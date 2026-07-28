@@ -12,20 +12,7 @@ tutorial_category: Synteny & comparative genomics
 PAF with `minimap2 -c --eqx`, and note `add-track -a` takes `query,target`, the
 reverse of the minimap2 argument order.
 
-**Setup:** a JBrowse instance, two assemblies, and an alignment between them
-(minimap2 makes one).
-
-For general background on synteny views and a worked example with tumor and
-normal genome comparison, see the
-[SV visualization guide](/docs/user_guides/sv_visualization).
-
-You can follow along in a live demo built from three _Helicobacter pylori_
-strains (26695, J99, and CHC155) with all pairwise whole-genome alignments and
-gene annotations preloaded:
-[open the H. pylori synteny demo](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json).
-The two views below open directly into that data.
-
-## What you need
+## Prerequisites
 
 This tutorial assumes you already have a JBrowse 2 instance running (see the
 [web quickstart](/docs/quickstart_web), or the
@@ -62,6 +49,16 @@ If you'd rather use [MUMmer](https://github.com/mummer4/mummer), convert its
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
 you can even load `.delta` or `.chain` directly into JBrowse without converting.
+
+For general background on synteny views and a worked example with tumor and
+normal genome comparison, see the
+[SV visualization guide](/docs/user_guides/sv_visualization).
+
+You can follow along in a live demo built from three _Helicobacter pylori_
+strains (26695, J99, and CHC155) with all pairwise whole-genome alignments and
+gene annotations preloaded:
+[open the H. pylori synteny demo](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json).
+The two views below open directly into that data.
 
 ## Loading assemblies and alignments
 
@@ -185,8 +182,8 @@ color in every panel, and a gene's synteny becomes legible by color alone.
 ## Using PIF for large genomes
 
 For large whole-genome alignments, convert your PAF to
-[PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format) so JBrowse
-fetches only the alignments in the current viewport:
+[](/docs/developer_guides/pif_format) so JBrowse fetches only the alignments in
+the current viewport:
 
 ```bash
 jbrowse make-pif alignment.paf
@@ -241,12 +238,12 @@ dotplot figure above shows.
 ## See also
 
 - [Synteny track config guide](/docs/config_guides/synteny_track)
-- [Dotplot view](/docs/user_guides/dotplot_view)
-- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [](/docs/user_guides/dotplot_view)
+- [](/docs/user_guides/linear_synteny_view)
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny), the same
-  views on UCSC's hosted liftOver chains with nothing to download
+- [](/docs/tutorials/genomes_synteny), the same views on UCSC's hosted liftOver
+  chains with nothing to download
 
 ## References
 

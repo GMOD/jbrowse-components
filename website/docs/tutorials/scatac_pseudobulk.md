@@ -9,8 +9,19 @@ tutorial_category: Epigenomics & single cell
 coverage BigWig, then load the whole set as a single MultiWiggle track, which
 draws one row per file.
 
-**Setup:** nothing to read along. To build the tracks, a Python or R environment
-for the pseudobulk step, plus a JBrowse instance to load the BigWigs into.
+## Prerequisites
+
+Nothing to install to read along: the figures come from hosted CATlas data.
+
+To build the tracks you need cells already clustered and labeled, which means
+either a fragments file (or a barcoded BAM) plus a barcode-to-label table, or
+the project object your analysis tool already holds: an `AnnData` in SnapATAC2
+(Python), an `ArchRProject` in ArchR, or a Seurat/Signac object in R. The
+pseudobulk step below runs in that same environment, so the BigWigs it writes
+can also be viewed inline through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[](/docs/jbrowser)) without leaving the session. You'll also need a JBrowse
+instance to load the finished BigWigs into.
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
 a single cell is almost entirely zero and no locus reads as open or closed.
@@ -37,19 +48,6 @@ three things with it:
 [Reproduce it end to end](#reproduce-it-end-to-end) runs the whole path on a
 public 5k-PBMC dataset, and the sections before it cover each piece against your
 own data.
-
-## What you need
-
-Nothing to install to read along: the figures come from hosted CATlas data.
-
-To build the tracks you need cells already clustered and labeled, which means
-either a fragments file (or a barcoded BAM) plus a barcode-to-label table, or
-the project object your analysis tool already holds: an `AnnData` in SnapATAC2
-(Python), an `ArchRProject` in ArchR, or a Seurat/Signac object in R. The
-pseudobulk step below runs in that same environment, so the BigWigs it writes
-can also be viewed inline through the
-[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[JBrowseR](/docs/jbrowser)) without leaving the session.
 
 ## Generating per-group BigWigs
 
@@ -377,7 +375,7 @@ Example display config that starts taller and in density mode:
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
 - [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
 - [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay)
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/chromhmm)
 
 ## Sources
 

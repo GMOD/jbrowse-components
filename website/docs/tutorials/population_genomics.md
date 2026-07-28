@@ -14,8 +14,25 @@ axis, and read where the signals line up against genes. JBrowse draws the
 windowed statistic your tool produced; it runs no population-genetic inference
 of its own.
 
-**Setup:** a command-line pipeline (vcftools, bcftools, htslib,
-bedGraphToBigWig).
+## Prerequisites
+
+The pipeline uses these standard command-line tools, plus `curl` and `node` for
+the [JBrowse CLI](/docs/cli):
+
+- [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
+  a VCF
+- [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and
+  sample list
+- [htslib](https://www.htslib.org/) (`bgzip`, `tabix`) - compressing and
+  indexing the VCF built in the per-sample section
+- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) - UCSC
+  utility that packs a bedGraph into an indexed bigWig
+
+On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers everything
+but `bedGraphToBigWig`, which is a
+[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
+Homebrew has the same four (`brew install vcftools bcftools htslib`), and all
+five are on [bioconda](https://bioconda.github.io/) if you already run conda.
 
 Population-genetic scans are per-window statistics running along the genome: Fst
 (differentiation between groups), nucleotide diversity (π) within a group, dxy
@@ -52,26 +69,6 @@ panel of 205 inbred lines from a single Raleigh, North Carolina population
 
 The same workflow applies to any species and any grouping. Swap in your own
 populations or your own VCF and the JBrowse side is identical.
-
-## What you need
-
-The pipeline uses these standard command-line tools, plus `curl` and `node` for
-the [JBrowse CLI](/docs/cli):
-
-- [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
-  a VCF
-- [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and
-  sample list
-- [htslib](https://www.htslib.org/) (`bgzip`, `tabix`) - compressing and
-  indexing the VCF built in the per-sample section
-- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) - UCSC
-  utility that packs a bedGraph into an indexed bigWig
-
-On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers everything
-but `bedGraphToBigWig`, which is a
-[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
-Homebrew has the same four (`brew install vcftools bcftools htslib`), and all
-five are on [bioconda](https://bioconda.github.io/) if you already run conda.
 
 ## Get the data
 
@@ -495,10 +492,10 @@ no clamp.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track)
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/multiquantitative_track)
 - [Multi-sample variant track](/docs/user_guides/multivariant_track)
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [](/docs/user_guides/gwas_track)
 - [Configuring assemblies](/docs/config_guides/assemblies)
 
 ## References

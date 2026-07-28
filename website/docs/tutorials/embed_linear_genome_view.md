@@ -8,8 +8,11 @@ tutorial_category: Configuration & embedding
 **TL;DR:** embed a single linear genome view in a plain web page with one
 `<script>` tag and no build step, then feed it `assembly`, `tracks`, and `init`.
 
-**Setup:** a text editor and a local HTTP server. No build step and no React
-project.
+## Prerequisites
+
+A text editor and a local HTTP server. JBrowse won't load if you open the HTML
+file directly. It needs to be served. If you have Node.js installed,
+`npx serve -S` in the directory works.
 
 This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag, no build step or React project required. For the full JBrowse
@@ -22,15 +25,9 @@ view state, web-worker rendering, and much more. This tutorial covers getting a
 basic view on the page. Reach for the storybook for anything beyond that.
 
 To embed other view types (synteny, dotplot, circular) or use a different
-bundler, see [Embedded components](/docs/embedded_components).
+bundler, see [](/docs/embedded_components).
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
-
-## What you need
-
-A text editor and a local HTTP server. JBrowse won't load if you open the HTML
-file directly. It needs to be served. If you have Node.js installed,
-`npx serve -S` in the directory works.
 
 ## Create a web page
 
@@ -263,9 +260,9 @@ function GenomeBrowser() {
 
 ## See also
 
-- [Embedded components](/docs/embedded_components)
+- [](/docs/embedded_components)
 - [Configuring assemblies](/docs/config_guides/assemblies)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [LGV storybook](https://jbrowse.org/storybook/lgv/)
 - [JBrowse Jupyter](/docs/jbrowse_jupyter) (Python equivalent)
-- [JBrowseR](/docs/jbrowser) (R/Shiny equivalent)
+- [](/docs/jbrowser) (R/Shiny equivalent)

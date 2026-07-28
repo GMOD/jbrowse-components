@@ -10,8 +10,12 @@ tutorial_category: Configuration & embedding
 persistent defaults in `config.json` and as per-session overrides in a URL
 session spec or embedded view. When both are set, the per-session value wins.
 
-**Setup:** a JBrowse instance with one track loaded. Everything here is config
-and URL editing.
+## Prerequisites
+
+A JBrowse instance with a track already loaded (see the
+[web quickstart](/docs/quickstart_web) or
+[desktop quickstart](/docs/quickstart_desktop)). Everything here is config and
+URL editing, so there is nothing else to install.
 
 Track display settings (height, color scheme, display type, score range, and so
 on) live in two places:
@@ -25,13 +29,6 @@ on) live in two places:
 Both use the same setting names. The per-session settings are a per-session
 override of the fields you can bake in as defaults.
 
-## What you need
-
-A JBrowse instance with a track already loaded (see the
-[web quickstart](/docs/quickstart_web) or
-[desktop quickstart](/docs/quickstart_desktop)). Everything here is config and
-URL editing, so there is nothing else to install.
-
 ## Finding a setting's name
 
 The per-session setting keys match the display model's own settings (the same
@@ -42,8 +39,8 @@ names you'd put in a config `displayDefaults`). Two ways to discover them:
   track's `displays` settings under those exact key names.
 - Look up the display in the auto-generated
   [config schema docs](/docs/config_guide) (e.g.
-  [LinearWiggleDisplay](/docs/config/linearwiggledisplay),
-  [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay)).
+  [](/docs/config/linearwiggledisplay),
+  [](/docs/config/linearalignmentsdisplay)).
 
 Common keys include `type` (the display type), `height`, `minScore` /
 `maxScore`, `defaultRendering`, `showSoftClipping`, and `colorBy`.
@@ -177,5 +174,5 @@ open in a specific state.
 
 - [Configuring tracks](/docs/config_guides/tracks)
 - [URL parameters](/docs/urlparams)
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
+- [](/docs/tutorials/embed_linear_genome_view)
 - [Config schema docs](/docs/config_guide)

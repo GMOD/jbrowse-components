@@ -11,8 +11,6 @@ multi-sample variant display, check inheritance against trio alignments, and
 read read-orientation evidence for a large chr19 inversion. Everything runs on a
 hosted demo, so no data download is needed.
 
-**Setup:** nothing. The dataset is hosted, and every figure has a live link.
-
 We cover three connected analyses of structural variants (SVs) from the 1000
 Genomes Project, using JBrowse's multi-sample visualization tools:
 
@@ -21,8 +19,7 @@ Genomes Project, using JBrowse's multi-sample visualization tools:
 - Characterizing a large chromosomal inversion on chr19
 
 For SNP-level trio analysis (phased genotypes, IBD blocks, and crossing-over
-visualization) see the companion
-[Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
+visualization) see the companion [](/docs/tutorials/analyze_trio) tutorial.
 
 The [Jupyter multi-sample variants example](/docs/jbrowse_jupyter) shows the
 same per-sample band and genotype-matrix displays from a VCF, and is available
@@ -125,7 +122,7 @@ family member's track at the SV locus. For a primer on reading these signals,
 see the [SV visualization guide](/docs/user_guides/sv_visualization).
 
 For SNP-level trio phasing and IBD block analysis with the matrix display, see
-the [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
+the [](/docs/tutorials/analyze_trio) tutorial.
 
 ## The chr19 large inversion
 
@@ -200,5 +197,5 @@ For more on navigating the breakpoint split view, see
 - [SV visualization guide](/docs/user_guides/sv_visualization)
 - [SV inspector guide](/docs/user_guides/sv_inspector_view)
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track)
-- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [](/docs/tutorials/analyze_trio)
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)

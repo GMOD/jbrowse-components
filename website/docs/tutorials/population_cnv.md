@@ -13,12 +13,7 @@ baseline of 2, and every individual becomes one row whose color _is_ a copy
 number. Past a few hundred samples the format becomes the bottleneck, so the
 second half packs the same values into one Zarr store.
 
-**Setup:** a JBrowse instance and the CLI. Nothing to download, the per-sample
-BigWigs are hosted.
-
-<Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies, and the bar top right is the scale. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where copy number runs from zero to ten across the panel." src="/img/cnv1000g/ccl3l1_depth.png" />
-
-## What you need
+## Prerequisites
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
@@ -43,6 +38,8 @@ QuicK-mer2 counts k-mers that occur exactly once in the reference, which is what
 makes it read _paralogs_ apart instead of collapsing a gene family into one
 averaged pile. That property is the whole reason this tutorial has anything to
 show.
+
+<Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies, and the bar top right is the scale. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where copy number runs from zero to ten across the panel." src="/img/cnv1000g/ccl3l1_depth.png" />
 
 ## Load it
 
@@ -267,8 +264,8 @@ converter over it, so nothing above depends on a hand-written sample list.
 
 - [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track), the
   display's own menus and options
-- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv), the same
-  one-row-per-sample idea for somatic segment calls
+- [](/docs/tutorials/tcga_cohort_cnv), the same one-row-per-sample idea for
+  somatic segment calls
 - [Structural variants across samples](/docs/tutorials/sv_multisamples)
 - [Clustering](/docs/user_guides/clustering)
 

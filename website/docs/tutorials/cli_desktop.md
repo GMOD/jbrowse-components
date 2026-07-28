@@ -11,8 +11,10 @@ Because it records each data file by a path relative to the config, the same
 folder opens in JBrowse Desktop or served on the web. Desktop saves session
 state back into the file it opens, so keep a copy if you need both.
 
-**Setup:** Node.js and JBrowse Desktop. Everything runs locally, with no web
-server.
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 18 or newer
+- JBrowse Desktop, or a web server if you want to serve the same folder
 
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
 command line instead of clicking through the **Add track** form. You run a few
@@ -23,11 +25,6 @@ It works in both places because the CLI records each file by a path _relative_
 to `config.json`: Desktop resolves those paths against the folder on disk, and a
 web server resolves them against the served config's URL. So one scriptable,
 reproducible setup is portable across both apps.
-
-## What you need
-
-- [Node.js](https://nodejs.org/) 18 or newer
-- JBrowse Desktop, or a web server if you want to serve the same folder
 
 ## Install the CLI
 

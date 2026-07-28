@@ -11,8 +11,20 @@ tutorial_category: Epigenomics & single cell
 JBrowse colors per-read methylation straight from the C→T conversion, with CpG,
 CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
 
-**Setup:** a full read-alignment pipeline (Trim Galore, bwameth, samtools), run
-on SRA reads.
+## Prerequisites
+
+This is a full command-line pipeline:
+
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI, and `wget`
+- [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
+  (with cutadapt)
+- [bwameth](https://github.com/brentp/bwa-meth) and
+  [samtools](http://www.htslib.org/)
+- htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
+- [MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
+  `bedGraphToBigWig`, for the optional aggregate track only
 
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
 without any long-read basecaller. A chemical (sodium bisulfite) or enzymatic
@@ -30,21 +42,6 @@ methylate almost entirely at CpG, but plants methylate in three sequence
 contexts: CpG, CHG, and CHH (H is A, C, or T). JBrowse restricts the coloring to
 any one of them, so all three read off the same pileup. Everything below runs on
 real _Arabidopsis thaliana_ data, from SRA reads to a colored browser view.
-
-## What you need
-
-This is a full command-line pipeline:
-
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI, and `wget`
-- [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
-  (with cutadapt)
-- [bwameth](https://github.com/brentp/bwa-meth) and
-  [samtools](http://www.htslib.org/)
-- htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
-- [MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
-  `bedGraphToBigWig`, for the optional aggregate track only
 
 ## The pipeline
 

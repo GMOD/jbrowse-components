@@ -9,9 +9,6 @@ tutorial_category: Transcriptomics & proteins
 BAM/CRAM CIGAR `N` skips automatically, with no extra configuration, and can
 color reads by fragment strand for strand-specific libraries.
 
-**Setup:** nothing. Every figure has a live link that opens the same view on
-hosted data.
-
 Every screenshot has a live link, built from JBrowse's
 [session-spec URL format](/docs/urlparams#session-spec), so you can open the
 same view yourself.
@@ -139,7 +136,7 @@ strand-specific BigWig produced by your aligner), load it separately as a
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track)
-- [Quantitative track](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/alignments_track)
+- [](/docs/user_guides/quantitative_track)
 - [Gene tracks](/docs/user_guides/gene_track)
 - [Gallery: alignments and long reads](/gallery/#alignments)

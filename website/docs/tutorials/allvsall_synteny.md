@@ -10,8 +10,13 @@ tutorial_category: Synteny & comparative genomics
 all-vs-all PAF, using `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for
 large files).
 
-**Setup:** a command-line pipeline. The NCBI `datasets` CLI, minimap2, and
-htslib build the all-vs-all PAF before anything loads.
+## Prerequisites
+
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`
+- `node`, for the [JBrowse CLI](/docs/cli)
 
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
@@ -23,19 +28,11 @@ Every figure below links to the live session that produced it.
 
 This same five-strain view also builds in Python or R: a `synteny_view` inside
 `JBrowseApp` ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or
-`JBrowseRApp` ([JBrowseR](/docs/jbrowser)) stacks the strains from one
-all-vs-all PAF, using the same hosted data as this tutorial.
+`JBrowseRApp` ([](/docs/jbrowser)) stacks the strains from one all-vs-all PAF,
+using the same hosted data as this tutorial.
 
 For cross-species comparisons built from gene-level ortholog tables instead, see
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny).
-
-## What you need
-
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI
-- `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`
-- `node`, for the [JBrowse CLI](/docs/cli)
 
 ## Producing an all-vs-all PAF
 

@@ -10,31 +10,7 @@ tutorial_category: Structural variation
 **TL;DR:** load the Cancer Genome in a Bottle HG008 cancer tumor/normal PacBio
 HiFi data and its benchmark SV/CNV calls into JBrowse.
 
-**Setup:** nothing to read along, since every figure opens a hosted config that
-streams the reads from NCBI. Building the instance yourself from the raw reads
-is the heaviest pipeline here (about 1 TB of disk, 32 GB of RAM), but you don't
-have to follow every step to see the jbrowse outputs (each figure has links).
-
-This tutorial loads data from the
-[Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)
-project into JBrowse 2 and uses several view types to inspect the supplied
-benchmark structural variant (SV) and copy-number variant (CNV) calls. The
-dataset is HG008, a pancreatic ductal adenocarcinoma (PDAC) cell line with
-matched tumor (HG008-T) and normal pancreatic tissue (HG008-N-P), sequenced with
-PacBio HiFi long reads. The project also publishes a near-complete
-telomere-to-telomere de novo assembly of the tumor genome, which is well-suited
-to JBrowse 2's synteny and dotplot views.
-
-For the full call sets, auxiliary assays, and methods, see the
-[NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
-and [McDaniel et al. 2025](https://doi.org/10.1038/s41597-025-05438-2).
-
-The SV-visualization concepts used below are covered in the
-[SV visualization guide](/docs/user_guides/sv_visualization) and the
-[SV inspector guide](/docs/user_guides/sv_inspector_view). This tutorial focuses
-on the data-loading workflow and a few worked examples.
-
-## What you need
+## Prerequisites
 
 This tutorial assumes you are setting up a JBrowse 2 instance on an Apache 2
 HTTP server on Ubuntu or Debian Linux, but the data-preparation steps work on
@@ -64,6 +40,25 @@ You will need:
 
 All of the data-preparation commands below are also collected into one
 reproducible script (see [Reproduce it end to end](#reproduce-it-end-to-end)).
+
+This tutorial loads data from the
+[Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)
+project into JBrowse 2 and uses several view types to inspect the supplied
+benchmark structural variant (SV) and copy-number variant (CNV) calls. The
+dataset is HG008, a pancreatic ductal adenocarcinoma (PDAC) cell line with
+matched tumor (HG008-T) and normal pancreatic tissue (HG008-N-P), sequenced with
+PacBio HiFi long reads. The project also publishes a near-complete
+telomere-to-telomere de novo assembly of the tumor genome, which is well-suited
+to JBrowse 2's synteny and dotplot views.
+
+For the full call sets, auxiliary assays, and methods, see the
+[NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
+and [McDaniel et al. 2025](https://doi.org/10.1038/s41597-025-05438-2).
+
+The SV-visualization concepts used below are covered in the
+[SV visualization guide](/docs/user_guides/sv_visualization) and the
+[SV inspector guide](/docs/user_guides/sv_inspector_view). This tutorial focuses
+on the data-loading workflow and a few worked examples.
 
 ## Install JBrowse 2 with Apache 2
 
@@ -571,12 +566,12 @@ For more on customizing JBrowse 2, see the
 
 - [Synteny visualization](/docs/tutorials/synteny_visualization) - the same
   dotplot/synteny views, worked with bacterial genome assemblies
-- [SV visualization](/docs/user_guides/sv_visualization) - reference for the SV
-  display types and read-signal patterns used throughout
-- [SV inspector view](/docs/user_guides/sv_inspector_view) - the SV inspector
-  workflow used in the translocation and CUZD1 walkthroughs
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
-  tumor/normal coverage comparison referenced in the CNV section
+- [](/docs/user_guides/sv_visualization) - reference for the SV display types
+  and read-signal patterns used throughout
+- [](/docs/user_guides/sv_inspector_view) - the SV inspector workflow used in
+  the translocation and CUZD1 walkthroughs
+- [](/docs/user_guides/multiquantitative_track) - tumor/normal coverage
+  comparison referenced in the CNV section
 
 ## References
 

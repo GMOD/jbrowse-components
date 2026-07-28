@@ -11,8 +11,12 @@ tutorial_category: Synteny & comparative genomics
 The table is reference-anchored on column 0, so only pairs that include that
 reference are direct alignments and row order is a real choice.
 
-**Setup:** a command-line pipeline. jcvi with the LAST aligner builds the
-ortholog table.
+## Prerequisites
+
+- [jcvi](https://github.com/tanghaibao/jcvi) with the
+  [LAST](https://gitlab.com/mcfrith/last) aligner
+- `samtools`, htslib (`bgzip`, `tabix`), `wget`
+- `node`, for the [JBrowse CLI](/docs/cli)
 
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. This tutorial builds a
@@ -23,13 +27,6 @@ cross-species ortholog table.
 For closely related genomes (strains or accessions of one species), a
 whole-genome all-vs-all PAF is usually a better source. See
 [All-vs-all synteny](/docs/tutorials/allvsall_synteny).
-
-## What you need
-
-- [jcvi](https://github.com/tanghaibao/jcvi) with the
-  [LAST](https://gitlab.com/mcfrith/last) aligner
-- `samtools`, htslib (`bgzip`, `tabix`), `wget`
-- `node`, for the [JBrowse CLI](/docs/cli)
 
 ## What a `.blocks` file is
 
@@ -321,8 +318,8 @@ and `tabix`, `wget`, and node (for the JBrowse CLI).
 
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) for hosted
-  pairwise alignments with no setup
-- [Linear synteny view](/docs/user_guides/linear_synteny_view)
+- [](/docs/tutorials/genomes_synteny) for hosted pairwise alignments with no
+  setup
+- [](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)

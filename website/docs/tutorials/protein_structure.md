@@ -10,8 +10,12 @@ AlphaFold and UniProt) and MSA views that launch from a gene and stay linked to
 the genome, so hovering a variant highlights the matching residue. Launching
 needs a gene feature carrying a recognizable protein or transcript ID.
 
-**Setup:** nothing to start. The next section opens an instance with both
-plugins already loaded.
+## Prerequisites
+
+Nothing to start: the next section opens a preconfigured instance with both
+plugins already loaded. To use them on your own data, add the two plugins to a
+JBrowse instance, covered under
+[Installing the plugins](#installing-the-plugins).
 
 JBrowse 2 can link genomic data to protein-level views: interactive 3D
 structures from [AlphaFold DB](https://alphafold.ebi.ac.uk/) and
@@ -31,20 +35,13 @@ Two plugins provide this:
 Both add new view types, launched from a gene's right-click menu in JBrowse Web
 and Desktop. The single-view embedded components host only a linear genome view,
 so neither view type appears there. The full-app embedded components can host
-one in principle: [JBrowseR](/docs/jbrowser)'s `JBrowseRApp` takes both runtime
-plugins and a `views` list, while [anywidget](/docs/jbrowse_jupyter)'s
-`JBrowseApp` has no plugin loading yet.
+one in principle: [](/docs/jbrowser)'s `JBrowseRApp` takes both runtime plugins
+and a `views` list, while [anywidget](/docs/jbrowse_jupyter)'s `JBrowseApp` has
+no plugin loading yet.
 
 The approach is described in our
 [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
 (_Journal of Molecular Biology_, 2026).
-
-## What you need
-
-Nothing to start: the next section opens a preconfigured instance with both
-plugins already loaded. To use them on your own data, add the two plugins to a
-JBrowse instance, covered under
-[Installing the plugins](#installing-the-plugins).
 
 ## Try it without installing anything
 
@@ -185,4 +182,4 @@ for details.
 - [g2p_mapper](https://github.com/cmdcolin/g2p_mapper)
 - [Gene tracks](/docs/user_guides/gene_track)
 - [Variant tracks](/docs/user_guides/variant_track)
-- [Plugin store](/docs/user_guides/plugin_store)
+- [](/docs/user_guides/plugin_store)

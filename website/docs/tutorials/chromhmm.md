@@ -9,8 +9,14 @@ tutorial_category: Epigenomics & single cell
 with a `cellType` column, then a `LinearMultiRowFeatureDisplay` partitions it
 into one color-coded row per cell type from a single track, adapter, and fetch.
 
-**Setup:** downloads plus htslib and the JBrowse CLI. No aligner and no heavy
-compute.
+## Prerequisites
+
+- `wget` and htslib (`bgzip`, `tabix`)
+- `node`, for the [JBrowse CLI](/docs/cli)
+
+On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
+comes from [nodejs.org](https://nodejs.org/). No aligner and no heavy compute
+needed.
 
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
 states (active promoter, strong enhancer, heterochromatin, ...) from
@@ -28,14 +34,6 @@ the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
 <Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM across 127 epigenomes as a single multi-row track, with NCBI RefSeq genes above for context. Each row is one epigenome, each block is painted by the file's own itemRgb, and the state key on the right is derived from the data."/>
-
-## What you need
-
-- `wget` and htslib (`bgzip`, `tabix`)
-- `node`, for the [JBrowse CLI](/docs/cli)
-
-On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
-comes from [nodejs.org](https://nodejs.org/).
 
 ## Reproduce it end to end
 
@@ -191,11 +189,10 @@ grouping you want depends on the locus rather than on a fixed publication order.
 
 ## See also
 
-- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv), the same display
-  colored from a numeric column instead of `itemRgb`
-- [QTL visualization example](/docs/tutorials/bxd_qtl), the same display for
-  strain genotypes, alongside a QTL scan
-- [Phased trio analysis](/docs/tutorials/analyze_trio), the same display for
-  inheritance painting
-- [Single-cell ATAC pseudobulk](/docs/tutorials/scatac_pseudobulk)
+- [](/docs/tutorials/tcga_cohort_cnv), the same display colored from a numeric
+  column instead of `itemRgb`
+- [](/docs/tutorials/bxd_qtl), the same display for strain genotypes, alongside
+  a QTL scan
+- [](/docs/tutorials/analyze_trio), the same display for inheritance painting
+- [](/docs/tutorials/scatac_pseudobulk)
 - [Configuring tracks](/docs/config_guides/tracks)
