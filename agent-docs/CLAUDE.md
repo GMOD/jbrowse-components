@@ -76,6 +76,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [DESKTOP_CONTEXT_ISOLATION.md](guides/DESKTOP_CONTEXT_ISOLATION.md) — desktop IPC, preload, plugin loading
 - [REGION_VIEW_LAUNCH.md](guides/REGION_VIEW_LAUNCH.md) — "open view X for this region" entry points (synteny stack, graph subgraph)
 - [PANGENOME_GRAPH_NEXT.md](guides/PANGENOME_GRAPH_NEXT.md) — the graph view's work queue: deterministic layout, pinning the plugin bundle, carriage, and the level-of-detail rework
+- [PANGENOME_FIGURE_PASS_HANDOFF.md](guides/PANGENOME_FIGURE_PASS_HANDOFF.md) — 2026-07-28 HPRC/pangenome figure pass: what shipped, and the tutorial prose still describing colors its figures no longer use
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is

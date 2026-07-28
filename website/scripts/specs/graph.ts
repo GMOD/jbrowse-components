@@ -189,6 +189,12 @@ const ECOLI_PATHS_SESSION_TRACK = {
 // `tabix ecoli_minigraph_paths.bed.gz chr:1094000-1098000`. The window is ~5x
 // the bubble so the flanking reference-path blocks show it is a local event.
 const PATHS_WINDOW = 'chr:1,088,000-1,104,000'
+const PATHS_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 1088000,
+  end: 1104000,
+}
 const PATHS_WINDOW_WIDE = 'chr:1,000,000-1,200,000'
 
 // The per-strain track's own window, and 12x wider than the one above on
@@ -220,8 +226,10 @@ const HOVERED_ALLELE = { x: 295, y: 555 }
 // somewhere the click-time layout had nothing (which is exactly what happened
 // while writing this spec — hence the settle delay before the right-click).
 // It restales on any layout change above the graph: the segments lane losing
-// its label rows lifted every row by about that much.
-const HPRC_ALLELE = { x: 305, y: 622 }
+// its label rows lifted every row by about that much, and compacting the gene
+// lane from 80 px to 60 lifted them 20 more, and the segments lane growing to
+// its third row put 6 back.
+const HPRC_ALLELE = { x: 305, y: 608 }
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -245,6 +253,12 @@ const K12_GENES_SESSION_TRACK = {
 // rank-2 (CFT073) allele, so the neighbourhood a right-click on it cuts has a
 // real bubble in it instead of a straight run of backbone.
 const ECOLI_WINDOW = 'chr:4,050,000-4,100,000'
+const ECOLI_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 4050000,
+  end: 4100000,
+}
 const SEGMENT_LABEL = 's1277'
 // ~2x the segment's own span, so its label is a comfortable right-click target
 const SEGMENT_WINDOW = 'chr:4,054,000-4,066,000'
@@ -432,8 +446,15 @@ function referencePositionColor({
 // name nothing a reader can look up, and at these widths the display spends
 // three or four rows of text on them — in the 90 kb allele-inventory frame they
 // covered more area than the blocks did. What the lane is for is the blue rank-0
-// backbone tiling the reference, which one row of blocks says as well as four,
-// so the height is that one row.
+// backbone tiling the reference.
+//
+// `heightMode: 'grow'` rather than a pinned height. The lane packs 2-4 rows
+// depending on how the window's segments overlap, and a pinned 45 px fitted the
+// thinnest of those: at MHC and at LPA the last row was cut by the lane's own
+// bottom border and the display raised a scrollbar, so every one of these
+// figures carried a clipped track and a scrollbar over the tracks. Growing to
+// the content also drops the whitespace where a window packs into two rows,
+// which a height picked for the worst case would have added everywhere else.
 //
 // Colored by the graph's own reference-position ramp over the window the
 // subgraph beside it was cut from, so the lane is the graph's backbone twice:
@@ -444,7 +465,7 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
     trackId: SEGMENTS_TRACK,
     type: 'LinearBasicDisplay',
     showLabels: 'off',
-    height: 45,
+    heightMode: 'grow',
     color: referencePositionColor(domain),
   }
 }
@@ -461,6 +482,14 @@ const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 // rows. Written once because two of the three assert against coordinates
 // measured in this exact layout — a stray difference between the copies would
 // move the hover target without failing anything.
+//
+// Reference-position colors on both panels, over the same window (review:
+// "might want to use rainbow coloring of nodes"). The tutorial argues for
+// exactly this a section later — the ramp is the one scheme a linear track can
+// reproduce, because it is a function of two numbers and a midpoint — and these
+// are the figures where the argument has to be visible: the block above and the
+// node below are the same color at the same bp. The rank scheme stays on
+// pangenome/rgfa_segment_neighbourhood, whose subject IS rank.
 function ecoliSampleRowsSession() {
   return sessionSpec(CONFIG, {
     sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
@@ -475,20 +504,16 @@ function ecoliSampleRowsSession() {
             trackId: ECOLI_SEGMENTS_TRACK,
             type: 'LinearBasicDisplay',
             height: 80,
+            color: referencePositionColor(PATHS_REGION),
           },
         ],
       },
       {
         type: 'GraphGenomeView',
         loadedTrackId: ECOLI_SEGMENTS_TRACK,
-        loadedRegion: {
-          refName: 'chr',
-          assemblyName: 'K12',
-          start: 1088000,
-          end: 1104000,
-        },
+        loadedRegion: PATHS_REGION,
         layoutMode: 'samplerows',
-        colorScheme: 'stable-rank',
+        colorScheme: 'reference-position',
       },
     ],
   })
@@ -665,7 +690,10 @@ export const graphSpecs: ScreenshotSpec[] = [
   // The indexed route on the tutorial's own four-strain graph: the rGFA
   // segments as a feature track over a 50 kb K12 window, and the subgraph the
   // launch menu cuts from that same window below it. Same two tabix indexes
-  // feed both, so the segment ids above are the nodes below. The track is
+  // feed both, so the segment ids above are the nodes below, and since this is
+  // the first figure on the page, the same reference-position ramp too: the
+  // window and the cut region are the same 50 kb, so a block and its node land
+  // on the same hue. The track is
   // declared in the session rather than the config because the config is the
   // shared graphgenomeview fixture; the indexes are hosted beside the GFAs.
   {
@@ -678,18 +706,19 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: ECOLI_WINDOW,
-          tracks: [ECOLI_SEGMENTS_TRACK],
+          tracks: [
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              color: referencePositionColor(ECOLI_REGION),
+            },
+          ],
         },
         {
           type: 'GraphGenomeView',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
-          loadedRegion: {
-            refName: 'chr',
-            assemblyName: 'K12',
-            start: 4050000,
-            end: 4100000,
-          },
-          colorScheme: 'stable-rank',
+          loadedRegion: ECOLI_REGION,
+          colorScheme: 'reference-position',
         },
       ],
     }),
@@ -866,19 +895,21 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr6:32,500,000-32,560,000',
-          // pinned heights: the three tracks left to themselves take two thirds
-          // of the frame, and the point of this figure is the axis the graph
-          // below shares with them
+          // Genes and the segments lane only. The bubbles lane was here too and
+          // came out badly at this window: the class II bubble runs the whole
+          // width and the five small ones pack against the right edge, where
+          // each of their two label lines is cut off horizontally, which no
+          // height fixes. Nothing in this figure's caption reads the lane
+          // either - it is about the axis the graph shares with the tracks -
+          // and pangenome/hprc_c4_subgraph and hprc_lpa_kiv2 both carry the
+          // bubbles lane on windows where its labels fit.
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
-              height: 100,
-            },
-            {
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              height: 110,
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
             },
             hprcSegmentsLane(MHC_REGION),
           ],
@@ -895,9 +926,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    // the compacted linear stack plus the graph canvas in full: at 1000 the rank
+    // the two-lane linear stack plus the graph canvas in full: at 1000 the rank
     // rows ran off the bottom edge, which reads as a broken layout
-    viewportHeight: 995,
+    viewportHeight: 803,
     hideTooltip: true,
   },
 
@@ -943,6 +974,9 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc_minigraph_bubbles',
               type: 'LinearBasicDisplay',
+              // pinned, not grown: a bubble's label is two lines and the lane
+              // packs few enough rows to fit them, so growing it only adds
+              // whitespace under the last one
               height: 90,
             },
             hprcSegmentsLane(C4_REGION),
@@ -967,9 +1001,10 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportWidth: 1000,
     // 1215 before the gene lane went compact, 1155 before the layout was
-    // seeded: the pane is sized to the drawing, so a different arrangement of
-    // the same 30 nodes is a different pane height
-    viewportHeight: 1166,
+    // seeded, 1166 before the segments lane grew to its third row: the pane is
+    // sized to the drawing, so a different arrangement of the same 30 nodes is
+    // a different pane height
+    viewportHeight: 1176,
     hideTooltip: true,
   },
 
@@ -1011,6 +1046,9 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc_minigraph_bubbles',
               type: 'LinearBasicDisplay',
+              // pinned, not grown: a bubble's label is two lines and the lane
+              // packs few enough rows to fit them, so growing it only adds
+              // whitespace under the last one
               height: 80,
             },
             hprcSegmentsLane(LPA_REGION),
@@ -1031,7 +1069,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     viewportWidth: 1000,
     // the linear stack plus the graph pane, which sizes itself to its rows
-    viewportHeight: 1045,
+    viewportHeight: 1049,
     hideTooltip: true,
   },
 
@@ -1118,7 +1156,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the gene lane, the segments lane, the 20-row callset, and the graph's
     // rows under them
-    viewportHeight: 1330,
+    viewportHeight: 1336,
     hideTooltip: true,
   },
   // The linearization: x is reference bp and each row is one contributing
@@ -1238,14 +1276,16 @@ export const graphSpecs: ScreenshotSpec[] = [
   // assemblies), so what the menu offers is the GRCh38 interval the allele
   // attaches to, which is the answer the HPRC tutorial's round trip needs.
   //
-  // Two frames, because the menu's first item is new and its result is the
-  // thing worth showing. Review: "need to be able to just highlight
-  // lineargenomeview coords". Hovering a node already draws a band in the
-  // linear view, but a hover band lives as long as the pointer does and cannot
-  // be pointed at afterwards; **Highlight in hg38** writes
-  // the same interval into the view's own highlight list, where it stays. The
-  // second frame is that highlight, cropped to the linear view so the band is
-  // the subject.
+  // One frame holding both the menu and its result. Review: "need to be able to
+  // just highlight lineargenomeview coords", then "make into a single
+  // screenshot instead of two screenshots potentially where highlight and right
+  // click menu is visible". Hovering a node already draws a band in the linear
+  // view, but a hover band lives as long as the pointer does; **Highlight in
+  // hg38** writes the same interval into the view's own highlight list, where it
+  // stays. That persistence is what lets one frame carry both: the actions click
+  // the item, then right-click the same node again, so the menu is open over a
+  // band it already left behind. Two stacked frames paid for the whole app
+  // chrome twice to say that.
   //
   // The right-click is a bare viewport coordinate for the same reason
   // HOVERED_ALLELE is: the graph is canvas, and this layout is deterministic. A
@@ -1264,7 +1304,12 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
-              height: 80,
+              // compact, as in the other HPRC figures: two HLA-DRB genes do not
+              // need a lane of their own, and every px here is one the graph
+              // rows under it do not get
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 60,
             },
             hprcSegmentsLane(MHC_REGION),
           ],
@@ -1283,32 +1328,19 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    viewportHeight: 830,
+    viewportHeight: 816,
     actions: [
       // the auto-fit has to have finished before a coordinate means anything
       { type: 'delay', ms: 2000 },
-    ],
-    stages: [
-      // A `stages` capture stacks the stage frames and nothing else, so the
-      // right-click lives here rather than in `actions` above — which is setup
-      // for stage one, not a frame of its own.
-      {
-        actions: [
-          { type: 'rightclick', from: HPRC_ALLELE },
-          { type: 'waitForText', text: 'Node details' },
-          { type: 'delay', ms: 500 },
-        ],
-      },
-      {
-        // the linear view alone, so the band is the subject rather than a strip
-        // above a graph pane that no longer has anything to say. Deep enough to
-        // hold the whole segments lane, since the band crosses both lanes
-        viewportHeight: 405,
-        actions: [
-          { type: 'click', text: 'Highlight in hg38' },
-          { type: 'delay', ms: 1500 },
-        ],
-      },
+      { type: 'rightclick', from: HPRC_ALLELE },
+      { type: 'waitForText', text: 'Highlight in hg38' },
+      { type: 'click', text: 'Highlight in hg38' },
+      // the band is written into the view's highlight list, and the menu closes
+      { type: 'delay', ms: 1500 },
+      // the same node again, so the frame carries the menu and the band it left
+      { type: 'rightclick', from: HPRC_ALLELE },
+      { type: 'waitForText', text: 'Node details' },
+      { type: 'delay', ms: 500 },
     ],
   },
 

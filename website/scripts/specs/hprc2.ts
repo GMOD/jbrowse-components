@@ -99,13 +99,18 @@ export const hprc2Specs: ScreenshotSpec[] = [
               trackId: 'hg38_ncbiRefSeq_ucsc',
               geneGlyphMode: 'longestCoding',
               displayMode: 'compact',
+              // five class II genes on one compact row: left to its default the
+              // lane spent 145 px of a 780 px frame on ~40 px of glyphs, all of
+              // it taken off the matrix, which is what the figure is for
+              height: 70,
             },
             {
               trackId: TRACK,
               type: 'LinearMultiSampleVariantDisplay',
-              // shorter than the matrix figure's 700: 464 rows still read at
-              // this height and it leaves the gene lane its share of the frame
-              height: 460,
+              // 464 haplotype rows, so height is px per row: at 460 a row was
+              // under a pixel and the clustered blocks aliased against each
+              // other. This is what the compacted gene lane above frees up.
+              height: 515,
               jexlFilters: SV_FILTER,
               runClustering: true,
             },
@@ -116,7 +121,11 @@ export const hprc2Specs: ScreenshotSpec[] = [
     readySelector: clusteredReady(REGULAR_READY),
     readyTimeout: 360000,
     viewportWidth: 1200,
-    viewportHeight: 780,
+    // the gene lane, the matrix in full, and the view's own bottom edge: at 780
+    // the last haplotype rows ran off the frame, which reads as a clipped track
+    // rather than as the bottom of the cohort (the run's own below-the-fold
+    // report is what this is measured against, not the PNG)
+    viewportHeight: 825,
     settleMs: 5000,
     hideTooltip: true,
     actions: [

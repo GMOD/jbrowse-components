@@ -248,7 +248,7 @@ each segment's source sequence (`SN`) and offset (`SO`):
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens.
 
-<Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, then the result of Highlight in hg38. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
+<Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, over the band Highlight in hg38 left in the linear view above. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
 That closes a loop over the lanes above: rubberband a locus into a graph, find
 the loop worth asking about, right-click it to put the linear view on its GRCh38
@@ -396,7 +396,7 @@ the samples. Put both in sample rows and the two row stacks answer different
 questions about the same bp: the graph names the haplotype an allele came
 **from**, the callset names every haplotype that **carries** it.
 
-<Figure caption="One window, both products, restricted to the same 10 donors so the rows line up: the callset (top) is filtered to the same 50 bp tier the graph holds, both haplotypes of each donor labeled by name; the graph (bottom) gives each donor haplotype a row, colored by where on the reference its alleles attach. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products, restricted to the same 10 donors so the rows line up: the callset (top) is filtered to the same 50 bp tier the graph holds, both haplotypes of each donor labeled by name; the graph (bottom) rows only the haplotypes that donated sequence here, colored by where on the reference their alleles attach. The callset numbers a donor's haplotypes HP0/HP1, the graph .1/.2. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Local ancestry (PCLAI)
 
