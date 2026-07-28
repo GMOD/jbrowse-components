@@ -30,18 +30,17 @@ tabix `.gz`, and so on).
 ```
 
 Spell out the full slot form (e.g. `bamLocation` plus `index.location`) only
-when the index is named differently, lives elsewhere, or is a `.csi` index, in
-which case also set `index.indexType: "CSI"`. Use CSI for chromosomes longer
-than 512 Mb, which TBI cannot index.
+when the index is named differently or lives elsewhere.
+
+Use CSI over TBI/BAI for chromosomes longer than 512 Mb (some plant and animal
+genomes exceed it; CRAM's `.crai` has no such limit). BAM and the tabix-indexed
+adapters (VCF, GFF3, BED, BEDGRAPH, MAF, PAF) accept a `csi: true` shorthand:
 
 ```json
 {
-  "type": "BamAdapter",
-  "bamLocation": { "uri": "https://example.com/sample.bam" },
-  "index": {
-    "indexType": "CSI",
-    "location": { "uri": "https://example.com/sample.bam.csi" }
-  }
+  "type": "VcfTabixAdapter",
+  "uri": "https://example.com/variants.vcf.gz",
+  "csi": true
 }
 ```
 
@@ -58,11 +57,11 @@ definition, not a track.
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| Bgzipped FASTA (.fa.gz + .fai + .gzi) | [BgzipFastaAdapter](/docs/config/bgzipfastaadapter) | assembly `sequence` |  |
-| chrom.sizes | [ChromSizesAdapter](/docs/config/chromsizesadapter) | assembly `sequence` | Names and lengths only, no sequence |
-| Indexed FASTA (.fa + .fai) | [IndexedFastaAdapter](/docs/config/indexedfastaadapter) | assembly `sequence` |  |
-| Plain FASTA (.fa, no index) | [UnindexedFastaAdapter](/docs/config/unindexedfastaadapter) | assembly `sequence` | Read entirely into memory; prefer an indexed form for large genomes |
-| UCSC 2bit | [TwoBitAdapter](/docs/config/twobitadapter) | assembly `sequence` |  |
+| Bgzipped FASTA (.fa.gz + .fai + .gzi) | [](/docs/config/bgzipfastaadapter) | assembly `sequence` |  |
+| chrom.sizes | [](/docs/config/chromsizesadapter) | assembly `sequence` | Names and lengths only, no sequence |
+| Indexed FASTA (.fa + .fai) | [](/docs/config/indexedfastaadapter) | assembly `sequence` |  |
+| Plain FASTA (.fa, no index) | [](/docs/config/unindexedfastaadapter) | assembly `sequence` | Read entirely into memory; prefer an indexed form for large genomes |
+| UCSC 2bit | [](/docs/config/twobitadapter) | assembly `sequence` |  |
 
 <!-- FILE_TYPES sequence END -->
 
@@ -87,10 +86,10 @@ coverage/pileup display options.
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| BAM | [BamAdapter](/docs/config/bamadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) |  |
-| CRAM | [CramAdapter](/docs/config/cramadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) |  |
-| Htsget BAM | [HtsgetBamAdapter](/docs/config/htsgetbamadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) | Less exercised than plain BAM/CRAM; prefer an indexed file where possible |
-| SAM | [SamAdapter](/docs/config/samadapter) | [AlignmentsTrack](/docs/config/alignmentstrack) | Unindexed, so the whole file is loaded into memory; prefer BAM or CRAM for sequencing-scale data |
+| BAM | [](/docs/config/bamadapter) | [](/docs/config/alignmentstrack) |  |
+| CRAM | [](/docs/config/cramadapter) | [](/docs/config/alignmentstrack) |  |
+| Htsget BAM | [](/docs/config/htsgetbamadapter) | [](/docs/config/alignmentstrack) | Less exercised than plain BAM/CRAM; prefer an indexed file where possible |
+| SAM | [](/docs/config/samadapter) | [](/docs/config/alignmentstrack) | Unindexed, so the whole file is loaded into memory; prefer BAM or CRAM for sequencing-scale data |
 
 <!-- FILE_TYPES alignments END -->
 
@@ -121,13 +120,13 @@ Gene models, repeats, and other interval features use a `FeatureTrack`.
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| BED (plain) | [BedAdapter](/docs/config/bedadapter) | [FeatureTrack](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
-| BED (tabix) | [BedTabixAdapter](/docs/config/bedtabixadapter) | [FeatureTrack](/docs/config/featuretrack) |  |
-| BigBed | [BigBedAdapter](/docs/config/bigbedadapter) | [FeatureTrack](/docs/config/featuretrack) |  |
-| GFF3 (plain) | [Gff3Adapter](/docs/config/gff3adapter) | [FeatureTrack](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
-| GFF3 (tabix) | [Gff3TabixAdapter](/docs/config/gff3tabixadapter) | [FeatureTrack](/docs/config/featuretrack) |  |
-| GTF (plain) | [GtfAdapter](/docs/config/gtfadapter) | [FeatureTrack](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
-| GTF (tabix) | [GtfTabixAdapter](/docs/config/gtftabixadapter) | [FeatureTrack](/docs/config/featuretrack) |  |
+| BED (plain) | [](/docs/config/bedadapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
+| BED (tabix) | [](/docs/config/bedtabixadapter) | [](/docs/config/featuretrack) |  |
+| BigBed | [](/docs/config/bigbedadapter) | [](/docs/config/featuretrack) |  |
+| GFF3 (plain) | [](/docs/config/gff3adapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
+| GFF3 (tabix) | [](/docs/config/gff3tabixadapter) | [](/docs/config/featuretrack) |  |
+| GTF (plain) | [](/docs/config/gtfadapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
+| GTF (tabix) | [](/docs/config/gtftabixadapter) | [](/docs/config/featuretrack) |  |
 
 <!-- FILE_TYPES feature END -->
 
@@ -176,19 +175,19 @@ tabix -p gff genes.gtf.gz
 ## Quantitative / signal
 
 Coverage and other numeric signals use a `QuantitativeTrack`. See
-[Quantitative tracks](/docs/config_guides/quantitative_track) and
-[Multi-quantitative tracks](/docs/config_guides/multiquantitative_track).
+[](/docs/config_guides/quantitative_track) and
+[](/docs/config_guides/multiquantitative_track).
 
 <!-- FILE_TYPES quantitative START -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| BedGraph (plain) | [BedGraphAdapter](/docs/config/bedgraphadapter) | [QuantitativeTrack](/docs/config/quantitativetrack) | Loaded entirely into memory; for small files |
-| BedGraph (tabix) | [BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter) | [QuantitativeTrack](/docs/config/quantitativetrack) |  |
-| BigWig | [BigWigAdapter](/docs/config/bigwigadapter) | [QuantitativeTrack](/docs/config/quantitativetrack) |  |
-| GC content | [GCContentAdapter](/docs/config/gccontentadapter) | [QuantitativeTrack](/docs/config/quantitativetrack) | Computed from the assembly sequence, no data file |
-| Multiple BigWigs | [MultiWiggleAdapter](/docs/config/multiwiggleadapter) | [MultiQuantitativeTrack](/docs/config/multiquantitativetrack) |  |
+| BedGraph (plain) | [](/docs/config/bedgraphadapter) | [](/docs/config/quantitativetrack) | Loaded entirely into memory; for small files |
+| BedGraph (tabix) | [](/docs/config/bedgraphtabixadapter) | [](/docs/config/quantitativetrack) |  |
+| BigWig | [](/docs/config/bigwigadapter) | [](/docs/config/quantitativetrack) |  |
+| GC content | [](/docs/config/gccontentadapter) | [](/docs/config/quantitativetrack) | Computed from the assembly sequence, no data file |
+| Multiple BigWigs | [](/docs/config/multiwiggleadapter) | [](/docs/config/multiquantitativetrack) |  |
 
 <!-- FILE_TYPES quantitative END -->
 
@@ -216,11 +215,11 @@ coloring and multi-sample displays.
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| BEDPE | [BedpeAdapter](/docs/config/bedpeadapter) | [VariantTrack](/docs/config/varianttrack) | Paired/breakend records, e.g. SV calls or Hi-C loops |
-| Split VCF (one file per refName) | [SplitVcfTabixAdapter](/docs/config/splitvcftabixadapter) | [VariantTrack](/docs/config/varianttrack) |  |
-| STAR-Fusion | [StarFusionAdapter](/docs/config/starfusionadapter) | [VariantTrack](/docs/config/varianttrack) |  |
-| VCF (plain) | [VcfAdapter](/docs/config/vcfadapter) | [VariantTrack](/docs/config/varianttrack) | Loaded entirely into memory; for small files |
-| VCF (tabix) | [VcfTabixAdapter](/docs/config/vcftabixadapter) | [VariantTrack](/docs/config/varianttrack) |  |
+| BEDPE | [](/docs/config/bedpeadapter) | [](/docs/config/varianttrack) | Paired/breakend records, e.g. SV calls or Hi-C loops |
+| Split VCF (one file per refName) | [](/docs/config/splitvcftabixadapter) | [](/docs/config/varianttrack) |  |
+| STAR-Fusion | [](/docs/config/starfusionadapter) | [](/docs/config/varianttrack) |  |
+| VCF (plain) | [](/docs/config/vcfadapter) | [](/docs/config/varianttrack) | Loaded entirely into memory; for small files |
+| VCF (tabix) | [](/docs/config/vcftabixadapter) | [](/docs/config/varianttrack) |  |
 
 <!-- FILE_TYPES variants END -->
 
@@ -247,17 +246,17 @@ Synteny adapters back dotplot and linear synteny views. See
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| All-vs-all indexed PAF (PIF) | [AllVsAllIndexedPAFAdapter](/docs/config/allvsallindexedpafadapter) | [SyntenyTrack](/docs/config/syntenytrack) | The tabix-indexed form of all-vs-all PAF |
-| All-vs-all PAF | [AllVsAllPAFAdapter](/docs/config/allvsallpafadapter) | [SyntenyTrack](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
-| BLAST tabular | [BlastTabularAdapter](/docs/config/blasttabularadapter) | [SyntenyTrack](/docs/config/syntenytrack) |  |
-| Chain (UCSC liftOver / lastz) | [ChainAdapter](/docs/config/chainadapter) | [SyntenyTrack](/docs/config/syntenytrack) |  |
-| Delta (MUMmer / nucmer) | [DeltaAdapter](/docs/config/deltaadapter) | [SyntenyTrack](/docs/config/syntenytrack) |  |
-| Indexed PAF (PIF) | [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) | [SyntenyTrack](/docs/config/syntenytrack) | Built by `jbrowse make-pif`; fetches only the visible region |
-| MashMap | [MashMapAdapter](/docs/config/mashmapadapter) | [SyntenyTrack](/docs/config/syntenytrack) |  |
-| MCScan anchors | [MCScanAnchorsAdapter](/docs/config/mcscananchorsadapter) | [SyntenyTrack](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
-| MCScan blocks | [MCScanBlocksAdapter](/docs/config/mcscanblocksadapter) | [SyntenyTrack](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
-| MCScan simple anchors | [MCScanSimpleAnchorsAdapter](/docs/config/mcscansimpleanchorsadapter) | [SyntenyTrack](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
-| PAF | [PAFAdapter](/docs/config/pafadapter) | [SyntenyTrack](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
+| All-vs-all indexed PAF (PIF) | [](/docs/config/allvsallindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of all-vs-all PAF |
+| All-vs-all PAF | [](/docs/config/allvsallpafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
+| BLAST tabular | [](/docs/config/blasttabularadapter) | [](/docs/config/syntenytrack) |  |
+| Chain (UCSC liftOver / lastz) | [](/docs/config/chainadapter) | [](/docs/config/syntenytrack) |  |
+| Delta (MUMmer / nucmer) | [](/docs/config/deltaadapter) | [](/docs/config/syntenytrack) |  |
+| Indexed PAF (PIF) | [](/docs/config/pairwiseindexedpafadapter) | [](/docs/config/syntenytrack) | Built by `jbrowse make-pif`; fetches only the visible region |
+| MashMap | [](/docs/config/mashmapadapter) | [](/docs/config/syntenytrack) |  |
+| MCScan anchors | [](/docs/config/mcscananchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
+| MCScan blocks | [](/docs/config/mcscanblocksadapter) | [](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
+| MCScan simple anchors | [](/docs/config/mcscansimpleanchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
+| PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 
 <!-- FILE_TYPES synteny END -->
 
@@ -270,9 +269,8 @@ perspective:
 jbrowse make-pif alignment.paf   # writes alignment.pif.gz + .tbi
 ```
 
-Then load `alignment.pif.gz` with the
-[PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) (the
-`add-track` CLI picks this automatically). See the
+Then load `alignment.pif.gz` with the [](/docs/config/pairwiseindexedpafadapter)
+(the `add-track` CLI picks this automatically). See the
 [PIF format guide](/docs/developer_guides/pif_format) and the
 [synteny tutorial](/docs/tutorials/synteny_visualization) for details.
 
@@ -287,9 +285,9 @@ band, per-row identity, and codon-view options.
 <!-- prettier-ignore -->
 | Format | Adapter | Track type |
 | --- | --- | --- |
-| BigMaf | [BigMafAdapter](/docs/config/bigmafadapter) | [MafTrack](/docs/config/maftrack) |
-| MAF (tabix) | [MafTabixAdapter](/docs/config/maftabixadapter) | [MafTrack](/docs/config/maftrack) |
-| TAF (bgzipped Taffy) | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter) | [MafTrack](/docs/config/maftrack) |
+| BigMaf | [](/docs/config/bigmafadapter) | [](/docs/config/maftrack) |
+| MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |
+| TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |
 
 <!-- FILE_TYPES maf END -->
 
@@ -314,7 +312,7 @@ band, per-row identity, and codon-view options.
 <!-- prettier-ignore -->
 | Format | Adapter | Track type |
 | --- | --- | --- |
-| .hic contact matrix | [HicAdapter](/docs/config/hicadapter) | [HicTrack](/docs/config/hictrack) |
+| .hic contact matrix | [](/docs/config/hicadapter) | [](/docs/config/hictrack) |
 
 <!-- FILE_TYPES hic END -->
 
@@ -331,52 +329,51 @@ See [GWAS track configuration](/docs/config_guides/gwas_track).
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| GWAS results (bgzipped, tabix-indexed BED-like) | [GWASAdapter](/docs/config/gwasadapter) | [GWASTrack](/docs/config/gwastrack) |  |
-| PLINK LD (plain .ld) | [PlinkLDAdapter](/docs/config/plinkldadapter) | [LDTrack](/docs/config/ldtrack) | PLINK `--r2` output; for regional analyses |
-| PLINK LD (tabix-indexed .ld.gz) | [PlinkLDTabixAdapter](/docs/config/plinkldtabixadapter) | [LDTrack](/docs/config/ldtrack) | For chromosome-scale or genome-wide LD |
+| GWAS results (bgzipped, tabix-indexed BED-like) | [](/docs/config/gwasadapter) | [](/docs/config/gwastrack) |  |
+| PLINK LD (plain .ld) | [](/docs/config/plinkldadapter) | [](/docs/config/ldtrack) | PLINK `--r2` output; for regional analyses |
+| PLINK LD (tabix-indexed .ld.gz) | [](/docs/config/plinkldtabixadapter) | [](/docs/config/ldtrack) | For chromosome-scale or genome-wide LD |
 
 <!-- FILE_TYPES gwas END -->
 
 ## Text searching
 
 Text-search adapters power the location search box. See
-[Text searching](/docs/config_guides/text_searching).
+[](/docs/config_guides/text_searching).
 
 <!-- FILE_TYPES textsearch START -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| JBrowse 1 names index | [JBrowse1TextSearchAdapter](/docs/config/jbrowse1textsearchadapter) | `aggregateTextSearchAdapters` / `textSearching` | From JBrowse 1 `generate-names.pl` |
-| Trix index (.ix/.ixx) | [TrixTextSearchAdapter](/docs/config/trixtextsearchadapter) | `aggregateTextSearchAdapters` / `textSearching` | Built by `jbrowse text-index` |
+| JBrowse 1 names index | [](/docs/config/jbrowse1textsearchadapter) | `aggregateTextSearchAdapters` / `textSearching` | From JBrowse 1 `generate-names.pl` |
+| Trix index (.ix/.ixx) | [](/docs/config/trixtextsearchadapter) | `aggregateTextSearchAdapters` / `textSearching` | Built by `jbrowse text-index` |
 
 <!-- FILE_TYPES textsearch END -->
 
 ## Inline data
 
 To embed a small dataset directly in `config.json` without a file, use a
-FromConfig adapter. See [FromConfig adapters](/docs/config_guides/from_config).
+FromConfig adapter. See [](/docs/config_guides/from_config).
 
 <!-- FILE_TYPES inline START -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| Inline features | [FromConfigAdapter](/docs/config/fromconfigadapter) | [FeatureTrack](/docs/config/featuretrack) | Features written straight into config.json |
-| Inline regions | [FromConfigRegionsAdapter](/docs/config/fromconfigregionsadapter) | assembly `sequence` | refNames and sizes only, no sequence |
-| Inline sequence | [FromConfigSequenceAdapter](/docs/config/fromconfigsequenceadapter) | assembly `sequence` | Each feature's `seq` holds the bases for its region |
+| Inline features | [](/docs/config/fromconfigadapter) | [](/docs/config/featuretrack) | Features written straight into config.json |
+| Inline regions | [](/docs/config/fromconfigregionsadapter) | assembly `sequence` | refNames and sizes only, no sequence |
+| Inline sequence | [](/docs/config/fromconfigsequenceadapter) | assembly `sequence` | Each feature's `seq` holds the bases for its region |
 
 <!-- FILE_TYPES inline END -->
 
 ## Full adapter reference
 
 Each adapter links above to its autogenerated config docs, which list every
-slot. For the full set of configuration topics, see the
-[Config guide](/docs/config_guide).
+slot. For the full set of configuration topics, see the [](/docs/config_guide).
 
 ## See also
 
 - [Configuring tracks](/docs/config_guides/tracks)
 - [Configuring assemblies](/docs/config_guides/assemblies)
-- [Deploying JBrowse Web](/docs/config_guides/deploying)
+- [](/docs/config_guides/deploying)
 - [`@jbrowse/cli` command reference](/docs/cli)

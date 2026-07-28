@@ -26,26 +26,17 @@ Example `AlignmentsTrack` config:
 ## Adapter options
 
 The `uri` shorthand above resolves the index for you (`<uri>.bai` for a BAM,
-`<uri>.crai` for a CRAM), so most tracks need nothing else. The
-[`uri` shorthand section](/docs/config_guides/file_types#the-uri-shorthand)
-covers when to spell out the location slots instead, such as a CSI-indexed BAM:
-
-```json
-{
-  "type": "BamAdapter",
-  "bamLocation": { "uri": "https://yourhost/file.bam" },
-  "index": {
-    "indexType": "CSI",
-    "location": { "uri": "https://yourhost/file.bam.csi" }
-  }
-}
-```
+`<uri>.crai` for a CRAM), so most tracks need nothing else. For a CSI-indexed
+BAM (chromosomes over 512 Mb, which BAI can't index), add `"csi": true`
+alongside `uri`. See the
+[`uri` shorthand section](/docs/config_guides/file_types#the-uri-shorthand) for
+when to spell out the location slots instead.
 
 CRAM decodes against the reference sequence, but you do not configure that. Both
 adapters take their `sequenceAdapter` from the enclosing assembly automatically.
 
-See the [BamAdapter](/docs/config/bamadapter) and
-[CramAdapter](/docs/config/cramadapter) config docs for all options.
+See the [](/docs/config/bamadapter) and [](/docs/config/cramadapter) config docs
+for all options.
 
 ## Display options
 
@@ -76,5 +67,5 @@ embedded view instead of changing the default, see
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track)
+- [](/docs/user_guides/alignments_track)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)

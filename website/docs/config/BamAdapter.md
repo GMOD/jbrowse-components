@@ -11,8 +11,9 @@ plugin.
 
 ## Example usage
 
-The `uri` shorthand auto-resolves the `.bai` index. For a `.csi` index or a
-differently-named index, set `index` explicitly with the full slot form:
+The `uri` shorthand auto-resolves the `.bai` index (pass `csi: true` for a
+`.csi` index). For a differently-named index, set `index` explicitly with the
+full slot form:
 
 ```js
 {

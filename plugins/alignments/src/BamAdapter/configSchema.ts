@@ -13,8 +13,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * automatically supplies it from the enclosing assembly's sequence track.
  *
  * #example
- * The `uri` shorthand auto-resolves the `.bai` index. For a `.csi` index or a
- * differently-named index, set `index` explicitly with the full slot form:
+ * The `uri` shorthand auto-resolves the `.bai` index (pass `csi: true` for a
+ * `.csi` index). For a differently-named index, set `index` explicitly with
+ * the full slot form:
  * ```js
  * {
  *   type: 'BamAdapter',
@@ -32,8 +33,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           baseUri: snap.baseUri,
         },
         index: {
+          indexType: snap.csi ? 'CSI' : 'BAI',
           location: {
-            uri: `${snap.uri}.bai`,
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'bai'}`,
             baseUri: snap.baseUri,
           },
         },
