@@ -243,14 +243,6 @@ fraction of all calls in each context:
 
 <Figure caption="TAIR10 genes, the aggregate MethylDackel track (one 0-100% row per context), and three copies of the same WGBS pileup colored by CpG, CHG, and CHH. AT1G12930 on the left is red in CpG only, at both levels. The silenced element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
-Because the call is made per read rather than per position, zooming in follows
-the methylation on individual molecules. AT1G12930 is on the minus strand, so
-the left of the 2.4 kb window below is its 5' end, where gene body methylation
-is depleted: all three aggregate rows sit near zero there, including CpG, and
-they switch on together in the intergenic gap as the element begins.
-
-<Figure caption="The same tracks zoomed to the AT1G12930 to AT1G12935 boundary, with reads tall enough to follow one at a time. Each aggregate bar is now a single cytosine. Reads that span the boundary carry no marks on the left and pick up red as soon as they enter the element, in all three contexts." src="/img/methylation/arabidopsis_wgbs_boundary.png" />
-
 ## Reproduce it end to end
 
 The whole pipeline is wrapped in one script,
@@ -276,5 +268,5 @@ alignment step downloads a full WGBS run, so allow time and disk for it.
 ## See also
 
 - [Long-read methylation](/docs/tutorials/methylation)
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
-- [Alignments track](/docs/user_guides/alignments_track)
+- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/alignments_track)
