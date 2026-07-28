@@ -18,8 +18,6 @@ JBrowse reads the slice you are looking at straight off HPRC's S3; the other two
 we have prebuilt and host, with the build scripts in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
-**Setup:** nothing to build. Every track is a URL you can paste.
-
 ## What release 2 publishes
 
 `pangenomes/freeze/release2/minigraph-cactus/` holds these per reference (a
@@ -121,7 +119,7 @@ and put the output on `jbrowse.org`.
 
 The graph genome view is a separate beta plugin, and so are the two adapters
 these tracks use. The
-[pangenome graph view tutorial](/docs/tutorials/pangenome_graph_view) has the
+[pangenome graph view tutorial](/docs/user_guides/graph_genome_view) has the
 one-line config that loads it, and covers the view's layouts, colors and menus
 on a smaller graph than this one.
 
@@ -223,7 +221,7 @@ cursor brightens in the graph. Nothing to configure, and it is the third thing a
 reference axis can hold for a rank>0 allele: not the allele's own sequence, but
 the interval between the two backbone segments it detaches from and rejoins.
 Both directions are pictured in the
-[E. coli tutorial](/docs/tutorials/pangenome_graph_view#hovering-one-panel-highlights-the-other).
+[E. coli tutorial](/docs/user_guides/graph_genome_view#hovering-one-panel-highlights-the-other).
 
 ### From a node back to a coordinate
 
@@ -262,7 +260,7 @@ sequence exists and where it attaches; those three say how common it is.
 Where the contributing assemblies _are_ loaded, a handful of genomes rather than
 hundreds, the same menu opens any of them, or all at once as a synteny view. See
 the
-[E. coli tutorial](/docs/tutorials/pangenome_graph_view#from-a-node-back-to-a-genome).
+[E. coli tutorial](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
 
 ## The bubble track
 
@@ -313,7 +311,7 @@ An `AlignmentsTrack` over a BED is the point, not a mistake. Each row carries a
 `CIGAR` against the reference span it replaces (`2062M63348I`), and the
 alignments display draws whatever has one, so the alleles pack into rows and
 each insertion draws at its real magnitude instead of as a 1 bp box. The
-[E. coli tutorial](/docs/tutorials/pangenome_graph_view#when-all-you-have-is-the-graph)
+[E. coli tutorial](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
 walks through the columns and how the walk derives them.
 
 Whole graph: 208,545 alleles, 112,995 of them insertions, 661 of those longer
@@ -475,7 +473,7 @@ reads only those two indexes, never the graph, and writes the allele inventory:
 23 seconds off the 41 MB pair, against the 842 MB download they came from. That
 is what makes it the route that survives having no assemblies, the normal
 situation with someone else's graph. The E. coli tutorial's
-[per-strain paths](/docs/tutorials/pangenome_graph_view#which-strain-takes-which-path)
+[per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 answer the carriage question instead, at the cost of re-mapping every haplotype.
 
 [`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)

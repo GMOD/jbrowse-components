@@ -15,8 +15,18 @@ graph, but it works reference-first:
 chosen reference, every other sample is aligned onto it, and Cactus normalizes
 the result into a graph.
 
-**Setup:** Docker and a `cactus-pangenome` graph build, plus the NCBI `datasets`
-CLI and htslib. The graph is built here, not downloaded.
+## Prerequisites
+
+- `docker`, for the cactus image (which carries odgi, halSynteny, hal2maf, and
+  `samtools`)
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
+  `wget`
+- `node`, for the [JBrowse CLI](/docs/cli)
+
+The graph is built here, not downloaded.
 
 This tutorial builds a graph from the **same five _E. coli_ strains** as the
 [pggb tutorial](/docs/tutorials/pangenome_ecoli) and loads the same four linear
@@ -37,17 +47,6 @@ Every projection lands on a JBrowse track type you already have. The four are
 laid out in the
 [pggb tutorial's projection table](/docs/tutorials/pangenome_ecoli); the
 sections below build each from the Cactus outputs.
-
-## What you need
-
-- `docker`, for the cactus image (which carries odgi, halSynteny, hal2maf, and
-  `samtools`)
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI
-- `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
-  `wget`
-- `node`, for the [JBrowse CLI](/docs/cli)
 
 ## Building the graph with cactus-pangenome
 
@@ -107,7 +106,7 @@ The cactus image also carries [odgi](https://github.com/pangenome/odgi),
 reference position and the graph genome view has no backbone to anchor to. The
 projections below are unaffected, being already flattened onto K12; for the
 graph itself take one of the routes the
-[pggb tutorial](/docs/tutorials/pangenome_graph_view) covers, either
+[pggb tutorial](/docs/user_guides/graph_genome_view) covers, either
 `odgi extract` on one window or a minigraph rGFA of the same assemblies.
 
 ## All-vs-all synteny projection
@@ -358,7 +357,9 @@ gene-level version of that zoom.
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
-runs everything above in one shot:
+runs everything above in one shot. It calls its helper
+[`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py)
+from its own directory, so save both together if downloading files individually:
 
 ```bash
 bash scripts/build_ecoli_pangenome_cactus.sh   # builds ./ecoli_cactus_build/jbrowse2
@@ -377,5 +378,5 @@ session. It needs the same tools listed under [What you need](#what-you-need).
 - [HPRC pangenome](/docs/tutorials/pangenome_hprc), a Minigraph-Cactus graph of
   464 human haplotypes, opened from hosted files rather than built here
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
-- [MAF track](/docs/user_guides/maf_track)
+- [](/docs/user_guides/maf_track)
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)

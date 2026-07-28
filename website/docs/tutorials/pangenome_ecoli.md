@@ -15,8 +15,17 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
-**Setup:** Docker and a pggb graph build, plus the NCBI `datasets` CLI and
-htslib. The graph is built here, not downloaded.
+## Prerequisites
+
+- `docker`, for the pggb image, which also carries odgi
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
+- `python3`, htslib (`bgzip`, `tabix`), `unzip`
+- `node`, for the [JBrowse CLI](/docs/cli)
+
+The graph is built here, not downloaded.
 
 Most of what JBrowse draws are the graph's **linear projections**: the same
 graph flattened onto one reference genome's coordinates, in four complementary
@@ -27,7 +36,7 @@ lands on JBrowse track types you already have:
 | ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
 | All-vs-all synteny     | The blocks each pair of genomes shares                      | the wfmash all-vs-all PAF, `odgi untangle`, `halSynteny` | [synteny track](/docs/config_guides/synteny_track)                 |
 | Pangenome variants     | Every difference the graph calls, across all samples        | `pggb -V`, `cactus-pangenome --vcf`, `vg deconstruct`    | [multi-sample variant track](/docs/user_guides/multivariant_track) |
-| Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`, `hal2maf`                                     | [MAF track](/docs/user_guides/maf_track)                           |
+| Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`, `hal2maf`                                     | [](/docs/user_guides/maf_track)                                    |
 | Pangenome depth        | How many genomes cover each reference base (core/accessory) | `odgi depth`                                             | [quantitative track](/docs/config_guides/quantitative_track)       |
 
 This tutorial builds a five-strain _E. coli_ pangenome with pggb, loads all four
@@ -36,16 +45,6 @@ projections, and draws the graph itself. It uses the same five genomes as the
 the synteny projection alone from a plain minimap2 alignment; here that same
 projection falls out of the graph, alongside the variant and MAF projections a
 graph additionally gives you.
-
-## What you need
-
-- `docker`, for the pggb image, which also carries odgi
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI
-- `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
-- `python3`, htslib (`bgzip`, `tabix`), `unzip`
-- `node`, for the [JBrowse CLI](/docs/cli)
 
 ## Building the graph with pggb
 
@@ -195,10 +194,10 @@ instead, or filter on `LV` to pick a level of the snarl tree directly.
 ## Whole-genome alignment (MAF) projection
 
 `pggb -M` writes the multiple alignment as a MAF, which JBrowse reads as a
-[MAF track](/docs/config_guides/maf_track). One wrinkle: pggb orders each MAF
-block from its longest path, so the block's reference row is not consistently
-the same genome, whereas a MAF track projects onto a single reference. Re-root
-every block on K12 (drop blocks that lack it), and rename the PanSN names to
+[](/docs/config_guides/maf_track). One wrinkle: pggb orders each MAF block from
+its longest path, so the block's reference row is not consistently the same
+genome, whereas a MAF track projects onto a single reference. Re-root every
+block on K12 (drop blocks that lack it), and rename the PanSN names to
 `sample.chr` so the MAF display can split each row's species off on the `.`:
 
 ```bash
@@ -403,7 +402,7 @@ axes to show how much wider it is on the graph's.
 
 The four projections above flatten the graph onto K12. JBrowse can also draw it
 **as a graph**, beside a linear view of the same window, through the
-[graph genome view plugin](/docs/tutorials/pangenome_graph_view). That tutorial
+[graph genome view plugin](/docs/user_guides/graph_genome_view). That tutorial
 covers the view itself, its layouts, and moving between the two panels. This
 section covers the part specific to pggb: getting a base-level graph in.
 
@@ -431,7 +430,7 @@ derives matches the ones `gfa_nodes_to_bed.py` derives from the extracted
 subgraph.
 
 Load it as one `FeatureTrack` pointed at the shared prefix, the same shape the
-[graph view tutorial](/docs/tutorials/pangenome_graph_view#route-1-a-graph-track-browsable-by-locus)
+[graph view tutorial](/docs/user_guides/graph_genome_view#route-1-a-graph-track-browsable-by-locus)
 uses for an rGFA:
 
 ```json
@@ -524,7 +523,8 @@ position, so they are absent.
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
-runs everything above in one shot:
+runs everything above in one shot. It calls out to several helper scripts in the
+same directory, so clone the repo rather than downloading this one file:
 
 ```bash
 bash scripts/build_ecoli_pangenome_graph.sh   # builds ./ecoli_pangenome_graph_build/jbrowse2
@@ -548,14 +548,14 @@ build output. Export your own `TMPDIR` to override it.
 
 ## See also
 
-- [Pangenome graph view](/docs/tutorials/pangenome_graph_view), which draws this
+- [Pangenome graph view](/docs/user_guides/graph_genome_view), which draws this
   graph as a graph and covers the view's layouts and menus
 - [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus)
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
-- [MAF track](/docs/user_guides/maf_track)
+- [](/docs/user_guides/maf_track)
 - [Multi-sample variant track](/docs/user_guides/multivariant_track)
 - [PIF format](/docs/developer_guides/pif_format)
 - [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter), which stacks these same
   strains from the all-vs-all PAF in a notebook
-- [JBrowseR](/docs/jbrowser), the same in R
+- [](/docs/jbrowser), the same in R
 - [pggb](https://github.com/pangenome/pggb)
