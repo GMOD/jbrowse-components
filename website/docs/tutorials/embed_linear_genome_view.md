@@ -5,68 +5,150 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-**TL;DR:** embed a single linear genome view in a plain web page with one
-`<script>` tag and no build step, then feed it `assembly`, `tracks`, and `init`.
+**TL;DR:** one `<script>` tag, no build step, no `createViewState` call. Drop
+`assembly`, `tracks`, and `init` into `<LinearGenomeView>` and it owns the view
+engine itself.
 
 ## Prerequisites
 
-A text editor and a local HTTP server. JBrowse won't load if you open the HTML
-file directly. It needs to be served. If you have Node.js installed,
-`npx serve -S` in the directory works.
+A text editor and a local HTTP server. Opening the HTML file directly won't
+work, JBrowse needs it served. `npx serve -S` in the folder works (`-S` resolves
+symlinks, so a data file you symlink in still loads).
 
-This tutorial embeds a single JBrowse linear genome view into a web page using a
-`<script>` tag, no build step or React project required. For the full JBrowse
-app, see the [web quickstart](/docs/quickstart_web) instead.
-
-The [LGV storybook](https://jbrowse.org/storybook/lgv/) is the reference for
-_customizing_ this component. It has live, runnable, copy-pasteable examples for
-custom themes, per-feature colors, text searching, drawer widgets, reacting to
-view state, web-worker rendering, and much more. This tutorial covers getting a
-basic view on the page. Reach for the storybook for anything beyond that.
-
-To embed other view types (synteny, dotplot, circular) or use a different
-bundler, see [](/docs/embedded_components).
+For the full JBrowse app instead of one view, see the
+[web quickstart](/docs/quickstart_web). For other view types (synteny, dotplot,
+circular), a different bundler, or working demo repos, see
+[](/docs/embedded_components). The
+[LGV storybook](https://jbrowse.org/storybook/lgv/) has live, copy-pasteable
+examples for everything beyond a basic view: themes, per-feature colors, text
+search, drawer widgets, reacting to view state, web-worker rendering.
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
-## Create a web page
+## Quick start
 
-Create a folder, then an `index.html` inside it with this content:
+Save as `index.html`, then run `npx serve -S` in the folder and open the URL it
+prints:
 
 ```html title="index.html"
+<!doctype html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>JBrowse Linear Genome View</title>
+    <script
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2/dist/react-linear-genome-view.umd.production.min.js"
+      crossorigin
+    ></script>
+  </head>
   <body>
-    <h1>Hello world!</h1>
+    <div id="jbrowse_linear_genome_view"></div>
+    <script>
+      const { React, createRoot, LinearGenomeView } =
+        JBrowseReactLinearGenomeView
+
+      const assembly = {
+        name: 'hg38',
+        sequence: {
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+          },
+        },
+      }
+
+      const tracks = [
+        {
+          type: 'FeatureTrack',
+          trackId: 'ncbi_genes',
+          name: 'NCBI RefSeq Genes',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+          },
+        },
+      ]
+
+      const init = {
+        loc: '10:29,838,565..29,838,850',
+        tracks: ['ncbi_genes'],
+      }
+
+      const root = createRoot(
+        document.getElementById('jbrowse_linear_genome_view'),
+      )
+      root.render(
+        React.createElement(LinearGenomeView, { assembly, tracks, init }),
+      )
+    </script>
   </body>
 </html>
 ```
 
-## Start the server
+The unpkg URL always fetches the latest release; pin a version for production
+(e.g. `@jbrowse/react-linear-genome-view2@4.3.0/dist/...`) or download the
+bundle and serve it yourself.
 
-In the folder, run `npx serve -S`. It prints a local URL (typically
-`http://localhost:3000`). Open it in your browser and you should see "Hello
-world!".
+To serve your own data instead of the hosted hg38 example, get each file into
+the indexed, compressed form JBrowse reads (bgzip and index a FASTA,
+sort/bgzip/tabix a GFF3, and so on) using the recipes in the
+[web quickstart](/docs/quickstart_web#adding-tracks).
 
-The `-S` flag tells `serve` to resolve symlinks rather than return a 404, so
-data files you symlink into the folder will load.
+For more tracks, more track types (alignments, variants, quantitative), or name
+search, see the <a href="#more-complete-example">complete example</a> below,
+[](/docs/embedded_components), and the
+[LGV storybook](https://jbrowse.org/storybook/lgv/).
 
-## Preparing your own data files
+## Using the component in a React app
 
-The example below loads data hosted on `jbrowse.org`, so you can skip ahead to
-[Setup](#setup) to get a working page first. To serve your _own_ genome and
-tracks, first get each file into the indexed, compressed form JBrowse reads
-(bgzip and index a FASTA, sort/bgzip/tabix a GFF3, and so on). The
-[web quickstart](/docs/quickstart_web#adding-tracks) gives the per-format
-recipes, and
-[`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching)
-builds the optional name-search index used in the elaborate example below.
+Pass the same `assembly`, `tracks`, and `init` as props instead:
 
-## Setup
+```jsx
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-Define the assembly, tracks, and an `init` describing what to show on first
-paint. This example wires up an hg38 genome with gene, repeat, alignment,
-variant, and conservation tracks. The [next section](#render-the-view) shows
-where these go in the page:
+function GenomeBrowser() {
+  return <LinearGenomeView assembly={assembly} tracks={tracks} init={init} />
+}
+```
+
+Props are read once on mount, so a parent re-render doesn't reset the browser.
+To reach the view engine imperatively from outside (navigate, show a track),
+take a `ref` (see the [LGV storybook](https://jbrowse.org/storybook/lgv/)) or
+use `useCreateViewState`, which builds the same view state as a hook:
+
+```js
+import {
+  useCreateViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
+
+function GenomeBrowser() {
+  const state = useCreateViewState({ assembly, tracks, location: '...' })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+```
+
+## See also
+
+- [](/docs/embedded_components)
+- [Configuring assemblies](/docs/config_guides/assemblies)
+- [Configuring tracks](/docs/config_guides/tracks)
+- [LGV storybook](https://jbrowse.org/storybook/lgv/)
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) (Python equivalent)
+- [](/docs/jbrowser) (R/Shiny equivalent)
+
+<details id="more-complete-example">
+<summary>More complete example: multiple track types, name search</summary>
+
+Genes, repeats, alignments, variants, and conservation together, plus a name
+search index, all on the same hg38 assembly used above:
 
 ```js
 const assembly = {
@@ -163,106 +245,23 @@ const init = {
 }
 ```
 
-Notes about the above config:
+Drop these into the same `index.html` from [Quick start](#quick-start) in place
+of the smaller `assembly`/`tracks`/`init`. This is the config that produced the
+screenshot at the top of this page.
+
+Notes:
 
 - CRAM tracks need the assembly's sequence to decode reads, but JBrowse supplies
   it automatically from the enclosing assembly, so no manual `sequenceAdapter`
   is required (the same applies to BAM tracks that lack an MD tag, e.g. from
   `samtools calmd`). See the
   [alignments track config guide](/docs/config_guides/alignments_track).
-
-- The configs above use the `uri` shorthand, which assumes each index sits next
-  to its data file (e.g. `file.cram.crai`). To place an index elsewhere, use the
+- These configs use the `uri` shorthand, which assumes each index sits next to
+  its data file (e.g. `file.cram.crai`). To place an index elsewhere, use the
   full adapter form (see the
   [auto-generated config reference](/docs/config_guide)).
+- The `textSearching` block on `ncbi_genes` is what powers name search; build
+  the index for your own data with
+  [`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching).
 
-## Render the view
-
-Replace the "Hello world!" `index.html` from earlier with the page below. It
-loads the component's UMD bundle from a CDN and mounts the managed
-`LinearGenomeView` component (which owns the view engine itself, so there's no
-`createViewState` call to make) into a `<div>`. Drop in the `assembly`,
-`tracks`, and `init` from [Setup](#setup) where marked:
-
-```html title="index.html"
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>JBrowse Linear Genome View</title>
-    <script
-      src="https://unpkg.com/@jbrowse/react-linear-genome-view2/dist/react-linear-genome-view.umd.production.min.js"
-      crossorigin
-    ></script>
-  </head>
-  <body>
-    <div id="jbrowse_linear_genome_view"></div>
-    <script>
-      const { React, createRoot, LinearGenomeView } =
-        JBrowseReactLinearGenomeView
-
-      // assembly, tracks, and init from the Setup section above
-
-      const root = createRoot(
-        document.getElementById('jbrowse_linear_genome_view'),
-      )
-      root.render(
-        React.createElement(LinearGenomeView, { assembly, tracks, init }),
-      )
-    </script>
-  </body>
-</html>
-```
-
-Loading the UMD bundle in the `<head>` defines a global
-`JBrowseReactLinearGenomeView` that re-exports everything you need, including
-`React` and `createRoot`, so the page needs no other `<script>` tags. Reload the
-served page and the view appears.
-
-The unpkg URL above always fetches the latest release. To guard against breaking
-changes between versions, pin one (e.g.
-`@jbrowse/react-linear-genome-view2@4.3.0/dist/...`) or download the bundle and
-serve it yourself.
-
-## Using the component in a React app
-
-If you are using `@jbrowse/react-linear-genome-view2` as an NPM package in a
-React app (rather than the UMD script tag approach above), pass `assembly`,
-`tracks`, and `init` straight to the managed `<LinearGenomeView>` component as
-props, the same data from [Setup](#setup), no `createViewState` call needed:
-
-```jsx
-import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-
-function GenomeBrowser() {
-  return <LinearGenomeView assembly={assembly} tracks={tracks} init={init} />
-}
-```
-
-The component constructs the view engine once on mount and reads its props as
-initial values only, so parent re-renders don't reset the browser. If you need
-to reach the engine imperatively from outside the component (e.g. navigate or
-show a track in response to an event), take a `ref` (see the
-[LGV storybook](https://jbrowse.org/storybook/lgv/) for examples) or drop down
-to `useCreateViewState`, which builds the same underlying view state as a hook:
-
-```js
-import {
-  useCreateViewState,
-  JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view2'
-
-function GenomeBrowser() {
-  const state = useCreateViewState({ assembly, tracks, location: '...' })
-  return <JBrowseLinearGenomeView viewState={state} />
-}
-```
-
-## See also
-
-- [](/docs/embedded_components)
-- [Configuring assemblies](/docs/config_guides/assemblies)
-- [Configuring tracks](/docs/config_guides/tracks)
-- [LGV storybook](https://jbrowse.org/storybook/lgv/)
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) (Python equivalent)
-- [](/docs/jbrowser) (R/Shiny equivalent)
+</details>
