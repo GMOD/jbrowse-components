@@ -13,11 +13,25 @@ plugin.
 
 Adapter for reading pre-computed LD data from PLINK --r2 output (tabix-indexed).
 
-The input file should be bgzipped and tabix-indexed: bgzip plink.ld tabix -s1
--b2 -e2 plink.ld.gz
+The input file should be bgzipped and tabix-indexed:
+
+```bash
+plink --bfile study --r2 --out study
+(head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n) > study.sorted.ld
+bgzip study.sorted.ld
+tabix -s 1 -b 2 -e 2 -S 1 study.sorted.ld.gz
+```
 
 Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2 Optional columns: DP
 (D'), MAF_A, MAF_B
+
+`study.ld` before bgzipping, whitespace-delimited:
+
+```
+CHR_A  BP_A     SNP_A       CHR_B  BP_B     SNP_B       R2
+1      729679   rs4970383   1      752566   rs3131972   0.0925926
+1      729679   rs4970383   1      754182   rs3131969   0.157316
+```
 
 Used by the
 [variant LD display](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)

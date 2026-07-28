@@ -19,6 +19,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * [GWAS Manhattan LD coloring](/docs/config_guides/gwas_track#preparing-the-ld-file)
  * (LocusZoom-style r² to an index SNP). See either guide for generating the .ld
  * file with `plink --r2`.
+ *
+ * ```bash
+ * plink --bfile study --r2 --out study
+ * ```
+ *
+ * Writes `study.ld`, whitespace-delimited:
+ *
+ * ```
+ * CHR_A  BP_A     SNP_A       CHR_B  BP_B     SNP_B       R2
+ * 1      729679   rs4970383   1      752566   rs3131972   0.0925926
+ * 1      729679   rs4970383   1      754182   rs3131969   0.157316
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
