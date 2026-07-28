@@ -134,5 +134,5 @@ top to further narrow results by name, category, or description.
 
 ## See also
 
-- [Basic usage](/docs/user_guides/basic_usage)
+- [](/docs/user_guides/basic_usage)
 - [Configuring tracks](/docs/config_guides/tracks)

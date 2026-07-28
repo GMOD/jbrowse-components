@@ -135,9 +135,8 @@ and use its **Add track** button. Either opens the "Add a track" form:
 The new track appears in the track selector. Turn it on to display it.
 
 JBrowse desktop supports the same file formats as JBrowse web. See
-[Supported file types](/docs/config_guides/file_types). For the indexing and
-preparation commands behind these formats, see the
-[web quick start](/docs/quickstart_web).
+[](/docs/config_guides/file_types). For the indexing and preparation commands
+behind these formats, see the [web quick start](/docs/quickstart_web).
 
 To load many tracks at once, choose **Add multiple tracks at once** in the "Add
 a track" form.
@@ -242,7 +241,7 @@ only if WebGL is also unavailable.
 
 ## See also
 
-- [User guide](/docs/user_guide)
-- [Config guide](/docs/config_guide)
+- [](/docs/user_guide)
+- [](/docs/config_guide)
 - [Web quick start](/docs/quickstart_web)
-- [FAQ](/docs/faq)
+- [](/docs/faq)

@@ -190,6 +190,6 @@ A gene-level MCScan track, showing the BED files and the two-assembly pairing:
 
 ## See also
 
-- [Linear synteny view](/docs/user_guides/linear_synteny_view)
-- [Dotplot view](/docs/user_guides/dotplot_view)
+- [](/docs/user_guides/linear_synteny_view)
+- [](/docs/user_guides/dotplot_view)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)

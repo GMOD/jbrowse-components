@@ -84,4 +84,4 @@ To configure sessions via URL, see [URL parameters](/docs/urlparams).
 
 - [Intro to the config.json format](/docs/config_guides/intro)
 - [URL parameters](/docs/urlparams)
-- [Deploying JBrowse Web](/docs/config_guides/deploying)
+- [](/docs/config_guides/deploying)

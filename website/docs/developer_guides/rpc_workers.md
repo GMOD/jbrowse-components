@@ -210,10 +210,10 @@ shape is still read and hoisted to the flat slot on load.)
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/data_fetching)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Creating custom adapters](/docs/developer_guides/creating_adapter)
-- [RefName aliasing](/docs/developer_guides/refname_aliasing)
+- [](/docs/developer_guides/refname_aliasing)
 
 [sca]:
   https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm

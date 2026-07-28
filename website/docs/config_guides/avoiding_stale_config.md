@@ -20,10 +20,9 @@ browser cache.
 Because `config.json` is fetched before it can configure anything, this snippet
 is the one piece of deploy config that must live in `index.html` rather than in
 `config.json`. It is a single line, so it is easy to inject from a build script
-instead of hand-editing. See
-[Deploying JBrowse Web](/docs/config_guides/deploying).
+instead of hand-editing. See [](/docs/config_guides/deploying).
 
 ## See also
 
-- [Deploying JBrowse Web](/docs/config_guides/deploying)
-- [config.json format](/docs/config_guides/intro)
+- [](/docs/config_guides/deploying)
+- [](/docs/config_guides/intro)

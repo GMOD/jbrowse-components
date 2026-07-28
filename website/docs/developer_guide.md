@@ -66,37 +66,37 @@ own via pull request.
 
 ### Getting started
 
-- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
-- [Writing a plugin](/docs/developer_guides/simple_plugin)
-- [Theming](/docs/developer_guides/theming)
+- [](/docs/developer_guides/no_build_plugin)
+- [](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/simple_plugin)
+- [](/docs/developer_guides/theming)
 
 ### Core concepts
 
-- [Configuration schema](/docs/developer_guides/configuration_schema)
-- [Data fetching pipeline](/docs/developer_guides/data_fetching)
-- [Extension points](/docs/developer_guides/extension_points)
-- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
-- [MST patterns](/docs/developer_guides/mst_patterns)
-- [RPC and worker system](/docs/developer_guides/rpc_workers)
+- [](/docs/developer_guides/configuration_schema)
+- [](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/extension_points)
+- [](/docs/developer_guides/imports_and_reexports)
+- [](/docs/developer_guides/mst_patterns)
+- [](/docs/developer_guides/rpc_workers)
 
 ### Creating pluggable elements
 
-- [Custom adapters](/docs/developer_guides/creating_adapter)
-- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow)
-- [Custom connections](/docs/developer_guides/creating_connection)
-- [Custom track and display types](/docs/developer_guides/creating_display)
-- [GPU displays](/docs/developer_guides/creating_gpu_display)
-- [Text search adapters](/docs/developer_guides/creating_text_search_adapter)
-- [Custom view types](/docs/developer_guides/creating_view)
-- [Custom widgets](/docs/developer_guides/creating_widget)
-- [Drawer widgets](/docs/developer_guides/drawer_widgets)
-- [Top-level menu items](/docs/developer_guides/menus)
-- [Plotting features in a custom display](/docs/developer_guides/plotting_features)
-- [SVG export](/docs/developer_guides/svg_export)
+- [](/docs/developer_guides/creating_adapter)
+- [](/docs/developer_guides/creating_addtrack_workflow)
+- [](/docs/developer_guides/creating_connection)
+- [](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/creating_gpu_display)
+- [](/docs/developer_guides/creating_text_search_adapter)
+- [](/docs/developer_guides/creating_view)
+- [](/docs/developer_guides/creating_widget)
+- [](/docs/developer_guides/drawer_widgets)
+- [](/docs/developer_guides/menus)
+- [](/docs/developer_guides/plotting_features)
+- [](/docs/developer_guides/svg_export)
 
 ### Advanced topics
 
-- [PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format)
-- [RefName aliasing](/docs/developer_guides/refname_aliasing)
-- [Testing a plugin](/docs/developer_guides/testing_plugins)
+- [](/docs/developer_guides/pif_format)
+- [](/docs/developer_guides/refname_aliasing)
+- [](/docs/developer_guides/testing_plugins)

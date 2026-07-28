@@ -134,10 +134,10 @@ For a screenshot of the running app - an open menu, a hover popover, a track
 after some interaction - drive JBrowse Web with puppeteer or Playwright:
 navigate to a URL that already carries the state you want (see
 [URL parameters](/docs/urlparams)), wait for it to settle, then capture.
-[Automating JBrowse](/docs/automating#headless--puppeteer) has a worked example
-along with the two things that usually go wrong, namely that headless Chrome
-needs `--enable-unsafe-swiftshader` before GPU-rendered tracks appear, and that
-a capture taken before the displays report done comes out blank.
+[](/docs/automating#headless--puppeteer) has a worked example along with the two
+things that usually go wrong, namely that headless Chrome needs
+`--enable-unsafe-swiftshader` before GPU-rendered tracks appear, and that a
+capture taken before the displays report done comes out blank.
 
 Nearly every figure on this site is generated that way, from a declarative spec
 per image in
@@ -321,10 +321,10 @@ password in config.json is public.
 The usual answer is to put the app and the data on the same origin and protect
 both with the login your site already has, so the browser sends its cookie with
 every data request and JBrowse needs no configuration at all.
-[Authentication](/docs/config_guides/authentication) covers that setup, what
-"same origin" means in practice, the login-page-instead-of-BAM-bytes failure to
-watch for, and the fallbacks (Desktop, presigned URLs, `internetAccounts`) when
-it does not fit.
+[](/docs/config_guides/authentication) covers that setup, what "same origin"
+means in practice, the login-page-instead-of-BAM-bytes failure to watch for, and
+the fallbacks (Desktop, presigned URLs, `internetAccounts`) when it does not
+fit.
 
 ### How can I make a header on a jbrowse-web instance
 
@@ -496,9 +496,9 @@ For everyone who visits your instance, set a
 
 For a one-off link, the [URL parameters](/docs/urlparams) `&assembly=`, `&loc=`
 and `&tracks=` cover the common case, and a session spec can describe a whole
-multi-view state including per-track display settings.
-[Automating JBrowse](/docs/automating) compares all the ways to preset a view
-(URL, config, embedded props, session spec), and the cookbook has a
+multi-view state including per-track display settings. [](/docs/automating)
+compares all the ways to preset a view (URL, config, embedded props, session
+spec), and the cookbook has a
 [config to URL](/docs/cookbook#from-config-to-a-url) walkthrough.
 
 ## Behavior and design
@@ -531,8 +531,8 @@ Undo and redo are app-wide rather than per-view: `Ctrl`/`Cmd` + `Z` undoes and
 and JBrowse Desktop, including things like reopening a view you just closed. The
 embedded components do not include it.
 
-See [Basic usage](/docs/user_guides/basic_usage#zooming) for the scroll-to-zoom
-toggle and other navigation controls.
+See [](/docs/user_guides/basic_usage#zooming) for the scroll-to-zoom toggle and
+other navigation controls.
 
 ### Why do some of my reads not display soft-clipping
 
@@ -882,5 +882,4 @@ them from code.
 Embedded components are designed for web developers to build custom systems
 around, so features like sessions and track manipulation can be implemented by
 the embedding application. If your app is Python or R rather than JavaScript,
-[JBrowse in a Jupyter notebook](/docs/jbrowse_jupyter) and
-[JBrowseR](/docs/jbrowser) wrap the same views.
+[](/docs/jbrowse_jupyter) and [](/docs/jbrowser) wrap the same views.

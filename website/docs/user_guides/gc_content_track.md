@@ -60,6 +60,6 @@ scale, autoscale modes, and manual min/max.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track)
-- [Sequence track](/docs/user_guides/sequence_track)
+- [](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/sequence_track)
 - [GCContentAdapter configuration](/docs/config/gccontentadapter)

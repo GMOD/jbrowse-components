@@ -210,8 +210,7 @@ whole-genome comparisons PIF is strongly preferred.
 
 ## See also
 
-- Adapter config reference:
-  [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) and
-  [PAFAdapter](/docs/config/pafadapter)
+- Adapter config reference: [](/docs/config/pairwiseindexedpafadapter) and
+  [](/docs/config/pafadapter)
 - [Creating custom view types](/docs/developer_guides/creating_view)
 - [Config guide: synteny track](/docs/config_guides/synteny_track)

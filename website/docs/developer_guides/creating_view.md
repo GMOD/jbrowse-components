@@ -47,8 +47,8 @@ export default function (pluginManager: PluginManager) {
 ```
 
 The state model is a [mobx-state-tree](https://mobx-state-tree.js.org/) model
-(see [MST patterns](/docs/developer_guides/mst_patterns)) and the React
-component receives `{ model }` as a prop.
+(see [](/docs/developer_guides/mst_patterns)) and the React component receives
+`{ model }` as a prop.
 
 ## Reference implementations in this repo
 
@@ -61,7 +61,7 @@ component receives `{ model }` as a prop.
 
 ## See also
 
-- [Custom track and display types](/docs/developer_guides/creating_display)
-- [Extension points](/docs/developer_guides/extension_points)
-- [MST patterns](/docs/developer_guides/mst_patterns)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/extension_points)
+- [](/docs/developer_guides/mst_patterns)
+- [](/docs/developer_guides/pluggable_elements)

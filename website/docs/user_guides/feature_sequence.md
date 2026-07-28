@@ -53,6 +53,6 @@ bases is configurable from the gear icon.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track)
-- [Gene track](/docs/user_guides/gene_track)
+- [](/docs/user_guides/sequence_track)
+- [](/docs/user_guides/gene_track)
 - [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables)

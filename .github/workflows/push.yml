@@ -178,6 +178,8 @@ jobs:
         run: node website/scripts/sync-doc-snippets.ts --check
       - name: Check every doc is reachable from the sidebar
         run: node website/scripts/check-sidebar.ts
+      - name: Check no link duplicates its target's title
+        run: node website/scripts/check-wiki-titles.ts
       # Round-trips every `json addtrack` doc block through the real
       # `jbrowse add-track`, so a Config/CLI tab whose derived command drifts
       # from the shown config fails the build. Needs the CLI's built dist.

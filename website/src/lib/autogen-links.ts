@@ -40,6 +40,12 @@ export interface DocListEntry {
 // instead of hand-mirroring every title + description.
 const docsByDir = new Map<string, DocListEntry[]>()
 
+// page url ("/docs/user_guides/foo") -> its own frontmatter title, across
+// every doc. Backs remark-wiki-title's empty-text `[](url)` links, so a
+// cross-link's visible text can't drift from the title of the page it points
+// to.
+const titleByUrl = new Map<string, string>()
+
 function topDir(id: string): string {
   return id.split('/')[0]!
 }
@@ -71,6 +77,9 @@ export function ensureAutogenIndex(): Promise<void> {
   built ??= (async () => {
     const docs = await getCollection('docs')
     const knownIds = new Set(docs.map(d => d.id))
+    for (const d of docs) {
+      titleByUrl.set(urlFor(d.id), d.data.title)
+    }
     for (const d of docs) {
       const dir = topDir(d.id)
       // Only pages inside a subdirectory belong to that dir's doc-list; a
@@ -156,4 +165,10 @@ export function backlinksFor(autogenId: string): GuideRef[] {
   return [...(backlinks.get(autogenId) ?? [])].sort((a, b) =>
     a.title.localeCompare(b.title),
   )
+}
+
+// Resolves a link href (as written in markdown source: a trailing slash and/or
+// `#fragment` optional) to the title of the page it points to.
+export function titleForUrl(url: string): string | undefined {
+  return titleByUrl.get(url.replace(/#.*$/, '').replace(/\/$/, ''))
 }

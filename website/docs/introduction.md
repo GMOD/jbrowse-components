@@ -18,37 +18,37 @@ See the [visualization gallery](/gallery/), or hosted genomes at
 
 - [JBrowse web](/docs/quickstart_web)
 - [JBrowse desktop](/docs/quickstart_desktop)
-- [Embedded components](/docs/embedded_components)
+- [](/docs/embedded_components)
 
 ## Use it
 
-- [User guide](/docs/user_guide)
+- [](/docs/user_guide)
 - [Tutorials](/docs/tutorials)
 - [Feature overview](/features/)
-- [FAQ](/docs/faq)
+- [](/docs/faq)
 
 ## Configure and host
 
-- [Config guide](/docs/config_guide)
-- [Cookbook](/docs/cookbook)
-- [Supported file types](/docs/config_guides/file_types)
+- [](/docs/config_guide)
+- [](/docs/cookbook)
+- [](/docs/config_guides/file_types)
 - [Config reference](/docs/config)
 - [@jbrowse/cli](/docs/cli)
 
 ## Embed and script
 
-- [Automating JBrowse](/docs/automating)
-- [URL query parameter API](/docs/urlparams)
-- [JBrowseR](/docs/jbrowser)
+- [](/docs/automating)
+- [](/docs/urlparams)
+- [](/docs/jbrowser)
 - [JBrowse Jupyter](/docs/jbrowse_jupyter)
 - [@jbrowse/img](/docs/jbrowse-img)
 
 ## Extend it
 
-- [Developer guide](/docs/developer_guide)
-- [Writing a plugin](/docs/developer_guides/simple_plugin/)
+- [](/docs/developer_guide)
+- [](/docs/developer_guides/simple_plugin/)
 - [State model reference](/docs/models)
-- [Exported functions](/docs/api)
+- [](/docs/api)
 
 ## Contact
 

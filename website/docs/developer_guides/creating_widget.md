@@ -70,6 +70,6 @@ session.showWidget(widget)
 ## See also
 
 - [Drawer widgets in embedded components](/docs/developer_guides/drawer_widgets)
-- [Extension points](/docs/developer_guides/extension_points)
-- [Configuration schema](/docs/developer_guides/configuration_schema)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/extension_points)
+- [](/docs/developer_guides/configuration_schema)
+- [](/docs/developer_guides/pluggable_elements)

@@ -103,10 +103,10 @@ multi-sample displays' allele-frequency and missingness sliders are expressed.
 
 ## See also
 
-- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/multivariant_track)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
-- [Alignments track](/docs/user_guides/alignments_track)
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [](/docs/user_guides/alignments_track)
+- [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track)
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
+- [](/docs/config_guides/customizing_feature_colors)
 - [Gallery: variants and populations](/gallery/#variants)

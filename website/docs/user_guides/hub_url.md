@@ -65,8 +65,8 @@ opened with `config=none` shows only the tracks its own assemblies cover.
 
 ## See also
 
-- [Connections](/docs/user_guides/connections) - adding the same hubs through
-  the UI, the CLI, or a config
+- [](/docs/user_guides/connections) - adding the same hubs through the UI, the
+  CLI, or a config
 - [URL parameter API](/docs/urlparams#huburl) - the full list of launch
   parameters, including `&hubURL=`
 - [Live demo: UCSC GenArk hub import](/gallery/#hubs)

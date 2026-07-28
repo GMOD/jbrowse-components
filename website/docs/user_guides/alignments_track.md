@@ -273,10 +273,10 @@ pairs drawn pink lift away from the background.
 
 ## See also
 
-- [Consensus sequence](/docs/user_guides/consensus_sequence)
+- [](/docs/user_guides/consensus_sequence)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [SV inspector](/docs/user_guides/sv_inspector_view)
-- [Variant track](/docs/user_guides/variant_track)
+- [](/docs/user_guides/variant_track)
 - [Alignments track configuration](/docs/config_guides/alignments_track)
 - [LinearAlignmentsDisplay config schema](/docs/config/linearalignmentsdisplay)
 - [Gallery: alignments and long reads](/gallery/#alignments)

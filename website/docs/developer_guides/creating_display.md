@@ -114,5 +114,5 @@ In-tree references:
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/data_fetching)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)

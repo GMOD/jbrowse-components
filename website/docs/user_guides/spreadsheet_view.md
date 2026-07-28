@@ -36,6 +36,6 @@ whole-genome circular overview and cross-filters the two together.
 
 ## See also
 
-- [SV inspector view](/docs/user_guides/sv_inspector_view)
-- [Circular genome view](/docs/user_guides/circular_view)
+- [](/docs/user_guides/sv_inspector_view)
+- [](/docs/user_guides/circular_view)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)

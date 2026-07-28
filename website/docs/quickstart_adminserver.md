@@ -115,9 +115,8 @@ selector to access the "Add track" form:
 
 In the "Add track" form, you can provide a URL or select a local file to load.
 For the formats JBrowse supports and their accepted index types, see
-[Supported file types](/docs/config_guides/file_types). Additional data formats
-can be supported via plugins; check out the
-[plugin store](/docs/user_guides/plugin_store).
+[](/docs/config_guides/file_types). Additional data formats can be supported via
+plugins; check out the [plugin store](/docs/user_guides/plugin_store).
 
 ### Editing a track
 
@@ -143,7 +142,7 @@ session, or any of your previously saved sessions.
 ## See also
 
 - [Quickstart web](/docs/quickstart_web)
-- [Supported file types](/docs/config_guides/file_types)
-- [Default session](/docs/config_guides/default_session)
+- [](/docs/config_guides/file_types)
+- [](/docs/config_guides/default_session)
 - [Assembly configuration guide](/docs/config_guides/assemblies)
-- [Config guide](/docs/config_guide)
+- [](/docs/config_guide)

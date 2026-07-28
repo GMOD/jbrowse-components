@@ -62,5 +62,5 @@ With more than one motif in the list, two buttons are available:
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track)
-- [Feature sequence panel](/docs/user_guides/feature_sequence)
+- [](/docs/user_guides/sequence_track)
+- [](/docs/user_guides/feature_sequence)

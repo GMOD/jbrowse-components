@@ -100,5 +100,4 @@ Full documentation is at
 ## See also
 
 - [JBrowse Jupyter](/docs/jbrowse_jupyter) — Python equivalent
-- [Embedded components](/docs/embedded_components) — the JS/React view this
-  wraps
+- [](/docs/embedded_components) — the JS/React view this wraps

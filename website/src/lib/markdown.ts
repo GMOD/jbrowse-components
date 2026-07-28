@@ -24,6 +24,7 @@ import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
 import remarkRelatedGuides from './remark-related-guides.ts'
 import remarkSpecExample from './remark-spec-example.ts'
+import remarkWikiTitle from './remark-wiki-title.ts'
 
 const processor = unified()
   .use(remarkParse)
@@ -35,6 +36,7 @@ const processor = unified()
   .use(remarkSpecExample)
   .use(remarkCodeBase)
   .use(remarkAutolinkTypes)
+  .use(remarkWikiTitle)
   .use(remarkRelatedGuides)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)

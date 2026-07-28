@@ -105,5 +105,5 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 
 ## See also
 
-- [Using jexl callbacks](/docs/config_guides/jexl)
+- [](/docs/config_guides/jexl)
 - [Configuring tracks](/docs/config_guides/tracks)

@@ -199,7 +199,7 @@ for reshaping detail panels the same way.
 
 ## See also
 
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
-- [Customizing feature details](/docs/config_guides/customizing_feature_details)
-- [Variant track](/docs/user_guides/variant_track)
-- [Alignments track](/docs/user_guides/alignments_track)
+- [](/docs/config_guides/customizing_feature_colors)
+- [](/docs/config_guides/customizing_feature_details)
+- [](/docs/user_guides/variant_track)
+- [](/docs/user_guides/alignments_track)

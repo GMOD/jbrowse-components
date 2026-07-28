@@ -291,9 +291,9 @@ See the [configuration guide](/docs/config_guides/track_selector) for more.
 
 ## See also
 
-- [Connections](/docs/user_guides/connections)
-- [Bookmark widget](/docs/user_guides/bookmark_widget)
-- [Plugin store](/docs/user_guides/plugin_store)
+- [](/docs/user_guides/connections)
+- [](/docs/user_guides/bookmark_widget)
+- [](/docs/user_guides/plugin_store)
 - [Track selector configuration](/docs/config_guides/track_selector)
-- [Avoiding stale config](/docs/config_guides/avoiding_stale_config)
-- [Supported file types](/docs/config_guides/file_types)
+- [](/docs/config_guides/avoiding_stale_config)
+- [](/docs/config_guides/file_types)

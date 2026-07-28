@@ -39,8 +39,8 @@ Not sure if you want an embedded view or the full app? See the
 
 ## See also
 
-- [Automating JBrowse](/docs/automating)
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
+- [](/docs/automating)
+- [](/docs/tutorials/embed_linear_genome_view)
 - [JBrowse Jupyter](/docs/jbrowse_jupyter) — Python equivalent
-- [JBrowseR](/docs/jbrowser) — R/Shiny equivalent
+- [](/docs/jbrowser) — R/Shiny equivalent
 - [FAQ: embedded views vs. full app](/docs/faq#embedded-views-versus-full-jbrowse-app)

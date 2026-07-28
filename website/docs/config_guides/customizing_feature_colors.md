@@ -100,6 +100,6 @@ For embedded components, see the
 
 ## See also
 
-- [Using jexl callbacks](/docs/config_guides/jexl)
-- [Customizing feature details](/docs/config_guides/customizing_feature_details)
+- [](/docs/config_guides/jexl)
+- [](/docs/config_guides/customizing_feature_details)
 - [No-build plugin tutorial](/docs/developer_guides/no_build_plugin)

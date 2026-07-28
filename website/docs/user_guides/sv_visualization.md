@@ -361,9 +361,9 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track)
+- [](/docs/user_guides/alignments_track)
 - [SV inspector](/docs/user_guides/sv_inspector_view)
-- [Circular genome view](/docs/user_guides/circular_view)
-- [Variant track](/docs/user_guides/variant_track)
+- [](/docs/user_guides/circular_view)
+- [](/docs/user_guides/variant_track)
 - [Alignments track configuration](/docs/config_guides/alignments_track)
 - [Gallery: structural variant examples](/gallery/#sv)

@@ -119,5 +119,5 @@ https://jbrowse.org/storybook/lgv/with-drawer-widget/
 ## See also
 
 - [Creating custom widgets](/docs/developer_guides/creating_widget)
-- [Extension points](/docs/developer_guides/extension_points)
-- [Embedded components](/docs/embedded_components)
+- [](/docs/developer_guides/extension_points)
+- [](/docs/embedded_components)

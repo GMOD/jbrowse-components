@@ -1015,7 +1015,7 @@ export function writePromotableSlotDocs(
       const links = slots.map(
         slot => `[\`${slot}\`](${page}/#slot-${slot.toLowerCase()})`,
       )
-      return `| ${trackType} | [${cfg.header.name}](${page}) | ${links.join(', ')} |`
+      return `| ${trackType} | [](${page}) | ${links.join(', ')} |`
     })
   return rewriteMarkerBlock(
     'PROMOTABLE_SLOTS',

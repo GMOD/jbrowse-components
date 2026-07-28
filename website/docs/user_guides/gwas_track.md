@@ -92,8 +92,8 @@ as the index; right-click any point or use the track menu to change it.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track)
-- [Variant track](/docs/user_guides/variant_track)
+- [](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/variant_track)
 - [Linkage disequilibrium tutorial](/docs/tutorials/linkage_disequilibrium)
 - [QTL visualization example tutorial](/docs/tutorials/bxd_qtl)
 - [GWAS track configuration](/docs/config_guides/gwas_track)

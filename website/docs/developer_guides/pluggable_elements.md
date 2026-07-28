@@ -117,7 +117,7 @@ Drawing is owned by the **display**; it is not a pluggable element of its own:
 See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)
 for the mixins this is built from, and
-[GPU displays](/docs/developer_guides/creating_gpu_display) to build one.
+[](/docs/developer_guides/creating_gpu_display) to build one.
 
 How views, tracks, and displays relate:
 
@@ -169,8 +169,8 @@ menu items.
 
 ## See also
 
-- [Writing a plugin](/docs/developer_guides/simple_plugin)
-- [Custom track and display types](/docs/developer_guides/creating_display)
-- [Custom view types](/docs/developer_guides/creating_view)
-- [Custom widgets](/docs/developer_guides/creating_widget)
-- [Configuration schema](/docs/developer_guides/configuration_schema)
+- [](/docs/developer_guides/simple_plugin)
+- [](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/creating_view)
+- [](/docs/developer_guides/creating_widget)
+- [](/docs/developer_guides/configuration_schema)

@@ -25,5 +25,5 @@ for the other global slots.
 
 ## See also
 
-- [config.json format](/docs/config_guides/intro)
+- [](/docs/config_guides/intro)
 - [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration)

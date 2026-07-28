@@ -111,8 +111,7 @@ syntax.
 
 To extract the full protein (or CDS, cDNA, or genomic sequence) for a single
 transcript, click the feature and use the sequence panel in the feature detail
-sidebar. See [Feature sequence panel](/docs/user_guides/feature_sequence) for
-the available options.
+sidebar. See [](/docs/user_guides/feature_sequence) for the available options.
 
 ## Using gene tracks with the Protein3d plugin
 
@@ -131,8 +130,8 @@ for installation and connected-view examples.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track)
-- [Feature sequence panel](/docs/user_guides/feature_sequence)
+- [](/docs/user_guides/sequence_track)
+- [](/docs/user_guides/feature_sequence)
 - [RNA-seq tutorial](/docs/tutorials/rnaseq)
 - [Track configuration](/docs/config_guides/tracks)
 - [Gallery: genes and proteins](/gallery/#genes)

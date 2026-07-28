@@ -106,14 +106,14 @@ the Methylation category (assembly hg38, chr21).
 Reorder subtracks by signal similarity, via **Clustering → Cluster rows by
 score...** in the track menu. Auto mode samples signal values at each pixel
 across the visible region to build the matrix. See
-[Clustering rows](/docs/user_guides/clustering) for the modes, the dendrogram,
-and how to share a result in a session URL.
+[](/docs/user_guides/clustering) for the modes, the dendrogram, and how to share
+a result in a session URL.
 
 <Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster rows by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/quantitative_track)
 - [Methylation tutorial](/docs/tutorials/methylation)
 - [Single-cell ATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk)
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)

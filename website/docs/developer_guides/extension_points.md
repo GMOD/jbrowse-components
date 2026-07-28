@@ -899,7 +899,7 @@ choose your own prefix to avoid collisions.
 
 ## See also
 
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
-- [Custom view types](/docs/developer_guides/creating_view)
-- [Top-level menu items](/docs/developer_guides/menus)
-- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow)
+- [](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/creating_view)
+- [](/docs/developer_guides/menus)
+- [](/docs/developer_guides/creating_addtrack_workflow)

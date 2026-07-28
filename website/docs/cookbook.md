@@ -237,8 +237,8 @@ Drop any of these into the same `displayDefaults`:
 
 `randomColor`, `alpha`, `hsl`, `colorString`, and `interpolate` are the built-in
 [color helpers](/docs/config_guides/jexl).
-[Customizing feature colors](/docs/config_guides/customizing_feature_colors)
-covers BED column naming and moving an outgrown callback into a plugin.
+[](/docs/config_guides/customizing_feature_colors) covers BED column naming and
+moving an outgrown callback into a plugin.
 
 The lookup table keys on any field the track exposes. UCSC RepeatMasker carries
 a `repClass` column:
@@ -601,11 +601,11 @@ from one PAF, [ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi
 
 ### Related views {#synteny-related}
 
-- [Dotplot view](/docs/user_guides/dotplot_view) and
+- [](/docs/user_guides/dotplot_view) and
   [linear synteny view](/docs/user_guides/linear_synteny_view) for what each
   view does with the track
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) to launch a
-  synteny view from a liftOver track in a linear genome view
+- [](/docs/tutorials/genomes_synteny) to launch a synteny view from a liftOver
+  track in a linear genome view
 - [Pangenome graphs](/docs/tutorials/pangenome_ecoli) for graph-derived
   alignments
 
@@ -692,22 +692,19 @@ a region of interest travels in the link:
 &sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"1","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
 ```
 
-See the [URL query parameter API](/docs/urlparams) for the full list, multi-view
-layouts, and the encoded links the "Share" button produces, and
-[FromConfig adapters](/docs/config_guides/from_config) for inline features in a
-config.
+See the [](/docs/urlparams) for the full list, multi-view layouts, and the
+encoded links the "Share" button produces, and
+[](/docs/config_guides/from_config) for inline features in a config.
 
 ---
 
 ## Where to go next
 
-- [Config guide](/docs/config_guide) - structure of `config.json` and links to
-  every per-track guide
-- [Using jexl callbacks](/docs/config_guides/jexl) - full catalog of callback
-  functions
-- [Supported file types](/docs/config_guides/file_types) - every format and its
-  adapter
+- [](/docs/config_guide) - structure of `config.json` and links to every
+  per-track guide
+- [](/docs/config_guides/jexl) - full catalog of callback functions
+- [](/docs/config_guides/file_types) - every format and its adapter
 - [Config reference](/docs/config) - the complete, auto-generated slot list for
   every track, display, and adapter
-- [Automating JBrowse](/docs/automating) - the shared `init` launch model across
-  config, URL, and embedded components
+- [](/docs/automating) - the shared `init` launch model across config, URL, and
+  embedded components

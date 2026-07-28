@@ -235,9 +235,8 @@ track is open.
 ## Clustering samples by genotype
 
 Samples can be reordered by genotype similarity, via **Clustering → Cluster rows
-by genotype...** in the track menu. See
-[Clustering rows](/docs/user_guides/clustering) for the modes, the dendrogram,
-and how to share a result in a session URL.
+by genotype...** in the track menu. See [](/docs/user_guides/clustering) for the
+modes, the dendrogram, and how to share a result in a session URL.
 
 <Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog with its auto/manual mode options. Bottom: after clustering, samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
@@ -246,11 +245,11 @@ dendrogram shows haplotype-level relationships rather than sample-level ones.
 
 ## See also
 
-- [Variant track](/docs/user_guides/variant_track)
-- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [](/docs/user_guides/variant_track)
+- [](/docs/tutorials/analyze_trio)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
-- [Selection scans (Fst, π, Tajima's D)](/docs/tutorials/population_genomics)
-- [Linkage disequilibrium](/docs/tutorials/linkage_disequilibrium)
+- [](/docs/tutorials/population_genomics)
+- [](/docs/tutorials/linkage_disequilibrium)
 - [Variant track configuration](/docs/config_guides/variant_track)
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
+- [](/docs/config_guides/customizing_feature_colors)
 - [Gallery: variants and populations](/gallery/#variants)

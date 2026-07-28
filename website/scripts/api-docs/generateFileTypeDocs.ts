@@ -94,8 +94,7 @@ function collectFormats(files: string[], groups: Record<string, Row[]>) {
 // pseudo-types that name a non-track config slot.
 function trackTypeCell(trackType: string) {
   return (
-    NON_TRACK_SLOTS[trackType] ??
-    `[${trackType}](/docs/config/${trackType.toLowerCase()})`
+    NON_TRACK_SLOTS[trackType] ?? `[](/docs/config/${trackType.toLowerCase()})`
   )
 }
 
@@ -112,7 +111,7 @@ function renderTable(rows: Row[]) {
         r =>
           `| ${[
             tableCell(r.format),
-            `[${r.adapter}](/docs/config/${r.adapter.toLowerCase()})`,
+            `[](/docs/config/${r.adapter.toLowerCase()})`,
             trackTypeCell(r.trackType),
             ...(anyNote ? [tableCell(r.note)] : []),
           ].join(' | ')} |`,
@@ -171,9 +170,7 @@ export function writeDisplayTypeDocs(
   { check = false } = {},
 ) {
   const link = (name: string) =>
-    configNames.has(name)
-      ? `[${name}](/docs/config/${name.toLowerCase()})`
-      : name
+    configNames.has(name) ? `[](/docs/config/${name.toLowerCase()})` : name
   const rows = [...displayTypesByTrack]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(

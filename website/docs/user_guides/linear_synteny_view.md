@@ -49,8 +49,7 @@ be an open track:
   pair that alignment describes. Its **Use CIGAR to map the current visible
   region to the target** option walks the alignment to find the interval that
   actually matches what you are looking at, rather than framing on the whole
-  block's endpoints. Worked through in
-  [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny).
+  block's endpoints. Worked through in [](/docs/tutorials/genomes_synteny).
 - The same **Linear synteny view (visible region)** entry sits in the view's
   hamburger menu under **Launch view**, for when the region you want is the
   whole view and there is nothing to select.
@@ -104,10 +103,10 @@ the indel:
 
 ## See also
 
-- [Dotplot view](/docs/user_guides/dotplot_view)
+- [](/docs/user_guides/dotplot_view)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) - hosted
-  liftOver chains, nothing to set up
+- [](/docs/tutorials/genomes_synteny) - hosted liftOver chains, nothing to set
+  up
 - [Synteny/dotplot configuration](/docs/config_guides/synteny_track)
-- [MAF track](/docs/user_guides/maf_track)
+- [](/docs/user_guides/maf_track)
 - [Gallery: synteny examples](/gallery/#synteny)

@@ -68,5 +68,5 @@ example draws only the high-scoring calls, in dark red, as thin arcs:
 
 ## See also
 
-- [Hi-C track](/docs/user_guides/hic_track)
+- [](/docs/user_guides/hic_track)
 - [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay)

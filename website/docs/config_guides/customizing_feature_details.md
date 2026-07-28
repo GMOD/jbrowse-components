@@ -210,6 +210,6 @@ these extension points (see
 
 ## See also
 
-- [Using jexl callbacks](/docs/config_guides/jexl)
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
-- [Extension points](/docs/developer_guides/extension_points)
+- [](/docs/config_guides/jexl)
+- [](/docs/config_guides/customizing_feature_colors)
+- [](/docs/developer_guides/extension_points)

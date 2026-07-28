@@ -92,10 +92,9 @@ Reach for these instead of re-implementing the parsing/scale math yourself:
 | `@jbrowse/sv-core`             | VCF breakend / structural-variant parsing helpers        |
 
 The exported functions for each are documented in the API reference
-([cigar-utils](/docs/api/cigar-utils),
-[modifications-utils](/docs/api/modifications-utils),
-[wiggle-core](/docs/api/wiggle-core), [synteny-core](/docs/api/synteny-core),
-[sv-core](/docs/api/sv-core)) and mirrored into each package's README on npm.
+([](/docs/api/cigar-utils), [](/docs/api/modifications-utils),
+[](/docs/api/wiggle-core), [](/docs/api/synteny-core), [](/docs/api/sv-core))
+and mirrored into each package's README on npm.
 
 ## How to import, by plugin type
 
@@ -163,6 +162,6 @@ add it to the list.
 
 ## See also
 
-- [Writing a plugin](/docs/developer_guides/simple_plugin)
-- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/simple_plugin)
+- [](/docs/developer_guides/no_build_plugin)
+- [](/docs/developer_guides/pluggable_elements)

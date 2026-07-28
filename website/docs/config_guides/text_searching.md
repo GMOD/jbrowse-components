@@ -145,4 +145,4 @@ Also check that the feature type carrying the name is not in `--exclude`
 ## See also
 
 - [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box)
-- [Connections](/docs/user_guides/connections)
+- [](/docs/user_guides/connections)

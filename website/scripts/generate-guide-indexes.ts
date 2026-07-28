@@ -114,7 +114,7 @@ function buildTocSection(
     }
     lines.push(`${headingLevel} ${cat}`, '')
     for (const e of entries) {
-      lines.push(`- [${e.title}](/docs/${e.dir}/${e.slug})`)
+      lines.push(`- [](/docs/${e.dir}/${e.slug})`)
     }
     lines.push('')
   }
@@ -157,7 +157,7 @@ function buildTutorialSection(): string[] {
     if (inCategory.length) {
       lines.push(`### ${category}`, '')
       for (const e of inCategory) {
-        lines.push(`- [${e.title}](/docs/tutorials/${e.slug})`)
+        lines.push(`- [](/docs/tutorials/${e.slug})`)
       }
       lines.push('')
     }

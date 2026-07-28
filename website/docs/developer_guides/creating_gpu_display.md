@@ -14,9 +14,9 @@ and a Canvas2D renderer behind one factory, wire an MST model with
 
 This is the scale-up path for large or dense datasets (roughly ≳100K features
 per frame). For typical annotation tracks, start with
-[Plotting features in a custom display](/docs/developer_guides/plotting_features),
-the shader-free Canvas2D path. The two share the same model, fetch chain, and
-lifecycle; only the renderer differs, so moving up later is a small change.
+[](/docs/developer_guides/plotting_features), the shader-free Canvas2D path. The
+two share the same model, fetch chain, and lifecycle; only the renderer differs,
+so moving up later is a small change.
 
 The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
@@ -616,7 +616,7 @@ section of the architecture spec is the full quick-scan list.
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching)
-- [RPC and worker system](/docs/developer_guides/rpc_workers)
+- [](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/rpc_workers)
 - [Creating custom display types](/docs/developer_guides/creating_display)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)

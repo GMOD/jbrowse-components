@@ -26,8 +26,7 @@ Both render identically as categories in the track selector.
 
 ## Connection config format
 
-Every connection shares the base fields from
-[BaseConnection](/docs/config/baseconnection):
+Every connection shares the base fields from [](/docs/config/baseconnection):
 
 - `type`: the connection type (e.g. `UCSCTrackHubConnection`)
 - `connectionId`: a unique id for the connection
@@ -39,8 +38,7 @@ Each type then adds its own location slot.
 
 ### UCSC track hub
 
-Points at a hub's `hub.txt`. See
-[UCSCTrackHubConnection](/docs/config/ucsctrackhubconnection).
+Points at a hub's `hub.txt`. See [](/docs/config/ucsctrackhubconnection).
 
 ```json
 {
@@ -55,9 +53,8 @@ Points at a hub's `hub.txt`. See
 
 ### JB2 track hub
 
-Points at a JBrowse 2 config file. See
-[JB2TrackHubConnection](/docs/config/jb2trackhubconnection) and
-[loading from a config file](/docs/config_guides/from_config).
+Points at a JBrowse 2 config file. See [](/docs/config/jb2trackhubconnection)
+and [loading from a config file](/docs/config_guides/from_config).
 
 ```json
 {
@@ -74,7 +71,7 @@ Points at a JBrowse 2 config file. See
 
 Points at a legacy JBrowse 1 data directory containing `trackList.json`. A
 JBrowse 1 connection requires `assemblyNames`. See
-[JBrowse1Connection](/docs/config/jbrowse1connection).
+[](/docs/config/jbrowse1connection).
 
 ```json
 {
@@ -122,6 +119,6 @@ re-fetching the whole hub, and editing it saves the change to the session too.
 ## See also
 
 - [Connections user guide](/docs/user_guides/connections)
-- [BaseConnection](/docs/config/baseconnection)
+- [](/docs/config/baseconnection)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [Loading from a config file](/docs/config_guides/from_config)

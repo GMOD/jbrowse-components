@@ -86,6 +86,6 @@ published plugins.
 
 ## See also
 
-- [Plugin store](/docs/user_guides/plugin_store)
+- [](/docs/user_guides/plugin_store)
 - [No-build plugin](/docs/developer_guides/no_build_plugin)
 - [Simple plugin tutorial](/docs/developer_guides/simple_plugin)

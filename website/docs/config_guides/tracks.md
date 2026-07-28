@@ -141,18 +141,18 @@ pick which:
 <!-- prettier-ignore -->
 | Track type | Display types |
 | --- | --- |
-| [AlignmentsTrack](/docs/config/alignmentstrack) | [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay) |
-| [FeatureTrack](/docs/config/featuretrack) | [LinearArcDisplay](/docs/config/lineararcdisplay)<br/>[LinearBasicDisplay](/docs/config/linearbasicdisplay)<br/>[LinearMultiRowFeatureDisplay](/docs/config/linearmultirowfeaturedisplay)<br/>[LinearScoreDisplay](/docs/config/linearscoredisplay) |
-| [GCContentTrack](/docs/config/gccontenttrack) | LinearGCContentTrackDisplay |
-| [GWASTrack](/docs/config/gwastrack) | [LinearManhattanDisplay](/docs/config/linearmanhattandisplay) |
-| [HicTrack](/docs/config/hictrack) | [LinearHicDisplay](/docs/config/linearhicdisplay) |
-| [LDTrack](/docs/config/ldtrack) | LDTrackDisplay |
-| [MafTrack](/docs/config/maftrack) | [LinearMafDisplay](/docs/config/linearmafdisplay) |
-| [MultiQuantitativeTrack](/docs/config/multiquantitativetrack) | [MultiLinearWiggleDisplay](/docs/config/multilinearwiggledisplay) |
-| [QuantitativeTrack](/docs/config/quantitativetrack) | [LinearWiggleDisplay](/docs/config/linearwiggledisplay) |
-| [ReferenceSequenceTrack](/docs/config/referencesequencetrack) | LinearGCContentDisplay<br/>[LinearReferenceSequenceDisplay](/docs/config/linearreferencesequencedisplay) |
-| [SyntenyTrack](/docs/config/syntenytrack) | [DotplotDisplay](/docs/config/dotplotdisplay)<br/>[LGVSyntenyDisplay](/docs/config/lgvsyntenydisplay)<br/>[LinearSyntenyDisplay](/docs/config/linearsyntenydisplay) |
-| [VariantTrack](/docs/config/varianttrack) | [ChordVariantDisplay](/docs/config/chordvariantdisplay)<br/>LDDisplay<br/>[LinearMultiSampleVariantDisplay](/docs/config/linearmultisamplevariantdisplay)<br/>[LinearMultiSampleVariantMatrixDisplay](/docs/config/linearmultisamplevariantmatrixdisplay)<br/>[LinearPairedArcDisplay](/docs/config/linearpairedarcdisplay)<br/>[LinearVariantDisplay](/docs/config/linearvariantdisplay) |
+| [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay) |
+| [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay)<br/>[](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay) |
+| [](/docs/config/gccontenttrack) | LinearGCContentTrackDisplay |
+| [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) |
+| [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) |
+| [](/docs/config/ldtrack) | LDTrackDisplay |
+| [](/docs/config/maftrack) | [](/docs/config/linearmafdisplay) |
+| [](/docs/config/multiquantitativetrack) | [](/docs/config/multilinearwiggledisplay) |
+| [](/docs/config/quantitativetrack) | [](/docs/config/linearwiggledisplay) |
+| [](/docs/config/referencesequencetrack) | LinearGCContentDisplay<br/>[](/docs/config/linearreferencesequencedisplay) |
+| [](/docs/config/syntenytrack) | [](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearsyntenydisplay) |
+| [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>LDDisplay<br/>[](/docs/config/linearmultisamplevariantdisplay)<br/>[](/docs/config/linearmultisamplevariantmatrixdisplay)<br/>[](/docs/config/linearpairedarcdisplay)<br/>[](/docs/config/linearvariantdisplay) |
 
 <!-- DISPLAY_TYPES END -->
 
@@ -182,18 +182,16 @@ The config guides cover common settings. Every slot for every track, display,
 and adapter type is in the auto-generated **config reference**, built from
 source so it never drifts. For example:
 
-- [BamAdapter](/docs/config/bamadapter),
-  [VcfTabixAdapter](/docs/config/vcftabixadapter),
-  [BigWigAdapter](/docs/config/bigwigadapter)
-- [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay),
-  [LinearWiggleDisplay](/docs/config/linearwiggledisplay)
+- [](/docs/config/bamadapter), [](/docs/config/vcftabixadapter),
+  [](/docs/config/bigwigadapter)
+- [](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay)
 
 The full set of pages is in the **Config reference** section of the docs
 sidebar.
 
 ## See also
 
-- [Supported file types](/docs/config_guides/file_types)
-- [Hierarchical track selector](/docs/config_guides/track_selector)
-- [Deploying JBrowse Web](/docs/config_guides/deploying#generating-configjson-from-a-script)
-- [Display settings](/docs/tutorials/display_settings)
+- [](/docs/config_guides/file_types)
+- [](/docs/config_guides/track_selector)
+- [](/docs/config_guides/deploying#generating-configjson-from-a-script)
+- [](/docs/tutorials/display_settings)

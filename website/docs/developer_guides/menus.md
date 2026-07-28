@@ -244,6 +244,6 @@ auto-generated signatures:
 
 ## See also
 
-- [Extension points](/docs/developer_guides/extension_points)
-- [Custom track and display types](/docs/developer_guides/creating_display)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/extension_points)
+- [](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/pluggable_elements)

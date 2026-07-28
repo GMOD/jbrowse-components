@@ -29,5 +29,5 @@ yourself.
 ## See also
 
 - [Plugin store page](/plugin_store)
-- [Developer guide](/docs/developer_guide)
+- [](/docs/developer_guide)
 - [Plugin configuration](/docs/config_guides/plugins)

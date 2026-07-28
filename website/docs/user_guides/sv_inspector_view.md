@@ -66,8 +66,8 @@ automatically.
 
 ## See also
 
-- [Circular genome view](/docs/user_guides/circular_view)
-- [Spreadsheet view](/docs/user_guides/spreadsheet_view)
+- [](/docs/user_guides/circular_view)
+- [](/docs/user_guides/spreadsheet_view)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples)

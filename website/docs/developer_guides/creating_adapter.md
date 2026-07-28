@@ -34,8 +34,7 @@ drawing, state, and menus.
   [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
   and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) adapters.
 - **RefName alias adapter** - Returns alias data for reference sequence names,
-  e.g. "chr1" → "1". See
-  [RefName aliasing](/docs/developer_guides/refname_aliasing).
+  e.g. "chr1" → "1". See [](/docs/developer_guides/refname_aliasing).
 - **Text search adapter** - Searches text search indexes and returns results.
   Example: the trix adapter. See
   [creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter).
@@ -179,7 +178,7 @@ interface BaseOptions {
 - `signal` - an `AbortSignal` for APIs (like `fetch`) that take one
 - `headers` - HTTP headers as a plain object
 - `statusCallback` - report load progress to the UI (see
-  [RPC and worker system](/docs/developer_guides/rpc_workers))
+  [](/docs/developer_guides/rpc_workers))
 - any `renderProps` from the display model type are also spread in
 
 Returns an rxjs `Observable`. Emit features with
@@ -189,9 +188,9 @@ async callback) to `observer.error()`.
 
 ## See also
 
-- [Custom track and display types](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/creating_display)
 - [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
-- [Configuration schema](/docs/developer_guides/configuration_schema)
-- [RPC and worker system](/docs/developer_guides/rpc_workers)
+- [](/docs/developer_guides/configuration_schema)
+- [](/docs/developer_guides/rpc_workers)
 - [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/pluggable_elements)

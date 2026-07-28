@@ -11,6 +11,7 @@
     "lint-docs-check": "node scripts/generate-guide-indexes.ts --check",
     "check-doc-imports": "node scripts/check-doc-imports.ts",
     "check-sidebar": "node scripts/check-sidebar.ts",
+    "check-wiki-titles": "node scripts/check-wiki-titles.ts",
     "check-links": "node scripts/check-links.ts",
     "check-llms": "node scripts/check-llms.ts",
     "snapshot": "node scripts/snapshot.ts",

@@ -18,18 +18,18 @@ matching codon table. See
 for how to set this up.
 
 You can also extract or copy the sequence underlying selected features; see the
-[Feature sequence panel](/docs/user_guides/feature_sequence) guide.
+[](/docs/user_guides/feature_sequence) guide.
 
 <Figure caption="The sequence track showing the reference sequence (top row) and six-frame translation (three frames per strand) at single-base resolution." src="/img/sequence_track.png" />
 
 Searching the reference sequence for a pattern, CRISPR guide, or restriction
 site (or any other named motif) is a separate, view-level feature; see
-[Sequence search](/docs/user_guides/sequence_search).
+[](/docs/user_guides/sequence_search).
 
 ## See also
 
-- [Gene track](/docs/user_guides/gene_track)
-- [Feature sequence panel](/docs/user_guides/feature_sequence)
+- [](/docs/user_guides/gene_track)
+- [](/docs/user_guides/feature_sequence)
 - [Assembly configuration](/docs/config_guides/assemblies)
-- [GC content track](/docs/user_guides/gc_content_track)
-- [Sequence search](/docs/user_guides/sequence_search)
+- [](/docs/user_guides/gc_content_track)
+- [](/docs/user_guides/sequence_search)

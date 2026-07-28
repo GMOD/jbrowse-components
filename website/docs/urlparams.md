@@ -225,8 +225,8 @@ Loads one or more UCSC track hubs as a session (multiple hubs as a
 comma-separated list), typically combined with `?config=none` since the hub
 supplies its own assemblies and tracks.
 
-See [Opening track hubs by URL](/docs/user_guides/hub_url) for the full
-workflow, including combining a hub with a config and loading several at once.
+See [](/docs/user_guides/hub_url) for the full workflow, including combining a
+hub with a config and loading several at once.
 
 ### Navigating within the default session
 
@@ -429,7 +429,7 @@ Each track object supports the following properties:
   - `forceLoad`: render even when the region trips the "too much data" gate, the
     declarative equivalent of the "Force load" button, which matters here
     because a URL/session has no one to click it (see
-    [BaseLinearDisplay](/docs/config/baselineardisplay/#slot-forceload))
+    [](/docs/config/baselineardisplay/#slot-forceload))
   - Other display-specific settings
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
 
@@ -1013,7 +1013,7 @@ See
 
 ## See also
 
-- [Automating JBrowse](/docs/automating)
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
-- [Default session](/docs/config_guides/default_session)
-- [Extension points](/docs/developer_guides/extension_points)
+- [](/docs/automating)
+- [](/docs/tutorials/embed_linear_genome_view)
+- [](/docs/config_guides/default_session)
+- [](/docs/developer_guides/extension_points)

@@ -72,8 +72,8 @@ change.
 
 ## See also
 
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/gwas_track)
 - [SV visualization: working with large SVs](/docs/user_guides/sv_visualization#working-with-large-svs)
 - [Quantitative track configuration](/docs/config_guides/quantitative_track)
 - [LinearWiggleDisplay config schema](/docs/config/linearwiggledisplay)

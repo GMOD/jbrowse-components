@@ -56,11 +56,11 @@ the full list of display slots and their defaults.
 BigWig (`BigWigAdapter`) and bedGraph are both supported. For bedGraph, use
 `BedGraphTabixAdapter` (a bgzip+tabix-indexed file) for large data, or
 `BedGraphAdapter` for a small plain `.bedGraph`. The example above uses the
-reduced `uri` form. See the [BigWigAdapter](/docs/config/bigwigadapter),
-[BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter), and
-[BedGraphAdapter](/docs/config/bedgraphadapter) config docs for all options.
+reduced `uri` form. See the [](/docs/config/bigwigadapter),
+[](/docs/config/bedgraphtabixadapter), and [](/docs/config/bedgraphadapter)
+config docs for all options.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track)
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/multiquantitative_track)

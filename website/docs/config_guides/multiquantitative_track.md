@@ -119,10 +119,10 @@ const track = {
 }
 ```
 
-See [Deploying JBrowse Web](/docs/config_guides/deploying) for the full pattern
-of generating `config.json` from a samplesheet in a CI/CD pipeline.
+See [](/docs/config_guides/deploying) for the full pattern of generating
+`config.json` from a samplesheet in a CI/CD pipeline.
 
 ## See also
 
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
-- [Quantitative track](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)

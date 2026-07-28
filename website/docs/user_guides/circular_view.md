@@ -39,7 +39,7 @@ together.
 
 ## See also
 
-- [SV inspector view](/docs/user_guides/sv_inspector_view)
+- [](/docs/user_guides/sv_inspector_view)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [ChordVariantDisplay config schema](/docs/config/chordvariantdisplay)

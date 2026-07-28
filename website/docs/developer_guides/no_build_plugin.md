@@ -234,6 +234,6 @@ example in the `@jbrowse/react-app2` examples site for a live example.
 
 ## See also
 
-- [Writing a plugin](/docs/developer_guides/simple_plugin)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
-- [Custom widgets](/docs/developer_guides/creating_widget)
+- [](/docs/developer_guides/simple_plugin)
+- [](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/creating_widget)

@@ -26,10 +26,9 @@ older and more widely referenced in existing examples.
 
 Both ship a custom **view** (`src/HelloView`) as their worked example. For a
 custom track/display, which is the more common case, scaffold from a template
-and then follow
-[Plotting features in a custom display](/docs/developer_guides/plotting_features).
-Its complete plugin lives in `example-plugins/score-example/`, and every code
-block in that guide is generated from that source.
+and then follow [](/docs/developer_guides/plotting_features). Its complete
+plugin lives in `example-plugins/score-example/`, and every code block in that
+guide is generated from that source.
 
 ## What's in a plugin
 
@@ -38,7 +37,7 @@ methods that register pluggable elements against the `pluginManager`. The
 element-specific guides walk through each type:
 
 - [Creating custom view types](/docs/developer_guides/creating_view)
-- [Custom track and display types](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/creating_display)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Creating custom adapters](/docs/developer_guides/creating_adapter)
 - [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
@@ -51,7 +50,7 @@ tweaks), see
 
 ## See also
 
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
-- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin)
-- [Testing a plugin](/docs/developer_guides/testing_plugins)
-- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+- [](/docs/developer_guides/pluggable_elements)
+- [](/docs/developer_guides/no_build_plugin)
+- [](/docs/developer_guides/testing_plugins)
+- [](/docs/developer_guides/imports_and_reexports)

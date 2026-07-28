@@ -100,6 +100,5 @@ and repaint** live.
 
 ## See also
 
-- [Embedded components](/docs/embedded_components) — the JS/React view this
-  wraps
-- [JBrowseR](/docs/jbrowser) — R/Shiny equivalent
+- [](/docs/embedded_components) — the JS/React view this wraps
+- [](/docs/jbrowser) — R/Shiny equivalent

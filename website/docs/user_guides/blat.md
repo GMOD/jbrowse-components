@@ -60,8 +60,8 @@ An assembly UCSC does not host has nowhere to search. A genome you opened from
 your own files is the usual case, and the dialog says so before you submit
 rather than after the server answers; if UCSC does have a database for it, set
 that database under advanced settings. There is no local aligner behind these
-dialogs, but [Sequence search](/docs/user_guides/sequence_search) scans the
-reference for an exact pattern without involving UCSC at all.
+dialogs, but [](/docs/user_guides/sequence_search) scans the reference for an
+exact pattern without involving UCSC at all.
 
 ### CAPTCHA and apiKeys
 
@@ -117,5 +117,5 @@ track selector.
 
 ## See also
 
-- [Sequence search](/docs/user_guides/sequence_search)
-- [Sequence track](/docs/user_guides/sequence_track)
+- [](/docs/user_guides/sequence_search)
+- [](/docs/user_guides/sequence_track)

@@ -9,10 +9,9 @@ guide_category: Creating pluggable elements
 **TL;DR:** A custom display that fetches features in a worker and draws them
 with Canvas2D, no shaders required. Right for gene-scale tracks (hundreds to
 thousands of features per frame); move to
-[GPU displays](/docs/developer_guides/creating_gpu_display) only when a profile
-shows Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths
-share the same model, fetch chain, and lifecycle, so starting here never boxes
-you in.
+[](/docs/developer_guides/creating_gpu_display) only when a profile shows
+Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths share
+the same model, fetch chain, and lifecycle, so starting here never boxes you in.
 
 This is a **build-step plugin** path: it bundles `@jbrowse/render-core` and
 composes mixins from `@jbrowse/plugin-linear-genome-view`, neither of which a
@@ -100,8 +99,8 @@ export interface ScoreRegionData {
 ## Step 2: Write the RPC method
 
 The worker fetches from the adapter and packs the result. See
-[RPC and worker system](/docs/developer_guides/rpc_workers) for the full
-`RpcMethodType` contract; the shape is:
+[](/docs/developer_guides/rpc_workers) for the full `RpcMethodType` contract;
+the shape is:
 
 `ScoreRPC/GetScoreData.ts`:
 
@@ -279,7 +278,7 @@ full in [the data fetching pipeline](/docs/developer_guides/data_fetching).
 The renderer has two parts: a **pure draw function** that paints blocks into any
 2D context, and a thin backend class that the lifecycle drives. Keeping the draw
 logic pure means SVG export reuses it unchanged (see
-[SVG export](/docs/developer_guides/svg_export)).
+[](/docs/developer_guides/svg_export)).
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/drawScore.ts -->
 
@@ -486,7 +485,7 @@ worked example.
 Because `drawScoreBlocks` takes a `Ctx2D`, SVG export calls the exact same
 function with an `SvgCanvas` and emits vector output, with no second rendering
 implementation. Add a `renderSvg` action per
-[SVG export](/docs/developer_guides/svg_export).
+[](/docs/developer_guides/svg_export).
 
 ## When to move to the GPU path
 
@@ -495,7 +494,7 @@ with WebGL2/Canvas2D fallback) is worth its extra cost (a `.slang` shader, an
 instance packer, a GPU backend class) only at high feature counts. The model,
 fetch chain, `renderState`, and hit-testing carry over unchanged; you add a GPU
 renderer and swap `createCanvas2DBackend` for `createRenderingBackend`. See
-[GPU displays](/docs/developer_guides/creating_gpu_display).
+[](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 

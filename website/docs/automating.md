@@ -48,9 +48,9 @@ instruction rather than persistent state, so a saved session never retains it.
   [URL query parameters](/docs/urlparams).
 - Embed a view in your own page or app by passing `location` (and related
   fields) to `createViewState`, see
-  [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view).
+  [](/docs/tutorials/embed_linear_genome_view).
 - Ship a preset view in a config file with a `defaultSession` in config.json,
-  see [Default session](/docs/config_guides/default_session).
+  see [](/docs/config_guides/default_session).
 - Open a preset session programmatically with a session spec, which is an `init`
   block inside a view snapshot, see
   [URL params → session spec](/docs/urlparams).
@@ -66,8 +66,8 @@ JBrowse Web maps query parameters straight onto `init`:
 ?assembly=hg19&loc=chr1:1,000-2,000&tracks=genes,variants&tracklist=true&nav=false&highlight=chr1:1,500-1,600
 ```
 
-See [URL query parameter API](/docs/urlparams) for every parameter, session
-specs for all view types, and shareable/encoded sessions.
+See [](/docs/urlparams) for every parameter, session specs for all view types,
+and shareable/encoded sessions.
 
 Embedded components (`@jbrowse/react-linear-genome-view2`,
 `@jbrowse/react-app2`) make no assumptions about URL parameters. That logic is
@@ -89,8 +89,7 @@ const state = createViewState({
 ```
 
 For full track control at launch, provide a `defaultSession` whose view carries
-an `init` object. See
-[Embedding JBrowse](/docs/tutorials/embed_linear_genome_view).
+an `init` object. See [](/docs/tutorials/embed_linear_genome_view).
 
 ## Config / session files
 
@@ -115,7 +114,7 @@ A `defaultSession` in config.json (or any session snapshot) can give a view an
 }
 ```
 
-See [Default session](/docs/config_guides/default_session).
+See [](/docs/config_guides/default_session).
 
 ## Highlights
 
@@ -136,7 +135,7 @@ for programmatic `createViewState`/session-JSON launches. See the
 Circular, dotplot, synteny, spreadsheet, breakpoint-split, and SV-inspector
 views each accept their own `init`/session-spec shape, applied once on launch in
 the same way. Their fields are documented per view type in the
-[URL query parameter API](/docs/urlparams) session-spec section.
+[](/docs/urlparams) session-spec section.
 
 ## Headless / puppeteer
 
@@ -209,7 +208,7 @@ check the frame, or assert on something the data itself produces.
 
 For a longer-form session (multiple views, per-track display options) encode a
 full session spec rather than individual params. See the session-spec section of
-the [URL query parameter API](/docs/urlparams).
+the [](/docs/urlparams).
 
 Nearly every figure on this documentation site is produced this way. Each one is
 a declarative spec in
@@ -232,6 +231,6 @@ from
 
 ## See also
 
-- [Embedded components](/docs/embedded_components)
-- [Default session](/docs/config_guides/default_session)
-- [URL query parameter API](/docs/urlparams)
+- [](/docs/embedded_components)
+- [](/docs/config_guides/default_session)
+- [](/docs/urlparams)

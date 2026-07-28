@@ -63,12 +63,12 @@ display's `displaySnapshot`, described under
 [URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration).
 
 The per-display field references are
-[MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) and
-[MultiLinearWiggleDisplay](/docs/config/multilinearwiggledisplay).
+[](/docs/models/multisamplevariantbasemodel) and
+[](/docs/config/multilinearwiggledisplay).
 
 ## See also
 
-- [Multi-sample variant display](/docs/user_guides/multivariant_track)
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track)
-- [Multi-row feature track](/docs/user_guides/multirow_feature_track)
-- [MAF track](/docs/user_guides/maf_track)
+- [](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/multirow_feature_track)
+- [](/docs/user_guides/maf_track)

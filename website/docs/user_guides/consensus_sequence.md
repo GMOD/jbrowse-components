@@ -99,7 +99,7 @@ scores, use a dedicated caller.
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track)
-- [Feature sequence panel](/docs/user_guides/feature_sequence)
-- [Sequence track](/docs/user_guides/sequence_track)
-- [Variant track](/docs/user_guides/variant_track)
+- [](/docs/user_guides/alignments_track)
+- [](/docs/user_guides/feature_sequence)
+- [](/docs/user_guides/sequence_track)
+- [](/docs/user_guides/variant_track)
