@@ -393,6 +393,24 @@ test('null peptide when feature hit but no codon under cursor', () => {
   }
 })
 
+test('bpPos is floored to an integer even when the mouse pixel maps to a fractional base', () => {
+  const data = makeData([makeItem('gene1', 1000, 5000, 0, 20)])
+  // 81px of an 800px-wide, 10000bp region -> frac 0.10125 -> bpPos 1012.5, a
+  // genuinely fractional base that the old unfloored code returned as-is and
+  // fed straight into the HGVS formatter (`c.93.66`-style tooltip text).
+  const result = hit(
+    new Map([[0, data]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    81,
+    10,
+  )
+  expect(isHitFeature(result)).toBe(true)
+  if (isHitFeature(result)) {
+    expect(result.bpPos).toBe(1012)
+    expect(Number.isInteger(result.bpPos)).toBe(true)
+  }
+})
+
 test('handles reversed region (encoded via end < start, no flag)', () => {
   // Matches how LGV emits reversed regions: vr.end < vr.start; the bp mapping
   // is symmetric in the signed span so no reversed flag is needed here.
@@ -511,7 +529,7 @@ test('hoverTooltip prefers the subfeature label over the feature mouseover', () 
   ).toBe('BRCA1-201')
 })
 
-test('hoverTooltip prefixes the residue with the isoform when over a codon', () => {
+test('hoverTooltip puts the residue on its own line under the isoform', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
     hoverTooltip(
@@ -520,7 +538,7 @@ test('hoverTooltip prefixes the residue with the isoform when over a codon', () 
         peptide: makeAa('K', 0, 3, 123),
       }),
     ),
-  ).toBe('BRCA1-201 K124')
+  ).toBe('BRCA1-201<br/>K124')
 })
 
 test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
@@ -547,17 +565,17 @@ const isoformHit = (over: Partial<HitFeatureResult>) =>
     ...over,
   })
 
-test('hoverTooltip names the exon under the cursor', () => {
+test('hoverTooltip names the exon under the cursor, on a line under the isoform', () => {
   const at = (bpPos: number) => hoverTooltip(isoformHit({ bpPos }))
-  expect(at(5)).toBe('BRCA1-201 exon 1/3 c.1')
-  expect(at(25)).toBe('BRCA1-201 exon 2/3 c.11')
-  expect(at(45)).toBe('BRCA1-201 exon 3/3 c.*1')
+  expect(at(5)).toBe('BRCA1-201<br/>exon 1/3 c.1')
+  expect(at(25)).toBe('BRCA1-201<br/>exon 2/3 c.11')
+  expect(at(45)).toBe('BRCA1-201<br/>exon 3/3 c.*1')
   // an intron names no exon -- the c. offset already says which boundary it is
   // past, and "exon 2" would read as though the cursor were inside one. The
   // offset is measured from whichever exon is nearer, so the 10bp intron at
   // 10..19 reads +n in its first half and -n in its second.
-  expect(at(11)).toBe('BRCA1-201 c.5+2')
-  expect(at(18)).toBe('BRCA1-201 c.6-2')
+  expect(at(11)).toBe('BRCA1-201<br/>c.5+2')
+  expect(at(18)).toBe('BRCA1-201<br/>c.6-2')
 })
 
 test('hoverTooltip reads the transcript off the feature when it stands alone', () => {
@@ -572,20 +590,20 @@ test('hoverTooltip reads the transcript off the feature when it stands alone', (
         bpPos: 25,
       }),
     ),
-  ).toBe('mRNA mouseover exon 2/3 c.11')
+  ).toBe('mRNA mouseover<br/>exon 2/3 c.11')
 })
 
-test('hoverTooltip keeps exon and HGVS alongside a hovered residue', () => {
+test('hoverTooltip keeps exon and HGVS alongside a hovered residue, on the second line', () => {
   expect(
     hoverTooltip(isoformHit({ peptide: makeAa('K', 0, 3, 123), bpPos: 25 })),
-  ).toBe('BRCA1-201 exon 2/3 c.11 K124')
+  ).toBe('BRCA1-201<br/>exon 2/3 c.11 K124')
 })
 
 // Zoomed out, the cursor covers many bases at once, so a position reported to
 // the base would be silently wrong. The exon is still safe to name.
 test('hoverTooltip drops the HGVS position below base zoom', () => {
   expect(hoverTooltip(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toBe(
-    'BRCA1-201 exon 2/3',
+    'BRCA1-201<br/>exon 2/3',
   )
 })
 
@@ -602,7 +620,7 @@ test('hoverTooltip says nothing extra for a single-exon transcript', () => {
       }),
     ),
     // "exon 1/1" is noise; the coordinate still carries
-  ).toBe('SOX2-201 c.21')
+  ).toBe('SOX2-201<br/>c.21')
 })
 
 test('subfeature label hit area is reserved when the label is present', () => {

@@ -56,9 +56,9 @@ export interface HitFeatureResult {
   subfeature: SubfeatureInfo | null
   // amino-acid codon under the cursor, when hovering peptide-level CDS
   peptide: AminoAcidOverlayItem | null
-  // genomic position under the cursor, which the transcript readouts are
-  // measured from, and the zoom it was read at, which decides how precise a
-  // readout is honest
+  // integer genomic position under the cursor, which the transcript readouts
+  // are measured from, and the zoom it was read at, which decides how precise
+  // a readout is honest
   bpPos: number
   bpPerPx: number
   displayedRegionIndex: number
@@ -120,24 +120,36 @@ export function hgvsHitLabel(result: HitFeatureResult) {
   return position && accession ? `${accession}:${position}` : position
 }
 
+// One tooltip row: its parts share a line, space-separated, dropping any that
+// are absent (e.g. no exon named for an intronic position).
+function tooltipRow(...parts: (string | undefined)[]) {
+  return parts.filter(Boolean).join(' ')
+}
+
+// The full tooltip: its rows stack one per line, dropping any row that came
+// out empty (e.g. an unnamed feature with no transcript readout). Rendered as
+// HTML — see FeatureTooltip, which passes this through SanitizedHTML — so a
+// literal `<br/>` is a line break rather than sanitized-away text.
+function tooltipLines(...rows: string[]) {
+  return rows.filter(Boolean).join('<br/>')
+}
+
 // Tooltip text for a hit: the subfeature under the cursor names its containing
 // feature (a transcript/isoform, or a mature-peptide product), else the
-// top-level feature's resolved `mouseover` slot. On a transcript the exon and
-// HGVS coordinate under the cursor are named too — clinical reporting is written
-// in those terms, and neither is practical to work out by eye. A hovered
-// amino-acid letter adds its residue (e.g. `K124`) on top of that, so the
-// isoform stays visible.
+// top-level feature's resolved `mouseover` slot, on its own line. On a
+// transcript the exon and HGVS coordinate under the cursor are named too on a
+// second line — clinical reporting is written in those terms, and neither is
+// practical to work out by eye. A hovered amino-acid letter adds its residue
+// (e.g. `K124`) to that second line, so the isoform stays on its own.
 export function hoverTooltip(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
-  return (
-    peptide
-      ? [isoform, exon, hgvs, `${peptide.aminoAcid}${peptide.proteinIndex + 1}`]
-      : [isoform ?? result.feature.tooltip, exon, hgvs]
-  )
-    .filter(Boolean)
-    .join(' ')
+  const title = peptide ? isoform : (isoform ?? result.feature.tooltip)
+  const residue = peptide
+    ? `${peptide.aminoAcid}${peptide.proteinIndex + 1}`
+    : undefined
+  return tooltipLines(tooltipRow(title), tooltipRow(exon, hgvs, residue))
 }
 
 export function buildFeatureFlatbushIndex(
@@ -286,9 +298,9 @@ export function performMultiRegionHitDetection(
         const reversed = vr.reversed ?? false
         const frac = (mouseXPx - vr.screenStartPx) / blockWidth
         const bpSpan = vr.end - vr.start
-        const bpPos = reversed
-          ? vr.end - frac * bpSpan
-          : vr.start + frac * bpSpan
+        const bpPos = Math.floor(
+          reversed ? vr.end - frac * bpSpan : vr.start + frac * bpSpan,
+        )
 
         if (indexes.feature) {
           // Features' hit boxes are padded by label width and can overlap a
