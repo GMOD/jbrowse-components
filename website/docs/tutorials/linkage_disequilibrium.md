@@ -31,7 +31,11 @@ in dairying populations.
   the haplotype apart.
 
 A block this long and common only forms when a haplotype rises faster than
-recombination can break it up: the signature of a recent sweep.
+recombination can break it up: the signature of a recent sweep. The blue curve
+above the triangle makes that boundary explicit: the recombination track
+([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
+− r² between adjacent SNPs, peaks in the white gaps and dips inside the red
+block.
 
 ## An inversion suppresses recombination
 
@@ -47,28 +51,17 @@ or each sample's karyotype, as in the
 [population genomics tutorial](/docs/tutorials/population_genomics)'s fly
 inversion.
 
-## Marking where a block ends
-
-The blue curve above the triangle is the recombination track
-([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)): 1
-− r² between adjacent SNPs, peaking in the white gaps and dipping inside the red
-blocks, the block boundaries made explicit.
-
 ## LD is a local tool, so mind the scale
 
-The triangle is a **local, kb-scale** view: it plots pairwise correlation
-between the SNPs on screen, and r² decays with distance, excellent for a
-haplotype block a few kb to a few hundred kb wide, the wrong tool for a large,
-low-frequency structural variant.
-
-A megabase inversion at low frequency (like the _Drosophila_ `In(2L)t` inversion
-in the [population genomics tutorial](/docs/tutorials/population_genomics))
-barely registers: SNPs still recombine normally within any local window, and the
-sparse diagnostic SNPs carrying the long-range signal are diluted by the common
-ones around them. A **windowed scan** catches it instead (Fst spikes across the
-whole region), because it integrates one statistic over a large window rather
-than SNP-pair correlation. Triangle for a kb-scale haplotype block, windowed
-scan for an Mb-scale structural variant or broad sweep.
+The triangle is a **local, kb-scale** view: r² decays with distance, so it's
+excellent for a haplotype block a few kb to a few hundred kb wide, and the wrong
+tool for a large, low-frequency structural variant like the _Drosophila_
+`In(2L)t` inversion in the
+[population genomics tutorial](/docs/tutorials/population_genomics): the sparse
+diagnostic SNPs carrying its signal are diluted by the common SNPs around them
+in any local window. A **windowed scan** catches it instead, because it
+integrates one statistic (Fst) over a large window rather than SNP-pair
+correlation.
 
 ## Making an LD track from your own data
 
