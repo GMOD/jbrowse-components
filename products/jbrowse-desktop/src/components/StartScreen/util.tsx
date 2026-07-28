@@ -149,11 +149,12 @@ export async function createPluginManager(
   pluginManager.configure()
 
   if (!readConfObject(config, 'disableAnalytics')) {
-    // these are ok if they are uncaught promises
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeAWSAnalytics(rootModel, initialTimestamp)
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeGAAnalytics(rootModel, initialTimestamp)
+    writeAWSAnalytics(rootModel, initialTimestamp).catch((e: unknown) => {
+      console.warn('Failed to write analytics to AWS.', e)
+    })
+    writeGAAnalytics(rootModel, initialTimestamp).catch((e: unknown) => {
+      console.warn('Failed to write analytics to GA.', e)
+    })
   }
 
   // Set the session preserving its existing name rather than calling
