@@ -73,7 +73,8 @@ no hosting step needed ([desktop quickstart](/docs/quickstart_desktop)).
 
 ## Track 1: chromosome painting
 
-The painting is a [multi-row feature display](/docs/user_guides/multirow_feature_track): one row
+The painting is a
+[multi-row feature display](/docs/user_guides/multirow_feature_track): one row
 per strain, each block colored by genotype. To make it, walk each strain's
 markers along every chromosome and emit one BED interval per run of consecutive
 same-genotype markers (run-length encoding), coloring `B`/`D`/`H` and writing

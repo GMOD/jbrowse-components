@@ -19,11 +19,11 @@ For what the track looks like once loaded, see the
 
 ## Adapters
 
-| Format         | Adapter                                             |
-| -------------- | --------------------------------------------------- |
-| BigMaf         | [BigMafAdapter](/docs/config/bigmafadapter)         |
-| MAF (tabix)    | [MafTabixAdapter](/docs/config/maftabixadapter)     |
-| TAF (bgzipped) | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter) |
+| Format         | Adapter                            |
+| -------------- | ---------------------------------- |
+| BigMaf         | [](/docs/config/bigmafadapter)     |
+| MAF (tabix)    | [](/docs/config/maftabixadapter)   |
+| TAF (bgzipped) | [](/docs/config/bgziptaffyadapter) |
 
 Provide the aligned species either as a `samples` array (in track order) or via
 an `nhLocation` Newick tree, which both supplies the species and orders/labels
@@ -124,6 +124,6 @@ focused set for detailed reading; see the
 
 ## See also
 
-- [MAF track](/docs/user_guides/maf_track)
+- [](/docs/user_guides/maf_track)
 - [Synteny track config](/docs/config_guides/synteny_track)
-- [Supported file types](/docs/config_guides/file_types)
+- [](/docs/config_guides/file_types)

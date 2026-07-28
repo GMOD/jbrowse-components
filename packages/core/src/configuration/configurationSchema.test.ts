@@ -11,6 +11,7 @@ import {
   ConfigurationSchema,
 } from './configurationSchema.ts'
 import { getConf, readConfObject } from './index.ts'
+import { getSlotDefinition } from './slotFacade.ts'
 import { isConfigurationModel } from './util.ts'
 
 import type { AnyConfigurationModel } from './types.ts'
@@ -198,6 +199,87 @@ describe('configuration schemas', () => {
       // merge composes across different hook keys, only same-key overlap throws
       expect(node.baseAction()).toBe('base')
       expect(node.childView()).toBe('child')
+    })
+  })
+
+  describe('baseConfiguration slot override merge', () => {
+    // The definition merge in preprocessConfigurationSchemaArguments is
+    // field-by-field for a redeclared *slot* and wholesale for everything else,
+    // so an override states only what differs. Replace semantics were the old
+    // behavior and dropped every field an override left out, silently.
+    const isEven = (value: unknown) =>
+      typeof value === 'number' && value % 2 === 0
+    const base = ConfigurationSchema('MergeBase', {
+      size: {
+        type: 'number',
+        defaultValue: 2,
+        description: 'the base description',
+        contextVariable: ['feature'],
+        validate: isEven,
+        advanced: true,
+      },
+      mySubConfiguration: ConfigurationSchema('MergeBaseSub', {
+        kept: { type: 'number', defaultValue: 1 },
+        dropped: { type: 'number', defaultValue: 2 },
+      }),
+      label: 'base label',
+    })
+
+    test('an override keeps what it states and inherits the rest', () => {
+      const child = ConfigurationSchema(
+        'MergeChild',
+        { size: { type: 'number', defaultValue: 4 } },
+        { baseConfiguration: base },
+      )
+      const def = getSlotDefinition(
+        child.create(undefined, { pluginManager }),
+        'size',
+      )
+      expect(def.defaultValue).toBe(4)
+      expect(def.description).toBe('the base description')
+      expect(def.contextVariable).toEqual(['feature'])
+      expect(def.validate).toBe(isEven)
+      expect(def.advanced).toBe(true)
+    })
+
+    test('stating a field turns an inherited one off', () => {
+      const child = ConfigurationSchema(
+        'MergeOptOut',
+        { size: { type: 'number', defaultValue: 4, advanced: false } },
+        { baseConfiguration: base },
+      )
+      expect(
+        getSlotDefinition(child.create(undefined, { pluginManager }), 'size')
+          .advanced,
+      ).toBe(false)
+    })
+
+    // a sub-schema is an opaque entry with no fields to fold, so it replaces
+    test('a redeclared sub-schema replaces the base one wholesale', () => {
+      const child = ConfigurationSchema(
+        'MergeSubChild',
+        {
+          mySubConfiguration: ConfigurationSchema('MergeChildSub', {
+            kept: { type: 'number', defaultValue: 10 },
+          }),
+        },
+        { baseConfiguration: base },
+      )
+      const node = child.create(undefined, { pluginManager })
+      expect(readConfObject(node, ['mySubConfiguration', 'kept'])).toBe(10)
+      expect(
+        readConfObject(node, ['mySubConfiguration', 'dropped']),
+      ).toBeUndefined()
+    })
+
+    test('a redeclared constant replaces the base one wholesale', () => {
+      const child = ConfigurationSchema(
+        'MergeConstChild',
+        { label: 'child label' },
+        { baseConfiguration: base },
+      )
+      const node = child.create(undefined, { pluginManager })
+      expect((node as unknown as { label: string }).label).toBe('child label')
     })
   })
 

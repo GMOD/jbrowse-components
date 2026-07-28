@@ -76,6 +76,11 @@ parameter names), and eight slots lost the base's `description`, leaving the
 config editor and generated docs blank. To genuinely turn a base field off,
 state it: `promotable: false`.
 
+This is a behavior change external plugins inherit with no import to grep for,
+so it's recorded in `agent-docs/reference/PLUGIN_ABI_STABILITY.md` ("Ledger")
+and written up for plugin authors in
+`website/docs/developer_guides/configuration_schema.md`.
+
 ## A config snapshot is transport, not a value-read API
 
 Slots are built with `types.stripDefault` (`configurationSlot.ts`), which omits

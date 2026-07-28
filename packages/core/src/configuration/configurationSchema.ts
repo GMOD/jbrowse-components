@@ -23,7 +23,10 @@ import {
 
 import type PluginManager from '../PluginManager.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
-import type { AnyConfigurationSchemaType } from './types.ts'
+import type {
+  AnyConfigurationSchemaType,
+  GetInheritedIdentifier,
+} from './types.ts'
 import type {
   IAnyType,
   IType,
@@ -515,21 +518,26 @@ type IsAny<T> = 0 extends 1 & T ? true : false
 // **widened** `AnyConfigurationSchemaType` — a factory that hasn't tightened its
 // `configSchema` param past it — has an `any` definition, so it reads `any`,
 // exactly as before this type existed: such factories gain no narrowing (their
-// slot values were already `any` via the `any` definition brand) but also don't
-// regress structural expectations like `DisplayModel`'s `{ displayId: string }`
-// that the old `any` instance satisfied vacuously. Measured cost of removing
-// this hatch (widened branch → `AnyConfigurationModel`): exactly ONE production
-// site breaks — `LinearVariantDisplayComponent` needs `configuration.displayId`,
-// which the config instance doesn't carry as a named prop (erased through the
-// `Record<string, any>` modelDefinition above). Fixing that one identifier is
-// the minimal unblock for narrowing the variant/canvas base — see the "Config
-// read type narrowing" section of `./CLAUDE.md`.
+// slot values were already `any` via the `any` definition brand).
+//
+// Both branches are intersected with the schema's identifier prop, because
+// `makeConfigurationSchemaModel` builds the model from a `Record<string, any>`
+// `modelDefinition`, which erases every named prop — including the identifier it
+// installs from `explicitIdentifier`/`implicitIdentifier`. Without this, a
+// **concrete** display instance fails the repo-wide structural check of a display
+// against `{ displayId: string }` (`DisplayModel`, `DisplayContainer`), which is
+// what blocked pinning the widened display factories: pinning turns a vacuously-
+// passing `any` into a real instance with no `displayId` on it. The widened
+// branch is unaffected (`any & X` is `any`). See the "Config read type narrowing"
+// section of `./CLAUDE.md`.
 type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
-  SCHEMA extends ConfigurationSchemaType<infer D, any>
+  (SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? IsAny<D> extends true
       ? any
       : SCHEMA['Type']
-    : SCHEMA['Type']
+    : SCHEMA['Type']) & {
+    [K in GetInheritedIdentifier<SCHEMA>]: string
+  }
 
 /**
  * Static type of the value `ConfigurationReference` produces, and therefore of a

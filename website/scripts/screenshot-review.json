@@ -2155,8 +2155,8 @@
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
-    "status": "bad",
-    "note": "this may not be the primary point of the screenshot but i dont necessarily understand the lines that are drawn to the backbone. some only have 1 line and some have 3. how should users interpret these? it should be clear to users ideally. can also try to make back-to-back comparison of backbone linear and bandage force directed modes",
+    "status": "good",
+    "note": "this may not be the primary point of the screenshot but i dont necessarily understand the lines that are drawn to the backbone. some only have 1 line and some have 3. how should users interpret these? it should be clear to users ideally. can also try to make back-to-back comparison of backbone linear and bandage force directed modes FIXED in prose, no new figure: a line is one graph link, drawn when both endpoints are inside the cut. Counted out of ecoli_minigraph.links.bed.gz over chr:4,053,156-4,067,028, every allele in the window has exactly two links total (one leaving the backbone, one rejoining): s1814 and s1815 have both endpoints in the cut and draw two lines; s1813, s1816 and the rank-2 s2272 have their other neighbour (s1271, s1280, s1285) outside it and draw one. The mark with three lines is two alleles drawn on top of each other, s1813 (4 bp) and s1814 (53 bp), both under the minimum node width at 3.1% zoom: 4 marks for 5 alleles, and 7 drawn lines for the 7 off-backbone links, which is how the counts were confirmed. The caption said 'three short rank-1 alleles' and there are four. The back-to-back anchored/force-directed comparison was declined: the HPRC tutorial already pictures both layouts, and the standing instruction on this set is to pare figures down rather than add.",
     "reviewedAt": "2026-07-27T18:41:59.832Z",
     "hash": "e1b4916662dd5b2af010c9a0f5f7b707bf7c1d8d"
   },

@@ -112,7 +112,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 | Slot                                             | Type      | Description                                                                                                                                                                                 |
 | ------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [height](#slot-height)                           | `number`  | default height for the track                                                                                                                                                                |
+| [height](#slot-height)                           | `number`  | Starting height in pixels for the genotype rows; drag-resizable, and the rows divide it while row height is on auto-fit                                                                     |
 | [showInsertionGlyphs](#slot-showinsertionglyphs) | `boolean` | Widen each alt-carrying cell of an insertion to a marker sized by the inserted bp, the same one `plugins/alignments` and `plugins/maf` draw, with the bp count when the row is tall enough. |
 
 <details>
@@ -120,7 +120,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: height
 
-default height for the track
+Starting height in pixels for the genotype rows; drag-resizable, and the rows
+divide it while row height is on auto-fit
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `200`
 

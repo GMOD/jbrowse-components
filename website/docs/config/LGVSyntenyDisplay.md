@@ -201,7 +201,8 @@ or fit modes, and does not limit how much is laid out (see maxHeight)
 
 #### slot: height
 
-default height for the track
+Starting height in pixels for the coverage band and pileup together; heightMode
+decides what a pileup deeper than this does
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 

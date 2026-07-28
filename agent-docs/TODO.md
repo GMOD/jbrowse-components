@@ -244,50 +244,14 @@ against `TCGA-BRCA cohort copy number`. The 1000G card also still points its
 `guide:` at `user_guides/multiquantitative_track`, written before
 `tutorials/population_cnv` existed, which is now the better destination.
 
-## multi-row
-
-in our tutorial we should link "Track 1: chromosome painting
-
-The painting is a multi-row feature display: one row per strain..." to an actual e.g. config guide or autogen guide or something page currently links to chromhmm
-
 
 ## lai
 
 unclear coloring. some pink shades, what are those
 
-## tutorial 'setup'
-
-Can be in a prerequsites section, doesnt need special sentence e.g. dont need "Setup: nothing to read along. Your own data needs long reads carrying MM/ML tags, which modern basecallers write by default."
-
-
 ## consider rehosting
 
 https://jbrowse.org/jb2-staging/docs/tutorials/population_genomics/
-
-## reduce prose
-
-https://jbrowse.org/jb2-staging/docs/tutorials/linkage_disequilibrium/
-
-the recombination track is not shown also, not sure if we should show maybe could work in lct locus
-
-
-## consolidate examples
-
-https://jbrowse.org/jb2-staging/docs/config/baseassembly/
-
-unclear why geneticCodes is dropped in some, the super-minimal could be first
-
-
-## tbi warning
-
-
-See the Config slots section below for all available configuration fields.
-Gotcha
-
-TBI cannot index a chromosome longer than 512 Mb, which some plant genomes exceed. Index those with CSI instead and set both index.location and index.indexType: 'CSI'; the uri shorthand assumes a sibling .tbi.
-
-first  animal genomes can be large too, and (b) we can add a csiUrl:true for shorthand
-
 
 ## autogen docs
 
@@ -297,24 +261,4 @@ related links to bottom.
 
 kind of hard to 'read'. we may want to expand the <details> by default also
 
-## reduce
 
-https://jbrowse.org/jb2-staging/docs/config_guides/assemblies/
-
-## ~~rename~~ ✓
-
-~~CNV tutorials can just say CNV not "Copy number"~~
-
-## generally review and improve
-
-https://jbrowse.org/jb2-staging/docs/tutorials/genomes_synteny/
-
-## reduce
-
-https://jbrowse.org/jb2-staging/docs/tutorials/embed_linear_genome_view/
-
-the initial should be copy-and-pasteable and usable, one track, one assembly. more complete notes could be a <details> at bottom of page
-
-## title
-
-CLI config for Desktop should using JBrowse CLI with JBrowse Desktop

@@ -168,6 +168,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       height: {
         type: 'number',
         defaultValue: 250,
+        description:
+          'Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does',
       },
       /**
        * #slot

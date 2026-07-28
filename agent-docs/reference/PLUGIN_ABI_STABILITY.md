@@ -224,6 +224,26 @@ The pre-rip situation, and the graceful path we *didn't* take:
 
 ---
 
+## Ledger: behavior changes external plugins inherit
+
+Not every ABI break is a removed export. A change to how core *interprets* what a
+plugin declares reaches every external plugin at once, with no import to grep
+for and no compile error anywhere. Those go here, with the opt-out, so a plugin
+author who lands on a behavior change can find the sentence that explains it.
+
+- **Config slot overrides merge over `baseConfiguration` instead of replacing
+  it** (`mergeSchemaDefinition`, `configuration/configurationSchema.ts`). A
+  schema that redeclares a slot its base already defines now inherits every
+  field the override leaves out — `description`, `advanced`, `contextVariable`,
+  `validate`, `model`, `promotable`/`promotedBase` — where it used to drop them.
+  For the 32 in-tree overrides this was strictly a fix (three were losing
+  metadata by accident), and it is almost certainly what an external author
+  meant too. But an override that relied on *replacement* to shed an inherited
+  field silently gains it back. **Opt-out: state the field
+  (`advanced: false`).** Documented for plugin authors in
+  `developer_guides/configuration_schema.md`; sub-schemas and constants still
+  replace wholesale.
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably

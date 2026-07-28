@@ -316,3 +316,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
     },
   )
 }
+
+export type LinearCanvasBaseDisplayConfigModel = ReturnType<
+  typeof baseConfigSchemaFactory
+>

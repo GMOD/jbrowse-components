@@ -21,6 +21,8 @@ function makeLDConfigSchema(typeName: string) {
       height: {
         type: 'number',
         defaultValue: 400,
+        description:
+          'Starting height in pixels for the LD triangle, excluding the lineZoneHeight band; drag-resizable',
       },
     },
     {

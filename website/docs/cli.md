@@ -437,9 +437,12 @@ setting "metadata": { "skipTextIndex": true } on the track. Such tracks are
 skipped even when indexing all tracks or a whole assembly, so you do not have to
 pass --excludeTracks on every run.
 
-Only tracks with an indexable adapter type (e.g. Gff3TabixAdapter,
-VcfTabixAdapter) are indexed; tracks with other adapter types are skipped
-automatically.
+Only tracks with an indexable adapter type (Gff3Adapter, Gff3TabixAdapter,
+GtfAdapter, VcfAdapter, VcfTabixAdapter) are indexed; tracks with other adapter
+types are skipped automatically.
+
+GTF has no Name/ID attributes, so the default --attributes also match their GTF
+spellings (gene_name, transcript_name, gene_id, transcript_id).
 
 Examples:
 

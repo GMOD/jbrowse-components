@@ -399,7 +399,7 @@ featureHighlights: types.stripDefault(
 | <span id="property-end">end</span>                     | `IMaybe<ISimpleType<number>>`                         |
 | <span id="property-name">name</span>                   | `IMaybe<ISimpleType<string>>`                         |
 | <span id="property-featureid">featureId</span>         | `IMaybe<ISimpleType<string>>`                         |
-| <span id="property-configuration">configuration</span> | `IConfigurationReference<AnyConfigurationSchemaType>` |
+| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
 
 </details>
 
@@ -689,7 +689,7 @@ reservation — reads this so a box never reserves width for a description it
 won't draw.
 
 ```ts
-type renderedShowDescriptions = any
+type renderedShowDescriptions = boolean
 ```
 
 #### getter: renderedShowLabels
@@ -715,18 +715,18 @@ type renderedShowLabels = boolean
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | <span id="getter-renderstate">renderState</span>                             | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
 | <span id="getter-labelscrollbucket">labelScrollBucket</span>                 | `number`                                                          |
-| <span id="getter-maxheight">maxHeight</span>                                 | `any`                                                             |
+| <span id="getter-maxheight">maxHeight</span>                                 | `number`                                                          |
 | <span id="getter-displaymode">displayMode</span>                             | `"normal" \| "compact" \| "superCompact" \| "collapsed"`          |
 | <span id="getter-labelfontsize">labelFontSize</span>                         | `number`                                                          |
-| <span id="getter-showlabelsmode">showLabelsMode</span>                       | `any`                                                             |
+| <span id="getter-showlabelsmode">showLabelsMode</span>                       | `"auto" \| "off" \| "on"`                                         |
 | <span id="getter-showlabels">showLabels</span>                               | `boolean`                                                         |
-| <span id="getter-showdescriptions">showDescriptions</span>                   | `any`                                                             |
+| <span id="getter-showdescriptions">showDescriptions</span>                   | `boolean`                                                         |
 | <span id="getter-showoutline">showOutline</span>                             | `boolean`                                                         |
 | <span id="getter-featurecolor">featureColor</span>                           | `any`                                                             |
 | <span id="getter-utrcolor">utrColor</span>                                   | `string`                                                          |
 | <span id="getter-colorbymode">colorByMode</span>                             | `"strand" \| "attribute" \| "solid"`                              |
 | <span id="getter-colorbyattribute">colorByAttribute</span>                   | `string`                                                          |
-| <span id="getter-effectiveshowdescriptions">effectiveShowDescriptions</span> | `any`                                                             |
+| <span id="getter-effectiveshowdescriptions">effectiveShowDescriptions</span> | `boolean`                                                         |
 | <span id="getter-selectedfeatureid">selectedFeatureId</span>                 | `string \| undefined`                                             |
 | <span id="getter-colorbycds">colorByCDS</span>                               | `boolean`                                                         |
 | <span id="getter-sequenceadapter">sequenceAdapter</span>                     | `any`                                                             |

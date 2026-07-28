@@ -108,9 +108,9 @@ _See the **Config slots** section below for all available configuration fields._
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                   | Type     | Description                  |
-| ---------------------- | -------- | ---------------------------- |
-| [height](#slot-height) | `number` | default height for the track |
+| Slot                   | Type     | Description                                                                                                                                                  |
+| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [height](#slot-height) | `number` | Starting height in pixels for the genotype matrix, excluding the lineZoneHeight band; drag-resizable, and the rows divide it while row height is on auto-fit |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -126,7 +126,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: height
 
-default height for the track
+Starting height in pixels for the genotype matrix, excluding the lineZoneHeight
+band; drag-resizable, and the rows divide it while row height is on auto-fit
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 

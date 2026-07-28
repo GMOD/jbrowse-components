@@ -69,19 +69,11 @@ configuration for the Manhattan plot display used by GWAS tracks
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                     | Type                      | Description                                     |
-| ------------------------ | ------------------------- | ----------------------------------------------- |
-| [color](#slot-color)     | `color`                   | CSS color or jexl callback for Manhattan points |
-| [colorBy](#slot-colorby) | `stringEnum` (normal, ld) | LocusZoom-style coloring.                       |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                       | Type          | Description                                                      |
-| ------------------------------------------ | ------------- | ---------------------------------------------------------------- |
-| [scatterPointSize](#slot-scatterpointsize) | `maybeNumber` | Manhattan point diameter in px (adjustable from the track menu). |
-
-</details>
+| Slot                                       | Type                      | Description                                                      |
+| ------------------------------------------ | ------------------------- | ---------------------------------------------------------------- |
+| [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                  |
+| [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring.                                        |
+| [scatterPointSize](#slot-scatterpointsize) | `maybeNumber`             | Manhattan point diameter in px (adjustable from the track menu). |
 
 <details>
 <summary>LinearManhattanDisplay - Slots</summary>
@@ -107,7 +99,7 @@ Manhattan point diameter in px (adjustable from the track menu). Larger default
 than wiggle's since Manhattan points are the primary glyph.
 
 **Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:**
-`DEFAULT_POINT_DIAMETER_PX` · _advanced, promotable_
+`DEFAULT_POINT_DIAMETER_PX` · _promotable_
 
 </details>
 

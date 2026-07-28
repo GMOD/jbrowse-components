@@ -133,7 +133,7 @@ Rows start in file order. Three ways to change that:
 - **Clustering → Cluster rows by similarity** reorders rows so that samples with
   similar paintings sit together, and draws a dendrogram in the sidebar. Unlike
   the other clustering displays it runs without a dialog. See
-  [Clustering rows](/docs/user_guides/clustering).
+  [](/docs/user_guides/clustering).
 
 **Reset row order** appears in the track menu once any of the three has run, and
 returns the rows to file order.
@@ -149,22 +149,21 @@ all.
 
 Each of these builds the input file and the track config end to end:
 
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - many cell types from
-  one merged BED, colored by `itemRgb`
-- [Cohort copy number (TCGA)](/docs/tutorials/tcga_cohort_cnv) - a thousand
-  tumors, colored by a jexl expression over a numeric column
-- [QTL visualization example](/docs/tutorials/bxd_qtl) - strain genotype
-  painting beside a QTL Manhattan plot, sorted at the peak
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - IBD blocks and local
-  ancestry per haplotype
-- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) - per-haplotype ancestry
-  painting across a chromosome
+- [](/docs/tutorials/chromhmm) - many cell types from one merged BED, colored by
+  `itemRgb`
+- [](/docs/tutorials/tcga_cohort_cnv) - a thousand tumors, colored by a jexl
+  expression over a numeric column
+- [](/docs/tutorials/bxd_qtl) - strain genotype painting beside a QTL Manhattan
+  plot, sorted at the peak
+- [](/docs/tutorials/analyze_trio) - IBD blocks and local ancestry per haplotype
+- [](/docs/tutorials/pangenome_hprc) - per-haplotype ancestry painting across a
+  chromosome
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track)
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) - the
-  same one-row-per-sample idea for signal rather than intervals
-- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/multiquantitative_track) - the same one-row-per-sample
+  idea for signal rather than intervals
+- [](/docs/user_guides/multivariant_track)
 - [LinearMultiRowFeatureDisplay config schema](/docs/config/linearmultirowfeaturedisplay)
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors)
+- [](/docs/config_guides/customizing_feature_colors)

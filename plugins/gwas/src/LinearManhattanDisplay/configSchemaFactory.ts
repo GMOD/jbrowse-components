@@ -93,6 +93,10 @@ export function configSchemaFactory() {
         description:
           'Diameter in px of Manhattan points. Unset (the default) follows the session-wide default for this display type',
         promotable: true,
+        // wiggle marks this advanced because scatter is one of its several
+        // renderings; Manhattan is only ever a scatter, so point size is a
+        // basic setting here and stays out of "Show advanced settings"
+        advanced: false,
       },
     },
     {

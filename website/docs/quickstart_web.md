@@ -13,12 +13,11 @@ Other ways to run JBrowse:
 
 - [JBrowse desktop](/docs/quickstart_desktop) - open local files without a web
   server
-- [Embedded components](/docs/embedded_components) - embed a view in your own
-  web app
+- [](/docs/embedded_components) - embed a view in your own web app
 
 The `config.json` directory you build in this guide isn't web-only: the same
 folder opens directly in JBrowse Desktop, so you don't have to choose up front.
-See [CLI config for Desktop](/docs/tutorials/cli_desktop).
+See [](/docs/tutorials/cli_desktop).
 
 ## TLDR
 
@@ -116,7 +115,7 @@ defaults to the current directory). To write elsewhere, add
 path to a specific config file. Run `jbrowse add-track --help` for all options.
 
 For the full list of supported formats and the adapter each maps to, see
-[Supported file types](/docs/config_guides/file_types).
+[](/docs/config_guides/file_types).
 
 Every example below uses `--load copy`, which puts the data file next to
 `config.json` so one server serves both. That is the simplest arrangement and
@@ -252,8 +251,8 @@ of your data files it needs.
 
 That means a lab with somewhere to put files already has most of what it needs:
 a web server, an S3 or GCS bucket, or an institutional file host. See
-[Deploying JBrowse Web](/docs/config_guides/deploying) for the full picture,
-including generating `config.json` from a samplesheet.
+[](/docs/config_guides/deploying) for the full picture, including generating
+`config.json` from a samplesheet.
 
 Two properties decide whether a host works, and both fail quietly rather than
 with an obvious error:
@@ -276,7 +275,7 @@ well.
 
 For data that cannot be public, JBrowse can authenticate per file host rather
 than proxying through a server of its own. See
-[Authentication](/docs/config_guides/authentication) and
+[](/docs/config_guides/authentication) and
 [putting data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login).
 
 ## Indexing feature names for searching
@@ -289,12 +288,12 @@ jbrowse text-index
 
 This indexes GFF3 and VCF tracks (tabix-indexed or plain). Once complete, names
 can be typed directly into the location search box. See the
-[text-index docs](/docs/cli#jbrowse-text-index) and
-[FAQ](/docs/faq#text-searching) for more.
+[text-index docs](/docs/cli#jbrowse-text-index) and [](/docs/faq#text-searching)
+for more.
 
 ## Tutorials
 
-- [CLI config for Desktop](/docs/tutorials/cli_desktop)
+- [](/docs/tutorials/cli_desktop)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Cancer structural variants](/docs/tutorials/sv_visualization_cgiab)
 - [Population genomics](/docs/tutorials/population_genomics)
@@ -304,11 +303,11 @@ can be typed directly into the location search box. See the
 
 ## See also
 
-- [User guide](/docs/user_guide)
-- [Supported file types](/docs/config_guides/file_types)
-- [Config guide](/docs/config_guide)
+- [](/docs/user_guide)
+- [](/docs/config_guides/file_types)
+- [](/docs/config_guide)
 - [CLI reference](/docs/cli)
-- [FAQ](/docs/faq)
+- [](/docs/faq)
 - [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files)
 
 ## Tips

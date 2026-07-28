@@ -35,24 +35,24 @@ The most important things to configure are your
 [tracks](/docs/config_guides/tracks). The rest of the top-level fields are
 optional:
 
-| Field                         | Guide                                                     |
-| ----------------------------- | --------------------------------------------------------- |
-| `connections`                 | [Connections](/docs/config_guides/connections)            |
-| `plugins`                     | [Plugins](/docs/config_guides/plugins)                    |
-| `internetAccounts`            | [Authentication](/docs/config_guides/authentication)      |
-| `aggregateTextSearchAdapters` | [Text searching](/docs/config_guides/text_searching)      |
-| `defaultSession`              | [Default session](/docs/config_guides/default_session)    |
-| `configuration`               | [JBrowseConfiguration](/docs/config/jbrowseconfiguration) |
+| Field                         | Guide                                   |
+| ----------------------------- | --------------------------------------- |
+| `connections`                 | [](/docs/config_guides/connections)     |
+| `plugins`                     | [](/docs/config_guides/plugins)         |
+| `internetAccounts`            | [](/docs/config_guides/authentication)  |
+| `aggregateTextSearchAdapters` | [](/docs/config_guides/text_searching)  |
+| `defaultSession`              | [](/docs/config_guides/default_session) |
+| `configuration`               | [](/docs/config/jbrowseconfiguration)   |
 
 These hand-written guides explain the common cases. For the exhaustive list of
 options for a specific track or adapter type, the auto-generated
 [config reference](/docs/config_guide) has one page per type, generated from
-source so it never goes stale, e.g. [BamAdapter](/docs/config/bamadapter) or
-[LinearWiggleDisplay](/docs/config/linearwiggledisplay).
+source so it never goes stale, e.g. [](/docs/config/bamadapter) or
+[](/docs/config/linearwiggledisplay).
 
 For repetitive data you can
 [generate `config.json` from a script](/docs/config_guides/deploying); see
-[Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end setup.
+[](/docs/config_guides/deploying) for an end-to-end setup.
 
 On jbrowse-desktop, saved sessions use this same config format, stored in a file
 with a `.jbrowse` extension.
@@ -79,5 +79,5 @@ createViewState({
 
 - [Configuring assemblies](/docs/config_guides/assemblies)
 - [Configuring tracks](/docs/config_guides/tracks)
-- [Deploying JBrowse Web](/docs/config_guides/deploying)
+- [](/docs/config_guides/deploying)
 - [`@jbrowse/cli` command reference](/docs/cli)

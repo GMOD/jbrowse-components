@@ -98,6 +98,8 @@ export default function configSchemaFactory() {
       height: {
         type: 'number',
         defaultValue: 200,
+        description:
+          'Starting height in pixels for the genotype rows; drag-resizable, and the rows divide it while row height is on auto-fit',
       },
       /**
        * #slot

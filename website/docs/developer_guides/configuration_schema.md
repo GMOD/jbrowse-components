@@ -111,8 +111,33 @@ export default function configSchemaF(pluginManager: PluginManager) {
 }
 ```
 
-The base schema's slots are merged in first; child slots override them if names
-collide.
+The base schema's slots are merged in first. When a name collides, what happens
+depends on the kind of entry:
+
+- **A slot the child redeclares merges field-by-field over the base slot**, so
+  the override states only what differs and inherits the rest — `description`,
+  `advanced`, `contextVariable`, `validate`, `model`, and the promotable fields.
+  Keep `type` and `defaultValue` in the override either way: those are what mark
+  an entry as a slot rather than a nested sub-schema.
+- **A nested sub-schema or a constant replaces the base entry wholesale.** They
+  have no fields to fold.
+
+To turn an inherited field off, state it rather than omitting it:
+
+```ts
+// inherits the base slot's description and validate, but is not advanced here
+mySlot: { type: 'number', defaultValue: 4, advanced: false },
+```
+
+:::note Changed behavior
+
+An override used to _replace_ the whole base slot definition, so every field it
+left out was dropped. If your plugin redeclares a slot from a base display
+schema and was relying on that — to shed an inherited `advanced` or `validate`,
+say — state the field explicitly, as above. Overrides that only moved a
+`defaultValue` need no change.
+
+:::
 
 ## preProcessSnapshot
 
@@ -313,5 +338,5 @@ resolution.
 
 ## See also
 
-- [MST patterns](/docs/developer_guides/mst_patterns)
-- [Custom track and display types](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/mst_patterns)
+- [](/docs/developer_guides/creating_display)

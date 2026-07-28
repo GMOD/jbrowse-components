@@ -5,17 +5,18 @@ description:
   beside a linear view of the same window
 ---
 
-**Prerequisites:** The
-[Graph genome view plugin](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
-a pangenome graph in rGFA or GFA format, and optionally the contributing
-assemblies.
-
 Most pangenome tracks are **projections**: the graph flattened onto one
 reference's coordinates, as synteny, variants, alignment or depth. This guide is
 about drawing the graph **as a graph**, beside a linear view of the same window,
-and moving between the two.
+and moving between the two. The reference's own path through the graph is its
+**backbone**; every segment off that path is an alternate allele some other
+assembly carries.
 
-<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes, so the blue blocks above are the blue rank-0 backbone below, same ids at the same offsets. The orange, red and purple alleles have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+**Prerequisites:** the graph genome view plugin (loading it is covered below), a
+pangenome graph in rGFA or GFA, and the contributing assemblies if you want to
+launch out into them.
+
+<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue at the same bp. The alleles under the backbone take the paler tint of the segment they attach to; they have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -43,11 +44,14 @@ and loads from any config today (see
 
 :::
 
-### Quick start
+## Quick start
 
-If you have an indexed rGFA or GFA: **Add track** with `RgfaTabixAdapter` or
-`BedTabixAdapter` pointing to your `.segs.bed.gz` and `.links.bed.gz` → **Track
-menu → Launch view → Graph genome view (this region)**. Skip to
+Indexing a graph means converting it once into two tabix-indexed BED files,
+`.segs.bed.gz` for the segments and `.links.bed.gz` for the links between them,
+which JBrowse can then query by locus. With that pair in hand: **Add track**
+with `RgfaTabixAdapter` or `BedTabixAdapter` pointing at it → **Track menu →
+Launch view → Graph genome view (this region)**.
+[Route 1](#route-1-a-graph-track-browsable-by-locus) builds the pair; skip to
 [Three layouts](#three-layouts) if you just need to know what the buttons do.
 
 ## Coordinates are the whole problem
@@ -62,15 +66,17 @@ on.
 | **rGFA** (minigraph, the minigraph stage of Minigraph-Cactus) | `SN`/`SO`/`SR` tags on every segment | direct, the file states them             |
 | **plain GFA** (pggb, odgi, base-level Minigraph-Cactus)       | inside the P/W path lines            | walk a path first, in the app or offline |
 
-Both end up in the same place. The difference is only whether the coordinates
-are stated per segment or have to be derived by walking, and either way you get
-a segment track on the reference and a graph that lines up under it.
+Both end up in the same place: a segment track on the reference, and a graph
+that lines up under it.
 
 ## Route 1: a graph track, browsable by locus
 
 Index the graph once and it becomes an ordinary `FeatureTrack`, with the graph a
 menu item away from whatever is on screen. Which script builds the index depends
-on the format, and nothing after that does:
+on the format, and nothing after that does. Both live in the repo's
+[`scripts/`](https://github.com/GMOD/jbrowse-components/tree/main/scripts)
+directory and need `bgzip` and `tabix`, plus `gfatools` for the rGFA route or
+`python3` for the plain-GFA one:
 
 ```bash
 # rGFA: the tags are already coordinates, so this is a projection
@@ -113,7 +119,14 @@ half its length on each side so it opens with context rather than clipped to its
 own ends. Dragging across the ruler and picking **Graph genome view (this
 selection)** does the same for a window you choose, with no track menu involved.
 
-<Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window is the segment plus half its length on each side: blue rank-0 backbone, three short rank-1 alleles hanging off it, and one rank-2 allele in purple." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
+<Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window is the segment plus half its length on each side: blue rank-0 backbone, four short rank-1 alleles in three marks, one rank-2 allele in purple, and one line per graph link." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
+
+Each line is one graph link, drawn when both of its endpoints are inside the
+cut. Every allele here has two links, one leaving the backbone and one
+rejoining, so s1814 and s1815 draw two lines while s1813, s1816 and the rank-2
+s2272 draw one, their other neighbour falling outside the window. The leftmost
+mark carries three because it is two alleles at once, s1813 and s1814, both a
+few tens of bp and so too short to draw apart at this zoom.
 
 ## Route 2: a GFA file
 
@@ -156,7 +169,7 @@ assembly on the command line, 1 is sequence first added with the second, and so
 on. So a high-rank segment is sequence none of the earlier assemblies had, and
 only rank 0 has reference coordinates, which is why it is the only rank a linear
 view of the reference can show, and why the figure at the top of this page has
-blue blocks above and colored alleles only below.
+fewer blocks above than the graph has nodes below.
 
 Rank is a property of how the graph was built, not of any genome: at a dense
 locus one rank holds alleles from many haplotypes, so a rank row means nothing
@@ -257,17 +270,14 @@ where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
 ## Building the rGFA these figures use
 
-**Optional reference.** Skip this section if you're loading pre-indexed graphs.
-This section describes how to prepare rGFA and GFA files for indexing.
+**Skip this if your graph is already indexed.**
 
 The figures above are a minigraph graph of the same five strains. minigraph
 takes its stable names from the input FASTA headers, so give it the PanSN-named
 records rather than the per-strain files (whose contig is called `chr` in all
 five), otherwise every segment lands on an ambiguous `chr` that no later command
-can query by strain. Build scripts handle the data preparation; see the
-corresponding [pangenome tutorials](/docs/tutorials/pangenome_ecoli) for
-end-to-end pipelines. The key scripts are in the
-[jbrowse-components repo](https://github.com/GMOD/jbrowse-components/tree/main/scripts).
+can query by strain. The [pangenome tutorials](/docs/tutorials/pangenome_ecoli)
+run the pipeline end to end.
 
 A minigraph graph is far less fragmented than a pggb one, since it records
 structural variation rather than every SNP, so a legible window is hundreds of
@@ -277,9 +287,7 @@ coordinates if you want a file rather than an index.
 
 ## Which strain takes which path
 
-**Optional feature.** This section shows how to index per-strain paths through
-bubbles for the sample-rows layout. It requires the original assemblies. Skip if
-you're using the default segment-only index.
+**Requires the source assemblies.**
 
 The two indexes say what the graph contains, not who carries what: rGFA's `SR`
 tag is build order, not sample. minigraph can recompute the walks by aligning
@@ -350,10 +358,6 @@ carries that nested tier instead.
 
 ## When all you have is the graph
 
-**Optional feature.** This section shows how to index an allele inventory from
-an rGFA file alone, without the source assemblies. Skip if you already have
-per-strain data indexed.
-
 Someone else's rGFA usually arrives without the assemblies it was built from,
 which rules out the re-mapping above. The two indexes still state every allele
 the graph holds, because each L-line row carries both of its endpoints in full:
@@ -403,27 +407,11 @@ one when you do not.
 
 ## See also
 
-**Using graph views:**
-
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) — compare aligned
-  genomes side-by-side
-- [Dotplot view](/docs/user_guides/dotplot_view) — all-versus-all genome
-  comparisons
-- [Alignments track](/docs/user_guides/alignments_track) — display synteny
-  ribbons and CIGAR alignments
-
-**Building graphs (tutorials):**
-
-- [Pangenome (pggb)](/docs/tutorials/pangenome_ecoli) — builds rGFA and GFA
-  graphs with projections
-- [Pangenome (HPRC)](/docs/tutorials/pangenome_hprc) — 464-haplotype human
-  pangenome
-- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus) — hierarchical
-  alignment graphs
-
-**Configuration reference:**
-
-- [RgfaTabixAdapter](/docs/config/adapters/#rgfatabixadapter) — config schema
-  for indexed rGFA files
-- [Configuring plugins](/docs/config_guides/plugins) — how to load the graph
-  genome view plugin
+- [](/docs/user_guides/linear_synteny_view)
+- [](/docs/user_guides/dotplot_view)
+- [](/docs/user_guides/alignments_track)
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/tutorials/pangenome_hprc)
+- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus)
+- [Configuring plugins](/docs/config_guides/plugins)
+- [Gallery: pangenomes](/gallery/#pangenome)

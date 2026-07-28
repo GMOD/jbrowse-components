@@ -32,6 +32,25 @@ export type GetExplicitIdentifier<SCHEMA> =
     ? EXPLICIT_IDENTIFIER
     : never
 
+/**
+ * The identifier prop a schema declares **or inherits** — `trackId`,
+ * `displayId`, or whatever `explicitIdentifier` names. Recursive because most
+ * display schemas never declare it themselves: they pick up `displayId` from
+ * `baseConfiguration: baseLinearDisplayConfigSchema`, whose options
+ * `preprocessConfigurationSchemaArguments` merges in at runtime, leaving the
+ * subclass's own `EXPLICIT_IDENTIFIER` param `undefined`. Same walk
+ * `ConfigurationSlotName` does for inherited slot names.
+ */
+export type GetInheritedIdentifier<SCHEMA> = SCHEMA extends undefined
+  ? never
+  : SCHEMA extends ConfigurationSchemaType<any, any>
+    ?
+        | GetExplicitIdentifier<SCHEMA>
+        | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+            ? GetInheritedIdentifier<GetBase<SCHEMA>>
+            : never)
+    : never
+
 export type ConfigurationSchemaForModel<MODEL> =
   MODEL extends IStateTreeNode<infer SCHEMA extends AnyConfigurationSchemaType>
     ? SCHEMA

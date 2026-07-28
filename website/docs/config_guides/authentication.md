@@ -106,19 +106,18 @@ Nothing on the track config changes.
 
 ## Account types
 
-| Type                                                                            | Use for                                                    |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [HTTPBasicInternetAccount](/docs/config/httpbasicinternetaccount)               | A server behind HTTP Basic auth (username + password)      |
-| [OAuthInternetAccount](/docs/config/oauthinternetaccount)                       | Any OAuth 2.0 provider, configured with your own endpoints |
-| [DropboxOAuthInternetAccount](/docs/config/dropboxoauthinternetaccount)         | Dropbox, with the endpoints pre-filled                     |
-| [GoogleDriveOAuthInternetAccount](/docs/config/googledriveoauthinternetaccount) | Google Drive, with the endpoints pre-filled                |
-| [ExternalTokenInternetAccount](/docs/config/externaltokeninternetaccount)       | A token the user pastes in, or that your portal hands over |
+| Type                                             | Use for                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| [](/docs/config/httpbasicinternetaccount)        | A server behind HTTP Basic auth (username + password)      |
+| [](/docs/config/oauthinternetaccount)            | Any OAuth 2.0 provider, configured with your own endpoints |
+| [](/docs/config/dropboxoauthinternetaccount)     | Dropbox, with the endpoints pre-filled                     |
+| [](/docs/config/googledriveoauthinternetaccount) | Google Drive, with the endpoints pre-filled                |
+| [](/docs/config/externaltokeninternetaccount)    | A token the user pastes in, or that your portal hands over |
 
-Every type shares the slots on
-[BaseInternetAccount](/docs/config/baseinternetaccount): `internetAccountId`
-(the unique id), `name` and `description` (shown in the UI), `domains` (below),
-and `authHeader`/`tokenType`, which control the request header the token is sent
-in.
+Every type shares the slots on [](/docs/config/baseinternetaccount):
+`internetAccountId` (the unique id), `name` and `description` (shown in the UI),
+`domains` (below), and `authHeader`/`tokenType`, which control the request
+header the token is sent in.
 
 ## How an account is matched to a URL
 
@@ -266,7 +265,7 @@ available: there is no cross-origin request to configure.
 
 ## See also
 
-- [config.json format](/docs/config_guides/intro)
+- [](/docs/config_guides/intro)
 - [BaseInternetAccount config docs](/docs/config/baseinternetaccount)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [FAQ: how do I put my data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login)

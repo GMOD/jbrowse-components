@@ -100,6 +100,7 @@ import type {
   RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureItemEntry,
@@ -117,7 +118,6 @@ import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -264,7 +264,7 @@ function bodyScaleTo(bodyPx: number, targetPx: number) {
  * super-capture pattern.
  */
 export default function baseStateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearCanvasBaseDisplayConfigModel,
 ) {
   return (
     types
