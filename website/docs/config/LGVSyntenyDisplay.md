@@ -85,7 +85,7 @@ Tooltip shown on hovering a synteny feature; the default jexl expression renders
 both mates' names and locations.
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:lgvSyntenyTooltip(feature)'`
+`'jexl:lgvSyntenyTooltip(feature)'` · **Callback args:** `feature`
 
 #### slot: colorBy
 
@@ -94,17 +94,6 @@ Synteny reads are strand-colored by default (vs the base alignments display's
 
 **Type:** `maybeFrozen` · **Default:** `undefined` · **Resolves to:**
 `{ type: 'strand' }` · _advanced, promotable_
-
-```js
-{
-  type: 'maybeFrozen',
-  defaultValue: undefined,
-  promotedBase: { type: 'strand' },
-  promotable: true,
-  validate: isRegisteredColorScheme,
-  advanced: true,
-}
-```
 
 #### slot: showCoverage
 
@@ -211,6 +200,8 @@ or fit modes, and does not limit how much is laid out (see maxHeight)
 · _advanced_
 
 #### slot: height
+
+default height for the track
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 

@@ -55,7 +55,8 @@ read one section, read [The cascade](#the-cascade).
 | Cached per-schema promotable-slot list (`promotableSlotNames`), shared with the `getConfSnapshot` guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
 | Control builders + share/worker helpers (`make*Control`, `resolvePromotableConfigSnapshot`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
-| `promotable` / `promotedBase` slot metadata | `packages/core/src/configuration/configurationSlot.ts` |
+| `promotable` / `promotedBase` slot metadata + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
+| Slot-definition inheritance (an override merges over the base slot, so `promotable` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
 | Resolved read type (`SlotValueFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
@@ -154,13 +155,15 @@ readers of it. Don't re-derive tiers in a consumer — add a field to
 `SlotResolution` if you need something new.
 
 ```ts
-interface SlotResolution {
-  base: unknown       // value a following track shows with nothing promoted
-  customized: boolean // track holds its own value rather than following the default
-  promoted: unknown   // raw session-wide promoted default, if any
-  callback: boolean   // track holds a `jexl:` value — see "Callback values" below
-  value: unknown      // final cascaded value (never the unset sentinel)
-}
+// discriminated on `callback` — a callback track has no settled value, so it
+// offers no `value` to read. See "Callback values" below
+type SlotResolution =
+  | { base: unknown; promoted: unknown; callback: false
+      customized: boolean // track holds its own value rather than following the default
+      value: unknown }    // final cascaded value (never the unset sentinel)
+  | { base: unknown; promoted: unknown; callback: true
+      customized: true
+      evaluate: () => unknown } // run the callback with this read's args
 
 function resolveSlot(self, slot, args = {}): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
@@ -171,6 +174,7 @@ function resolveSlot(self, slot, args = {}): SlotResolution {
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
   // raw read: this *is* the resolver, so `readConfObject`, not `getConf` (which
   // would recurse back into resolveSlot for a promotable slot)
+  // (a `jexl:` slot returns before this — see "Callback values")
   const own = readConfObject(self.configuration, slot, args)
   // a track is customized exactly when it holds a *usable* value — the same
   // `isUsableValue` gate a promoted default passes, so a malformed or stale own
@@ -208,25 +212,25 @@ excludes `undefined`, so no cast either:
 ### Callback values (`jexl:`)
 
 A promotable slot can hold a `jexl:` callback like any other slot, and
-`getConf(self, slot, args)` forwards its `args` so the callback evaluates with
-the caller's context. But a callback returns a **different value per call**, so
-it has no single value to compare against the slot default — it can't
+`resolveConf(self, slot, args)` forwards its `args` so the callback evaluates
+with the caller's context. But a callback returns a **different value per
+call**, so it has no single value to compare against the slot default — it can't
 meaningfully "follow the default". A `jexl:` value therefore leaves the cascade
-at the top: `customized` is true, `callback` is true, and `value` is whatever the
-callback returns for this read's `args`.
+at the top: `customized` is true, `callback` is true, and there is no `value` at
+all — only `evaluate()`, which needs the caller's `args`.
 
-`value` on that branch evaluates **lazily**, because the cascade's own consumers
-(the pin, the badge, the share bake) have no per-feature context to supply and
-must not blow up on a track whose slot holds one. They branch on `callback`
-instead — `getDisplayTypeDefaultChanges` tests `customized` first,
+**That's the union's whole job.** The cascade's own consumers (the pin, the
+badge, the share bake) have no per-feature context to supply, and on the callback
+branch the type gives them nothing to misread: `resolveConf` is the only reader
+that calls `evaluate()`, because it's the only one holding the caller's `args`.
+Everyone else branches — `getDisplayTypeDefaultChanges` tests `customized` first
+(which narrows the callback branch away, since it's `true` there),
 `tracksDifferingFrom` counts a callback track as differing without evaluating it,
 `resolvePromotableConfigSnapshot` leaves the raw `jexl:` string in the worker
 payload for the worker to evaluate per-feature, and
 `makeCurrentValueDisplayTypeDefaultControl` returns a **disabled** pin (a
-callback has no single current value to promote). A **new** consumer reading
-`.value` without `args` must do the same — reading it with no `args` evaluates
-the callback against an empty context and throws out of whatever is building the
-menu.
+callback has no single current value to promote). A new consumer that forgets
+doesn't reach a menu-breaking throw at runtime; it fails to compile.
 
 ### Exported API (`@jbrowse/core/configuration`)
 
@@ -241,6 +245,7 @@ group of them so several slots move as one unit.
 | `makeCurrentValueDisplayTypeDefaultControl(self, slots)` | same, over the track's *current* resolved values; `disabled` when any of them is a `jexl:` callback | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self)` | clears every promoted default for this display's type | badge "clear default" |
+| `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 
 `DisplayTypeDefaultControl` is
 `{ active: boolean; disabled: boolean; toggle: () => void }`.
@@ -268,9 +273,9 @@ The low-level primitives behind the builders —
 `makeSlotsValueDisplayTypeDefaultControl(self, entries)` (the grouped base
 builder both public ones delegate to), `isPromotableDefault(self, entries)`,
 `setPromotableDefault(self, entries, on)`, `tracksDifferingFrom(self, entries)`,
-`resetSlotsToInherit(displays, slots)`, and `isSlotCustomized` — are
-**module-internal** (exercised by `promotableDefaults.test.ts`), *not* on the
-public barrel. Consume the two `make*Control` builders, not these. The grouped
+and `resetSlotsToInherit(displays, slots)` — are **module-internal** (exercised
+by `promotableDefaults.test.ts`), *not* on the public barrel. Consume the two
+`make*Control` builders, not these. The grouped
 base is internal because no adopter promotes more than one slot behind a single
 pin: feature-height presets once grouped `featureHeight` + `featureSpacing`, but
 `featureSpacing` is now *derived* from `featureHeight` and never stored, and the
@@ -371,9 +376,12 @@ actual state of the *open* tracks".
 `openPromotableDisplays` recurses into a composite view's **`views` array**
 (breakpoint-split, the linear-comparative / synteny family), which holds child
 views rather than tracks of its own — `LGVSyntenyDisplay` is only reachable that
-way. `markIgnorePromotedDefaults` recurses over the outgoing snapshot to match;
-the two walks must cover the same set, or a nested display gets its values baked
-but not the flag.
+way. It is the **only** walk that decides reach: `markIgnorePromotedDefaults`
+stamps the flag by matching the displayIds that walk already collected, walking
+the outgoing snapshot structurally rather than re-following
+views→tracks→displays. A second shape-aware walk had to be kept in step by hand,
+and a composite view it forgot got its values baked but not the flag — the half
+that silently loses to the recipient's own default.
 
 A view holding its children under *named props* instead
 (`SvInspectorView.circularView`) is **not** reached. Enumerating a view's own
@@ -482,6 +490,14 @@ it.
    be some string), add a `validate: (value) => boolean` hook — it gates both a
    promoted default and a track's own saved value, so a value that's since gone
    invalid degrades to the base instead of reaching a consumer that trusts it.
+
+   **Overriding an inherited promotable slot states only the difference.** A
+   subclass schema that redeclares one merges field-by-field over the base's, so
+   `LGVSyntenyDisplay`'s `colorBy` writes just its `promotedBase`
+   (`{type:'strand'}` rather than `normal`) and inherits `promotable`,
+   `validate` and `advanced`. Keep `type` and `defaultValue` — they're what marks
+   the entry as a slot rather than a nested sub-schema. A subclass that wants a
+   genuinely plain slot writes `promotable: false`.
 2. Read it on the display with **`resolveConf(self, slot)`**, not `getConf` —
    `get x(): X { return resolveConf(self, 'x') }`, no post-guard and no cast. If
    you forget, tsc catches it: the raw `getConf` read type is `X | undefined`

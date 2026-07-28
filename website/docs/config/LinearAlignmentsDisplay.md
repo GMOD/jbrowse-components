@@ -85,7 +85,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [heightMode](#slot-heightmode)                             | `maybeStringEnum` (fixed, grow, fit)                             | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
 | [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
 | [showSashimiLabels](#slot-showsashimilabels)               | `maybeBoolean`                                                   | Draw the supporting-read count on each sashimi arc                                                                                                                         |
-| [height](#slot-height)                                     | `number`                                                         |                                                                                                                                                                            |
+| [height](#slot-height)                                     | `number`                                                         | default height for the track                                                                                                                                               |
 | [collapseGroupRows](#slot-collapsegrouprows)               | `boolean`                                                        | Only consulted while `groupBy` is in effect.                                                                                                                               |
 | [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                                    |
 | [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                        |
@@ -192,6 +192,8 @@ or fit modes, and does not limit how much is laid out (see maxHeight)
 · _advanced_
 
 #### slot: height
+
+default height for the track
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 

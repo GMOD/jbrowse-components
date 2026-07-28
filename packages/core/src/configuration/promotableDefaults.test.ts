@@ -14,6 +14,7 @@ import {
   resolvePromotableConfigSnapshot,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
+import { getSlotDefinition } from './slotFacade.ts'
 import { getConfSnapshot, readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -1197,5 +1198,60 @@ describe('promotable slot authoring guards', () => {
         },
       }),
     ).toThrow(/must leave 'defaultValue' undefined/)
+  })
+
+  // a subclass overriding an inherited slot merges over the base's definition
+  // rather than replacing it, so an override that moves one field keeps the rest
+  // — including the promotable machinery, which is otherwise easy to drop and
+  // whose only symptom would be resolveConf throwing on every read
+  describe('a subclass override of an inherited promotable slot', () => {
+    const base = ConfigurationSchema('PromotableBase', {
+      colorBy: {
+        type: 'maybeFrozen',
+        defaultValue: undefined,
+        promotedBase: { type: 'normal' },
+        promotable: true,
+        validate: (value: unknown) =>
+          typeof value === 'object' && value !== null && 'type' in value,
+        advanced: true,
+        description: 'the base description',
+      },
+    })
+
+    // LGVSyntenyDisplay over the alignments display, in miniature
+    const schema = ConfigurationSchema(
+      'MovesPromotedBase',
+      {
+        colorBy: {
+          type: 'maybeFrozen',
+          defaultValue: undefined,
+          promotedBase: { type: 'strand' },
+        },
+      },
+      { baseConfiguration: base },
+    )
+    const def = getSlotDefinition(schema.create(), 'colorBy')
+
+    test('takes the override for what it states', () => {
+      expect(def.promotedBase).toEqual({ type: 'strand' })
+    })
+
+    test('inherits the promotable machinery it left out', () => {
+      expect(def.promotable).toBe(true)
+      expect(def.validate).toBe(
+        getSlotDefinition(base.create(), 'colorBy').validate,
+      )
+    })
+
+    // the three fields real overrides were silently dropping
+    test('inherits the base metadata it left out', () => {
+      expect(def.advanced).toBe(true)
+      expect(def.description).toBe('the base description')
+    })
+
+    test('resolves through the cascade using the overridden base', () => {
+      const { display } = createDisplay(schema)
+      expect(resolveConf(display, 'colorBy')).toEqual({ type: 'strand' })
+    })
   })
 })

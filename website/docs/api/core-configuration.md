@@ -97,12 +97,11 @@ session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
 multi-mode slot like displayMode) where the pin means "whatever I'm showing",
 not a fixed on-value. Groups multiple slots behind one control.
 
-The one cascade consumer that reads `.value`, so it's also the one that has to
-honour the callback branch: a `jexl:` slot computes a different value per
+A `jexl:` slot has no current value to promote — it computes a different one per
 feature, and this builder runs while a track menu is being assembled, with no
-feature to supply. Reading `.value` there evaluated the callback with empty args
-and threw out of the menu, so a callback disables the pin instead — there is no
-single current value to promote.
+feature to supply — so it disables the pin instead. The resolution union offers
+no `.value` on that branch, so this is a case the type makes you handle rather
+than one you have to remember.
 
 ```js
 // type signature

@@ -3,7 +3,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { deepEqual } from '../util/deepEqual.ts'
 import { getSession, isViewContainer } from '../util/index.ts'
 import { setConf } from './getConf.ts'
-import { resolveSlot } from './promotableResolve.ts'
+import { resolveSlot, storedSlotValue } from './promotableResolve.ts'
 import { promotableSlotNames, rawConfSnapshot } from './util.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
@@ -189,14 +189,12 @@ export function resetSlotsToInherit(
   for (const display of displays.filter(display => isAlive(display))) {
     display.setIgnorePromotedDefaults(false)
     for (const slot of slots) {
-      // the stored value, not `readConfObject` — this asks only "is the slot set
-      // at all?", and a `jexl:` value has to answer it without being evaluated
-      // (this caller has no feature context, so evaluating throws). The same raw
-      // access `resolveSlot` uses for its own callback check. Not
-      // `isSlotCustomized` either, deliberately — a stored value that fails the
-      // usability gate reads as not-customized, and clearing it out is exactly
-      // what should happen to it.
-      if (display.configuration[slot] !== undefined) {
+      // the stored value, because this asks only "is the slot set at all?" — a
+      // question a `jexl:` value has to answer without being evaluated (this
+      // caller has no feature context). Not `isSlotCustomized` either,
+      // deliberately: a stored value that fails the usability gate reads as
+      // not-customized, and clearing it out is exactly what should happen to it.
+      if (storedSlotValue(display, slot) !== undefined) {
         setConf(display, slot, undefined)
       }
     }
@@ -365,27 +363,28 @@ export function makeDisplayTypeDefaultControl(
  * multi-mode slot like displayMode) where the pin means "whatever I'm showing",
  * not a fixed on-value. Groups multiple slots behind one control.
  *
- * The one cascade consumer that reads `.value`, so it's also the one that has to
- * honour the callback branch: a `jexl:` slot computes a different value per
- * feature, and this builder runs while a track menu is being assembled, with no
- * feature to supply. Reading `.value` there evaluated the callback with empty
- * args and threw out of the menu, so a callback disables the pin instead —
- * there is no single current value to promote.
+ * A `jexl:` slot has no current value to promote — it computes a different one
+ * per feature, and this builder runs while a track menu is being assembled, with
+ * no feature to supply — so it disables the pin instead. The resolution union
+ * offers no `.value` on that branch, so this is a case the type makes you
+ * handle rather than one you have to remember.
  */
 export function makeCurrentValueDisplayTypeDefaultControl(
   self: PromotableDisplay,
   slots: string[],
 ): DisplayTypeDefaultControl {
-  const resolutions = slots.map(slot => ({
-    slot,
-    res: resolveSlot(self, slot),
-  }))
-  return resolutions.some(({ res }) => res.callback)
+  const entries: PromotableEntry[] = []
+  for (const slot of slots) {
+    const res = resolveSlot(self, slot)
+    if (!res.callback) {
+      entries.push({ slot, value: res.value })
+    }
+  }
+  // a callback slot contributes no entry, so a short list means at least one of
+  // them has no current value to promote
+  return entries.length < slots.length
     ? { active: false, disabled: true, toggle: () => {} }
-    : makeSlotsValueDisplayTypeDefaultControl(
-        self,
-        resolutions.map(({ slot, res }) => ({ slot, value: res.value })),
-      )
+    : makeSlotsValueDisplayTypeDefaultControl(self, entries)
 }
 
 /**
@@ -399,8 +398,9 @@ export function getDisplayTypeDefaultChanges(
 ): TrackConfigChange[] {
   const changes: TrackConfigChange[] = []
   for (const slot of promotableSlotNames(self.configuration)) {
-    // `customized` first: a customized slot inherits nothing, and reading
-    // `.value` on a callback slot would need a context this caller doesn't have
+    // `customized` first: a customized slot inherits nothing. It also narrows
+    // the callback branch away (which is always customized), which is what makes
+    // `.value` readable here — this caller has no context to evaluate one with
     const res = resolveSlot(self, slot)
     if (!res.customized && !deepEqual(res.value, res.base)) {
       changes.push({

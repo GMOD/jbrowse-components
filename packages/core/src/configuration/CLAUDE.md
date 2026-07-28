@@ -27,7 +27,11 @@ with `?? someDefault` — that silently bypasses the cascade.)
 `maybe*` type (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/
 `maybeFrozen`), must leave `defaultValue` undefined, and must declare
 `promotedBase` — `ConfigSlot` throws otherwise, so the resolver has exactly one
-path and `isUsableValue`'s first check is a bare `value !== undefined`. Enums do
+path and `isUsableValue`'s first check is a bare `value !== undefined`. A
+subclass schema **overriding** an inherited promotable slot states only the
+difference — slot definitions merge over the base's (see "Slot overrides
+merge"), so `promotable`/`promotedBase` survive an override that doesn't mention
+them. Enums do
 _not_ spend a spare `'inherit'` member on it: `maybeStringEnum` takes the plain
 vocabulary as its `model` and ConfigSlot adds the nullability, so no
 enumeration, menu, or config-editor dropdown ever shows the cascade's plumbing.
@@ -51,6 +55,26 @@ enumerating callers and by `getConfSnapshot`'s own guard) ←
 `openPromotableDisplays`, the one open-display walk). Full model + the
 `ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
+
+## Slot overrides merge over `baseConfiguration`
+
+A subclass schema that redeclares a slot its `baseConfiguration` already defines
+gets a **field-by-field merge over the base slot**, not a replacement
+(`mergeSchemaDefinition`). So an override states only what differs and inherits
+`description`, `advanced`, `contextVariable`, `promotable`/`promotedBase`,
+`validate`, `model`. Keep `type` and `defaultValue` in the override regardless:
+those are what `isSlotDefinitionEntry` keys on to tell a slot from a nested
+sub-schema. Sub-schema and constant entries still replace wholesale — they have
+no fields to fold.
+
+Replace semantics were the old behavior and were losing metadata silently. Of
+the 32 real slot overrides in the repo, 30 changed only
+`defaultValue`/`description`, and three dropped base fields by accident:
+`LinearManhattanDisplay`'s `scatterPointSize` lost `advanced`,
+`LGVSyntenyDisplay`'s `mouseover` lost `contextVariable` (a jexl callback's
+parameter names), and eight slots lost the base's `description`, leaving the
+config editor and generated docs blank. To genuinely turn a base field off,
+state it: `promotable: false`.
 
 ## A config snapshot is transport, not a value-read API
 

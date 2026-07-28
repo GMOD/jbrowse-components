@@ -86,10 +86,13 @@ export function resolveConf<
 > {
   // `model` is the display state node the resolver needs (type + session +
   // ignorePromotedDefaults); only display state models carry promotable slots.
-  // `resolveSlot(...).value` is `unknown`, which the declared return type can't
-  // infer on its own.
-  return resolveSlot(model as unknown as PromotableDisplay, slot, args)
-    .value as ConfigurationSlotValueResolved<
+  const res = resolveSlot(model as unknown as PromotableDisplay, slot, args)
+  // the one reader that holds the caller's `args`, so the one that may run a
+  // `jexl:` slot's callback. The resolution is `unknown` either way, which the
+  // declared return type can't infer on its own.
+  return (
+    res.callback ? res.evaluate() : res.value
+  ) as ConfigurationSlotValueResolved<
     ConfigurationSchemaForModel<CONFMODEL>,
     SLOT
   >

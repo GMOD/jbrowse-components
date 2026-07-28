@@ -201,10 +201,11 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 //
 // `ownSlots` seeds a seen-by-name set so a slot the config (or a closer base)
 // redeclares is skipped at every farther base — otherwise an override (e.g.
-// LGVSyntenyDisplay's `colorBy`, non-promotable with a `strand` default) still
-// shows the shadowed base definition (promotable, `normal` default) in the
-// "Inherited" section, which reads as a live alternative rather than
-// superseded history.
+// LGVSyntenyDisplay's `colorBy`, which moves `promotedBase` to `strand`) still
+// shows the shadowed base definition (`normal`) in the "Inherited" section,
+// which reads as a live alternative rather than superseded history. The
+// override's own entry already carries the base's other fields, since
+// `resolveInheritedSlotMeta` merges them the way the runtime does.
 function inheritedSlotsSection(ownSlots: Item[], bases: ConfigWithHeader[]) {
   const seen = new Set(ownSlots.map(s => s.name))
   const blocks = bases.flatMap(config => {
@@ -639,9 +640,12 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
     }
   } else if (
     (key === 'advanced' || key === 'promotable') &&
-    node.kind === ts.SyntaxKind.TrueKeyword
+    (node.kind === ts.SyntaxKind.TrueKeyword ||
+      node.kind === ts.SyntaxKind.FalseKeyword)
   ) {
-    meta[key] = true
+    // `false` is recorded, not just skipped: an override states it to turn a
+    // base slot's flag off, and that has to win over the inherited `true`
+    meta[key] = node.kind === ts.SyntaxKind.TrueKeyword
   } else if (key === 'promotedBase') {
     const inline = renderInlineDefault(node)
     if (inline === undefined) {
@@ -774,9 +778,62 @@ function slotMetaLine(meta: SlotMeta): string {
 
 // Parses a slot's value object literal once; slotBlock (full entry) and
 // slotRow (table summary) both read off this so they can't drift apart.
+// Effective meta for a slot that overrides one further up the `baseConfiguration`
+// chain, filled in by `resolveInheritedSlotMeta`.
+const inheritedSlotMeta = new WeakMap<Item, SlotMeta>()
+
+/**
+ * Fold each overriding slot's meta over the base slot it shadows, matching what
+ * `ConfigurationSchema` does at runtime (`mergeSchemaDefinition`): a redeclared
+ * slot merges field-by-field over the base's rather than replacing it.
+ *
+ * Without this the pages describe a slot by its override's source text alone, so
+ * an override stating only what differs reads as though it dropped everything it
+ * left out — `LinearManhattanDisplay`'s `scatterPointSize` would render as a
+ * common slot when it is really `advanced`, and `LGVSyntenyDisplay`'s `colorBy`
+ * as neither advanced nor promotable when it is both. The flags, the
+ * advanced/common split, and the promotable-settings table in
+ * `user_guides/display_defaults.md` all read through `slotMetaFor`, so resolving
+ * it here fixes each of them at once.
+ */
+function resolveInheritedSlotMeta(
+  configs: ConfigWithHeader[],
+  index: ConfigIndex,
+) {
+  for (const config of configs) {
+    const bases = collectBaseConfigs(config, index)
+    for (const slot of config.slots) {
+      // nearest base first, so a slot overridden twice down a chain layers in
+      // the same order the runtime spread does
+      const inherited = bases.flatMap(base =>
+        base.slots.filter(s => s.name === slot.name),
+      )
+      if (inherited.length) {
+        const merged = inherited
+          .reverse()
+          .reduce<SlotMeta>(
+            (acc, base) => ({ ...acc, ...parseSlotMeta(rawSlotValue(base)) }),
+            {},
+          )
+        inheritedSlotMeta.set(slot, {
+          ...merged,
+          ...parseSlotMeta(rawSlotValue(slot)),
+          // whether a source block is worth keeping is a fact about the text
+          // actually shown, which is this slot's own
+          keepCode: parseSlotMeta(rawSlotValue(slot)).keepCode,
+        })
+      }
+    }
+  }
+}
+
+function rawSlotValue(item: Item) {
+  return stripPropertyName(item.code)
+}
+
 function slotMetaFor(item: Item) {
-  const value = stripPropertyName(item.code)
-  return { value, meta: parseSlotMeta(value) }
+  const value = rawSlotValue(item)
+  return { value, meta: inheritedSlotMeta.get(item) ?? parseSlotMeta(value) }
 }
 
 // A retained source block exists to show the one thing the label line couldn't
@@ -923,9 +980,10 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
 // promotes a slot. Rows are the display types users actually meet (those with a
 // `new DisplayType(...)` registration), each with its effective promotable slots:
 // declared on the display or inherited from a base, shadowing resolved the same
-// way the config page's "Inherited config slots" section resolves it, so a
-// non-promotable override (LGVSyntenyDisplay-style) doesn't count its base's
-// promotable definition.
+// way the config page's "Inherited config slots" section resolves it. An
+// override counts as promotable when the slot it shadows is (LGVSyntenyDisplay's
+// `colorBy`), matching the runtime merge; to opt a slot out, state
+// `promotable: false`.
 export function writePromotableSlotDocs(
   byFile: Record<string, Config>,
   displayToTrackType: Map<string, string>,
@@ -937,6 +995,7 @@ export function writePromotableSlotDocs(
     byDeclId: mapByKey(withHeader, c => c.header.declId),
     byName: mapByKey(withHeader, c => c.header.name),
   }
+  resolveInheritedSlotMeta(withHeader, index)
   const rows = withHeader
     .filter(cfg => displayToTrackType.has(cfg.header.name))
     .map(cfg => {
@@ -978,6 +1037,7 @@ export async function writeConfigDocs(
   const byDeclId = mapByKey(withHeader, c => c.header.declId)
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
+  resolveInheritedSlotMeta(withHeader, index)
   const links: DisplayLinkContext = {
     displayTypesByTrack,
     displayToTrackType,

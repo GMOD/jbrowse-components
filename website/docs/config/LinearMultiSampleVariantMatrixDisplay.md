@@ -108,9 +108,9 @@ _See the **Config slots** section below for all available configuration fields._
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                   | Type     | Description |
-| ---------------------- | -------- | ----------- |
-| [height](#slot-height) | `number` |             |
+| Slot                   | Type     | Description                  |
+| ---------------------- | -------- | ---------------------------- |
+| [height](#slot-height) | `number` | default height for the track |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -125,6 +125,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 <summary>LinearMultiSampleVariantMatrixDisplay - Slots</summary>
 
 #### slot: height
+
+default height for the track
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 

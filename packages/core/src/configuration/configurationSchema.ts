@@ -76,6 +76,48 @@ const OVERRIDABLE_HOOK_KEYS = [
   'preProcessSnapshot',
 ] as const satisfies readonly (keyof ConfigurationSchemaOptions<any, any>)[]
 
+/**
+ * Fold a subclass's schema definition over its `baseConfiguration`'s. New slots
+ * are added and sub-schema entries replaced wholesale, but a slot the subclass
+ * **redeclares merges field-by-field over the base's** — so an override states
+ * only what actually differs and inherits the rest. (`type` and `defaultValue`
+ * come along regardless: they're what marks an entry as a slot rather than a
+ * nested sub-schema, per `isSlotDefinitionEntry`.)
+ *
+ * This used to be a flat `{...base, ...child}`, i.e. an override replaced the
+ * slot's whole definition. Overriding a default meant restating the slot, and
+ * every field left out was silently lost. Surveying all 32 real overrides in the
+ * repo, 30 changed nothing but `defaultValue`/`description`, and three were
+ * losing base metadata by accident: `LinearManhattanDisplay`'s `scatterPointSize`
+ * dropped `advanced` (so it showed in the basic config editor there and nowhere
+ * else), `LGVSyntenyDisplay`'s `mouseover` dropped `contextVariable` (the jexl
+ * callback's parameter names), and eight slots dropped the base's `description`,
+ * leaving the config editor and the generated docs blank for them.
+ *
+ * Merging also removes the sharpest edge for `promotable` slots: an override that
+ * forgot `promotable`/`promotedBase` produced a slot that threw "not promotable"
+ * on every `resolveConf` read. Now it inherits both, and a subclass that really
+ * wants a plain slot says `promotable: false`.
+ */
+function mergeSchemaDefinition(
+  baseDefinition: ConfigurationSchemaDefinition,
+  childDefinition: ConfigurationSchemaDefinition,
+): ConfigurationSchemaDefinition {
+  const merged: ConfigurationSchemaDefinition = {
+    ...baseDefinition,
+    ...childDefinition,
+  }
+  for (const [slot, childEntry] of Object.entries(childDefinition)) {
+    const baseEntry = baseDefinition[slot]
+    // both sides must be slot definitions: a sub-schema (or a constant) is an
+    // opaque entry with no fields to fold, so it keeps replace semantics
+    if (isSlotDefinitionEntry(baseEntry) && isSlotDefinitionEntry(childEntry)) {
+      merged[slot] = { ...baseEntry, ...childEntry }
+    }
+  }
+  return merged
+}
+
 function preprocessConfigurationSchemaArguments(
   modelName: string,
   inputSchemaDefinition: ConfigurationSchemaDefinition,
@@ -105,10 +147,10 @@ function preprocessConfigurationSchemaArguments(
           `Rename one, or fold the base's ${clobberedHooks.join(', ')} into ${modelName}'s directly.`,
       )
     }
-    schemaDefinition = {
-      ...baseMeta.definition,
-      ...schemaDefinition,
-    }
+    schemaDefinition = mergeSchemaDefinition(
+      baseMeta.definition,
+      schemaDefinition,
+    )
     options = {
       ...baseMeta.options,
       ...inputOptions,

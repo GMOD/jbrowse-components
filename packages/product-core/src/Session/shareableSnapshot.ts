@@ -90,7 +90,7 @@ export function bakePromotedDefaultsIntoSnapshot(
     }
   }
 
-  markIgnorePromotedDefaults(snap.views, openDisplayIds)
+  markIgnorePromotedDefaults(snap, openDisplayIds)
   for (const bake of bakes) {
     bakeValues(snap, bake)
   }
@@ -99,26 +99,31 @@ export function bakePromotedDefaultsIntoSnapshot(
 
 // A display state serializes its `configuration` reference as the displayId
 // string; stamp `ignorePromotedDefaults` on every open one so the recipient
-// resolves it from its own config only. Recurses into a composite view's `views`
-// array, matching `openPromotableDisplays` — the two walks have to cover the
-// same set or a nested display gets its values baked but not the flag.
-function markIgnorePromotedDefaults(
-  views: unknown,
-  openDisplayIds: Set<string>,
-) {
-  for (const view of asArray(views)) {
-    for (const track of asArray(getField(view, 'tracks'))) {
-      for (const display of asArray(getField(track, 'displays'))) {
-        if (
-          isRecord(display) &&
-          typeof display.configuration === 'string' &&
-          openDisplayIds.has(display.configuration)
-        ) {
-          display.ignorePromotedDefaults = true
-        }
-      }
+// resolves it from its own config only.
+//
+// Identifies its targets purely by that id, walking the snapshot structurally
+// rather than following views -> tracks -> displays. Nothing else in a session
+// snapshot carries a displayId under `configuration`, and matching on the ids
+// `openPromotableDisplays` already collected means this can't reach a display
+// that walk didn't. That's the point: a shape-aware second walk had to be kept
+// in step with the first by hand, and a composite view it forgot to recurse into
+// got its values baked but not the flag — the values without the flag are the
+// half that silently loses to a recipient's own promoted default.
+function markIgnorePromotedDefaults(node: unknown, openDisplayIds: Set<string>) {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      markIgnorePromotedDefaults(child, openDisplayIds)
     }
-    markIgnorePromotedDefaults(getField(view, 'views'), openDisplayIds)
+  } else if (isRecord(node)) {
+    if (
+      typeof node.configuration === 'string' &&
+      openDisplayIds.has(node.configuration)
+    ) {
+      node.ignorePromotedDefaults = true
+    }
+    for (const child of Object.values(node)) {
+      markIgnorePromotedDefaults(child, openDisplayIds)
+    }
   }
 }
 
@@ -165,8 +170,4 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 
 function asArray(v: unknown): unknown[] {
   return Array.isArray(v) ? v : []
-}
-
-function getField(v: unknown, key: string): unknown {
-  return isRecord(v) ? v[key] : undefined
 }

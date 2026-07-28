@@ -1,9 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
-import {
-  isRegisteredColorScheme,
-  linearAlignmentsDisplayConfigSchemaFactory,
-} from '@jbrowse/plugin-alignments'
+import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 
 import { getMate } from '../syntenyMate.ts'
 
@@ -83,17 +80,15 @@ function configSchemaF(pluginManager: PluginManager) {
        * display's `normal`); overrides the inherited `colorBy` slot's default.
        */
       colorBy: {
-        // Overriding a slot replaces its whole definition, so it has to restate
-        // the base's promotable sentinel shape (unset = inherit) or `resolveConf`
-        // throws "not promotable" on every synteny read. Only `promotedBase`
-        // differs: synteny falls back to `strand`, not `normal`.
+        // merges over the base alignments slot, so this states only what
+        // differs — synteny falls back to `strand`, not `normal`. `promotable`,
+        // `validate` and `advanced` are inherited. (`type`/`defaultValue` stay
+        // because they're what marks an entry as a slot rather than a
+        // sub-schema.)
         type: 'maybeFrozen',
         defaultValue: undefined,
         promotedBase: { type: 'strand' },
-        promotable: true,
-        validate: isRegisteredColorScheme,
         description: 'Color scheme for synteny reads',
-        advanced: true,
       },
       /**
        * #slot

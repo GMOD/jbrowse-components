@@ -126,6 +126,13 @@ export function createTestEnvironment() {
       name: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
+      // promoted display-type defaults, behind the same
+      // get/setDisplayTypeDefault interface the promotable cascade reads
+      // (BaseSession stores them flat in an observable.map — the nesting here is
+      // local, and reassigned wholesale so the display getters track it)
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
     })
     .volatile(() => ({
       // what queueDialog was called with, resolved to [Component, props] so a
@@ -154,9 +161,12 @@ export function createTestEnvironment() {
         isValidRefName: () => true,
       },
     }))
-    .views(() => ({
+    .views(self => ({
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
+      },
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        return self.displayTypeDefaults[displayType]?.[slot]
       },
     }))
     .actions(self => ({
@@ -169,6 +179,18 @@ export function createTestEnvironment() {
         cb: (handleClose: () => void) => [unknown, Record<string, unknown>],
       ) {
         self.queuedDialogs.push(cb(() => {}))
+      },
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        const forType = { ...self.displayTypeDefaults[displayType] }
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        self.displayTypeDefaults = {
+          ...self.displayTypeDefaults,
+          [displayType]: forType,
+        }
       },
     }))
 

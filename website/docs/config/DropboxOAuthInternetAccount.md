@@ -54,7 +54,7 @@ boolean to indicate if the endpoint needs a PKCE code
 
 array of valid domains the url can contain to use this account
 
-**Type:** `stringArray`
+**Type:** `stringArray` · **Default:** `[]`
 
 ```js
 {
