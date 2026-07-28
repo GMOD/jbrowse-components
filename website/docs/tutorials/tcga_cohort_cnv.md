@@ -11,17 +11,7 @@ tutorial_category: Structural variation
 expression on the segment log2 ratio, so recurrent copy-number events read as
 vertical stripes down the stack.
 
-**Setup:** a JBrowse instance and the CLI. Nothing to download, both files are
-hosted.
-
-Most copy-number views show one tumor at a time. This tutorial builds the other
-kind: every primary tumor in a TCGA project stacked as its own row, so a
-copy-number change shared across the cohort reads as a vertical stripe running
-down hundreds of samples.
-
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together. Four recurrent loci are labeled." src="/img/tcga/cohort_cnv_genome.png" />
-
-## What you need
+## Prerequisites
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
@@ -48,6 +38,13 @@ chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
 
 `sample` is a TCGA barcode and is what splits the rows; `segmean` is the
 caller's log2 tumor/normal ratio and is what colors them.
+
+Most copy-number views show one tumor at a time. This tutorial builds the other
+kind: every primary tumor in a TCGA project stacked as its own row, so a
+copy-number change shared across the cohort reads as a vertical stripe running
+down hundreds of samples.
+
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together. Four recurrent loci are labeled." src="/img/tcga/cohort_cnv_genome.png" />
 
 ## Load it into JBrowse
 
@@ -215,7 +212,10 @@ all reshape into that shape with the same concatenate-and-tag step.
 
 One script builds both files for any project id, so nothing above depends on the
 hosted copies:
-[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh).
+[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh),
+which calls its helper
+[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
+from its own directory, so save both together if downloading files individually.
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/).
 
@@ -279,10 +279,8 @@ splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
   display's own menus and options
 - [Quantitative tracks](/docs/user_guides/quantitative_track), for the
   recurrence track's scale and color controls
-- [QTL visualization example](/docs/tutorials/bxd_qtl), the same multi-row
-  display for strain genotypes
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm), the same display across
-  cell types
+- [](/docs/tutorials/bxd_qtl), the same multi-row display for strain genotypes
+- [](/docs/tutorials/chromhmm), the same display across cell types
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab), single-tumor
   structural and copy-number variation
 - [jexl](/docs/config_guides/jexl)

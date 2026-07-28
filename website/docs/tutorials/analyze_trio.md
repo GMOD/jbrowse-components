@@ -10,20 +10,7 @@ calls) into a BED9 with `itemRgb` and a category column, then point a
 `LinearMultiRowFeatureDisplay`'s `partitionField` at that column to paint one
 colored row per parental haplotype and read crossovers straight off the track.
 
-**Setup:** nothing to read along, since every figure opens live. Building the
-tracks yourself needs Java and a VCF pipeline.
-
-A trio is a mother, father, and child sequenced together. A phased VCF tags each
-variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
-copy of the genome it came from.
-
-We'll use a pre-built phased VCF from the 1000 Genomes Project, the
-Kinh-Vietnamese trio HG02024, chr1 only:
-
-- [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
-- [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
-
-## What you need
+## Prerequisites
 
 To follow the viewing sections you need only a browser: every figure below has
 an "Open this view in JBrowse ↗" link that loads the finished tracks live, so
@@ -37,10 +24,20 @@ To build the tracks yourself:
 - `python3`, `node`, and htslib (`bgzip`, `tabix`)
 - `bcftools`, `curl`, and `unzip`, for the local-ancestry section only
 
+A trio is a mother, father, and child sequenced together. A phased VCF tags each
+variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
+copy of the genome it came from.
+
+We'll use a pre-built phased VCF from the 1000 Genomes Project, the
+Kinh-Vietnamese trio HG02024, chr1 only:
+
+- [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
+- [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
+
 The finished tracks also render inline in a notebook through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter), or
-[JBrowseR](/docs/jbrowser) in R. This tutorial builds its tracks on the command
-line, not in a notebook.
+[](/docs/jbrowser) in R. This tutorial builds its tracks on the command line,
+not in a notebook.
 
 Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
 "Add track" workflow. The
@@ -329,15 +326,14 @@ pedigree-aware method such as
 
 ## Reproduce it end to end
 
-Both scripts below live in the
-[jbrowse-components](https://github.com/GMOD/jbrowse-components) repo, so run
-them from a checkout (`git clone` it first, or download the single file you want
-from the links).
-
 [`build_khv_trio_hapibd.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_khv_trio_hapibd.sh)
 runs the whole pipeline in one shot. It downloads the trio VCF, hap-ibd, and the
 genetic map, runs hap-ibd, builds the painted BED, downloads JBrowse, and writes
-a `config.json` with the hg38 assembly plus the VCF and hap-ibd tracks.
+a `config.json` with the hg38 assembly plus the VCF and hap-ibd tracks. It calls
+its helper
+[`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
+from its own directory, so if you're downloading files individually rather than
+cloning the repo, save both in the same directory.
 
 ```bash
 bash scripts/build_khv_trio_hapibd.sh   # builds ./khv_trio_build/jbrowse2
@@ -357,6 +353,9 @@ separate script,
 bash scripts/build_asw_trio_ancestry.sh # builds ./asw_trio_build/
 ```
 
+It calls its helper
+[`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
+from its own directory, so save both together if downloading files individually.
 It needs `bcftools`, htslib (`bgzip`/`tabix`), Java 8+, `python3`, `curl`, and
 `unzip`. Unlike the hap-ibd script it writes just the painted BED,
 `asw_trio_build/NA19828_ASW_trio.chr1.ancestry.bed.gz` (plus its `.tbi`), which
@@ -367,5 +366,5 @@ you load with the track JSON from the
 
 - [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
-- [Multi-sample variant display](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/multivariant_track)
 - [Variant track config](/docs/config_guides/variant_track)

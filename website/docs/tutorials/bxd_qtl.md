@@ -11,8 +11,14 @@ chromosome-painting `LinearMultiRowFeatureDisplay` and a QTL Manhattan
 `GWASTrack`, then stack them so a trait peak sits directly over the B/D
 haplotype blocks that drive it.
 
-**Setup:** a short Python and htslib pipeline, plus a JBrowse instance to load
-the two tracks into.
+## Prerequisites
+
+- `python3` with `pandas`, `numpy`, and `scipy`
+- htslib (`bgzip`, `tabix`)
+- A JBrowse instance to add the tracks to (see the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
+  hosting step)
 
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
@@ -34,17 +40,8 @@ that drive it directly underneath.
 
 The GWAS/Manhattan and multi-row feature tracks shown here also render inline
 through the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[JBrowseR](/docs/jbrowser) in R), so you can run the scan and view the peak in
-one Python or R session.
-
-## What you need
-
-- `python3` with `pandas`, `numpy`, and `scipy`
-- htslib (`bgzip`, `tabix`)
-- A JBrowse instance to add the tracks to (see the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
-  hosting step)
+[](/docs/jbrowser) in R), so you can run the scan and view the peak in one
+Python or R session.
 
 ## The data: BXD consensus genotypes
 
@@ -233,7 +230,13 @@ or click the **Open in JBrowse** link under any figure above.
 ## Reproduce it end to end
 
 Every step above is wrapped in one script,
-[`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh):
+[`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh),
+which calls its helpers
+[`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
+and
+[`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py)
+from its own directory, so save all three together if downloading files
+individually:
 
 ```bash
 bash scripts/bxd_build_demo.sh        # builds ./bxd_demo/jbrowse2
@@ -249,9 +252,9 @@ your `PATH`.
 
 ## See also
 
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm)
-- [Phased trio analysis](/docs/tutorials/analyze_trio)
+- [](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/analyze_trio)
 - [Population genomics](/docs/tutorials/population_genomics)
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track)
+- [](/docs/user_guides/gwas_track)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [jexl](/docs/config_guides/jexl)
