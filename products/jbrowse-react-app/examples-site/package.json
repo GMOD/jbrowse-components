@@ -25,7 +25,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@jbrowse/browser-test-utils": "workspace:*",
     "typescript": "^6.0.3"
   }

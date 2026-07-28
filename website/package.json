@@ -44,7 +44,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@iconify-json/mdi": "^1.2.3",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/hast": "^3.0.5",

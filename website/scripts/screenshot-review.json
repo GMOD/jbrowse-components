@@ -902,8 +902,8 @@
     "name": "trio-crossover-paternal",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:18:35.895Z",
-    "hash": "0573708dfb199899efbf7c87dffb0e4785137952"
+    "reviewedAt": "2026-07-28T15:05:46.016Z",
+    "hash": "908e62310f37ef1acbbe74b676c0f6948569f604"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
@@ -1389,17 +1389,17 @@
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T23:06:52.154Z",
-    "hash": "e368bc3b031ea96ed0758ef41132e07a4f2bf3d8"
+    "status": "bad",
+    "note": "delete",
+    "reviewedAt": "2026-07-28T15:06:12.780Z",
+    "hash": "8abb704b84b134bda4a7d591f080fe249d0197cd"
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T19:40:32.922Z",
-    "hash": "3575190af5adba40ac7d3d09019314b922a3333e"
+    "reviewedAt": "2026-07-28T15:05:58.002Z",
+    "hash": "db80d66a1e39129990517c740f9ef7bfc2621b55"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1602,9 +1602,9 @@
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
     "status": "good",
-    "note": "FIXED: rewrote the caption plainer (dropped the em-dash, the colon-flourish, and the dramatic 'One variant swept...' closer). The numbered list below the figure already carries the argument, so the caption just names what's shown.",
-    "reviewedAt": "2026-07-20T21:18:45.000Z",
-    "hash": "389a2e18b681e35b2be89503d1f3d0204a120eea"
+    "note": "",
+    "reviewedAt": "2026-07-28T15:08:45.401Z",
+    "hash": "09b37ad85b86aae6836edcc96e1b22ca9a37295c"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
@@ -1827,17 +1827,17 @@
   },
   "hprc2/local_ancestry": {
     "name": "hprc2/local_ancestry",
-    "status": "good",
-    "note": "resolved (flat bands): rewindowed from all of chr1 to chr1:210Mb-end. Across the whole chromosome the view is ~226kb/px and the median ancestry tract is ~0.24Mb, so tracts fell below a pixel and nearly every row read as one solid colour. Window chosen from the BED by counting colour switches: 44/64 haplotypes switch inside 210Mb-end vs 33 in 110-140Mb and 29 in 170-200Mb, and at 44kb/px the median tract is ~5px so breakpoints are visible. Coverage is continuous there (no gap band). Note the hosted BED is chr1-only, so a different chromosome needs a rebuild+rehost. REGENERATED: the committed PNG had regressed to the whole-chr1 window. b592c72585 rewindowed the spec to chr1:210Mb-end and both figures with it, but a later regen (ac585558b3 Update spans) recommitted this one at 1:1..248,945,532 while its clustered sibling kept the new window - so the tutorial pair captioned as the same painting before and after clustering was two different regions, and the flat-bands problem the rewindow fixed was back in half of it. Rendered from the current spec; the two now match.",
-    "reviewedAt": "2026-07-25T08:00:00.000Z",
-    "hash": "1e8f60ce938e168263f1839605213823d832fcaf"
+    "status": "bad",
+    "note": "delete clustered only is fine",
+    "reviewedAt": "2026-07-28T15:09:28.749Z",
+    "hash": "dc60dcabcdf3e6e72f7a26c61063432dc5017bf3"
   },
   "hprc2/local_ancestry_clustered": {
     "name": "hprc2/local_ancestry_clustered",
-    "status": "good",
-    "note": "i am not sure i really understand this figure. do we need to zoom out even more to see interesting variety?  KEPT at the current window: tested the same clustered painting at whole chr1. The clustered blocks do show more between-cluster variety at that scale (the Iberian-ancestry cluster in particular reads visibly admixed), but this figure's whole point (per its own caption, paired with local_ancestry) is the same window before and after clustering, and that sibling figure already rewindowed away from whole chr1 for a documented reason: at ~226kb/px the median 0.24Mb ancestry tract falls under a pixel and most rows read as one solid colour, which is a real loss of resolution, not just a look. Changing only the clustered half would break the pairing and reintroduce the resolution problem the sibling was already fixed to avoid. No image change.",
-    "reviewedAt": "2026-07-27T06:15:00.000Z",
-    "hash": "360e143d524fb519cb3437ff0a949c46d9594262"
+    "status": "bad",
+    "note": "unclear why user should care about this figure",
+    "reviewedAt": "2026-07-28T15:09:52.484Z",
+    "hash": "b07d2fddf603de31c5fc5280c84a874ec5be7a57"
   },
   "sv/read_connections": {
     "name": "sv/read_connections",
@@ -1849,9 +1849,9 @@
   "hprc2/mhc_clustered": {
     "name": "hprc2/mhc_clustered",
     "status": "good",
-    "note": "DENSITY PASS: the gene lane was on its default height and spent 145 of 780 css px on five compact glyphs, and the matrix ran off the bottom of the frame (the run reports 22 css px below the fold). Gene lane pinned to 70, matrix 460 -> 515, viewport 780 -> 825, so 464 haplotype rows get more than a pixel each and the view bottom edge is in frame.",
-    "reviewedAt": "2026-07-27T12:49:07.309Z",
-    "hash": "234ce3ac52ebeaf392f6483476531524194e2925"
+    "note": "",
+    "reviewedAt": "2026-07-28T15:08:59.531Z",
+    "hash": "df92739ebac2828bed839567230416f9027ff272"
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
@@ -1966,10 +1966,10 @@
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "bad",
-    "note": "might want to use rainbow coloring of nodes. previous agent notes:The single long X is gone. projectAlleles now orders a run by distance from its entry anchor and sweeps offsets forward over the run graph, so a member sits where it sits WITHIN its allele instead of where a DFS pop reached it; on the 21-node allele at K12 1,196,361-1,223,579 the old concatenation put graph neighbours 26 kb apart and the edges spanning those gaps drew the X. Published as ae1aa4cabf9e. Three crossed bubbles remain on the test fixture from a separate cause, tracked in bubbleCrossing.test.ts and the handoff: the GFA states some links reverse-complement, and computeEdgeCurves always leaves the from-node last point for the to-node first, so those edges attach to the wrong end.",
-    "reviewedAt": "2026-07-27T19:41:03.728Z",
-    "hash": "5cc3474730ad385ae922c1574e58816cc41638c1"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-28T15:06:20.903Z",
+    "hash": "c197d2ebbcf6e36c6870c8176b1a6686bb5c2e26"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2050,24 +2050,24 @@
   },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
-    "status": "good",
-    "note": "DENSITY PASS. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Viewport 1166 -> 1176 for the extra row. Bubbles lane left pinned at 90: growing it only added whitespace under its two entries.",
-    "reviewedAt": "2026-07-27T14:22:08.277Z",
-    "hash": "14a935a6b7d9a4ec417102af469966360f0209d6"
+    "status": "bad",
+    "note": "would be interesting to see linearized multiway synteny of several haplotypes with gene annotation in each",
+    "reviewedAt": "2026-07-28T15:08:36.638Z",
+    "hash": "da0c1ad054245cd88d5729118e28e086a4099a8a"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "bad",
     "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps. FIXED: root cause wasn't color, the segments lane already carried the reference-position ramp. It was scale: the callset held all 464 haplotypes while the graph's sample-rows layout draws only the ~12 that actually walk a non-reference path here, so 452 callset rows had nothing to compare against and the 12 that mattered were lost in the stack. Replaced runClustering with a fixed layout of the same 10 donors the graph shows (both haplotypes each, derived from the segments/links tabix over the same window), dropping the callset to 20 labeled rows that line up by name with the graph's rows below. Regenerated. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Also two caption corrections: the graph rows only the haplotypes that donated sequence here (12 of the 20 callset rows), which is what a reader notices first about the pair, and the callset numbers a donor HP0/HP1 while the graph uses PanSN .1/.2.",
-    "reviewedAt": "2026-07-27T19:42:23.971Z",
-    "hash": "83ab8098a0fff965598bb1da97d83fb297de355b"
+    "reviewedAt": "2026-07-28T15:07:34.637Z",
+    "hash": "ccad5ff49be9ecc9bd9380c6fc8920b5d4025da6"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
-    "note": "DENSITY PASS. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. The bubbles lane is gone from this figure: at this window the class II bubble runs the full width and the five small ones pack against the right edge where both of their label lines are cut off horizontally, which no height fixes, and nothing in the caption reads the lane (it is about the axis the graph shares with the tracks). hprc_c4_subgraph and hprc_lpa_kiv2 keep the bubbles lane, on windows where its labels fit. Gene lane compact/longest-isoform at 70, as in the other HPRC figures; viewport 995 -> 803, and the anchored graph now has most of the frame.",
-    "reviewedAt": "2026-07-27T19:42:17.407Z",
-    "hash": "fa5b824085209edf37cbe298c574439e957396f9"
+    "note": "",
+    "reviewedAt": "2026-07-28T15:07:10.258Z",
+    "hash": "f9c3bfeb25b53b28e91ccc5e5f4cb9cac522ded6"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2078,10 +2078,10 @@
   },
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
-    "status": "bad",
-    "note": "the rainbow is good. look for further simplifications also. reduce height of each panel for density. make into a single screenshot instead of two screenshots potentially where highlight and right click menu is visible. previous notes: similar to other notes ive made, just hard to figure out correspondence between linear and graph. maybe with interactive mouseover it would help but hard to tell from static screenshot. need tobe able to just highlight linear genome view coords. the lineargenomeview menu item should say launch if that is what it does, and may want to be Launch->Linear genome view submenu FIXED, both halves of the note. The plugin's node menu now offers 'Highlight this node in the hg38 view', which writes the node's reference interval into the linear view's own highlight list where it stays (a hover band lives only as long as the pointer). And the launch item is a verb: 'Open in linear view - around this node on hg38' rather than a bare 'Linear genome view'. It says Open rather than Launch because it scrolls the view beside the graph when there is one and only opens a pane when there is not. The figure is now two frames: the menu, then the band it leaves behind. ALSO: menu wording cut ('reducing wordiness of the menus is also very important'). 'Highlight this node in the hg38 view' -> 'Highlight in hg38', 'Open in linear view - around this node on hg38' -> 'Open in hg38 - around this node'; every word dropped restated the context a menu opened on a node is already in. FIXED, both halves of the newest note. One frame instead of two: the actions now click Highlight in hg38 and then right-click the SAME node again, so the menu is open over the band it already left in the linear view - the highlight persists, which is the property the item exists for, so a single frame can carry both. The gene lane went compact/longest-isoform at 60px (two HLA-DRB genes did not need 80 plus a default glyph mode), and dropping the second frame took the figure from 2470 to 1620 px tall. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it.",
-    "reviewedAt": "2026-07-27T04:58:23.784Z",
-    "hash": "e7f02c1c3e76db8108a0e8bd27d129d6ee3171bf"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-28T15:07:00.722Z",
+    "hash": "e80440a99df6d68fda93c05fa5a199309360592f"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2149,9 +2149,9 @@
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
     "status": "good",
-    "note": "NEW. The KIV-2 repeat in LPA, picked out of the bubble index rather than off a locus list: ranking every record in hprc-v2.0-mc-grch38.bubbles.bed.gz for deep traversal at a segment count still worth drawing puts chr6:160,606,991-160,639,012 near the top, 33 segments and 584 paths with alleles reaching 176,236 bp against 32 kb of reference. Copy number there sets Lp(a) and is not callable off short reads. Window runs to 160,525,000 so LPA own start is in frame and the gene track labels it; a window sitting entirely inside one gene draws that label off the left edge and the figure names nothing. DENSITY PASS. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Viewport 1045 -> 1049. Bubbles lane left pinned at 80 for the same reason as C4.",
-    "reviewedAt": "2026-07-27T18:30:00.000Z",
-    "hash": "1be40f16672d0873a955ae3846838416ffca1e38"
+    "note": "",
+    "reviewedAt": "2026-07-28T15:07:34.496Z",
+    "hash": "6cb1f2ba828f8552c3252976c8bd5ed813a3363a"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2174,10 +2174,10 @@
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
-    "status": "bad",
-    "note": "might want to use rainbow coloring of nodes.",
-    "reviewedAt": "2026-07-27T19:41:12.341Z",
-    "hash": "a1f207c811dec954cdf39974c02d37ab676fb68f"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-28T15:06:31.112Z",
+    "hash": "833226900822e5693a440c576b382d9b8229824f"
   },
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
@@ -2185,5 +2185,12 @@
     "note": "",
     "reviewedAt": "2026-07-27T19:41:46.359Z",
     "hash": "49ed779cf0bcc0820c03ef3a9497ffe7e820444f"
+  },
+  "scatac/pbmc5k_cd8a": {
+    "name": "scatac/pbmc5k_cd8a",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-28T15:05:49.870Z",
+    "hash": "158210d74bc67c24f407f56575f4f5eb42fd3c70"
   }
 }
