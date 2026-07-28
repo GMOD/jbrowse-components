@@ -158,6 +158,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (e.button !== 0) {
       return
     }
+    // Shift+drag is the view's rubberband region-select gesture, not a pan.
+    // Don't stopPropagation (startDocumentDrag does that) — let it bubble to
+    // the LGV's TracksContainer, which checks event.shiftKey itself.
+    if (e.shiftKey) {
+      return
+    }
     dragMovedRef.current = false
     const startOffsetPx = view.offsetPx
     startDocumentDrag(e, dragControllerRef, (dx, dy) => {
