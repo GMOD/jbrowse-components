@@ -109,7 +109,10 @@ export function bakePromotedDefaultsIntoSnapshot(
 // in step with the first by hand, and a composite view it forgot to recurse into
 // got its values baked but not the flag — the values without the flag are the
 // half that silently loses to a recipient's own promoted default.
-function markIgnorePromotedDefaults(node: unknown, openDisplayIds: Set<string>) {
+function markIgnorePromotedDefaults(
+  node: unknown,
+  openDisplayIds: Set<string>,
+) {
   if (Array.isArray(node)) {
     for (const child of node) {
       markIgnorePromotedDefaults(child, openDisplayIds)

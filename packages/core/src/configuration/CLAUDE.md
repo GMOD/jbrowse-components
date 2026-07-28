@@ -31,10 +31,10 @@ path and `isUsableValue`'s first check is a bare `value !== undefined`. A
 subclass schema **overriding** an inherited promotable slot states only the
 difference — slot definitions merge over the base's (see "Slot overrides
 merge"), so `promotable`/`promotedBase` survive an override that doesn't mention
-them. Enums do
-_not_ spend a spare `'inherit'` member on it: `maybeStringEnum` takes the plain
-vocabulary as its `model` and ConfigSlot adds the nullability, so no
-enumeration, menu, or config-editor dropdown ever shows the cascade's plumbing.
+them. Enums do _not_ spend a spare `'inherit'` member on it: `maybeStringEnum`
+takes the plain vocabulary as its `model` and ConfigSlot adds the nullability,
+so no enumeration, menu, or config-editor dropdown ever shows the cascade's
+plumbing.
 
 The promoted default lives in a personal, un-shared store, so **every boundary
 that serializes a display's config for elsewhere must flatten** — the worker via
