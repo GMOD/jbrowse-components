@@ -245,20 +245,17 @@ against `TCGA-BRCA cohort copy number`. The 1000G card also still points its
 `tutorials/population_cnv` existed, which is now the better destination.
 
 
-## lai
-
-unclear coloring. some pink shades, what are those
-
 ## consider rehosting
 
 https://jbrowse.org/jb2-staging/docs/tutorials/population_genomics/
 
-## autogen docs
 
-related links to bottom.
+## maf fetch cost on long blocks
 
-## config slot table
-
-kind of hard to 'read'. we may want to expand the <details> by default also
+Design done, nothing built, premise unconfirmed — see
+[guides/MAF_LARGE_BLOCKS.md](guides/MAF_LARGE_BLOCKS.md). Run the one-line block-size
+check before building any of it. The byte-gate half (the estimate rescales by span
+while a tabix line's cost is quantized by feature) is not MAF-specific and is
+logged in ARCHITECTURAL_LIMITS.md.
 
 
