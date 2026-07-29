@@ -31,6 +31,31 @@ const FeatureSequenceDialog = lazy(
   () => import('./components/FeatureSequenceDialog.tsx'),
 )
 
+// Everything a right-click resolved, as one value: the model stores it
+// verbatim (see openContextMenu) and this builder reads it back, so a new
+// hit-derived field costs one edit here rather than three.
+export interface FeatureContextMenuInfo {
+  item: FlatbushItem
+  // The transcript under the cursor, when the right-click landed on one. Lets
+  // the menu act on the specific isoform the user aimed at rather than its
+  // whole gene. Absent for gene-level entry points (the label layer) and for
+  // featureless glyphs.
+  subfeature?: SubfeatureInfo
+  // The HGVS position the right-click landed on, resolved at click time (see
+  // hgvsHitLabel) because only the hit knows the genomic position and the zoom
+  // it was read at. Absent for the label layer, which is a click on a name
+  // rather than on a base.
+  hgvsLabel?: string
+  // Plain-text form of the hover tooltip this hit would show (see
+  // hoverTooltipText), resolved at click time for the same reason as
+  // hgvsLabel. The label layer passes the feature's own tooltip, which is what
+  // its hover shows.
+  tooltipText?: string
+  displayedRegionIndex: number
+  clientX: number
+  clientY: number
+}
+
 // Structural, not `Instance<typeof baseStateModelFactory>`: the factory calls
 // these builders, so importing its inferred model type back here would be a
 // circular type reference. Safe as a mirror in a way the old component-side one
@@ -38,17 +63,7 @@ const FeatureSequenceDialog = lazy(
 // compile error there, not a silent runtime undefined. Same idiom as
 // LinearMultiRowFeatureDisplay/trackMenuItems.ts.
 export interface FeatureMenuSelf extends IAnyStateTreeNode {
-  contextMenuInfo:
-    | {
-        item: FlatbushItem
-        subfeature?: SubfeatureInfo
-        hgvsLabel?: string
-        tooltipText?: string
-        displayedRegionIndex: number
-        clientX: number
-        clientY: number
-      }
-    | undefined
+  contextMenuInfo: FeatureContextMenuInfo | undefined
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
   pinnedFeatureIdSet: ReadonlySet<string>
   highlightedFeatureIdSet: ReadonlySet<string>
@@ -78,6 +93,23 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
   showAllHidden: () => void
 }
 
+// Copy plain text with a success/error snackbar, `what` naming what landed.
+// The clipboard util is dynamically imported so it stays out of the initial
+// bundle — this only ever runs on a menu click. (Same shape as the alignments
+// display's copyText; kept local rather than shared, since the two plugins
+// have no other menu code in common.)
+async function copyText(self: IAnyStateTreeNode, text: string, what: string) {
+  const session = getSession(self)
+  try {
+    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+    copy(text)
+    session.notify(`Copied ${what} to clipboard`, 'success')
+  } catch (e) {
+    console.error(e)
+    session.notifyError(`${e}`, e)
+  }
+}
+
 // The "Show N hidden features" recovery item, shared by the feature context
 // menu (Show/hide submenu) and the track menu (Edit filters submenu). Empty
 // when nothing is hidden.
@@ -99,114 +131,60 @@ export function showHiddenFeaturesMenuItems(self: {
     : []
 }
 
-// The feature right-click menu. Empty unless a right-click landed on a feature
-// (`contextMenuInfo`), which also carries the subfeature under the cursor when
-// there was one, so each item can act on the exact isoform aimed at.
+// What every group below is built from: the model to act on, the right-click
+// that opened the menu, and the nouns naming its two scopes. Derived once here
+// so no group re-derives them.
+interface MenuContext {
+  self: FeatureMenuSelf
+  info: FeatureContextMenuInfo
+  // Name each scope by its own type rather than hardcoding
+  // "transcript"/"gene": subfeatureInfos carries more than transcripts (a
+  // transposon's LTR parts, mature-protein regions), so fixed wording would
+  // mislabel those.
+  featureNoun: string
+  subfeatureNoun: string
+}
+
+// The feature right-click menu, one group of items per line. Empty unless a
+// right-click landed on a feature (`contextMenuInfo`), which also carries the
+// subfeature under the cursor when there was one, so each item can act on the
+// exact isoform aimed at.
 export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
   const info = self.contextMenuInfo
-  if (!info) {
-    return []
+  if (info) {
+    const ctx: MenuContext = {
+      self,
+      info,
+      featureNoun: info.item.type ?? 'feature',
+      subfeatureNoun: info.subfeature?.type ?? 'subfeature',
+    }
+    return [
+      ...inspectItems(ctx),
+      ...highlightItems(ctx),
+      showHideItem(ctx),
+      ...copyItems(ctx),
+    ]
   }
+  return []
+}
+
+// The three ways in to the feature itself.
+//
+// "Open feature details" and "Zoom to feature" deliberately stay whole-feature
+// even when the click resolved to a subfeature, unlike Get sequence and
+// Highlight. They are the only way to reach the containing gene: a left-click
+// already opens the isoform (selectFeatureById resolves the subfeature), and on
+// a gene glyph the transcripts' hit boxes cover the whole span — introns
+// included — so there's no pixel that means "the gene". Don't narrow them to
+// the subfeature to match the rest of the menu; that removes the gene scope
+// rather than adding one.
+function inspectItems({ self, info }: MenuContext): MenuItem[] {
   const {
-    item: { featureId, startBp, endBp, name, type },
+    item: { featureId, startBp, endBp },
     subfeature,
-    hgvsLabel,
-    tooltipText,
     displayedRegionIndex,
   } = info
-  const pinned = self.pinnedFeatureIdSet.has(featureId)
-  const highlighted = self.highlightedFeatureIdSet.has(featureId)
-  const inSoloSet = self.soloFeatureIdSet.has(featureId)
-  const soloCount = self.soloFeatureIds.length
-  const subfeatureHighlighted =
-    !!subfeature && self.highlightedFeatureIdSet.has(subfeature.featureId)
-  // Name each scope by its own type rather than hardcoding
-  // "transcript"/"gene": subfeatureInfos carries more than transcripts
-  // (a transposon's LTR parts, mature-protein regions), so fixed
-  // wording would mislabel those.
-  const subfeatureNoun = subfeature?.type ?? 'subfeature'
-  const featureNoun = type ?? 'feature'
-  // One toggle shared by both highlight scopes: when already boxed,
-  // remove by the target's id; otherwise add a highlight for the target.
-  function highlightItem(
-    active: boolean,
-    addLabel: string,
-    removeLabel: string,
-    target: HighlightTarget,
-  ) {
-    return {
-      label: active ? removeLabel : addLabel,
-      icon: Highlighter,
-      onClick: () => {
-        if (active) {
-          self.removeFeatureHighlightsForId(target.featureId)
-        } else {
-          const region = self.loadedRegions.get(displayedRegionIndex)
-          if (region) {
-            self.addFeatureHighlightForItem(target, region.refName)
-          }
-        }
-      },
-    }
-  }
-  // Mirrors highlightItem's two scopes: JSON info can be copied for the
-  // subfeature under the cursor or for the whole feature that contains it.
-  // `targetSubfeatureId` undefined means "top-level feature". Always fetches
-  // from `featureId` (the top-level id `item` always carries, subfeature or
-  // not — see FeatureMenuSelf) and descends when a subfeature is targeted, the
-  // same route selectFeatureById uses. `name` drives both the menu label and
-  // the copied-confirmation, so the two scopes stay distinguishable in the
-  // notification, not just the menu.
-  function copyJsonItem(name: string, targetSubfeatureId: string | undefined) {
-    return {
-      label: `Copy ${name}`,
-      icon: ContentCopyIcon,
-      onClick: () => {
-        void (async () => {
-          const session = getSession(self)
-          const parentFeature = await self.fetchFullFeature(
-            featureId,
-            displayedRegionIndex,
-          )
-          if (!parentFeature) {
-            return
-          }
-          const target = targetSubfeatureId
-            ? (findSubfeatureById(parentFeature, targetSubfeatureId) ??
-              parentFeature)
-            : parentFeature
-          try {
-            const { uniqueId: _, ...rest } = target.toJSON()
-            const { default: copy } =
-              await import('@jbrowse/core/util/copyToClipboard')
-            copy(JSON.stringify(rest, null, 4))
-            session.notify(`Copied ${name} to clipboard`, 'success')
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        })()
-      },
-    }
-  }
-  const wholeSuffix = name ? ` (${name})` : ''
-  const wholeFeatureItem = highlightItem(
-    highlighted,
-    subfeature ? `Whole ${featureNoun}${wholeSuffix}` : 'Highlight feature',
-    subfeature
-      ? `Remove whole ${featureNoun}${wholeSuffix} highlight`
-      : 'Remove highlight',
-    { startBp, endBp, name, featureId },
-  )
   return [
-    // These two deliberately stay whole-feature even when the click resolved to
-    // a subfeature, unlike Get sequence / Highlight below. They are the only way
-    // to reach the containing gene: a left-click already opens the isoform
-    // (selectFeatureById resolves the subfeature), and on a gene glyph the
-    // transcripts' hit boxes cover the whole span — introns included — so
-    // there's no pixel that means "the gene". Don't narrow them to the
-    // subfeature to match the rest of the menu; that removes the gene scope
-    // rather than adding one.
     {
       label: 'Open feature details',
       icon: MenuOpenIcon,
@@ -218,17 +196,15 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
       label: 'Zoom to feature',
       icon: CenterFocusStrongIcon,
       onClick: () => {
+        // resolved on click, not while building the menu: a refetch can swap
+        // loadedRegions out from under an open menu
         const region = self.loadedRegions.get(displayedRegionIndex)
         if (region) {
           const view = getContainingView(self) as LinearGenomeViewModel
           // grow 0.2 adds ~20% flanks so the feature isn't pinned to
           // the viewport edges (matches synteny/bookmark zoom-to).
           view.navTo(
-            {
-              refName: region.refName,
-              start: startBp,
-              end: endBp,
-            },
+            { refName: region.refName, start: startBp, end: endBp },
             0.2,
           )
         }
@@ -248,10 +224,8 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
             FeatureSequenceDialog,
             {
               model: self,
-              parentFeatureId: subfeature
-                ? subfeature.parentFeatureId
-                : featureId,
-              featureId: subfeature ? subfeature.featureId : featureId,
+              parentFeatureId: subfeature?.parentFeatureId ?? featureId,
+              featureId: subfeature?.featureId ?? featureId,
               displayedRegionIndex,
               assemblyName: region.assemblyName,
               handleClose,
@@ -260,187 +234,272 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
         }
       },
     },
-    // Two highlight scopes. When the click resolved to a subfeature (an
-    // isoform, an LTR part) both the whole feature and that subfeature
-    // can be boxed, so the scopes are grouped under a "Highlight"
-    // submenu. With no subfeature there is a single scope, kept as a
-    // top-level entry so the common case stays one click away.
-    ...(subfeature
-      ? [
-          {
-            label: 'Highlight',
-            icon: Highlighter,
-            subMenu: [
-              // The subfeature scope carries the subfeature's own id, so
-              // it resolves to this isoform rather than its gene even
-              // when the two share a span (the common GFF3 case).
-              highlightItem(
-                subfeatureHighlighted,
-                subfeature.displayLabel
-                  ? `${subfeatureNoun} (${subfeature.displayLabel})`
-                  : `This ${subfeatureNoun}`,
-                subfeature.displayLabel
-                  ? `Remove ${subfeatureNoun} (${subfeature.displayLabel}) highlight`
-                  : `Remove ${subfeatureNoun} highlight`,
-                {
-                  startBp: subfeature.startBp,
-                  endBp: subfeature.endBp,
-                  name: subfeature.displayLabel,
-                  featureId: subfeature.featureId,
-                },
-              ),
-              wholeFeatureItem,
-            ],
-          },
-        ]
-      : [wholeFeatureItem]),
-    // The show/hide family (pin, solo, hide) groups the growing set of
-    // visibility toggles behind one submenu so the common actions above
-    // stay one click away.
-    {
-      label: 'Show/hide',
-      icon: VisibilityIcon,
-      subMenu: [
-        {
-          label: pinned ? 'Unpin from top' : 'Pin to top of layout',
-          icon: VerticalAlignTopIcon,
-          onClick: () => {
-            self.togglePinnedFeature(featureId)
-          },
-        },
-        // Solo menu. Applying a collected set is done from the "N
-        // selected" badge (see SoloSelectionChip), so the menu only
-        // ever offers the one-shot single isolate, add/remove-from-set,
-        // and show-all.
-        //  - applied → show everything again (and optionally drop this)
-        //  - otherwise → the one-shot isolate + add/remove this feature
-        ...(self.soloApplied
-          ? [
-              {
-                label: 'Show all features',
-                icon: FilterAltOffIcon,
-                onClick: () => {
-                  self.clearSolo()
-                },
-              },
-              ...(inSoloSet && soloCount > 1
-                ? [
-                    {
-                      label: 'Remove this feature from view',
-                      icon: PlaylistRemoveIcon,
-                      onClick: () => {
-                        self.toggleSoloFeature(featureId)
-                      },
-                    },
-                  ]
-                : []),
-            ]
-          : [
-              {
-                label: 'Show only this feature',
-                icon: FilterAltIcon,
-                onClick: () => {
-                  self.soloFeature(featureId)
-                },
-              },
-              {
-                label: inSoloSet ? 'Remove from set' : 'Add to set',
-                icon: inSoloSet ? PlaylistRemoveIcon : PlaylistAddIcon,
-                onClick: () => {
-                  self.toggleSoloFeature(featureId)
-                },
-              },
-            ]),
-        {
-          label: 'Hide this feature',
-          icon: VisibilityOffIcon,
-          onClick: () => {
-            self.hideFeature(featureId)
-          },
-        },
-        // Reachable from any still-visible feature; the track menu's
-        // "Clear filters" covers the case where everything got hidden.
-        ...showHiddenFeaturesMenuItems(self),
-      ],
-    },
-    // Four possible entries (position, tooltip, and one or two JSON scopes)
-    // would clutter the top level as plain "Copy …" items, so they're grouped
-    // here — each still independently conditional within the submenu.
-    {
-      label: 'Copy to clipboard',
-      icon: ContentCopyIcon,
-      subMenu: [
-        // The clicked base in transcript coordinates, already qualified with
-        // the transcript accession (e.g. `EDEN.1:c.93+1` — see
-        // hgvsHitLabel), which is how a clinical report names it. Absent —
-        // rather than disabled — when the click didn't land on a transcript
-        // at base zoom, since there is no honest position to offer then.
-        ...(hgvsLabel
-          ? [
-              {
-                label: `Copy HGVS position (${hgvsLabel})`,
-                icon: ContentCopyIcon,
-                onClick: () => {
-                  void (async () => {
-                    const session = getSession(self)
-                    try {
-                      const { default: copy } =
-                        await import('@jbrowse/core/util/copyToClipboard')
-                      copy(hgvsLabel)
-                      session.notify(`Copied ${hgvsLabel}`, 'success')
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    }
-                  })()
-                },
-              },
-            ]
-          : []),
-        // The exact text the hover tooltip showed for this hit (isoform/gene
-        // name, plus exon and HGVS position when the hit resolved to a
-        // transcript) — richer than the bare HGVS position above, and reuses
-        // what's already computed for the hover rather than re-fetching the
-        // feature. Present for nearly every hit (any named feature has at
-        // least a title row).
-        ...(tooltipText
-          ? [
-              {
-                label: 'Copy tooltip',
-                icon: ContentCopyIcon,
-                onClick: () => {
-                  void (async () => {
-                    const session = getSession(self)
-                    try {
-                      const { default: copy } =
-                        await import('@jbrowse/core/util/copyToClipboard')
-                      copy(tooltipText)
-                      session.notify(
-                        `Copied "${tooltipText.split('\n')[0]}" to clipboard`,
-                        'success',
-                      )
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    }
-                  })()
-                },
-              },
-            ]
-          : []),
-        // Full attribute dump (JSON), scoped the same way as Highlight above:
-        // with a subfeature under the cursor, offer that isoform by name
-        // ahead of the whole gene; otherwise just the one feature.
-        ...(subfeature
-          ? [
-              copyJsonItem(
-                subfeature.displayLabel ?? `this ${subfeatureNoun}`,
-                subfeature.featureId,
-              ),
-            ]
-          : []),
-        copyJsonItem(name ?? featureNoun, undefined),
-      ],
-    },
   ]
+}
+
+// One highlight toggle: when the target is already boxed, remove by its id;
+// otherwise add a highlight for it. Shared by both scopes below.
+function highlightItem(
+  { self, info }: MenuContext,
+  addLabel: string,
+  removeLabel: string,
+  target: HighlightTarget,
+): MenuItem {
+  const active = self.highlightedFeatureIdSet.has(target.featureId)
+  return {
+    label: active ? removeLabel : addLabel,
+    icon: Highlighter,
+    onClick: () => {
+      if (active) {
+        self.removeFeatureHighlightsForId(target.featureId)
+      } else {
+        const region = self.loadedRegions.get(info.displayedRegionIndex)
+        if (region) {
+          self.addFeatureHighlightForItem(target, region.refName)
+        }
+      }
+    },
+  }
+}
+
+// Two highlight scopes. When the click resolved to a subfeature (an isoform, an
+// LTR part) both the whole feature and that subfeature can be boxed, so the
+// scopes are grouped under a "Highlight" submenu. With no subfeature there is a
+// single scope, kept as a top-level entry so the common case stays one click
+// away.
+function highlightItems(ctx: MenuContext): MenuItem[] {
+  const { info, featureNoun, subfeatureNoun } = ctx
+  const {
+    item: { featureId, startBp, endBp, name },
+    subfeature,
+  } = info
+  const suffix = name ? ` (${name})` : ''
+  const wholeItem = highlightItem(
+    ctx,
+    subfeature ? `Whole ${featureNoun}${suffix}` : 'Highlight feature',
+    subfeature
+      ? `Remove whole ${featureNoun}${suffix} highlight`
+      : 'Remove highlight',
+    { startBp, endBp, name, featureId },
+  )
+  if (subfeature) {
+    // Named by its own label where it has one ("mRNA (EDEN.1)") — never
+    // case-folded, since the nouns come from the annotation's own types
+    // (mRNA, ncRNA) where case carries meaning.
+    const scope = subfeature.displayLabel
+      ? `${subfeatureNoun} (${subfeature.displayLabel})`
+      : undefined
+    return [
+      {
+        label: 'Highlight',
+        icon: Highlighter,
+        subMenu: [
+          // The subfeature scope carries the subfeature's own id, so it
+          // resolves to this isoform rather than its gene even when the two
+          // share a span (the common GFF3 case).
+          highlightItem(
+            ctx,
+            scope ?? `This ${subfeatureNoun}`,
+            `Remove ${scope ?? subfeatureNoun} highlight`,
+            {
+              startBp: subfeature.startBp,
+              endBp: subfeature.endBp,
+              name: subfeature.displayLabel,
+              featureId: subfeature.featureId,
+            },
+          ),
+          wholeItem,
+        ],
+      },
+    ]
+  }
+  return [wholeItem]
+}
+
+// The show/hide family (pin, solo, hide) groups the growing set of visibility
+// toggles behind one submenu so the common actions above stay one click away.
+function showHideItem({ self, info }: MenuContext): MenuItem {
+  const { featureId } = info.item
+  return {
+    label: 'Show/hide',
+    icon: VisibilityIcon,
+    subMenu: [
+      {
+        label: self.pinnedFeatureIdSet.has(featureId)
+          ? 'Unpin from top'
+          : 'Pin to top of layout',
+        icon: VerticalAlignTopIcon,
+        onClick: () => {
+          self.togglePinnedFeature(featureId)
+        },
+      },
+      ...soloItems(self, featureId),
+      {
+        label: 'Hide this feature',
+        icon: VisibilityOffIcon,
+        onClick: () => {
+          self.hideFeature(featureId)
+        },
+      },
+      // Reachable from any still-visible feature; the track menu's
+      // "Clear filters" covers the case where everything got hidden.
+      ...showHiddenFeaturesMenuItems(self),
+    ],
+  }
+}
+
+// Applying a collected set is done from the "N selected" badge (see
+// SoloSelectionChip), so this only ever offers:
+//  - applied → show everything again (and optionally drop this feature)
+//  - otherwise → the one-shot isolate + add/remove this feature
+function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
+  const inSoloSet = self.soloFeatureIdSet.has(featureId)
+  const removeFromSet = {
+    label: 'Remove from set',
+    icon: PlaylistRemoveIcon,
+    onClick: () => {
+      self.toggleSoloFeature(featureId)
+    },
+  }
+  return self.soloApplied
+    ? [
+        {
+          label: 'Show all features',
+          icon: FilterAltOffIcon,
+          onClick: () => {
+            self.clearSolo()
+          },
+        },
+        // Removing the only remaining feature would empty the view, which
+        // "Show all features" above already covers.
+        ...(inSoloSet && self.soloFeatureIds.length > 1
+          ? [{ ...removeFromSet, label: 'Remove this feature from view' }]
+          : []),
+      ]
+    : [
+        {
+          label: 'Show only this feature',
+          icon: FilterAltIcon,
+          onClick: () => {
+            self.soloFeature(featureId)
+          },
+        },
+        inSoloSet
+          ? removeFromSet
+          : {
+              label: 'Add to set',
+              icon: PlaylistAddIcon,
+              onClick: () => {
+                self.toggleSoloFeature(featureId)
+              },
+            },
+      ]
+}
+
+// One item that copies `text`, naming what landed in both the menu and the
+// confirmation.
+function copyItem(
+  self: FeatureMenuSelf,
+  label: string,
+  text: string,
+  what: string,
+): MenuItem {
+  return {
+    label,
+    icon: ContentCopyIcon,
+    onClick: () => {
+      void copyText(self, text, what)
+    },
+  }
+}
+
+// Attributes as JSON, for one of the two scopes: `subfeature` names the isoform
+// under the cursor, undefined the whole feature containing it. Taking the
+// subfeature itself rather than its id keeps the copied thing and the name on
+// the label from being able to disagree.
+//
+// Always fetches from `featureId` (the top-level id `item` always carries,
+// subfeature or not — see FeatureMenuSelf) and descends when a subfeature is
+// targeted, the same route selectFeatureById uses.
+function copyJsonItem(
+  { self, info, featureNoun, subfeatureNoun }: MenuContext,
+  subfeature: SubfeatureInfo | undefined,
+): MenuItem {
+  const {
+    item: { featureId, name },
+    displayedRegionIndex,
+  } = info
+  const wholeScope = name ?? featureNoun
+  const scope = subfeature
+    ? (subfeature.displayLabel ?? `this ${subfeatureNoun}`)
+    : wholeScope
+  return {
+    label: `Copy ${scope} attributes (JSON)`,
+    icon: ContentCopyIcon,
+    onClick: () => {
+      void (async () => {
+        const parent = await self.fetchFullFeature(
+          featureId,
+          displayedRegionIndex,
+        )
+        if (parent) {
+          const target = subfeature
+            ? findSubfeatureById(parent, subfeature.featureId)
+            : parent
+          // Both sides take the ids from the same layout pass, so a miss means
+          // the fetched feature disagrees with what was drawn. Copy the
+          // containing feature rather than nothing, but say that's what landed
+          // instead of claiming the isoform.
+          const { uniqueId: _, ...rest } = (target ?? parent).toJSON()
+          await copyText(
+            self,
+            JSON.stringify(rest, null, 4),
+            `${target ? scope : wholeScope} attributes`,
+          )
+        }
+      })()
+    },
+  }
+}
+
+// Up to four copy entries would clutter the top level as plain "Copy …" items,
+// so they're grouped under one submenu — unless only one applies (the label
+// layer resolves no base and only the feature's own tooltip), where a submenu
+// holding a single item is pure indirection. Every label says "Copy", so an
+// item reads the same either way.
+function copyItems(ctx: MenuContext): MenuItem[] {
+  const { self, info } = ctx
+  const { subfeature, hgvsLabel, tooltipText } = info
+  const items = [
+    // The clicked base in transcript coordinates, already qualified with the
+    // transcript accession (e.g. `EDEN.1:c.93+1` — see hgvsHitLabel), which is
+    // how a clinical report names it. Absent — rather than disabled — when the
+    // click didn't land on a transcript at base zoom, since there is no honest
+    // position to offer then.
+    ...(hgvsLabel
+      ? [
+          copyItem(
+            self,
+            `Copy HGVS position (${hgvsLabel})`,
+            hgvsLabel,
+            hgvsLabel,
+          ),
+        ]
+      : []),
+    // The exact text the hover tooltip showed for this hit (isoform/gene name,
+    // plus exon and HGVS position when the hit resolved to a transcript) —
+    // richer than the bare HGVS position above, and reuses what's already
+    // computed for the hover rather than re-fetching the feature. Present for
+    // nearly every hit (any named feature has at least a title row).
+    ...(tooltipText
+      ? [copyItem(self, 'Copy tooltip text', tooltipText, 'tooltip text')]
+      : []),
+    // Scoped the same way as Highlight: with a subfeature under the cursor,
+    // offer that isoform by name ahead of the whole gene.
+    ...(subfeature ? [copyJsonItem(ctx, subfeature)] : []),
+    copyJsonItem(ctx, undefined),
+  ]
+  return items.length === 1
+    ? items
+    : [{ label: 'Copy to clipboard', icon: ContentCopyIcon, subMenu: items }]
 }

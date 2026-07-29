@@ -96,7 +96,6 @@ import type {
 // from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
   FeatureDataResult,
-  FlatbushItem,
   RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -108,6 +107,7 @@ import type {
   VisibleRegion,
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
+import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type {
   FeatureHighlight,
   HighlightTarget,
@@ -381,28 +381,9 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        contextMenuInfo: undefined as
-          | {
-              item: FlatbushItem
-              // The transcript under the cursor, when the right-click landed on
-              // one. Lets the menu act on the specific isoform the user aimed
-              // at rather than its whole gene. Absent for gene-level entry
-              // points (the label layer) and for featureless glyphs.
-              subfeature?: SubfeatureInfo
-              // The HGVS position the right-click landed on, resolved at click
-              // time (see hgvsHitLabel) because only the hit knows the genomic
-              // position and the zoom it was read at. Absent for the label
-              // layer, which is a click on a name rather than on a base.
-              hgvsLabel?: string
-              // Plain-text form of the hover tooltip this hit would show (see
-              // hoverTooltipText), resolved at click time for the same reason
-              // as hgvsLabel. Absent for the label layer.
-              tooltipText?: string
-              displayedRegionIndex: number
-              clientX: number
-              clientY: number
-            }
-          | undefined,
+        // Everything the right-click resolved — see FeatureContextMenuInfo for
+        // what each field means and which entry points supply it.
+        contextMenuInfo: undefined as FeatureContextMenuInfo | undefined,
         /**
          * #volatile
          */
@@ -1957,24 +1938,12 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          openContextMenu(
-            featureInfo: FlatbushItem,
-            displayedRegionIndex: number,
-            clientX: number,
-            clientY: number,
-            subfeature?: SubfeatureInfo,
-            hgvsLabel?: string,
-            tooltipText?: string,
-          ) {
-            self.contextMenuInfo = {
-              item: featureInfo,
-              subfeature,
-              hgvsLabel,
-              tooltipText,
-              displayedRegionIndex,
-              clientX,
-              clientY,
-            }
+          // One object rather than positional args: every new hit-derived
+          // field the menu wants would otherwise widen this signature and the
+          // two call sites' prop types too (same idiom as
+          // LinearMultiRowFeatureDisplay's openContextMenu).
+          openContextMenu(info: FeatureContextMenuInfo) {
+            self.contextMenuInfo = info
             // Pin the hover to the menu's target so its highlight box always
             // matches what the menu acts on — for every entry point (canvas or
             // label right-click), and even when no mousemove preceded this
@@ -1982,8 +1951,8 @@ export default function baseStateModelFactory(
             // transcript: the menu names it, so the box must agree. Drop the
             // tooltip so it doesn't overlap the menu. closeContextMenu clears
             // all of this again.
-            self.featureIdUnderMouse = featureInfo.featureId
-            self.subfeatureIdUnderMouse = subfeature?.featureId ?? null
+            self.featureIdUnderMouse = info.item.featureId
+            self.subfeatureIdUnderMouse = info.subfeature?.featureId ?? null
             self.mouseoverExtraInformation = undefined
           },
         }

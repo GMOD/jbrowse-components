@@ -2,7 +2,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 function regionData() {
   const features = Array.from({ length: 4 }, (_, i) => ({
@@ -47,7 +47,7 @@ function setup() {
 describe('context menu hover pin', () => {
   it('pins the hover box to the right-clicked feature', () => {
     const { display, menuTarget } = setup()
-    display.openContextMenu(menuTarget, 0, 100, 100)
+    rightClick(display, menuTarget)
     expect(display.contextMenuInfo!.item.featureId).toBe(menuTarget.featureId)
     expect(display.featureIdUnderMouse).toBe(menuTarget.featureId)
   })
@@ -58,7 +58,7 @@ describe('context menu hover pin', () => {
   // would not act on. setHover itself now holds the pin.
   it('ignores a hover from any source while the menu is open', () => {
     const { display, menuTarget, other } = setup()
-    display.openContextMenu(menuTarget, 0, 100, 100)
+    rightClick(display, menuTarget)
 
     display.setHover(other.featureId, null, other.tooltip)
 
@@ -71,7 +71,7 @@ describe('context menu hover pin', () => {
   // clearHover with no knowledge of the menu; the pin lives in the action.
   it('ignores a hover clear while the menu is open', () => {
     const { display, menuTarget } = setup()
-    display.openContextMenu(menuTarget, 0, 100, 100)
+    rightClick(display, menuTarget)
 
     display.clearHover()
 
@@ -80,7 +80,7 @@ describe('context menu hover pin', () => {
 
   it('releases the pin when the menu closes', () => {
     const { display, menuTarget, other } = setup()
-    display.openContextMenu(menuTarget, 0, 100, 100)
+    rightClick(display, menuTarget)
     display.closeContextMenu()
     expect(display.featureIdUnderMouse).toBeNull()
 

@@ -34,6 +34,7 @@ import {
 
 import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
+import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -124,12 +125,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
 }: {
   model: LinearCanvasBaseDisplayModel
   view: LGV
-  openContextMenu: (
-    feature: FlatbushItem,
-    displayedRegionIndex: number,
-    clientX: number,
-    clientY: number,
-  ) => void
+  openContextMenu: (info: FeatureContextMenuInfo) => void
   onLabelMouseOver: (
     item: FlatbushItem,
     displayedRegionIndex: number,
@@ -431,19 +427,19 @@ const FeatureBody = observer(function FeatureBody({
       // subfeature rides along so the menu can target the exact transcript
       // under the cursor, not just its gene.
       e.preventDefault()
-      model.openContextMenu(
-        result.feature,
-        result.displayedRegionIndex,
-        e.clientX,
-        e.clientY,
-        result.subfeature ?? undefined,
+      model.openContextMenu({
+        item: result.feature,
+        displayedRegionIndex: result.displayedRegionIndex,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        subfeature: result.subfeature ?? undefined,
         // resolved here rather than in the menu: only the hit knows which base
         // was clicked and at what zoom
-        hgvsHitLabel(result),
+        hgvsLabel: hgvsHitLabel(result),
         // same reasoning — the plain-text form of the tooltip this exact hit
-        // would show, for the "Copy tooltip" menu item
-        hoverTooltipText(result),
-      )
+        // would show, for the "Copy tooltip text" menu item
+        tooltipText: hoverTooltipText(result),
+      })
     }
   }
 

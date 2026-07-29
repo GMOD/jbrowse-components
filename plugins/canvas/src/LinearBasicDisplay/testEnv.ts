@@ -14,6 +14,10 @@ import LinearBasicDisplayComponent from './components/LinearBasicDisplayComponen
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
+import type {
+  FlatbushItem,
+  SubfeatureInfo,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Shared display-instantiation harness: builds a PluginManager with a
@@ -231,4 +235,29 @@ export function createTestEnvironment(opts?: {
   }
 
   return { createDisplay, mockRpcCall }
+}
+
+export type TestDisplay = ReturnType<
+  ReturnType<typeof createTestEnvironment>['createDisplay']
+>['display']
+
+// Right-click on `item`, resolving `subfeature` when the click landed on one —
+// what FeatureComponent's handleContextMenu does, minus the hit test. The click
+// position is fixed since only the Menu component reads it.
+export function rightClick(
+  display: TestDisplay,
+  item: FlatbushItem,
+  subfeature?: SubfeatureInfo,
+  // what the hit resolved beyond the feature itself: only a click on a base at
+  // base zoom carries these
+  resolved?: { hgvsLabel?: string; tooltipText?: string },
+) {
+  display.openContextMenu({
+    item,
+    subfeature,
+    ...resolved,
+    displayedRegionIndex: 0,
+    clientX: 0,
+    clientY: 0,
+  })
 }

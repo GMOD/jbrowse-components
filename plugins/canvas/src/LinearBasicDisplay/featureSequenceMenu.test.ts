@@ -4,7 +4,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -65,7 +65,7 @@ describe('feature "Get sequence" context menu', () => {
     const { display, session } = createDisplay()
     loadGene(display, [])
 
-    display.openContextMenu(gene, 0, 0, 0, undefined)
+    rightClick(display, gene)
     clickLabel(display, 'Get sequence')
 
     expect(session.queuedDialogs).toHaveLength(1)
@@ -82,7 +82,7 @@ describe('feature "Get sequence" context menu', () => {
     const { display, session } = createDisplay()
     loadGene(display, [eden1])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
     clickLabel(display, 'Get sequence')
 
     // the panel needs the gene to fetch (only it is addressable by the RPC) but

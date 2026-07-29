@@ -2,7 +2,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -51,7 +51,7 @@ function open(display: Display, hgvsLabel?: string, tooltipText?: string) {
     ctgA,
   )
   display.setLoadedRegion(0, ctgA)
-  display.openContextMenu(gene, 0, 0, 0, transcript, hgvsLabel, tooltipText)
+  rightClick(display, gene, transcript, { hgvsLabel, tooltipText })
 }
 
 describe('HGVS position context menu', () => {
@@ -86,17 +86,17 @@ describe('Copy tooltip context menu item', () => {
     const { display } = createDisplay()
     open(display, undefined, 'EDEN.1\nexon 2/3 c.93+1')
 
-    expect(menuLabels(display)).toContain('Copy tooltip')
+    expect(menuLabels(display)).toContain('Copy tooltip text')
   })
 
   // Absent rather than disabled: nothing to copy when the hit resolved no
-  // tooltip content (e.g. the label layer, which never sets it).
+  // tooltip content.
   it('offers nothing when the hit resolved no tooltip text', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     open(display)
 
-    expect(menuLabels(display)).not.toContain('Copy tooltip')
+    expect(menuLabels(display)).not.toContain('Copy tooltip text')
   })
 })
 
@@ -109,7 +109,7 @@ describe('Feature info (JSON) copy', () => {
     const { display } = createDisplay()
     open(display)
 
-    expect(menuLabels(display)).toContain('Copy EDEN.1')
-    expect(menuLabels(display)).toContain('Copy EDEN')
+    expect(menuLabels(display)).toContain('Copy EDEN.1 attributes (JSON)')
+    expect(menuLabels(display)).toContain('Copy EDEN attributes (JSON)')
   })
 })

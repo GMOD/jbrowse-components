@@ -2,7 +2,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -95,7 +95,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
 
     // the entry must survive EDEN.1's span being identical to EDEN's
     expect(menuLabels(display)).toContain('mRNA (EDEN.1)')
@@ -107,7 +107,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
     clickLabel(display, 'mRNA (EDEN.1)')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
@@ -120,7 +120,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden2)
+    rightClick(display, gene, eden2)
     clickLabel(display, 'mRNA (EDEN.2)')
 
     // only the name separates these two; a span-keyed highlight boxes both
@@ -132,7 +132,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden3)
+    rightClick(display, gene, eden3)
     clickLabel(display, 'mRNA (EDEN.3)')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.3'])
@@ -143,7 +143,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
     clickLabel(display, 'Whole gene (EDEN)')
 
     // the gene, and none of its three isoforms
@@ -155,7 +155,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
     clickLabel(display, 'mRNA (EDEN.1)')
     clickLabel(display, 'Remove mRNA (EDEN.1) highlight')
 
@@ -168,7 +168,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0)
+    rightClick(display, gene)
 
     expect(menuLabels(display)).toContain('Highlight feature')
     expect(menuLabels(display)).not.toContain('Whole gene (EDEN)')
@@ -198,7 +198,7 @@ describe('transcript highlight context menu', () => {
     )
     display.setLoadedRegion(0, ctgA)
 
-    display.openContextMenu(repeat, 0, 0, 0, ltr)
+    rightClick(display, repeat, ltr)
 
     expect(menuLabels(display)).toContain('LTR (LTR_5)')
     expect(menuLabels(display)).toContain('Whole repeat_region')
@@ -210,7 +210,7 @@ describe('transcript highlight context menu', () => {
     const unnamed = makeTranscript({ displayLabel: undefined })
     loadGene(display, [unnamed])
 
-    display.openContextMenu(gene, 0, 0, 0, unnamed)
+    rightClick(display, gene, unnamed)
 
     expect(menuLabels(display)).toContain('This mRNA')
   })
@@ -221,7 +221,7 @@ describe('transcript highlight context menu', () => {
     const unnamed = makeTranscript({ displayLabel: undefined })
     loadGene(display, [unnamed, eden2])
 
-    display.openContextMenu(gene, 0, 0, 0, unnamed)
+    rightClick(display, gene, unnamed)
     clickLabel(display, 'This mRNA')
 
     // right-click highlights resolve by the clicked feature's exact id, not
@@ -234,7 +234,7 @@ describe('transcript highlight context menu', () => {
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
 
     expect(display.subfeatureIdUnderMouse).toBe('EDEN.1')
     expect(display.featureIdUnderMouse).toBe('EDEN')
@@ -263,7 +263,7 @@ describe('transcript highlight context menu', () => {
     })
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
 
     // the search highlight boxes the gene, so EDEN.1 is NOT highlighted and the
     // menu offers to add it — the click must not be swallowed as a duplicate
@@ -283,7 +283,7 @@ describe('transcript highlight context menu', () => {
     })
     loadGene(display, [eden1, eden2, eden3])
 
-    display.openContextMenu(gene, 0, 0, 0, eden1)
+    rightClick(display, gene, eden1)
     clickLabel(display, 'mRNA (EDEN.1)')
     clickLabel(display, 'Remove mRNA (EDEN.1) highlight')
 

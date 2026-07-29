@@ -6,7 +6,7 @@ import {
   highlightBoxColors,
   overlayItemRect,
 } from './highlightUtils.ts'
-import { HIT_PAD_PX } from './hitTesting.ts'
+import { HIT_PAD_PX, htmlToPlainText } from './hitTesting.ts'
 import {
   computeLabelExtraWidth,
   forEachDisplayLabel,
@@ -19,6 +19,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 
 interface OverlayModel {
@@ -147,12 +148,7 @@ export function useFloatingLabels(
   width: number | undefined,
   bpPerPx: number,
   model: OverlayModel,
-  openContextMenu: (
-    feature: FlatbushItem,
-    displayedRegionIndex: number,
-    clientX: number,
-    clientY: number,
-  ) => void,
+  openContextMenu: (info: FeatureContextMenuInfo) => void,
   onLabelMouseOver?: (
     item: FlatbushItem,
     displayedRegionIndex: number,
@@ -279,7 +275,17 @@ export function useFloatingLabels(
         const t = resolveTarget(e)
         if (t) {
           e.preventDefault()
-          openContextMenu(t.item, t.displayedRegionIndex, e.clientX, e.clientY)
+          // No base and no hit to read a transcript off — this is a click on
+          // a name — so no HGVS position. The tooltip text is the feature's
+          // own, which is exactly what hovering this label shows, stripped to
+          // plain text the same way the canvas path does it.
+          openContextMenu({
+            item: t.item,
+            displayedRegionIndex: t.displayedRegionIndex,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            tooltipText: htmlToPlainText(t.item.tooltip),
+          })
         }
       }}
       onMouseMove={e => {
