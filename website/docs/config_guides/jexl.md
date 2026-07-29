@@ -1,7 +1,7 @@
 ---
 title: Using jexl callbacks
 description: Dynamic configuration using jexl callback expressions
-guide_category: Callbacks and customization
+guide_category: Callbacks
 ---
 
 **TL;DR:** a config callback is a string prefixed with `jexl:`. Read feature

@@ -45,6 +45,16 @@ describe('parseTaggedComment', () => {
     expect(docs).toBe('the description')
   })
 
+  test('ignores a tag mentioned mid-prose rather than heading the line', () => {
+    const { category, docs } = parseTaggedComment(
+      '#stateModel Foo\n#category general\nnot a view, which the #category tag overrides',
+      'stateModel',
+      'Foo',
+    )
+    expect(category).toBe('general')
+    expect(docs).toBe('not a view, which the #category tag overrides')
+  })
+
   test('extracts a #trackType and removes it from docs', () => {
     const { trackType, docs } = parseTaggedComment(
       '#config BamAdapter\n#trackType AlignmentsTrack\nthe description',

@@ -1,7 +1,7 @@
 ---
 id: dotplot1dview
 title: Dotplot1DView
-sidebar_label: ` tag keeps -> Dotplot1DView
+sidebar_label: General -> Dotplot1DView
 ---
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
@@ -9,7 +9,8 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `dotplot-view` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts).
 
-the name-suffix heuristic from filing it under View ref
+one axis of a dotplot. categorized General rather than View because it is not a
+pluggable view type, which the name-suffix heuristic would otherwise assume ref
 https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
 used here
 

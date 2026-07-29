@@ -35,7 +35,7 @@ recipes, see the [Cookbook](/docs/cookbook).
 - [](/docs/config_guides/synteny_track)
 - [](/docs/config_guides/variant_track)
 
-## Callbacks and customization
+## Callbacks
 
 - [](/docs/config_guides/customizing_feature_colors)
 - [](/docs/config_guides/customizing_feature_details)

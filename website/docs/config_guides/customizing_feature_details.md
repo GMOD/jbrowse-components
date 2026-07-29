@@ -1,7 +1,7 @@
 ---
 title: Customizing feature details
 description: Customizing feature detail panels with the formatDetails slot
-guide_category: Callbacks and customization
+guide_category: Callbacks
 ---
 
 **TL;DR:** the track slot `formatDetails` takes jexl callbacks that return an

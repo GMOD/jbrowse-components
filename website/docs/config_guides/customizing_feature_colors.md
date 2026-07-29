@@ -1,7 +1,7 @@
 ---
 title: Customizing feature colors
 description: Per-feature color callbacks using jexl or plugin code
-guide_category: Callbacks and customization
+guide_category: Callbacks
 ---
 
 **TL;DR:** set a track's `color` in `displayDefaults`, either as a plain CSS

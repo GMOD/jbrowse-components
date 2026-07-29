@@ -2,7 +2,7 @@
 title: FromConfig adapters
 description:
   Inline data adapters for embedding small datasets directly in config
-guide_category: Callbacks and customization
+guide_category: Callbacks
 ---
 
 `FromConfigAdapter` and `FromConfigSequenceAdapter` embed feature data directly

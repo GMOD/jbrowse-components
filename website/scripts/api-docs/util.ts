@@ -808,6 +808,17 @@ export function containsTag(text: string, name: string) {
   return new RegExp(`#${name}(?![A-Za-z0-9_])`).test(text)
 }
 
+// True when `#name` *heads* the comment line, which is how every tag is
+// actually written (`* #category general`). The value tags below take the rest
+// of the line, so containsTag alone let a mention inside prose ("categorized
+// General rather than View, which the #category tag overrides") be parsed as
+// the tag — and the value regex, being greedy, then took the text after the
+// LAST occurrence on the line. That wrote `sidebar_label: \` tag keeps the ->
+// Base1DView` into the generated frontmatter with no error.
+export function startsWithTag(text: string, name: string) {
+  return new RegExp(`^\\s*\\*?\\s*#${name}(?![A-Za-z0-9_])`).test(text)
+}
+
 function getNameNode(node: ts.Node): ts.Node | undefined {
   if (
     'name' in node &&
@@ -938,13 +949,13 @@ export function parseTaggedComment(
       if (fromTag) {
         name = fromTag
       }
-    } else if (containsTag(line, 'category')) {
+    } else if (startsWithTag(line, 'category')) {
       endGotcha()
-      category = line.replace(/.*#category\s*/, '').trim() || undefined
-    } else if (containsTag(line, 'trackType')) {
+      category = line.replace(/^.*?#category\s*/, '').trim() || undefined
+    } else if (startsWithTag(line, 'trackType')) {
       endGotcha()
-      trackType = line.replace(/.*#trackType\s*/, '').trim() || undefined
-    } else if (containsTag(line, 'fileFormat')) {
+      trackType = line.replace(/^.*?#trackType\s*/, '').trim() || undefined
+    } else if (startsWithTag(line, 'fileFormat')) {
       // Consumed by generateFileTypeDocs (the format -> adapter tables in the
       // file types guide). Dropped here so it doesn't leak into the config
       // page's prose.

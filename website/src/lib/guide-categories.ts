@@ -4,6 +4,11 @@
 // sidebar label (docs-sidebar.ts), in the order listed here. Keeping the orders
 // in one place stops the two groupings from drifting — a page's sidebar
 // neighbors and its overview-page section are guaranteed to match.
+//
+// Keep these names SHORT. Since the sidebar flattened they are prefixed onto
+// every page label, so "<Category>: <Title>" has to fit ~40 characters or the
+// entry wraps to two lines. "Callbacks and customization" wrapped every page
+// under it, which is why it is now just "Callbacks".
 
 export const USER_CATEGORIES = [
   'General usage',
@@ -17,13 +22,17 @@ export const CONFIG_CATEGORIES = [
   'Getting started',
   'Core configuration',
   'Track types',
-  'Callbacks and customization',
+  'Callbacks',
   'Other features',
 ]
 
 export const DEVELOPER_CATEGORIES = [
   'Getting started',
   'Core concepts',
+  // TODO: shorten to 'Pluggable elements' — at 27 characters this prefix wraps
+  // every page under it. Deferred only because renaming means editing the
+  // `guide_category` frontmatter of all 12 pages, 5 of which currently carry
+  // another agent's uncommitted prose pass in this shared worktree.
   'Creating pluggable elements',
   'Advanced topics',
 ]
