@@ -1,15 +1,9 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { getEnv } from '@jbrowse/mobx-state-tree'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -49,52 +43,35 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   const error = expression ? jexlError(expression, jexl) : undefined
 
   return (
-    <Dialog
+    <SubmitDialog
       open
-      onClose={() => {
+      title="Color by attribute"
+      submitText="Apply"
+      submitDisabled={!trimmed || !!error}
+      onCancel={() => {
         handleClose()
       }}
-      title="Color by attribute"
+      onSubmit={() => {
+        model.setFeatureColor(expression)
+        handleClose()
+      }}
     >
-      <DialogContent>
-        <Typography variant="body2" gutterBottom>
-          Each unique value of the chosen feature attribute receives a distinct
-          color. Common attributes: type, source, biotype, gene_id.
-        </Typography>
-        <TextField
-          label="Attribute name"
-          value={attribute}
-          onChange={event => {
-            setAttribute(event.target.value)
-          }}
-          placeholder="e.g. type"
-          fullWidth
-          helperText={expression ? `Expression: ${expression}` : undefined}
-        />
-        {error ? <ErrorMessage error={error} /> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={!trimmed || !!error}
-          onClick={() => {
-            model.setFeatureColor(expression)
-            handleClose()
-          }}
-        >
-          Apply
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Typography variant="body2" gutterBottom>
+        Each unique value of the chosen feature attribute receives a distinct
+        color. Common attributes: type, source, biotype, gene_id.
+      </Typography>
+      <TextField
+        label="Attribute name"
+        value={attribute}
+        onChange={event => {
+          setAttribute(event.target.value)
+        }}
+        placeholder="e.g. type"
+        fullWidth
+        helperText={expression ? `Expression: ${expression}` : undefined}
+      />
+      {error ? <ErrorMessage error={error} /> : null}
+    </SubmitDialog>
   )
 })
 

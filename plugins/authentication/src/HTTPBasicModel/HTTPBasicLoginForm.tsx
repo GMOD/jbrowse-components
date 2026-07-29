@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { SubmitDialog } from '@jbrowse/core/ui'
+import { TextField } from '@mui/material'
 
 export function HTTPBasicLoginForm({
   internetAccountId,
@@ -14,69 +14,50 @@ export function HTTPBasicLoginForm({
   const [password, setPassword] = useState('')
 
   return (
-    <Dialog
+    <SubmitDialog
       open
       maxWidth="xl"
       data-testid="login-httpbasic"
       title={`Log in for ${internetAccountId}`}
-      onClose={() => {
+      onCancel={() => {
         handleClose()
       }}
+      onSubmit={() => {
+        if (username && password) {
+          handleClose(btoa(`${username}:${password}`))
+        } else {
+          handleClose()
+        }
+      }}
     >
-      <form
-        onSubmit={event => {
-          if (username && password) {
-            handleClose(btoa(`${username}:${password}`))
-          } else {
-            handleClose()
-          }
-          event.preventDefault()
-        }}
-      >
-        <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
-          <TextField
-            required
-            label="Username"
-            variant="outlined"
-            onChange={event => {
-              setUsername(event.target.value)
-            }}
-            margin="dense"
-            slotProps={{
-              htmlInput: { 'data-testid': 'login-httpbasic-username' },
-            }}
-          />
-          <TextField
-            required
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            variant="outlined"
-            onChange={event => {
-              setPassword(event.target.value)
-            }}
-            margin="dense"
-            slotProps={{
-              htmlInput: { 'data-testid': 'login-httpbasic-password' },
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" color="primary" type="submit">
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            type="button"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <TextField
+          required
+          label="Username"
+          variant="outlined"
+          onChange={event => {
+            setUsername(event.target.value)
+          }}
+          margin="dense"
+          slotProps={{
+            htmlInput: { 'data-testid': 'login-httpbasic-username' },
+          }}
+        />
+        <TextField
+          required
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          variant="outlined"
+          onChange={event => {
+            setPassword(event.target.value)
+          }}
+          margin="dense"
+          slotProps={{
+            htmlInput: { 'data-testid': 'login-httpbasic-password' },
+          }}
+        />
+      </div>
+    </SubmitDialog>
   )
 }

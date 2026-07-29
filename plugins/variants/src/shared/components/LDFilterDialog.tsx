@@ -1,13 +1,9 @@
 import { useState } from 'react'
 
-import { NumberTextField } from '@jbrowse/core/ui'
-import Dialog from '@jbrowse/core/ui/Dialog'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import {
   Alert,
   Box,
-  Button,
-  DialogActions,
-  DialogContent,
   FormControlLabel,
   Switch,
   Typography,
@@ -57,14 +53,28 @@ export default observer(function LDFilterDialog({
     (callRateEnabled && callRate === undefined)
 
   return (
-    <Dialog
+    <SubmitDialog
       open
-      onClose={() => {
+      title="LD Filter Settings"
+      submitText="Apply"
+      submitDisabled={hasError}
+      onCancel={() => {
         handleClose()
       }}
-      title="LD Filter Settings"
+      onSubmit={() => {
+        if (maf !== undefined) {
+          model.setMafFilter(maf)
+        }
+        model.setHweFilter(
+          hweEnabled && hweThreshold !== undefined ? hweThreshold : 0,
+        )
+        model.setCallRateFilter(
+          callRateEnabled && callRate !== undefined ? callRate : 0,
+        )
+        handleClose()
+      }}
     >
-      <DialogContent style={{ width: 500 }}>
+      <Box sx={{ width: 500 }}>
         {filterStats ? (
           <Alert severity="info" style={{ marginBottom: 16 }}>
             <Typography variant="subtitle2" gutterBottom>
@@ -170,37 +180,7 @@ export default observer(function LDFilterDialog({
             style={{ marginTop: 8 }}
           />
         ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleClose()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            if (maf !== undefined) {
-              model.setMafFilter(maf)
-            }
-            model.setHweFilter(
-              hweEnabled && hweThreshold !== undefined ? hweThreshold : 0,
-            )
-            model.setCallRateFilter(
-              callRateEnabled && callRate !== undefined ? callRate : 0,
-            )
-            handleClose()
-          }}
-          color="primary"
-          variant="contained"
-          disabled={hasError}
-        >
-          Apply
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </SubmitDialog>
   )
 })

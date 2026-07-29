@@ -1,15 +1,8 @@
 import { useState } from 'react'
 
 import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Alert,
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-} from '@mui/material'
+import { ConfirmDialog } from '@jbrowse/core/ui'
+import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
@@ -45,69 +38,51 @@ export default function PluginWarningDialog({
   const [remember, setRemember] = useState(true)
   const { intro, trust, details } = text[kind]
   return (
-    <Dialog
+    <ConfirmDialog
       open
       maxWidth="xl"
       title="Warning"
-      onClose={() => {
+      submitText="Yes, I trust it"
+      onCancel={() => {
         onCancel()
       }}
+      onSubmit={() => {
+        onConfirm(remember)
+      }}
     >
-      <DialogContent>
-        <Alert severity="warning" style={{ width: 800 }}>
-          {intro}
-          <ul>
-            {reason.map(r => (
-              <li key={pluginUrl(r)}>
-                {pluginDescriptionString(r)} - ({pluginUrl(r)})
-              </li>
-            ))}
-          </ul>
-          {trust}{' '}
-          <Button
-            variant="contained"
-            type="button"
-            size="small"
-            onClick={() => {
-              setShow(s => !s)
+      <Alert severity="warning" style={{ width: 800 }}>
+        {intro}
+        <ul>
+          {reason.map(r => (
+            <li key={pluginUrl(r)}>
+              {pluginDescriptionString(r)} - ({pluginUrl(r)})
+            </li>
+          ))}
+        </ul>
+        {trust}{' '}
+        <Button
+          variant="contained"
+          type="button"
+          size="small"
+          onClick={() => {
+            setShow(s => !s)
+          }}
+        >
+          {show ? 'Hide details' : 'Why am I seeing this?'}
+        </Button>
+        {show ? <div>{details}</div> : null}
+      </Alert>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={remember}
+            onChange={event => {
+              setRemember(event.target.checked)
             }}
-          >
-            {show ? 'Hide details' : 'Why am I seeing this?'}
-          </Button>
-          {show ? <div>{details}</div> : null}
-        </Alert>
-      </DialogContent>
-      <DialogActions>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={remember}
-              onChange={event => {
-                setRemember(event.target.checked)
-              }}
-            />
-          }
-          label="Remember on this site"
-        />
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={() => {
-            onConfirm(remember)
-          }}
-        >
-          Yes, I trust it
-        </Button>
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={() => {
-            onCancel()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+          />
+        }
+        label="Remember on this site"
+      />
+    </ConfirmDialog>
   )
 }

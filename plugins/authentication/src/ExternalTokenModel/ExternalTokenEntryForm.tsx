@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { SubmitDialog } from '@jbrowse/core/ui'
+import { TextField } from '@mui/material'
 
 export const ExternalTokenEntryForm = ({
   internetAccountId,
@@ -13,51 +13,32 @@ export const ExternalTokenEntryForm = ({
   const [token, setToken] = useState('')
 
   return (
-    <Dialog
+    <SubmitDialog
       open
       maxWidth="xl"
       data-testid="externalToken-form"
-      onClose={() => {
+      title={`Enter token for ${internetAccountId}`}
+      submitText="Add"
+      submitDisabled={!token}
+      onCancel={() => {
         handleClose()
       }}
-      title={`Enter token for ${internetAccountId}`}
+      onSubmit={() => {
+        handleClose(token)
+      }}
     >
-      <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
-        <TextField
-          required
-          label="Enter Token"
-          variant="outlined"
-          onChange={event => {
-            setToken(event.target.value)
-          }}
-          margin="dense"
-          slotProps={{
-            htmlInput: { 'data-testid': 'entry-externalToken' },
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          disabled={!token}
-          onClick={() => {
-            handleClose(token)
-          }}
-        >
-          Add
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <TextField
+        required
+        label="Enter Token"
+        variant="outlined"
+        onChange={event => {
+          setToken(event.target.value)
+        }}
+        margin="dense"
+        slotProps={{
+          htmlInput: { 'data-testid': 'entry-externalToken' },
+        }}
+      />
+    </SubmitDialog>
   )
 }
