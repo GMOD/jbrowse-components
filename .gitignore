@@ -20,6 +20,11 @@ yalc.lock
 .yalc
 **/package-lock.json
 **/__diff_output__/
+# Raster dumps some tests write for eyeballing. Nothing compares them, so a
+# tracked copy just goes stale and leaves the worktree permanently dirty — which
+# in a shared worktree means it rides along into someone else's commit. Anything
+# a test actually asserts belongs in __snapshots__/ or __image_snapshots__/.
+**/__debug_output__/
 **/dist/
 **/esm/
 **/nextstrain-demos-data/

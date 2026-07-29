@@ -25,7 +25,14 @@ beforeEach(() => {
 })
 
 const timeout = 100000
-const outDir = path.join(path.dirname(module.filename), '__overlap_demo__')
+// Eyeball-only output — these tests assert nothing about the pixels, so the
+// files go to the gitignored debug dir rather than being tracked and going
+// stale on every rendering change.
+const outDir = path.join(
+  path.dirname(module.filename),
+  '__debug_output__',
+  'overlap',
+)
 
 async function renderLinkedOverlap(name: string, loc: string, track: string) {
   const user = userEvent.setup()

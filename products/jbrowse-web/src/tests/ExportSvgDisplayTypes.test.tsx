@@ -23,6 +23,14 @@ const snapshotDir = path.join(
   path.dirname(module.filename),
   '__image_snapshots__',
 )
+// The rasterized exports are a base64 PNG blob: nothing compares them (the
+// assertions below only check that an <image> is present at all), and a diff of
+// one tells a reviewer nothing. Tracking them just meant three files that went
+// stale on any rendering change and left the worktree dirty. The vector dumps
+// stay in __image_snapshots__ — they're deterministic text that diffs usefully,
+// and most are pinned by a toMatchSnapshot() on the same string.
+const debugDir = path.join(path.dirname(module.filename), '__debug_output__')
+fs.mkdirSync(debugDir, { recursive: true })
 
 // node-canvas gives real PNG output instead of jsdom's empty "data:,"
 const canvasFactory = nodeCreateCanvas as unknown as (
@@ -64,7 +72,7 @@ test('wiggle display SVG rasterized export embeds PNG', async () => {
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/wiggle_rasterized_snapshot.svg`, svg)
+  fs.writeFileSync(`${debugDir}/wiggle_rasterized_snapshot.svg`, svg)
   expect(svg).toContain('<image')
   expect(svg).toContain('data:image/png;base64,iVBOR')
 }, 45000)
@@ -89,7 +97,7 @@ test('canvas feature display SVG rasterized export embeds PNG', async () => {
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/canvas_feature_rasterized_snapshot.svg`, svg)
+  fs.writeFileSync(`${debugDir}/canvas_feature_rasterized_snapshot.svg`, svg)
   expect(svg).toContain('<image')
   expect(svg).toContain('data:image/png;base64,iVBOR')
 }, 45000)
@@ -104,7 +112,7 @@ test('alignments display SVG rasterized export embeds PNG', async () => {
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/alignments_rasterized_snapshot.svg`, svg)
+  fs.writeFileSync(`${debugDir}/alignments_rasterized_snapshot.svg`, svg)
   expect(svg).toContain('<image')
   expect(svg).toContain('data:image/png;base64,iVBOR')
 }, 45000)
