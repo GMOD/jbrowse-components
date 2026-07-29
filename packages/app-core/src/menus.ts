@@ -52,15 +52,30 @@ export interface Menu {
   menuItems: MenuItem[] | (() => MenuItem[])
 }
 
-// the mutable menu helpers below can only operate on array-form menus; a
-// thunk-form menu computes its items dynamically and has nothing to splice into
-function staticItems(menu: Menu) {
-  if (typeof menu.menuItems === 'function') {
-    throw new Error(
-      `cannot add items to the "${menu.label}" menu because its items are generated dynamically`,
-    )
+// recursively copy the array spine so later splice/push helpers never mutate
+// the caller's array; leaf items (with their onClick/icon) are shared by ref
+function cloneMenuItems(items: MenuItem[]): MenuItem[] {
+  return items.map(item =>
+    'subMenu' in item
+      ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
+      : item,
+  )
+}
+
+// An array-form menu is mutated in place. A thunk-form menu recomputes its
+// items every time it opens, so there is nothing to splice into now: compose
+// the mutation into a new thunk that applies it to each fresh result.
+function mutateMenuItems(menu: Menu, mutate: (items: MenuItem[]) => void) {
+  const { menuItems } = menu
+  if (typeof menuItems === 'function') {
+    menu.menuItems = () => {
+      const items = cloneMenuItems(menuItems())
+      mutate(items)
+      return items
+    }
+  } else {
+    mutate(menuItems)
   }
-  return menu.menuItems
 }
 
 /**
@@ -112,8 +127,6 @@ export function insertMenu({
  * @param menuName - Name of the top-level menu to append to.
  *
  * @param menuItem - Menu item to append.
- *
- * @returns The new length of the menu
  */
 export function appendToMenu({
   menus,
@@ -125,11 +138,13 @@ export function appendToMenu({
   menuItem: MenuItem
 }) {
   const menu = menus.find(m => m.label === menuName)
-  if (!menu) {
+  if (menu) {
+    mutateMenuItems(menu, items => {
+      items.push(menuItem)
+    })
+  } else {
     menus.push({ label: menuName, menuItems: [menuItem] })
-    return 1
   }
-  return staticItems(menu).push(menuItem)
 }
 /**
  * #action
@@ -143,8 +158,6 @@ export function appendToMenu({
  * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
  * the second-to-last one. Note: a menu item with a `priority` set is
  * re-sorted at render time, which overrides this position.
- *
- * @returns The new length of the menu
  */
 export function insertInMenu({
   menus,
@@ -158,44 +171,53 @@ export function insertInMenu({
   position: number
 }) {
   const menu = menus.find(m => m.label === menuName)
-  if (!menu) {
+  if (menu) {
+    mutateMenuItems(menu, items => {
+      items.splice(
+        position < 0 ? items.length + position : position,
+        0,
+        menuItem,
+      )
+    })
+  } else {
     menus.push({ label: menuName, menuItems: [menuItem] })
-    return 1
   }
-  const items = staticItems(menu)
-  const insertPosition = position < 0 ? items.length + position : position
-  items.splice(insertPosition, 0, menuItem)
-  return items.length
 }
 /**
  * Find-or-create the top-level menu named by `menuPath[0]`, then walk the
- * remaining path segments (creating empty sub-menus as needed) and return the
- * deepest sub-menu's item array. Throws if a path segment exists but is not a
- * sub-menu.
+ * remaining path segments (creating empty sub-menus as needed) and apply
+ * `mutate` to the deepest sub-menu's item array. Throws if a path segment
+ * exists but is not a sub-menu.
  */
-function resolveSubMenuItems(menus: Menu[], menuPath: string[]) {
+function mutateSubMenuItems(
+  menus: Menu[],
+  menuPath: string[],
+  mutate: (items: MenuItem[]) => void,
+) {
   let topMenu = menus.find(m => m.label === menuPath[0])
   if (!topMenu) {
     const idx = appendMenu({ menus, menuName: menuPath[0]! })
     topMenu = menus[idx - 1]!
   }
-  let subMenu = staticItems(topMenu)
-  const pathSoFar = [menuPath[0]]
-  for (const menuName of menuPath.slice(1)) {
-    pathSoFar.push(menuName)
-    let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-    if (!sm) {
-      const idx = subMenu.push({ label: menuName, subMenu: [] })
-      sm = subMenu[idx - 1]!
+  mutateMenuItems(topMenu, items => {
+    let subMenu = items
+    const pathSoFar = [menuPath[0]]
+    for (const menuName of menuPath.slice(1)) {
+      pathSoFar.push(menuName)
+      let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
+      if (!sm) {
+        const idx = subMenu.push({ label: menuName, subMenu: [] })
+        sm = subMenu[idx - 1]!
+      }
+      if (!('subMenu' in sm)) {
+        throw new Error(
+          `"${menuName}" in path "${pathSoFar.join(' > ')}" is not a subMenu`,
+        )
+      }
+      subMenu = sm.subMenu
     }
-    if (!('subMenu' in sm)) {
-      throw new Error(
-        `"${menuName}" in path "${pathSoFar.join(' > ')}" is not a subMenu`,
-      )
-    }
-    subMenu = sm.subMenu
-  }
-  return subMenu
+    mutate(subMenu)
+  })
 }
 /**
  * #action
@@ -205,8 +227,6 @@ function resolveSubMenuItems(menus: Menu[], menuPath: string[]) {
  * top-level menu (e.g. `['File', 'Insert']`).
  *
  * @param menuItem - Menu item to append.
- *
- * @returns The new length of the sub-menu
  */
 export function appendToSubMenu({
   menus,
@@ -217,7 +237,9 @@ export function appendToSubMenu({
   menuPath: string[]
   menuItem: MenuItem
 }) {
-  return resolveSubMenuItems(menus, menuPath).push(menuItem)
+  mutateSubMenuItems(menus, menuPath, items => {
+    items.push(menuItem)
+  })
 }
 /**
  * #action
@@ -231,8 +253,6 @@ export function appendToSubMenu({
  * @param position - Position to insert menu item. If negative, counts
  * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
  * the second-to-last one.
- *
- * @returns The new length of the sub-menu
  */
 export function insertInSubMenu({
   menus,
@@ -245,20 +265,9 @@ export function insertInSubMenu({
   menuItem: MenuItem
   position: number
 }) {
-  const subMenu = resolveSubMenuItems(menus, menuPath)
-  const insertPosition = position < 0 ? subMenu.length + position : position
-  subMenu.splice(insertPosition, 0, menuItem)
-  return subMenu.length
-}
-
-// recursively copy the array spine so later splice/push helpers never mutate
-// the caller's array; leaf items (with their onClick/icon) are shared by ref
-function cloneMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(item =>
-    'subMenu' in item
-      ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
-      : item,
-  )
+  mutateSubMenuItems(menus, menuPath, items => {
+    items.splice(position < 0 ? items.length + position : position, 0, menuItem)
+  })
 }
 
 export function processMutableMenuActions(ret: Menu[], actions: MenuAction[]) {

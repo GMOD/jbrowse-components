@@ -15,13 +15,15 @@ function makeMenus(): Menu[] {
   return []
 }
 
-// the helpers under test only ever build array-form menus, so narrow for the
-// assertions that index into the items
+// resolve either menu form to the items a reader would see on open
 function itemsOf(menu: Menu): MenuItem[] {
-  if (typeof menu.menuItems === 'function') {
-    throw new Error('expected an array-form menu')
-  }
-  return menu.menuItems
+  return typeof menu.menuItems === 'function'
+    ? menu.menuItems()
+    : menu.menuItems
+}
+
+function labelsOf(menu: Menu) {
+  return itemsOf(menu).map(i => ('label' in i ? i.label : ''))
 }
 
 describe('appendMenu', () => {
@@ -233,6 +235,87 @@ describe('insertInSubMenu', () => {
   })
 })
 
+// jbrowse-web's File menu is a thunk (its recent-sessions list is recomputed on
+// open), and plugins append to it by name — jbrowse-plugin-hubs does exactly
+// this. The mutation has to compose into the thunk rather than reject it.
+describe('thunk-form menus', () => {
+  function makeThunkMenus(): Menu[] {
+    return [
+      {
+        label: 'File',
+        menuItems: () =>
+          [
+            { label: 'New session' },
+            { label: 'Open' },
+          ] as unknown as MenuItem[],
+      },
+    ]
+  }
+
+  it('appends to a thunk menu', () => {
+    const menus = makeThunkMenus()
+    appendToMenu({
+      menus,
+      menuName: 'File',
+      menuItem: { label: 'Open track hub' } as unknown as MenuItem,
+    })
+    expect(labelsOf(menus[0]!)).toEqual([
+      'New session',
+      'Open',
+      'Open track hub',
+    ])
+  })
+
+  it('inserts into a thunk menu at a position', () => {
+    const menus = makeThunkMenus()
+    insertInMenu({
+      menus,
+      menuName: 'File',
+      menuItem: { label: 'Save' } as unknown as MenuItem,
+      position: 1,
+    })
+    expect(labelsOf(menus[0]!)).toEqual(['New session', 'Save', 'Open'])
+  })
+
+  it('appends to a sub-menu of a thunk menu', () => {
+    const menus = makeThunkMenus()
+    appendToSubMenu({
+      menus,
+      menuPath: ['File', 'Import'],
+      menuItem: { label: 'From URL' } as unknown as MenuItem,
+    })
+    const importEntry = itemsOf(menus[0]!).find(
+      i => 'label' in i && i.label === 'Import',
+    )
+    expect(importEntry).toMatchObject({
+      label: 'Import',
+      subMenu: [{ label: 'From URL' }],
+    })
+  })
+
+  // the thunk's freshly-computed items are what a re-open must show, with the
+  // appended item still there and appended only once
+  it('re-runs the underlying thunk on every open', () => {
+    let opens = 0
+    const menus: Menu[] = [
+      {
+        label: 'File',
+        menuItems: () => {
+          opens += 1
+          return [{ label: `open ${opens}` }] as unknown as MenuItem[]
+        },
+      },
+    ]
+    appendToMenu({
+      menus,
+      menuName: 'File',
+      menuItem: { label: 'Open track hub' } as unknown as MenuItem,
+    })
+    expect(labelsOf(menus[0]!)).toEqual(['open 1', 'Open track hub'])
+    expect(labelsOf(menus[0]!)).toEqual(['open 2', 'Open track hub'])
+  })
+})
+
 describe('processMutableMenuActions', () => {
   it('processes setMenus action', () => {
     const initial: Menu[] = [{ label: 'Old', menuItems: [] }]
@@ -331,9 +414,33 @@ describe('processMutableMenuActions', () => {
     ]
     const first = processMutableMenuActions([], actions)
     const second = processMutableMenuActions([], actions)
-    const labelsOf = (r: Menu[]) =>
-      itemsOf(r[0]!).map(i => ('label' in i ? i.label : ''))
-    expect(labelsOf(first)).toEqual(['About'])
-    expect(labelsOf(second)).toEqual(['About'])
+    expect(labelsOf(first[0]!)).toEqual(['About'])
+    expect(labelsOf(second[0]!)).toEqual(['About'])
+  })
+
+  // same replay hazard as above, but the base menu is a thunk: wrapping must
+  // not accumulate across the menus() re-renders that replay the action list
+  it('is idempotent across replays into a thunk menu', () => {
+    const actions: MenuAction[] = [
+      {
+        type: 'appendToMenu',
+        menuName: 'File',
+        menuItem: { label: 'Open track hub' } as unknown as MenuItem,
+      },
+    ]
+    const base = (): Menu[] => [
+      {
+        label: 'File',
+        menuItems: () => [{ label: 'New session' }] as unknown as MenuItem[],
+      },
+    ]
+    expect(labelsOf(processMutableMenuActions(base(), actions)[0]!)).toEqual([
+      'New session',
+      'Open track hub',
+    ])
+    expect(labelsOf(processMutableMenuActions(base(), actions)[0]!)).toEqual([
+      'New session',
+      'Open track hub',
+    ])
   })
 })
