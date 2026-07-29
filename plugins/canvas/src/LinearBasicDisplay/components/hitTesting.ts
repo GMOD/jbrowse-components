@@ -167,11 +167,10 @@ export function hoverTooltip(result: HitFeatureResult) {
 // with `<br/>` is the standard mouseover idiom, and textContent alone would run
 // those fields together into one line.
 export function htmlToPlainText(html: string) {
-  const { textContent } = new DOMParser().parseFromString(
+  return new DOMParser().parseFromString(
     html.replace(/<br\s*\/?>/gi, '\n'),
     'text/html',
-  ).body
-  return textContent ?? ''
+  ).body.textContent
 }
 
 // The same content as the hover tooltip, as plain text for the clipboard: rows

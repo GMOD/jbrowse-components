@@ -420,10 +420,16 @@ export default function stateModelFactory(
        * height split evenly across rows so all rows stay visible as the row count
        * grows. Any positive value is a pinned px height. Every consumer reads
        * this, never `rowHeightSetting`.
+       *
+       * Auto-fit is not floored at a pixel: a display given thousands of rows
+       * would otherwise stop fitting and grow to a pixel a row instead, which is
+       * a track thousands of pixels tall rather than the dense overview asked
+       * for. The floor lives in `rowBand`, where a sub-pixel row is widened for
+       * drawing without changing how many rows fit.
        */
       get rowHeight(): number {
         return self.rowHeightSetting === 0
-          ? Math.max(1, self.fitTargetHeight / self.nrow)
+          ? self.fitTargetHeight / self.nrow
           : self.rowHeightSetting
       },
     }))
