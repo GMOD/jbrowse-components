@@ -43,14 +43,35 @@ public struct RowRectVsOut {
   public float4 color    : COLOR0;
 };
 
+// Thinnest a row is ever painted. Vertical twin of the min-width floor used
+// below: a row thinner than a pixel can miss every pixel center and disappear,
+// so without this rows drop out as they get denser instead of just getting
+// thinner. Floored, neighbours overlap instead.
+static const float MIN_DRAWN_ROW_PX = 1.0;
+
+public struct RowBand {
+  public float height;  // what the rect is painted at
+  public float offset;  // inset from the row's top, negative once floored
+};
+
+// Mirror of `rowBand` / `drawnRowHeight` in rowBand.ts, which the Canvas2D
+// painter, the indel glyphs and the hover box all inset from. Keep the two in
+// step: a row drawn here and hit-tested there must be the same band.
+public RowBand rowBandPx(float rowHeight, float rowProportion) {
+  RowBand band;
+  band.height = max(rowHeight * rowProportion, MIN_DRAWN_ROW_PX);
+  band.offset = (rowHeight - band.height) * 0.5;
+  return band;
+}
+
 public RowRectVsOut rowRectVertex(
   RowRectInstance inst, uint vid, RowRectUniforms u
 ) {
   float2 local = quadLocal(vid);
 
-  float h      = u.rowHeight * u.rowProportion;
-  float offset = (u.rowHeight - h) * 0.5;
-  float rowY   = offset + u.rowHeight * float(inst.rowIndex);
+  RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
+  float h      = band.height;
+  float rowY   = band.offset + u.rowHeight * float(inst.rowIndex);
 
   float sx1 = hpToClipX(hpSplitUint(inst.startBp), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(inst.endBp), u.bpRangeX, u.zero);
