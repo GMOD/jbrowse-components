@@ -1,36 +1,24 @@
-import { getSession } from '@jbrowse/core/util'
-import { isSessionWithSessionTracks } from '@jbrowse/product-core'
-
-import type { MinimalModel, TrackNodeSource, TreeNode } from './types.ts'
+import type { TrackNodeSource, TreeNode } from './types.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface NodeWithChildren {
   children: TreeNode[]
 }
 
 export function generateHierarchy({
-  model,
   trackSources,
+  sessionTrackIds,
+  filteredTrackSet,
   extra,
   noCategories,
 }: {
-  model: MinimalModel
   noCategories?: boolean
   trackSources: TrackNodeSource[]
+  sessionTrackIds: Set<string>
+  filteredTrackSet: Set<AnyConfigurationModel>
   extra?: string
 }): TreeNode[] {
   const root: NodeWithChildren = { children: [] }
-  const { filteredTrackSet } = model
-  const session = getSession(model)
-
-  // a non-admin's added/copied tracks live in session.sessionTracks and are
-  // grouped under a "Session tracks" category. Membership is the session's own
-  // list — the source of truth — not a suffix baked into the trackId.
-  const sessionTrackIds = new Set(
-    isSessionWithSessionTracks(session)
-      ? session.sessionTracks.map(t => t.trackId)
-      : [],
-  )
-
   const categoryMaps = new Map<NodeWithChildren, Map<string, TreeNode>>()
 
   // trackSources arrive resolved and sorted (see model.allTracks), so nothing

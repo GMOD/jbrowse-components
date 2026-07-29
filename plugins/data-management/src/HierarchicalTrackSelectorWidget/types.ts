@@ -41,7 +41,3 @@ export interface TrackNodeSource {
   categories: string[]
   searchText: string
 }
-
-export interface MinimalModel {
-  filteredTrackSet: Set<AnyConfigurationModel>
-}

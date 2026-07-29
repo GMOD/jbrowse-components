@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 import { autorun, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
@@ -605,6 +606,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * a non-admin's added/copied tracks, which the tree groups under a
+       * "Session tracks" category. Membership is the session's own list — the
+       * source of truth — not a suffix baked into the trackId
+       */
+      get sessionTrackIds() {
+        const session = getSession(self)
+        return new Set(
+          isSessionWithSessionTracks(session)
+            ? session.sessionTracks.map(t => t.trackId)
+            : [],
+        )
+      },
+
+      /**
+       * #getter
        * map restricted to tracks the current view can display; derived from
        * allTracks so connection tracks go through exactly one filterTracks()
        * pass, shared with the tree, and favorites / recently-used can't surface
@@ -642,8 +658,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * a group is kept even when no track in it survives the filter, so an
+       * empty connection still shows in the tree
        */
       get hierarchy() {
+        const { sessionTrackIds, filteredTrackSet } = self
         return {
           name: 'Root',
           id: 'Root',
@@ -656,8 +675,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             defaultCollapsed: s.defaultCollapsed,
             loading: s.loading,
             children: generateHierarchy({
-              model: self,
               trackSources: s.tracks,
+              sessionTrackIds,
+              filteredTrackSet,
               extra: s.id,
               noCategories: s.noCategories,
             }),
