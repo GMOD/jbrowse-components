@@ -32,7 +32,13 @@ const HierarchicalTree = observer(function HierarchicalTree({
       ref={containerRef}
       style={{ height, overflowY: 'auto' }}
       onScroll={e => {
-        setScrollTop(e.currentTarget.scrollTop)
+        // the overscan means most scroll events don't change which rows are
+        // mounted; only re-render when they cross out of the rendered window
+        const next = e.currentTarget.scrollTop
+        const range = model.itemOffsets(height, next)
+        if (range.startIndex !== startIndex || range.endIndex !== endIndex) {
+          setScrollTop(next)
+        }
       }}
     >
       <div

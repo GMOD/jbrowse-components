@@ -6,11 +6,15 @@ import {
   getSession,
   isSessionModelWithConnectionEditing,
   isSessionModelWithConnections,
-  isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
+
+import {
+  showAddConnectionWidget,
+  showAddTrackWidget,
+} from '../../showAddWidget.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -61,13 +65,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
                 {
                   label: 'Add track...',
                   onClick: () => {
-                    if (isSessionModelWithWidgets(session)) {
-                      session.showWidget(
-                        session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                          view: model.view.id,
-                        }),
-                      )
-                    }
+                    showAddTrackWidget(session, model.view.id)
                   },
                 },
               ]
@@ -82,14 +80,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
                     {
                       label: 'Add connection...',
                       onClick: () => {
-                        if (isSessionModelWithWidgets(session)) {
-                          session.showWidget(
-                            session.addWidget(
-                              'AddConnectionWidget',
-                              'addConnectionWidget',
-                            ),
-                          )
-                        }
+                        showAddConnectionWidget(session)
                       },
                     },
                     {

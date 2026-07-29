@@ -3,13 +3,17 @@ import { useState } from 'react'
 import {
   getSession,
   isSessionModelWithConnections,
-  isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import { Fab, Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import {
+  showAddConnectionWidget,
+  showAddTrackWidget,
+} from '../showAddWidget.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
@@ -58,14 +62,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
           <MenuItem
             onClick={() => {
               setAnchorEl(null)
-              if (isSessionModelWithWidgets(session)) {
-                session.showWidget(
-                  session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  ),
-                )
-              }
+              showAddConnectionWidget(session)
             }}
           >
             Add connection
@@ -75,13 +72,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
           <MenuItem
             onClick={() => {
               setAnchorEl(null)
-              if (isSessionModelWithWidgets(session)) {
-                session.showWidget(
-                  session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                    view: model.view.id,
-                  }),
-                )
-              }
+              showAddTrackWidget(session, model.view.id)
             }}
           >
             Add track

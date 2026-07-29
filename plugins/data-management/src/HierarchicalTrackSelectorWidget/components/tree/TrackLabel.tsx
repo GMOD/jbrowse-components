@@ -1,6 +1,6 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { FormControlLabel } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import { isUnsupported } from '../../util.ts'
@@ -12,18 +12,41 @@ import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
+// checkboxLabel merges MUI FormControlLabel's root styles, so the row renders a
+// plain <label> instead of mounting FormControlLabel + its Typography wrapper
+// once per virtualized row. marginLeft -11 is MUI's own offset, kept so track
+// rows keep aligning with their parent category
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
     padding: 0,
   },
   checkboxLabel: {
+    // FormControlLabel wrapped the label text in a body1 <Typography>; restated
+    // here rather than left to inherit, so dropping that wrapper can't change
+    // the row's type
+    fontFamily: theme.typography.body1.fontFamily,
+    fontWeight: theme.typography.body1.fontWeight,
+    fontSize: theme.typography.body1.fontSize,
+    lineHeight: theme.typography.body1.lineHeight,
+    letterSpacing: theme.typography.body1.letterSpacing,
+    display: 'inline-flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    verticalAlign: 'middle',
+    WebkitTapHighlightColor: 'transparent',
+    marginLeft: -11,
     marginRight: 0,
     '&:hover': {
       backgroundColor: theme.palette.action.selected,
     },
   },
   selected: {
-    background: '#cccc',
+    // stronger than the hover tint (action.selected), which this would
+    // otherwise be indistinguishable from, and readable in both modes
+    background: alpha(
+      theme.palette.primary.main,
+      theme.palette.action.selectedOpacity * 4,
+    ),
   },
   label: {
     display: 'flex',
@@ -99,7 +122,7 @@ const TrackLabel = observer(function TrackLabel({
 
   return (
     <>
-      <FormControlLabel
+      <label
         className={classes.checkboxLabel}
         data-tooltip={description}
         aria-description={description}
@@ -113,25 +136,22 @@ const TrackLabel = observer(function TrackLabel({
             event.preventDefault()
           }
         }}
-        control={
-          <TrackCheckbox
-            model={model}
-            trackId={trackId}
-            disabled={isUnsupported(name)}
-            className={classes.compactCheckbox}
-          />
-        }
-        label={
-          <TrackLabelText
-            model={model}
-            conf={conf}
-            id={id}
-            name={name}
-            trackId={trackId}
-            selectedClass={classes.selected}
-          />
-        }
-      />
+      >
+        <TrackCheckbox
+          model={model}
+          trackId={trackId}
+          disabled={isUnsupported(name)}
+          className={classes.compactCheckbox}
+        />
+        <TrackLabelText
+          model={model}
+          conf={conf}
+          id={id}
+          name={name}
+          trackId={trackId}
+          selectedClass={classes.selected}
+        />
+      </label>
       <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )

@@ -10,12 +10,12 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import FolderIcon from '@mui/icons-material/Folder'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isNodeCollapsed } from '../../model.ts'
 import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
+import MoreHorizGlyph from './MoreHorizGlyph.tsx'
 import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -224,7 +224,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
           setMenuOpen(open)
         }}
       >
-        <MoreHorizIcon />
+        <MoreHorizGlyph />
       </CascadingMenuButton>
     </div>
   )
@@ -278,7 +278,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
             setMenuOpen(open)
           }}
         >
-          <MoreHorizIcon />
+          <MoreHorizGlyph />
         </CascadingMenuButton>
       </Typography>
     </div>

@@ -13,7 +13,19 @@ const levelWidth = 10
 const useStyles = makeStyles()(theme => ({
   nestingLevelMarker: {
     position: 'absolute',
-    borderLeft: '1.5px solid #555',
+    borderLeft: `1.5px solid ${theme.palette.action.disabled}`,
+  },
+  // only height/top/marginLeft vary per row, so everything else lives in a
+  // class rather than a per-row inline style object
+  row: {
+    position: 'absolute',
+    width: '100%',
+    display: 'flex',
+    cursor: 'pointer',
+  },
+  rowContent: {
+    whiteSpace: 'nowrap',
+    flex: 1,
   },
   accordionCard: {
     padding: 3,
@@ -82,7 +94,7 @@ const TreeItem = observer(function TreeItem({
   model: HierarchicalTrackSelectorModel
   top: number
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const { useAccordionStyle, height } = getNodePresentation(
     item,
     model.folderCategories,
@@ -92,24 +104,18 @@ const TreeItem = observer(function TreeItem({
     nestingLevel * levelWidth + (item.type === 'category' ? 0 : levelWidth)
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        width: '100%',
-        display: 'flex',
-        cursor: 'pointer',
-        height,
-        top,
-      }}
-    >
+    <div className={classes.row} style={{ height, top }}>
       <NestingMarkers
         nestingLevel={nestingLevel}
         height={height}
         className={classes.nestingLevelMarker}
       />
       <div
-        className={useAccordionStyle ? classes.accordionCard : undefined}
-        style={{ marginLeft, whiteSpace: 'nowrap', flex: 1 }}
+        className={cx(
+          classes.rowContent,
+          useAccordionStyle ? classes.accordionCard : undefined,
+        )}
+        style={{ marginLeft }}
       >
         {item.type === 'category' ? (
           <CategoryRow
