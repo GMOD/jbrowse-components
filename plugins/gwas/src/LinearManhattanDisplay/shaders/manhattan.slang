@@ -129,30 +129,32 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  if (fragIn.shape > 2.5) {
-    // Ranged-SV bar: solid fill, no marker AA.
-    return fragIn.color;
-  }
+  // Each glyph only picks its SDF here; the AA derivative is taken once after
+  // the branch, because WGSL rejects a derivative under a branch on a varying
+  // ("must only be called from uniform control flow"). shape is constant per
+  // primitive, so the shared ramp is exact.
   float2 p = fragIn.localPos;
-  float alpha;
-  if (fragIn.shape > 1.5) {
+  float coverage;
+  if (fragIn.shape > 2.5) {
+    // Ranged-SV bar: solid fill, no marker AA. A constant SDF has zero
+    // gradient, so the ramp below saturates to alpha 1.
+    coverage = 1.0;
+  } else if (fragIn.shape > 1.5) {
     // Inverted triangle: top edge (-1,1)-(1,1), apex (0,-1). Each edge's signed
     // distance is positive inside; the min is the SDF used for the AA fade.
     float dTop = 1.0 - p.y;
     float dLeft = (2.0 * p.x + p.y + 1.0) * INV_SQRT5;
     float dRight = (-2.0 * p.x + p.y + 1.0) * INV_SQRT5;
-    float coverage = min(dTop, min(dLeft, dRight));
-    float aa = fwidth(coverage);
-    alpha = smoothstep(-aa, aa, coverage);
+    coverage = min(dTop, min(dLeft, dRight));
   } else if (fragIn.shape > 0.5) {
     // Diamond (rhombus): L1-norm distance from center, positive inside,
     // zero at the four edges — the LocusZoom-style lead-SNP marker.
-    float coverage = 1.0 - (abs(p.x) + abs(p.y));
-    float aa = fwidth(coverage);
-    alpha = smoothstep(-aa, aa, coverage);
+    coverage = 1.0 - (abs(p.x) + abs(p.y));
   } else {
-    alpha = discAlpha(p);
+    coverage = discCoverage(p);
   }
+  float aa = max(fwidth(coverage), 1e-5);
+  float alpha = smoothstep(-aa, aa, coverage);
   if (alpha <= 0.0) discard;
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

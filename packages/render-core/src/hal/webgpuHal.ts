@@ -34,23 +34,19 @@ const MAX_UNIFORM_SLOTS = 2048
 const MSAA_SAMPLE_COUNT: 1 | 4 = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
-  // RGB uses the caller-supplied factors; alpha always uses ONE / ONE_MINUS_SRC_ALPHA
-  // so the destination alpha accumulates correctly (matches webgl2Hal.applyBlendState).
-  // 'max' applies to both components (factors ignored by the max operation), so
-  // same-color overlaps take the higher coverage instead of accumulating.
-  const operation = bs.op ?? 'add'
-  return {
-    color: {
-      srcFactor: bs.srcFactor,
-      dstFactor: bs.dstFactor,
-      operation,
-    },
-    alpha: {
-      srcFactor: 'one',
-      dstFactor: 'one-minus-src-alpha',
-      operation,
-    },
-  }
+  // Max ignores its factors, but WebGPU still validates them and rejects
+  // anything but 'one' on both channels ("Destination blend factor ... is
+  // defined and not BlendFactor::One when blend operation is
+  // BlendOperation::Max"). Same blend as webgl2Hal's bare glBlendEquation(MAX).
+  const max = { srcFactor: 'one', dstFactor: 'one', operation: 'max' } as const
+  // Otherwise RGB uses the caller-supplied factors and alpha always accumulates
+  // through ONE / ONE_MINUS_SRC_ALPHA (matches webgl2Hal.applyBlendState).
+  return bs.op === 'max'
+    ? { color: max, alpha: max }
+    : {
+        color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor },
+        alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+      }
 }
 
 // One entry per (region, pass). `dataBuffer` is the vertex buffer bound via

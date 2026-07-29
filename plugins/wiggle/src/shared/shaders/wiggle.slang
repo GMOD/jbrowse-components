@@ -25,18 +25,6 @@ static const int SCALE_TYPE_LOG = 1;
 // genomic coordinate, so it never collides with a real start.
 static const uint NO_PREV_START = 0xffffffffu;
 
-// Scatter glyph shapes carved by the fragment shader (matches manhattan.slang):
-// point-like features become an AA disc, tiny points a crisp square.
-// SMALL_POINT_MAX_DIAMETER and the disc SDF live in the shared pointGlyph
-// module so they stay in lockstep with manhattan.slang.
-static const float SHAPE_SOLID = 0.0;
-static const float SHAPE_DISC = 1.0;
-// Antialiased line capsule (linecenter). localPos = segment_coord (along, perp)
-// in px from the segment center, segHalfLen = the body half-length; the fragment
-// evaluates the capsule SDF into angle-uniform analytic coverage and outputs
-// premultiplied alpha for the max-blend PASS_LINE_CENTER.
-static const float SHAPE_LINE = 2.0;
-
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
   float score     : ATTR1;
@@ -73,14 +61,30 @@ float bpToClipX(uint bp, Uniforms u) {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  // scatter: local quad coord (-1..1) for disc AA. center-line (SHAPE_LINE):
-  // segment_coord — signed px distance (along, perp) from the SEGMENT CENTER, so
-  // the fragment can evaluate the capsule SDF. shape selects the fragment path;
-  // segHalfLen is the segment's half-length in px (the capsule body extent).
+  // scatter: local quad coord (-1..1) for disc AA. center-line: segment_coord —
+  // signed px distance (along, perp) from the SEGMENT CENTER, so the fragment
+  // can evaluate the capsule SDF, with segHalfLen the segment's half-length in
+  // px (the capsule body extent).
   float2 localPos : TEXCOORD0;
-  float  shape    : TEXCOORD1;
-  float  segHalfLen : TEXCOORD2;
+  float  segHalfLen : TEXCOORD1;
 };
+
+// Which glyph the pass draws follows entirely from uniforms, so both stages
+// derive it instead of passing a discriminator varying. That also keeps the
+// fragment's branch in UNIFORM control flow, which WGSL requires around the
+// derivatives it takes (a branch on a varying is rejected outright).
+//
+// Point-like scatter features become an AA disc; tiny ones a crisp square, like
+// manhattan.slang. SMALL_POINT_MAX_DIAMETER and the disc SDF live in the shared
+// pointGlyph module so the two stay in lockstep.
+bool drawsDisc() {
+  return u.renderingType == RENDERING_TYPE_SCATTER
+    && u.scatterPointSize > SMALL_POINT_MAX_DIAMETER;
+}
+
+bool drawsCapsule() {
+  return u.renderingType == RENDERING_TYPE_LINE_CENTER;
+}
 
 float normalizeScore(float score, float domainMin, float domainMax, int scaleType) {
   // `max(range, 1e-6)` guards a degenerate (min==max) domain from dividing by
@@ -118,7 +122,6 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
 
   float sx;
   float sy;
-  float shape = SHAPE_SOLID;
   float2 localPos = float2(0.0, 0.0);
   float segHalfLen = 0.0;
 
@@ -199,7 +202,6 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     sy = 1.0 - (centerYpx + dir.y * la + nrm.y * lp) * pxToClip;
     localPos = float2(la, lp);
     segHalfLen = len * 0.5;
-    shape = SHAPE_LINE;
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
     // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
@@ -207,14 +209,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float midX = (sx1 + sx2) * 0.5;
     float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float2 q = quadLocal(vid);
-    if (u.scatterPointSize <= SMALL_POINT_MAX_DIAMETER) {
-      // tiny point: pixel-snapped crisp filled square (SHAPE_SOLID), no AA disc
-      float2 centerPx = float2((midX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
-      float2 vPx = crispSquareCornerPx(centerPx, u.scatterPointSize, q);
-      sx = vPx.x / u.viewportWidth * 2.0 - 1.0;
-      sy = 1.0 - vPx.y * pxToClip;
-      shape = SHAPE_SOLID;
-    } else {
+    if (drawsDisc()) {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
       float radiusPx = u.scatterPointSize * 0.5;
       float2 local = q * 2.0 - float2(1.0, 1.0);
@@ -222,8 +217,13 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       float halfPx = radiusPx * expand;
       sx = midX + local.x * halfPx * 2.0 / u.viewportWidth;
       sy = (1.0 - scoreYPx * pxToClip) + local.y * halfPx * pxToClip;
-      shape = SHAPE_DISC;
       localPos = local * expand;
+    } else {
+      // tiny point: pixel-snapped crisp filled square, no AA disc
+      float2 centerPx = float2((midX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
+      float2 vPx = crispSquareCornerPx(centerPx, u.scatterPointSize, q);
+      sx = vPx.x / u.viewportWidth * 2.0 - 1.0;
+      sy = 1.0 - vPx.y * pxToClip;
     }
   } else {
     // 1.5 CSS px minimum width matches WIGGLE_MIN_PX in the Canvas2D path.
@@ -263,7 +263,6 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   o.position = float4(sx, sy, 0.0, 1.0);
   o.color = outColor;
   o.localPos = localPos;
-  o.shape = shape;
   o.segHalfLen = segHalfLen;
   return o;
 }
@@ -271,29 +270,28 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float4 outColor;
-  if (fragIn.shape == SHAPE_DISC) {
+  if (drawsDisc()) {
     float alpha = discAlpha(fragIn.localPos);
     if (alpha <= 0.0) {
       discard;
     }
     outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
-  } else if (fragIn.shape == SHAPE_LINE) {
-    // Capsule SDF: distance from this fragment to the segment's centerLINE, in
-    // px. localPos = segment_coord (along, perp) from the segment center;
-    // clamping the along-overhang past ±segHalfLen to 0 gives rounded caps of
-    // radius halfPx. Coverage = halfPx − dist, divided by the true gradient
-    // magnitude (=1, a proper SDF) for an angle-uniform 1px AA edge. Round caps
-    // on adjacent capsules coincide at the shared vertex, so the max-blend pass
-    // unions them into a seamless round join at any angle. PREMULTIPLIED output
-    // so same-color overlaps union (max) rather than accumulating.
+  } else if (drawsCapsule()) {
+    // Capsule SDF: px distance to the segment centerline. localPos =
+    // segment_coord (along, perp) from the segment center; clamping the
+    // along-overhang past ±segHalfLen to 0 gives rounded caps. Dividing by the
+    // true gradient magnitude (=1, a proper SDF) gives an angle-uniform 1px AA
+    // edge, and coincident caps let the max-blend pass union adjacent capsules
+    // into a seamless round join at any angle.
     float alongOver = max(abs(fragIn.localPos.x) - fragIn.segHalfLen, 0.0);
     float dist = length(float2(alongOver, fragIn.localPos.y));
-    float halfPx = u.lineWidth * 0.5;
     float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-4);
-    float alpha = clamp((halfPx - dist) / aa + 0.5, 0.0, 1.0);
+    float alpha = clamp((u.lineWidth * 0.5 - dist) / aa + 0.5, 0.0, 1.0);
     if (alpha <= 0.0) {
       discard;
     }
+    // PREMULTIPLIED output so same-color overlaps union (max) rather than
+    // accumulating.
     outColor = float4(fragIn.color.rgb * alpha, alpha);
   } else {
     // Solid modes (xyplot/density/step-line) and the wide-bin bar are flat fills;

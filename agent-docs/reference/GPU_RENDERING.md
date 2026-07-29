@@ -720,6 +720,32 @@ two real consumers with a live drift hazard — not on surface similarity; see
 `topology`, `blendState`, `textures`, and buffer sharing. Authoring conventions
 and gotchas: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
 
+### WGSL validates what GLSL waves through
+
+Codegen emitting both backends means a shader can pass `pnpm gen:shaders`, run
+fine on WebGL2, and be rejected at `createShaderModule` on WebGPU. Two rules the
+WebGL2 path never enforces:
+
+- **Derivatives (`ddx`/`ddy`/`fwidth`) must sit in uniform control flow.** A
+  fragment shader that branches on a varying — a `shape` discriminator, an early
+  `return` — and then takes a derivative inside that branch fails with `'dpdy'
+  must only be called from uniform control flow`. Fix: each branch picks only its
+  SDF, and the derivative + AA ramp run once after the branch (`manhattan.slang`),
+  or compute every glyph's alpha before the branch and let it select
+  (`wiggle.slang`). Reconvergence restores uniformity, so a plain `if/else` that
+  assigns and falls through is fine; `discard` doesn't demote it either.
+- **A `max` blend operation takes no factors.** WebGPU rejects any factor but
+  `one` on either channel, so `BlendState` makes `{ op: 'max' }` a variant with no
+  factor fields at all rather than letting an ignored-but-invalid pair be written.
+
+Both survive review easily because the WebGL2 fallback renders correctly; the
+only signal is a `[GPU] UNCAPTURED ERROR` / `GPUPipelineError` in a WebGPU
+browser. To check every shader at once without the app, drive puppeteer at a
+**secure origin** (`navigator.gpu` is undefined on `about:blank`) with a
+WebGPU-capable Chrome, import each `*.generated.ts`, and read
+`createShaderModule(...).getCompilationInfo()`; wrap `createRenderPipeline` in
+`pushErrorScope('validation')` for the blend/pipeline half.
+
 ## Canvas scaling & hi-DPI
 
 **GPU canvases (HAL-managed):** shader uniforms are in CSS pixels; HAL sets the

@@ -37,11 +37,20 @@ public float2 crispSquareCornerPx(float2 centerPx, float diameterPx, float2 q) {
   return topLeft + q * diameterPx;
 }
 
-// Antialiased disc coverage → alpha. localPos is the expanded quad-local coord
+// Disc SDF, positive inside. localPos is the expanded quad-local coord
 // (-expand..expand); the disc boundary sits at distance 1, so the SDF is
-// `1 - length`. fwidth-based smoothstep gives a resolution-independent 1px fade.
+// `1 - length`. Exposed separately for shaders that select between several
+// glyph SDFs and take the AA derivative once afterwards — WGSL only allows
+// derivatives in uniform control flow, so they can't call discAlpha inside a
+// branch on a varying.
+public float discCoverage(float2 localPos) {
+  return 1.0 - length(localPos);
+}
+
+// Antialiased disc coverage → alpha. fwidth-based smoothstep gives a
+// resolution-independent 1px fade. Only call from uniform control flow.
 public float discAlpha(float2 localPos) {
-  float coverage = 1.0 - length(localPos);
+  float coverage = discCoverage(localPos);
   float aa = fwidth(coverage);
   return smoothstep(-aa, aa, coverage);
 }

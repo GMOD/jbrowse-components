@@ -2,7 +2,7 @@ import { syncCanvasSize } from '../canvas2dUtils.ts'
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
-import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
+import type { BlendFactor, GpuHal, PassDescriptor } from './types.ts'
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -101,7 +101,7 @@ function glErrorName(gl: WebGL2RenderingContext, code: number) {
 
 function glBlendFactor(
   gl: WebGL2RenderingContext,
-  factor: BlendState['srcFactor'],
+  factor: BlendFactor,
 ): number {
   switch (factor) {
     case 'one':

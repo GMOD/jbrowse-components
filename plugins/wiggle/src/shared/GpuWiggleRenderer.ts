@@ -54,7 +54,7 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
     id: PASS_LINE_CENTER,
     mod: wiggleShader,
     topology: 'triangle-list',
-    blendState: { srcFactor: 'one', dstFactor: 'one', op: 'max' },
+    blendState: { op: 'max' },
   }),
 ]
 

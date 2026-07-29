@@ -7,14 +7,16 @@ export interface GlAttributeLayout {
   integer: boolean
 }
 
-export interface BlendState {
-  srcFactor: 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
-  dstFactor: 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
-  // Blend equation. 'add' (default) = src*srcFactor + dst*dstFactor. 'max' =
-  // per-channel max(src, dst), ignoring factors — used by same-color AA lines so
-  // overlapping segments union instead of darkening under src-over accumulation.
-  op?: 'add' | 'max'
-}
+export type BlendFactor = 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
+
+// Blend equation. 'add' (default) = src*srcFactor + dst*dstFactor. 'max' =
+// per-channel max(src, dst) — used by same-color AA lines so overlapping
+// segments union instead of darkening under src-over accumulation. Max ignores
+// blend factors entirely (and WebGPU rejects any factor but 'one' under it), so
+// that variant carries none.
+export type BlendState =
+  | { op?: 'add'; srcFactor: BlendFactor; dstFactor: BlendFactor }
+  | { op: 'max' }
 
 export interface TextureBinding {
   // WebGPU binding index for the texture view (e.g. 2)
