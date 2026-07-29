@@ -113,6 +113,29 @@ test('multi-column insertion emits one entry per row with the correct length', (
   ])
 })
 
+// A malformed file can ship a row shorter than the reference. Out of range a
+// typed array reads `undefined`, which is neither '-' nor ' ', so the missing
+// tail used to read as real bases: phantom depth, a mismatch against base code
+// 0, and phantom insertion length. Every other per-column row walk already
+// stopped at the row's end (`renderBases`, `buildInstanceBuffer`,
+// `IdentityColumns.accumulate`), so coverage disagreed with what was drawn.
+test('a row shorter than the reference contributes nothing past its end', () => {
+  const blocks: MafBlock[] = [block(10, 'ACGT', [row(0, 'ACGT'), row(1, 'AC')])]
+  const r = computeMafCoverage(blocks, 10, 14)
+  expect(Array.from(r.depths)).toEqual([2, 2, 1, 1])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
+  // identity over the truncated row: defined where it has bases, NaN past them
+  const full = computeMafCoverage(blocks, 10, 14, 0)
+  expect(Array.from(full.identity)).toEqual([1, 1, Number.NaN, Number.NaN])
+})
+
+test('a short row emits no phantom insertion in a reference-gap column', () => {
+  // Ref has a 2-column insertion at refPos=51; row1 ends before it.
+  const blocks: MafBlock[] = [block(50, 'A--T', [row(0, 'AGCT'), row(1, 'A')])]
+  const r = computeMafCoverage(blocks, 50, 52)
+  expect(r.insertions).toEqual([{ position: 51, length: 2 }])
+})
+
 test('clamps to region bounds — bases outside [regionStart, regionEnd) are ignored', () => {
   const blocks: MafBlock[] = [block(100, 'ACGTAC', [row(0, 'ACGTAC')])]
   const r = computeMafCoverage(blocks, 102, 105)

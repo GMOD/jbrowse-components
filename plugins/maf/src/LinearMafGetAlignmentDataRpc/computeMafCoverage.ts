@@ -1,9 +1,7 @@
-import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
+import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../util/asciiBytes.ts'
 
 import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { InsertionEntry } from '@jbrowse/alignments-core'
-
-const N_UPPER = 78 // 'N'
 
 /**
  * Growable `(position, base)` pairs. Mismatches are the one per-base-per-row
@@ -41,6 +39,27 @@ class MismatchWriter {
       mismatchBases: this.bases.slice(0, this.count),
     }
   }
+}
+
+/**
+ * The sample's aligned base at column `col`, uppercased — or undefined when the
+ * column carries no base for this row: an alignment gap (`-`), missing data
+ * (` `), or a column past the end of a row shorter than the reference.
+ *
+ * That last case is why this is a helper rather than the test spelled out at
+ * each use. A typed array reads `undefined` out of range and `undefined` is
+ * neither `DASH` nor `SPACE`, so both walks below used to count a phantom base
+ * at every missing column of a truncated row — phantom insertion length,
+ * phantom depth, and a mismatch recorded against base code 0. Every other
+ * per-column row walk in the plugin stops at the row's end (`renderBases`,
+ * `buildInstanceBuffer`, `IdentityColumns.accumulate`); one helper keeps the
+ * three conditions together so a new caller can't drop one.
+ */
+function alignedBaseUpper(alignmentBytes: Uint8Array, col: number) {
+  const byte = alignmentBytes[col]
+  return byte === undefined || byte === DASH || byte === SPACE
+    ? undefined
+    : byte & ~LOWER_BIT
 }
 
 export interface MafCoverageResult {
@@ -120,8 +139,7 @@ export function computeMafCoverage(
       const refByte = refBytes[col]!
       if (refByte === DASH) {
         for (const row of block.rows) {
-          const sampleByte = row.alignmentBytes[col]!
-          if (sampleByte !== DASH && sampleByte !== SPACE) {
+          if (alignedBaseUpper(row.alignmentBytes, col) !== undefined) {
             pendingInsLen.set(
               row.rowIndex,
               (pendingInsLen.get(row.rowIndex) ?? 0) + 1,
@@ -135,10 +153,9 @@ export function computeMafCoverage(
           const refUpper = refByte & ~LOWER_BIT
           const refKnown = refUpper !== N_UPPER
           for (const row of block.rows) {
-            const sampleByte = row.alignmentBytes[col]!
-            if (sampleByte !== DASH && sampleByte !== SPACE) {
+            const sampleUpper = alignedBaseUpper(row.alignmentBytes, col)
+            if (sampleUpper !== undefined) {
               depths[depthIdx]! += 1
-              const sampleUpper = sampleByte & ~LOWER_BIT
               // A known ref base + any differing sample base (incl. N and IUPAC
               // codes, which render grey downstream) is a mismatch. An N ref is
               // unclassifiable, so nothing is recorded against it.
