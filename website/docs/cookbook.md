@@ -10,13 +10,11 @@ Examples use the `volvox` sample data
 ([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox)).
 For the full reference, see the [config guide](/docs/config_guide).
 
----
-
-## A complete config {#tldr-a-complete-config-on-one-screen}
+## A complete config
 
 One assembly, one track of each common type, an opening view, and a theme, in
-the shortest form JBrowse accepts. Every recipe below varies one of these
-tracks. One assembly plus one track is already a valid config.
+the shortest form JBrowse accepts — though one assembly and one track is already
+valid. Every recipe below varies one of these tracks.
 
 ```json
 {
@@ -92,26 +90,23 @@ tracks. One assembly plus one track is already a valid config.
 
 ### Jump to a recipe
 
-| To change                      | Setting                               | Section                                                                                           |
-| ------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Data file and index            | `adapter`, `uri`                      | [shorthand](#how-config-shorthand-works), [assemblies](#assemblies)                               |
-| Feature color                  | `color`, `colorBy`                    | [colors](#colors)                                                                                 |
-| Feature labels and tooltips    | `labels`, `mouseover`                 | [labels & tooltips](#labels-tooltips-details)                                                     |
-| Click-details panel            | `formatDetails`                       | [feature details](#customizing-the-feature-details-panel)                                         |
-| Track height and packing       | `height`, `heightMode`, `displayMode` | [feature tracks](#feature-tracks)                                                                 |
-| Feature and read filtering     | `jexlFilters`, `filterBy`             | [filtering](#showing-only-some-features-filtering), [SAM flags](#filter-reads-by-sam-flag-or-tag) |
-| Read grouping and clipping     | `groupBy`, `showSoftClipping`         | [alignments tracks](#alignments-tracks)                                                           |
-| Plot style and scale           | `defaultRendering`, `scaleType`       | [wiggle tracks](#quantitative-wiggle-tracks)                                                      |
-| Multiple signals per track     | `subadapters`                         | [multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color)                          |
-| Genotype matrix                | `displays`                            | [variant tracks](#variant-tracks)                                                                 |
-| Assembly-to-assembly alignment | `queryAssembly`, `targetAssembly`     | [synteny](#synteny-and-dotplot-tracks), [stacking N genomes](#synteny-stacking)                   |
-| Track folders and metadata     | `category`, `metadata`                | [instance-wide settings](#instance-wide-settings)                                                 |
-| Theme, search, and plugins     | `theme`, `plugins`                    | [instance-wide settings](#instance-wide-settings)                                                 |
-| Opening view                   | `defaultSession`, URL params          | [config to a URL](#from-config-to-a-url)                                                          |
+| To change                                 | Setting                                    | Section                                                                                           |
+| ----------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Data file and index                       | `adapter`, `uri`                           | [shorthand](#config-shorthand), [assemblies](#assemblies)                                         |
+| Feature color                             | `color`, `colorBy`                         | [colors](#colors)                                                                                 |
+| Feature labels and tooltips               | `labels`, `mouseover`                      | [labels & tooltips](#labels-tooltips-details)                                                     |
+| Click-details panel                       | `formatDetails`                            | [feature details](#customizing-the-feature-details-panel)                                         |
+| Track height and packing                  | `height`, `heightMode`, `displayMode`      | [feature tracks](#feature-tracks)                                                                 |
+| Feature and read filtering                | `jexlFilters`, `filterBy`                  | [filtering](#showing-only-some-features-filtering), [SAM flags](#filter-reads-by-sam-flag-or-tag) |
+| Read grouping and clipping                | `groupBy`, `showSoftClipping`              | [alignments tracks](#alignments-tracks)                                                           |
+| Plot style and scale                      | `defaultRendering`, `scaleType`            | [wiggle tracks](#quantitative-wiggle-tracks)                                                      |
+| Multiple signals per track                | `subadapters`                              | [multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color)                          |
+| Genotype matrix                           | `displays`                                 | [variant tracks](#variant-tracks)                                                                 |
+| Assembly-to-assembly alignment            | `queryAssembly`, `targetAssembly`          | [synteny](#synteny-and-dotplot-tracks), [stacking N genomes](#synteny-stacking)                   |
+| Folders, metadata, theme, search, plugins | `category`, `metadata`, `theme`, `plugins` | [instance-wide settings](#instance-wide-settings)                                                 |
+| Opening view                              | `defaultSession`, URL params               | [config to a URL](#from-config-to-a-url)                                                          |
 
----
-
-## Config shorthand {#how-config-shorthand-works}
+## Config shorthand
 
 JBrowse expands these at load time, so you write only what matters:
 
@@ -125,7 +120,7 @@ JBrowse expands these at load time, so you write only what matters:
 - **`displayDefaults`** routes each setting to the display that defines it, so
   you never name a display or write a `displays` array. A key nothing defines
   warns in the console. Write `displays` only to pick a non-default display type
-  (like the [arc display](#draw-features-as-arcs-with-a-jexl-computed-height)).
+  (like the [arc display](#draw-features-as-arcs)).
 - **A `jexl:` prefix** makes any slot a per-feature callback, see
   [using jexl callbacks](/docs/config_guides/jexl).
 
@@ -133,18 +128,14 @@ The same objects work in `config.json`, in a `session=spec-…` URL, and in an
 embedded `createViewState`. The app writes them back out too: **About ▸ Copy
 config** on a track, or **File ▸ Export session** for the whole view.
 
----
-
 ## Applying a recipe from the CLI
 
-`config.json` is plain JSON, so hand-editing it or generating it from a script
-is a first-class way to work: past a handful of similar tracks, emitting the
-`tracks` array from your samplesheet usually beats one CLI call per file. The
-CLI is a convenience, not a requirement.
+The CLI is a convenience, not a requirement: `config.json` is plain JSON, and
+past a handful of similar tracks, emitting the `tracks` array from your
+samplesheet beats one CLI call per file.
 
-Going the CLI route, the [web quickstart](/docs/quickstart_web) covers `create`,
-`add-assembly`, and `add-track`, and four `add-track` flags reach every recipe
-on this page:
+The [web quickstart](/docs/quickstart_web) covers `create`, `add-assembly`, and
+`add-track`. Four `add-track` flags reach every recipe on this page:
 
 | To set                                                        | Flag                         |
 | ------------------------------------------------------------- | ---------------------------- |
@@ -162,17 +153,16 @@ Wrap the value in single quotes and use double quotes _inside_ the jexl. Re-run
 the command with `--force` to change a track you already added. See the
 [CLI reference](/docs/cli).
 
----
+## Assemblies
 
-## Assemblies {#assemblies}
+`{ name, uri }` picks the adapter off the extension, so you rarely name one.
+What each extension resolves to, and the index siblings it expects:
 
-Pick the adapter matching your sequence file:
-
-```json
-{ "type": "TwoBitAdapter", "uri": "genome.2bit" }
-{ "type": "BgzipFastaAdapter", "uri": "genome.fa.gz" }
-{ "type": "IndexedFastaAdapter", "uri": "genome.fa" }
-```
+| `uri`          | Adapter               | Expects                    |
+| -------------- | --------------------- | -------------------------- |
+| `genome.2bit`  | `TwoBitAdapter`       | nothing                    |
+| `genome.fa.gz` | `BgzipFastaAdapter`   | `.fa.gz.fai`, `.fa.gz.gzi` |
+| `genome.fa`    | `IndexedFastaAdapter` | `.fa.fai`                  |
 
 `BgzipFastaAdapter` (`bgzip genome.fa` + `samtools faidx genome.fa.gz`) is
 recommended for large genomes.
@@ -191,9 +181,7 @@ chromosomes differently. Point at a two-column chromAliases file:
 See [assemblies](/docs/config_guides/assemblies) for the inline
 `FromConfigAdapter` form.
 
----
-
-## Colors {#colors}
+## Colors
 
 A track's color is `color` in `displayDefaults`: a plain CSS color, or a `jexl:`
 expression run per feature.
@@ -231,12 +219,17 @@ Drop any of these into the same `displayDefaults`:
 | By a numeric threshold            | `{ "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }`                                 | a hard cutoff, not a gradient                    |
 | Continuous gradient from a number | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                     | maps `feature.score` onto an HSL hue             |
 | Auto color per category           | `{ "color": "jexl:randomColor(feature.type)" }`                                               | same string always gets the same color           |
-| BED file's own colors (`itemRgb`) | `{ "color": "jexl:feature.itemRgb \|\| 'gray'" }`                                             | only guaranteed for BED12/bigBed                 |
+| BED file's own colors             | leave `color` unset                                                                           | automatic — see below                            |
 | BAM/CRAM tag (`AlignmentsTrack`)  | `{ "colorBy": { "type": "tag", "tag": "HP" } }`                                               | built-in, reads the tag and picks colors         |
 | SNPs vs indels (`VariantTrack`)   | `{ "color": "jexl:feature.type=='SNV'?'green':'purple'" }`                                    | branch on `feature.type` or any VCF `INFO` field |
 
 `randomColor`, `alpha`, `hsl`, `colorString`, and `interpolate` are the built-in
 [color helpers](/docs/config_guides/jexl).
+
+A BED or bigBed that carries its own colors needs no callback: an unset `color`
+paints each feature from its color column, whichever name that column lands
+under (`itemRgb` on a BED12, `reserved` on a bigBed, `field8` on a BED9). Write
+a callback only to override those.
 [](/docs/config_guides/customizing_feature_colors) covers BED column naming and
 moving an outgrown callback into a plugin.
 
@@ -253,8 +246,6 @@ a `repClass` column:
 
 Wrap a callback in `log(...)` to print what it returns per feature to the
 browser console.
-
----
 
 ## Labels, tooltips & details {#labels-tooltips-details}
 
@@ -282,7 +273,7 @@ links work:
 }
 ```
 
-### Customizing the feature details panel {#customizing-the-feature-details-panel}
+### Customizing the feature details panel
 
 `formatDetails` sits at the top level of the track, not in `displayDefaults`.
 Its `feature` callback returns an object merged into what's shown: name a field
@@ -297,32 +288,31 @@ to rewrite it, add one for an extra row, or set it to `undefined` to hide it.
 `subfeatures` (with `depth`) reshapes subfeature rows the same way. See
 [customizing feature details](/docs/config_guides/customizing_feature_details).
 
----
-
-## Feature tracks {#feature-tracks}
+## Feature tracks
 
 Genes from GFF3, BED, or bigBed are the same track with a different adapter:
 
-```json
-{ "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" }
-{ "type": "BedTabixAdapter", "uri": "volvox-bed12.bed.gz" }
-{ "type": "BigBedAdapter", "uri": "volvox.bb" }
-```
+| `uri`                 | Adapter            |
+| --------------------- | ------------------ |
+| `volvox.sort.gff3.gz` | `Gff3TabixAdapter` |
+| `volvox-bed12.bed.gz` | `BedTabixAdapter`  |
+| `volvox.bb`           | `BigBedAdapter`    |
 
 For a **small, unindexed** file use the plaintext adapter (`Gff3Adapter`,
 `BedAdapter`, `VcfAdapter`), which reads the whole file into memory.
+[](/docs/config_guides/file_types) has the full extension-to-adapter table.
 
 ### Track height
 
 `height` sets the box the track lives in,
 [`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) what
-happens when more features than fit are present:
+happens when more features arrive than fit in it:
 
 ```json
 "displayDefaults": { "height": 200, "heightMode": "fit" }
 ```
 
-- `fixed` (the default) keeps the height you set and scrolls the overflow
+- `fixed` keeps the height you set and scrolls the overflow
 - `grow` expands the track downward until every feature shows, no scrollbar
 - `fit` shrinks the features so the whole stack fits the current height
 
@@ -341,7 +331,7 @@ everything onto one row with labels off, for a repeat or mappability stripe:
 
 `normal`, `compact`, and `superCompact` are the other values.
 
-### Draw features as arcs {#draw-features-as-arcs-with-a-jexl-computed-height}
+### Draw features as arcs
 
 For interactions, breakpoints, or paired features. The arc display isn't a
 `FeatureTrack`'s default, so select it with a `displays` array:
@@ -359,7 +349,7 @@ For interactions, breakpoints, or paired features. The arc display isn't a
 can encode span or score. See
 [`LinearArcDisplay`](/docs/config/lineararcdisplay).
 
-### Showing only some features (filtering) {#showing-only-some-features-filtering}
+### Showing only some features (filtering)
 
 `jexlFilters` draws only features passing every expression. Unlike `color`,
 filter expressions **leave off the `jexl:` prefix**:
@@ -372,9 +362,7 @@ filter expressions **leave off the `jexl:` prefix**:
 
 The same slot works on variant and alignments tracks.
 
----
-
-## Alignments tracks {#alignments-tracks}
+## Alignments tracks
 
 `colorBy`, `height`, `showSoftClipping`, and `groupBy` are display settings:
 
@@ -395,10 +383,11 @@ The same slot works on variant and alignments tracks.
 ```
 
 `colorBy` also takes `strand`, `pairOrientation`, `insertSize`, and
-`modifications` (methylation), `groupBy` also `{ "type": "strand" }`. CRAM uses
+`modifications` (methylation); `groupBy` also takes `strand`,
+`firstOfPairStrand`, `pairOrientation`, `supplementary`, and `mapq`. CRAM uses
 `CramAdapter` in place of `BamAdapter`.
 
-### Filter reads by SAM flag or tag {#filter-reads-by-sam-flag-or-tag}
+### Filter reads by SAM flag or tag
 
 `flagExclude` hides reads with any of those bits set, `flagInclude` keeps only
 reads with all of them (default 1540 = unmapped, vendor-failed, duplicate; 3844
@@ -415,9 +404,7 @@ Every filter has to pass:
 adds up a number for you. `fetchSizeLimit` on the adapter caps how much data is
 fetched. See [alignments tracks](/docs/config_guides/alignments_track).
 
----
-
-## Quantitative (wiggle) tracks {#quantitative-wiggle-tracks}
+## Quantitative (wiggle) tracks
 
 ```json addtrack
 {
@@ -436,11 +423,11 @@ growing downward. Write `color` or `posColor`/`negColor`, never both. A wiggle
 colors per signal, not per feature, so the color expressions above don't apply.
 
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
-picks the plot: bars, lines, scatter (good for BAF or CN points), or a density
-stripe. Its page lists every value, as does
+picks the plot: `xyplot`, `line`, `scatter` (good for BAF or CN points), or
+`density`. Its page lists every value, as does
 [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) for the scale slots.
 
-### Multiple signals on one track, each its own color {#multiple-signals-on-one-track-each-its-own-color}
+### Multiple signals on one track, each its own color
 
 ```json
 {
@@ -483,14 +470,15 @@ your samplesheet.
 
 <Figure caption="A three-sample MultiQuantitativeTrack over the AMY1 cluster (multirowxy): each 1000 Genomes sample's copy number draws in its own color and varies across the locus." src="/img/cookbook_multiwig.png"/>
 
----
+## Variant tracks
 
-## Variant tracks {#variant-tracks}
+`color` and `jexlFilters` work as they do on a feature track, with VCF `INFO`
+fields the usual thing to branch on; they parse as arrays, so index them:
 
 ```json
 "displayDefaults": {
-  "jexlFilters": ["feature.start<8000"],
-  "color": "jexl:feature.start>5000?'darkgreen':'red'"
+  "color": "jexl:{DEL:'red',INS:'blue',DUP:'green',INV:'orange'}[feature.INFO.SVTYPE[0]] || 'gray'",
+  "jexlFilters": ["feature.INFO.AF[0] > 0.05"]
 }
 ```
 
@@ -503,9 +491,7 @@ switch from the track menu or name the display in the config:
 
 See [variant tracks](/docs/config_guides/variant_track).
 
----
-
-## Synteny and dotplot tracks {#synteny-and-dotplot-tracks}
+## Synteny and dotplot tracks
 
 A `SyntenyTrack` lines up two assemblies and feeds both the dotplot and
 linear-synteny views. Pick the adapter matching your aligner: `PAFAdapter` for
@@ -539,8 +525,8 @@ the target on the vertical (bottom row). Both must already exist in
 
 ### Large alignments {#synteny-large-alignments}
 
-Every adapter but `PairwiseIndexedPAFAdapter` reads the whole file into memory,
-so index big PAFs once:
+Every synteny adapter reads the whole file into memory except the two indexed
+(PIF) ones, which do a tabix range lookup instead. Index a big PAF once:
 
 ```bash
 jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
@@ -554,6 +540,9 @@ jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
   "targetAssembly": "grape"
 }
 ```
+
+`AllVsAllIndexedPAFAdapter` is the same thing for an all-vs-all PAF, taking
+`assemblyNames` in place of query/target ([below](#synteny-stacking)).
 
 ### Gene-level synteny from ortholog tables {#synteny-mcscan}
 
@@ -576,8 +565,26 @@ covers `MCScanBlocksAdapter` for a `.blocks` table.
 
 ### Stacking more than two genomes {#synteny-stacking}
 
-A `LinearSyntenyView` takes N assembly rows and one track entry per band (three
-rows, two bands), all servable by the same all-vs-all track:
+One all-vs-all PAF backs every band, so it needs one track. Its sequence names
+must be PanSN-prefixed (`sample#haplotype#contig`), and `assemblyNames` lists
+every assembly the file covers:
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "ecoli_ava",
+  "name": "E. coli all-vs-all",
+  "assemblyNames": ["K12", "Sakai", "CFT073"],
+  "adapter": {
+    "type": "AllVsAllPAFAdapter",
+    "uri": "all_vs_all.paf",
+    "assemblyNames": ["K12", "Sakai", "CFT073"]
+  }
+}
+```
+
+A `LinearSyntenyView` then takes N assembly rows and one track entry per band
+(three rows, two bands):
 
 ```json
 "defaultSession": {
@@ -609,9 +616,7 @@ from one PAF, [ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi
 - [Pangenome graphs](/docs/tutorials/pangenome_ecoli) for graph-derived
   alignments
 
----
-
-## Instance-wide settings {#instance-wide-settings}
+## Instance-wide settings
 
 **Track folders**, set on the track. Nested arrays nest folders in the
 [hierarchical track selector](/docs/config_guides/track_selector):
@@ -654,13 +659,11 @@ elsewhere, see [plugins](/docs/config_guides/plugins):
 "plugins": [{ "name": "MyPlugin", "esmLoc": { "uri": "myplugin.js" } }]
 ```
 
-**Opening to a specific view** with the `defaultSession` from
-[the config above](#tldr-a-complete-config-on-one-screen), see
+**Opening to a specific view** is the `defaultSession` from
+[the config above](#a-complete-config). See
 [default session](/docs/config_guides/default_session).
 
----
-
-## From config to a URL {#from-config-to-a-url}
+## From config to a URL
 
 A link names what `config.json` already defines:
 
@@ -695,8 +698,6 @@ a region of interest travels in the link:
 See the [](/docs/urlparams) for the full list, multi-view layouts, and the
 encoded links the "Share" button produces, and
 [](/docs/config_guides/from_config) for inline features in a config.
-
----
 
 ## Where to go next
 
