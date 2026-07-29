@@ -101,8 +101,23 @@ _DENR_ and _CYP1A2_ are done (see above).
 QuicK-mer2 copy number across breeds, and those per-sample estimates are not
 released: `kiddlabshare/public-data/QuicK-mer/QuicK-mer2-refs/` is empty, the
 Dog10K share has no CNV directory, and the paper's Zenodo record (8084059) holds
-variants, SVs, and the phased panel but no CN. A 1000-Genomes-style copy-number
-matrix for dogs would need re-running QuicK-mer2 over the CRAMs in `cram-share/`.
+variants, SVs, and the phased panel but no CN.
+
+Recomputing it hits two walls, neither of which is the tool:
+
+- **The published fastCN reference is canFam3.1 only** (`fastCN-refs/` has
+  `canFam3.1.tar` 475 MB and `canFam3.1-Y-files.tgz` 1.8 GB). Everything we ship
+  is canFam4, so CN computed against it would land on the wrong assembly, and
+  these are mappability-defined windows, which liftOver handles badly. A canFam4
+  reference would have to be built.
+- **The reads are mostly not on the share.** `cram-share/` holds 15 CRAMs at
+  ~10.6 GB each, and they are nearly all one breed; the rest of the collection
+  is in ENA under PRJEB62420. "CN across breeds" therefore means tens of TB of
+  downloads or compute at the archive.
+
+The 15 shared CRAMs *are* range-requestable with their `.crai`, so a
+single-locus read-depth comparison across those samples is cheap. It is not a
+cohort CN matrix, and the breed spread does not support one.
 
 **phyloP on canFam4 exists but is awkward.** Zenodo 8084059 carries
 `zoonomia-cf3.1-lifted-to-cf4.liftover.phylop.20210708.bw.gz`, which is Fig 10c.
@@ -110,6 +125,20 @@ It is a 12.8 GB *gzipped* bigWig, so it cannot be range-requested: adding a
 conservation track under any of these figures means downloading it whole,
 decompressing, and slicing the locus into a small bigWig. UCSC has no
 conservation track for canFam4.
+
+## Which dog assembly
+
+Everything here is **canFam4 = UU_Cfam_GSD_1.0** (the German Shepherd assembly):
+`test_data/dog10k/config.json`, its `chrom.sizes`, the pre-existing
+`test_data/cfam2` demo, all three Dog10K callsets, and the hosted UCSC gene
+track the figures point at. Verified by chr1 = 123,556,469 bp against UCSC's
+`canFam4.chrom.sizes`.
+
+The wider dog literature is still largely canFam3.1 — the published genetic
+maps, most GWAS, and dbSNP rsIDs — which is exactly why the local-ancestry
+tutorial has to generate its own uniform map and why the CYP1A2 tutorial derives
+the stop codon's coordinate instead of copying an rsID's position. Treat any
+dog coordinate from a paper as canFam3.1 until proven otherwise.
 
 ## Gotchas worth not rediscovering
 
