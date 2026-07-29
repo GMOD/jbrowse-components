@@ -16,11 +16,27 @@ linear synteny view uses, so see
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
 for its Quick start / Manual modes and the file types it accepts. The only
 dotplot-specific thing to know is that both axes come from the chosen track's
-`assemblyNames`, and **Swap** transposes the plot rather than reordering panels.
+`assemblyNames` - the
+[query](/docs/user_guides/linear_synteny_view#query-target-and-cigar)
+horizontally and the target vertically - and that **Swap** transposes the plot
+rather than reordering panels.
 
 <Figure caption="Launching a dotplot view from the Add menu (top), then the import form's Manual mode, where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
-<Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
+<Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes, with Color by set to Query and a minimum alignment length applied. Each peach chromosome takes its own color, so the short diagonal runs read as syntenic blocks; the horizontal band across grape chr12 is every peach chromosome at once, a repeat-rich region rather than synteny." src="/img/dotplot.png" />
+
+### Cutting clutter on a busy plot
+
+Two toolbar controls do most of the work on a whole-genome plot, and the figure
+above uses both:
+
+- The palette button's **Color by** menu. **Query** gives each sequence on the
+  horizontal axis its own color, which separates real syntenic runs from
+  scatter. **Strand** and **Identity** are there too, and each option carries a
+  description of what it colors.
+- **Min length**, in the settings popover, drops alignments shorter than the
+  slider value. Divergent genomes align in many short fragments, and hiding them
+  is usually what makes the syntenic blocks visible at all.
 
 ## Navigation and interaction
 

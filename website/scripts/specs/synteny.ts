@@ -248,12 +248,24 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'dotplot',
     // use the full peach_grape.paf (grape_peach_paf), not the small in-repo paf
     // that the config defaultSession loads
+    //
+    // Grape and peach are divergent enough that this PAF is all short hits: the
+    // median block is well under a kb and the longest is ~12kb against a 227 x
+    // 486 Mbp plot. Drawn plain and black that is a uniform scatter with the
+    // syntenic runs lost inside it, which is what this figure used to be. The
+    // min-length filter keeps roughly the top tenth by block length, and
+    // per-query coloring separates what survives: the short diagonal runs read
+    // as blocks, and the horizontal band across grape chr12 stays visible but
+    // is now obviously every peach chromosome at once, i.e. a repeat-rich
+    // region rather than synteny.
     url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {
           type: 'DotplotView',
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
           tracks: ['grape_peach_paf'],
+          minAlignmentLength: 2000,
+          colorBy: 'query',
         },
       ],
     }),
@@ -1414,7 +1426,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 12000,
   },
-
 
   // ────────────────────────────────────────────────────────────────────────
   // Dotplot / synteny interactions
