@@ -112,17 +112,17 @@ async function main() {
       .filter((name): name is string => Boolean(name)),
   )
 
-  const configsWithNoExample = await writeConfigDocs(
+  const configsWithNoExample = writeConfigDocs(
     configs,
     displayTypesByTrack,
     displayToTrackType,
     modelNames,
   )
   writePromotableSlotDocs(configs, displayToTrackType)
-  const modelsWithNoExample = await writeModelDocs(models, configNames)
+  const modelsWithNoExample = writeModelDocs(models, configNames)
   writeExampleGaps(configsWithNoExample, modelsWithNoExample)
-  await writeApiDocs(api)
-  await writeApiReadmes(api)
+  writeApiDocs(api)
+  const readmes = writeApiReadmes(api)
   writeColorDocs()
   writeJexlDocs()
   writeExtensionPointDocs()
@@ -137,7 +137,7 @@ async function main() {
     ),
   )
 
-  await formatWithOxfmt(FORMAT_DIRS)
+  await formatWithOxfmt([...FORMAT_DIRS, ...readmes])
 }
 
 // Directories this script is responsible for leaving format-clean: the

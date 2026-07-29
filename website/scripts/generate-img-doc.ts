@@ -92,9 +92,13 @@ function imagesToFigures(md: string) {
   )
 }
 
-// Format through prettier with the repo config so the output matches what
-// `pnpm format` (postautogen) produces — otherwise the committed file and the
-// --check comparison would disagree on line wrapping.
+// The generated string is compared byte-for-byte against the committed file, and
+// `pnpm format` also rewrites that file — so whatever formats here has to agree
+// with `pnpm format` or the two fight and `--check` oscillates.
+//
+// `pnpm format` is oxfmt, not prettier; this passes only because the two agree on
+// markdown today. See the same note in generate-cli-doc.ts — these are the two
+// sites left to convert after the api-docs generator dropped prettier.
 async function generate() {
   // The README is the source of truth, but its help block is auto-filled from
   // the CLI. Refresh it and run it through prettier so the injected README is

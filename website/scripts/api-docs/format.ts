@@ -4,36 +4,26 @@ import { createRequire } from 'module'
 import path from 'path'
 import { promisify } from 'util'
 
-import { format, resolveConfig } from 'prettier'
-
-// Generated markdown is hand-authored prose (docstrings) reassembled by code,
-// so its line breaks/blank lines don't reliably match what `pnpm format`
-// would produce. Run it through prettier before writing so generated output
-// is format-clean and `pnpm gendocs` is idempotent.
-//
-// Lives apart from util.ts so the pure markdown/parse helpers there stay
-// importable (e.g. from unit tests) without pulling in prettier, which is
-// ESM-only and doesn't load under Jest's CommonJS runtime.
-export async function writeFormatted(path: string, content: string) {
-  const config = await resolveConfig(path)
-  const formatted = await format(content, {
-    ...config,
-    filepath: path,
-  })
-  fs.writeFileSync(path, formatted)
+// Generated pages are written raw and formatted in one `formatWithOxfmt` sweep
+// at the end of the run (see generate.ts). Every path written here has to appear
+// in that sweep, so a page can't ship unformatted — the package READMEs
+// writeApiReadmes touches live outside the doc directories and are collected for
+// exactly that reason.
+export function writeDoc(file: string, content: string) {
+  fs.writeFileSync(file, content)
 }
 
-// Run the repo formatter over already-written files: the marker-block
-// generators splice raw tables into the hand-written guides, which nothing else
-// re-wraps.
+// Run the repo formatter over already-written files. Generated markdown is
+// hand-authored prose (docstrings) reassembled by code, so its wrapping doesn't
+// match what `pnpm format` produces; the marker-block generators additionally
+// splice raw tables into the hand-written guides, which nothing else re-wraps.
 //
-// This used to be a prettier pass over every doc, re-run until it stopped
-// changing anything. It cost ~12s a run and, in the steady state, changed
-// nothing at all — `writeFormatted` had already formatted each generated page,
-// and `pnpm gendocs` then ran oxfmt over the very same directories. oxfmt is the
-// repo's formatter (`pnpm format`), so running it here is what actually decides
-// the committed bytes, it does the whole tree in ~3s, and there is no second
-// formatter to drift from.
+// oxfmt is the repo's formatter (`pnpm format`), so running it is what actually
+// decides the committed bytes. This used to be prettier — per page as it was
+// written, then over every doc again, re-run until it stopped changing anything.
+// That cost ~12s a run to change nothing in the steady state, and left two
+// formatters that had to agree on markdown forever or the `--check` gates would
+// oscillate.
 //
 // The binary is resolved through node's resolver rather than spawned by name:
 // the old prettier shell-out only found its binary via the PATH an npm script

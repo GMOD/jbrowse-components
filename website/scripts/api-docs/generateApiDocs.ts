@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
-import { writeFormatted } from './format.ts'
+import { writeDoc } from './format.ts'
 import {
   codeBlock,
   exampleSection,
@@ -102,11 +102,11 @@ ${section(...sorted.map(exp => renderExport(exp, '##')))}
 `
 }
 
-export async function writeApiDocs(byGroup: Record<string, ApiGroup>) {
+export function writeApiDocs(byGroup: Record<string, ApiGroup>) {
   const dir = 'website/docs/api'
   fs.mkdirSync(dir, { recursive: true })
   for (const grp of Object.values(byGroup)) {
-    await writeFormatted(`${dir}/${grp.id}.md`, renderGroup(grp))
+    writeDoc(`${dir}/${grp.id}.md`, renderGroup(grp))
   }
 }
 
@@ -147,7 +147,11 @@ function seedReadme(root: string) {
 // so regeneration is idempotent and never touches hand-written README prose. The
 // block is appended once (replaced in place thereafter). Packages without a
 // README get a minimal one seeded from package.json so the block has a home.
-export async function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
+//
+// Returns the paths written: these sit outside the doc directories, so they have
+// to be handed to the run's oxfmt sweep explicitly or a regenerated README ships
+// unformatted.
+export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
   const byPackage: Record<string, ApiExport[]> = {}
   for (const grp of Object.values(byGroup)) {
     for (const exp of grp.exports) {
@@ -157,18 +161,19 @@ export async function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
       }
     }
   }
-  for (const [root, exports] of Object.entries(byPackage)) {
+  return Object.entries(byPackage).map(([root, exports]) => {
     const readmePath = `${root}/README.md`
     const existing = fs.existsSync(readmePath)
       ? fs.readFileSync(readmePath, 'utf8')
       : seedReadme(root)
     const block = `${README_START}\n\n${renderReadmeSection(exports)}\n\n${README_END}`
     const re = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
-    await writeFormatted(
+    writeDoc(
       readmePath,
       re.test(existing)
         ? existing.replace(re, block)
         : `${existing.trimEnd()}\n\n${block}\n`,
     )
-  }
+    return readmePath
+  })
 }

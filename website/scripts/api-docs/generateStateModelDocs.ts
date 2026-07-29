@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
-import { writeFormatted } from './format.ts'
+import { writeDoc } from './format.ts'
 import {
   assertSingleHeader,
   codeCell,
@@ -382,7 +382,7 @@ function renderModel(
   })
 }
 
-export async function writeModelDocs(
+export function writeModelDocs(
   byFile: Record<string, StateModel>,
   configNames: Set<string>,
 ) {
@@ -395,7 +395,7 @@ export async function writeModelDocs(
   }
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, index)
-    await writeFormatted(
+    writeDoc(
       `${dir}/${model.header.name}.md`,
       renderModel(model, ancestors, configNames),
     )

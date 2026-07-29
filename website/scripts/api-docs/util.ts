@@ -944,7 +944,7 @@ export function parseTaggedComment(
   // first, so it can wrap across lines without a terminator and without
   // swallowing the description prose that follows it. Its own line breaks are
   // collapsed, since they are comment wrapping rather than markdown structure —
-  // prettier rewraps the rendered callout to the doc's width.
+  // the formatter rewraps the rendered callout to the doc's width.
   const endGotcha = () => {
     if (currentGotcha) {
       const text = currentGotcha.join(' ').replaceAll(/\s+/g, ' ').trim()
@@ -1665,9 +1665,9 @@ export function listDocs(dir: string): string[] {
   })
 }
 
-// Collapse the whitespace prettier adds when it pads markdown table columns, so
-// a freshness (--check) comparison sees the block's *content* and not its
-// formatting (committed tables are prettier-padded; the generators emit them
+// Collapse the whitespace a formatter adds when it pads markdown table columns,
+// so a freshness (--check) comparison sees the block's *content* and not its
+// formatting (a committed table may be padded; the generators emit them
 // compact). Regions outside the markers are byte-identical between current and
 // regenerated, so normalizing them is a no-op for the comparison.
 export function normalizeMarkerWhitespace(s: string) {
@@ -1680,6 +1680,10 @@ export function normalizeMarkerWhitespace(s: string) {
 // function replacer keeps any `$`-sequence in the rendered block literal. Shared
 // by the single-marker generators (jexl catalog, extension-point index); the
 // color tables use a per-group variant of the same idea.
+//
+// Each marker generator sweeps the whole tree for its own pair, so a run relists
+// and rereads website/docs eight times. Caching that measured 113ms for all eight
+// sweeps — not worth the module-level state, so don't.
 export function rewriteMarkerBlock(
   marker: string,
   block: string,
@@ -1768,9 +1772,23 @@ export function runMarkerScript(
   console.log(`${label} up to date`)
 }
 
+// Every source file the generators document, tracked plus untracked-but-not-
+// ignored (`--others --exclude-standard`).
+//
+// Without `--others` a brand-new file is invisible until it is `git add`ed, and
+// not just to the tag scan: the TypeScript program can't resolve imports of it
+// either, so every signature that flows through it silently degrades to `any`.
+// That reads as a mysterious doc regression with no cause in the diff, and it is
+// local-only — CI has nothing untracked, so the two disagree. `--exclude-standard`
+// keeps ignored scratch files out, leaving exactly the files that are about to be
+// committed anyway.
+//
+// The `plugins` alternative is deliberately unanchored: it also matches
+// `example-plugins/`, the worked examples backing the developer guides, whose
+// LinearScoreDisplay config and model are documented pages.
 export async function getAllFiles() {
   const { stdout } = await exec2(
-    String.raw`git ls-files | grep "\(plugins\|products\|packages\).*\.\(t\|j\)sx\?$"`,
+    String.raw`git ls-files --cached --others --exclude-standard | grep "\(plugins\|products\|packages\).*\.\(t\|j\)sx\?$"`,
   )
   // `git ls-files` also lists files staged as added but since deleted from the
   // worktree, which every generator downstream would then try to read.

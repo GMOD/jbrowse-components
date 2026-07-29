@@ -8,7 +8,7 @@ import {
   scalarConstantValue,
   slotFieldConstantPairs,
 } from './enumConstants.ts'
-import { writeFormatted } from './format.ts'
+import { writeDoc } from './format.ts'
 import {
   assertSingleHeader,
   codeBlock,
@@ -384,7 +384,7 @@ function trackConfigLines(trackType: string, adapterCode: string) {
 // fence as the `adapter:` value of a track config of the adapter's #trackType
 // (defaulting to FeatureTrack). Prose around the fence is preserved; an example
 // that already spells out a full config (declares trackId/adapter) is left
-// alone. Final indentation is normalized by the prettier pass in generate.ts.
+// alone. Final indentation is normalized by the oxfmt sweep in generate.ts.
 function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
   return content.replace(
     /```(?:js|javascript|json)?\n([\s\S]*?)\n```/g,
@@ -1123,7 +1123,7 @@ export function writePromotableSlotDocs(
   )
 }
 
-export async function writeConfigDocs(
+export function writeConfigDocs(
   byFile: Record<string, Config>,
   displayTypesByTrack: Map<string, string[]>,
   displayToTrackType: Map<string, string>,
@@ -1150,7 +1150,7 @@ export async function writeConfigDocs(
   warnAdaptersMissingTrackType(withHeader)
   warnSlotsMissingDescription(withHeader)
   for (const cfg of withHeader) {
-    await writeFormatted(
+    writeDoc(
       `${dir}/${cfg.header.name}.md`,
       renderConfig(cfg, collectBaseConfigs(cfg, index), links),
     )
