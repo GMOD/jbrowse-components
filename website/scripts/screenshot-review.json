@@ -68,8 +68,8 @@
     "name": "alignments_track_arcs",
     "status": "good",
     "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value — log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
-    "reviewedAt": "2026-07-25T16:29:17.856Z",
-    "hash": "5b92e8b7d4b5c0ebecaf40945bbfbb6c56d0ff3b"
+    "reviewedAt": "2026-07-29T20:51:28.511Z",
+    "hash": "748b101da5da41074c281ccaa29802b6ee86e1a0"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -1066,8 +1066,8 @@
     "name": "jbrowse-img/yeast_dotplot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:06:14.684Z",
-    "hash": "f786708079e08138d3b7363b238a33df5eda7660"
+    "reviewedAt": "2026-07-29T20:40:27.490Z",
+    "hash": "e9ca9e31eaa2b431925dbd466144074203dc0a85"
   },
   "jbrowse-img/variants": {
     "name": "jbrowse-img/variants",
@@ -1433,13 +1433,6 @@
     "reviewedAt": "2026-07-27T14:58:19.583Z",
     "hash": "f2f86f17b747f162b43aafa0b98896fc8fe41c96"
   },
-  "methylation/arabidopsis_wgbs_boundary": {
-    "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "good",
-    "note": "might be able to delete, methylation/arabidopsis_wgbs_contexts  seems to cover visual interest, unless there is something i'm missing KEPT: contexts is the wide genic view (14kb); boundary zooms to the AT1G12930/AT1G12935 boundary (2.4kb) where individual reads are tall enough to follow one cytosine at a time, showing the per-read transition from unmarked to marked as a read crosses into the silenced element. That per-molecule onset is not visible at the contexts figure's zoom level. No image change.",
-    "reviewedAt": "2026-07-27T06:00:00.000Z",
-    "hash": "c2463316705f498fafc49feca195eb1ad0b38189"
-  },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
     "status": "good",
@@ -1601,10 +1594,10 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:08:45.401Z",
-    "hash": "09b37ad85b86aae6836edcc96e1b22ca9a37295c"
+    "status": "bad",
+    "note": "the 'annotation text' saying swept and draffed this whole block with it is 'dramatic' wording that a user who doesnt understand linkage very well would not understand. also, the recombination track is unfortunately hard to understand here. it is not 'super suppressed'. if it helps, zoom out more",
+    "reviewedAt": "2026-07-29T20:41:31.545Z",
+    "hash": "5a1caec9aa7b5ed841034e7bfe0e12670dc9c04c"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
@@ -1732,16 +1725,16 @@
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
     "status": "good",
-    "note": "added MANE gene lane (pinned to 2 rows) + a highlight band over ERBB2",
-    "reviewedAt": "2026-07-25T17:14:18.491Z",
-    "hash": "3210171bc785ede619bbfbde89132bf79495eb0a"
+    "note": "",
+    "reviewedAt": "2026-07-29T20:42:10.285Z",
+    "hash": "bb15968258b970f580ff0a618312e74f75084caf"
   },
   "tcga/cohort_cnv_genome": {
     "name": "tcga/cohort_cnv_genome",
     "status": "good",
-    "note": "COMBINED with tcga/cnv_recurrence_genome (reviewer): the recurrence wiggle now sits above the clustered stack in this one figure, and the separate unclustered figure (spec + PNG + doc figure) is deleted. This also closes that figure's 'increase browser height' - the viewport is 1120 so the whole 760px stack fits instead of being sliced. The 'taller viewport crashes the renderer' theory behind leaving it at 860 was wrong: fitTargetHeight reads the height CONFIG SLOT, not the viewport, so viewport height never resized the canvas, and the render at 1120 is clean. Four recurrent loci still labeled; callouts are now offsets from a single STACK_TOP constant.",
-    "reviewedAt": "2026-07-25T21:33:08.028Z",
-    "hash": "c5942747b17551d6f446b619e227036515787267"
+    "note": "",
+    "reviewedAt": "2026-07-29T20:42:22.896Z",
+    "hash": "fb3838e709a8dab50e0481a69aad36f707f94481"
   },
   "variants/potato_missingness": {
     "name": "variants/potato_missingness",
@@ -2192,5 +2185,68 @@
     "note": "",
     "reviewedAt": "2026-07-28T15:05:49.870Z",
     "hash": "158210d74bc67c24f407f56575f4f5eb42fd3c70"
+  },
+  "dog10k-cyp1a2-cohort-copy-number": {
+    "name": "dog10k-cyp1a2-cohort-copy-number",
+    "status": "bad",
+    "note": "it it helps, add breed label sidebar colors too tree-sidebar",
+    "reviewedAt": "2026-07-29T20:36:53.455Z",
+    "hash": "ee5f3693a92a953abc07e53dda6d1aabd1d36a8b"
+  },
+  "dog10k-cyp1a2-copy-number": {
+    "name": "dog10k-cyp1a2-copy-number",
+    "status": "bad",
+    "note": "this figure is less interesting after we did the full cohort. does this show something actually interesting? there is also a white gap in the middle, not sure if that is a bug?",
+    "reviewedAt": "2026-07-29T20:37:54.475Z",
+    "hash": "2a2faae549d4f9276ab967ed3f5693c74da5ea8f"
+  },
+  "dog10k-cyp1a2-nonsense": {
+    "name": "dog10k-cyp1a2-nonsense",
+    "status": "bad",
+    "note": "are you happy with this figure?",
+    "reviewedAt": "2026-07-29T20:38:20.889Z",
+    "hash": "ab58a7306a4822076e561814d53452d7c07e7156"
+  },
+  "dog10k-denr-sine-deletions": {
+    "name": "dog10k-denr-sine-deletions",
+    "status": "bad",
+    "note": "are you happy with this figure? appears to be using matrix mode but no lines connective to genomic position are visible. is this a bug?",
+    "reviewedAt": "2026-07-29T20:39:01.330Z",
+    "hash": "feff2746bf0f3034ff4dc47aadd9d32eba190269"
+  },
+  "dog10k-wolfdog-block-genotypes": {
+    "name": "dog10k-wolfdog-block-genotypes",
+    "status": "bad",
+    "note": "are you happy with this figure? is it showing anything actually interesting?",
+    "reviewedAt": "2026-07-29T20:40:00.078Z",
+    "hash": "166dacc4cf36bdc8eb60735da8bed24e1dd81638"
+  },
+  "dog10k-wolfdog-ancestry": {
+    "name": "dog10k-wolfdog-ancestry",
+    "status": "bad",
+    "note": "are you happy with this figure? are there any interesting genes in this region?, make combined figure instead of the 'dissected below' if it helps",
+    "reviewedAt": "2026-07-29T20:40:27.406Z",
+    "hash": "8f1bf2e9087f0e94b7e6ed4457be929d5c581bf2"
+  },
+  "mcscan_anchors": {
+    "name": "mcscan_anchors",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-29T20:41:33.832Z",
+    "hash": "a14c3a239dbcf8a325a49788129071108d9b989f"
+  },
+  "sv_synteny/linear_synteny_ortholog_colors": {
+    "name": "sv_synteny/linear_synteny_ortholog_colors",
+    "status": "bad",
+    "note": "i do not like these colors the color palette is not good. i think we should delete this figure",
+    "reviewedAt": "2026-07-29T20:41:58.639Z",
+    "hash": "544a652889dd2718ad1bbd9ff02c2ff5949fe3c4"
+  },
+  "dog10k-nhej1-cea-deletion": {
+    "name": "dog10k-nhej1-cea-deletion",
+    "status": "bad",
+    "note": "are you happy with this figure? looks kind of unclear. if needed we can use clustering to improve visual layout, but i just dont necessarily understand the 'story'. I do not want extended caption prose, i want the figure to be so exceedingly clear, that users understand it immediately. if needed we can color by SV type",
+    "reviewedAt": "2026-07-29T20:43:08.880Z",
+    "hash": "44608f8d47acc41fe22658079c892a043925b32b"
   }
 }

@@ -53,11 +53,6 @@ function wgbsContextTrack(
 const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
   wgbsContextTrack(c),
 )
-// zoomed-in variant: taller reads so one molecule can be followed across the
-// gene body -> silenced element boundary
-const WGBS_BOUNDARY_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
-  wgbsContextTrack(c, { featureHeight: 6, featureSpacing: 1, height: 175 }),
-)
 
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
 // NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
@@ -116,72 +111,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // each get the matching label anchored to their own track row. dx pulls the
     // pill hard toward the left edge of the ~1500px-wide data area (container
     // center ~750, so -690 lands the pill near x≈60).
-    annotations: [
-      ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
-        type: 'text' as const,
-        anchor: {
-          selector:
-            '[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_methyldackel"]',
-        },
-        dx: -690,
-        dy: (i - 1) * 57,
-        fontSize: 22,
-        text,
-      })),
-      ...(
-        [
-          ['cg', 'CpG'],
-          ['chg', 'CHG'],
-          ['chh', 'CHH'],
-        ] as const
-      ).map(([ctx, text]) => ({
-        type: 'text' as const,
-        anchor: {
-          selector: `[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_wgbs_${ctx}"]`,
-        },
-        dx: -690,
-        fontSize: 22,
-        text,
-      })),
-    ],
-  },
-  // The same three per-read copies zoomed to the gene body -> silenced element
-  // boundary (~4,404,800-4,407,200), with reads tall enough to follow one
-  // molecule at a time: a read crossing the boundary stays blank on the left in
-  // the CHG/CHH copies and picks up red as it enters the element. The aggregate
-  // MethylDackel rows stay on top (reviewer: they bring the story home) — at
-  // 2.4 kb each bar is one cytosine, so the per-molecule pileup underneath reads
-  // as the same calls resolved read by read.
-  {
-    mode: 'url',
-    name: 'methylation/arabidopsis_wgbs_boundary',
-    url: sessionSpec(ARABIDOPSIS_WGBS_CONFIG, {
-      sessionTracks: WGBS_BOUNDARY_COPIES.map(c => c.track),
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'arabidopsis',
-          loc: 'NC_003070.9:4,404,800-4,407,200',
-          tracks: [
-            { trackId: 'arabidopsis_genes' },
-            {
-              trackId: 'arabidopsis_methyldackel',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowxy',
-              minScore: 0,
-              maxScore: 100,
-              height: 170,
-            },
-            ...WGBS_BOUNDARY_COPIES.map(c => c.display),
-          ],
-        },
-      ],
-    }),
-    readyText: 'Per-read WGBS',
-    readyTimeout: 90000,
-    settleMs: 20000,
-    // genes + the 170px aggregate stack + three 175px pileups + chrome
-    viewportHeight: 1165,
     annotations: [
       ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
         type: 'text' as const,
