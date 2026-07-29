@@ -3,9 +3,6 @@ import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 
-import { sortConfs } from './sortUtils.ts'
-import { matchesLower } from './util.ts'
-
 import type { MinimalModel, TreeNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -25,7 +22,7 @@ export function generateHierarchy({
   extra?: string
 }): TreeNode[] {
   const root: NodeWithChildren = { children: [] }
-  const { filterText, activeSortTrackNames, activeSortCategories } = model
+  const { filteredTrackSet } = model
   const session = getSession(model)
 
   // a non-admin's added/copied tracks live in session.sessionTracks and are
@@ -37,18 +34,11 @@ export function generateHierarchy({
       : [],
   )
 
-  const queryLower = filterText.trim().toLowerCase()
-  const confs = queryLower
-    ? trackConfs.filter(conf => matchesLower(queryLower, conf, session))
-    : trackConfs
-
   const categoryMaps = new Map<NodeWithChildren, Map<string, TreeNode>>()
 
-  for (const conf of sortConfs(
-    confs,
-    activeSortTrackNames,
-    activeSortCategories,
-  )) {
+  // trackConfs arrives already sorted (see model.allTracks); filtering preserves
+  // that order, so no sort happens on the filterText path
+  for (const conf of trackConfs.filter(c => filteredTrackSet.has(c))) {
     const isSessionTrack = sessionTrackIds.has(conf.trackId)
     const baseCategories =
       (readConfObject(conf, 'category') as string[] | undefined) ?? []

@@ -21,18 +21,17 @@ export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
   return subset.every(x => s.has(x))
 }
 
-// queryLower must be pre-lowercased by caller to avoid redundant per-track work
-export function matchesLower(
-  queryLower: string,
+// The text a track's filter query matches against: its name and each of its
+// categories, newline-joined so a query can't span two of them (the filter is a
+// single-line text field). Built once per track into model.trackSearchText, so
+// typing costs one String.includes rather than re-reading configs.
+export function trackSearchTextFor(
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
 ) {
   const categories =
     (readConfObject(conf, 'category') as string[] | undefined) ?? []
-  return (
-    getTrackName(conf, session).toLowerCase().includes(queryLower) ||
-    categories.some(c => c.toLowerCase().includes(queryLower))
-  )
+  return [getTrackName(conf, session), ...categories].join('\n').toLowerCase()
 }
 
 interface Node {

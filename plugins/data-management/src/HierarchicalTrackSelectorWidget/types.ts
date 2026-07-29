@@ -32,7 +32,5 @@ export interface TreeCategoryNode {
 export type TreeNode = TreeTrackNode | TreeCategoryNode
 
 export interface MinimalModel {
-  filterText: string
-  activeSortTrackNames: boolean
-  activeSortCategories: boolean
+  filteredTrackSet: Set<AnyConfigurationModel>
 }

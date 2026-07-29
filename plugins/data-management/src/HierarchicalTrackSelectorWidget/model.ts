@@ -13,13 +13,15 @@ import { autorun, observable } from 'mobx'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
+import { sortConfs } from './sortUtils.ts'
 import {
   findSubCategories,
   findTopLevelCategories,
   getAllTrackNodes,
+  trackSearchTextFor,
 } from './util.ts'
 
-import type { TreeNode } from './types.ts'
+import type { TreeNode, TreeTrackNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -32,9 +34,9 @@ const sortTrackNamesK = 'sortTrackNames'
 const sortCategoriesK = 'sortCategories'
 
 // single source of truth for how a node renders, so virtual-scroll offset math
-// (getItemHeight) and the row component (TreeItem) can't drift apart. A folder
-// category collapses to a track-height row; only an expandable (non-folder)
-// category gets the taller accordion styling
+// (flattenedItemOffsets) and the row component (TreeItem) can't drift apart. A
+// folder category collapses to a track-height row; only an expandable
+// (non-folder) category gets the taller accordion styling
 export function getNodePresentation(
   item: TreeNode,
   folderCategories: { has(key: string): boolean },
@@ -48,13 +50,6 @@ export function getNodePresentation(
     useAccordionStyle,
     height: useAccordionStyle ? categoryItemHeight : defaultItemHeight,
   }
-}
-
-export function getItemHeight(
-  item: TreeNode,
-  folderCategories: { has(key: string): boolean },
-) {
-  return getNodePresentation(item, folderCategories).height
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -543,17 +538,92 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * map restricted to tracks the current view can display; connection
-       * tracks go through the same filterTracks() pass as the tree so favorites
-       * and recently-used don't surface tracks the view can't show
+       * lowercased "name\ncategory..." per track, so filtering costs one
+       * String.includes per track instead of re-reading every name/category
+       * config on each keystroke
+       */
+      get trackSearchText() {
+        const session = getSession(self)
+        return new Map(
+          this.allTrackConfigurations.map(
+            t => [t, trackSearchTextFor(t, session)] as const,
+          ),
+        )
+      },
+
+      /**
+       * #getter
+       * tracks matching filterText. An empty query matches everything, since
+       * ''.includes is always true, so there is no unfiltered special case
+       */
+      get filteredTrackSet() {
+        const query = self.filterText.trim().toLowerCase()
+        const result = new Set<AnyConfigurationModel>()
+        for (const [conf, text] of this.trackSearchText) {
+          if (text.includes(query)) {
+            result.add(conf)
+          }
+        }
+        return result
+      },
+
+      /**
+       * #getter
+       * one group per connection *config* (not just live instances), so a
+       * connection shows in the tree before it's loaded; expanding it hydrates
+       * the connection (see toggleCategory). Tracks are empty until then.
+       *
+       * Sorting happens here, not in generateHierarchy, so that a filterText
+       * keystroke doesn't re-sort every track: filtering preserves order
+       */
+      get allTracks() {
+        const { connectionInstances = [], connections } = getSession(self)
+        const liveByConnectionId = new Map(
+          connectionInstances.map(c => [c.connectionId, c]),
+        )
+        const sort = (tracks: AnyConfigurationModel[]) =>
+          sortConfs(
+            tracks,
+            this.activeSortTrackNames,
+            this.activeSortCategories,
+          )
+        return [
+          {
+            group: 'Tracks',
+            id: 'Tracks',
+            tracks: sort(this.configAndSessionTrackConfigurations),
+            noCategories: false,
+            defaultCollapsed: false,
+            loading: false,
+          },
+          ...connections.map(conf => {
+            const live = liveByConnectionId.get(conf.connectionId)
+            return {
+              group: readConfObject(conf, 'name') as string,
+              id: connectionCategoryId(conf.connectionId),
+              tracks: live ? sort(filterTracks(live.tracks, self)) : [],
+              noCategories: false,
+              // dormant connections collapse by default so expanding loads them;
+              // a loaded one shows its tracks
+              defaultCollapsed: !live,
+              // show a spinner while the connection is fetching. A failed connect
+              // breaks the instance (no longer live), so this clears too
+              loading: live?.loading ?? false,
+            }
+          }),
+        ]
+      },
+
+      /**
+       * #getter
+       * map restricted to tracks the current view can display; derived from
+       * allTracks so connection tracks go through exactly one filterTracks()
+       * pass, shared with the tree, and favorites / recently-used can't surface
+       * a track the view cannot show
        */
       get displayableTrackConfigurationMap() {
-        const { connectionInstances = [] } = getSession(self)
         return new Map(
-          [
-            ...this.configAndSessionTrackConfigurations,
-            ...connectionInstances.flatMap(c => filterTracks(c.tracks, self)),
-          ].map(t => [t.trackId, t]),
+          this.allTracks.flatMap(g => g.tracks).map(t => [t.trackId, t]),
         )
       },
     }))
@@ -576,46 +646,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return self.recentlyUsed
           .map(t => self.displayableTrackConfigurationMap.get(t))
           .filter(notEmpty)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get allTracks() {
-        const session = getSession(self)
-        const { connectionInstances = [], connections } = session
-        const liveByConnectionId = new Map(
-          connectionInstances.map(c => [c.connectionId, c]),
-        )
-        // one category per connection *config* (not just live instances), so a
-        // connection shows in the tree before it's loaded; expanding it hydrates
-        // the connection (see toggleCategory). Tracks are empty until then.
-        return [
-          {
-            group: 'Tracks',
-            id: 'Tracks',
-            tracks: self.configAndSessionTrackConfigurations,
-            noCategories: false,
-            defaultCollapsed: false,
-            loading: false,
-          },
-          ...connections.map(conf => {
-            const live = liveByConnectionId.get(conf.connectionId)
-            return {
-              group: readConfObject(conf, 'name') as string,
-              id: connectionCategoryId(conf.connectionId),
-              tracks: live ? filterTracks(live.tracks, self) : [],
-              noCategories: false,
-              // dormant connections collapse by default so expanding loads them;
-              // a loaded one shows its tracks
-              defaultCollapsed: !live,
-              // show a spinner while the connection is fetching. A failed connect
-              // breaks the instance (no longer live), so this clears too
-              loading: live?.loading ?? false,
-            }
-          }),
-        ]
       },
     }))
     .views(self => ({
@@ -658,7 +688,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         let cumulativeHeight = 0
         for (const item of items) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(item, self.folderCategories)
+          cumulativeHeight += getNodePresentation(
+            item,
+            self.folderCategories,
+          ).height
         }
         return { cumulativeHeight, offsets }
       },
@@ -682,20 +715,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         return { startIndex: start, endIndex: end }
       },
+      // structure-only, so showing/hiding a track doesn't re-walk every folder
+      // subtree; only folderCategoryStats' cheap counting pass re-runs
+      get folderTrackNodes() {
+        const map = new Map<string, TreeTrackNode[]>()
+        for (const item of self.flattenedItems) {
+          if (item.type === 'category' && self.folderCategories.has(item.id)) {
+            map.set(item.id, getAllTrackNodes(item))
+          }
+        }
+        return map
+      },
       get folderCategoryStats() {
         const stats = new Map<string, { active: number; total: number }>()
         const { shownTrackIds } = self
-        for (const item of self.flattenedItems) {
-          if (item.type === 'category' && self.folderCategories.has(item.id)) {
-            const trackNodes = getAllTrackNodes(item)
-            let active = 0
-            for (const n of trackNodes) {
-              if (shownTrackIds.has(n.trackId)) {
-                active++
-              }
+        for (const [id, trackNodes] of this.folderTrackNodes) {
+          let active = 0
+          for (const n of trackNodes) {
+            if (shownTrackIds.has(n.trackId)) {
+              active++
             }
-            stats.set(item.id, { active, total: trackNodes.length })
           }
+          stats.set(id, { active, total: trackNodes.length })
         }
         return stats
       },

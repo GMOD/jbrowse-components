@@ -41,14 +41,16 @@ function openDisplays(model: HierarchicalTrackSelectorModel, trackId: string) {
 // session.getTrackConfigChanges / updateTrackConfiguration) or a session-wide
 // displayTypeDefault the user promoted. One pencil marks both; the tooltip and
 // the dialog it opens name the actual source (and its reset) in words.
-const OverrideBadge = observer(function OverrideBadge({
+const OpenTrackBadge = observer(function OpenTrackBadge({
   model,
   trackId,
   name,
+  displays,
 }: {
   model: HierarchicalTrackSelectorModel
   trackId: string
   name: string
+  displays: PromotableDisplay[]
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
@@ -64,7 +66,6 @@ const OverrideBadge = observer(function OverrideBadge({
   // both functions are total (a schema with no promotable slot yields no changes
   // and clears nothing), so there is nothing to dispatch on and no display needs
   // to opt in
-  const displays = openDisplays(model, trackId)
   const displayTypeDefaults = displays.flatMap(d =>
     getDisplayTypeDefaultChanges(d),
   )
@@ -76,9 +77,7 @@ const OverrideBadge = observer(function OverrideBadge({
 
   const edited = changes.length > 0
   const affectedByDefault = displayTypeDefaults.length > 0
-  // Only badge a track that's currently shown: a closed track has no open
-  // display, so its edited/default state isn't visible anywhere to act on.
-  if (displays.length === 0 || (!edited && !affectedByDefault)) {
+  if (!edited && !affectedByDefault) {
     return null
   }
   // Prefer the "edited" pencil when a real per-track edit exists; otherwise the
@@ -111,6 +110,31 @@ const OverrideBadge = observer(function OverrideBadge({
       </IconButton>
     </Tooltip>
   )
+})
+
+// Only a track that's currently shown can be badged: a closed track has no open
+// display, so its edited/default state isn't visible anywhere to act on. The
+// gate lives out here, ahead of OpenTrackBadge's cascade reads (a resolveSlot +
+// deepEqual per promotable slot) — one badge renders per row of the tree, and
+// most rows are closed tracks.
+const OverrideBadge = observer(function OverrideBadge({
+  model,
+  trackId,
+  name,
+}: {
+  model: HierarchicalTrackSelectorModel
+  trackId: string
+  name: string
+}) {
+  const displays = openDisplays(model, trackId)
+  return displays.length > 0 ? (
+    <OpenTrackBadge
+      model={model}
+      trackId={trackId}
+      name={name}
+      displays={displays}
+    />
+  ) : null
 })
 
 export default OverrideBadge
