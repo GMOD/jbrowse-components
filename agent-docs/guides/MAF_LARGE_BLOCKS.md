@@ -174,11 +174,19 @@ Independent of block size, and possibly the real cause of "crashes":
 
 ## Render cost is no longer the open question
 
-Worth stating so the next person doesn't re-profile it. Three passes have
-landed: the sub-pixel decimation on the base cells, `IdentityColumns` on the
-per-row identity plot (2.4-3.9x, and the bp bound on the conservation band), and
-the source-chromosome ranks moved to a memoized computed. What remains
-un-decimated on the main thread is bounded by block size, not by span —
+Worth stating so the next person doesn't re-profile it. Four passes have landed:
+the sub-pixel decimation on the base cells, `IdentityColumns` on the per-row
+identity plot (2.4-3.9x, and the bp bound on the conservation band), the
+source-chromosome ranks moved to a memoized computed, and the deletion overlay
+gated on what its label can actually fit (679k markers built and 0 drawn per
+frame on a 26-species view — the one item here that was on the *default* path).
+
+The deletion one is the lesson worth carrying: the decimation pass fixed the
+base-cell encode and stopped at the encode boundary, while a sibling getter kept
+doing a full per-cell scan at the same zooms. When something here gets faster,
+check the overlays computing alongside it before declaring the zoom level cheap.
+
+What remains un-decimated on the main thread is bounded by block size, not span —
 `drawMafBlocks` (Canvas2D fallback + SVG export) and `findRowHoverAtBp` both
 walk a whole block, so they are yet another thing a megabase block makes
 quadratic and nothing a normal one troubles.
