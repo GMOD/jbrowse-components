@@ -33,6 +33,10 @@ Two supporting habits came out of the pass and are worth keeping:
   & Kidd 2025, plus the two _DENR_ SINEC2A1 dimorphisms as the contrasting kind
   of variant (220 bp at ~90% frequency, the reference carrying the rare allele).
   Both built by `scripts/build_dog10k_nhej1_sv.sh`.
+- `tutorials/dog10k_lof.md` (new) — the _CYP1A2_ p.Arg373Ter nonsense allele
+  from the Dog10K paper's Fig 10, built by `scripts/build_dog10k_cyp1a2.sh`.
+  The coordinate is derived by translating the reference CDS rather than copied,
+  which is worth repeating elsewhere: it re-checks against the assembly in use.
 - `tutorials/methylation.md` (17b87d98d0) — refocused onto HG002 at the SNRPN
   imprinting center. The COLO829 by-type/2-color figure was already in
   `user_guides/alignments_track.md#modifications-and-methylation`, so the
@@ -91,7 +95,21 @@ breed-labeled `layout`), so each of these is roughly an hour:
   local-ancestry tutorial's numbers are chr1 only and say so; the sweep is what
   would let it quote genome-wide fractions.
 
-_DENR_ is done (see above).
+_DENR_ and _CYP1A2_ are done (see above).
+
+**Copy number is not reproducible from published data.** The paper's Fig 10a is
+QuicK-mer2 copy number across breeds, and those per-sample estimates are not
+released: `kiddlabshare/public-data/QuicK-mer/QuicK-mer2-refs/` is empty, the
+Dog10K share has no CNV directory, and the paper's Zenodo record (8084059) holds
+variants, SVs, and the phased panel but no CN. A 1000-Genomes-style copy-number
+matrix for dogs would need re-running QuicK-mer2 over the CRAMs in `cram-share/`.
+
+**phyloP on canFam4 exists but is awkward.** Zenodo 8084059 carries
+`zoonomia-cf3.1-lifted-to-cf4.liftover.phylop.20210708.bw.gz`, which is Fig 10c.
+It is a 12.8 GB *gzipped* bigWig, so it cannot be range-requested: adding a
+conservation track under any of these figures means downloading it whole,
+decompressing, and slicing the locus into a small bigWig. UCSC has no
+conservation track for canFam4.
 
 ## Gotchas worth not rediscovering
 
