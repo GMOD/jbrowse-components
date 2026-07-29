@@ -19,6 +19,7 @@ tracks, so reading needs only a browser. To build the track yourself:
 
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4)
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
+- for the copy-number section, `samtools` built with libcurl
 
 ## The gene and the question
 
@@ -116,6 +117,60 @@ different distribution across these breeds and one of the wolves carries it, so
 "tracks breed structure" is a property of a particular variant rather than of
 the locus.
 
+## The gene is also copy-number variable
+
+The paper reports half the collection at three or more copies of _CYP1A2_, which
+is the other half of its figure and the reason a genotype at this locus is
+harder to read than it looks. Those copy-number estimates were never published,
+but they do not have to be: the Dog10K share puts 15 CRAMs online with their
+indexes, so only the reads over this gene have to be fetched.
+
+Depth becomes copy number by comparison, not by calibration. Each dog's own
+flanking sequence is copy number two, so it is the denominator:
+
+```
+CN = 2 * depth over the element / depth over that dog's flanks
+```
+
+Nothing about that needs a copy-number caller, and the check on it is in the
+same picture: the flanks have to come back out at two. The build script rounds
+each window to an integer and colors it the way the paper does, which is a
+painting rather than a trace.
+
+<Figure caption="Read-depth copy number over CYP1A2, one row per dog, each 5 kb window colored by its rounded copy number (black 2, dark blue 3, blue 4, cyan 5). The Greenland Dog is black across the whole window; every other dog steps up over the gene and returns to black either side. White columns are windows the script drops as unmeasurable, either too repetitive or reading off two in every dog." src="/img/dog10k-cyp1a2-copy-number.png" />
+
+Read against the panel above it, this is what makes the locus awkward: a
+genotype call at the stop codon is a call across however many copies that dog
+has, and the paper discounts a Hardy-Weinberg outlier here for exactly that
+reason.
+
+## The same estimate across all 1,987 canids
+
+Fifteen CRAMs is every read set the share publishes, but not every dog it has
+depth for. The SNV callset carries a per-sample `DP` at every site for the whole
+collection, so the same ratio can be taken from it: one tabix slice of the 397
+GB VCF, stripped to the depth field.
+
+That is a different measurement, made only where a variant was called, so the
+build script checks it against the fifteen dogs that have both rather than
+assuming. Over the shared windows it comes out at r = 0.97 with no bias, which
+is what earns the second painting.
+
+<Figure caption="The same copy-number painting over every canid in the Dog10K callset, one row each. Rows are sorted by sample ID, which groups them by breed, so breeds fixed for the expansion read as solid bands while others stay black. The flanks are the control and are black across the collection." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+
+Two things are worth reading off it. The expansion appears in every part of the
+collection rather than in one clade, which is the paper's own conclusion and
+suggests it predates breed formation. And whole breeds sit at one copy number
+while their neighbors sit at another, which is what makes this a locus where the
+breed matters clinically.
+
+One number does not reproduce. This estimate puts 80% of the collection at three
+or more copies where the paper reports 49.7%, and the two independent depth
+sources here agree with each other too closely for that to be measurement noise.
+The difference is which interval is being counted: the paper's copy number comes
+from QuicK-mer2 over an element whose extent was never published, while this one
+is measured over the windows the collection itself puts above two.
+
 ## Reproduce it end to end
 
 [`build_dog10k_cyp1a2.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2.sh)
@@ -128,6 +183,19 @@ bash scripts/build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 It derives the stop codon's position from the reference, builds the sample list
 from the Dog10K sample table, slices the gene out of the callset, and prints the
 genotypes at the stop so you can check the figure against the data.
+
+[`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
+builds the copy-number tracks:
+
+```bash
+bash scripts/build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
+```
+
+It reads depth over this gene straight out of each published CRAM, paints the 15
+dogs, then slices the callset's own depth field and paints the other 1,972. It
+prints each dog's copy number over the element beside the spread of its flanks,
+and the agreement between the two measurements, so both figures can be checked
+against the numbers that produced them.
 
 ## See also
 

@@ -64,6 +64,151 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_cyp1a2_cn",
+      "name": "CYP1A2 copy number (read depth, 5 kb windows)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "copyNumber"
+        ],
+        "uri": "dog10k_cyp1a2_cn.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_cyp1a2_cn-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+          "rowOrder": [
+            "Greenland Dog",
+            "Springer Spaniel 1",
+            "Springer Spaniel 2",
+            "Springer Spaniel 3",
+            "Pointing Dog 1",
+            "Pointing Dog 2",
+            "Pointing Dog 3",
+            "Pointing Dog 4",
+            "Pointing Dog 5",
+            "Pointing Dog 6",
+            "Pointing Dog 7",
+            "Pointing Dog 8",
+            "Chihuahua 1",
+            "Chihuahua 2",
+            "Village dog (Azerbaijan)"
+          ],
+          "legend": [
+            {
+              "label": "CN 2",
+              "color": "rgb(0,0,0)"
+            },
+            {
+              "label": "CN 3",
+              "color": "rgb(0,0,153)"
+            },
+            {
+              "label": "CN 4",
+              "color": "rgb(51,51,255)"
+            },
+            {
+              "label": "CN 5",
+              "color": "rgb(0,255,255)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_cyp1a2_cohort_cn",
+      "name": "CYP1A2 copy number across the Dog10K collection (callset depth)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "copyNumber"
+        ],
+        "uri": "dog10k_cyp1a2_cohort_cn.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_cyp1a2_cohort_cn-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+          "legend": [
+            {
+              "label": "CN 0",
+              "color": "rgb(224,224,224)"
+            },
+            {
+              "label": "CN 1",
+              "color": "rgb(160,160,160)"
+            },
+            {
+              "label": "CN 2",
+              "color": "rgb(0,0,0)"
+            },
+            {
+              "label": "CN 3",
+              "color": "rgb(0,0,153)"
+            },
+            {
+              "label": "CN 4",
+              "color": "rgb(51,51,255)"
+            },
+            {
+              "label": "CN 5",
+              "color": "rgb(0,255,255)"
+            },
+            {
+              "label": "CN 6",
+              "color": "rgb(0,153,0)"
+            },
+            {
+              "label": "CN 7",
+              "color": "rgb(255,255,0)"
+            },
+            {
+              "label": "CN 8",
+              "color": "rgb(255,153,51)"
+            },
+            {
+              "label": "CN 9",
+              "color": "rgb(153,76,0)"
+            },
+            {
+              "label": "CN 10",
+              "color": "rgb(204,0,0)"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "dog10k_wolfdog_block_genotypes",
       "name": "Dog10K phased genotypes (wolves, Saarloos, dogs)",

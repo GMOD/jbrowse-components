@@ -2,9 +2,10 @@ import { lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the two Dog10K tutorials (local_ancestry.md, dog10k_svs.md). Both
-// read test_data/dog10k/config.json, whose data is built by
-// scripts/build_dog10k_wolfdog_ancestry.sh and scripts/build_dog10k_nhej1_sv.sh.
+// Figures for the three Dog10K tutorials (local_ancestry.md, dog10k_svs.md,
+// dog10k_lof.md). All read test_data/dog10k/config.json, whose data is built by
+// scripts/build_dog10k_wolfdog_ancestry.sh, scripts/build_dog10k_nhej1_sv.sh,
+// scripts/build_dog10k_cyp1a2.sh and scripts/build_dog10k_cyp1a2_cn.sh.
 
 const DOG_CONFIG = 'test_data/dog10k/config.json'
 
@@ -368,5 +369,83 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track plus all 39 sample rows and the genotype legend
     viewportHeight: 870,
+  },
+
+  // Copy number over the same gene (Meadows et al. 2023, Fig 10a), from read
+  // depth over the 15 CRAMs the Dog10K share publishes. Painted the way the
+  // paper and QuicK-mer2 itself draw copy number: each 5 kb window rounded to
+  // an integer and colored by it (2 black, 3 dark blue, 4 blue, 5 cyan), which
+  // is the same BED9 painting the wolfdog ancestry figure above uses. A wiggle
+  // per dog was the alternative and it renders each window's 7-10% spread as
+  // wobble that reads like structure; rounding states the call instead. Built
+  // by scripts/build_dog10k_cyp1a2_cn.sh.
+  {
+    mode: 'url',
+    name: 'dog10k-cyp1a2-copy-number',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // the copy-number element plus ~30 kb of copy-number-two sequence either
+      // side, which is the comparison the figure rests on
+      loc: 'chr30:38,235,000-38,295,000',
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 90,
+        },
+        {
+          trackId: 'dog10k_cyp1a2_cn',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 400,
+        },
+      ],
+    }),
+    readyText: 'chr30',
+    // gate on the data-driven color key rather than a settle, same reason as
+    // the ancestry painting: canvasDrawn can flip on an empty first paint
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // gene track plus all 15 dog rows and the copy-number key
+    viewportHeight: 730,
+  },
+
+  // The same estimate over the whole collection. The 15 CRAMs are all the share
+  // publishes, but the SNV callset carries a per-sample DP at every site for all
+  // 1,987 canids, and the same ratio of element depth to that dog's own flank
+  // depth reproduces the CRAM answer (r = 0.97 per window, no bias) — so this
+  // paints every dog in the collection rather than the fifteen with reads.
+  // Rows take the display's default sorted order, which for Dog10K IDs means
+  // grouped by breed (`BOPD*`, `CHIH*`, `VILL*` village dogs, `CLUP*` wolves) —
+  // so whole breeds fixed for the expansion read as solid bands, which is the
+  // paper's "variable in all major clades" claim. Built by
+  // scripts/build_dog10k_cyp1a2_cn.sh.
+  {
+    mode: 'url',
+    name: 'dog10k-cyp1a2-cohort-copy-number',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr30:38,235,000-38,295,000',
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 90,
+        },
+        {
+          trackId: 'dog10k_cyp1a2_cohort_cn',
+          type: 'LinearMultiRowFeatureDisplay',
+          // auto-fit bottoms out at 1px a row, so 1,987 rows set the height
+          // rather than take it; this is what they come to
+          height: 2000,
+        },
+      ],
+    }),
+    readyText: 'chr30',
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // gene track plus the full 1,987-row stack and the copy-number key
+    viewportHeight: 2320,
   },
 ]
