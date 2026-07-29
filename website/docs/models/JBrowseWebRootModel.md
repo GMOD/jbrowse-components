@@ -8,297 +8,77 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
 see [pluggable elements](/docs/developer_guide/) for concepts.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts).
 
-## Overview
-
 note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
-## Members
-
-| Member                                                                   | Kind       | Defined by                                          | Description                                                                                                         |
-| ------------------------------------------------------------------------ | ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| [configPath](#property-configpath)                                       | Properties | JBrowseWebRootModel                                 |                                                                                                                     |
-| [adminMode](#volatile-adminmode)                                         | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [sessionDB](#volatile-sessiondb)                                         | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [version](#volatile-version)                                             | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [gitCommit](#volatile-gitcommit)                                         | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [pluginsUpdated](#volatile-pluginsupdated)                               | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [savedSessionMetadata](#volatile-savedsessionmetadata)                   | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [reloadPluginManagerCallback](#volatile-reloadpluginmanagercallback)     | Volatiles  | JBrowseWebRootModel                                 |                                                                                                                     |
-| [menus](#method-menus)                                                   | Methods    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [setSavedSessionMetadata](#action-setsavedsessionmetadata)               | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [fetchSessionMetadata](#action-fetchsessionmetadata)                     | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [setSessionDB](#action-setsessiondb)                                     | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [setPluginsUpdated](#action-setpluginsupdated)                           | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [setReloadPluginManagerCallback](#action-setreloadpluginmanagercallback) | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [activateSession](#action-activatesession)                               | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [setSavedSessionFavorite](#action-setsavedsessionfavorite)               | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [deleteSavedSession](#action-deletesavedsession)                         | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [renameSavedSession](#action-renamesavedsession)                         | Actions    | JBrowseWebRootModel                                 |                                                                                                                     |
-| [jbrowse](#property-jbrowse)                                             | Properties | [BaseRootModel](../baserootmodel)                   | `jbrowse` is a mapping of the config.json into the in-memory state tree                                             |
-| [session](#property-session)                                             | Properties | [BaseRootModel](../baserootmodel)                   | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc. |
-| [sessionPath](#property-sessionpath)                                     | Properties | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [assemblyManager](#property-assemblymanager)                             | Properties | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [error](#volatile-error)                                                 | Volatiles  | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [textSearchManager](#volatile-textsearchmanager)                         | Volatiles  | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [pluginManager](#volatile-pluginmanager)                                 | Volatiles  | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [setError](#action-seterror)                                             | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [setSession](#action-setsession)                                         | Actions    | [BaseRootModel](../baserootmodel)                   | Sets the active session.                                                                                            |
-| [setDefaultSession](#action-setdefaultsession)                           | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [setSessionPath](#action-setsessionpath)                                 | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [renameCurrentSession](#action-renamecurrentsession)                     | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                     |
-| [internetAccounts](#property-internetaccounts)                           | Properties | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                     |
-| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                     |
-| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                     |
-| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                     |
-| [history](#property-history)                                             | Properties | [HistoryManagementMixin](../historymanagementmixin) | used for undo/redo                                                                                                  |
-| [mutableMenuActions](#volatile-mutablemenuactions)                       | Volatiles  | [RootAppMenuMixin](../rootappmenumixin)             |                                                                                                                     |
-| [setMenus](#action-setmenus)                                             | Actions    | [RootAppMenuMixin](../rootappmenumixin)             |                                                                                                                     |
-| [appendMenu](#action-appendmenu)                                         | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Add a top-level menu                                                                                                |
-| [insertMenu](#action-insertmenu)                                         | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Insert a top-level menu                                                                                             |
-| [appendToMenu](#action-appendtomenu)                                     | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Add a menu item to a top-level menu                                                                                 |
-| [insertInMenu](#action-insertinmenu)                                     | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Insert a menu item into a top-level menu                                                                            |
-| [appendToSubMenu](#action-appendtosubmenu)                               | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Add a menu item to a sub-menu                                                                                       |
-| [insertInSubMenu](#action-insertinsubmenu)                               | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Insert a menu item into a sub-menu                                                                                  |
-
-<details>
-<summary>JBrowseWebRootModel - Properties</summary>
-
-| Member                                           | Type                          |
-| ------------------------------------------------ | ----------------------------- |
-| <span id="property-configpath">configPath</span> | `IMaybe<ISimpleType<string>>` |
-
-</details>
-
-<details>
-<summary>JBrowseWebRootModel - Volatiles</summary>
-
-| Member                                                                             | Type                                                                                            |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <span id="volatile-adminmode">adminMode</span>                                     | `boolean`                                                                                       |
-| <span id="volatile-sessiondb">sessionDB</span>                                     | `IDBPDatabase<SessionDB> \| undefined`                                                          |
-| <span id="volatile-version">version</span>                                         | `string`                                                                                        |
-| <span id="volatile-gitcommit">gitCommit</span>                                     | `string`                                                                                        |
-| <span id="volatile-pluginsupdated">pluginsUpdated</span>                           | `false`                                                                                         |
-| <span id="volatile-rpcmanager">rpcManager</span>                                   | `RpcManager`                                                                                    |
-| <span id="volatile-savedsessionmetadata">savedSessionMetadata</span>               | `SessionMetadata[] \| undefined`                                                                |
-| <span id="volatile-reloadpluginmanagercallback">reloadPluginManagerCallback</span> | `(_configSnapshot: Record<string, unknown>, _sessionSnapshot: Record<string, unknown>) => void` |
-
-</details>
-
-<details>
-<summary>JBrowseWebRootModel - Methods</summary>
-
-| Member                               | Type           |
-| ------------------------------------ | -------------- |
-| <span id="method-menus">menus</span> | `() => Menu[]` |
-
-</details>
-
-<details>
-<summary>JBrowseWebRootModel - Actions</summary>
-
-| Member                                                                                 | Type                                                                                                              |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| <span id="action-setsavedsessionmetadata">setSavedSessionMetadata</span>               | `(sessions: SessionMetadata[]) => void`                                                                           |
-| <span id="action-fetchsessionmetadata">fetchSessionMetadata</span>                     | `() => Promise<void>`                                                                                             |
-| <span id="action-setsessiondb">setSessionDB</span>                                     | `(sessionDB: IDBPDatabase<SessionDB>) => void`                                                                    |
-| <span id="action-setpluginsupdated">setPluginsUpdated</span>                           | `() => void`                                                                                                      |
-| <span id="action-setreloadpluginmanagercallback">setReloadPluginManagerCallback</span> | `(callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void` |
-| <span id="action-activatesession">activateSession</span>                               | `(id: string) => Promise<void>`                                                                                   |
-| <span id="action-setsavedsessionfavorite">setSavedSessionFavorite</span>               | `(id: string, favorite: boolean) => Promise<void>`                                                                |
-| <span id="action-deletesavedsession">deleteSavedSession</span>                         | `(id: string) => Promise<void>`                                                                                   |
-| <span id="action-renamesavedsession">renameSavedSession</span>                         | `(id: string, name: string) => Promise<void>`                                                                     |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseRootModel</summary>
-
-[BaseRootModel →](../baserootmodel)
-
-**Properties**
-
-#### property: jbrowse
-
-`jbrowse` is a mapping of the config.json into the in-memory state tree
-
-```ts
-// type signature
-type jbrowse = IAnyType
-// code
-jbrowse: jbrowseModelType
-```
-
-#### property: session
-
-`session` encompasses the currently active state of the app, including views
-open, tracks open in those views, etc.
-
-```ts
-// type signature
-type session = IMaybe<IAnyType>
-// code
-session: types.maybe(sessionModelType)
-```
-
-| Member                                                     | Type                                               |
-| ---------------------------------------------------------- | -------------------------------------------------- |
-| <span id="property-sessionpath">sessionPath</span>         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-assemblymanager">assemblyManager</span> | `IOptionalIType<IModelType<…>, [undefined]>`       |
-
-**Volatiles**
-
-| Member                                                         | Type                |
-| -------------------------------------------------------------- | ------------------- |
-| <span id="volatile-error">error</span>                         | `unknown`           |
-| <span id="volatile-textsearchmanager">textSearchManager</span> | `TextSearchManager` |
-| <span id="volatile-pluginmanager">pluginManager</span>         | `PluginManager`     |
-
-**Actions**
-
-#### action: setSession
-
-Sets the active session. Remaps any legacy display type names (e.g.
-LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST
-tree to drop open tracks whose config can't hydrate so shared sessions still
-load when referencing tracks that no longer exist. Dropped tracks are surfaced
-to the user via a snackbar. If filtering throws, the previous session is
-restored.
-
-```ts
-type setSession = (sessionSnapshot?: any) => void
-```
-
-| Member                                                             | Type                        |
-| ------------------------------------------------------------------ | --------------------------- |
-| <span id="action-seterror">setError</span>                         | `(error: unknown) => void`  |
-| <span id="action-setdefaultsession">setDefaultSession</span>       | `() => void`                |
-| <span id="action-setsessionpath">setSessionPath</span>             | `(path: string) => void`    |
-| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(newName: string) => void` |
-
-</details>
-
-<details>
-<summary>Derived from InternetAccountsMixin</summary>
-
-[InternetAccountsMixin →](../internetaccountsmixin)
-
-**Properties**
-
-| Member                                                       | Type                   |
-| ------------------------------------------------------------ | ---------------------- |
-| <span id="property-internetaccounts">internetAccounts</span> | `IArrayType<IAnyType>` |
-
-**Actions**
-
-| Member                                                                                 | Type                                                                                                         |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| <span id="action-initializeinternetaccount">initializeInternetAccount</span>           | `(internetAccountConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, initialSnapshot?: any) => any` |
-| <span id="action-createephemeralinternetaccount">createEphemeralInternetAccount</span> | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                  |
-| <span id="action-findappropriateinternetaccount">findAppropriateInternetAccount</span> | `(location: UriLocation) => any`                                                                             |
-
-</details>
-
-<details>
-<summary>Derived from HistoryManagementMixin</summary>
-
-[HistoryManagementMixin →](../historymanagementmixin)
-
-**Properties**
-
-#### property: history
-
-used for undo/redo
-
-```ts
-// type signature
-type history = IOptionalIType<IModelType<…>, [...]>
-// code
-history: types.optional(TimeTraveller, { targetPath: '../session' })
-```
-
-</details>
-
-<details>
-<summary>Derived from RootAppMenuMixin</summary>
-
-[RootAppMenuMixin →](../rootappmenumixin)
-
-**Volatiles**
-
-| Member                                                           | Type           |
-| ---------------------------------------------------------------- | -------------- |
-| <span id="volatile-mutablemenuactions">mutableMenuActions</span> | `MenuAction[]` |
-
-**Actions**
-
-#### action: appendMenu
-
-Add a top-level menu
-
-```ts
-type appendMenu = (menuName: string) => void
-```
-
-#### action: insertMenu
-
-Insert a top-level menu
-
-```ts
-type insertMenu = (menuName: string, position: number) => void
-```
-
-#### action: appendToMenu
-
-Add a menu item to a top-level menu
-
-```ts
-type appendToMenu = (menuName: string, menuItem: MenuItem) => void
-```
-
-#### action: insertInMenu
-
-Insert a menu item into a top-level menu
-
-```ts
-type insertInMenu = (
-  menuName: string,
-  menuItem: MenuItem,
-  position: number,
-) => void
-```
-
-#### action: appendToSubMenu
-
-Add a menu item to a sub-menu
-
-```ts
-type appendToSubMenu = (menuPath: string[], menuItem: MenuItem) => void
-```
-
-#### action: insertInSubMenu
-
-Insert a menu item into a sub-menu
-
-```ts
-type insertInSubMenu = (
-  menuPath: string[],
-  menuItem: MenuItem,
-  position: number,
-) => void
-```
-
-| Member                                     | Type                         |
-| ------------------------------------------ | ---------------------------- |
-| <span id="action-setmenus">setMenus</span> | `(newMenus: Menu[]) => void` |
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-configpath">**configPath**</span><br><code>configPath: types.maybe(types.string)</code> |  | JBrowseWebRootModel |
+| <span id="property-jbrowse">**jbrowse**</span><br><code>jbrowse: jbrowseModelType</code> | <span data-pagefind-ignore>`jbrowse` is a mapping of the config.json into the in-memory state tree</span> | [BaseRootModel](../baserootmodel#property-jbrowse) |
+| <span id="property-session">**session**</span><br><code>session: types.maybe(sessionModelType)</code> | <span data-pagefind-ignore>`session` encompasses the currently active state of the app, including views open, tracks open in those views, etc.</span> | [BaseRootModel](../baserootmodel#property-session) |
+| <span id="property-sessionpath">**sessionPath**</span><br><code>sessionPath: types.stripDefault(types.string, '')</code> |  | [BaseRootModel](../baserootmodel#property-sessionpath) |
+| <span id="property-assemblymanager">**assemblyManager**</span><br><details><summary><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></summary><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [BaseRootModel](../baserootmodel#property-assemblymanager) |
+| <span id="property-internetaccounts">**internetAccounts**</span><br><details><summary><code>internetAccounts: types.array( pluginManager.pluggableMstType('…</code></summary><pre><code>internetAccounts: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('internet account', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#property-internetaccounts) |
+| <span id="property-history">**history**</span><br><details><summary><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></summary><pre><code>history: types.optional(TimeTraveller, { targetPath: '../session' })</code></pre></details> | <span data-pagefind-ignore>used for undo/redo</span> | [HistoryManagementMixin](../historymanagementmixin#property-history) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>adminMode</code> |  | JBrowseWebRootModel |
+| <span id="volatile-sessiondb">**sessionDB**</span><br><code>sessionDB: undefined as IDBPDatabase&lt;SessionDB&gt; &#124; undefined</code> |  | JBrowseWebRootModel |
+| <span id="volatile-version">**version**</span><br><code>version: packageJSON.version</code> |  | JBrowseWebRootModel |
+| <span id="volatile-gitcommit">**gitCommit**</span><br><code>gitCommit</code> |  | JBrowseWebRootModel |
+| <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>pluginsUpdated: false</code> |  | JBrowseWebRootModel |
+| <span id="volatile-rpcmanager">**rpcManager**</span><br><details><summary><code>rpcManager: new RpcManager( pluginManager, self.jbrowse.configu…</code></summary><pre><code>rpcManager: new RpcManager(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;self.jbrowse.configuration.rpc,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;makeWorkerInstance,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultDriverName: 'WebWorkerRpcDriver',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | JBrowseWebRootModel |
+| <span id="volatile-savedsessionmetadata">**savedSessionMetadata**</span><br><code>savedSessionMetadata: undefined as SessionMetadata[] &#124; undefined</code> |  | JBrowseWebRootModel |
+| <span id="volatile-reloadpluginmanagercallback">**reloadPluginManagerCallback**</span><br><details><summary><code>reloadPluginManagerCallback: ( _configSnapshot: Record&lt;string,…</code></summary><pre><code>reloadPluginManagerCallback: (&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;_configSnapshot: Record&lt;string, unknown&gt;,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;_sessionSnapshot: Record&lt;string, unknown&gt;,&#10;&#160;&#160;&#160;&#160;&#160;&#160;) =&gt; {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;console.error('reloadPluginManagerCallback unimplemented')&#10;&#160;&#160;&#160;&#160;&#160;&#160;}</code></pre></details> |  | JBrowseWebRootModel |
+| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseRootModel](../baserootmodel#volatile-error) |
+| <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>textSearchManager: new TextSearchManager(pluginManager)</code> |  | [BaseRootModel](../baserootmodel#volatile-textsearchmanager) |
+| <span id="volatile-pluginmanager">**pluginManager**</span><br><code>pluginManager</code> |  | [BaseRootModel](../baserootmodel#volatile-pluginmanager) |
+| <span id="volatile-mutablemenuactions">**mutableMenuActions**</span><br><code>mutableMenuActions: [] as MenuAction[]</code> |  | [RootAppMenuMixin](../rootappmenumixin#volatile-mutablemenuactions) |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-menus">**menus**</span><br><code>() =&gt; Menu[]</code> |  |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setsavedsessionmetadata">**setSavedSessionMetadata**</span><br><code>(sessions: SessionMetadata[]) =&gt; void</code> |  | JBrowseWebRootModel |
+| <span id="action-fetchsessionmetadata">**fetchSessionMetadata**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  | JBrowseWebRootModel |
+| <span id="action-setsessiondb">**setSessionDB**</span><br><code>(sessionDB: IDBPDatabase&lt;SessionDB&gt;) =&gt; void</code> |  | JBrowseWebRootModel |
+| <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; void</code> |  | JBrowseWebRootModel |
+| <span id="action-setreloadpluginmanagercallback">**setReloadPluginManagerCallback**</span><br><details><summary><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSna…</code></summary><pre><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSnapshot: Record&lt;string, unknown&gt;) =&gt; void) =&gt; void</code></pre></details> |  | JBrowseWebRootModel |
+| <span id="action-activatesession">**activateSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  | JBrowseWebRootModel |
+| <span id="action-setsavedsessionfavorite">**setSavedSessionFavorite**</span><br><code>(id: string, favorite: boolean) =&gt; Promise&lt;void&gt;</code> |  | JBrowseWebRootModel |
+| <span id="action-deletesavedsession">**deleteSavedSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  | JBrowseWebRootModel |
+| <span id="action-renamesavedsession">**renameSavedSession**</span><br><code>(id: string, name: string) =&gt; Promise&lt;void&gt;</code> |  | JBrowseWebRootModel |
+| <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-seterror) |
+| <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot?: any) =&gt; void</code> | <span data-pagefind-ignore>Sets the active session. Remaps any legacy display type names (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST tree to drop open tracks whose config can't hydrate so shared sessions still load when referencing tracks that no longer exist. Dropped tracks are surfaced to the user via a snackbar. If filtering throws, the previous session is restored.</span> | [BaseRootModel](../baserootmodel#action-setsession) |
+| <span id="action-setdefaultsession">**setDefaultSession**</span><br><code>() =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-setdefaultsession) |
+| <span id="action-setsessionpath">**setSessionPath**</span><br><code>(path: string) =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-setsessionpath) |
+| <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(newName: string) =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-renamecurrentsession) |
+| <span id="action-initializeinternetaccount">**initializeInternetAccount**</span><br><details><summary><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStat…</code></summary><pre><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;, initialSnapshot?: any) =&gt; any</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#action-initializeinternetaccount) |
+| <span id="action-createephemeralinternetaccount">**createEphemeralInternetAccount**</span><br><details><summary><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unk…</code></summary><pre><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unknown&gt;, url: string) =&gt; any</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#action-createephemeralinternetaccount) |
+| <span id="action-findappropriateinternetaccount">**findAppropriateInternetAccount**</span><br><code>(location: UriLocation) =&gt; any</code> |  | [InternetAccountsMixin](../internetaccountsmixin#action-findappropriateinternetaccount) |
+| <span id="action-setmenus">**setMenus**</span><br><code>(newMenus: Menu[]) =&gt; void</code> |  | [RootAppMenuMixin](../rootappmenumixin#action-setmenus) |
+| <span id="action-appendmenu">**appendMenu**</span><br><code>(menuName: string) =&gt; void</code> | <span data-pagefind-ignore>Add a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-appendmenu) |
+| <span id="action-insertmenu">**insertMenu**</span><br><code>(menuName: string, position: number) =&gt; void</code> | <span data-pagefind-ignore>Insert a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-insertmenu) |
+| <span id="action-appendtomenu">**appendToMenu**</span><br><code>(menuName: string, menuItem: MenuItem) =&gt; void</code> | <span data-pagefind-ignore>Add a menu item to a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-appendtomenu) |
+| <span id="action-insertinmenu">**insertInMenu**</span><br><code>(menuName: string, menuItem: MenuItem, position: number) =&gt; void</code> | <span data-pagefind-ignore>Insert a menu item into a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-insertinmenu) |
+| <span id="action-appendtosubmenu">**appendToSubMenu**</span><br><code>(menuPath: string[], menuItem: MenuItem) =&gt; void</code> | <span data-pagefind-ignore>Add a menu item to a sub-menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-appendtosubmenu) |
+| <span id="action-insertinsubmenu">**insertInSubMenu**</span><br><details><summary><code>(menuPath: string[], menuItem: MenuItem, position: number) =&gt; v…</code></summary><pre><code>(menuPath: string[], menuItem: MenuItem, position: number) =&gt; void</code></pre></details> | <span data-pagefind-ignore>Insert a menu item into a sub-menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-insertinsubmenu) |

@@ -49,50 +49,17 @@ combined VCF (useful for large call sets split by chromosome)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "SplitVcfTabixAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type                    | Description                               |
-| ---------------------------------------------- | ----------------------- | ----------------------------------------- |
-| [vcfGzLocationMap](#slot-vcfgzlocationmap)     | `frozen`                | object like `{chr1:{uri:'url to file'}}`  |
-| [indexLocationMap](#slot-indexlocationmap)     | `frozen`                | object like `{chr1:{uri:'url to index'}}` |
-| [indexType](#slot-indextype)                   | `stringEnum` (TBI, CSI) |                                           |
-| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation`          |                                           |
-
-<details>
-<summary>SplitVcfTabixAdapter - Slots</summary>
-
-#### slot: vcfGzLocationMap
-
-object like `{chr1:{uri:'url to file'}}`
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-#### slot: indexLocationMap
-
-object like `{chr1:{uri:'url to index'}}`
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-#### slot: indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: samplesTsvLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/samples.tsv',
-    description:
-      'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
-    locationType: 'UriLocation',
-  },
-}
-```
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-vcfgzlocationmap">**vcfGzLocationMap**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | object like `{chr1:{uri:'url to file'}}` |
+| <span id="slot-indexlocationmap">**indexLocationMap**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | object like `{chr1:{uri:'url to index'}}` |
+| <span id="slot-indextype">**indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/samples.tsv', description: 'tsv with header li…</code></summary><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: '/path/to/samples.tsv',&#10;&#160;&#160;&#160;&#160;description:&#10;&#160;&#160;&#160;&#160;&#160;&#160;'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></details> |  |

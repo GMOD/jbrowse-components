@@ -46,101 +46,19 @@ view supplies a `targetAssemblyName`.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "AllVsAllIndexedPAFAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                             | Type                    | Description                                                                                                                                                                           |
-| ------------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)             | `stringArray`           | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse.                                                                      |
-| [pifGzLocation](#slot-pifgzlocation)             | `fileLocation`          | location of the all-vs-all tabix indexed PAF (pif)                                                                                                                                    |
-| [assemblyNameToPanSN](#slot-assemblynametopansn) | `frozen`                | Maps a JBrowse assembly name to its PanSN prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). |
-| [index](#slot-index)                             |                         |                                                                                                                                                                                       |
-| [index.indexType](#slot-indexindextype)          | `stringEnum` (TBI, CSI) |                                                                                                                                                                                       |
-| [index.location](#slot-indexlocation)            | `fileLocation`          |                                                                                                                                                                                       |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                                   | Type     | Description                                                                                                                                                                                                                 |
-| ------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [coarseBpPerPxThreshold](#slot-coarsebpperpxthreshold) | `number` | bpPerPx threshold at which a view on "Level of detail: automatic" switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with a coarse tier. |
-
-</details>
-
-<details>
-<summary>AllVsAllIndexedPAFAdapter - Slots</summary>
-
-#### slot: assemblyNames
-
-The assemblies this track appears on and can back synteny bands for — list the
-assemblies you load into JBrowse. Each entry must resolve to a PanSN sample
-(`grape`) or haplotype (`grape#1`) prefix present in the file. In a plain LGV
-the track still draws its assembly against every other sample in the file, so
-mates need not be listed here (unlisted mates are labelled by their PanSN
-prefix).
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: pifGzLocation
-
-location of the all-vs-all tabix indexed PAF (pif)
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:**
-`{ uri: '/path/to/all_vs_all.pif.gz', locationType: 'UriLocation' }`
-
-#### slot: assemblyNameToPanSN
-
-Maps a JBrowse assembly name to its PanSN prefix in the PAF, for when they
-differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need
-`{ grape: 'Vitis_vinifera' }`). The prefix may name a sample (`grape`, matching
-all of its haplotypes) or one haplotype (`grape#1`), so a haplotype-resolved
-pangenome that loads each haplotype as its own assembly maps
-`{ grape_hap1: 'grape#1', grape_hap2: 'grape#2' }`. Defaults to identity: the
-assembly name is assumed to be the PanSN sample name.
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-#### slot: coarseBpPerPxThreshold
-
-bpPerPx threshold at which a view on "Level of detail: automatic" switches from
-the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier
-(uppercase T/Q prefix), when make-pif was run with a coarse tier. No coarse tier
-present in the file = always uses the fine tier. Should be at least make-pif's
-`--coarse` gap: below it, coarse ribbons are drawn straight across indels wide
-enough to see.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`10000` · _advanced_
-
-#### slot: index
-
-```js
-ConfigurationSchema('TabixIndex', {
-  indexType: {
-    model: types.enumeration('IndexType', ['TBI', 'CSI']),
-    type: 'stringEnum',
-    defaultValue: 'TBI',
-  },
-  location: {
-    type: 'fileLocation',
-    defaultValue: {
-      uri: '/path/to/all_vs_all.pif.gz.tbi',
-      locationType: 'UriLocation',
-    },
-  },
-})
-```
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:**
-`{ uri: '/path/to/all_vs_all.pif.gz.tbi', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse. Each entry must resolve to a PanSN sample (`grape`) or haplotype (`grape#1`) prefix present in the file. In a plain LGV the track still draws its assembly against every other sample in the file, so mates need not be listed here (unlisted mates are labelled by their PanSN prefix). |
+| <span id="slot-pifgzlocation">**pifGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/all_vs_all.pif.gz', locationType: 'UriLocation…</code></summary><pre><code>{ uri: '/path/to/all_vs_all.pif.gz', locationType: 'UriLocation' }</code></pre></details> | location of the all-vs-all tabix indexed PAF (pif) |
+| <span id="slot-assemblynametopansn">**assemblyNameToPanSN**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | Maps a JBrowse assembly name to its PanSN prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). The prefix may name a sample (`grape`, matching all of its haplotypes) or one haplotype (`grape#1`), so a haplotype-resolved pangenome that loads each haplotype as its own assembly maps `{ grape_hap1: 'grape#1', grape_hap2: 'grape#2' }`. Defaults to identity: the assembly name is assumed to be the PanSN sample name. |
+| <span id="slot-coarsebpperpxthreshold">**coarseBpPerPxThreshold**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | bpPerPx threshold at which a view on "Level of detail: automatic" switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with a coarse tier. No coarse tier present in the file = always uses the fine tier. Should be at least make-pif's `--coarse` gap: below it, coarse ribbons are drawn straight across indels wide enough to see.<br>_advanced_ |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/all_vs_all.pif.gz.tbi', locationType: 'UriLoca…</code></summary><pre><code>{ uri: '/path/to/all_vs_all.pif.gz.tbi', locationType: 'UriLocation' }</code></pre></details> |  |

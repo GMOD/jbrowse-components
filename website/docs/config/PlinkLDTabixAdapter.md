@@ -9,7 +9,22 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchemaTabix.ts).
 
-## Overview
+## Example usage
+
+```js
+{
+  type: 'LDTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'PlinkLDTabixAdapter',
+    uri: 'https://example.com/study.sorted.ld.gz',
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
 
 Adapter for reading pre-computed LD data from PLINK --r2 output (tabix-indexed).
 
@@ -40,50 +55,22 @@ Used by the
 (LocusZoom-style r² to an index SNP). See either guide for generating the .ld
 file with `plink --r2`.
 
-### PlinkLDTabixAdapter - Pre-processor / simplified config
-
-Preprocessor to allow minimal config:
-
-```json
-{
-  "type": "PlinkLDTabixAdapter",
-  "uri": "plink.ld.gz"
-}
-```
-
 ## Related links
 
 - **Track:** [LDTrack](../ldtrack)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "PlinkLDTabixAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                    | Type                    | Description                                     |
-| --------------------------------------- | ----------------------- | ----------------------------------------------- |
-| [ldLocation](#slot-ldlocation)          | `fileLocation`          | Location of the bgzipped PLINK LD file (.ld.gz) |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                 |
-| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                 |
-
-<details>
-<summary>PlinkLDTabixAdapter - Slots</summary>
-
-#### slot: ldLocation
-
-Location of the bgzipped PLINK LD file (.ld.gz)
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/plink.ld.gz', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/plink.ld.gz.tbi', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-ldlocation">**ldLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/plink.ld.gz', locationType: 'UriLocation' }</code> | Location of the bgzipped PLINK LD file (.ld.gz) |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/plink.ld.gz.tbi', locationType: 'UriLocation' }</code> |  |

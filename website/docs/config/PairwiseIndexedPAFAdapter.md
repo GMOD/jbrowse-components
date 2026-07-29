@@ -40,96 +40,20 @@ auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "PairwiseIndexedPAFAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                    | Type                    | Description                                            |
-| --------------------------------------- | ----------------------- | ------------------------------------------------------ |
-| [assemblyNames](#slot-assemblynames)    | `stringArray`           | Array of assembly names to use for this file.          |
-| [targetAssembly](#slot-targetassembly)  | `string`                | Alternative to assemblyNames: the target assembly name |
-| [queryAssembly](#slot-queryassembly)    | `string`                | Alternative to assemblyNames: the query assembly name  |
-| [pifGzLocation](#slot-pifgzlocation)    | `fileLocation`          | location of pairwise tabix indexed PAF (pif)           |
-| [index](#slot-index)                    |                         |                                                        |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                        |
-| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                        |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                                   | Type     | Description                                                                                                                                                                                                                 |
-| ------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [coarseBpPerPxThreshold](#slot-coarsebpperpxthreshold) | `number` | bpPerPx threshold at which a view on "Level of detail: automatic" switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with a coarse tier. |
-
-</details>
-
-<details>
-<summary>PairwiseIndexedPAFAdapter - Slots</summary>
-
-#### slot: assemblyNames
-
-Array of assembly names to use for this file. The query assembly name is the
-first value in the array, target assembly name is the second
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: targetAssembly
-
-Alternative to assemblyNames: the target assembly name
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: queryAssembly
-
-Alternative to assemblyNames: the query assembly name
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: pifGzLocation
-
-location of pairwise tabix indexed PAF (pif)
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/data/file.pif.gz', locationType: 'UriLocation' }`
-
-#### slot: coarseBpPerPxThreshold
-
-bpPerPx threshold at which a view on "Level of detail: automatic" switches from
-the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier
-(uppercase T/Q prefix), when make-pif was run with a coarse tier. No coarse tier
-present in the file = always uses the fine tier. Should be at least make-pif's
-`--coarse` gap: below it, coarse ribbons are drawn straight across indels wide
-enough to see.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`10000` · _advanced_
-
-#### slot: index
-
-```js
-ConfigurationSchema('TabixIndex', {
-  indexType: {
-    model: types.enumeration('IndexType', ['TBI', 'CSI']),
-    type: 'stringEnum',
-    defaultValue: 'TBI',
-  },
-  location: {
-    type: 'fileLocation',
-    defaultValue: {
-      uri: '/path/to/my.paf.gz.tbi',
-      locationType: 'UriLocation',
-    },
-  },
-})
-```
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.paf.gz.tbi', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames: the target assembly name |
+| <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames: the query assembly name |
+| <span id="slot-pifgzlocation">**pifGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/data/file.pif.gz', locationType: 'UriLocation'…</code></summary><pre><code>{ uri: '/path/to/data/file.pif.gz', locationType: 'UriLocation' }</code></pre></details> | location of pairwise tabix indexed PAF (pif) |
+| <span id="slot-coarsebpperpxthreshold">**coarseBpPerPxThreshold**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | bpPerPx threshold at which a view on "Level of detail: automatic" switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with a coarse tier. No coarse tier present in the file = always uses the fine tier. Should be at least make-pif's `--coarse` gap: below it, coarse ribbons are drawn straight across indels wide enough to see.<br>_advanced_ |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.paf.gz.tbi', locationType: 'UriLocation' }</code> |  |

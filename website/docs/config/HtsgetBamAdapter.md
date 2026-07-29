@@ -37,27 +37,15 @@ library
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "HtsgetBamAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                 | Type     | Description                                    |
-| ------------------------------------ | -------- | ---------------------------------------------- |
-| [htsgetBase](#slot-htsgetbase)       | `string` | the base URL to fetch from                     |
-| [htsgetTrackId](#slot-htsgettrackid) | `string` | the trackId, which is appended to the base URL |
-
-<details>
-<summary>HtsgetBamAdapter - Slots</summary>
-
-#### slot: htsgetBase
-
-the base URL to fetch from
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: htsgetTrackId
-
-the trackId, which is appended to the base URL
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-htsgetbase">**htsgetBase**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the base URL to fetch from |
+| <span id="slot-htsgettrackid">**htsgetTrackId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the trackId, which is appended to the base URL |

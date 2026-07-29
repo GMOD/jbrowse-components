@@ -9,128 +9,47 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `grid-bookmark` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/grid-bookmark/src/GridBookmarkWidget/model.ts).
 
-## Overview
+## Properties
 
-## Members
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-label">**label**</span><br><code>label: types.optional(types.string, '')</code> |  |
+| <span id="property-highlight">**highlight**</span><br><code>highlight: types.optional(types.string, DEFAULT_HIGHLIGHT)</code> |  |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>type: types.literal('GridBookmarkWidget')</code> |  |
+| <span id="property-bookmarks">**bookmarks**</span><br><details><summary><code>bookmarks: types.optional(types.array(LabeledRegionModel), () =…</code></summary><pre><code>bookmarks: types.optional(types.array(LabeledRegionModel), () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;localStorageGetJSON(localStorageKeyF(), []),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> | loaded from localStorage when not present in snapshot; sharedBookmarks from a shared URL are merged in via preProcessSnapshot |
 
-| Member                                                               | Kind       | Defined by              | Description                                                                                                                   |
-| -------------------------------------------------------------------- | ---------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [label](#property-label)                                             | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [highlight](#property-highlight)                                     | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [id](#property-id)                                                   | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [type](#property-type)                                               | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [bookmarks](#property-bookmarks)                                     | Properties | GridBookmarkWidgetModel | loaded from localStorage when not present in snapshot; sharedBookmarks from a shared URL are merged in via preProcessSnapshot |
-| [selectedBookmarks](#volatile-selectedbookmarks)                     | Volatiles  | GridBookmarkWidgetModel |                                                                                                                               |
-| [gridView](#volatile-gridview)                                       | Volatiles  | GridBookmarkWidgetModel | which grid tab is visible: bookmarks or highlights                                                                            |
-| [assembliesInViews](#getter-assembliesinviews)                       | Getters    | GridBookmarkWidgetModel | assemblies currently displayed in any open view; the grids only show bookmarks/highlights belonging to these                  |
-| [visibleBookmarks](#getter-visiblebookmarks)                         | Getters    | GridBookmarkWidgetModel | bookmarks belonging to an assembly currently open in a view                                                                   |
-| [setLabel](#action-setlabel)                                         | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setHighlight](#action-sethighlight)                                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setGridView](#action-setgridview)                                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [importBookmarks](#action-importbookmarks)                           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [addBookmark](#action-addbookmark)                                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [updateBookmarkLabel](#action-updatebookmarklabel)                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [updateBookmarkHighlight](#action-updatebookmarkhighlight)           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [updateBulkBookmarkHighlights](#action-updatebulkbookmarkhighlights) | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setSelectedBookmarks](#action-setselectedbookmarks)                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setBookmarkedRegions](#action-setbookmarkedregions)                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [clearSelectedBookmarks](#action-clearselectedbookmarks)             | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [removeBookmarkObject](#action-removebookmarkobject)                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+## Volatiles
 
-<details>
-<summary>GridBookmarkWidgetModel - Properties</summary>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-selectedbookmarks">**selectedBookmarks**</span><br><code>selectedBookmarks: [] as IExtendedLabeledRegionModel[]</code> |  |
+| <span id="volatile-gridview">**gridView**</span><br><code>gridView: 'bookmarks'</code> | which grid tab is visible: bookmarks or highlights |
 
-#### property: bookmarks
+## Getters
 
-loaded from localStorage when not present in snapshot; sharedBookmarks from a
-shared URL are merged in via preProcessSnapshot
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-assembliesinviews">**assembliesInViews**</span><br><code>Set&lt;string&gt;</code> | assemblies currently displayed in any open view; the grids only show bookmarks/highlights belonging to these |
+| <span id="getter-visiblebookmarks">**visibleBookmarks**</span><br><details><summary><code>(ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...…</code></summary><pre><code>(ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;)[]</code></pre></details> | bookmarks belonging to an assembly currently open in a view |
 
-```ts
-// type signature
-type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
-// code
-bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        localStorageGetJSON(localStorageKeyF(), []),
-      )
-```
+## Actions
 
-</details>
-
-<details>
-<summary>GridBookmarkWidgetModel - Properties (other undocumented members)</summary>
-
-| Member                                         | Type                                               |
-| ---------------------------------------------- | -------------------------------------------------- |
-| <span id="property-label">label</span>         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-highlight">highlight</span> | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-id">id</span>               | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-type">type</span>           | `ISimpleType<"GridBookmarkWidget">`                |
-
-</details>
-
-<details>
-<summary>GridBookmarkWidgetModel - Volatiles</summary>
-
-#### volatile: gridView
-
-which grid tab is visible: bookmarks or highlights
-
-```ts
-// type signature
-type gridView = string
-// code
-gridView: 'bookmarks'
-```
-
-</details>
-
-<details>
-<summary>GridBookmarkWidgetModel - Volatiles (other undocumented members)</summary>
-
-| Member                                                         | Type                            |
-| -------------------------------------------------------------- | ------------------------------- |
-| <span id="volatile-selectedbookmarks">selectedBookmarks</span> | `IExtendedLabeledRegionModel[]` |
-
-</details>
-
-<details>
-<summary>GridBookmarkWidgetModel - Getters</summary>
-
-#### getter: assembliesInViews
-
-assemblies currently displayed in any open view; the grids only show
-bookmarks/highlights belonging to these
-
-```ts
-type assembliesInViews = Set<string>
-```
-
-#### getter: visibleBookmarks
-
-bookmarks belonging to an assembly currently open in a view
-
-```ts
-type visibleBookmarks = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]
-```
-
-</details>
-
-<details>
-<summary>GridBookmarkWidgetModel - Actions</summary>
-
-| Member                                                                             | Type                                                                                                                             |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-setlabel">setLabel</span>                                         | `(label: string) => void`                                                                                                        |
-| <span id="action-sethighlight">setHighlight</span>                                 | `(color: string) => void`                                                                                                        |
-| <span id="action-setgridview">setGridView</span>                                   | `(arg: "bookmarks" \| "highlights" \| "both") => void`                                                                           |
-| <span id="action-importbookmarks">importBookmarks</span>                           | `(regions: Region[]) => void`                                                                                                    |
-| <span id="action-addbookmark">addBookmark</span>                                   | `(region: Region) => void`                                                                                                       |
-| <span id="action-updatebookmarklabel">updateBookmarkLabel</span>                   | `(bookmark: IExtendedLabeledRegionModel, label: string) => void`                                                                 |
-| <span id="action-updatebookmarkhighlight">updateBookmarkHighlight</span>           | `(bookmark: IExtendedLabeledRegionModel, color: string) => void`                                                                 |
-| <span id="action-updatebulkbookmarkhighlights">updateBulkBookmarkHighlights</span> | `(color: string) => void`                                                                                                        |
-| <span id="action-setselectedbookmarks">setSelectedBookmarks</span>                 | `(bookmarks: IExtendedLabeledRegionModel[]) => void`                                                                             |
-| <span id="action-setbookmarkedregions">setBookmarkedRegions</span>                 | `(regions: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<…>, { ...; }>>>[]) => void`                         |
-| <span id="action-clearselectedbookmarks">clearSelectedBookmarks</span>             | `() => void`                                                                                                                     |
-| <span id="action-removebookmarkobject">removeBookmarkObject</span>                 | `(arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setlabel">**setLabel**</span><br><code>(label: string) =&gt; void</code> |  |
+| <span id="action-sethighlight">**setHighlight**</span><br><code>(color: string) =&gt; void</code> |  |
+| <span id="action-setgridview">**setGridView**</span><br><code>(arg: "bookmarks" &#124; "highlights" &#124; "both") =&gt; void</code> |  |
+| <span id="action-importbookmarks">**importBookmarks**</span><br><code>(regions: Region[]) =&gt; void</code> |  |
+| <span id="action-addbookmark">**addBookmark**</span><br><code>(region: Region) =&gt; void</code> |  |
+| <span id="action-updatebookmarklabel">**updateBookmarkLabel**</span><br><code>(bookmark: IExtendedLabeledRegionModel, label: string) =&gt; void</code> |  |
+| <span id="action-updatebookmarkhighlight">**updateBookmarkHighlight**</span><br><code>(bookmark: IExtendedLabeledRegionModel, color: string) =&gt; void</code> |  |
+| <span id="action-updatebulkbookmarkhighlights">**updateBulkBookmarkHighlights**</span><br><code>(color: string) =&gt; void</code> |  |
+| <span id="action-setselectedbookmarks">**setSelectedBookmarks**</span><br><code>(bookmarks: IExtendedLabeledRegionModel[]) =&gt; void</code> |  |
+| <span id="action-setbookmarkedregions">**setBookmarkedRegions**</span><br><details><summary><code>(regions: ModelCreationType&lt;ExtractCFromProps&lt;_OverrideProps&lt;_O…</code></summary><pre><code>(regions: ModelCreationType&lt;ExtractCFromProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt;&gt;[]) =&gt; void</code></pre></details> |  |
+| <span id="action-clearselectedbookmarks">**clearSelectedBookmarks**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-removebookmarkobject">**removeBookmarkObject**</span><br><details><summary><code>(arg: ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;,…</code></summary><pre><code>(arg: ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;) =&gt; void</code></pre></details> |  |

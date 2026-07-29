@@ -43,29 +43,15 @@ what per-base mismatches are computed against for records with no MD tag.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "SamAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type           | Description                                                                    |
-| -------------------------------- | -------------- | ------------------------------------------------------------------------------ |
-| [samLocation](#slot-samlocation) | `fileLocation` |                                                                                |
-| [samText](#slot-samtext)         | `text`         | SAM text supplied inline instead of from `samLocation`, header lines included. |
-
-<details>
-<summary>SamAdapter - Slots</summary>
-
-#### slot: samLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.sam', locationType: 'UriLocation' }`
-
-#### slot: samText
-
-SAM text supplied inline instead of from `samLocation`, header lines included.
-Takes precedence when set. Lets an alignment produced in the browser — a BLAT
-hit converted from PSL, for instance — persist in a session without a file
-behind it.
-
-**Type:** [`text`](/docs/config_guides/slot_types#text) · **Default:** `''`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-samlocation">**samLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.sam', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-samtext">**samText**</span><br>[`text`](/docs/config_guides/slot_types#text) = <code>''</code> | SAM text supplied inline instead of from `samLocation`, header lines included. Takes precedence when set. Lets an alignment produced in the browser — a BLAT hit converted from PSL, for instance — persist in a session without a file behind it. |

@@ -9,117 +9,44 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `data-management` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/model.ts).
 
-## Overview
-
-## Members
-
-| Member                                   | Kind       | Defined by                                    | Description                                                                                                                                                                                                                             |
-| ---------------------------------------- | ---------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [configuration](#property-configuration) | Properties | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                         |
-| [type](#property-type)                   | Properties | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                         |
-| [connect](#action-connect)               | Actions    | UCSCTrackHubConnection                        |                                                                                                                                                                                                                                         |
-| [tracks](#property-tracks)               | Properties | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
-| [silent](#property-silent)               | Properties | [BaseConnectionModel](../baseconnectionmodel) | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. |
-| [loading](#volatile-loading)             | Volatiles  | [BaseConnectionModel](../baseconnectionmodel) | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector.                                                                                                                         |
-| [connectionId](#getter-connectionid)     | Getters    | [BaseConnectionModel](../baseconnectionmodel) | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                             |
-| [name](#getter-name)                     | Getters    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
-| [setLoading](#action-setloading)         | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
-| [addTrackConf](#action-addtrackconf)     | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
-| [addTrackConfs](#action-addtrackconfs)   | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
-| [setTrackConfs](#action-settrackconfs)   | Actions    | [BaseConnectionModel](../baseconnectionmodel) |                                                                                                                                                                                                                                         |
-
-### UCSCTrackHubConnection - Configuration
-
 The configuration slots for this model are documented on its
 [config schema page](../../config/ucsctrackhubconnection).
 
-<details>
-<summary>UCSCTrackHubConnection - Properties</summary>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
-| Member                                                 | Type                                                  |
-| ------------------------------------------------------ | ----------------------------------------------------- |
-| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
-| <span id="property-type">type</span>                   | `ISimpleType<"UCSCTrackHubConnection">`               |
+## Properties
 
-</details>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | UCSCTrackHubConnection |
+| <span id="property-type">**type**</span><br><code>type: types.literal('UCSCTrackHubConnection')</code> |  | UCSCTrackHubConnection |
+| <span id="property-tracks">**tracks**</span><br><details><summary><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('tr…</code></summary><pre><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))</code></pre></details> |  | [BaseConnectionModel](../baseconnectionmodel#property-tracks) |
+| <span id="property-silent">**silent**</span><br><code>silent: types.optional(types.boolean, false)</code> | <span data-pagefind-ignore>set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized.</span> | [BaseConnectionModel](../baseconnectionmodel#property-silent) |
 
-<details>
-<summary>UCSCTrackHubConnection - Actions</summary>
+## Volatiles
 
-| Member                                   | Type                  |
-| ---------------------------------------- | --------------------- |
-| <span id="action-connect">connect</span> | `() => Promise<void>` |
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-loading">**loading**</span><br><code>loading: false</code> | <span data-pagefind-ignore>true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks.</span> | [BaseConnectionModel](../baseconnectionmodel#volatile-loading) |
 
-</details>
+## Getters
 
-## Inherited members
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="getter-connectionid">**connectionId**</span><br><code>string</code> | <span data-pagefind-ignore>the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)</span> | [BaseConnectionModel](../baseconnectionmodel#getter-connectionid) |
+| <span id="getter-name">**name**</span><br><code>string</code> |  | [BaseConnectionModel](../baseconnectionmodel#getter-name) |
 
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
+## Actions
 
-<details>
-<summary>Derived from BaseConnectionModel</summary>
-
-[BaseConnectionModel →](../baseconnectionmodel)
-
-**Properties**
-
-#### property: silent
-
-set when the connection is being re-established on session load (its open tracks
-are already restored from `connectionTrackConfigs`), so `doConnect` suppresses
-first-connect side effects like launching a view or a success snackbar.
-Runtime-only: connection instances aren't serialized.
-
-```ts
-// type signature
-type silent = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-silent: types.optional(types.boolean, false)
-```
-
-| Member                                   | Type                        |
-| ---------------------------------------- | --------------------------- |
-| <span id="property-tracks">tracks</span> | `IArrayType<IAnyModelType>` |
-
-**Volatiles**
-
-#### volatile: loading
-
-true while `connect()` is fetching this connection's tracks; drives a loading
-affordance in the track selector. Distinct from an empty `tracks` array, which
-is also the state of a connection that loaded successfully but has no tracks.
-
-```ts
-// type signature
-type loading = false
-// code
-loading: false
-```
-
-**Getters**
-
-#### getter: connectionId
-
-the connection's unique id, resolved from its configuration (the config is the
-source of truth; connection names are not guaranteed unique)
-
-```ts
-type connectionId = string
-```
-
-| Member                             | Type     |
-| ---------------------------------- | -------- |
-| <span id="getter-name">name</span> | `string` |
-
-**Actions**
-
-| Member                                               | Type                                |
-| ---------------------------------------------------- | ----------------------------------- |
-| <span id="action-setloading">setLoading</span>       | `(loading: boolean) => void`        |
-| <span id="action-addtrackconf">addTrackConf</span>   | `(trackConf: TrackConf) => any`     |
-| <span id="action-addtrackconfs">addTrackConfs</span> | `(trackConfs: TrackConf[]) => void` |
-| <span id="action-settrackconfs">setTrackConfs</span> | `(trackConfs: TrackConf[]) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-connect">**connect**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  | UCSCTrackHubConnection |
+| <span id="action-setloading">**setLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-setloading) |
+| <span id="action-addtrackconf">**addTrackConf**</span><br><code>(trackConf: TrackConf) =&gt; any</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-addtrackconf) |
+| <span id="action-addtrackconfs">**addTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-addtrackconfs) |
+| <span id="action-settrackconfs">**setTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-settrackconfs) |

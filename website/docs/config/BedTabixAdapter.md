@@ -35,65 +35,24 @@ _See the **Config slots** section below for all available configuration fields._
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+- **Extended by:** [GWASAdapter](../gwasadapter)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BedTabixAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                               | Type                    | Description                                                                           |
-| -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------- |
-| [bedGzLocation](#slot-bedgzlocation)               | `fileLocation`          |                                                                                       |
-| [index.indexType](#slot-indexindextype)            | `stringEnum` (TBI, CSI) |                                                                                       |
-| [index.location](#slot-indexlocation)              | `fileLocation`          |                                                                                       |
-| [columnNames](#slot-columnnames)                   | `stringArray`           | List of column names                                                                  |
-| [scoreColumn](#slot-scorecolumn)                   | `string`                | The column to use as a "score" attribute                                              |
-| [autoSql](#slot-autosql)                           | `string`                | The autoSql definition for the data fields in the file                                |
-| [disableGeneHeuristic](#slot-disablegeneheuristic) | `boolean`               | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. |
-
-<details>
-<summary>BedTabixAdapter - Slots</summary>
-
-#### slot: bedGzLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bed.gz.tbi', locationType: 'UriLocation' }`
-
-#### slot: columnNames
-
-List of column names
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: scoreColumn
-
-The column to use as a "score" attribute
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: autoSql
-
-The autoSql definition for the data fields in the file
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: disableGeneHeuristic
-
-Disable the heuristic that auto-detects BED12 features as gene/transcript
-structures. Useful for files that have BED12-like structure but are not genes
-(e.g. tandem duplications)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bedgzlocation">**bedGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz.tbi', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |
+| <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The column to use as a "score" attribute |
+| <span id="slot-autosql">**autoSql**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The autoSql definition for the data fields in the file |
+| <span id="slot-disablegeneheuristic">**disableGeneHeuristic**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications) |

@@ -40,29 +40,15 @@ into memory, so prefer the GtfTabixAdapter for large files.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "GtfAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                   | Type           | Description                                                                    |
-| -------------------------------------- | -------------- | ------------------------------------------------------------------------------ |
-| [gtfLocation](#slot-gtflocation)       | `fileLocation` | path to gtf file, also allows for gzipped gtf                                  |
-| [aggregateField](#slot-aggregatefield) | `string`       | field used to aggregate multiple transcripts into a single parent gene feature |
-
-<details>
-<summary>GtfAdapter - Slots</summary>
-
-#### slot: gtfLocation
-
-path to gtf file, also allows for gzipped gtf
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.gtf', locationType: 'UriLocation' }`
-
-#### slot: aggregateField
-
-field used to aggregate multiple transcripts into a single parent gene feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'gene_name'`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-gtflocation">**gtfLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gtf', locationType: 'UriLocation' }</code> | path to gtf file, also allows for gzipped gtf |
+| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'gene_name'</code> | field used to aggregate multiple transcripts into a single parent gene feature |

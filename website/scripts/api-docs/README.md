@@ -62,9 +62,9 @@ docstrings but gets no website page and no sidebar entry — for app-shell wirin
 (`SessionLoader`), desktop job-queue internals, and thin product wrappers whose
 documented surface lives on the model they compose.
 
-Do **not** put it on a mixin. A composed page's "Inherited members" section only
-includes ancestors that resolve to a documented `#stateModel`, so hiding a mixin
-also deletes its members from every display/session page that composes it.
+Do **not** put it on a mixin. A composed page only lists inherited members from
+ancestors that resolve to a documented `#stateModel`, so hiding a mixin also
+deletes its members from every display/session page that composes it.
 
 Unlike config/statemodel, **many `#api` exports per file** are allowed. Each
 `#api` tag documents one exported function or const. The text after the tag is
@@ -99,26 +99,21 @@ Then, in statemodels
 #method - a view that takes function params or is called as a function
 ```
 
-Each `#stateModel` page renders a flattened "Inherited members" section
-reproducing every member reachable through composition in full, grouped by the
-model that defines it (with a "Derived from" link back to that model's own
-page), so the page is self-contained — a reader sees the whole API surface
-without chasing links. A member redeclared by a more specific model is shown
-once, at its most-specific definition. The "Members" index table at the top
-covers the same whole surface — own members first, then each ancestor's — with a
-"Defined by" column naming the source (a link to the ancestor's page for
-inherited members), so scanning the table finds any member on the page. Both the
-table and the inherited section render from one deduped computation, so they
-cannot disagree.
+Each `#stateModel` page is five tables — Properties, Volatiles, Getters,
+Methods, Actions — and nothing else. A table lists this model's own members
+first, then every member reachable through composition, with a "Defined by"
+column linking to the ancestor's page; a member redeclared by a more specific
+model appears once, at its most-specific definition. The whole API surface is
+therefore on the page, stated exactly once, and a member is one row rather than
+a heading plus a code fence.
 
-Every member is on the page, but they are not all the same size. A member whose
-author wrote prose or an `#example` renders as a full entry (heading, prose,
-type/code block); the rest — bare setters, internal accessors, the plumbing the
-structural pass recovers so the API surface stays complete — compact into a
-name-and-type table, since the type is their entire content. Those rows carry an
-explicit `<span id>` reproducing the anchor the heading would have had, so the
-"Members" index still links to every member. The same split applies inside each
-ancestor's "Derived from" block.
+A row is name-over-type in one cell and the full documentation in the next, so
+the prose gets the width. Long types and authored `#example` blocks fold into
+`<details>` inside their cell (`codeCell`/`exampleCell`) rather than holding the
+row open. Each name carries a `<span id="<tag>-<name>">`, which is what the
+"Defined by" links on descendant pages point at. Inherited rows are
+`data-pagefind-ignore`d, so a search lands on the model that defines a member
+instead of on every page that composes it.
 
 Type signatures come from the TypeScript checker, which truncates past ~340
 characters by cutting mid-token. `elideSignature` in `util.ts` shortens
@@ -227,6 +222,26 @@ heading to stay subordinate.
 | `#slot`                           | After the slot's code block (`**Example:**`)    |
 | `#getter` / `#method` / `#action` | After the member's code block (`**Example:**`)  |
 | `#api`                            | After the type signature (`#### Example usage`) |
+
+### Coverage is tracked in `example-gaps.txt`
+
+A type with no `#example` gets a page that lists its slots and never shows one
+being used, which is the whole point of the page for anyone arriving from a
+`#slot-` deep link. `generate.ts` writes every such name to
+**`example-gaps.txt`**, which is committed, so adding a bare type is a `+ Name`
+line in the PR diff attributable to the change that caused it, and filling one
+in is a `-` line. The `Check config/model/api docs are up to date` step in
+`push.yml` diffs it alongside the generated pages, so the list can't go stale.
+
+This replaces relying on the `N/M configs have no #example` warning the
+generators still print: that fails nothing and scrolls past in a CI log, which
+is how 40 config pages and 90 model pages came to be bare.
+
+Base/shared schemas (`BaseLinearDisplay`, `SharedVariantDisplay`, ...) are
+excluded by design — they are never named in a config, so an example on one
+would teach a type nobody can write. They route to their concrete types through
+the **Extended by** links instead. See `isBaseSchema` in `generateConfigDocs.ts`
+for how one is detected.
 
 ## Marker-block generators
 

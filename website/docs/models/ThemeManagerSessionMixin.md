@@ -9,73 +9,33 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
 
-## Overview
+## Volatiles
 
-## Members
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-sessionthemename">**sessionThemeName**</span><br><code>sessionThemeName: localStorageGetItem('themeName') ?? 'default'</code> |  |
 
-| Member                                                 | Kind      | Defined by               | Description                                                                                         |
-| ------------------------------------------------------ | --------- | ------------------------ | --------------------------------------------------------------------------------------------------- |
-| [sessionThemeName](#volatile-sessionthemename)         | Volatiles | ThemeManagerSessionMixin |                                                                                                     |
-| [themeName](#getter-themename)                         | Getters   | ThemeManagerSessionMixin |                                                                                                     |
-| [themeOptions](#getter-themeoptions)                   | Getters   | ThemeManagerSessionMixin |                                                                                                     |
-| [theme](#getter-theme)                                 | Getters   | ThemeManagerSessionMixin |                                                                                                     |
-| [allThemes](#method-allthemes)                         | Methods   | ThemeManagerSessionMixin |                                                                                                     |
-| [getActiveThemeOptions](#method-getactivethemeoptions) | Methods   | ThemeManagerSessionMixin | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). |
-| [setThemeName](#action-setthemename)                   | Actions   | ThemeManagerSessionMixin |                                                                                                     |
+## Getters
 
-<details>
-<summary>ThemeManagerSessionMixin - Volatiles</summary>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-themename">**themeName**</span><br><code>string</code> |  |
+| <span id="getter-themeoptions">**themeOptions**</span><br><code>SerializableThemeArgs</code> |  |
+| <span id="getter-theme">**theme**</span><br><code>Theme</code> |  |
 
-| Member                                                       | Type     |
-| ------------------------------------------------------------ | -------- |
-| <span id="volatile-sessionthemename">sessionThemeName</span> | `string` |
+## Methods
 
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-allthemes">**allThemes**</span><br><code>() =&gt; ThemeMap</code> |  |
+| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><details><summary><code>(name?: string &#124; undefined) =&gt; ThemeOptions &amp; { name?: string &#124;…</code></summary><pre><code>(name?: string &#124; undefined) =&gt; ThemeOptions &amp; { name?: string &#124; undefined; }</code></pre></details> | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme), this is the plain options object every view's SVG export threads into each display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside React context. |
 
-<details>
-<summary>ThemeManagerSessionMixin - Getters</summary>
+## Actions
 
-| Member                                             | Type                    |
-| -------------------------------------------------- | ----------------------- |
-| <span id="getter-themename">themeName</span>       | `string`                |
-| <span id="getter-themeoptions">themeOptions</span> | `SerializableThemeArgs` |
-| <span id="getter-theme">theme</span>               | `Theme`                 |
-
-</details>
-
-<details>
-<summary>ThemeManagerSessionMixin - Methods</summary>
-
-#### method: getActiveThemeOptions
-
-Raw `ThemeOptions` for the active theme, or a named override (used by the
-SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme),
-this is the plain options object every view's SVG export threads into each
-display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside
-React context.
-
-```ts
-type getActiveThemeOptions = (
-  name?: string | undefined,
-) => ThemeOptions & { name?: string | undefined }
-```
-
-</details>
-
-<details>
-<summary>ThemeManagerSessionMixin - Methods (other undocumented members)</summary>
-
-| Member                                       | Type             |
-| -------------------------------------------- | ---------------- |
-| <span id="method-allthemes">allThemes</span> | `() => ThemeMap` |
-
-</details>
-
-<details>
-<summary>ThemeManagerSessionMixin - Actions</summary>
-
-| Member                                             | Type                     |
-| -------------------------------------------------- | ------------------------ |
-| <span id="action-setthemename">setThemeName</span> | `(name: string) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setthemename">**setThemeName**</span><br><code>(name: string) =&gt; void</code> |  |

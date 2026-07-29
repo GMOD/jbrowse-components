@@ -28,275 +28,76 @@ show. The two panels flank a structural-variant breakpoint:
 Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to set
 per-panel display options (e.g. a shorter alignments height).
 
-## Overview
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
-## Members
+## Properties
 
-| Member                                                           | Kind       | Defined by                        | Description                                                                                                                                    |
-| ---------------------------------------------------------------- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                           | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [height](#property-height)                                       | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [showIntraviewLinks](#property-showintraviewlinks)               | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [linkViews](#property-linkviews)                                 | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [interactiveOverlay](#property-interactiveoverlay)               | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [showHeader](#property-showheader)                               | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [views](#property-views)                                         | Properties | BreakpointSplitView               |                                                                                                                                                |
-| [init](#property-init)                                           | Properties | BreakpointSplitView               | declarative child panels (loc/assembly/tracks) resolved into `views` once the view has a width; used for initializing from a session snapshot. |
-| [width](#volatile-width)                                         | Volatiles  | BreakpointSplitView               |                                                                                                                                                |
-| [matchedTrackFeatures](#volatile-matchedtrackfeatures)           | Volatiles  | BreakpointSplitView               |                                                                                                                                                |
-| [scrollZoom](#getter-scrollzoom)                                 | Getters    | BreakpointSplitView               | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                          |
-| [hasSomethingToShow](#getter-hassomethingtoshow)                 | Getters    | BreakpointSplitView               |                                                                                                                                                |
-| [initialized](#getter-initialized)                               | Getters    | BreakpointSplitView               |                                                                                                                                                |
-| [showLoading](#getter-showloading)                               | Getters    | BreakpointSplitView               | Spinner instead of content, i.e. sub-views exist but haven't loaded their assemblies yet.                                                      |
-| [showImportForm](#getter-showimportform)                         | Getters    | BreakpointSplitView               |                                                                                                                                                |
-| [assembly](#getter-assembly)                                     | Getters    | BreakpointSplitView               |                                                                                                                                                |
-| [matchedTracks](#getter-matchedtracks)                           | Getters    | BreakpointSplitView               | Find all track ids that match across multiple views, or return just the single view's track if only a single row is used                       |
-| [matchedTrackChunks](#getter-matchedtrackchunks)                 | Getters    | BreakpointSplitView               | Classifies each matched track and pairs its features, keyed by trackId.                                                                        |
-| [overlayMatches](#getter-overlaymatches)                         | Getters    | BreakpointSplitView               | Zero-arg cached getter: resolves each matched chunk's features to layout rectangles, returning a Map keyed by trackId.                         |
-| [exportSvg](#method-exportsvg)                                   | Methods    | BreakpointSplitView               | creates an svg export and save using FileSaver                                                                                                 |
-| [getMatchedTracks](#method-getmatchedtracks)                     | Methods    | BreakpointSplitView               | Get tracks with a given trackId across multiple views.                                                                                         |
-| [getTrackOverlayData](#method-gettrackoverlaydata)               | Methods    | BreakpointSplitView               | Per-render precompute for an overlay track.                                                                                                    |
-| [getMatchedFeaturesInLayout](#method-getmatchedfeaturesinlayout) | Methods    | BreakpointSplitView               |                                                                                                                                                |
-| [menuItems](#method-menuitems)                                   | Methods    | BreakpointSplitView               |                                                                                                                                                |
-| [rubberBandMenuItems](#method-rubberbandmenuitems)               | Methods    | BreakpointSplitView               |                                                                                                                                                |
-| [setWidth](#action-setwidth)                                     | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setInteractiveOverlay](#action-setinteractiveoverlay)           | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setShowIntraviewLinks](#action-setshowintraviewlinks)           | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setLinkViews](#action-setlinkviews)                             | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setScrollZoom](#action-setscrollzoom)                           | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setShowHeader](#action-setshowheader)                           | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setMatchedTrackFeatures](#action-setmatchedtrackfeatures)       | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [reverseViewOrder](#action-reversevieworder)                     | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [squareView](#action-squareview)                                 | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setInit](#action-setinit)                                       | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [setViews](#action-setviews)                                     | Actions    | BreakpointSplitView               |                                                                                                                                                |
-| [id](#property-id)                                               | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                |
-| [displayName](#property-displayname)                             | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified                                          |
-| [minimized](#property-minimized)                                 | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                |
-| [setDisplayName](#action-setdisplayname)                         | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                |
-| [setMinimized](#action-setminimized)                             | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                |
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-type">**type**</span><br><code>type: types.literal('BreakpointSplitView')</code> |  | BreakpointSplitView |
+| <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> |  | BreakpointSplitView |
+| <span id="property-showintraviewlinks">**showIntraviewLinks**</span><br><code>showIntraviewLinks: types.stripDefault(types.boolean, true)</code> |  | BreakpointSplitView |
+| <span id="property-linkviews">**linkViews**</span><br><code>linkViews: types.stripDefault(types.boolean, false)</code> |  | BreakpointSplitView |
+| <span id="property-interactiveoverlay">**interactiveOverlay**</span><br><code>interactiveOverlay: types.stripDefault(types.boolean, true)</code> |  | BreakpointSplitView |
+| <span id="property-showheader">**showHeader**</span><br><code>showHeader: types.stripDefault(types.boolean, true)</code> |  | BreakpointSplitView |
+| <span id="property-views">**views**</span><br><details><summary><code>views: types.array( pluginManager.getViewType('LinearGenomeView…</code></summary><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.getViewType('LinearGenomeView')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.stateModel as LinearGenomeViewStateModel,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | BreakpointSplitView |
+| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;BreakpointSplitViewInitView[] &#124; undefined&gt;()</code> | declarative child panels (loc/assembly/tracks) resolved into `views` once the view has a width; used for initializing from a session snapshot. Transient — stripped by postProcessSnapshot. | BreakpointSplitView |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseViewModel](../baseviewmodel#property-id) |
+| <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
+| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  | [BaseViewModel](../baseviewmodel#property-minimized) |
 
-<details>
-<summary>BreakpointSplitView - Properties</summary>
+## Volatiles
 
-#### property: init
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-width">**width**</span><br><code>width: 800</code> |  |
+| <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>matchedTrackFeatures: {}</code> |  |
 
-declarative child panels (loc/assembly/tracks) resolved into `views` once the
-view has a width; used for initializing from a session snapshot. Transient —
-stripped by postProcessSnapshot.
+## Getters
 
-```ts
-// type signature
-type init = IType<
-  BreakpointSplitViewInitView[] | undefined,
-  BreakpointSplitViewInitView[] | undefined,
-  BreakpointSplitViewInitView[] | undefined
->
-// code
-init: types.frozen<BreakpointSplitViewInitView[] | undefined>()
-```
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere |
+| <span id="getter-hassomethingtoshow">**hasSomethingToShow**</span><br><code>boolean</code> |  |
+| <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
+| <span id="getter-showloading">**showLoading**</span><br><code>boolean</code> | Spinner instead of content, i.e. sub-views exist but haven't loaded their assemblies yet. Named to match LGV/dotplot/synteny/circular, which is what ViewContainer reads to publish `data-view-phase`. |
+| <span id="getter-showimportform">**showImportForm**</span><br><code>boolean</code> |  |
+| <span id="getter-assembly">**assembly**</span><br><details><summary><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTree…</code></summary><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></details> |  |
+| <span id="getter-matchedtracks">**matchedTracks**</span><br><code>OverlayTrack[]</code> | Find all track ids that match across multiple views, or return just the single view's track if only a single row is used |
+| <span id="getter-matchedtrackchunks">**matchedTrackChunks**</span><br><code>Map&lt;string, MatchedChunks&gt;</code> | Classifies each matched track and pairs its features, keyed by trackId. Everything here is a function of the fetched features alone, so it is deliberately kept out of `overlayMatches`, which additionally reads each track's layout: the layout reads invalidate on a track resize or a compactness change, and fusing the two would re-run this whole pass — including the SA-chain parse, the expensive part — on every drag frame. |
+| <span id="getter-overlaymatches">**overlayMatches**</span><br><code>Map&lt;string, OverlayMatch&gt;</code> | Zero-arg cached getter: resolves each matched chunk's features to layout rectangles, returning a Map keyed by trackId. Mobx caches this across renders and only invalidates when the underlying feature or layout reads change — so scrolling within already-loaded data does NOT trigger a re-lookup. |
 
-</details>
+## Methods
 
-<details>
-<summary>BreakpointSplitView - Properties (other undocumented members)</summary>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-exportsvg">**exportSvg**</span><br><code>(opts?: ExportSvgOptions) =&gt; Promise&lt;void&gt;</code> | creates an svg export and save using FileSaver |
+| <span id="method-getmatchedtracks">**getMatchedTracks**</span><br><code>(trackConfigId: string) =&gt; OverlayTrack[]</code> | Get tracks with a given trackId across multiple views. Callers that index the result by view level (getTrackOverlayData, getMatchedFeaturesInLayout) rely on it staying aligned with `views` — which holds only because overlays are driven by `overlayMatches`, whose trackIds come from `matchedTracks` (the intersect across all views), so the track is present in every view and `filter` drops nothing. Don't level-index the result for an arbitrary trackId. |
+| <span id="method-gettrackoverlaydata">**getTrackOverlayData**</span><br><details><summary><code>(trackId: string, yOffsetsOverride?: number[] &#124; undefined, domY…</code></summary><pre><code>(trackId: string, yOffsetsOverride?: number[] &#124; undefined, domYOffsets?: (number &#124; undefined)[] &#124; undefined) =&gt; {…}</code></pre></details> | Per-render precompute for an overlay track. Resolves an OverlayLevel of geometry per view level, then returns getX/getY closures for converting feature layout records to SVG coordinates.<br><br>`yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed. `domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay SVG), scrollTops still read from model. |
+| <span id="method-getmatchedfeaturesinlayout">**getMatchedFeaturesInLayout**</span><br><details><summary><code>(trackConfigId: string, features: Feature[][]) =&gt; { feature: Fe…</code></summary><pre><code>(trackConfigId: string, features: Feature[][]) =&gt; { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: number; }[][]</code></pre></details> |  |
+| <span id="method-menuitems">**menuItems**</span><br><details><summary><code>() =&gt; ({…} &#124; {…} &#124; { label: string; icon: OverridableComponent&lt;…</code></summary><pre><code>() =&gt; ({…} &#124; {…} &#124; { label: string; icon: OverridableComponent&lt;…&gt; &amp; { ...; }; onClick: () =&gt; void; subMenu?: undefined; } &#124; { ...; })[]</code></pre></details> |  |
+| <span id="method-rubberbandmenuitems">**rubberBandMenuItems**</span><br><code>() =&gt; { label: string; onClick: () =&gt; void; }[]</code> |  |
 
-| Member                                                           | Type                                                                                                                                   |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="property-type">type</span>                             | `ISimpleType<"BreakpointSplitView">`                                                                                                   |
-| <span id="property-height">height</span>                         | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                     |
-| <span id="property-showintraviewlinks">showIntraviewLinks</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
-| <span id="property-linkviews">linkViews</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
-| <span id="property-interactiveoverlay">interactiveOverlay</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
-| <span id="property-showheader">showHeader</span>                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                    |
-| <span id="property-views">views</span>                           | `IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>>` |
+## Actions
 
-</details>
-
-<details>
-<summary>BreakpointSplitView - Volatiles</summary>
-
-| Member                                                               | Type     |
-| -------------------------------------------------------------------- | -------- |
-| <span id="volatile-width">width</span>                               | `number` |
-| <span id="volatile-matchedtrackfeatures">matchedTrackFeatures</span> | `{}`     |
-
-</details>
-
-<details>
-<summary>BreakpointSplitView - Getters</summary>
-
-#### getter: scrollZoom
-
-scroll-to-zoom is a global, personal preference resolved from the session;
-toggling it in any view applies everywhere
-
-```ts
-type scrollZoom = boolean
-```
-
-#### getter: showLoading
-
-Spinner instead of content, i.e. sub-views exist but haven't loaded their
-assemblies yet. Named to match LGV/dotplot/synteny/circular, which is what
-ViewContainer reads to publish `data-view-phase`.
-
-```ts
-type showLoading = boolean
-```
-
-#### getter: matchedTracks
-
-Find all track ids that match across multiple views, or return just the single
-view's track if only a single row is used
-
-```ts
-type matchedTracks = OverlayTrack[]
-```
-
-#### getter: matchedTrackChunks
-
-Classifies each matched track and pairs its features, keyed by trackId.
-Everything here is a function of the fetched features alone, so it is
-deliberately kept out of `overlayMatches`, which additionally reads each track's
-layout: the layout reads invalidate on a track resize or a compactness change,
-and fusing the two would re-run this whole pass — including the SA-chain parse,
-the expensive part — on every drag frame.
-
-```ts
-type matchedTrackChunks = Map<string, MatchedChunks>
-```
-
-#### getter: overlayMatches
-
-Zero-arg cached getter: resolves each matched chunk's features to layout
-rectangles, returning a Map keyed by trackId. Mobx caches this across renders
-and only invalidates when the underlying feature or layout reads change — so
-scrolling within already-loaded data does NOT trigger a re-lookup.
-
-```ts
-type overlayMatches = Map<string, OverlayMatch>
-```
-
-</details>
-
-<details>
-<summary>BreakpointSplitView - Getters (other undocumented members)</summary>
-
-| Member                                                         | Type                                                                                   |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| <span id="getter-hassomethingtoshow">hasSomethingToShow</span> | `boolean`                                                                              |
-| <span id="getter-initialized">initialized</span>               | `boolean`                                                                              |
-| <span id="getter-showimportform">showImportForm</span>         | `boolean`                                                                              |
-| <span id="getter-assembly">assembly</span>                     | `(ModelInstanceTypeProps<…> & {…} & ... 12 more ... & IStateTreeNode<…>) \| undefined` |
-
-</details>
-
-<details>
-<summary>BreakpointSplitView - Methods</summary>
-
-#### method: exportSvg
-
-creates an svg export and save using FileSaver
-
-```ts
-type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
-```
-
-#### method: getMatchedTracks
-
-Get tracks with a given trackId across multiple views. Callers that index the
-result by view level (getTrackOverlayData, getMatchedFeaturesInLayout) rely on
-it staying aligned with `views` — which holds only because overlays are driven
-by `overlayMatches`, whose trackIds come from `matchedTracks` (the intersect
-across all views), so the track is present in every view and `filter` drops
-nothing. Don't level-index the result for an arbitrary trackId.
-
-```ts
-type getMatchedTracks = (trackConfigId: string) => OverlayTrack[]
-```
-
-#### method: getTrackOverlayData
-
-Per-render precompute for an overlay track. Resolves an OverlayLevel of geometry
-per view level, then returns getX/getY closures for converting feature layout
-records to SVG coordinates.
-
-`yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
-`domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay
-SVG), scrollTops still read from model.
-
-```ts
-type getTrackOverlayData = (trackId: string, yOffsetsOverride?: number[] | undefined, domYOffsets?: (number | undefined)[] | undefined) => {…}
-```
-
-</details>
-
-<details>
-<summary>BreakpointSplitView - Methods (other undocumented members)</summary>
-
-| Member                                                                         | Type                                                                                                                                                |
-| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="method-getmatchedfeaturesinlayout">getMatchedFeaturesInLayout</span> | `(trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: number; }[][]` |
-| <span id="method-menuitems">menuItems</span>                                   | `() => ({…} \| {…} \| { label: string; icon: OverridableComponent<…> & { ...; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`        |
-| <span id="method-rubberbandmenuitems">rubberBandMenuItems</span>               | `() => { label: string; onClick: () => void; }[]`                                                                                                   |
-
-</details>
-
-<details>
-<summary>BreakpointSplitView - Actions</summary>
-
-| Member                                                                   | Type                                                          |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| <span id="action-setwidth">setWidth</span>                               | `(newWidth: number) => void`                                  |
-| <span id="action-setinteractiveoverlay">setInteractiveOverlay</span>     | `(arg: boolean) => void`                                      |
-| <span id="action-setshowintraviewlinks">setShowIntraviewLinks</span>     | `(arg: boolean) => void`                                      |
-| <span id="action-setlinkviews">setLinkViews</span>                       | `(arg: boolean) => void`                                      |
-| <span id="action-setscrollzoom">setScrollZoom</span>                     | `(arg: boolean) => void`                                      |
-| <span id="action-setshowheader">setShowHeader</span>                     | `(arg: boolean) => void`                                      |
-| <span id="action-setmatchedtrackfeatures">setMatchedTrackFeatures</span> | `(obj: Record<string, Feature[][]>) => void`                  |
-| <span id="action-reversevieworder">reverseViewOrder</span>               | `() => void`                                                  |
-| <span id="action-squareview">squareView</span>                           | `() => void`                                                  |
-| <span id="action-setinit">setInit</span>                                 | `(init?: BreakpointSplitViewInitView[] \| undefined) => void` |
-| <span id="action-setviews">setViews</span>                               | `(viewInits: BreakpointSplitViewInitView[]) => void`          |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseViewModel</summary>
-
-[BaseViewModel →](../baseviewmodel)
-
-**Properties**
-
-#### property: displayName
-
-displayName is displayed in the header of the view, or assembly names being used
-if none is specified
-
-```ts
-// type signature
-type displayName = IMaybe<ISimpleType<string>>
-// code
-displayName: types.maybe(types.string)
-```
-
-| Member                                         | Type                                                |
-| ---------------------------------------------- | --------------------------------------------------- |
-| <span id="property-id">id</span>               | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| <span id="property-minimized">minimized</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
-**Actions**
-
-| Member                                                 | Type                      |
-| ------------------------------------------------------ | ------------------------- |
-| <span id="action-setdisplayname">setDisplayName</span> | `(name: string) => void`  |
-| <span id="action-setminimized">setMinimized</span>     | `(flag: boolean) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setinteractiveoverlay">**setInteractiveOverlay**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setshowintraviewlinks">**setShowIntraviewLinks**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setlinkviews">**setLinkViews**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setscrollzoom">**setScrollZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setshowheader">**setShowHeader**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setmatchedtrackfeatures">**setMatchedTrackFeatures**</span><br><code>(obj: Record&lt;string, Feature[][]&gt;) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-reversevieworder">**reverseViewOrder**</span><br><code>() =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-squareview">**squareView**</span><br><code>() =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setinit">**setInit**</span><br><code>(init?: BreakpointSplitViewInitView[] &#124; undefined) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setviews">**setViews**</span><br><code>(viewInits: BreakpointSplitViewInitView[]) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |

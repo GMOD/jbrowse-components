@@ -12,23 +12,23 @@ import { writeFormatted } from './format.ts'
 import {
   assertSingleHeader,
   codeBlock,
-  collapsibleClosed,
+  codeCell,
   collectTransitive,
   docPage,
+  exampleCell,
   exampleSection,
   filterUnseenByName,
-  firstSentence,
   lookupByIdOrName,
   mapByKey,
   markdownTable,
   overviewSection,
   parseNode,
+  proseCell,
   repoRelative,
   rewriteMarkerBlock,
   section,
   stripPropertyName,
   suffixCategory,
-  tableCell,
   warnHeaderGaps,
   withHeaders,
 } from './util.ts'
@@ -195,40 +195,37 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
   )
 }
 
-// Full slot detail for every inherited config, grouped by the base it comes
-// from, so a config page is self-contained — a reader configuring this track
-// sees every available slot (own + inherited) without chasing links.
+// Every slot available on this config — its own first, then each base's — as
+// one row apiece, so a reader configuring this track sees the whole surface in
+// one scan without chasing links.
 //
-// `ownSlots` seeds a seen-by-name set so a slot the config (or a closer base)
-// redeclares is skipped at every farther base — otherwise an override (e.g.
-// LGVSyntenyDisplay's `colorBy`, which moves `promotedBase` to `strand`) still
-// shows the shadowed base definition (`normal`) in the "Inherited" section,
-// which reads as a live alternative rather than superseded history. The
-// override's own entry already carries the base's other fields, since
-// `resolveInheritedSlotMeta` merges them the way the runtime does.
-function inheritedSlotsSection(ownSlots: Item[], bases: ConfigWithHeader[]) {
-  const seen = new Set(ownSlots.map(s => s.name))
-  const blocks = bases.flatMap(config => {
-    const shown = filterUnseenByName(seen, config.slots)
-    return shown.length
-      ? [
-          collapsibleClosed(
-            `Inherited from ${config.header.name}`,
-            // a markdown link inside <summary> renders literally, so the link to
-            // the base config's own page leads the body instead
-            `[${config.header.name} config →](../${config.header.id})`,
-            ...shown.map(s => slotBlock(s)),
-          ),
-        ]
-      : []
-  })
-  return blocks.length
-    ? section(
-        '## Inherited config slots',
-        'Slots available on this config via its base configuration(s), shown in full so this page is self-contained. A slot redeclared by a more specific config is shown once, at its most specific definition.',
-        ...blocks,
-      )
-    : ''
+// The seen-by-name set makes a slot the config (or a closer base) redeclares
+// skip every farther base — otherwise an override (e.g. LGVSyntenyDisplay's
+// `colorBy`, which moves `promotedBase` to `strand`) also lists the shadowed
+// base definition (`normal`), which reads as a live alternative rather than
+// superseded history. The override's own row already carries the base's other
+// fields, since `resolveInheritedSlotMeta` merges them the way the runtime does.
+function slotsTable(ownSlots: Item[], bases: ConfigWithHeader[]) {
+  const seen = new Set<string>()
+  const groups = [
+    { slots: filterUnseenByName(seen, ownSlots), definedBy: '' },
+    ...bases.map(config => ({
+      slots: filterUnseenByName(seen, config.slots),
+      definedBy: `[${config.header.name}](../${config.header.id})`,
+    })),
+  ]
+  const all = groups.flatMap(g => g.slots)
+  // the "Defined by" column only earns its width on a config that has a base
+  const inherited = groups.slice(1).some(g => g.slots.length > 0)
+  const rows = groups.flatMap(({ slots, definedBy }) =>
+    slots
+      .filter(s => !isContainerSlot(s, slotMetaFor(s).meta, all))
+      .map(s => slotRow(s, inherited ? definedBy : undefined)),
+  )
+  return markdownTable(
+    ['Slot', 'Description', ...(inherited ? ['From'] : [])],
+    rows,
+  )
 }
 
 // Name-suffix heuristic for a config's sidebar category, checked in order.
@@ -256,6 +253,25 @@ interface DisplayLinkContext {
   adaptersByTrack: Map<string, string[]>
   byName: Map<string, ConfigWithHeader>
   modelNames: Set<string>
+  // reverse of each config's `baseConfiguration:` — the concrete configs that
+  // inherit a base's slots (see extendedByLines)
+  extendedBy: Map<string, string[]>
+}
+
+// Reverse the base-config graph: base name -> the configs deriving from it.
+// Every page's "From" column links a slot up to the base that defines it, so a
+// `#slot-` deep link can land on a base schema — a name that is never written
+// in a config. This is the only route back down to something pasteable.
+function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
+  const map = new Map<string, string[]>()
+  for (const config of configs) {
+    const base = resolveBase(config, index)
+    if (base) {
+      const name = base.header.name
+      map.set(name, [...(map.get(name) ?? []), config.header.name])
+    }
+  }
+  return map
 }
 
 // The track type a config is associated with: a Track config is its own track
@@ -402,6 +418,54 @@ function usedInLines(trackType: string | undefined, links: DisplayLinkContext) {
   ]
 }
 
+// The concrete configs that inherit this one's slots, for a base/shared schema
+// that is never named in a config itself. Without it a reader arriving at
+// `BaseLinearDisplay#slot-fetchsizelimit` has the slot's meaning but no type to
+// set it on; these are the pages whose own example shows the shape.
+function extendedByLines(name: string, links: DisplayLinkContext) {
+  return (links.extendedBy.get(name) ?? [])
+    .map(childName => links.byName.get(childName))
+    .filter((c): c is ConfigWithHeader => Boolean(c))
+    .map(c =>
+      relatedLine('Extended by', `[${c.header.name}](../${c.header.id})`),
+    )
+}
+
+// Whether a config is a base/shared schema — inherited from, never written in a
+// config file itself. Positive evidence that a config IS writable: a
+// DisplayType registration (ground truth, the same map that builds the display
+// links), or an authored #example. Extended by others with neither is a base.
+// This is what keeps `"type": "BaseLinearDisplay"` — the one string a reader
+// arriving from a `#slot-` link would copy — out of the slot table.
+function isBaseSchema(header: ConfigHeader, links: DisplayLinkContext) {
+  return (
+    links.extendedBy.has(header.name) &&
+    !links.displayToTrackType.has(header.name) &&
+    !header.examples.length
+  )
+}
+
+// Where a page's slots are written in a config file. A `#slot-` deep link
+// scrolls past the example and lands mid-table, so the nesting — adapter slot,
+// display entry, or top-level track field — has to be stated at the table
+// itself; the reader who followed that link never sees anything above it.
+function slotNesting(name: string, category: string, isBase: boolean) {
+  if (isBase) {
+    return `\`${name}\` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example.`
+  }
+  const shapes: Record<string, string> = {
+    Adapter: `These slots go inside the track's \`adapter\`: \`"adapter": { "type": "${name}", ... }\`.`,
+    Display: `These slots go on a display entry: \`"displays": [{ "type": "${name}", ... }]\`, or in the track's [\`displayDefaults\`](${DISPLAYS_GUIDE}) when this is its default display.`,
+    Track:
+      'These slots are top-level fields of the track config, alongside `trackId` and `name`.',
+    Connection:
+      "These slots are top-level fields of the connection's entry in `connections`.",
+    'Internet Account':
+      "These slots are top-level fields of the account's entry in `internetAccounts`.",
+  }
+  return shapes[category] ?? ''
+}
+
 // The inverse of the per-display model link in displayTypesLines: a config
 // (commonly a Display or Track) links to its own state-model page when one with
 // the same name is documented, so the two halves of a pluggable element — config
@@ -463,26 +527,23 @@ function renderConfig(
 
   // Slots are the primary configuration surface, so they get their own H2 —
   // visible in the page's table of contents (which indexes only h2/h3) — instead
-  // of being buried under Overview. The scan table lists the common slots; the
-  // `_advanced_` ones (rarely touched — maxHeight, fetchSizeLimit, ...) fold into
-  // a collapsed table so a 45-row display page doesn't lead with them. The
-  // collapsed block below holds the full per-slot detail every row links into.
-  const advancedSlots = slots.filter(s => slotMetaFor(s).meta.advanced)
-  const commonSlots = slots.filter(s => !slotMetaFor(s).meta.advanced)
-  const slotsSection = slots.length
+  // of being buried under Overview. One table is the whole reference: a slot's
+  // type, default, and prose are the entire content of a slot, and they fit a
+  // row, so nothing is duplicated between a summary and a detail view and a
+  // 50-slot display page stays 50 lines rather than 250.
+  const category = configCategory(header.name, header.category)
+  const isBase = isBaseSchema(header, links)
+  const table = slotsTable(slots, bases)
+  const slotsSection = table
     ? section(
         '## Config slots',
-        `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}).`,
-        commonSlots.length && slotsTable(commonSlots),
-        advancedSlots.length &&
-          collapsibleClosed(
-            `Advanced slots (${advancedSlots.length})`,
-            slotsTable(advancedSlots),
-          ),
-        collapsibleClosed(
-          `${header.name} - Slots`,
-          ...slots.map(s => slotBlock(s)),
-        ),
+        [
+          slotNesting(header.name, category, isBase),
+          `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}). Slots a base configuration contributes are listed here too, so this table is the whole surface.`,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        table,
       )
     : ''
 
@@ -508,6 +569,7 @@ function renderConfig(
     ...displayTypesLines(header.name, links),
     ...compatibleAdaptersLines(header.name, links),
     ...usedInLines(header.trackType, links),
+    ...extendedByLines(header.name, links),
     stateModelLine(header.name, header.id, links),
     derivesLine,
   ].filter(Boolean)
@@ -516,7 +578,6 @@ function renderConfig(
   const slotsNote = hasSlots
     ? 'See the **Config slots** section below for all available configuration fields.'
     : ''
-  const category = configCategory(header.name, header.category)
   // On adapter pages, show the full track config a user pastes, not just the
   // bare adapter snapshot the #example is authored as.
   const examples =
@@ -556,7 +617,6 @@ function renderConfig(
       docsSection,
       relatedSection,
       slotsSection,
-      inheritedSlotsSection(slots, bases),
     ),
   })
 }
@@ -583,18 +643,22 @@ interface SlotMeta {
   promotedBase?: string
   // `contextVariable`: the names a jexl callback on this slot receives
   contextVariable?: string[]
-  // true when the slot carries something the label line can't summarize (a
-  // non-inline default, a non-enumeration `model`, an unrecognized key), so the
-  // full source code block is kept below rather than dropped as redundant.
-  keepCode?: boolean
+  // source of a default too long to render inline (a long array/object
+  // literal), shown in the Default column behind a fold
+  defaultCode?: string
+  // source of a `model` that isn't an enumeration we could read the values of,
+  // shown in the Type column
+  typeCode?: string
+  // source of a slot whose value isn't a plain object literal at all
+  // (`pluginManager.pluggableConfigSchemaType('adapter')`), which has no type or
+  // default to name — it is the whole description of the slot
+  valueCode?: string
 }
 
 // A slot's value is an object literal (`{ type, description, defaultValue, ... }`).
-// Surface its fields as prose/labels rather than leaving a reader to parse them
+// Surface its fields as table columns rather than leaving a reader to parse them
 // out of a dumped code block: the in-object `description` becomes the slot's
-// prose when no JSDoc was written, and type/default/enum/flags render as a
-// compact label line. The code block is dropped whenever the label line fully
-// captures the slot (see keepCode), which is the common case.
+// prose when no JSDoc was written, and type/default/enum/flags become cells.
 function parseSlotMeta(value: string): SlotMeta {
   const sf = ts.createSourceFile(
     'slot.ts',
@@ -607,19 +671,31 @@ function parseSlotMeta(value: string): SlotMeta {
   const meta: SlotMeta = {}
   if (init && ts.isObjectLiteralExpression(init)) {
     for (const p of init.properties) {
-      if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
-        applySlotProperty(meta, p.name.text, p.initializer)
-      } else {
-        meta.keepCode = true
+      // a shorthand/spread/computed property, or a key no column names, can't
+      // be summarized — the whole source stands in for it
+      if (
+        !(
+          ts.isPropertyAssignment(p) &&
+          ts.isIdentifier(p.name) &&
+          applySlotProperty(meta, p.name.text, p.initializer)
+        )
+      ) {
+        meta.valueCode = value
       }
     }
   } else {
-    meta.keepCode = true
+    meta.valueCode = value
   }
   return meta
 }
 
-function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
+// Fills in the column this slot property feeds; false when the key is one no
+// column covers.
+function applySlotProperty(
+  meta: SlotMeta,
+  key: string,
+  node: ts.Expression,
+): boolean {
   if (key === 'type' && ts.isStringLiteralLike(node)) {
     meta.type = node.text
   } else if (key === 'description' && ts.isStringLiteralLike(node)) {
@@ -627,7 +703,7 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
   } else if (key === 'defaultValue') {
     const inline = renderInlineDefault(node)
     if (inline === undefined) {
-      meta.keepCode = true
+      meta.defaultCode = node.getText()
     } else {
       meta.defaultValue = inline
     }
@@ -636,7 +712,7 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
     if (values) {
       meta.enumValues = values
     } else {
-      meta.keepCode = true
+      meta.typeCode = node.getText()
     }
   } else if (
     (key === 'advanced' || key === 'promotable') &&
@@ -649,7 +725,7 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
   } else if (key === 'promotedBase') {
     const inline = renderInlineDefault(node)
     if (inline === undefined) {
-      meta.keepCode = true
+      meta.promotedBase = node.getText()
     } else {
       meta.promotedBase = inline
     }
@@ -663,13 +739,12 @@ function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
     ) {
       meta.contextVariable = names
     } else {
-      meta.keepCode = true
+      return false
     }
   } else {
-    // an unrecognized key (contextVariable, a non-true flag, ...) can't be
-    // summarized on the label line, so keep the source visible
-    meta.keepCode = true
+    return false
   }
+  return true
 }
 
 // The values of a `types.enumeration('Name', ['a', 'b'])` model, so a stringEnum
@@ -736,6 +811,7 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
 // Only types with a matching `### <type>` heading there are linked — CI checks
 // these anchors resolve — anything else renders as plain code.
 const SLOT_TYPES_GUIDE = '/docs/config_guides/slot_types'
+const DISPLAYS_GUIDE = '/docs/config_guides/tracks#configuring-displays'
 const DOCUMENTED_SLOT_TYPES = new Set([
   'string',
   'number',
@@ -754,32 +830,8 @@ function typeLink(type: string) {
     : `\`${type}\``
 }
 
-function slotMetaLine(meta: SlotMeta): string {
-  const enums = meta.enumValues
-    ? ` (one of ${meta.enumValues.map(v => `\`${v}\``).join(', ')})`
-    : ''
-  const flags = [meta.advanced && 'advanced', meta.promotable && 'promotable']
-    .filter(Boolean)
-    .join(', ')
-  return [
-    meta.type && `**Type:** ${typeLink(meta.type)}${enums}`,
-    meta.defaultValue !== undefined && `**Default:** \`${meta.defaultValue}\``,
-    // a promotable slot's default is a sentinel; the value it actually resolves
-    // to is the one a reader is after
-    meta.promotedBase !== undefined &&
-      `**Resolves to:** \`${meta.promotedBase}\``,
-    meta.contextVariable?.length &&
-      `**Callback args:** ${meta.contextVariable.map(v => `\`${v}\``).join(', ')}`,
-    flags && `_${flags}_`,
-  ]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-// Parses a slot's value object literal once; slotBlock (full entry) and
-// slotRow (table summary) both read off this so they can't drift apart.
-// Effective meta for a slot that overrides one further up the `baseConfiguration`
-// chain, filled in by `resolveInheritedSlotMeta`.
+// Effective meta for a slot that overrides one further up the
+// `baseConfiguration` chain, filled in by `resolveInheritedSlotMeta`.
 const inheritedSlotMeta = new WeakMap<Item, SlotMeta>()
 
 /**
@@ -818,9 +870,6 @@ function resolveInheritedSlotMeta(
         inheritedSlotMeta.set(slot, {
           ...merged,
           ...parseSlotMeta(rawSlotValue(slot)),
-          // whether a source block is worth keeping is a fact about the text
-          // actually shown, which is this slot's own
-          keepCode: parseSlotMeta(rawSlotValue(slot)).keepCode,
         })
       }
     }
@@ -836,13 +885,11 @@ function slotMetaFor(item: Item) {
   return { value, meta: inheritedSlotMeta.get(item) ?? parseSlotMeta(value) }
 }
 
-// A retained source block exists to show the one thing the label line couldn't
-// summarize, so strip what's already rendered above it: the `description`
-// (printed verbatim as the slot's prose) and the blank lines JSDoc stripping
-// leaves behind. Without this a kept block is mostly a second copy of the prose,
-// which is what makes these pages read like source rather than reference.
-// Spliced by source range rather than by regex so a description wrapped across
-// lines (prettier does this routinely) is removed whole.
+// A slot whose source stands in for its type strips what the other columns
+// already carry: the `description` (printed verbatim in the Description cell)
+// and the blank lines JSDoc stripping leaves behind. Spliced by source range
+// rather than by regex so a description wrapped across lines (prettier does
+// this routinely) is removed whole.
 function trimSlotCode(value: string) {
   const sf = ts.createSourceFile(
     'slot.ts',
@@ -869,44 +916,93 @@ function trimSlotCode(value: string) {
   return stripped.replace(/\n\s*\n+/g, '\n')
 }
 
-function slotBlock(item: Item) {
-  const { value, meta } = slotMetaFor(item)
-  return section(
-    `#### slot: ${item.name}`,
-    item.docs || meta.description,
-    slotMetaLine(meta),
-    meta.keepCode && codeBlock(trimSlotCode(value)),
-    exampleSection(item.examples, '**Example:**'),
-  )
-}
-
-// Mirrors the github-slugger id Astro derives for a slotBlock's `#### slot:
-// <name>` heading: lowercased, with the `slot: ` prefix's punctuation and any
-// dots in a nested slot name (e.g. `index.indexType`) dropped rather than
-// kept as separators.
+// The anchor other pages link a slot by (the promotable-settings table in
+// `user_guides/display_defaults.md`), kept as an explicit `<span id>` on the
+// row: lowercased, with any dots in a nested slot name (e.g.
+// `index.indexType`) dropped rather than kept as separators.
 function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
 }
 
-// One row of the slots table: name (linked to its full entry below), type,
-// and a one-line description.
-function slotRow(item: Item) {
-  const { meta } = slotMetaFor(item)
+// The Type cell: the slot's declared type, linked to the slot-types guide, with
+// a stringEnum's choices after it. A slot whose value isn't a `{ type, ... }`
+// object at all (`pluginManager.pluggableConfigSchemaType('adapter')`, a nested
+// `ConfigurationSchema`) has no type to name, so its source stands in — that
+// expression is the only thing there is to say about it.
+function slotTypeCell(meta: SlotMeta) {
   const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
-  const type = meta.type ? `\`${meta.type}\`${enums}` : ''
-  const desc = item.docs || meta.description
-  return `| [${item.name}](#${slotAnchor(item.name)}) | ${tableCell(type)} | ${tableCell(desc && firstSentence(desc))} |`
+  return meta.type
+    ? `${typeLink(meta.type)}${enums}`
+    : codeCell(
+        meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
+      )
 }
 
-// A real table of this config's own slots — name, type, and description at a
-// glance — rather than a bare list of links, since the slots are the actual
-// user-facing configuration surface and are worth seeing in one scan. The
-// Slots section itself is collapsed by default (see renderConfig): this table
-// is the primary way to find and evaluate a slot without opening it, and the
-// site's own table of contents only goes down to h2/h3 so it misses the h4
-// slot headings entirely.
-function slotsTable(slots: Item[]) {
-  return markdownTable(['Slot', 'Type', 'Description'], slots.map(slotRow))
+// The Default cell. A promotable slot's own default is a sentinel meaning
+// "unset", so it renders as what it actually resolves to.
+function slotDefaultCell(meta: SlotMeta) {
+  const value =
+    meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode
+  return [
+    // a promotable slot's own default is a sentinel; the value it resolves to
+    // is the one a reader is after
+    codeCell(meta.promotedBase ?? value),
+    meta.promotable && '_promotable_',
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
+// The Description cell: the slot's prose in full (paragraph breaks kept), then
+// the facts that have no column of their own — the jexl callback's arguments,
+// whether the slot is `advanced` (hidden behind "show advanced" in the UI), and
+// any authored `#example`, folded so a snippet doesn't hold the row open.
+function slotDescriptionCell(item: Item, meta: SlotMeta) {
+  return [
+    proseCell(item.docs || meta.description),
+    meta.contextVariable?.length &&
+      `_callback args:_ ${meta.contextVariable.map(v => `\`${v}\``).join(', ')}`,
+    meta.advanced && '_advanced_',
+    exampleCell(item.examples),
+  ]
+    .filter(Boolean)
+    .join('<br>')
+}
+
+// A sub-schema slot (`index`, `labels`) is a container: its own row would carry
+// no type, default, or description, and its children are listed as `index.*`
+// rows of their own.
+function isContainerSlot(item: Item, meta: SlotMeta, all: Item[]) {
+  return (
+    !meta.type &&
+    !(item.docs || meta.description) &&
+    all.some(s => s.name.startsWith(`${item.name}.`))
+  )
+}
+
+// `definedBy` is undefined on a config with no base (no "From" column at all),
+// and empty for the config's own slots when the column is there.
+//
+// Name, type and default share one cell — `name` over `string = 'foo'` — rather
+// than taking a column each. They are short and read as one fact ("what this
+// slot is"), while the description is the column that actually needs the width;
+// as three columns they squeezed a paragraph of prose into a quarter of the
+// table.
+function slotRow(item: Item, definedBy: string | undefined) {
+  const { meta } = slotMetaFor(item)
+  const type = slotTypeCell(meta)
+  const dflt = slotDefaultCell(meta)
+  const cells = [
+    [
+      `<span id="${slotAnchor(item.name)}">**${item.name}**</span>`,
+      [type, dflt].filter(Boolean).join(' = '),
+    ]
+      .filter(Boolean)
+      .join('<br>'),
+    slotDescriptionCell(item, meta),
+    ...(definedBy === undefined ? [] : [definedBy]),
+  ]
+  return `| ${cells.join(' | ')} |`
 }
 
 // Warn once per config that declares a `baseConfiguration` we couldn't link to a
@@ -932,11 +1028,14 @@ function warnAdaptersMissingTrackType(configs: ConfigWithHeader[]) {
   for (const config of configs) {
     const isAdapter =
       configCategory(config.header.name, config.header.category) === 'Adapter'
-    if (
-      isAdapter &&
-      config.header.examples.length &&
-      !config.header.trackType
-    ) {
+    // only when an example would actually be wrapped: an author who wrote the
+    // full track config by hand hits wrapAdapterExample's `alreadyFull` guard
+    // and keeps their own `type`, so no default was applied and there is
+    // nothing to warn about (MotifListAdapter was flagged on exactly this)
+    const wouldWrap = config.header.examples.some(
+      ex => wrapAdapterExample(ex.content) !== ex.content,
+    )
+    if (isAdapter && wouldWrap && !config.header.trackType) {
       console.warn(
         `${config.header.name}: adapter has an #example but no #trackType — its full-config example defaulted to FeatureTrack`,
       )
@@ -1019,7 +1118,7 @@ export function writePromotableSlotDocs(
     })
   return rewriteMarkerBlock(
     'PROMOTABLE_SLOTS',
-    `<!-- prettier-ignore -->\n${markdownTable(['Track type', 'Display', 'Settings with a pin'], rows)}`,
+    markdownTable(['Track type', 'Display', 'Settings with a pin'], rows),
     { check },
   )
 }
@@ -1038,12 +1137,14 @@ export async function writeConfigDocs(
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
+  const extendedBy = extendedByMap(withHeader, index)
   const links: DisplayLinkContext = {
     displayTypesByTrack,
     displayToTrackType,
     adaptersByTrack: adaptersByTrackType(withHeader),
     byName,
     modelNames,
+    extendedBy,
   }
   warnUnresolvedBases(withHeader, index)
   warnAdaptersMissingTrackType(withHeader)
@@ -1054,8 +1155,13 @@ export async function writeConfigDocs(
       renderConfig(cfg, collectBaseConfigs(cfg, index), links),
     )
   }
-  warnHeaderGaps({
-    items: withHeader,
+  // A base/shared schema is exempt from the #example gap: it is never named in
+  // a config, so an example on it would teach a type nobody can write. Listing
+  // them made the warning a 40-name wall that read as noise, which is how ~17
+  // genuinely pasteable adapters and displays stayed bare. Their route to a
+  // usable shape is the Extended by links, not an example of their own.
+  return warnHeaderGaps({
+    items: withHeader.filter(c => !extendedBy.has(c.header.name)),
     kind: 'configs',
     getName: c => c.header.name,
     hasExample: c => c.header.examples.length > 0,

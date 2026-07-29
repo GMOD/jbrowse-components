@@ -18,50 +18,18 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BlastTabularAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type           | Description                                                                   |
-| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)           | `stringArray`  | Query assembly is the first value in the array, target assembly is the second |
-| [targetAssembly](#slot-targetassembly)         | `string`       | Alternative to assemblyNames array: the target assembly                       |
-| [queryAssembly](#slot-queryassembly)           | `string`       | Alternative to assemblyNames array: the query assembly                        |
-| [blastTableLocation](#slot-blasttablelocation) | `fileLocation` |                                                                               |
-| [columns](#slot-columns)                       | `string`       | Optional space-separated column name list.                                    |
-
-<details>
-<summary>BlastTabularAdapter - Slots</summary>
-
-#### slot: assemblyNames
-
-Query assembly is the first value in the array, target assembly is the second
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: targetAssembly
-
-Alternative to assemblyNames array: the target assembly
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: queryAssembly
-
-Alternative to assemblyNames array: the query assembly
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: blastTableLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/blastTable.tsv', locationType: 'UriLocation' }`
-
-#### slot: columns
-
-Optional space-separated column name list. If custom columns were used in
-outfmt, enter them here exactly as specified in the command. At least qseqid,
-sseqid, qstart, qend, sstart, and send are required
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore'`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Query assembly is the first value in the array, target assembly is the second |
+| <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames array: the target assembly |
+| <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames array: the query assembly |
+| <span id="slot-blasttablelocation">**blastTableLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/blastTable.tsv', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-columns">**columns**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'qseqid sseqid pident length mismatch gapopen qstart qend sstar…</code></summary><pre><code>'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore'</code></pre></details> | Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required |

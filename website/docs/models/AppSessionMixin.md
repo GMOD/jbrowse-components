@@ -9,53 +9,33 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppSession/AppSessionMixin.ts).
 
-## Overview
-
 Session getters shared by the "app" products (desktop + web) that simply
 delegate to the root model — `version`, `history`, `menus`, `assemblyManager` —
 plus `renameCurrentSession`. Centralized here so the products compose one mixin
 instead of re-declaring (and diverging on) the same root delegations. The root
 must satisfy AppRootModel.
 
-## Members
+## Getters
 
-| Member                                               | Kind    | Defined by      | Description |
-| ---------------------------------------------------- | ------- | --------------- | ----------- |
-| [root](#getter-root)                                 | Getters | AppSessionMixin |             |
-| [version](#getter-version)                           | Getters | AppSessionMixin |             |
-| [gitCommit](#getter-gitcommit)                       | Getters | AppSessionMixin |             |
-| [history](#getter-history)                           | Getters | AppSessionMixin |             |
-| [assemblyManager](#getter-assemblymanager)           | Getters | AppSessionMixin |             |
-| [menus](#method-menus)                               | Methods | AppSessionMixin |             |
-| [renameCurrentSession](#action-renamecurrentsession) | Actions | AppSessionMixin |             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-root">**root**</span><br><code>AppRootModel</code> |  |
+| <span id="getter-version">**version**</span><br><code>string</code> |  |
+| <span id="getter-gitcommit">**gitCommit**</span><br><code>string &#124; undefined</code> |  |
+| <span id="getter-history">**history**</span><br><details><summary><code>{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): voi…</code></summary><pre><code>{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } &#124; undefined</code></pre></details> |  |
+| <span id="getter-assemblymanager">**assemblyManager**</span><br><details><summary><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; IStateTreeN…</code></summary><pre><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; IStateTreeNode&lt;…&gt;</code></pre></details> |  |
 
-<details>
-<summary>AppSessionMixin - Getters</summary>
+## Methods
 
-| Member                                                   | Type                                                                               |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| <span id="getter-root">root</span>                       | `AppRootModel`                                                                     |
-| <span id="getter-version">version</span>                 | `string`                                                                           |
-| <span id="getter-gitcommit">gitCommit</span>             | `string \| undefined`                                                              |
-| <span id="getter-history">history</span>                 | `{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } \| undefined` |
-| <span id="getter-assemblymanager">assemblyManager</span> | `ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & IStateTreeNode<…>`            |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-menus">**menus**</span><br><code>() =&gt; Menu[]</code> |  |
 
-</details>
+## Actions
 
-<details>
-<summary>AppSessionMixin - Methods</summary>
-
-| Member                               | Type           |
-| ------------------------------------ | -------------- |
-| <span id="method-menus">menus</span> | `() => Menu[]` |
-
-</details>
-
-<details>
-<summary>AppSessionMixin - Actions</summary>
-
-| Member                                                             | Type                            |
-| ------------------------------------------------------------------ | ------------------------------- |
-| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(sessionName: string) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(sessionName: string) =&gt; void</code> |  |

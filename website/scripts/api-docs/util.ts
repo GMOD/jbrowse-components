@@ -1198,12 +1198,93 @@ export function tableCell(text: string | undefined) {
     .trim()
 }
 
+// Prose that keeps its paragraph breaks inside a cell. A cell is one line of
+// markdown, so a blank line isn't available — `<br><br>` is what a multi-
+// paragraph slot description renders as.
+export function proseCell(text: string | undefined) {
+  return (text ?? '')
+    .split(/\n\s*\n/)
+    .map(p => tableCell(p))
+    .filter(Boolean)
+    .join('<br><br>')
+}
+
+// Raw-HTML escaping for a cell: `&`/`<`/`>` so code can't be read as markup,
+// `|` so it can't split the row.
+function escapeCellHtml(text: string) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\|/g, '&#124;')
+}
+
+// Newlines inside a cell are written as `&#10;` (the row is one line) and
+// line-leading indentation as `&#160;` — ordinary leading spaces are stripped
+// by the raw-HTML round trip the table goes through, nbsp survives.
+function preCell(code: string) {
+  return escapeCellHtml(code.trim()).replace(
+    /\n[ \t]*/g,
+    m => `&#10;${'&#160;'.repeat(m.length - 1)}`,
+  )
+}
+
+// Code in a table cell — a slot's default, a member's type signature. Short
+// code renders inline; anything longer folds into a `<details>` showing its
+// head, so one 300-character generic type can't blow up the row it sits in.
+// Raw `<code>` rather than a markdown code span because these carry backticks
+// (jexl defaults are template literals).
+const MAX_INLINE_CELL_CODE = 64
+export function codeCell(code: string | undefined) {
+  const flat = (code ?? '').replace(/\s+/g, ' ').trim()
+  return flat
+    ? flat.length <= MAX_INLINE_CELL_CODE
+      ? `<code>${escapeCellHtml(flat)}</code>`
+      : detailsCell(
+          `<code>${escapeCellHtml(`${flat.slice(0, MAX_INLINE_CELL_CODE - 1).trimEnd()}…`)}</code>`,
+          `<pre><code>${preCell(code ?? '')}</code></pre>`,
+        )
+    : ''
+}
+
+export function detailsCell(summary: string, body: string) {
+  return `<details><summary>${summary}</summary>${body}</details>`
+}
+
+// An authored `#example` inside a table cell. Its prose stays markdown (a cell
+// parses as inline markdown, so backticks and links still render); its fenced
+// code can't — a fence needs its own lines — so it becomes a `<pre>`.
+export function exampleCell(examples: Example[]) {
+  return examples
+    .map(ex =>
+      detailsCell(
+        ex.label ? `example: ${ex.label}` : 'example',
+        ex.content
+          .split(/```[\w]*\n([\s\S]*?)```/)
+          .map((part, i) =>
+            i % 2
+              ? `<pre><code>${preCell(part)}</code></pre>`
+              : tableCell(part) && `<p>${tableCell(part)}</p>`,
+          )
+          .filter(Boolean)
+          .join(''),
+      ),
+    )
+    .join('')
+}
+
 // A GFM pipe table: header cells, then one already-built `| a | b | c |` row
 // per entry. Rows are joined with a single newline (not `section`'s blank-line
 // join) since a table's rows must be consecutive lines with no gaps.
+//
+// `prettier-ignore` pins the compact form. Otherwise the formatter pads every
+// cell in a column out to its widest member, so one long slot description
+// inflates a whole page (LinearAlignmentsDisplay: 57KB of padding) and editing
+// that one description reflows every row into the diff.
 export function markdownTable(headers: string[], rows: string[]) {
   return rows.length
     ? [
+        '<!-- prettier-ignore -->',
         `| ${headers.join(' | ')} |`,
         `| ${headers.map(() => '---').join(' | ')} |`,
         ...rows,
@@ -1356,8 +1437,9 @@ export function warnHeaderGaps<T>({
   hasExample: (item: T) => boolean
   isGeneralCategory: (item: T) => boolean
 }) {
+  const noExample = items.filter(item => !hasExample(item))
   warnCoverageGap({
-    items: items.filter(item => !hasExample(item)),
+    items: noExample,
     total: items.length,
     kind,
     reason: 'have no #example',
@@ -1370,6 +1452,9 @@ export function warnHeaderGaps<T>({
     reason: 'resolved to the General category (consider adding #category)',
     getName,
   })
+  // returned so the driver can commit the list — a console.warn alone fails
+  // nothing and scrolls past, which is how these gaps accumulated
+  return noExample.map(getName)
 }
 
 // Narrow a by-file record to the entries that actually carry a #config/#stateModel
@@ -1503,7 +1588,7 @@ export function exampleSection(
 // Composition is now derived from each model's factory (see
 // resolveComposedModels), so any hand-authored `extends`/`composed of` marker
 // block left in a #stateModel comment is redundant. Strip it from the rendered
-// prose so it does not duplicate the generated "Inherited members" section.
+// prose so it does not duplicate the generated inherited-member rows.
 //
 // Removes the marker line and the bullet list that follows it — bullets, their
 // indented continuation lines, and interleaved blanks — but stops at the next

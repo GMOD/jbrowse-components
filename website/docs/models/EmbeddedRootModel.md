@@ -9,8 +9,6 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/embedded-core/src/createEmbeddedRootModel.ts).
 
-## Overview
-
 Root model shared by the single-view embedded products
 (react-linear-genome-view, react-circular-genome-view). Each product supplies
 its own model name, version, and session model, and may `.props()` on extra
@@ -18,96 +16,46 @@ fields (e.g. the LGV `disableAddTracks`/`drawerViewHeight`). Internet accounts
 come from the same product-core mixin the web/desktop root models use, so config
 `internetAccounts` are auto-initialized (no manual wiring needed).
 
-## Members
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
-| Member                                                                   | Kind       | Defined by                                        | Description |
-| ------------------------------------------------------------------------ | ---------- | ------------------------------------------------- | ----------- |
-| [config](#property-config)                                               | Properties | EmbeddedRootModel                                 |             |
-| [session](#property-session)                                             | Properties | EmbeddedRootModel                                 |             |
-| [assemblyManager](#property-assemblymanager)                             | Properties | EmbeddedRootModel                                 |             |
-| [error](#volatile-error)                                                 | Volatiles  | EmbeddedRootModel                                 |             |
-| [adminMode](#volatile-adminmode)                                         | Volatiles  | EmbeddedRootModel                                 |             |
-| [version](#volatile-version)                                             | Volatiles  | EmbeddedRootModel                                 |             |
-| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  | EmbeddedRootModel                                 |             |
-| [textSearchManager](#volatile-textsearchmanager)                         | Volatiles  | EmbeddedRootModel                                 |             |
-| [jbrowse](#getter-jbrowse)                                               | Getters    | EmbeddedRootModel                                 |             |
-| [pluginManager](#getter-pluginmanager)                                   | Getters    | EmbeddedRootModel                                 |             |
-| [setSession](#action-setsession)                                         | Actions    | EmbeddedRootModel                                 |             |
-| [renameCurrentSession](#action-renamecurrentsession)                     | Actions    | EmbeddedRootModel                                 |             |
-| [setError](#action-seterror)                                             | Actions    | EmbeddedRootModel                                 |             |
-| [internetAccounts](#property-internetaccounts)                           | Properties | [InternetAccountsMixin](../internetaccountsmixin) |             |
-| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    | [InternetAccountsMixin](../internetaccountsmixin) |             |
-| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin) |             |
-| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin) |             |
+## Properties
 
-<details>
-<summary>EmbeddedRootModel - Properties</summary>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-config">**config**</span><br><code>config: createConfigModel(pluginManager, assemblyConfigSchema)</code> |  | EmbeddedRootModel |
+| <span id="property-session">**session**</span><br><code>session: sessionModelType</code> |  | EmbeddedRootModel |
+| <span id="property-assemblymanager">**assemblyManager**</span><br><details><summary><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></summary><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | EmbeddedRootModel |
+| <span id="property-internetaccounts">**internetAccounts**</span><br><details><summary><code>internetAccounts: types.array( pluginManager.pluggableMstType('…</code></summary><pre><code>internetAccounts: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('internet account', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#property-internetaccounts) |
 
-| Member                                                     | Type                                                                                                                                                                                                                            |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="property-config">config</span>                   | `IModelType<…>; assembly: IAnyType; tracks: IArrayType<…>; internetAccounts: IArrayType<…>; connections: IArrayType<…>; aggregateTextSearchAdapters: IArrayType<…>; plugins: IType<…>; }, {…}, _NotCustomized, _NotCustomized>` |
-| <span id="property-session">session</span>                 | `SESSION`                                                                                                                                                                                                                       |
-| <span id="property-assemblymanager">assemblyManager</span> | `IOptionalIType<IModelType<…>, [undefined]>`                                                                                                                                                                                    |
+## Volatiles
 
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>adminMode: false</code> |  |
+| <span id="volatile-version">**version**</span><br><code>version</code> |  |
+| <span id="volatile-rpcmanager">**rpcManager**</span><br><details><summary><code>rpcManager: new RpcManager( pluginManager, self.config.configur…</code></summary><pre><code>rpcManager: new RpcManager(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;self.config.configuration.rpc,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;makeWorkerInstance,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultDriverName: makeWorkerInstance&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;? 'WebWorkerRpcDriver'&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;: 'MainThreadRpcDriver',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
+| <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>textSearchManager: new TextSearchManager(pluginManager)</code> |  |
 
-<details>
-<summary>EmbeddedRootModel - Volatiles</summary>
+## Getters
 
-| Member                                                         | Type                |
-| -------------------------------------------------------------- | ------------------- |
-| <span id="volatile-error">error</span>                         | `unknown`           |
-| <span id="volatile-adminmode">adminMode</span>                 | `false`             |
-| <span id="volatile-version">version</span>                     | `string`            |
-| <span id="volatile-rpcmanager">rpcManager</span>               | `RpcManager`        |
-| <span id="volatile-textsearchmanager">textSearchManager</span> | `TextSearchManager` |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-jbrowse">**jbrowse**</span><br><details><summary><code>ModelPropertiesDeclarationToProperties&lt;…&gt;; session: SESSION; as…</code></summary><pre><code>ModelPropertiesDeclarationToProperties&lt;…&gt;; session: SESSION; assemblyManager: IOptionalIType&lt;IModelType&lt;…&gt;, [undefined]&gt;; }&gt;["config"]["Type"]</code></pre></details> |  |
+| <span id="getter-pluginmanager">**pluginManager**</span><br><code>PluginManager</code> |  |
 
-</details>
+## Actions
 
-<details>
-<summary>EmbeddedRootModel - Getters</summary>
-
-| Member                                               | Type                                                                                                                                             |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <span id="getter-jbrowse">jbrowse</span>             | `ModelPropertiesDeclarationToProperties<…>; session: SESSION; assemblyManager: IOptionalIType<IModelType<…>, [undefined]>; }>["config"]["Type"]` |
-| <span id="getter-pluginmanager">pluginManager</span> | `PluginManager`                                                                                                                                  |
-
-</details>
-
-<details>
-<summary>EmbeddedRootModel - Actions</summary>
-
-| Member                                                             | Type                                             |
-| ------------------------------------------------------------------ | ------------------------------------------------ |
-| <span id="action-setsession">setSession</span>                     | `(sessionSnapshot: SnapshotIn<SESSION>) => void` |
-| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(sessionName: string) => void`                  |
-| <span id="action-seterror">setError</span>                         | `(error: unknown) => void`                       |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from InternetAccountsMixin</summary>
-
-[InternetAccountsMixin →](../internetaccountsmixin)
-
-**Properties**
-
-| Member                                                       | Type                   |
-| ------------------------------------------------------------ | ---------------------- |
-| <span id="property-internetaccounts">internetAccounts</span> | `IArrayType<IAnyType>` |
-
-**Actions**
-
-| Member                                                                                 | Type                                                                                                         |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| <span id="action-initializeinternetaccount">initializeInternetAccount</span>           | `(internetAccountConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, initialSnapshot?: any) => any` |
-| <span id="action-createephemeralinternetaccount">createEphemeralInternetAccount</span> | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                  |
-| <span id="action-findappropriateinternetaccount">findAppropriateInternetAccount</span> | `(location: UriLocation) => any`                                                                             |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot: SnapshotIn&lt;SESSION&gt;) =&gt; void</code> |  | EmbeddedRootModel |
+| <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(sessionName: string) =&gt; void</code> |  | EmbeddedRootModel |
+| <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  | EmbeddedRootModel |
+| <span id="action-initializeinternetaccount">**initializeInternetAccount**</span><br><details><summary><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStat…</code></summary><pre><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;, initialSnapshot?: any) =&gt; any</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#action-initializeinternetaccount) |
+| <span id="action-createephemeralinternetaccount">**createEphemeralInternetAccount**</span><br><details><summary><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unk…</code></summary><pre><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unknown&gt;, url: string) =&gt; any</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#action-createephemeralinternetaccount) |
+| <span id="action-findappropriateinternetaccount">**findAppropriateInternetAccount**</span><br><code>(location: UriLocation) =&gt; any</code> |  | [InternetAccountsMixin](../internetaccountsmixin#action-findappropriateinternetaccount) |

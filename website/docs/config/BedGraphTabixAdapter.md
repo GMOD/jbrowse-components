@@ -36,39 +36,17 @@ used to load bgzip-compressed, tabix-indexed bedGraph signal files
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BedGraphTabixAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type                    | Description          |
-| ---------------------------------------------- | ----------------------- | -------------------- |
-| [bedGraphGzLocation](#slot-bedgraphgzlocation) | `fileLocation`          |                      |
-| [index.indexType](#slot-indexindextype)        | `stringEnum` (TBI, CSI) |                      |
-| [index.location](#slot-indexlocation)          | `fileLocation`          |                      |
-| [columnNames](#slot-columnnames)               | `stringArray`           | List of column names |
-
-<details>
-<summary>BedGraphTabixAdapter - Slots</summary>
-
-#### slot: bedGraphGzLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:**
-`{ uri: '/path/to/my.bedgraph.gz.tbi', locationType: 'UriLocation' }`
-
-#### slot: columnNames
-
-List of column names
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bedgraphgzlocation">**bedGraphGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/my.bedgraph.gz.tbi', locationType: 'UriLocatio…</code></summary><pre><code>{ uri: '/path/to/my.bedgraph.gz.tbi', locationType: 'UriLocation' }</code></pre></details> |  |
+| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |

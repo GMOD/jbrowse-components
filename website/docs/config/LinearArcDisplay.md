@@ -56,122 +56,26 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go on a display entry:
+`"displays": [{ "type": "LinearArcDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type                       | Description                                                    |
-| -------------------------------- | -------------------------- | -------------------------------------------------------------- |
-| [color](#slot-color)             | `color`                    | the color of the arcs                                          |
-| [thickness](#slot-thickness)     | `number`                   | the thickness of the arcs                                      |
-| [label](#slot-label)             | `string`                   | the label to appear at the apex of the arcs                    |
-| [arcHeight](#slot-archeight)     | `number`                   | the height of the arcs                                         |
-| [caption](#slot-caption)         | `string`                   | the caption to appear when hovering over any point on the arcs |
-| [displayMode](#slot-displaymode) | `enum` (arcs, semicircles) | render semi-circles instead of arcs                            |
-
-<details>
-<summary>LinearArcDisplay - Slots</summary>
-
-#### slot: color
-
-the color of the arcs
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'darkblue'` · **Callback args:** `feature`
-
-#### slot: thickness
-
-the thickness of the arcs
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`'jexl:logThickness(feature,'score')'` · **Callback args:** `feature`
-
-#### slot: label
-
-the label to appear at the apex of the arcs
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'score')'` · **Callback args:** `feature`
-
-#### slot: arcHeight
-
-the height of the arcs
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`'jexl:log10(get(feature,'end')-get(feature,'start'))*50'` · **Callback args:**
-`feature`
-
-#### slot: caption
-
-the caption to appear when hovering over any point on the arcs
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'name')'` · **Callback args:** `feature`
-
-#### slot: displayMode
-
-render semi-circles instead of arcs
-
-**Type:** `enum` (one of `arcs`, `semicircles`) · **Default:** `'arcs'`
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseLinearDisplay</summary>
-
-[BaseLinearDisplay config →](../baselineardisplay)
-
-#### slot: maxFeatureScreenDensity
-
-maximum features per pixel before showing a "too many features" message, used if
-byte size estimates are not available
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_advanced_
-
-#### slot: fetchSizeLimit
-
-maximum data to attempt to download for a given track, used if adapter doesn't
-specify one
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1_000_000` · _advanced_
-
-#### slot: forceLoad
-
-Declarative equivalent of the "Force load" button on the "too much data" banner:
-when true the display always renders, however large the region or dense the
-features. Off by default (the gate guards against huge downloads). Set it on a
-view no one can interact with — an embedded / notebook view, or a screenshot —
-where the region is known and you want it drawn without a click.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: height
-
-default height for the track
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: mouseover
-
-text to display when the cursor hovers over a feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-· **Callback args:** `feature`
-
-#### slot: jexlFilters
-
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
-
-**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'darkblue'</code> | the color of the arcs<br>_callback args:_ `feature` |  |
+| <span id="slot-thickness">**thickness**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:logThickness(feature,'score')'</code> | the thickness of the arcs<br>_callback args:_ `feature` |  |
+| <span id="slot-label">**label**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'score')'</code> | the label to appear at the apex of the arcs<br>_callback args:_ `feature` |  |
+| <span id="slot-archeight">**arcHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:log10(get(feature,'end')-get(feature,'start'))*50'</code> | the height of the arcs<br>_callback args:_ `feature` |  |
+| <span id="slot-caption">**caption**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'name')'</code> | the caption to appear when hovering over any point on the arcs<br>_callback args:_ `feature` |  |
+| <span id="slot-displaymode">**displayMode**</span><br>`enum` (arcs, semicircles) = <code>'arcs'</code> | render semi-circles instead of arcs |  |
+| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></summary><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></details> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[`get(feature,'gbkey')!='Src'`]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config | [BaseLinearDisplay](../baselineardisplay) |

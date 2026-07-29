@@ -35,26 +35,15 @@ so prefer the BedGraphTabixAdapter for large files.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BedGraphAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                       | Type           | Description          |
-| ------------------------------------------ | -------------- | -------------------- |
-| [bedGraphLocation](#slot-bedgraphlocation) | `fileLocation` |                      |
-| [columnNames](#slot-columnnames)           | `stringArray`  | List of column names |
-
-<details>
-<summary>BedGraphAdapter - Slots</summary>
-
-#### slot: bedGraphLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
-
-#### slot: columnNames
-
-List of column names
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bedgraphlocation">**bedGraphLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |

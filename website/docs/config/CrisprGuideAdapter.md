@@ -15,66 +15,20 @@ source and silently desyncs the track if the assembly's sequence changes.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "CrisprGuideAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                     | Type                          | Description                                                                                          |
-| ---------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [sequenceAdapter](#slot-sequenceadapter) | `frozen`                      | discouraged: leave unset.                                                                            |
-| [pam](#slot-pam)                         | `string`                      | PAM motif in IUPAC codes, e.g. NGG for SpCas9, TTTV for Cas12a                                       |
-| [guideLength](#slot-guidelength)         | `number`                      | protospacer length in bp                                                                             |
-| [pamLocation](#slot-pamlocation)         | `stringEnum` (3prime, 5prime) | whether the PAM is 3' (Cas9) or 5' (Cas12a) of the protospacer                                       |
-| [cutOffset](#slot-cutoffset)             | `number`                      | distance in bp from the PAM-proximal end of the protospacer to the predicted cut site (3 for SpCas9) |
-| [searchForward](#slot-searchforward)     | `boolean`                     |                                                                                                      |
-| [searchReverse](#slot-searchreverse)     | `boolean`                     |                                                                                                      |
-
-<details>
-<summary>CrisprGuideAdapter - Slots</summary>
-
-#### slot: sequenceAdapter
-
-discouraged: leave unset. JBrowse supplies the assembly's sequence adapter
-automatically; this override exists only for the rare case of scanning a
-sequence other than the one the track is displayed against.
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null`
-
-#### slot: pam
-
-PAM motif in IUPAC codes, e.g. NGG for SpCas9, TTTV for Cas12a
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'NGG'`
-
-#### slot: guideLength
-
-protospacer length in bp
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `20`
-
-#### slot: pamLocation
-
-whether the PAM is 3' (Cas9) or 5' (Cas12a) of the protospacer
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`3prime`, `5prime`) · **Default:** `'3prime'`
-
-#### slot: cutOffset
-
-distance in bp from the PAM-proximal end of the protospacer to the predicted cut
-site (3 for SpCas9)
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `3`
-
-#### slot: searchForward
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: searchReverse
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | discouraged: leave unset. JBrowse supplies the assembly's sequence adapter automatically; this override exists only for the rare case of scanning a sequence other than the one the track is displayed against. |
+| <span id="slot-pam">**pam**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'NGG'</code> | PAM motif in IUPAC codes, e.g. NGG for SpCas9, TTTV for Cas12a |
+| <span id="slot-guidelength">**guideLength**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | protospacer length in bp |
+| <span id="slot-pamlocation">**pamLocation**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (3prime, 5prime) = <code>'3prime'</code> | whether the PAM is 3' (Cas9) or 5' (Cas12a) of the protospacer |
+| <span id="slot-cutoffset">**cutOffset**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3</code> | distance in bp from the PAM-proximal end of the protospacer to the predicted cut site (3 for SpCas9) |
+| <span id="slot-searchforward">**searchForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> |  |
+| <span id="slot-searchreverse">**searchReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> |  |

@@ -13,312 +13,48 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 ## Related links
 
+- **Extended by:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Extended by:** [LinearVariantDisplay](../linearvariantdisplay)
 - **State model:** [runtime API](../../models/linearcanvasbasedisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
-
-| Slot                                                           | Type                                                         | Description                                                                                                                                                               |
-| -------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [heightMode](#slot-heightmode)                                 | `maybeStringEnum` (fixed, grow, fit)                         | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). |
-| [showLabels](#slot-showlabels)                                 | `stringEnum` (auto, on, off)                                 | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                   |
-| [showDescriptions](#slot-showdescriptions)                     | `boolean`                                                    | Show feature descriptions                                                                                                                                                 |
-| [color](#slot-color)                                           | `maybeColor`                                                 | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring).                                                                         |
-| [connectorColor](#slot-connectorcolor)                         | `maybeColor`                                                 | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                          |
-| [utrColor](#slot-utrcolor)                                     | `maybeColor`                                                 | fill color for UTRs on gene/transcript glyphs.                                                                                                                            |
-| [outlineColor](#slot-outlinecolor)                             | `color`                                                      | outline color for features (empty string = no outline)                                                                                                                    |
-| [featureHeight](#slot-featureheight)                           | `number`                                                     | height in pixels of the main body of each feature                                                                                                                         |
-| [displayMode](#slot-displaymode)                               | `maybeStringEnum` (normal, compact, superCompact, collapsed) | Feature height preset.                                                                                                                                                    |
-| [geneGlyphMode](#slot-geneglyphmode)                           | `stringEnum` (auto, all, longestCoding)                      | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript                       |
-| [subfeatureLabels](#slot-subfeaturelabels)                     | `maybeStringEnum` (none, below, overlay)                     | subfeature label display mode.                                                                                                                                            |
-| [displayDirectionalChevrons](#slot-displaydirectionalchevrons) | `maybeBoolean`                                               | Display directional chevrons on intron lines to indicate strand direction.                                                                                                |
-| [transcriptTypes](#slot-transcripttypes)                       | `stringArray`                                                |                                                                                                                                                                           |
-| [containerTypes](#slot-containertypes)                         | `stringArray`                                                |                                                                                                                                                                           |
-| [subParts](#slot-subparts)                                     | `string`                                                     | subparts for a glyph                                                                                                                                                      |
-| [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                                    | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                                          |
-| [labels](#slot-labels)                                         |                                                              |                                                                                                                                                                           |
-| [labels.name](#slot-labelsname)                                | `string`                                                     | the primary name of the feature to show                                                                                                                                   |
-| [labels.description](#slot-labelsdescription)                  | `string`                                                     | the text description to show                                                                                                                                              |
-
-<details>
-<summary>Advanced slots (3)</summary>
-
-| Slot                                                   | Type     | Description                                                                                                                                   |
-| ------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)                           | `number` | Clamp in pixels on the content height this display reports (does not limit fixed or fit mode, where taller content scrolls).                  |
-| [growMaxHeight](#slot-growmaxheight)                   | `number` | Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. |
-| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity) | `number` | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value                                       |
-
-</details>
-
-<details>
-<summary>LinearCanvasBaseDisplay - Slots</summary>
-
-#### slot: maxHeight
-
-Clamp in pixels on the content height this display reports (does not limit fixed
-or fit mode, where taller content scrolls). The autogrow ceiling is
-growMaxHeight
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1200` · _advanced_
-
-#### slot: growMaxHeight
-
-Ceiling in pixels for the "autogrow track height" sizing mode; a track with more
-content than this grows to the ceiling and scrolls the rest. Does not apply to
-the fixed or fit modes. Raising it past maxHeight has no effect, since that
-clamps the content height first
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `800`
-· _advanced_
-
-#### slot: heightMode
-
-Track-sizing strategy — how the track responds when there are more features than
-fit (shared vocabulary with the alignments display, exposed in the "Track
-sizing" menu). Unset (the default) follows the session-wide default for this
-display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height,
-`grow` expands the track to show all features, `fit` squeezes features to fill
-the current height. Orthogonal to the per-feature size set by `displayMode`.
-Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
-settings.
-
-**Type:** `maybeStringEnum` (one of `fixed`, `grow`, `fit`) · **Default:**
-`undefined` · **Resolves to:** `'fixed'` · _promotable_
-
-#### slot: showLabels
-
-Show feature labels: "auto" hides labels at high feature density, "on" always
-shows, "off" always hides
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`auto`, `on`, `off`) · **Default:** `'auto'`
-
-#### slot: maxLabelFeatureDensity
-
-In "auto" showLabels mode, hide labels when visible feature density
-(features/pixel) exceeds this value
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`MAX_LABEL_FEATURE_DENSITY` · _advanced_
-
-#### slot: showDescriptions
-
-Show feature descriptions
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: color
-
-the main fill color of each feature (a CSS color, or a jexl expression for
-per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has
-one, else goldenrod
-
-**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
-
-#### slot: connectorColor
-
-color of the connecting/intron lines between feature segments (defaults to the
-theme text color)
-
-**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
-
-#### slot: utrColor
-
-fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED
-itemRgb paints them too (matching UCSC's whole-item coloring), else a
-contrasting blue
-
-**Type:** `maybeColor` · **Default:** `undefined` · **Callback args:** `feature`
-
-#### slot: outlineColor
-
-outline color for features (empty string = no outline)
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:** `''`
-
-#### slot: featureHeight
-
-height in pixels of the main body of each feature
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `10`
-· **Callback args:** `feature`
-
-#### slot: displayMode
-
-Feature height preset. Unset (the default) follows the session-wide default for
-this display type, falling back to `normal`; `normal`/`compact`/`superCompact`
-customize the track explicitly (including customizing `normal` back over a
-`compact` session default); `collapsed` packs every feature onto a single row
-with all labels hidden
-
-**Type:** `maybeStringEnum` (one of `normal`, `compact`, `superCompact`,
-`collapsed`) · **Default:** `undefined` · **Resolves to:** `'normal'` ·
-_promotable_
-
-#### slot: geneGlyphMode
-
-Gene glyph display mode: "auto" switches based on zoom level, "all" shows all
-transcripts, "longestCoding" shows only the longest coding transcript
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`auto`, `all`, `longestCoding`) · **Default:** `'auto'`
-
-#### slot: subfeatureLabels
-
-subfeature label display mode. Unset (the default) follows the session-wide
-default for this display type, falling back to `none`; `none`/`below`/`overlay`
-customize the track explicitly
-
-**Type:** `maybeStringEnum` (one of `none`, `below`, `overlay`) · **Default:**
-`undefined` · **Resolves to:** `'none'` · _promotable_
-
-#### slot: displayDirectionalChevrons
-
-Display directional chevrons on intron lines to indicate strand direction. Unset
-(the default) follows the session-wide default for this display type, falling
-back to on; an explicit true/false customizes the track (including customizing
-on over an off session default)
-
-**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · **Resolves to:** `true` · _promotable_
-
-#### slot: transcriptTypes
-
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [
-    'mRNA',
-    'transcript',
-    'primary_transcript',
-    'V_gene_segment',
-    'C_gene_segment',
-    'D_gene_segment',
-    'J_gene_segment',
-  ],
-}
-```
-
-#### slot: containerTypes
-
-**Type:** `stringArray` · **Default:** `['proteoform_orf']`
-
-#### slot: subParts
-
-subparts for a glyph
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'CDS,UTR,five_prime_UTR,three_prime_UTR'`
-
-#### slot: impliedUTRs
-
-imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit
-UTR subfeatures
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: labels
-
-```js
-ConfigurationSchema('CanvasFeatureLabels', {
-  name: {
-    type: 'string',
-    description: 'the primary name of the feature to show',
-    defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
-    contextVariable: ['feature'],
-  },
-  description: {
-    type: 'string',
-    description: 'the text description to show',
-    defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
-    contextVariable: ['feature'],
-  },
-})
-```
-
-#### slot: labels.name
-
-the primary name of the feature to show
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'name') || get(feature,'id')'` · **Callback args:** `feature`
-
-#### slot: labels.description
-
-the text description to show
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')'`
-· **Callback args:** `feature`
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseLinearDisplay</summary>
-
-[BaseLinearDisplay config →](../baselineardisplay)
-
-#### slot: maxFeatureScreenDensity
-
-maximum features per pixel before showing a "too many features" message, used if
-byte size estimates are not available
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_advanced_
-
-#### slot: fetchSizeLimit
-
-maximum data to attempt to download for a given track, used if adapter doesn't
-specify one
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1_000_000` · _advanced_
-
-#### slot: forceLoad
-
-Declarative equivalent of the "Force load" button on the "too much data" banner:
-when true the display always renders, however large the region or dense the
-features. Off by default (the gate guards against huge downloads). Set it on a
-view no one can interact with — an embedded / notebook view, or a screenshot —
-where the region is known and you want it drawn without a click.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: height
-
-default height for the track
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: mouseover
-
-text to display when the cursor hovers over a feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-· **Callback args:** `feature`
-
-#### slot: jexlFilters
-
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
-
-**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
-
-</details>
+`LinearCanvasBaseDisplay` is a shared base schema, not a type you name in a
+config. Set these slots on one of the configs under **Extended by** above, each
+of which lists them as inherited and shows the shape in its own example. Slot
+types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
+
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-maxheight">**maxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1200</code> | Clamp in pixels on the content height this display reports (does not limit fixed or fit mode, where taller content scrolls). The autogrow ceiling is growMaxHeight<br>_advanced_ |  |
+| <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes. Raising it past maxHeight has no effect, since that clamps the content height first<br>_advanced_ |  |
+| <span id="slot-heightmode">**heightMode**</span><br>`maybeStringEnum` (fixed, grow, fit) = <code>'fixed'</code> _promotable_ | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings. |  |
+| <span id="slot-showlabels">**showLabels**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, on, off) = <code>'auto'</code> | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides |  |
+| <span id="slot-maxlabelfeaturedensity">**maxLabelFeatureDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>MAX_LABEL_FEATURE_DENSITY</code> | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value<br>_advanced_ |  |
+| <span id="slot-showdescriptions">**showDescriptions**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show feature descriptions |  |
+| <span id="slot-color">**color**</span><br>`maybeColor` = <code>undefined</code> | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod<br>_callback args:_ `feature` |  |
+| <span id="slot-connectorcolor">**connectorColor**</span><br>`maybeColor` = <code>undefined</code> | color of the connecting/intron lines between feature segments (defaults to the theme text color)<br>_callback args:_ `feature` |  |
+| <span id="slot-utrcolor">**utrColor**</span><br>`maybeColor` = <code>undefined</code> | fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue<br>_callback args:_ `feature` |  |
+| <span id="slot-outlinecolor">**outlineColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>''</code> | outline color for features (empty string = no outline) |  |
+| <span id="slot-featureheight">**featureHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10</code> | height in pixels of the main body of each feature<br>_callback args:_ `feature` |  |
+| <span id="slot-displaymode">**displayMode**</span><br>`maybeStringEnum` (normal, compact, superCompact, collapsed) = <code>'normal'</code> _promotable_ | Feature height preset. Unset (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden |  |
+| <span id="slot-geneglyphmode">**geneGlyphMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, all, longestCoding) = <code>'auto'</code> | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript |  |
+| <span id="slot-subfeaturelabels">**subfeatureLabels**</span><br>`maybeStringEnum` (none, below, overlay) = <code>'none'</code> _promotable_ | subfeature label display mode. Unset (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly |  |
+| <span id="slot-displaydirectionalchevrons">**displayDirectionalChevrons**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) = <code>true</code> _promotable_ | Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (including customizing on over an off session default) |  |
+| <span id="slot-transcripttypes">**transcriptTypes**</span><br>`stringArray` = <details><summary><code>[ 'mRNA', 'transcript', 'primary_transcript', 'V_gene_segment',…</code></summary><pre><code>[&#10;&#160;&#160;&#160;&#160;'mRNA',&#10;&#160;&#160;&#160;&#160;'transcript',&#10;&#160;&#160;&#160;&#160;'primary_transcript',&#10;&#160;&#160;&#160;&#160;'V_gene_segment',&#10;&#160;&#160;&#160;&#160;'C_gene_segment',&#10;&#160;&#160;&#160;&#160;'D_gene_segment',&#10;&#160;&#160;&#160;&#160;'J_gene_segment',&#10;&#160;&#160;]</code></pre></details> |  |  |
+| <span id="slot-containertypes">**containerTypes**</span><br>`stringArray` = <code>['proteoform_orf']</code> |  |  |
+| <span id="slot-subparts">**subParts**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'CDS,UTR,five_prime_UTR,three_prime_UTR'</code> | subparts for a glyph |  |
+| <span id="slot-impliedutrs">**impliedUTRs**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures |  |
+| <span id="slot-labelsname">**labels.name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'name') &#124;&#124; get(feature,'id')'</code> | the primary name of the feature to show<br>_callback args:_ `feature` |  |
+| <span id="slot-labelsdescription">**labels.description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'jexl:get(feature,'note') &#124;&#124; get(feature,'description') &#124;&#124; get(…</code></summary><pre><code>'jexl:get(feature,'note') &#124;&#124; get(feature,'description') &#124;&#124; get(feature,'function')'</code></pre></details> | the text description to show<br>_callback args:_ `feature` |  |
+| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></summary><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></details> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[`get(feature,'gbkey')!='Src'`]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config | [BaseLinearDisplay](../baselineardisplay) |

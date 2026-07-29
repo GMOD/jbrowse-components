@@ -39,41 +39,17 @@ used to load UCSC chain alignment files (query and target assembly required)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "ChainAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                   | Type           | Description                                      |
-| -------------------------------------- | -------------- | ------------------------------------------------ |
-| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file.    |
-| [targetAssembly](#slot-targetassembly) | `string`       | can be specified as alternative to assemblyNames |
-| [queryAssembly](#slot-queryassembly)   | `string`       | can be specified as alternative to assemblyNames |
-| [chainLocation](#slot-chainlocation)   | `fileLocation` |                                                  |
-
-<details>
-<summary>ChainAdapter - Slots</summary>
-
-#### slot: assemblyNames
-
-Array of assembly names to use for this file. The query assembly name is the
-first value in the array, target assembly name is the second
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: targetAssembly
-
-can be specified as alternative to assemblyNames
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: queryAssembly
-
-can be specified as alternative to assemblyNames
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: chainLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/file.chain', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | can be specified as alternative to assemblyNames |
+| <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | can be specified as alternative to assemblyNames |
+| <span id="slot-chainlocation">**chainLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.chain', locationType: 'UriLocation' }</code> |  |

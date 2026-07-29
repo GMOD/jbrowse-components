@@ -53,67 +53,18 @@ used to load bgzip-compressed, tabix-indexed VCF files
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "VcfTabixAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type                    | Description |
-| ---------------------------------------------- | ----------------------- | ----------- |
-| [vcfGzLocation](#slot-vcfgzlocation)           | `fileLocation`          |             |
-| [index.indexType](#slot-indexindextype)        | `stringEnum` (TBI, CSI) |             |
-| [index.location](#slot-indexlocation)          | `fileLocation`          |             |
-| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation`          |             |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                   | Type     | Description                                                                                                                                                                           |
-| -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | Matches the feature-track default (5 Mb): the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a tighter gate trips on routine variant views. |
-
-</details>
-
-<details>
-<summary>VcfTabixAdapter - Slots</summary>
-
-#### slot: vcfGzLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.vcf.gz.tbi', locationType: 'UriLocation' }`
-
-#### slot: samplesTsvLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/samples.tsv',
-    description:
-      'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
-    locationType: 'UriLocation',
-  },
-}
-```
-
-#### slot: fetchSizeLimit
-
-Matches the feature-track default (5 Mb): the tabix byte estimate is
-block-granular (a small region still pulls whole BGZF blocks), so a tighter gate
-trips on routine variant views. VCF text downloads fast; the feature-density
-gate remains the backstop for genuinely over-dense views.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`5_000_000` · _advanced_
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-vcfgzlocation">**vcfGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.vcf.gz.tbi', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/samples.tsv', description: 'tsv with header li…</code></summary><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: '/path/to/samples.tsv',&#10;&#160;&#160;&#160;&#160;description:&#10;&#160;&#160;&#160;&#160;&#160;&#160;'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></details> |  |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5_000_000</code> | Matches the feature-track default (5 Mb): the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a tighter gate trips on routine variant views. VCF text downloads fast; the feature-density gate remains the backstop for genuinely over-dense views.<br>_advanced_ |

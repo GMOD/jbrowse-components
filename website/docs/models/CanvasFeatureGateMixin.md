@@ -9,8 +9,6 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `canvas` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
 
-## Overview
-
 Shared byte + density region-too-large gate for canvas feature displays.
 
 Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
@@ -33,153 +31,36 @@ A display opts into the whole banner story by composing this mixin (the
 decision) and rendering `DisplayChrome` (the UI) — the same "single shared
 layer, small opt-in contract" shape DisplayChrome uses for loading/error/retry.
 
-## Members
+## Volatiles
 
-| Member                                                           | Kind      | Defined by             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ---------------------------------------------------------------- | --------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [densityStatsPerRegion](#volatile-densitystatsperregion)         | Volatiles | CanvasFeatureGateMixin | per-region feature counts (keyed by displayedRegionIndex), so the density verdict is a live max over the visible regions at the current bpPerPx — never a stale fetch-time snapshot.                                                                                                                                                                                                                                                                                                                                             |
-| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)               | Getters   | CanvasFeatureGateMixin | Contributes the opt-in additively rather than overriding `derivedRegionTooLargeEnabled`: `MultiRegionDisplayMixin` ORs this in, so the gate stays on whichever side of `.compose()` this mixin lands.                                                                                                                                                                                                                                                                                                                            |
-| [densityGateEnabled](#getter-densitygateenabled)                 | Getters   | CanvasFeatureGateMixin | Whether the density (features-per-pixel) axis applies.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [visibleFeatureDensityPerPx](#getter-visiblefeaturedensityperpx) | Getters   | CanvasFeatureGateMixin | Current density across the visible regions at the debounced coarseBpPerPx, so the verdict shares the layout cadence and doesn't flicker mid-zoom.                                                                                                                                                                                                                                                                                                                                                                                |
-| [maxFeatureDensity](#getter-maxfeaturedensity)                   | Getters   | CanvasFeatureGateMixin | The density budget passed to the worker and used by the derived verdict: undefined (gate off) when nothing gates, otherwise the config.                                                                                                                                                                                                                                                                                                                                                                                          |
-| [densityTooLarge](#getter-densitytoolarge)                       | Getters   | CanvasFeatureGateMixin | The density axis of `RegionTooLargeMixin`'s verdict (false in the base mixin, so byte-only displays never gate on it).                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [observedMaxDensity](#method-observedmaxdensity)                 | Methods   | CanvasFeatureGateMixin | Highest features-per-pixel across the visible regions at `bpPerPx`, from the cached per-region counts.                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [setDensityStats](#action-setdensitystats)                       | Actions   | CanvasFeatureGateMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearGateMeasurements](#action-cleargatemeasurements)           | Actions   | CanvasFeatureGateMixin | Drop the cached per-region density stats on chromosome navigation (displayedRegion indices get reused, so a stale entry would gate the new region against the wrong stats).                                                                                                                                                                                                                                                                                                                                                      |
-| [commitGateMeasurements](#action-commitgatemeasurements)         | Actions   | CanvasFeatureGateMixin | Commit a batch of per-region fetch outcomes: record the per-region byte **max** (not sum — each region is gated against the same per-region budget, so a multi-region view where every region individually fits is never blanked by the cross-region total) and the per-region density, then publish the byte estimate to `RegionTooLargeMixin` — bytes and nothing else, since the budget it is compared against is a main-thread config read (`gateByteLimit`), the same one that produced the worker's `resolvedByteLimit()`. |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-densitystatsperregion">**densityStatsPerRegion**</span><br><details><summary><code>densityStatsPerRegion: observable.map&lt;number, RegionDensityStat…</code></summary><pre><code>densityStatsPerRegion: observable.map&lt;number, RegionDensityStats&gt;()</code></pre></details> | per-region feature counts (keyed by displayedRegionIndex), so the density verdict is a live max over the visible regions at the current bpPerPx — never a stale fetch-time snapshot. Survives viewport-change clears; dropped on chromosome nav by `clearGateMeasurements`. |
 
-<details>
-<summary>CanvasFeatureGateMixin - Volatiles</summary>
+## Getters
 
-#### volatile: densityStatsPerRegion
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-gatefoldedintofetch">**gateFoldedIntoFetch**</span><br><code>boolean</code> | Contributes the opt-in additively rather than overriding `derivedRegionTooLargeEnabled`: `MultiRegionDisplayMixin` ORs this in, so the gate stays on whichever side of `.compose()` this mixin lands. |
+| <span id="getter-densitygateenabled">**densityGateEnabled**</span><br><code>boolean</code> | Whether the density (features-per-pixel) axis applies. Byte-only displays override this to `false`: e.g. `LinearMultiRowFeatureDisplay` paints features into fixed lanes, so a high total feature count is not a per-glyph render cost — only the download (byte) budget should gate it. |
+| <span id="getter-visiblefeaturedensityperpx">**visibleFeatureDensityPerPx**</span><br><code>number</code> | Current density across the visible regions at the debounced coarseBpPerPx, so the verdict shares the layout cadence and doesn't flicker mid-zoom. |
+| <span id="getter-maxfeaturedensity">**maxFeatureDensity**</span><br><code>number &#124; undefined</code> | The density budget passed to the worker and used by the derived verdict: undefined (gate off) when nothing gates, otherwise the config. Force-load reaches this through the shared `gateActive`, so approving a track's *size* no longer half-disables its *density* axis by side effect — both axes read the one boolean now. |
+| <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> | The density axis of `RegionTooLargeMixin`'s verdict (false in the base mixin, so byte-only displays never gate on it). |
 
-per-region feature counts (keyed by displayedRegionIndex), so the density
-verdict is a live max over the visible regions at the current bpPerPx — never a
-stale fetch-time snapshot. Survives viewport-change clears; dropped on
-chromosome nav by `clearGateMeasurements`.
+## Methods
 
-```ts
-// type signature
-type densityStatsPerRegion = ObservableMap<number, RegionDensityStats>
-// code
-densityStatsPerRegion: observable.map<number, RegionDensityStats>()
-```
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-observedmaxdensity">**observedMaxDensity**</span><br><code>(bpPerPx: number) =&gt; number</code> | Highest features-per-pixel across the visible regions at `bpPerPx`, from the cached per-region counts. |
 
-</details>
+## Actions
 
-<details>
-<summary>CanvasFeatureGateMixin - Getters</summary>
-
-#### getter: gateFoldedIntoFetch
-
-Contributes the opt-in additively rather than overriding
-`derivedRegionTooLargeEnabled`: `MultiRegionDisplayMixin` ORs this in, so the
-gate stays on whichever side of `.compose()` this mixin lands.
-
-```ts
-type gateFoldedIntoFetch = boolean
-```
-
-#### getter: densityGateEnabled
-
-Whether the density (features-per-pixel) axis applies. Byte-only displays
-override this to `false`: e.g. `LinearMultiRowFeatureDisplay` paints features
-into fixed lanes, so a high total feature count is not a per-glyph render cost —
-only the download (byte) budget should gate it.
-
-```ts
-type densityGateEnabled = boolean
-```
-
-#### getter: visibleFeatureDensityPerPx
-
-Current density across the visible regions at the debounced coarseBpPerPx, so
-the verdict shares the layout cadence and doesn't flicker mid-zoom.
-
-```ts
-type visibleFeatureDensityPerPx = number
-```
-
-#### getter: maxFeatureDensity
-
-The density budget passed to the worker and used by the derived verdict:
-undefined (gate off) when nothing gates, otherwise the config. Force-load
-reaches this through the shared `gateActive`, so approving a track's _size_ no
-longer half-disables its _density_ axis by side effect — both axes read the one
-boolean now.
-
-```ts
-type maxFeatureDensity = number | undefined
-```
-
-#### getter: densityTooLarge
-
-The density axis of `RegionTooLargeMixin`'s verdict (false in the base mixin, so
-byte-only displays never gate on it).
-
-```ts
-type densityTooLarge = boolean
-```
-
-</details>
-
-<details>
-<summary>CanvasFeatureGateMixin - Methods</summary>
-
-#### method: observedMaxDensity
-
-Highest features-per-pixel across the visible regions at `bpPerPx`, from the
-cached per-region counts.
-
-```ts
-type observedMaxDensity = (bpPerPx: number) => number
-```
-
-</details>
-
-<details>
-<summary>CanvasFeatureGateMixin - Actions</summary>
-
-#### action: clearGateMeasurements
-
-Drop the cached per-region density stats on chromosome navigation
-(displayedRegion indices get reused, so a stale entry would gate the new region
-against the wrong stats). Driven by the mixin's own `afterAttach` below — no
-composing display has to wire it up. The byte estimate is dropped by
-`MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun on the same
-trigger.
-
-Measurements only. Force-load is a track-wide boolean that deliberately outlives
-navigation, so there is no per-region ceiling to expire here.
-
-```ts
-type clearGateMeasurements = () => void
-```
-
-#### action: commitGateMeasurements
-
-Commit a batch of per-region fetch outcomes: record the per-region byte **max**
-(not sum — each region is gated against the same per-region budget, so a
-multi-region view where every region individually fits is never blanked by the
-cross-region total) and the per-region density, then publish the byte estimate
-to `RegionTooLargeMixin` — bytes and nothing else, since the budget it is
-compared against is a main-thread config read (`gateByteLimit`), the same one
-that produced the worker's `resolvedByteLimit()`.
-
-```ts
-type commitGateMeasurements = (
-  measurements: RegionGateMeasurement[],
-  measuredSpanBp: number,
-) => void
-```
-
-</details>
-
-<details>
-<summary>CanvasFeatureGateMixin - Actions (other undocumented members)</summary>
-
-| Member                                                   | Type                                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------- |
-| <span id="action-setdensitystats">setDensityStats</span> | `(displayedRegionIndex: number, stats: RegionDensityStats) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setdensitystats">**setDensityStats**</span><br><details><summary><code>(displayedRegionIndex: number, stats: RegionDensityStats) =&gt; vo…</code></summary><pre><code>(displayedRegionIndex: number, stats: RegionDensityStats) =&gt; void</code></pre></details> |  |
+| <span id="action-cleargatemeasurements">**clearGateMeasurements**</span><br><code>() =&gt; void</code> | Drop the cached per-region density stats on chromosome navigation (displayedRegion indices get reused, so a stale entry would gate the new region against the wrong stats). Driven by the mixin's own `afterAttach` below — no composing display has to wire it up. The byte estimate is dropped by `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun on the same trigger.<br><br>Measurements only. Force-load is a track-wide boolean that deliberately outlives navigation, so there is no per-region ceiling to expire here. |
+| <span id="action-commitgatemeasurements">**commitGateMeasurements**</span><br><details><summary><code>(measurements: RegionGateMeasurement[], measuredSpanBp: number)…</code></summary><pre><code>(measurements: RegionGateMeasurement[], measuredSpanBp: number) =&gt; void</code></pre></details> | Commit a batch of per-region fetch outcomes: record the per-region byte **max** (not sum — each region is gated against the same per-region budget, so a multi-region view where every region individually fits is never blanked by the cross-region total) and the per-region density, then publish the byte estimate to `RegionTooLargeMixin` — bytes and nothing else, since the budget it is compared against is a main-thread config read (`gateByteLimit`), the same one that produced the worker's `resolvedByteLimit()`. |

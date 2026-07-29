@@ -40,23 +40,15 @@ used for specifying refNames+sizes of an assembly
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "FromConfigRegionsAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                         | Type     | Description |
-| ---------------------------- | -------- | ----------- |
-| [adapterId](#slot-adapterid) | `string` |             |
-| [features](#slot-features)   | `frozen` |             |
-
-<details>
-<summary>FromConfigRegionsAdapter - Slots</summary>
-
-#### slot: adapterId
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: features
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> |  |
+| <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> |  |

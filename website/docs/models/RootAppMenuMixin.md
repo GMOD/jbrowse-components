@@ -9,96 +9,22 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/RootMenu/index.ts).
 
-## Overview
+## Volatiles
 
-## Members
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-mutablemenuactions">**mutableMenuActions**</span><br><code>mutableMenuActions: [] as MenuAction[]</code> |  |
 
-| Member                                             | Kind      | Defined by       | Description                              |
-| -------------------------------------------------- | --------- | ---------------- | ---------------------------------------- |
-| [mutableMenuActions](#volatile-mutablemenuactions) | Volatiles | RootAppMenuMixin |                                          |
-| [setMenus](#action-setmenus)                       | Actions   | RootAppMenuMixin |                                          |
-| [appendMenu](#action-appendmenu)                   | Actions   | RootAppMenuMixin | Add a top-level menu                     |
-| [insertMenu](#action-insertmenu)                   | Actions   | RootAppMenuMixin | Insert a top-level menu                  |
-| [appendToMenu](#action-appendtomenu)               | Actions   | RootAppMenuMixin | Add a menu item to a top-level menu      |
-| [insertInMenu](#action-insertinmenu)               | Actions   | RootAppMenuMixin | Insert a menu item into a top-level menu |
-| [appendToSubMenu](#action-appendtosubmenu)         | Actions   | RootAppMenuMixin | Add a menu item to a sub-menu            |
-| [insertInSubMenu](#action-insertinsubmenu)         | Actions   | RootAppMenuMixin | Insert a menu item into a sub-menu       |
+## Actions
 
-<details>
-<summary>RootAppMenuMixin - Volatiles</summary>
-
-| Member                                                           | Type           |
-| ---------------------------------------------------------------- | -------------- |
-| <span id="volatile-mutablemenuactions">mutableMenuActions</span> | `MenuAction[]` |
-
-</details>
-
-<details>
-<summary>RootAppMenuMixin - Actions</summary>
-
-#### action: appendMenu
-
-Add a top-level menu
-
-```ts
-type appendMenu = (menuName: string) => void
-```
-
-#### action: insertMenu
-
-Insert a top-level menu
-
-```ts
-type insertMenu = (menuName: string, position: number) => void
-```
-
-#### action: appendToMenu
-
-Add a menu item to a top-level menu
-
-```ts
-type appendToMenu = (menuName: string, menuItem: MenuItem) => void
-```
-
-#### action: insertInMenu
-
-Insert a menu item into a top-level menu
-
-```ts
-type insertInMenu = (
-  menuName: string,
-  menuItem: MenuItem,
-  position: number,
-) => void
-```
-
-#### action: appendToSubMenu
-
-Add a menu item to a sub-menu
-
-```ts
-type appendToSubMenu = (menuPath: string[], menuItem: MenuItem) => void
-```
-
-#### action: insertInSubMenu
-
-Insert a menu item into a sub-menu
-
-```ts
-type insertInSubMenu = (
-  menuPath: string[],
-  menuItem: MenuItem,
-  position: number,
-) => void
-```
-
-</details>
-
-<details>
-<summary>RootAppMenuMixin - Actions (other undocumented members)</summary>
-
-| Member                                     | Type                         |
-| ------------------------------------------ | ---------------------------- |
-| <span id="action-setmenus">setMenus</span> | `(newMenus: Menu[]) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setmenus">**setMenus**</span><br><code>(newMenus: Menu[]) =&gt; void</code> |  |
+| <span id="action-appendmenu">**appendMenu**</span><br><code>(menuName: string) =&gt; void</code> | Add a top-level menu |
+| <span id="action-insertmenu">**insertMenu**</span><br><code>(menuName: string, position: number) =&gt; void</code> | Insert a top-level menu |
+| <span id="action-appendtomenu">**appendToMenu**</span><br><code>(menuName: string, menuItem: MenuItem) =&gt; void</code> | Add a menu item to a top-level menu |
+| <span id="action-insertinmenu">**insertInMenu**</span><br><code>(menuName: string, menuItem: MenuItem, position: number) =&gt; void</code> | Insert a menu item into a top-level menu |
+| <span id="action-appendtosubmenu">**appendToSubMenu**</span><br><code>(menuPath: string[], menuItem: MenuItem) =&gt; void</code> | Add a menu item to a sub-menu |
+| <span id="action-insertinsubmenu">**insertInSubMenu**</span><br><details><summary><code>(menuPath: string[], menuItem: MenuItem, position: number) =&gt; v…</code></summary><pre><code>(menuPath: string[], menuItem: MenuItem, position: number) =&gt; void</code></pre></details> | Insert a menu item into a sub-menu |

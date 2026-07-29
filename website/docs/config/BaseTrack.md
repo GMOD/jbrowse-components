@@ -19,160 +19,47 @@ fields in addition to its own.
 Every BaseTrack has a unique `trackId`, a required top-level field that
 identifies it (not one of the config slots below).
 
+## Related links
+
+- **Extended by:** [FeatureTrack](../featuretrack)
+- **Extended by:** [AlignmentsTrack](../alignmentstrack)
+- **Extended by:** [GCContentTrack](../gccontenttrack)
+- **Extended by:** [MultiQuantitativeTrack](../multiquantitativetrack)
+- **Extended by:** [QuantitativeTrack](../quantitativetrack)
+- **Extended by:** [GWASTrack](../gwastrack)
+- **Extended by:** [HicTrack](../hictrack)
+- **Extended by:** [MafTrack](../maftrack)
+- **Extended by:** [LDTrack](../ldtrack)
+- **Extended by:** [VariantTrack](../varianttrack)
+- **Extended by:** [SyntenyTrack](../syntenytrack)
+
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+`BaseTrack` is a shared base schema, not a type you name in a config. Set these
+slots on one of the configs under **Extended by** above, each of which lists
+them as inherited and shows the shape in its own example. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                                                            | Type          | Description                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#slot-name)                                                                              | `string`      | descriptive name of the track, falls back to the trackId when unset                                                                                   |
-| [assemblyNames](#slot-assemblynames)                                                            | `stringArray` | name of the assembly (or assemblies) track belongs to                                                                                                 |
-| [description](#slot-description)                                                                | `string`      | a description of the track                                                                                                                            |
-| [category](#slot-category)                                                                      | `stringArray` | the category and sub-categories of a track                                                                                                            |
-| [metadata](#slot-metadata)                                                                      | `frozen`      | anything to add about this track                                                                                                                      |
-| [adapter](#slot-adapter)                                                                        |               |                                                                                                                                                       |
-| [textSearching.indexingAttributes](#slot-textsearchingindexingattributes)                       | `stringArray` | list of which feature attributes to index for text searching                                                                                          |
-| [textSearching.indexingFeatureTypesToExclude](#slot-textsearchingindexingfeaturetypestoexclude) | `stringArray` | list of feature types to exclude in text search index                                                                                                 |
-| [textSearching.textSearchAdapter](#slot-textsearchingtextsearchadapter)                         |               |                                                                                                                                                       |
-| [displays](#slot-displays)                                                                      |               | An **array** of full display configs, e.g. `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`.                                              |
-| [formatDetails.feature](#slot-formatdetailsfeature)                                             | `frozen`      | adds extra fields to the feature details                                                                                                              |
-| [formatDetails.subfeatures](#slot-formatdetailssubfeatures)                                     | `frozen`      | adds extra fields to the subfeatures of a feature                                                                                                     |
-| [formatDetails.depth](#slot-formatdetailsdepth)                                                 | `number`      | depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2 |
-| [formatDetails.maxDepth](#slot-formatdetailsmaxdepth)                                           | `number`      | Maximum depth to render subfeatures                                                                                                                   |
-| [formatAbout.config](#slot-formataboutconfig)                                                   | `frozen`      | formats configuration object in about dialog                                                                                                          |
-| [formatAbout.hideUris](#slot-formatabouthideuris)                                               | `boolean`     |                                                                                                                                                       |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                 | Type     | Description                       |
-| ------------------------------------ | -------- | --------------------------------- |
-| [rpcDriverName](#slot-rpcdrivername) | `string` | RPC driver to use for this track. |
-
-</details>
-
-<details>
-<summary>BaseTrack - Slots</summary>
-
-#### slot: name
-
-descriptive name of the track, falls back to the trackId when unset
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: assemblyNames
-
-name of the assembly (or assemblies) track belongs to
-
-**Type:** `stringArray` · **Default:** `['assemblyName']`
-
-#### slot: description
-
-a description of the track
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: category
-
-the category and sub-categories of a track
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: metadata
-
-anything to add about this track
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-#### slot: rpcDriverName
-
-RPC driver to use for this track. Leave empty to use the display-level or global
-default.
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-· _advanced_
-
-#### slot: adapter
-
-```js
-pluginManager.pluggableConfigSchemaType('adapter')
-```
-
-#### slot: textSearching.indexingAttributes
-
-list of which feature attributes to index for text searching
-
-**Type:** `stringArray` · **Default:** `['Name', 'ID', 'symbol']`
-
-#### slot: textSearching.indexingFeatureTypesToExclude
-
-list of feature types to exclude in text search index
-
-**Type:** `stringArray` · **Default:** `['CDS', 'exon']`
-
-#### slot: textSearching.textSearchAdapter
-
-```js
-pluginManager.pluggableConfigSchemaType('text search adapter')
-```
-
-#### slot: displays
-
-An **array** of full display configs, e.g.
-`displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`. Each entry names a
-display `type`; use this when you need exact control — your own `displayId`,
-different settings for two displays, or choosing which display is the default.
-
-For the common case, prefer the `displayDefaults` shorthand instead — an object
-of appearance settings (e.g. `displayDefaults: { color: 'green' }`) that JBrowse
-routes to whichever display uses each setting, so you don't have to name the
-display or write the array.
-
-See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
-
-```js
-types.array(pluginManager.pluggableConfigSchemaType('display'))
-```
-
-#### slot: formatDetails.feature
-
-adds extra fields to the feature details
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `feature`
-
-#### slot: formatDetails.subfeatures
-
-adds extra fields to the subfeatures of a feature
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `feature`
-
-#### slot: formatDetails.depth
-
-depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g.
-you may not want to format the exon/cds subfeatures, so limited to 2
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
-
-#### slot: formatDetails.maxDepth
-
-Maximum depth to render subfeatures
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`99999`
-
-#### slot: formatAbout.config
-
-formats configuration object in about dialog
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `config`
-
-#### slot: formatAbout.hideUris
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the track, falls back to the trackId when unset |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>['assemblyName']</code> | name of the assembly (or assemblies) track belongs to |
+| <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
+| <span id="slot-category">**category**</span><br>`stringArray` = <code>[]</code> | the category and sub-categories of a track |
+| <span id="slot-metadata">**metadata**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | anything to add about this track |
+| <span id="slot-rpcdrivername">**rpcDriverName**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | RPC driver to use for this track. Leave empty to use the display-level or global default.<br>_advanced_ |
+| <span id="slot-adapter">**adapter**</span><br><code>pluginManager.pluggableConfigSchemaType('adapter')</code> |  |
+| <span id="slot-textsearchingindexingattributes">**textSearching.indexingAttributes**</span><br>`stringArray` = <code>['Name', 'ID', 'symbol']</code> | list of which feature attributes to index for text searching |
+| <span id="slot-textsearchingindexingfeaturetypestoexclude">**textSearching.indexingFeatureTypesToExclude**</span><br>`stringArray` = <code>['CDS', 'exon']</code> | list of feature types to exclude in text search index |
+| <span id="slot-textsearchingtextsearchadapter">**textSearching.textSearchAdapter**</span><br><details><summary><code>pluginManager.pluggableConfigSchemaType( 'text search adapter',…</code></summary><pre><code>pluginManager.pluggableConfigSchemaType(&#10;&#160;&#160;'text search adapter',&#10;)</code></pre></details> |  |
+| <span id="slot-displays">**displays**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('display'))</code> | An **array** of full display configs, e.g. `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`. Each entry names a display `type`; use this when you need exact control — your own `displayId`, different settings for two displays, or choosing which display is the default.<br><br>For the common case, prefer the `displayDefaults` shorthand instead — an object of appearance settings (e.g. `displayDefaults: { color: 'green' }`) that JBrowse routes to whichever display uses each setting, so you don't have to name the display or write the array.<br><br>See the [track config guide](/docs/config_guides/tracks/#configuring-displays). |
+| <span id="slot-formatdetailsfeature">**formatDetails.feature**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | adds extra fields to the feature details<br>_callback args:_ `feature` |
+| <span id="slot-formatdetailssubfeatures">**formatDetails.subfeatures**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | adds extra fields to the subfeatures of a feature<br>_callback args:_ `feature` |
+| <span id="slot-formatdetailsdepth">**formatDetails.depth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>2</code> | depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2 |
+| <span id="slot-formatdetailsmaxdepth">**formatDetails.maxDepth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>99999</code> | Maximum depth to render subfeatures |
+| <span id="slot-formataboutconfig">**formatAbout.config**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | formats configuration object in about dialog<br>_callback args:_ `config` |
+| <span id="slot-formatabouthideuris">**formatAbout.hideUris**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |

@@ -33,2098 +33,291 @@ A complete `VariantTrack` config to paste into `tracks`:
 }
 ```
 
-## Overview
-
 GPU-accelerated variant display with custom feature widget on click.
-
-## Members
-
-| Member                                                               | Kind       | Defined by                                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------------------------------------------- | ---------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                               | Properties | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorLegendDismissed](#volatile-colorlegenddismissed)               | Volatiles  | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [featureWidgetType](#getter-featurewidgettype)                       | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorsByConsequenceImpact](#getter-colorsbyconsequenceimpact)       | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorsBySvType](#getter-colorsbysvtype)                             | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorLegendItems](#getter-colorlegenditems)                         | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showColorLegend](#getter-showcolorlegend)                           | Getters    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorLegend](#getter-colorlegend)                                   | Getters    | LinearVariantDisplay                                  | This display's answer to the base's `colorLegend` chrome hook: the shared canvas body draws the key, so this display needs no component of its own (its `ReactComponent` is the one LinearBasicDisplay registers).                                                                                                                                                                                                                                                                                                               |
-| [colorBySubMenuItems](#method-colorbysubmenuitems)                   | Methods    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setColorLegendDismissed](#action-setcolorlegenddismissed)           | Actions    | LinearVariantDisplay                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [refName](#property-refname)                                         | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [start](#property-start)                                             | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [end](#property-end)                                                 | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [name](#property-name)                                               | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [featureId](#property-featureid)                                     | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [configuration](#property-configuration)                             | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [jexlFiltersSetting](#property-jexlfilterssetting)                   | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Runtime "Filter by..." override.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [pinnedFeatureIds](#property-pinnedfeatureids)                       | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Feature ids the user pinned to the top of the layout via the feature right-click menu.                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [soloFeatureIds](#property-solofeatureids)                           | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | "Show only these features": the collected set the user builds by ctrl+clicking features (or via the right-click menu).                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [soloApplied](#property-soloapplied)                                 | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Whether the collected soloFeatureIds set is actually isolating the view (worker drops non-members).                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [hiddenFeatureIds](#property-hiddenfeatureids)                       | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | "Hide this feature" exclusion set (inverse of solo): the worker drops these from layout/drawing.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [featureHighlights](#property-featurehighlights)                     | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Declarative feature highlights, typically seeded by a text search (highlight the gene you searched for).                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [rpcDataMap](#volatile-rpcdatamap)                                   | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [featureIdUnderMouse](#volatile-featureidundermouse)                 | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [subfeatureIdUnderMouse](#volatile-subfeatureidundermouse)           | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [mouseoverExtraInformation](#volatile-mouseoverextrainformation)     | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [sequenceHoverPosition](#volatile-sequencehoverposition)             | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | genomic base currently hovered in a feature sequence dialog opened from this display, read by the LGV crosshair overlay                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [contextMenuInfo](#volatile-contextmenuinfo)                         | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [incrementalLayout](#volatile-incrementallayout)                     | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [incrementalLayoutLabelsOnly](#volatile-incrementallayoutlabelsonly) | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [incrementalLayoutBodiesOnly](#volatile-incrementallayoutbodiesonly) | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [morphFromTops](#volatile-morphfromtops)                             | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [morphProgress](#volatile-morphprogress)                             | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [morphStartMs](#volatile-morphstartms)                               | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [morphFromMaxY](#volatile-morphfrommaxy)                             | Volatiles  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [conf](#getter-conf)                                                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`).                                                                                                                                                                                                                                                                                                                                    |
-| [geneGlyphNotice](#getter-geneglyphnotice)                           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Overridable hook (default absent): the isoform-collapse control the shared canvas body draws in its bottom-right chip stack, or nothing when the display has no gene glyphs.                                                                                                                                                                                                                                                                                                                                                     |
-| [renderState](#getter-renderstate)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [labelScrollBucket](#getter-labelscrollbucket)                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [maxHeight](#getter-maxheight)                                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [displayMode](#getter-displaymode)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [labelFontSize](#getter-labelfontsize)                               | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showLabelsMode](#getter-showlabelsmode)                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showLabels](#getter-showlabels)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showDescriptions](#getter-showdescriptions)                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showOutline](#getter-showoutline)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [featureColor](#getter-featurecolor)                                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [utrColor](#getter-utrcolor)                                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorByMode](#getter-colorbymode)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorByAttribute](#getter-colorbyattribute)                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [effectiveShowDescriptions](#getter-effectiveshowdescriptions)       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [selectedFeatureId](#getter-selectedfeatureid)                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [colorByCDS](#getter-colorbycds)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [sequenceAdapter](#getter-sequenceadapter)                           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [regionKeys](#getter-regionkeys)                                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reversedRegions](#getter-reversedregions)                           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [pinnedFeatureIdSet](#getter-pinnedfeatureidset)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [resolvedHighlights](#getter-resolvedhighlights)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [highlightedFeatureIdSet](#getter-highlightedfeatureidset)           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [layoutPinnedFeatureIdSet](#getter-layoutpinnedfeatureidset)         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [soloFeatureIdSet](#getter-solofeatureidset)                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [layoutInputs](#getter-layoutinputs)                                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Layout inputs shared by the base layout and every fit-escalation layout, minus the per-config label/description reservation flags.                                                                                                                                                                                                                                                                                                                                                                                               |
-| [layoutReady](#getter-layoutready)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Whether features can be laid out: data is fetched, in-bounds, and the view is measured.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [decimatedBaseInputs](#getter-decimatedbaseinputs)                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The `decimated` rung's layout inputs minus the whitespace factor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [baseLaidOutDataMap](#getter-baselaidoutdatamap)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Full reservation (names + descriptions): rendered at fit stage `full` and in non-fit modes, and the first stack `fitStage` probes.                                                                                                                                                                                                                                                                                                                                                                                               |
-| [fitLabelsOnlyLayout](#getter-fitlabelsonlylayout)                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Names reserved, descriptions dropped — the `labels` stage's stack.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [fitDecimatedSolved](#getter-fitdecimatedsolved)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The `decimated` stack with its whitespace factor SOLVED to the track height.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [fitBodiesOnlyLayout](#getter-fitbodiesonlylayout)                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Nothing reserved: bodies packed edge-to-edge (the tightest stack), labels hidden — the `bodies` stage's stack.                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [fitBodyPx](#getter-fitbodypx)                                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The unscaled feature-body height (px): configured `featureHeight` times the display-mode multiplier (what the layout already applied).                                                                                                                                                                                                                                                                                                                                                                                           |
-| [fitMinScale](#getter-fitminscale)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Floor on the fit squeeze: the smallest vertical scale that still leaves a feature body at least `MIN_FIT_BOX_PX` tall.                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [fitMaxScale](#getter-fitmaxscale)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Ceiling on the fit grow: the largest vertical scale before a feature body exceeds the configured (normal-mode) `featureHeight`.                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [fitStage](#getter-fitstage)                                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The resolved fit outcome — which reservation `level` survived, its unscaled `layout`, and the vertical `scale` to fill the track — bundled so the three can never disagree.                                                                                                                                                                                                                                                                                                                                                      |
-| [fitScale](#getter-fitscale)                                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Uniform vertical scale for fit mode; 1 unless the resolved stack is being grown to fill the track (> 1) or the bodies stack squeezed to fit (< 1).                                                                                                                                                                                                                                                                                                                                                                               |
-| [laidOutDataMap](#getter-laidoutdatamap)                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | What every consumer (hit test, GPU upload, React render) reads: the resolved fit layout, cloned and scaled only when grown or squeezed.                                                                                                                                                                                                                                                                                                                                                                                          |
-| [renderedShowDescriptions](#getter-renderedshowdescriptions)         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Descriptions are painted only at the `full` stage (and whenever fit is off).                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [renderedShowLabels](#getter-renderedshowlabels)                     | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Names are painted at every stage short of `bodies` (and whenever fit is off), where the packer reserved row height + overhang for the names it kept so they never overlap — including the `decimated` stage, whose per-feature pruning happens inside the layout (dropped names are removed from floatingLabelsData), not via this flag.                                                                                                                                                                                         |
-| [renderDataMap](#getter-renderdatamap)                               | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [settledMaxY](#getter-settledmaxy)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [maxY](#getter-maxy)                                                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [hasOverflow](#getter-hasoverflow)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [truncatedFeatureCount](#getter-truncatedfeaturecount)               | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [contentHeight](#getter-contentheight)                               | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [scrollableHeight](#getter-scrollableheight)                         | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [naturalContentHeight](#getter-naturalcontentheight)                 | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [grownHeight](#getter-grownheight)                                   | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [height](#getter-height)                                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [featureIdIndex](#getter-featureidindex)                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [subfeatureIdIndex](#getter-subfeatureidindex)                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [hoveredFeature](#getter-hoveredfeature)                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [hoveredSubfeature](#getter-hoveredsubfeature)                       | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [featureItemMap](#getter-featureitemmap)                             | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [flatbushIndexes](#getter-flatbushindexes)                           | Getters    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [activeFilters](#method-activefilters)                               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The filters actually applied, as `jexl:`-prefixed expressions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [rpcProps](#method-rpcprops)                                         | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [fitLayoutAt](#method-fitlayoutat)                                   | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | One fit-escalation candidate: the stack packed with the given label/description reservation, via that config's own memo instance so each keeps stable references across renders.                                                                                                                                                                                                                                                                                                                                                 |
-| [decimatedLayoutInputs](#method-decimatedlayoutinputs)               | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Layout inputs for the `decimated` rung at one whitespace factor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [solveLabelRoomFactor](#method-solvelabelroomfactor)                 | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The whitespace factor the `decimated` rung commits at: the smallest one whose packed stack fits `trackHeight` (smallest = most names kept), or undefined when even the most aggressive decimation overflows.                                                                                                                                                                                                                                                                                                                     |
-| [getFeatureById](#method-getfeaturebyid)                             | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [searchFeatureByID](#method-searchfeaturebyid)                       | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [renderSvg](#method-rendersvg)                                       | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [isCacheValid](#method-iscachevalid)                                 | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showSubmenuCheckboxItems](#method-showsubmenucheckboxitems)         | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showSubmenuRadioGroups](#method-showsubmenuradiogroups)             | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showSubmenuMenuItems](#method-showsubmenumenuitems)                 | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Flattened "Show..." submenu: all checkbox toggles first, then the radio groups (each under its own subHeader).                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [contextMenuItems](#method-contextmenuitems)                         | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | The feature right-click menu (open details, zoom to, get sequence, highlight scopes, pin/solo/hide, copy).                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [colorMenuItems](#method-colormenuitems)                             | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Color-related track menu entries: a single "Color by..." entry whose "Solid color..." choice opens the solid+UTR color picker.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [featureHeightMenuItems](#method-featureheightmenuitems)             | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | One "Feature height" menu with two independent radio groups: the size presets and, under a "Track sizing" subheader, how the track responds when there are more features than fit.                                                                                                                                                                                                                                                                                                                                               |
-| [trackMenuItems](#method-trackmenuitems)                             | Methods    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [beginYMorph](#action-beginymorph)                                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setMorphProgress](#action-setmorphprogress)                         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [endYMorph](#action-endymorph)                                       | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setRpcData](#action-setrpcdata)                                     | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearDisplaySpecificData](#action-cleardisplayspecificdata)         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [pruneRpcDataMapToVisible](#action-prunerpcdatamaptovisible)         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [startRenderingBackend](#action-startrenderingbackend)               | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setHover](#action-sethover)                                         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearHover](#action-clearhover)                                     | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [closeContextMenu](#action-closecontextmenu)                         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [togglePinnedFeature](#action-togglepinnedfeature)                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [toggleSoloFeature](#action-togglesolofeature)                       | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearSolo](#action-clearsolo)                                       | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [hideFeature](#action-hidefeature)                                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showAllHidden](#action-showallhidden)                               | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setFeatureHighlights](#action-setfeaturehighlights)                 | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [addFeatureHighlightForItem](#action-addfeaturehighlightforitem)     | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [removeFeatureHighlightsForId](#action-removefeaturehighlightsforid) | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearFeatureHighlights](#action-clearfeaturehighlights)             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [applySolo](#action-applysolo)                                       | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [soloFeature](#action-solofeature)                                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearAllFeatureFilters](#action-clearallfeaturefilters)             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [selectFeature](#action-selectfeature)                               | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Open the feature-details widget.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [clearSelection](#action-clearselection)                             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setShowLabels](#action-setshowlabels)                               | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setShowDescriptions](#action-setshowdescriptions)                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setJexlFilters](#action-setjexlfilters)                             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Sets the runtime filter override (already-`jexl:`-prefixed expressions).                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setShowOutline](#action-setshowoutline)                             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setFeatureColor](#action-setfeaturecolor)                           | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setUtrColor](#action-setutrcolor)                                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setSequenceHoverPosition](#action-setsequencehoverposition)         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [openContextMenu](#action-opencontextmenu)                           | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setDisplayMode](#action-setdisplaymode)                             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setHeightMode](#action-setheightmode)                               | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [openSetColorDialog](#action-opensetcolordialog)                     | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [openColorByAttributeDialog](#action-opencolorbyattributedialog)     | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [openFilterDialog](#action-openfilterdialog)                         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [fetchFullFeature](#action-fetchfullfeature)                         | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [selectFeatureById](#action-selectfeaturebyid)                       | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [reload](#action-reload)                                             | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [fetchNeeded](#action-fetchneeded)                                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [resizeHeight](#action-resizeheight)                                 | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | A manual drag-resize means the user wants a fixed height; leave grow mode first, otherwise the reactive `height` getter re-derives grownHeight on the next layout change and the drag appears to do nothing.                                                                                                                                                                                                                                                                                                                     |
-| [afterAttach](#action-afterattach)                                   | Actions    | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [id](#property-id)                                                   | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [rpcDriverName](#property-rpcdrivername)                             | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [ignorePromotedDefaults](#property-ignorepromoteddefaults)           | Properties | [BaseDisplay](../basedisplay)                         | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                                                                                                                                                                                                                                                                                                                                              |
-| [error](#volatile-error)                                             | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [statusMessage](#volatile-statusmessage)                             | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [statusProgress](#volatile-statusprogress)                           | Volatiles  | [BaseDisplay](../basedisplay)                         | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [parentTrack](#getter-parenttrack)                                   | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [parentDisplay](#getter-parentdisplay)                               | Getters    | [BaseDisplay](../basedisplay)                         | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [RenderingComponent](#getter-renderingcomponent)                     | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [DisplayBlurb](#getter-displayblurb)                                 | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [adapterConfig](#getter-adapterconfig)                               | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [isMinimized](#getter-isminimized)                                   | Getters    | [BaseDisplay](../basedisplay)                         | Returns true if the parent track is minimized.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [effectiveRpcDriverName](#getter-effectiverpcdrivername)             | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [DisplayMessageComponent](#getter-displaymessagecomponent)           | Getters    | [BaseDisplay](../basedisplay)                         | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [renderingProps](#method-renderingprops)                             | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)       | Actions    | [BaseDisplay](../basedisplay)                         | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [setStatusMessage](#action-setstatusmessage)                         | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setError](#action-seterror)                                         | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setRpcDriverName](#action-setrpcdrivername)                         | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [scrollTop](#volatile-scrolltop)                                     | Volatiles  | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setScrollTop](#action-setscrolltop)                                 | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setHeight](#action-setheight)                                       | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [heightMode](#getter-heightmode)                                     | Getters    | [HeightModeMixin](../heightmodemixin)                 | The resolved track-height strategy (`fixed`/`grow`/`fit`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [fitTargetHeight](#getter-fittargetheight)                           | Getters    | [HeightModeMixin](../heightmodemixin)                 | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into.                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [growMaxHeight](#getter-growmaxheight)                               | Getters    | [HeightModeMixin](../heightmodemixin)                 | Ceiling `grow` mode sizes the track to, in px (content past it scrolls).                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [autoHeight](#getter-autoheight)                                     | Getters    | [HeightModeMixin](../heightmodemixin)                 | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [fitHeightToDisplay](#getter-fitheighttodisplay)                     | Getters    | [HeightModeMixin](../heightmodemixin)                 | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [loadedRegions](#volatile-loadedregions)                             | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                                                                                                                                                                                                                           |
-| [canRender](#getter-canrender)                                       | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                                                                                                                                                                                                                                                                |
-| [isReady](#getter-isready)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [viewportWithinLoadedData](#getter-viewportwithinloadeddata)         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                                                                                                                                                                                                                                                                           |
-| [dataCurrent](#getter-datacurrent)                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now.                                                                                                                                                                                                                                                                                                                                                            |
-| [svgReady](#getter-svgready)                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)               | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data.                                                                                                                                                                                                                                                                                                                                                                               |
-| [renderBlocks](#getter-renderblocks)                                 | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [displayPhase](#getter-displayphase)                                 | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`.                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [rpcPropsCacheKey](#getter-rpcpropscachekey)                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string.                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setLoadedRegion](#action-setloadedregion)                           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [clearAllRpcData](#action-clearallrpcdata)                           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag.                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [invalidateLoadedRegions](#action-invalidateloadedregions)           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [onRegionTooLarge](#action-onregiontoolarge)                         | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (no-op base): called when `regionTooLarge` transitions to true.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [fetchRegions](#action-fetchregions)                                 | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [forceLoadTrack](#volatile-forceloadtrack)                           | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [byteEstimate](#volatile-byteestimate)                               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now.                                                                                                                                                                                                                                                                                                                                                         |
-| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [byteGateEnabled](#getter-bytegateenabled)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The one opt-in a pre-flight display writes: true means "measure this fetch and gate on it".                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)         | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [densityTooLarge](#getter-densitytoolarge)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                                                                                                                                                                                                                                                                                                  |
-| [configForceLoad](#getter-configforceload)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                                                                                                                                                                                                                                                                                                |
-| [gateVisibleBp](#getter-gatevisiblebp)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The span on screen, or undefined before the view is measured.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`).                                                                                                                                                                                                                                                                                                    |
-| [aboveForceLoadFloor](#getter-aboveforceloadfloor)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else.                                                                                                                                                                                                                                                                                                                                                                               |
-| [byteGateExempt](#getter-bytegateexempt)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button.                                                                                                                                                                                                                                                                                                                                                                                    |
-| [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers.                                                                                                                                                                                                                                                                                                                                                                             |
-| [gateByteLimit](#getter-gatebytelimit)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [gateActive](#getter-gateactive)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.                                                                                                                                                                                                                                                                                                                                                                                     |
-| [tooLargeStatus](#getter-toolargestatus)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text).                                                                                                                                                                                                                                                                                |
-| [regionTooLarge](#getter-regiontoolarge)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [regionTooLargeReason](#getter-regiontoolargereason)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [resolvedByteLimit](#method-resolvedbytelimit)                       | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features.                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [setByteEstimate](#action-setbyteestimate)                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                                                                                                                                                                                                                                                                                             |
-| [clearByteEstimate](#action-clearbyteestimate)                       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Drops the cached estimate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [setForceLoadTrack](#action-setforceloadtrack)                       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [forceLoad](#action-forceload)                                       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [byteGateBlocksFetch](#action-bytegateblocksfetch)                   | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.                                                                                                                                                                                                                                                                                                             |
-| [canvasDrawn](#volatile-canvasdrawn)                                 | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| [currentRenderingBackend](#volatile-currentrenderingbackend)         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [renderTick](#volatile-rendertick)                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [autorunsInstalled](#volatile-autorunsinstalled)                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [renderError](#volatile-rendererror)                                 | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [markCanvasDrawn](#action-markcanvasdrawn)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [stopRenderingBackend](#action-stoprenderingbackend)                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [renderNow](#action-rendernow)                                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [setRenderError](#action-setrendererror)                             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | set/clear the render-backend error.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [attachRenderingBackend](#action-attachrenderingbackend)             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [activeStopToken](#volatile-activestoptoken)                         | Volatiles  | [FetchMixin](../fetchmixin)                           | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [fetchGeneration](#volatile-fetchgeneration)                         | Volatiles  | [FetchMixin](../fetchmixin)                           | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [fetchCanceled](#volatile-fetchcanceled)                             | Volatiles  | [FetchMixin](../fetchmixin)                           | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [regionStatuses](#volatile-regionstatuses)                           | Volatiles  | [FetchMixin](../fetchmixin)                           | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                                                                                                                                                                                                                                                                                                                   |
-| [isLoading](#getter-isloading)                                       | Getters    | [FetchMixin](../fetchmixin)                           | true while a fetch is active                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [makeStatusCallback](#method-makestatuscallback)                     | Methods    | [FetchMixin](../fetchmixin)                           | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op.                                                                                                                                                                                                                                                                                     |
-| [makeRegionStatusCallback](#method-makeregionstatuscallback)         | Methods    | [FetchMixin](../fetchmixin)                           | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                                                                                                                                                                                                                                                                                                                 |
-| [throttleStatus](#action-throttlestatus)                             | Actions    | [FetchMixin](../fetchmixin)                           | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [resetStatus](#action-resetstatus)                                   | Actions    | [FetchMixin](../fetchmixin)                           | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [stopActiveFetch](#action-stopactivefetch)                           | Actions    | [FetchMixin](../fetchmixin)                           | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setRegionStatus](#action-setregionstatus)                           | Actions    | [FetchMixin](../fetchmixin)                           | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                                                                                                                                                                                                                                                                                                        |
-| [cancelFetch](#action-cancelfetch)                                   | Actions    | [FetchMixin](../fetchmixin)                           | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight).                                                                                                                                                                                                                                                                                                                                                                                     |
-| [cancelFetchByUser](#action-cancelfetchbyuser)                       | Actions    | [FetchMixin](../fetchmixin)                           | User-initiated cancel from the loading overlay.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [beforeDestroy](#action-beforedestroy)                               | Actions    | [FetchMixin](../fetchmixin)                           | Release an in-flight fetch's stop token on teardown.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [runFetch](#action-runfetch)                                         | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [densityStatsPerRegion](#volatile-densitystatsperregion)             | Volatiles  | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | per-region feature counts (keyed by displayedRegionIndex), so the density verdict is a live max over the visible regions at the current bpPerPx — never a stale fetch-time snapshot.                                                                                                                                                                                                                                                                                                                                             |
-| [densityGateEnabled](#getter-densitygateenabled)                     | Getters    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | Whether the density (features-per-pixel) axis applies.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [visibleFeatureDensityPerPx](#getter-visiblefeaturedensityperpx)     | Getters    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | Current density across the visible regions at the debounced coarseBpPerPx, so the verdict shares the layout cadence and doesn't flicker mid-zoom.                                                                                                                                                                                                                                                                                                                                                                                |
-| [maxFeatureDensity](#getter-maxfeaturedensity)                       | Getters    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | The density budget passed to the worker and used by the derived verdict: undefined (gate off) when nothing gates, otherwise the config.                                                                                                                                                                                                                                                                                                                                                                                          |
-| [observedMaxDensity](#method-observedmaxdensity)                     | Methods    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | Highest features-per-pixel across the visible regions at `bpPerPx`, from the cached per-region counts.                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [setDensityStats](#action-setdensitystats)                           | Actions    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [clearGateMeasurements](#action-cleargatemeasurements)               | Actions    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | Drop the cached per-region density stats on chromosome navigation (displayedRegion indices get reused, so a stale entry would gate the new region against the wrong stats).                                                                                                                                                                                                                                                                                                                                                      |
-| [commitGateMeasurements](#action-commitgatemeasurements)             | Actions    | [CanvasFeatureGateMixin](../canvasfeaturegatemixin)   | Commit a batch of per-region fetch outcomes: record the per-region byte **max** (not sum — each region is gated against the same per-region budget, so a multi-region view where every region individually fits is never blanked by the cross-region total) and the per-region density, then publish the byte estimate to `RegionTooLargeMixin` — bytes and nothing else, since the budget it is compared against is a main-thread config read (`gateByteLimit`), the same one that produced the worker's `resolvedByteLimit()`. |
-
-### LinearVariantDisplay - Configuration
 
 The configuration slots for this model are documented on its
 [config schema page](../../config/linearvariantdisplay).
 
-<details>
-<summary>LinearVariantDisplay - Properties</summary>
-
-| Member                               | Type                                  |
-| ------------------------------------ | ------------------------------------- |
-| <span id="property-type">type</span> | `ISimpleType<"LinearVariantDisplay">` |
-
-</details>
-
-<details>
-<summary>LinearVariantDisplay - Volatiles</summary>
-
-| Member                                                               | Type    |
-| -------------------------------------------------------------------- | ------- |
-| <span id="volatile-colorlegenddismissed">colorLegendDismissed</span> | `false` |
-
-</details>
-
-<details>
-<summary>LinearVariantDisplay - Getters</summary>
-
-#### getter: colorLegend
-
-This display's answer to the base's `colorLegend` chrome hook: the shared canvas
-body draws the key, so this display needs no component of its own (its
-`ReactComponent` is the one LinearBasicDisplay registers).
-
-```ts
-type colorLegend = { items: LegendItem[]; dismiss: () => void } | undefined
-```
-
-</details>
-
-<details>
-<summary>LinearVariantDisplay - Getters (other undocumented members)</summary>
-
-| Member                                                                       | Type                            |
-| ---------------------------------------------------------------------------- | ------------------------------- |
-| <span id="getter-featurewidgettype">featureWidgetType</span>                 | `{ type: string; id: string; }` |
-| <span id="getter-colorsbyconsequenceimpact">colorsByConsequenceImpact</span> | `boolean`                       |
-| <span id="getter-colorsbysvtype">colorsBySvType</span>                       | `boolean`                       |
-| <span id="getter-colorlegenditems">colorLegendItems</span>                   | `LegendItem[]`                  |
-| <span id="getter-showcolorlegend">showColorLegend</span>                     | `boolean`                       |
-
-</details>
-
-<details>
-<summary>LinearVariantDisplay - Methods</summary>
-
-| Member                                                           | Type                                                                               |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| <span id="method-colorbysubmenuitems">colorBySubMenuItems</span> | `() => { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]` |
-
-</details>
-
-<details>
-<summary>LinearVariantDisplay - Actions</summary>
-
-| Member                                                                   | Type                     |
-| ------------------------------------------------------------------------ | ------------------------ |
-| <span id="action-setcolorlegenddismissed">setColorLegendDismissed</span> | `(arg: boolean) => void` |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from LinearCanvasBaseDisplay</summary>
-
-[LinearCanvasBaseDisplay →](../linearcanvasbasedisplay)
-
-**Properties**
-
-#### property: jexlFiltersSetting
-
-Runtime "Filter by..." override. When set (even to an empty list) it replaces
-the `jexlFilters` config slot; when undefined the config default applies. Stored
-as already-`jexl:`-prefixed expressions (runtime convention), unlike the
-deferred-evaluation config slot.
-
-```ts
-// type signature
-type jexlFiltersSetting = IMaybe<IArrayType<ISimpleType<string>>>
-// code
-jexlFiltersSetting: types.maybe(types.array(types.string))
-```
-
-#### property: pinnedFeatureIds
-
-Feature ids the user pinned to the top of the layout via the feature right-click
-menu. Pinned features are inserted first into the greedy row-packer, so they
-hold the topmost rows in their bp range across zoom re-packs (see packRef in
-layout.ts). stripDefault so a display with nothing pinned omits the empty array
-from its snapshot.
-
-Persisted by uniqueId, which resolves back to the same feature after a plain
-reload of the same remote file: every adapter id is `adp-<configHash>` (idMaker
-over the config) plus a file byte offset (tabix/BigBed) or a deterministic
-full-file parse index (plain GFF3/BED/VCF). Caveat: NOT robust to editing a file
-read by a plain (non-tabix) adapter (the indices shift), nor to local blob files
-(their handleId changes each session — but a blob can't reload its data across
-refresh anyway). Same basis for solo/hiddenFeatureIds.
-
-```ts
-// type signature
-type pinnedFeatureIds = IOptionalIType<
-  IArrayType<ISimpleType<string>>,
-  [undefined]
->
-// code
-pinnedFeatureIds: types.stripDefault(types.array(types.string), [])
-```
-
-#### property: soloFeatureIds
-
-"Show only these features": the collected set the user builds by ctrl+clicking
-features (or via the right-click menu). Only isolates the view once
-`soloApplied` is true — before that it's a highlighted selection that hides
-nothing, so the candidates stay clickable. Persistent so a view can be opened
-pre-focused declaratively (e.g. collapse-introns seeds it in the new view's
-snapshot). stripDefault so an unfocused display omits the empty array from its
-snapshot.
-
-```ts
-// type signature
-type soloFeatureIds = IOptionalIType<
-  IArrayType<ISimpleType<string>>,
-  [undefined]
->
-// code
-soloFeatureIds: types.stripDefault(types.array(types.string), [])
-```
-
-#### property: soloApplied
-
-Whether the collected soloFeatureIds set is actually isolating the view (worker
-drops non-members). Decoupled from collection so building a multi-feature set
-doesn't hide the features mid-build.
-
-```ts
-// type signature
-type soloApplied = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-soloApplied: types.stripDefault(types.boolean, false)
-```
-
-#### property: hiddenFeatureIds
-
-"Hide this feature" exclusion set (inverse of solo): the worker drops these from
-layout/drawing. Applies immediately per feature — no collect-then-apply.
-Persistent like the solo set, so a hidden feature stays hidden across
-reload/session save. stripDefault so a display with nothing hidden omits the
-empty array from its snapshot.
-
-```ts
-// type signature
-type hiddenFeatureIds = IOptionalIType<
-  IArrayType<ISimpleType<string>>,
-  [undefined]
->
-// code
-hiddenFeatureIds: types.stripDefault(types.array(types.string), [])
-```
-
-#### property: featureHighlights
-
-Declarative feature highlights, typically seeded by a text search (highlight the
-gene you searched for). Each entry pins a feature by its span+name signature
-rather than its uniqueId — a search result carries no uniqueId to persist
-(unlike solo/hidden/pinned, which come from a click on a rendered feature and so
-DO have a reload-stable id) — and is resolved against rendered features on the
-main thread. stripDefault so a display with no highlights omits it from
-snapshot.
-
-```ts
-// type signature
-type featureHighlights = IOptionalIType<IArrayType<IModelType<…>>, [...]>
-// code
-featureHighlights: types.stripDefault(
-            types.array(FeatureHighlightModel),
-            [],
-          )
-```
-
-| Member                                                 | Type                                                  |
-| ------------------------------------------------------ | ----------------------------------------------------- |
-| <span id="property-refname">refName</span>             | `ISimpleType<string>`                                 |
-| <span id="property-start">start</span>                 | `IMaybe<ISimpleType<number>>`                         |
-| <span id="property-end">end</span>                     | `IMaybe<ISimpleType<number>>`                         |
-| <span id="property-name">name</span>                   | `IMaybe<ISimpleType<string>>`                         |
-| <span id="property-featureid">featureId</span>         | `IMaybe<ISimpleType<string>>`                         |
-| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
-
-**Volatiles**
-
-#### volatile: sequenceHoverPosition
-
-genomic base currently hovered in a feature sequence dialog opened from this
-display, read by the LGV crosshair overlay
-
-```ts
-// type signature
-type sequenceHoverPosition = SequenceHoverPosition | undefined
-// code
-sequenceHoverPosition: undefined as SequenceHoverPosition | undefined
-```
-
-| Member                                                                             | Type                                                                                                           |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| <span id="volatile-rpcdatamap">rpcDataMap</span>                                   | `ObservableMap<number, LoadedFeatureData>`                                                                     |
-| <span id="volatile-featureidundermouse">featureIdUnderMouse</span>                 | `string \| null`                                                                                               |
-| <span id="volatile-subfeatureidundermouse">subfeatureIdUnderMouse</span>           | `string \| null`                                                                                               |
-| <span id="volatile-mouseoverextrainformation">mouseoverExtraInformation</span>     | `string \| undefined`                                                                                          |
-| <span id="volatile-contextmenuinfo">contextMenuInfo</span>                         | `{…} \| undefined`                                                                                             |
-| <span id="volatile-incrementallayout">incrementalLayout</span>                     | `(rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>` |
-| <span id="volatile-incrementallayoutlabelsonly">incrementalLayoutLabelsOnly</span> | `(rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>` |
-| <span id="volatile-incrementallayoutbodiesonly">incrementalLayoutBodiesOnly</span> | `(rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>` |
-| <span id="volatile-morphfromtops">morphFromTops</span>                             | `Map<string, number> \| undefined`                                                                             |
-| <span id="volatile-morphprogress">morphProgress</span>                             | `number`                                                                                                       |
-| <span id="volatile-morphstartms">morphStartMs</span>                               | `number`                                                                                                       |
-| <span id="volatile-morphfrommaxy">morphFromMaxY</span>                             | `number`                                                                                                       |
-
-**Getters**
-
-#### getter: conf
-
-the config typed off the concrete schema; `ConfigurationReference` erases
-`self.configuration` to `any`, so direct reads route through this to stay typed
-(same move as `BaseAdapter<CONF>`).
-
-```ts
-type conf = ModelInstanceTypeProps<Record<…>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
-
-#### getter: geneGlyphNotice
-
-Overridable hook (default absent): the isoform-collapse control the shared
-canvas body draws in its bottom-right chip stack, or nothing when the display
-has no gene glyphs. Bundled — state plus the two actions — because the real
-implementation reads a `geneGlyphMode` config slot that only
-`LinearBasicDisplay`'s schema declares; the variant display shares this body and
-simply doesn't answer.
-
-Chrome a subclass owns arrives through hooks like this rather than through a
-per-subclass component, so one registered component serves every canvas-family
-display and no plugin imports another's component.
-
-```ts
-type geneGlyphNotice = GeneGlyphNotice | undefined
-```
-
-#### getter: layoutInputs
-
-Layout inputs shared by the base layout and every fit-escalation layout, minus
-the per-config label/description reservation flags. One source so the candidate
-layouts can't drift on bpPerPx / region keys / display mode / pins.
-
-```ts
-type layoutInputs = { bpPerPx: number; regionKeys: Map<…>; reversedRegions: Set<number>; displayMode: "normal" | "compact" | "superCompact" | "collapsed"; pinnedFeatureIds: ReadonlySet<string>; }
-```
-
-#### getter: layoutReady
-
-Whether features can be laid out: data is fetched, in-bounds, and the view is
-measured. The shared readiness guard for every layout getter — an empty stack
-until then, so the GPU upload autorun has nothing to push and view-geometry
-getters aren't read before the view is measured.
-
-```ts
-type layoutReady = boolean
-```
-
-#### getter: decimatedBaseInputs
-
-The `decimated` rung's layout inputs minus the whitespace factor. Typed without
-`labelRoomFactor` so the solve's shared preparation provably can't depend on it
-(see createContentHeightProbe).
-
-```ts
-type decimatedBaseInputs = Omit<LayoutInputs, 'labelRoomFactor'>
-```
-
-#### getter: baseLaidOutDataMap
-
-Full reservation (names + descriptions): rendered at fit stage `full` and in
-non-fit modes, and the first stack `fitStage` probes.
-
-```ts
-type baseLaidOutDataMap = Map<number, FeatureDataResult>
-```
-
-#### getter: fitLabelsOnlyLayout
-
-Names reserved, descriptions dropped — the `labels` stage's stack. With
-descriptions already off (config, or the auto density gate) this rung's
-reservation is the base one, so reuse that stack by reference rather than
-packing a byte-identical copy into a second memo.
-
-```ts
-type fitLabelsOnlyLayout = Map<number, FeatureDataResult>
-```
-
-#### getter: fitDecimatedSolved
-
-The `decimated` stack with its whitespace factor SOLVED to the track height. A
-name is kept only where the feature has at least `factor ×` its label width in
-neighbor whitespace (plus pinned/highlighted, always); the factor is
-binary-searched so the packed stack just fits `fitTargetHeight`. This fills the
-height with as many non-overlapping names as fit — rather than snapping between
-a few fixed rungs — because stack height is monotone in the factor (higher
-factor drops more names → shorter), so the search keeps the SMALLEST fitting
-factor, i.e. the MOST names. It decimates by isolation, not feature
-size/"importance" (no reliable importance signal — a tiny miRNA can outrank a
-large pseudogene), so it just maximizes how many readable names fit.
-
-The trial factors are measured by `createContentHeightProbe`, which runs the
-same pack over the same raw region data but skips the clone and the per-region Y
-rewrite that `computeLaidOutData` does (~4/5 of a layout) and hoists the
-factor-invariant preparation out of the probe loop (about half of what remains).
-Only the winning factor is laid out for real. Probe and commit therefore agree
-on the height by construction — identical packing over identical inputs — which
-is what lets the ladder trust that the stack it measured is the stack it
-renders.
-
-It deliberately does NOT use the incremental memo — the memo seeds each re-pack
-with the previous layout's rows (`captureFeatureTops`), and seeding a new
-factor's (different) label set from the old factor's rows packs the stack taller
-than the fresh probe, pushing the committed stack over `trackHeight` and making
-the ladder wrongly fall through to `bodies` (every label vanishing as the track
-grows).
-
-Known cost of that choice: this is the one rung without prior-row seeding, so
-while the display sits here a zoom re-pack does not preserve top features' rows
-the way the other three rungs do. The pack is still deterministic for given
-inputs (insertion order falls back to layoutStartBp), so it is a lost stability
-guarantee, not churn. Seeding probes AND commit from the previous committed
-layout would restore it and keep the heights agreeing, but it puts a stateful
-seed underneath a control loop that picks the factor from measured heights —
-which can oscillate the factor, and flickering labels are worse than shifting
-rows.
-
-When even the solve's most aggressive factor overflows (see
-`FIT_MAX_ROOM_FACTOR` in fitLadder.ts), the `labels` stack is returned — it
-overflows (that is why the ladder reached this rung), so `resolveFitLadder`
-descends to `bodies`, and reusing a stack already packed spares the solve one
-more pack that would only be discarded.
-
-With names off entirely there is nothing to decimate — every factor packs the
-`labels` stack (see keepFeatureLabel's `showLabels` guard) — so the solve is
-skipped and that stack reused, turning the probes this rung costs into zero on
-exactly the dense tracks where the auto density gate hides names and fit mode is
-most used.
-
-```ts
-type fitDecimatedSolved = Map<number, FeatureDataResult>
-```
-
-#### getter: fitBodiesOnlyLayout
-
-Nothing reserved: bodies packed edge-to-edge (the tightest stack), labels hidden
-— the `bodies` stage's stack. With names already off this is what the `labels`
-rung packed, so reuse that stack by reference instead of re-packing it into a
-third memo.
-
-```ts
-type fitBodiesOnlyLayout = Map<number, FeatureDataResult>
-```
-
-#### getter: fitBodyPx
-
-The unscaled feature-body height (px): configured `featureHeight` times the
-display-mode multiplier (what the layout already applied). Basis for the fit
-squeeze/grow scale floors.
-
-```ts
-type fitBodyPx = number
-```
-
-#### getter: fitMinScale
-
-Floor on the fit squeeze: the smallest vertical scale that still leaves a
-feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack tighter than
-this the squeeze stops here and the surplus scrolls instead of vanishing.
-
-```ts
-type fitMinScale = number
-```
-
-#### getter: fitMaxScale
-
-Ceiling on the fit grow: the largest vertical scale before a feature body
-exceeds the configured (normal-mode) `featureHeight`. A sparse stack grows to
-fill the track only until its bodies reach their normal height, so fit never
-makes a feature taller than it would be outside fit mode. In normal display mode
-fitBodyPx already is the normal height, pinning the scale at 1 (no grow, surplus
-stays whitespace); a compact mode (fitBodyPx below normal) may grow back up to —
-but not past — the normal height.
-
-This is exactly `1 / multiplier`: the grow target is the normal `featureHeight`
-and the laid-out body is `featureHeight * multiplier`, so `featureHeight`
-cancels and the ceiling is purely the display mode's compact ratio (1 in normal
-mode → no grow).
-
-```ts
-type fitMaxScale = number
-```
-
-#### getter: fitStage
-
-The resolved fit outcome — which reservation `level` survived, its unscaled
-`layout`, and the vertical `scale` to fill the track — bundled so the three can
-never disagree. The ladder keeps the least reduction whose _unscaled_ stack fits
-the track height: `full` (names + descriptions), else `labels` (drop
-descriptions), else `decimated` at a whitespace factor solved to the height
-(`fitDecimatedSolved` — keeps as many non-overlapping names as fit, filling the
-space continuously), else `bodies` (drop names too, pack tight) when even the
-tightest decimation overflows. The kept rung is then scaled to fill the track:
-grown up to `fitMaxScale` when it fits with room to spare, but never past the
-normal feature height — so in normal display mode grow is pinned at 1 and spare
-space stays whitespace, while a compact mode may enlarge back up to normal; or —
-only at the last `bodies` rung — squeezed down to `fitMinScale` and scrolled if
-even that overflows. Non-fit modes stay at `full`, scale 1. Read off the
-unscaled candidate heights so it can't feed back on its own `scale`. The ladder
-walk + scale math live in `resolveFitLadder`.
-
-```ts
-type fitStage = FitStage
-```
-
-#### getter: fitScale
-
-Uniform vertical scale for fit mode; 1 unless the resolved stack is being grown
-to fill the track (> 1) or the bodies stack squeezed to fit (< 1).
-
-```ts
-type fitScale = number
-```
-
-#### getter: laidOutDataMap
-
-What every consumer (hit test, GPU upload, React render) reads: the resolved fit
-layout, cloned and scaled only when grown or squeezed. A fit stack shorter than
-the track stays top-anchored at y=0 (the surplus is bottom whitespace), so a
-relayout — an isoform collapse, a filter — packs back up against the top instead
-of jumping to a re-centered offset. Returned by reference off the untransformed
-path (scale 1) so the incremental-layout upload diff and Y-morph idle check stay
-intact.
-
-```ts
-type laidOutDataMap = Map<number, FeatureDataResult>
-```
-
-#### getter: renderedShowDescriptions
-
-Descriptions are painted only at the `full` stage (and whenever fit is off).
-Every render-time consumer — label draw and the highlight/hit/SVG label-width
-reservation — reads this so a box never reserves width for a description it
-won't draw.
-
-```ts
-type renderedShowDescriptions = boolean
-```
-
-#### getter: renderedShowLabels
-
-Names are painted at every stage short of `bodies` (and whenever fit is off),
-where the packer reserved row height + overhang for the names it kept so they
-never overlap — including the `decimated` stage, whose per-feature pruning
-happens inside the layout (dropped names are removed from floatingLabelsData),
-not via this flag. At the `bodies` stage nothing is reserved, so all names are
-hidden rather than drawn on top of the boxes. Every render-time consumer reads
-this so hidden names reserve nothing.
-
-```ts
-type renderedShowLabels = boolean
-```
-
-| Member                                                                       | Type                                                              |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| <span id="getter-renderstate">renderState</span>                             | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
-| <span id="getter-labelscrollbucket">labelScrollBucket</span>                 | `number`                                                          |
-| <span id="getter-maxheight">maxHeight</span>                                 | `number`                                                          |
-| <span id="getter-displaymode">displayMode</span>                             | `"normal" \| "compact" \| "superCompact" \| "collapsed"`          |
-| <span id="getter-labelfontsize">labelFontSize</span>                         | `number`                                                          |
-| <span id="getter-showlabelsmode">showLabelsMode</span>                       | `"auto" \| "off" \| "on"`                                         |
-| <span id="getter-showlabels">showLabels</span>                               | `boolean`                                                         |
-| <span id="getter-showdescriptions">showDescriptions</span>                   | `boolean`                                                         |
-| <span id="getter-showoutline">showOutline</span>                             | `boolean`                                                         |
-| <span id="getter-featurecolor">featureColor</span>                           | `any`                                                             |
-| <span id="getter-utrcolor">utrColor</span>                                   | `string`                                                          |
-| <span id="getter-colorbymode">colorByMode</span>                             | `"strand" \| "attribute" \| "solid"`                              |
-| <span id="getter-colorbyattribute">colorByAttribute</span>                   | `string`                                                          |
-| <span id="getter-effectiveshowdescriptions">effectiveShowDescriptions</span> | `boolean`                                                         |
-| <span id="getter-selectedfeatureid">selectedFeatureId</span>                 | `string \| undefined`                                             |
-| <span id="getter-colorbycds">colorByCDS</span>                               | `boolean`                                                         |
-| <span id="getter-sequenceadapter">sequenceAdapter</span>                     | `any`                                                             |
-| <span id="getter-regionkeys">regionKeys</span>                               | `Map<number, string>`                                             |
-| <span id="getter-reversedregions">reversedRegions</span>                     | `Set<number>`                                                     |
-| <span id="getter-pinnedfeatureidset">pinnedFeatureIdSet</span>               | `ReadonlySet<string>`                                             |
-| <span id="getter-resolvedhighlights">resolvedHighlights</span>               | `ResolvedHighlights`                                              |
-| <span id="getter-highlightedfeatureidset">highlightedFeatureIdSet</span>     | `ReadonlySet<string>`                                             |
-| <span id="getter-layoutpinnedfeatureidset">layoutPinnedFeatureIdSet</span>   | `ReadonlySet<string>`                                             |
-| <span id="getter-solofeatureidset">soloFeatureIdSet</span>                   | `ReadonlySet<string>`                                             |
-| <span id="getter-renderdatamap">renderDataMap</span>                         | `Map<number, FeatureDataResult>`                                  |
-| <span id="getter-settledmaxy">settledMaxY</span>                             | `number`                                                          |
-| <span id="getter-maxy">maxY</span>                                           | `number`                                                          |
-| <span id="getter-hasoverflow">hasOverflow</span>                             | `boolean`                                                         |
-| <span id="getter-truncatedfeaturecount">truncatedFeatureCount</span>         | `number`                                                          |
-| <span id="getter-contentheight">contentHeight</span>                         | `number`                                                          |
-| <span id="getter-scrollableheight">scrollableHeight</span>                   | `number`                                                          |
-| <span id="getter-naturalcontentheight">naturalContentHeight</span>           | `number`                                                          |
-| <span id="getter-grownheight">grownHeight</span>                             | `number`                                                          |
-| <span id="getter-height">height</span>                                       | `number`                                                          |
-| <span id="getter-featureidindex">featureIdIndex</span>                       | `Map<string, FlatbushItem>`                                       |
-| <span id="getter-subfeatureidindex">subfeatureIdIndex</span>                 | `Map<string, SubfeatureInfo>`                                     |
-| <span id="getter-hoveredfeature">hoveredFeature</span>                       | `FlatbushItem \| null`                                            |
-| <span id="getter-hoveredsubfeature">hoveredSubfeature</span>                 | `SubfeatureInfo \| null`                                          |
-| <span id="getter-featureitemmap">featureItemMap</span>                       | `Map<string, FeatureItemEntry>`                                   |
-| <span id="getter-flatbushindexes">flatbushIndexes</span>                     | `Map<number, FlatbushRegionIndexes>`                              |
-
-**Methods**
-
-#### method: activeFilters
-
-The filters actually applied, as `jexl:`-prefixed expressions. The runtime
-override shadows the config slot when set; otherwise the deferred-evaluation
-`jexlFilters` config slot is prefixed on read. This is the single source of
-truth for both the worker (via rpcProps) and the "Filter by..." dialog (so
-existing config filters show up and are editable).
-
-```ts
-type activeFilters = () => string[]
-```
-
-#### method: fitLayoutAt
-
-One fit-escalation candidate: the stack packed with the given label/description
-reservation, via that config's own memo instance so each keeps stable references
-across renders. Empty until initialized/in-bounds, so the GPU upload autorun has
-nothing to push.
-
-```ts
-type fitLayoutAt = (memo: (rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>, showLabels: boolean, showDescriptions: boolean) => Map<...>
-```
-
-#### method: decimatedLayoutInputs
-
-Layout inputs for the `decimated` rung at one whitespace factor. Every probe and
-the committed layout go through this single builder, so the stack the solve
-measures cannot differ from the stack it commits by a forgotten field.
-
-```ts
-type decimatedLayoutInputs = (labelRoomFactor: number) => LayoutInputs
-```
-
-#### method: solveLabelRoomFactor
-
-The whitespace factor the `decimated` rung commits at: the smallest one whose
-packed stack fits `trackHeight` (smallest = most names kept), or undefined when
-even the most aggressive decimation overflows. The bisection and its probe live
-in `solveLabelRoomFactor` (fitLadder.ts), next to the ladder walk they serve.
-
-```ts
-type solveLabelRoomFactor = (trackHeight: number) => number | undefined
-```
-
-#### method: showSubmenuMenuItems
-
-Flattened "Show..." submenu: all checkbox toggles first, then the radio groups
-(each under its own subHeader). Composed from the two extension points above so
-subclasses inject toggles/groups in place without rebuilding trackMenuItems from
-scratch.
-
-```ts
-type showSubmenuMenuItems = () => MenuItem[]
-```
-
-#### method: contextMenuItems
-
-The feature right-click menu (open details, zoom to, get sequence, highlight
-scopes, pin/solo/hide, copy).
-
-```ts
-type contextMenuItems = () => MenuItem[]
-```
-
-#### method: colorMenuItems
-
-Color-related track menu entries: a single "Color by..." entry whose "Solid
-color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
-override to drop the gene-oriented UTR picker.
-
-```ts
-type colorMenuItems = () => MenuItem[]
-```
-
-#### method: featureHeightMenuItems
-
-One "Feature height" menu with two independent radio groups: the size presets
-and, under a "Track sizing" subheader, how the track responds when there are
-more features than fit.
-
-```ts
-type featureHeightMenuItems = () => MenuItem[]
-```
-
-| Member                                                                     | Type                                                                                                                                                         |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <span id="method-rpcprops">rpcProps</span>                                 | `() => {…}`                                                                                                                                                  |
-| <span id="method-getfeaturebyid">getFeatureById</span>                     | `(featureId: string) => FlatbushItem \| undefined`                                                                                                           |
-| <span id="method-searchfeaturebyid">searchFeatureByID</span>               | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                     |
-| <span id="method-rendersvg">renderSvg</span>                               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-| <span id="method-iscachevalid">isCacheValid</span>                         | `(displayedRegionIndex: number) => boolean`                                                                                                                  |
-| <span id="method-showsubmenucheckboxitems">showSubmenuCheckboxItems</span> | `() => MenuItem[]`                                                                                                                                           |
-| <span id="method-showsubmenuradiogroups">showSubmenuRadioGroups</span>     | `() => MenuItem[]`                                                                                                                                           |
-| <span id="method-trackmenuitems">trackMenuItems</span>                     | `() => MenuItem[]`                                                                                                                                           |
-
-**Actions**
-
-#### action: selectFeature
-
-Open the feature-details widget. The adapter's header metadata (VCF INFO/FORMAT
-descriptions, etc.) is fetched first and passed as `descriptions` so the widget
-can label attribute rows and — for the variant widget — resolve the ANN/CSQ
-column names; without it that table renders headerless. CoreGetMetadata returns
-null for adapters that expose none, so this is a no-op for those tracks.
-
-```ts
-type selectFeature = (feature: Feature) => void
-```
-
-#### action: setJexlFilters
-
-Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
-undefined to clear it and fall back to the config `jexlFilters` slot.
-
-```ts
-type setJexlFilters = (filters?: string[] | undefined) => void
-```
-
-#### action: resizeHeight
-
-A manual drag-resize means the user wants a fixed height; leave grow mode first,
-otherwise the reactive `height` getter re-derives grownHeight on the next layout
-change and the drag appears to do nothing. Read the displayed (grown) height
-before flipping and write `grown + distance` directly — the grow-exit bake skips
-when the slot is written during the exit, so this delta isn't clobbered (a plain
-`superResizeHeight` would read the stale slot post-flip and lose it).
-
-```ts
-type resizeHeight = (distance: number) => number
-```
-
-| Member                                                                             | Type                                                                                                                                                                                                                |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-beginymorph">beginYMorph</span>                                   | `(fromTops: Map<string, number>, fromMaxY: number) => void`                                                                                                                                                         |
-| <span id="action-setmorphprogress">setMorphProgress</span>                         | `(t: number) => void`                                                                                                                                                                                               |
-| <span id="action-endymorph">endYMorph</span>                                       | `() => void`                                                                                                                                                                                                        |
-| <span id="action-setrpcdata">setRpcData</span>                                     | `(displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void`                                                                                                            |
-| <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span>         | `() => void`                                                                                                                                                                                                        |
-| <span id="action-prunerpcdatamaptovisible">pruneRpcDataMapToVisible</span>         | `(visibleDisplayedRegionIndices: Set<number>) => void`                                                                                                                                                              |
-| <span id="action-startrenderingbackend">startRenderingBackend</span>               | `(backend: CanvasFeatureRenderingBackend) => void`                                                                                                                                                                  |
-| <span id="action-sethover">setHover</span>                                         | `(featureId: string \| null, subfeatureId: string \| null, tooltip: string \| undefined) => void`                                                                                                                   |
-| <span id="action-clearhover">clearHover</span>                                     | `() => void`                                                                                                                                                                                                        |
-| <span id="action-closecontextmenu">closeContextMenu</span>                         | `() => void`                                                                                                                                                                                                        |
-| <span id="action-togglepinnedfeature">togglePinnedFeature</span>                   | `(featureId: string) => void`                                                                                                                                                                                       |
-| <span id="action-togglesolofeature">toggleSoloFeature</span>                       | `(featureId: string) => void`                                                                                                                                                                                       |
-| <span id="action-clearsolo">clearSolo</span>                                       | `() => void`                                                                                                                                                                                                        |
-| <span id="action-hidefeature">hideFeature</span>                                   | `(featureId: string) => void`                                                                                                                                                                                       |
-| <span id="action-showallhidden">showAllHidden</span>                               | `() => void`                                                                                                                                                                                                        |
-| <span id="action-setfeaturehighlights">setFeatureHighlights</span>                 | `(highlights: FeatureHighlight[]) => void`                                                                                                                                                                          |
-| <span id="action-addfeaturehighlightforitem">addFeatureHighlightForItem</span>     | `(target: HighlightTarget, refName: string) => void`                                                                                                                                                                |
-| <span id="action-removefeaturehighlightsforid">removeFeatureHighlightsForId</span> | `(featureId: string) => void`                                                                                                                                                                                       |
-| <span id="action-clearfeaturehighlights">clearFeatureHighlights</span>             | `() => void`                                                                                                                                                                                                        |
-| <span id="action-applysolo">applySolo</span>                                       | `() => void`                                                                                                                                                                                                        |
-| <span id="action-solofeature">soloFeature</span>                                   | `(featureId: string) => void`                                                                                                                                                                                       |
-| <span id="action-clearallfeaturefilters">clearAllFeatureFilters</span>             | `() => void`                                                                                                                                                                                                        |
-| <span id="action-clearselection">clearSelection</span>                             | `() => void`                                                                                                                                                                                                        |
-| <span id="action-setshowlabels">setShowLabels</span>                               | `(value: "auto" \| "off" \| "on") => void`                                                                                                                                                                          |
-| <span id="action-setshowdescriptions">setShowDescriptions</span>                   | `(value: boolean) => void`                                                                                                                                                                                          |
-| <span id="action-setshowoutline">setShowOutline</span>                             | `(value: boolean) => void`                                                                                                                                                                                          |
-| <span id="action-setfeaturecolor">setFeatureColor</span>                           | `(color?: string \| undefined) => void`                                                                                                                                                                             |
-| <span id="action-setutrcolor">setUtrColor</span>                                   | `(color?: string \| undefined) => void`                                                                                                                                                                             |
-| <span id="action-setsequencehoverposition">setSequenceHoverPosition</span>         | `(pos: SequenceHoverPosition \| undefined) => void`                                                                                                                                                                 |
-| <span id="action-opencontextmenu">openContextMenu</span>                           | `(featureInfo: FlatbushItem, displayedRegionIndex: number, clientX: number, clientY: number, subfeature?: SubfeatureInfo \| undefined, hgvsLabel?: string \| undefined, tooltipText?: string \| undefined) => void` |
-| <span id="action-setdisplaymode">setDisplayMode</span>                             | `(value: "normal" \| "compact" \| "superCompact" \| "collapsed") => void`                                                                                                                                           |
-| <span id="action-setheightmode">setHeightMode</span>                               | `(mode: "fixed" \| "grow" \| "fit") => void`                                                                                                                                                                        |
-| <span id="action-opensetcolordialog">openSetColorDialog</span>                     | `(showUtrColor?: any) => void`                                                                                                                                                                                      |
-| <span id="action-opencolorbyattributedialog">openColorByAttributeDialog</span>     | `() => void`                                                                                                                                                                                                        |
-| <span id="action-openfilterdialog">openFilterDialog</span>                         | `() => void`                                                                                                                                                                                                        |
-| <span id="action-fetchfullfeature">fetchFullFeature</span>                         | `(featureId: string, displayedRegionIndex: number) => Promise<SimpleFeature \| undefined>`                                                                                                                          |
-| <span id="action-selectfeaturebyid">selectFeatureById</span>                       | `(featureId: string, subfeatureInfo: SubfeatureInfo \| undefined, displayedRegionIndex: number) => void`                                                                                                            |
-| <span id="action-reload">reload</span>                                             | `() => Promise<void>`                                                                                                                                                                                               |
-| <span id="action-fetchneeded">fetchNeeded</span>                                   | `(needed: { region: Region; displayedRegionIndex: number; }[]) => void`                                                                                                                                             |
-| <span id="action-afterattach">afterAttach</span>                                   | `() => void`                                                                                                                                                                                                        |
-
-</details>
-
-<details>
-<summary>Derived from BaseDisplay</summary>
-
-[BaseDisplay →](../basedisplay)
-
-**Properties**
-
-#### property: ignorePromotedDefaults
-
-true for a display that arrived inside a session received from someone else (a
-share link, an encoded/json session, a `spec-` URL). Such a display resolves its
-`promotable` config slots from its own config only, never from this browser's
-promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the
-received session is a record of what the sender saw, and a local preference
-silently repainting it would make it a lie. A track opened _afterwards_ in that
-same session is a fresh track of this user's, so it never gets the flag and
-picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user
-deliberately makes the display follow a default.
-
-```ts
-// type signature
-type ignorePromotedDefaults = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-ignorePromotedDefaults: types.stripDefault(types.boolean, false)
-```
-
-| Member                                                 | Type                                               |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| <span id="property-id">id</span>                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-rpcdrivername">rpcDriverName</span> | `IMaybe<ISimpleType<string>>`                      |
-
-**Volatiles**
-
-#### volatile: statusProgress
-
-determinate progress fraction [0,1] for the current status, or undefined when
-the in-flight phase is indeterminate. Set alongside `statusMessage` by
-`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
-
-```ts
-// type signature
-type statusProgress = number | undefined
-// code
-statusProgress: undefined as number | undefined
-```
-
-| Member                                                 | Type                  |
-| ------------------------------------------------------ | --------------------- |
-| <span id="volatile-error">error</span>                 | `unknown`             |
-| <span id="volatile-statusmessage">statusMessage</span> | `string \| undefined` |
-
-**Getters**
-
-#### getter: parentDisplay
-
-Returns the parent display if this display is nested within another display
-(e.g., PileupDisplay inside LinearAlignmentsDisplay)
-
-```ts
-type parentDisplay =
-  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
-  | undefined
-```
-
-#### getter: isMinimized
-
-Returns true if the parent track is minimized. Used to skip expensive operations
-like autoruns when track is not visible.
-
-```ts
-type isMinimized = boolean
-```
-
-#### getter: effectiveRpcDriverName
-
-Returns the effective RPC driver name with hierarchical fallback:
-
-1. This display's explicit rpcDriverName
-2. Parent display's effectiveRpcDriverName (for nested displays)
-3. Track config's rpcDriverName
-
-```ts
-type effectiveRpcDriverName = any
-```
-
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead, make this return a react
-component
-
-```ts
-type DisplayMessageComponent = FC<any> | undefined
-```
-
-| Member                                                         | Type                                                                                            |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <span id="getter-parenttrack">parentTrack</span>               | `AbstractTrackModel`                                                                            |
-| <span id="getter-renderingcomponent">RenderingComponent</span> | `FC<…>`                                                                                         |
-| <span id="getter-displayblurb">DisplayBlurb</span>             | `FC<{ model: ModelInstanceTypeProps<…> & { ...; } & { ...; } & IStateTreeNode<...>; }> \| null` |
-| <span id="getter-adapterconfig">adapterConfig</span>           | `any`                                                                                           |
-
-**Methods**
-
-#### method: renderingProps
-
-props passed to the renderer's React "Rendering" component. these are
-client-side only and never sent to the worker. includes displayModel and
-callbacks
-
-```ts
-type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
-```
-
-**Actions**
-
-#### action: setIgnorePromotedDefaults
-
-see the `ignorePromotedDefaults` property
-
-```ts
-type setIgnorePromotedDefaults = (flag: boolean) => void
-```
-
-| Member                                                     | Type                                        |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
-| <span id="action-seterror">setError</span>                 | `(error?: unknown) => void`                 |
-| <span id="action-setrpcdrivername">setRpcDriverName</span> | `(rpcDriverName: string) => void`           |
-
-</details>
-
-<details>
-<summary>Derived from TrackHeightMixin</summary>
-
-[TrackHeightMixin →](../trackheightmixin)
-
-**Volatiles**
-
-| Member                                         | Type     |
-| ---------------------------------------------- | -------- |
-| <span id="volatile-scrolltop">scrollTop</span> | `number` |
-
-**Actions**
-
-| Member                                             | Type                                |
-| -------------------------------------------------- | ----------------------------------- |
-| <span id="action-setscrolltop">setScrollTop</span> | `(scrollTop: number) => void`       |
-| <span id="action-setheight">setHeight</span>       | `(displayHeight: number) => number` |
-
-</details>
-
-<details>
-<summary>Derived from HeightModeMixin</summary>
-
-[HeightModeMixin →](../heightmodemixin)
-
-**Getters**
-
-#### getter: heightMode
-
-The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel
-slot: resolveConf walks the customized-track -> session-default -> `fixed`
-cascade and never returns the `inherit` sentinel.
-
-```ts
-type heightMode = 'fixed' | 'grow' | 'fit'
-```
-
-#### getter: fitTargetHeight
-
-The drag-resizable track height as stored in the config slot — the fit target
-the fit/grow layout scales or packs content into. Read there instead of the
-reactive `height` getter to break the grow-mode cycle
-(`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
-
-```ts
-type fitTargetHeight = number
-```
-
-#### getter: growMaxHeight
-
-Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives
-here rather than as a constant so a track whose whole point is a deep pileup can
-raise it; both displays that own a `grownHeight` read this, so the two can't
-diverge.
-
-```ts
-type growMaxHeight = number
-```
-
-#### getter: autoHeight
-
-`grow` mode as a boolean, derived from the unified `heightMode` slot.
-
-```ts
-type autoHeight = boolean
-```
-
-#### getter: fitHeightToDisplay
-
-`fit` mode as a boolean, derived from the unified `heightMode` slot.
-
-```ts
-type fitHeightToDisplay = boolean
-```
-
-</details>
-
-<details>
-<summary>Derived from MultiRegionDisplayMixin</summary>
-
-[MultiRegionDisplayMixin →](../multiregiondisplaymixin)
-
-**Volatiles**
-
-#### volatile: loadedRegions
-
-regions whose data has been fetched and committed, keyed by
-displayedRegionIndex; populated only after the fetch work callback returns
-
-```ts
-// type signature
-type loadedRegions = ObservableMap<number, Region>
-// code
-loadedRegions: observable.map<number, Region>()
-```
-
-**Getters**
-
-#### getter: canRender
-
-The render-lifecycle precondition for every LGV display (overrides
-`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
-callbacks until the view is measured. Before that, `renderBlocks` →
-`visibleRegions` → `view.width` throws by design, and the render autorun's catch
-would show that as a GPU render-error banner. Gating here — once, for all of
-them — is what lets a display's `renderState` be a plain resolved getter and its
-render callback gate only on its own data. The render-lifecycle twin of
-`autorunOnReadyView`.
-
-```ts
-type canRender = boolean
-```
-
-#### getter: isReady
-
-true once the canvas has painted and no fetch is in flight
-
-```ts
-type isReady = boolean
-```
-
-#### getter: viewportWithinLoadedData
-
-true when every visible block lies within an already-fetched region — i.e. the
-viewport shows data we actually loaded, not the stale fringe left after a
-zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
-Spatial only; see CLAUDE.md for why this is exact and for the
-resolution-staleness gap.
-
-```ts
-type viewportWithinLoadedData = boolean
-```
-
-#### getter: dataCurrent
-
-This family's answer to the shared freshness question every display foundation
-must answer (`dataCurrent`): the held data corresponds to what is on screen
-right now. Here that is spatial — every visible block lies within a fetched
-region — plus `loadedRegions.size`, which rules out the vacuously-true empty
-viewport. Regions stream in one at a time, so this (not "the first datum
-arrived") is what keeps a multi-region/whole-genome export complete.
-
-Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate
-the fetch autorun and the loading overlay use.
-
-```ts
-type dataCurrent = boolean
-```
-
-#### getter: svgReady
-
-true once an off-screen (SVG) export can safely read this display's data. Policy
-single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent`
-predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
-inlining the condition.
-
-```ts
-type svgReady = boolean
-```
-
-#### getter: svgReadyExtraTerminal
-
-Overridable hook (default false): a subclass returns true to mark an extra
-terminal state where off-screen export can proceed with no loaded data. Sequence
-sets it when zoomed past base resolution — it renders a static "zoom in" message
-and fetches nothing, so `svgReady` would otherwise never resolve.
-
-```ts
-type svgReadyExtraTerminal = boolean
-```
-
-#### getter: renderBlocks
-
-Shared cached view for every LGV-based GPU display. A single displayedRegion may
-produce multiple render blocks (shared GPU buffer, different scissor clips on
-screen). Plugins that want to suppress rendering in certain states (e.g. no
-domain yet) can override this getter to return [] — the autorun lifecycle will
-then issue an empty-blocks render that clears the canvas.
-
-```ts
-type renderBlocks = RenderBlock[]
-```
-
-#### getter: displayPhase
-
-The display's mutually-exclusive visual state, precedence single-sourced in
-`computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
-(viewport past loaded) is still on screen through the pre-refetch debounce.
-
-```ts
-type displayPhase = DisplayPhase
-```
-
-#### getter: rpcPropsCacheKey
-
-The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()`
-payload serialized to a string. `serializeRpcProps` owns the why;
-`installGlobalFetchAutorun` keys its global-family counterpart on the same
-function, so the two families invalidate on the same axis.
-
-```ts
-type rpcPropsCacheKey = string
-```
-
-**Actions**
-
-#### action: setLoadedRegion
-
-Action wrapper so callers after async boundaries stay in MST strict mode.
-
-```ts
-type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
-```
-
-#### action: clearAllRpcData
-
-full reset: cancels fetch, clears error, loadedRegions, display-specific data,
-and the canvas-drawn flag. The too-large gate is derived (a pure function of the
-cached estimate × viewport), so it needs no explicit clear here — it
-self-releases when the viewport changes.
-
-```ts
-type clearAllRpcData = () => void
-```
-
-#### action: invalidateLoadedRegions
-
-lighter reset: cancels fetch and clears loadedRegions, leaving error and
-regionTooLarge intact
-
-```ts
-type invalidateLoadedRegions = () => void
-```
-
-#### action: onRegionTooLarge
-
-Overridable hook (no-op base): called when `regionTooLarge` transitions to true.
-Displays with transient hover/tooltip state override it to clear that state —
-the too-large banner replaces the rendered content, so a lingering hover would
-otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge`
-autorun, fired by the derived too-large gate.
-
-```ts
-type onRegionTooLarge = () => void
-```
-
-#### action: fetchRegions
-
-Run a per-region fetch with byte-estimate gating. Marks regions as loaded only
-AFTER the work callback has populated display-specific data (rpcDataMap,
-cellData, etc) so the GPU upload autorun sees committed data when it observes
-loadedRegions.
-
-```ts
-type fetchRegions = (
-  needed: { region: Region; displayedRegionIndex: number }[],
-  work: (ctx: FetchContext) => Promise<void>,
-) => Promise<void>
-```
-
-</details>
-
-<details>
-<summary>Derived from RegionTooLargeMixin</summary>
-
-[RegionTooLargeMixin →](../regiontoolargemixin)
-
-**Volatiles**
-
-#### volatile: forceLoadTrack
-
-The force-load button's answer: render this track regardless of region size or
-feature density. One boolean for the whole track, not a raised ceiling per
-region — the banner already tells the user how much data is involved, so one
-informed click approves the track and they never have to re-approve it per
-locus.
-
-Volatile, not persisted, so it can't leak a disabled gate into a saved or shared
-session (a recipient would download the same data with no warning and no way to
-see why). A page load re-arms the gate. The durable, declarative equivalent is
-the `forceLoad` config slot, for session specs, embeds and
-`jbrowse-img --force`.
-
-```ts
-// type signature
-type forceLoadTrack = false
-// code
-forceLoadTrack: false
-```
-
-#### volatile: byteEstimate
-
-The last byte measurement for this display: the estimated bytes **and the span
-they cover**, which is what lets the derived gate rescale them to the span on
-screen now. One volatile rather than two, because the pair is a single
-measurement — written together by `setByteEstimate`, dropped together by
-`clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an
-ordinary viewport change doesn't flicker the banner; only chromosome navigation
-drops it. Ignored unless `derivedRegionTooLargeEnabled`.
-
-```ts
-// type signature
-type byteEstimate = ByteEstimate | undefined
-// code
-byteEstimate: undefined as ByteEstimate | undefined
-```
-
-**Getters**
-
-#### getter: gateFoldedIntoFetch
-
-Additive opt-in for displays that measure the estimate inside their own feature
-RPC instead of a pre-flight (canvas). Kept separate from
-`derivedRegionTooLargeEnabled` so a gate mixin contributes by setting _this_
-rather than overriding the verdict switch — the two would otherwise race on
-composition order, and the later `.compose()` argument silently winning is
-invisible to both the type system and the tests.
-
-```ts
-type gateFoldedIntoFetch = boolean
-```
-
-#### getter: byteGateEnabled
-
-The one opt-in a pre-flight display writes: true means "measure this fetch and
-gate on it". `byteGateBlocksFetch` reads it (so a display that calls the gate
-unconditionally still pays no RPC when it's off) and so does the verdict, which
-is why requesting the estimate and gating on it can't drift apart. MAF flips it
-off in summary mode, LD for pre-computed adapters.
-
-```ts
-type byteGateEnabled = boolean
-```
-
-#### getter: configuredFetchSizeLimit
-
-The composing display's configured `fetchSizeLimit`, read straight from its
-config. Only evaluated when the derived gate is enabled (guarded by
-`derivedRegionTooLargeEnabled`), and every derived display extends
-`baseLinearDisplayConfigSchema`, which owns the slot — so the read is always
-valid where it fires. A display with a bespoke source can still override it.
-
-```ts
-type configuredFetchSizeLimit = number
-```
-
-#### getter: densityTooLarge
-
-Second (non-byte) too-large axis folded into the derived verdict — canvas
-overrides it with its feature-density gate. Byte-only derived displays leave it
-false.
-
-```ts
-type densityTooLarge = boolean
-```
-
-#### getter: adapterFetchSizeLimit
-
-The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
-declares none); `resolveByteLimit` prefers it over the display config. Read on
-the main thread, and only here — the estimate that crosses the worker boundary
-carries bytes and nothing else, so the banner and the worker budget have no
-second spelling of "the adapter's limit" to disagree about.
-
-A slot **path off the live config**, not a read off `self.adapterConfig`: that
-getter is a snapshot, which by design omits slots sitting at their default, so a
-BAM's declared 5 Mb read back as `undefined` in every config that doesn't
-restate it. Resolved values come from a config node — see CONFIG_PATTERN.md
-§"Reading a slot: node, not snapshot".
-
-```ts
-type adapterFetchSizeLimit = number | undefined
-```
-
-#### getter: configForceLoad
-
-Declarative force-load: when true the display always renders regardless of
-region size / feature density (the config-driven equivalent of the force-load
-button). Read straight from the `forceLoad` config slot on
-`baseLinearDisplayConfigSchema` (same guard/ownership as
-`configuredFetchSizeLimit`), so every opt-in display honors it without
-per-display wiring.
-
-```ts
-type configForceLoad = boolean
-```
-
-#### getter: gateVisibleBp
-
-The span on screen, or undefined before the view is measured. The gate's only
-read of its container: `visibleBp` reads `view.width`, which throws before
-measurement and a bare getter must never throw, so the pre-init guard lives here
-once rather than at each reader.
-
-```ts
-type gateVisibleBp = number | undefined
-```
-
-#### getter: derivedRegionTooLargeEnabled
-
-Whether the derived, self-releasing gate is live at all — the union of the two
-ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte
-check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never
-an override, so a gate mixin's opt-in doesn't hinge on which side of
-`.compose()` it lands on. False for the non-byte displays (wiggle, manhattan,
-sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus`
-getters.
-
-```ts
-type derivedRegionTooLargeEnabled = boolean
-```
-
-#### getter: aboveForceLoadFloor
-
-Whether the span on screen is wide enough for the gate to have an opinion at all
-— the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before
-the view is measured.
-
-Deliberately independent of the opt-in and of force-load, so a display whose
-_own_ opt-in depends on the floor can read it without a cycle: MAF's
-`showSummary` swaps to the cheap summary adapter exactly where the detail fetch
-would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds
-the opt-in and exemption terms on top.
-
-```ts
-type aboveForceLoadFloor = boolean
-```
-
-#### getter: byteGateExempt
-
-True when nothing may gate, on either axis and in both the worker and the
-banner: the declarative `forceLoad` slot, or the force-load button. One boolean
-is the whole force-load mechanism — there is no per-region ceiling to carry,
-expire, or reconcile between the two axes. A self-summarizing adapter (BigWig,
-HiC, sequence) needs no term here: it reports no byte estimate at all, which
-already keeps the byte axis out of the verdict.
-
-```ts
-type byteGateExempt = boolean
-```
-
-#### getter: estimatedBytesForVisibleSpan
-
-How many bytes we estimate a fetch of the span on screen right now would pull,
-obtained by rescaling the stored measurement from the span it covers. Rescaling
-is what makes the derived verdict a pure function of the current view and lets
-it self-release on zoom-in — without it a large zoomed-out estimate stays above
-the limit forever and gates refetch. Only meaningful when
-`derivedRegionTooLargeEnabled`.
-
-```ts
-type estimatedBytesForVisibleSpan = number | undefined
-```
-
-#### getter: gateByteLimit
-
-The byte budget the gate enforces: the adapter's limit, else the display config.
-Also what `resolvedByteLimit()` hands the worker, so the two can't gate against
-different numbers. Force-load doesn't raise this — it exempts the track outright
-via `byteGateExempt`.
-
-```ts
-type gateByteLimit = number
-```
-
-#### getter: gateActive
-
-Whether anything may gate at this moment: the display opted in, nothing exempts
-it, and the view is measured and above the force-load floor.
-
-The single home of that question. Everything downstream reads it instead of
-restating it: the verdict, the pre-flight (no estimate RPC when nothing could
-act on it), and the worker budgets, which go undefined together here rather than
-each re-deriving the floor. The floor used to be spelled out in three places at
-three layers, which is a standing invitation for them to disagree.
-
-```ts
-type gateActive = boolean
-```
-
-#### getter: tooLargeStatus
-
-The verdict the whole mixin exists to produce, with the banner text: true when
-the estimated download for the span on screen exceeds the resolved byte budget,
-or when the display's own density axis trips (bytes take precedence for the
-text). Derived from the rescaled estimate, so it releases itself on zoom-in;
-false whenever `gateActive` is false.
-
-The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome`
-renders the banner from `regionTooLargeReason`.
-
-```ts
-type tooLargeStatus = RegionTooLargeStatus
-```
-
-#### getter: regionTooLargeReason
-
-Which axis tripped, as banner text: the estimated download size, or "Too many
-features". Empty string when the region isn't too large.
-
-```ts
-type regionTooLargeReason = string
-```
-
-| Member                                                 | Type      |
-| ------------------------------------------------------ | --------- |
-| <span id="getter-regiontoolarge">regionTooLarge</span> | `boolean` |
-
-**Methods**
-
-#### method: resolvedByteLimit
-
-The byte budget a fetch RPC enforces worker-side, short-circuiting an
-over-budget region before it downloads any features. Undefined (unlimited) when
-nothing gates; otherwise the very number the banner compares against, so the
-worker can't reject a region the banner then calls fine. Lives here, not on the
-canvas gate that consumes it, because both its terms are this mixin's — canvas
-owns only the density axis.
-
-```ts
-type resolvedByteLimit = () => number | undefined
-```
-
-**Actions**
-
-#### action: setByteEstimate
-
-Commits a byte measurement: the estimate together with the span it covers, so
-the derived gate can rescale it to the span on screen. `measuredSpanBp` must be
-the `visibleBp` captured when the measurement was _requested_, not read at
-commit time: a view that zoomed during the in-flight fetch would otherwise
-anchor the estimate to a span it never covered, and since `FetchVisibleRegions`
-skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner
-with no refetch to correct it. Harmless for non-gated displays (they ignore it).
-
-```ts
-type setByteEstimate = (estimate: ByteEstimate) => void
-```
-
-#### action: clearByteEstimate
-
-Drops the cached estimate. Chromosome navigation only: the estimate
-intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't
-flicker the banner.
-
-`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring
-it on navigation is exactly the per-locus re-approval the button exists to
-avoid.
-
-```ts
-type clearByteEstimate = () => void
-```
-
-#### action: setForceLoadTrack
-
-Exempt this track from the gate (or put it back under it). Separate from
-`forceLoad` so turning the gate off and refetching stay separable — a caller
-that just wants the flag (a revoke, a test) doesn't trigger a fetch, and
-`forceLoad` doesn't have to inline a volatile write.
-
-```ts
-type setForceLoadTrack = (flag: boolean) => void
-```
-
-#### action: forceLoad
-
-Force-load: exempt this track from the gate and refetch. One click covers every
-region and both axes, informed by the size the banner just quoted. The display
-chrome calls this from TooLargeMessage's button; concrete display models
-override `reload()` to do the actual refetch.
-
-```ts
-type forceLoad = () => void
-```
-
-#### action: byteGateBlocksFetch
-
-The entire pre-flight gate for one fetch: measure the region set, commit the
-estimate with the span it covers, and answer whether the caller must abandon the
-fetch — either superseded mid-measure, or over budget.
-
-Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family,
-LD and arc from their own global fetches) calls this and returns on true.
-Sequencing the steps at a call site is what used to go wrong: the span is read
-here, _before_ the await, so the estimate is anchored to the span it actually
-covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on
-screen, and since the fetch autoruns skip while `regionTooLarge` holds, an
-over-anchored estimate wedges the banner with no refetch to correct it.
-
-```ts
-type byteGateBlocksFetch = (
-  regions: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }[],
-  ctx: { isStale: () => boolean },
-) => Promise<boolean>
-```
-
-</details>
-
-<details>
-<summary>Derived from RenderLifecycleMixin</summary>
-
-[RenderLifecycleMixin →](../renderlifecyclemixin)
-
-**Volatiles**
-
-#### volatile: canvasDrawn
-
-flips true on first paint; read by test selectors to detect render
-
-```ts
-// type signature
-type canvasDrawn = false
-// code
-canvasDrawn: false
-```
-
-#### volatile: currentRenderingBackend
-
-current backend reference, updated on context-loss recovery. Typed `unknown`
-(not generic `B`) on purpose: this mixin is composed by every display via a
-non-generic factory, so the per-display backend type `B` isn't known here — it's
-supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
-autoruns. Don't "fix" the cast.
-
-```ts
-// type signature
-type currentRenderingBackend = undefined
-// code
-currentRenderingBackend: undefined
-```
-
-#### volatile: renderTick
-
-counter the render autorun observes; bumped to force a re-render
-
-```ts
-// type signature
-type renderTick = number
-// code
-renderTick: 0
-```
-
-#### volatile: autorunsInstalled
-
-guards attachRenderingBackend so the autorun pair spawns once per instance
-
-```ts
-// type signature
-type autorunsInstalled = false
-// code
-autorunsInstalled: false
-```
-
-#### volatile: renderError
-
-the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
-Single source of truth for the render-error terminal state:
-`useRenderingBackend` writes it from the canvas-init mechanism so the model —
-not React-local hook state — owns every terminal state. Read by `displayPhase`
-(whose `renderError` term outranks `loading`, suppressing the scrim) and by
-`DisplayChrome` (shows the retry overlay).
-
-```ts
-// type signature
-type renderError = undefined
-// code
-renderError: undefined
-```
-
-**Actions**
-
-#### action: setRenderError
-
-set/clear the render-backend error. Called by `useRenderingBackend`: with the
-error when the canvas factory rejects (or context-loss re-init fails), and with
-`undefined` on successful (re)init and on retry.
-
-```ts
-type setRenderError = (error: unknown) => void
-```
-
-#### action: attachRenderingBackend
-
-attach a GPU/Canvas2D backend and install the upload + render autorun pair
-(idempotent — re-calling only swaps the backend)
-
-```ts
-type attachRenderingBackend = <B>(
-  backend: B,
-  cbs: RenderingBackendCallbacks<B>,
-) => void
-```
-
-| Member                                                             | Type         |
-| ------------------------------------------------------------------ | ------------ |
-| <span id="action-markcanvasdrawn">markCanvasDrawn</span>           | `() => void` |
-| <span id="action-resetcanvasdrawn">resetCanvasDrawn</span>         | `() => void` |
-| <span id="action-stoprenderingbackend">stopRenderingBackend</span> | `() => void` |
-| <span id="action-rendernow">renderNow</span>                       | `() => void` |
-
-</details>
-
-<details>
-<summary>Derived from FetchMixin</summary>
-
-[FetchMixin →](../fetchmixin)
-
-**Volatiles**
-
-#### volatile: activeStopToken
-
-stop token of the in-flight fetch, or undefined when idle
-
-```ts
-// type signature
-type activeStopToken = StopToken | undefined
-// code
-activeStopToken: undefined as StopToken | undefined
-```
-
-#### volatile: fetchGeneration
-
-bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
-staleness epoch inside runFetch
-
-```ts
-// type signature
-type fetchGeneration = number
-// code
-fetchGeneration: 0
-```
-
-#### volatile: fetchCanceled
-
-true after the user explicitly cancels a load (the loading overlay's cancel
-button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
-it does not retrigger the fetch autoruns — so the load stays stopped until the
-user retries (`reload`) or the viewport changes. Any new fetch clears it
-(`runFetch` resets it at the start).
-
-```ts
-// type signature
-type fetchCanceled = false
-// code
-fetchCanceled: false
-```
-
-#### volatile: regionStatuses
-
-latest status of each concurrent in-flight operation, keyed by an arbitrary id
-(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
-reactively; setRegionStatus derives the observable statusMessage/statusProgress
-from it on every update so N parallel region fetches aggregate into one bar
-instead of clobbering.
-
-```ts
-// type signature
-type regionStatuses = Map<number, RpcStatus>
-// code
-regionStatuses: new Map<number, RpcStatus>()
-```
-
-**Getters**
-
-#### getter: isLoading
-
-true while a fetch is active
-
-```ts
-type isLoading = boolean
-```
-
-**Methods**
-
-#### method: makeStatusCallback
-
-An RPC `statusCallback` bound to this display: forwards progress to the shared
-`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
-torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
-Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
-at every call site.
-
-```ts
-type makeStatusCallback = () => (status: RpcStatus) => void
-```
-
-#### method: makeRegionStatusCallback
-
-Per-region variant of `makeStatusCallback`: routes progress through
-`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard;
-`setRegionStatus` owns the throttling (it has to thin only the bar write, not
-the per-region bookkeeping).
-
-```ts
-type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
-```
-
-**Actions**
-
-#### action: throttleStatus
-
-Run `apply` only if the throttle window has elapsed.
-
-```ts
-type throttleStatus = (apply: () => void) => void
-```
-
-#### action: resetStatus
-
-Drop the active stop token and clear all status bookkeeping. Shared by both
-cancel paths and runFetch's cleanup.
-
-```ts
-type resetStatus = () => void
-```
-
-#### action: stopActiveFetch
-
-Abort the in-flight fetch (if any) and clear its status. The shared preamble of
-both cancel paths; the difference between them is only what they do to
-`fetchCanceled` / `fetchGeneration` afterward.
-
-```ts
-type stopActiveFetch = () => void
-```
-
-#### action: setRegionStatus
-
-Record one concurrent operation's latest status (keyed) and recompute the shared
-statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
-undefined to drop a key. Used by displays that fan a single fetch out into
-parallel per-region RPCs.
-
-```ts
-type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
-```
-
-#### action: cancelFetch
-
-cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
-can retrigger fetch autoruns even when nothing was in flight). This is the
-_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
-user-cancel flag so the retrigger actually re-fetches.
-
-```ts
-type cancelFetch = () => void
-```
-
-#### action: cancelFetchByUser
-
-User-initiated cancel from the loading overlay. Stops the in-flight fetch and
-lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
-fetchGeneration — so the fetch autoruns don't immediately restart the load. The
-user retries via `reload` (the overlay's retry button), or it clears on the next
-viewport change.
-
-```ts
-type cancelFetchByUser = () => void
-```
-
-#### action: beforeDestroy
-
-Release an in-flight fetch's stop token on teardown. Without this, a display
-destroyed mid-fetch (track/view closed while loading) never revokes its token —
-a blob-URL leak on the non-SAB fallback path — and never signals the worker to
-abort the now-useless work. MST auto-chains lifecycle hooks, so a composing
-display can still define its own beforeDestroy.
-
-```ts
-type beforeDestroy = () => void
-```
-
-#### action: runFetch
-
-Run a cancel-safe fetch (cancels any prior). The work callback gets a
-FetchContext with a stopToken to forward to the RPC and an isStale() check to
-short-circuit commits once the user has moved on. Abort errors are swallowed;
-others are stored in `error` if not stale.
-
-```ts
-type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
-```
-
-</details>
-
-<details>
-<summary>Derived from CanvasFeatureGateMixin</summary>
-
-[CanvasFeatureGateMixin →](../canvasfeaturegatemixin)
-
-**Volatiles**
-
-#### volatile: densityStatsPerRegion
-
-per-region feature counts (keyed by displayedRegionIndex), so the density
-verdict is a live max over the visible regions at the current bpPerPx — never a
-stale fetch-time snapshot. Survives viewport-change clears; dropped on
-chromosome nav by `clearGateMeasurements`.
-
-```ts
-// type signature
-type densityStatsPerRegion = ObservableMap<number, RegionDensityStats>
-// code
-densityStatsPerRegion: observable.map<number, RegionDensityStats>()
-```
-
-**Getters**
-
-#### getter: densityGateEnabled
-
-Whether the density (features-per-pixel) axis applies. Byte-only displays
-override this to `false`: e.g. `LinearMultiRowFeatureDisplay` paints features
-into fixed lanes, so a high total feature count is not a per-glyph render cost —
-only the download (byte) budget should gate it.
-
-```ts
-type densityGateEnabled = boolean
-```
-
-#### getter: visibleFeatureDensityPerPx
-
-Current density across the visible regions at the debounced coarseBpPerPx, so
-the verdict shares the layout cadence and doesn't flicker mid-zoom.
-
-```ts
-type visibleFeatureDensityPerPx = number
-```
-
-#### getter: maxFeatureDensity
-
-The density budget passed to the worker and used by the derived verdict:
-undefined (gate off) when nothing gates, otherwise the config. Force-load
-reaches this through the shared `gateActive`, so approving a track's _size_ no
-longer half-disables its _density_ axis by side effect — both axes read the one
-boolean now.
-
-```ts
-type maxFeatureDensity = number | undefined
-```
-
-**Methods**
-
-#### method: observedMaxDensity
-
-Highest features-per-pixel across the visible regions at `bpPerPx`, from the
-cached per-region counts.
-
-```ts
-type observedMaxDensity = (bpPerPx: number) => number
-```
-
-**Actions**
-
-#### action: clearGateMeasurements
-
-Drop the cached per-region density stats on chromosome navigation
-(displayedRegion indices get reused, so a stale entry would gate the new region
-against the wrong stats). Driven by the mixin's own `afterAttach` below — no
-composing display has to wire it up. The byte estimate is dropped by
-`MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun on the same
-trigger.
-
-Measurements only. Force-load is a track-wide boolean that deliberately outlives
-navigation, so there is no per-region ceiling to expire here.
-
-```ts
-type clearGateMeasurements = () => void
-```
-
-#### action: commitGateMeasurements
-
-Commit a batch of per-region fetch outcomes: record the per-region byte **max**
-(not sum — each region is gated against the same per-region budget, so a
-multi-region view where every region individually fits is never blanked by the
-cross-region total) and the per-region density, then publish the byte estimate
-to `RegionTooLargeMixin` — bytes and nothing else, since the budget it is
-compared against is a main-thread config read (`gateByteLimit`), the same one
-that produced the worker's `resolvedByteLimit()`.
-
-```ts
-type commitGateMeasurements = (
-  measurements: RegionGateMeasurement[],
-  measuredSpanBp: number,
-) => void
-```
-
-| Member                                                   | Type                                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------- |
-| <span id="action-setdensitystats">setDensityStats</span> | `(displayedRegionIndex: number, stats: RegionDensityStats) => void` |
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-type">**type**</span><br><code>type: types.literal('LinearVariantDisplay')</code> |  | LinearVariantDisplay |
+| <span id="property-refname">**refName**</span><br><code>refName: types.string</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-refname) |
+| <span id="property-start">**start**</span><br><code>start: types.maybe(types.number)</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-start) |
+| <span id="property-end">**end**</span><br><code>end: types.maybe(types.number)</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-end) |
+| <span id="property-name">**name**</span><br><code>name: types.maybe(types.string)</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-name) |
+| <span id="property-featureid">**featureId**</span><br><code>featureId: types.maybe(types.string)</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-featureid) |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-configuration) |
+| <span id="property-jexlfilterssetting">**jexlFiltersSetting**</span><br><code>jexlFiltersSetting: types.maybe(types.array(types.string))</code> | <span data-pagefind-ignore>Runtime "Filter by..." override. When set (even to an empty list) it replaces the `jexlFilters` config slot; when undefined the config default applies. Stored as already-`jexl:`-prefixed expressions (runtime convention), unlike the deferred-evaluation config slot.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-jexlfilterssetting) |
+| <span id="property-pinnedfeatureids">**pinnedFeatureIds**</span><br><details><summary><code>pinnedFeatureIds: types.stripDefault(types.array(types.string),…</code></summary><pre><code>pinnedFeatureIds: types.stripDefault(types.array(types.string), [])</code></pre></details> | <span data-pagefind-ignore>Feature ids the user pinned to the top of the layout via the feature right-click menu. Pinned features are inserted first into the greedy row-packer, so they hold the topmost rows in their bp range across zoom re-packs (see packRef in layout.ts). stripDefault so a display with nothing pinned omits the empty array from its snapshot.<br><br>Persisted by uniqueId, which resolves back to the same feature after a plain reload of the same remote file: every adapter id is `adp-<configHash>` (idMaker over the config) plus a file byte offset (tabix/BigBed) or a deterministic full-file parse index (plain GFF3/BED/VCF). Caveat: NOT robust to editing a file read by a plain (non-tabix) adapter (the indices shift), nor to local blob files (their handleId changes each session — but a blob can't reload its data across refresh anyway). Same basis for solo/hiddenFeatureIds.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-pinnedfeatureids) |
+| <span id="property-solofeatureids">**soloFeatureIds**</span><br><details><summary><code>soloFeatureIds: types.stripDefault(types.array(types.string), […</code></summary><pre><code>soloFeatureIds: types.stripDefault(types.array(types.string), [])</code></pre></details> | <span data-pagefind-ignore>"Show only these features": the collected set the user builds by ctrl+clicking features (or via the right-click menu). Only isolates the view once `soloApplied` is true — before that it's a highlighted selection that hides nothing, so the candidates stay clickable. Persistent so a view can be opened pre-focused declaratively (e.g. collapse-introns seeds it in the new view's snapshot). stripDefault so an unfocused display omits the empty array from its snapshot.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-solofeatureids) |
+| <span id="property-soloapplied">**soloApplied**</span><br><code>soloApplied: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>Whether the collected soloFeatureIds set is actually isolating the view (worker drops non-members). Decoupled from collection so building a multi-feature set doesn't hide the features mid-build.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-soloapplied) |
+| <span id="property-hiddenfeatureids">**hiddenFeatureIds**</span><br><details><summary><code>hiddenFeatureIds: types.stripDefault(types.array(types.string),…</code></summary><pre><code>hiddenFeatureIds: types.stripDefault(types.array(types.string), [])</code></pre></details> | <span data-pagefind-ignore>"Hide this feature" exclusion set (inverse of solo): the worker drops these from layout/drawing. Applies immediately per feature — no collect-then-apply. Persistent like the solo set, so a hidden feature stays hidden across reload/session save. stripDefault so a display with nothing hidden omits the empty array from its snapshot.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-hiddenfeatureids) |
+| <span id="property-featurehighlights">**featureHighlights**</span><br><details><summary><code>featureHighlights: types.stripDefault( types.array(FeatureHighl…</code></summary><pre><code>featureHighlights: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(FeatureHighlightModel),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> | <span data-pagefind-ignore>Declarative feature highlights, typically seeded by a text search (highlight the gene you searched for). Each entry pins a feature by its span+name signature rather than its uniqueId — a search result carries no uniqueId to persist (unlike solo/hidden/pinned, which come from a click on a rendered feature and so DO have a reload-stable id) — and is resolved against rendered features on the main thread. stripDefault so a display with no highlights omits it from snapshot.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#property-featurehighlights) |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
+| <span id="property-rpcdrivername">**rpcDriverName**</span><br><code>rpcDriverName: types.maybe(types.string)</code> |  | [BaseDisplay](../basedisplay#property-rpcdrivername) |
+| <span id="property-ignorepromoteddefaults">**ignorePromotedDefaults**</span><br><code>ignorePromotedDefaults: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL). Such a display resolves its `promotable` config slots from its own config only, never from this browser's promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the received session is a record of what the sender saw, and a local preference silently repainting it would make it a lie. A track opened *afterwards* in that same session is a fresh track of this user's, so it never gets the flag and picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user deliberately makes the display follow a default.</span> | [BaseDisplay](../basedisplay#property-ignorepromoteddefaults) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-colorlegenddismissed">**colorLegendDismissed**</span><br><code>colorLegendDismissed: false</code> |  | LinearVariantDisplay |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: observable.map&lt;number, LoadedFeatureData&gt;()</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-rpcdatamap) |
+| <span id="volatile-featureidundermouse">**featureIdUnderMouse**</span><br><code>featureIdUnderMouse: null as string &#124; null</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-featureidundermouse) |
+| <span id="volatile-subfeatureidundermouse">**subfeatureIdUnderMouse**</span><br><code>subfeatureIdUnderMouse: null as string &#124; null</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-subfeatureidundermouse) |
+| <span id="volatile-mouseoverextrainformation">**mouseoverExtraInformation**</span><br><code>mouseoverExtraInformation: undefined as string &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-mouseoverextrainformation) |
+| <span id="volatile-sequencehoverposition">**sequenceHoverPosition**</span><br><details><summary><code>sequenceHoverPosition: undefined as SequenceHoverPosition &#124; und…</code></summary><pre><code>sequenceHoverPosition: undefined as SequenceHoverPosition &#124; undefined</code></pre></details> | <span data-pagefind-ignore>genomic base currently hovered in a feature sequence dialog opened from this display, read by the LGV crosshair overlay</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-sequencehoverposition) |
+| <span id="volatile-contextmenuinfo">**contextMenuInfo**</span><br><code>contextMenuInfo: undefined as FeatureContextMenuInfo &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-contextmenuinfo) |
+| <span id="volatile-incrementallayout">**incrementalLayout**</span><br><code>incrementalLayout: createIncrementalLayout()</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-incrementallayout) |
+| <span id="volatile-incrementallayoutlabelsonly">**incrementalLayoutLabelsOnly**</span><br><code>incrementalLayoutLabelsOnly: createIncrementalLayout()</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-incrementallayoutlabelsonly) |
+| <span id="volatile-incrementallayoutbodiesonly">**incrementalLayoutBodiesOnly**</span><br><code>incrementalLayoutBodiesOnly: createIncrementalLayout()</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-incrementallayoutbodiesonly) |
+| <span id="volatile-morphfromtops">**morphFromTops**</span><br><code>morphFromTops: undefined as Map&lt;string, number&gt; &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-morphfromtops) |
+| <span id="volatile-morphprogress">**morphProgress**</span><br><code>morphProgress: 1</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-morphprogress) |
+| <span id="volatile-morphstartms">**morphStartMs**</span><br><code>morphStartMs: 0</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-morphstartms) |
+| <span id="volatile-morphfrommaxy">**morphFromMaxY**</span><br><code>morphFromMaxY: 0</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#volatile-morphfrommaxy) |
+| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
+| <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
+| <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
+| <span id="volatile-scrolltop">**scrollTop**</span><br><code>scrollTop: 0</code> |  | [TrackHeightMixin](../trackheightmixin#volatile-scrolltop) |
+| <span id="volatile-loadedregions">**loadedRegions**</span><br><code>loadedRegions: observable.map&lt;number, Region&gt;()</code> | <span data-pagefind-ignore>regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#volatile-loadedregions) |
+| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>forceLoadTrack: false</code> | <span data-pagefind-ignore>The force-load button's answer: render this track regardless of region size or feature density. One boolean for the whole track, not a raised ceiling per region — the banner already tells the user how much data is involved, so one informed click approves the track and they never have to re-approve it per locus.<br><br>Volatile, not persisted, so it can't leak a disabled gate into a saved or shared session (a recipient would download the same data with no warning and no way to see why). A page load re-arms the gate. The durable, declarative equivalent is the `forceLoad` config slot, for session specs, embeds and `jbrowse-img --force`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#volatile-forceloadtrack) |
+| <span id="volatile-byteestimate">**byteEstimate**</span><br><code>byteEstimate: undefined as ByteEstimate &#124; undefined</code> | <span data-pagefind-ignore>The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now. One volatile rather than two, because the pair is a single measurement — written together by `setByteEstimate`, dropped together by `clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an ordinary viewport change doesn't flicker the banner; only chromosome navigation drops it. Ignored unless `derivedRegionTooLargeEnabled`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#volatile-byteestimate) |
+| <span id="volatile-canvasdrawn">**canvasDrawn**</span><br><code>canvasDrawn: false</code> | <span data-pagefind-ignore>flips true on first paint; read by test selectors to detect render</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-canvasdrawn) |
+| <span id="volatile-currentrenderingbackend">**currentRenderingBackend**</span><br><code>currentRenderingBackend: undefined</code> | <span data-pagefind-ignore>current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-currentrenderingbackend) |
+| <span id="volatile-rendertick">**renderTick**</span><br><code>renderTick: 0</code> | <span data-pagefind-ignore>counter the render autorun observes; bumped to force a re-render</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-rendertick) |
+| <span id="volatile-autorunsinstalled">**autorunsInstalled**</span><br><code>autorunsInstalled: false</code> | <span data-pagefind-ignore>guards attachRenderingBackend so the autorun pair spawns once per instance</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-autorunsinstalled) |
+| <span id="volatile-rendererror">**renderError**</span><br><code>renderError: undefined</code> | <span data-pagefind-ignore>the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-rendererror) |
+| <span id="volatile-activestoptoken">**activeStopToken**</span><br><code>activeStopToken: undefined as StopToken &#124; undefined</code> | <span data-pagefind-ignore>stop token of the in-flight fetch, or undefined when idle</span> | [FetchMixin](../fetchmixin#volatile-activestoptoken) |
+| <span id="volatile-fetchgeneration">**fetchGeneration**</span><br><code>fetchGeneration: 0</code> | <span data-pagefind-ignore>bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch</span> | [FetchMixin](../fetchmixin#volatile-fetchgeneration) |
+| <span id="volatile-fetchcanceled">**fetchCanceled**</span><br><code>fetchCanceled: false</code> | <span data-pagefind-ignore>true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`, it does not retrigger the fetch autoruns — so the load stays stopped until the user retries (`reload`) or the viewport changes. Any new fetch clears it (`runFetch` resets it at the start).</span> | [FetchMixin](../fetchmixin#volatile-fetchcanceled) |
+| <span id="volatile-regionstatuses">**regionStatuses**</span><br><code>regionStatuses: new Map&lt;number, RpcStatus&gt;()</code> | <span data-pagefind-ignore>latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex). Plain bookkeeping — not read reactively; setRegionStatus derives the observable statusMessage/statusProgress from it on every update so N parallel region fetches aggregate into one bar instead of clobbering.</span> | [FetchMixin](../fetchmixin#volatile-regionstatuses) |
+| <span id="volatile-densitystatsperregion">**densityStatsPerRegion**</span><br><details><summary><code>densityStatsPerRegion: observable.map&lt;number, RegionDensityStat…</code></summary><pre><code>densityStatsPerRegion: observable.map&lt;number, RegionDensityStats&gt;()</code></pre></details> | <span data-pagefind-ignore>per-region feature counts (keyed by displayedRegionIndex), so the density verdict is a live max over the visible regions at the current bpPerPx — never a stale fetch-time snapshot. Survives viewport-change clears; dropped on chromosome nav by `clearGateMeasurements`.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#volatile-densitystatsperregion) |
+
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> |  | LinearVariantDisplay |
+| <span id="getter-colorsbyconsequenceimpact">**colorsByConsequenceImpact**</span><br><code>boolean</code> |  | LinearVariantDisplay |
+| <span id="getter-colorsbysvtype">**colorsBySvType**</span><br><code>boolean</code> |  | LinearVariantDisplay |
+| <span id="getter-colorlegenditems">**colorLegendItems**</span><br><code>LegendItem[]</code> |  | LinearVariantDisplay |
+| <span id="getter-showcolorlegend">**showColorLegend**</span><br><code>boolean</code> |  | LinearVariantDisplay |
+| <span id="getter-colorlegend">**colorLegend**</span><br><code>{ items: LegendItem[]; dismiss: () =&gt; void; } &#124; undefined</code> | This display's answer to the base's `colorLegend` chrome hook: the shared canvas body draws the key, so this display needs no component of its own (its `ReactComponent` is the one LinearBasicDisplay registers). | LinearVariantDisplay |
+| <span id="getter-conf">**conf**</span><br><details><summary><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: st…</code></summary><pre><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;</code></pre></details> | <span data-pagefind-ignore>the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-conf) |
+| <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><code>GeneGlyphNotice &#124; undefined</code> | <span data-pagefind-ignore>Overridable hook (default absent): the isoform-collapse control the shared canvas body draws in its bottom-right chip stack, or nothing when the display has no gene glyphs. Bundled — state plus the two actions — because the real implementation reads a `geneGlyphMode` config slot that only `LinearBasicDisplay`'s schema declares; the variant display shares this body and simply doesn't answer.<br><br>Chrome a subclass owns arrives through hooks like this rather than through a per-subclass component, so one registered component serves every canvas-family display and no plugin imports another's component.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-geneglyphnotice) |
+| <span id="getter-renderstate">**renderState**</span><br><code>{ scrollY: number; canvasWidth: number; canvasHeight: number; }</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-renderstate) |
+| <span id="getter-labelscrollbucket">**labelScrollBucket**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-labelscrollbucket) |
+| <span id="getter-maxheight">**maxHeight**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-maxheight) |
+| <span id="getter-displaymode">**displayMode**</span><br><code>"normal" &#124; "compact" &#124; "superCompact" &#124; "collapsed"</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-displaymode) |
+| <span id="getter-labelfontsize">**labelFontSize**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-labelfontsize) |
+| <span id="getter-showlabelsmode">**showLabelsMode**</span><br><code>"auto" &#124; "off" &#124; "on"</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-showlabelsmode) |
+| <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-showlabels) |
+| <span id="getter-showdescriptions">**showDescriptions**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-showdescriptions) |
+| <span id="getter-showoutline">**showOutline**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-showoutline) |
+| <span id="getter-featurecolor">**featureColor**</span><br><code>any</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-featurecolor) |
+| <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-utrcolor) |
+| <span id="getter-colorbymode">**colorByMode**</span><br><code>"strand" &#124; "attribute" &#124; "solid"</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-colorbymode) |
+| <span id="getter-colorbyattribute">**colorByAttribute**</span><br><code>string</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-colorbyattribute) |
+| <span id="getter-effectiveshowdescriptions">**effectiveShowDescriptions**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-effectiveshowdescriptions) |
+| <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-selectedfeatureid) |
+| <span id="getter-colorbycds">**colorByCDS**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-colorbycds) |
+| <span id="getter-sequenceadapter">**sequenceAdapter**</span><br><code>any</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-sequenceadapter) |
+| <span id="getter-regionkeys">**regionKeys**</span><br><code>Map&lt;number, string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-regionkeys) |
+| <span id="getter-reversedregions">**reversedRegions**</span><br><code>Set&lt;number&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-reversedregions) |
+| <span id="getter-pinnedfeatureidset">**pinnedFeatureIdSet**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-pinnedfeatureidset) |
+| <span id="getter-resolvedhighlights">**resolvedHighlights**</span><br><code>ResolvedHighlights</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-resolvedhighlights) |
+| <span id="getter-highlightedfeatureidset">**highlightedFeatureIdSet**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-highlightedfeatureidset) |
+| <span id="getter-layoutpinnedfeatureidset">**layoutPinnedFeatureIdSet**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-layoutpinnedfeatureidset) |
+| <span id="getter-solofeatureidset">**soloFeatureIdSet**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-solofeatureidset) |
+| <span id="getter-layoutinputs">**layoutInputs**</span><br><details><summary><code>{ bpPerPx: number; regionKeys: Map&lt;…&gt;; reversedRegions: Set&lt;num…</code></summary><pre><code>{ bpPerPx: number; regionKeys: Map&lt;…&gt;; reversedRegions: Set&lt;number&gt;; displayMode: "normal" &#124; "compact" &#124; "superCompact" &#124; "collapsed"; pinnedFeatureIds: ReadonlySet&lt;string&gt;; }</code></pre></details> | <span data-pagefind-ignore>Layout inputs shared by the base layout and every fit-escalation layout, minus the per-config label/description reservation flags. One source so the candidate layouts can't drift on bpPerPx / region keys / display mode / pins.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-layoutinputs) |
+| <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether features can be laid out: data is fetched, in-bounds, and the view is measured. The shared readiness guard for every layout getter — an empty stack until then, so the GPU upload autorun has nothing to push and view-geometry getters aren't read before the view is measured.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-layoutready) |
+| <span id="getter-decimatedbaseinputs">**decimatedBaseInputs**</span><br><code>Omit&lt;LayoutInputs, "labelRoomFactor"&gt;</code> | <span data-pagefind-ignore>The `decimated` rung's layout inputs minus the whitespace factor. Typed without `labelRoomFactor` so the solve's shared preparation provably can't depend on it (see createContentHeightProbe).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-decimatedbaseinputs) |
+| <span id="getter-baselaidoutdatamap">**baseLaidOutDataMap**</span><br><code>Map&lt;number, FeatureDataResult&gt;</code> | <span data-pagefind-ignore>Full reservation (names + descriptions): rendered at fit stage `full` and in non-fit modes, and the first stack `fitStage` probes.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-baselaidoutdatamap) |
+| <span id="getter-fitlabelsonlylayout">**fitLabelsOnlyLayout**</span><br><code>Map&lt;number, FeatureDataResult&gt;</code> | <span data-pagefind-ignore>Names reserved, descriptions dropped — the `labels` stage's stack. With descriptions already off (config, or the auto density gate) this rung's reservation is the base one, so reuse that stack by reference rather than packing a byte-identical copy into a second memo.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitlabelsonlylayout) |
+| <span id="getter-fitdecimatedsolved">**fitDecimatedSolved**</span><br><code>Map&lt;number, FeatureDataResult&gt;</code> | <span data-pagefind-ignore>The `decimated` stack with its whitespace factor SOLVED to the track height. A name is kept only where the feature has at least `factor ×` its label width in neighbor whitespace (plus pinned/highlighted, always); the factor is binary-searched so the packed stack just fits `fitTargetHeight`. This fills the height with as many non-overlapping names as fit — rather than snapping between a few fixed rungs — because stack height is monotone in the factor (higher factor drops more names → shorter), so the search keeps the SMALLEST fitting factor, i.e. the MOST names. It decimates by isolation, not feature size/"importance" (no reliable importance signal — a tiny miRNA can outrank a large pseudogene), so it just maximizes how many readable names fit.<br><br>The trial factors are measured by `createContentHeightProbe`, which runs the same pack over the same raw region data but skips the clone and the per-region Y rewrite that `computeLaidOutData` does (~4/5 of a layout) and hoists the factor-invariant preparation out of the probe loop (about half of what remains). Only the winning factor is laid out for real. Probe and commit therefore agree on the height by construction — identical packing over identical inputs — which is what lets the ladder trust that the stack it measured is the stack it renders.<br><br>It deliberately does NOT use the incremental memo — the memo seeds each re-pack with the previous layout's rows (`captureFeatureTops`), and seeding a new factor's (different) label set from the old factor's rows packs the stack taller than the fresh probe, pushing the committed stack over `trackHeight` and making the ladder wrongly fall through to `bodies` (every label vanishing as the track grows).<br><br>Known cost of that choice: this is the one rung without prior-row seeding, so while the display sits here a zoom re-pack does not preserve top features' rows the way the other three rungs do. The pack is still deterministic for given inputs (insertion order falls back to layoutStartBp), so it is a lost stability guarantee, not churn. Seeding probes AND commit from the previous committed layout would restore it and keep the heights agreeing, but it puts a stateful seed underneath a control loop that picks the factor from measured heights — which can oscillate the factor, and flickering labels are worse than shifting rows.<br><br>When even the solve's most aggressive factor overflows (see `FIT_MAX_ROOM_FACTOR` in fitLadder.ts), the `labels` stack is returned — it overflows (that is why the ladder reached this rung), so `resolveFitLadder` descends to `bodies`, and reusing a stack already packed spares the solve one more pack that would only be discarded.<br><br>With names off entirely there is nothing to decimate — every factor packs the `labels` stack (see keepFeatureLabel's `showLabels` guard) — so the solve is skipped and that stack reused, turning the probes this rung costs into zero on exactly the dense tracks where the auto density gate hides names and fit mode is most used.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitdecimatedsolved) |
+| <span id="getter-fitbodiesonlylayout">**fitBodiesOnlyLayout**</span><br><code>Map&lt;number, FeatureDataResult&gt;</code> | <span data-pagefind-ignore>Nothing reserved: bodies packed edge-to-edge (the tightest stack), labels hidden — the `bodies` stage's stack. With names already off this is what the `labels` rung packed, so reuse that stack by reference instead of re-packing it into a third memo.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitbodiesonlylayout) |
+| <span id="getter-fitbodypx">**fitBodyPx**</span><br><code>number</code> | <span data-pagefind-ignore>The unscaled feature-body height (px): configured `featureHeight` times the display-mode multiplier (what the layout already applied). Basis for the fit squeeze/grow scale floors.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitbodypx) |
+| <span id="getter-fitminscale">**fitMinScale**</span><br><code>number</code> | <span data-pagefind-ignore>Floor on the fit squeeze: the smallest vertical scale that still leaves a feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack tighter than this the squeeze stops here and the surplus scrolls instead of vanishing.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitminscale) |
+| <span id="getter-fitmaxscale">**fitMaxScale**</span><br><code>number</code> | <span data-pagefind-ignore>Ceiling on the fit grow: the largest vertical scale before a feature body exceeds the configured (normal-mode) `featureHeight`. A sparse stack grows to fill the track only until its bodies reach their normal height, so fit never makes a feature taller than it would be outside fit mode. In normal display mode fitBodyPx already is the normal height, pinning the scale at 1 (no grow, surplus stays whitespace); a compact mode (fitBodyPx below normal) may grow back up to — but not past — the normal height.<br><br>This is exactly `1 / multiplier`: the grow target is the normal `featureHeight` and the laid-out body is `featureHeight * multiplier`, so `featureHeight` cancels and the ceiling is purely the display mode's compact ratio (1 in normal mode → no grow).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitmaxscale) |
+| <span id="getter-fitstage">**fitStage**</span><br><code>FitStage</code> | <span data-pagefind-ignore>The resolved fit outcome — which reservation `level` survived, its unscaled `layout`, and the vertical `scale` to fill the track — bundled so the three can never disagree. The ladder keeps the least reduction whose *unscaled* stack fits the track height: `full` (names + descriptions), else `labels` (drop descriptions), else `decimated` at a whitespace factor solved to the height (`fitDecimatedSolved` — keeps as many non-overlapping names as fit, filling the space continuously), else `bodies` (drop names too, pack tight) when even the tightest decimation overflows. The kept rung is then scaled to fill the track: grown up to `fitMaxScale` when it fits with room to spare, but never past the normal feature height — so in normal display mode grow is pinned at 1 and spare space stays whitespace, while a compact mode may enlarge back up to normal; or — only at the last `bodies` rung — squeezed down to `fitMinScale` and scrolled if even that overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled candidate heights so it can't feed back on its own `scale`. The ladder walk + scale math live in `resolveFitLadder`.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitstage) |
+| <span id="getter-fitscale">**fitScale**</span><br><code>number</code> | <span data-pagefind-ignore>Uniform vertical scale for fit mode; 1 unless the resolved stack is being grown to fill the track (> 1) or the bodies stack squeezed to fit (< 1).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-fitscale) |
+| <span id="getter-laidoutdatamap">**laidOutDataMap**</span><br><code>Map&lt;number, FeatureDataResult&gt;</code> | <span data-pagefind-ignore>What every consumer (hit test, GPU upload, React render) reads: the resolved fit layout, cloned and scaled only when grown or squeezed. A fit stack shorter than the track stays top-anchored at y=0 (the surplus is bottom whitespace), so a relayout — an isoform collapse, a filter — packs back up against the top instead of jumping to a re-centered offset. Returned by reference off the untransformed path (scale 1) so the incremental-layout upload diff and Y-morph idle check stay intact.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-laidoutdatamap) |
+| <span id="getter-renderedshowdescriptions">**renderedShowDescriptions**</span><br><code>boolean</code> | <span data-pagefind-ignore>Descriptions are painted only at the `full` stage (and whenever fit is off). Every render-time consumer — label draw and the highlight/hit/SVG label-width reservation — reads this so a box never reserves width for a description it won't draw.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-renderedshowdescriptions) |
+| <span id="getter-renderedshowlabels">**renderedShowLabels**</span><br><code>boolean</code> | <span data-pagefind-ignore>Names are painted at every stage short of `bodies` (and whenever fit is off), where the packer reserved row height + overhang for the names it kept so they never overlap — including the `decimated` stage, whose per-feature pruning happens inside the layout (dropped names are removed from floatingLabelsData), not via this flag. At the `bodies` stage nothing is reserved, so all names are hidden rather than drawn on top of the boxes. Every render-time consumer reads this so hidden names reserve nothing.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-renderedshowlabels) |
+| <span id="getter-renderdatamap">**renderDataMap**</span><br><code>Map&lt;number, FeatureDataResult&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-renderdatamap) |
+| <span id="getter-settledmaxy">**settledMaxY**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-settledmaxy) |
+| <span id="getter-maxy">**maxY**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-maxy) |
+| <span id="getter-hasoverflow">**hasOverflow**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-hasoverflow) |
+| <span id="getter-truncatedfeaturecount">**truncatedFeatureCount**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-truncatedfeaturecount) |
+| <span id="getter-contentheight">**contentHeight**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-contentheight) |
+| <span id="getter-scrollableheight">**scrollableHeight**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-scrollableheight) |
+| <span id="getter-naturalcontentheight">**naturalContentHeight**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-naturalcontentheight) |
+| <span id="getter-grownheight">**grownHeight**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-grownheight) |
+| <span id="getter-height">**height**</span><br><code>number</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-height) |
+| <span id="getter-featureidindex">**featureIdIndex**</span><br><code>Map&lt;string, FlatbushItem&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-featureidindex) |
+| <span id="getter-subfeatureidindex">**subfeatureIdIndex**</span><br><code>Map&lt;string, SubfeatureInfo&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-subfeatureidindex) |
+| <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>FlatbushItem &#124; null</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-hoveredfeature) |
+| <span id="getter-hoveredsubfeature">**hoveredSubfeature**</span><br><code>SubfeatureInfo &#124; null</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-hoveredsubfeature) |
+| <span id="getter-featureitemmap">**featureItemMap**</span><br><code>Map&lt;string, FeatureItemEntry&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-featureitemmap) |
+| <span id="getter-flatbushindexes">**flatbushIndexes**</span><br><code>Map&lt;number, FlatbushRegionIndexes&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-flatbushindexes) |
+| <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
+| <span id="getter-parentdisplay">**parentDisplay**</span><br><details><summary><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124;…</code></summary><pre><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124; undefined; } &#124; undefined</code></pre></details> | <span data-pagefind-ignore>Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)</span> | [BaseDisplay](../basedisplay#getter-parentdisplay) |
+| <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |
+| <span id="getter-displayblurb">**DisplayBlurb**</span><br><details><summary><code>FC&lt;{ model: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; I…</code></summary><pre><code>FC&lt;{ model: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }&gt; &#124; null</code></pre></details> |  | [BaseDisplay](../basedisplay#getter-displayblurb) |
+| <span id="getter-adapterconfig">**adapterConfig**</span><br><code>any</code> |  | [BaseDisplay](../basedisplay#getter-adapterconfig) |
+| <span id="getter-isminimized">**isMinimized**</span><br><code>boolean</code> | <span data-pagefind-ignore>Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.</span> | [BaseDisplay](../basedisplay#getter-isminimized) |
+| <span id="getter-effectiverpcdrivername">**effectiveRpcDriverName**</span><br><code>any</code> | <span data-pagefind-ignore>Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName</span> | [BaseDisplay](../basedisplay#getter-effectiverpcdrivername) |
+| <span id="getter-displaymessagecomponent">**DisplayMessageComponent**</span><br><code>FC&lt;any&gt; &#124; undefined</code> | <span data-pagefind-ignore>if a display-level message should be displayed instead, make this return a react component</span> | [BaseDisplay](../basedisplay#getter-displaymessagecomponent) |
+| <span id="getter-heightmode">**heightMode**</span><br><code>"fixed" &#124; "grow" &#124; "fit"</code> | <span data-pagefind-ignore>The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: resolveConf walks the customized-track -> session-default -> `fixed` cascade and never returns the `inherit` sentinel.</span> | [HeightModeMixin](../heightmodemixin#getter-heightmode) |
+| <span id="getter-fittargetheight">**fitTargetHeight**</span><br><code>number</code> | <span data-pagefind-ignore>The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. Read there instead of the reactive `height` getter to break the grow-mode cycle (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.</span> | [HeightModeMixin](../heightmodemixin#getter-fittargetheight) |
+| <span id="getter-growmaxheight">**growMaxHeight**</span><br><code>number</code> | <span data-pagefind-ignore>Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives here rather than as a constant so a track whose whole point is a deep pileup can raise it; both displays that own a `grownHeight` read this, so the two can't diverge.</span> | [HeightModeMixin](../heightmodemixin#getter-growmaxheight) |
+| <span id="getter-autoheight">**autoHeight**</span><br><code>boolean</code> | <span data-pagefind-ignore>`grow` mode as a boolean, derived from the unified `heightMode` slot.</span> | [HeightModeMixin](../heightmodemixin#getter-autoheight) |
+| <span id="getter-fitheighttodisplay">**fitHeightToDisplay**</span><br><code>boolean</code> | <span data-pagefind-ignore>`fit` mode as a boolean, derived from the unified `heightMode` slot.</span> | [HeightModeMixin](../heightmodemixin#getter-fitheighttodisplay) |
+| <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | <span data-pagefind-ignore>The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured. Before that, `renderBlocks` → `visibleRegions` → `view.width` throws by design, and the render autorun's catch would show that as a GPU render-error banner. Gating here — once, for all of them — is what lets a display's `renderState` be a plain resolved getter and its render callback gate only on its own data. The render-lifecycle twin of `autorunOnReadyView`.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-canrender) |
+| <span id="getter-isready">**isReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>true once the canvas has painted and no fetch is in flight</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-isready) |
+| <span id="getter-viewportwithinloadeddata">**viewportWithinLoadedData**</span><br><code>boolean</code> | <span data-pagefind-ignore>true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan. Drives the loading overlay through the pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact and for the resolution-staleness gap.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-viewportwithinloadeddata) |
+| <span id="getter-datacurrent">**dataCurrent**</span><br><code>boolean</code> | <span data-pagefind-ignore>This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now. Here that is spatial — every visible block lies within a fetched region — plus `loadedRegions.size`, which rules out the vacuously-true empty viewport. Regions stream in one at a time, so this (not "the first datum arrived") is what keeps a multi-region/whole-genome export complete.<br><br>Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate the fetch autorun and the loading overlay use.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-datacurrent) |
+| <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>true once an off-screen (SVG) export can safely read this display's data. Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of inlining the condition.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-svgready) |
+| <span id="getter-svgreadyextraterminal">**svgReadyExtraTerminal**</span><br><code>boolean</code> | <span data-pagefind-ignore>Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data. Sequence sets it when zoomed past base resolution — it renders a static "zoom in" message and fetches nothing, so `svgReady` would otherwise never resolve.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-svgreadyextraterminal) |
+| <span id="getter-renderblocks">**renderBlocks**</span><br><code>RenderBlock[]</code> | <span data-pagefind-ignore>Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-renderblocks) |
+| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | <span data-pagefind-ignore>The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-displayphase) |
+| <span id="getter-rpcpropscachekey">**rpcPropsCacheKey**</span><br><code>string</code> | <span data-pagefind-ignore>The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string. `serializeRpcProps` owns the why; `installGlobalFetchAutorun` keys its global-family counterpart on the same function, so the two families invalidate on the same axis.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-rpcpropscachekey) |
+| <span id="getter-gatefoldedintofetch">**gateFoldedIntoFetch**</span><br><code>boolean</code> | <span data-pagefind-ignore>Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas). Kept separate from `derivedRegionTooLargeEnabled` so a gate mixin contributes by setting *this* rather than overriding the verdict switch — the two would otherwise race on composition order, and the later `.compose()` argument silently winning is invisible to both the type system and the tests.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatefoldedintofetch) |
+| <span id="getter-bytegateenabled">**byteGateEnabled**</span><br><code>boolean</code> | <span data-pagefind-ignore>The one opt-in a pre-flight display writes: true means "measure this fetch and gate on it". `byteGateBlocksFetch` reads it (so a display that calls the gate unconditionally still pays no RPC when it's off) and so does the verdict, which is why requesting the estimate and gating on it can't drift apart. MAF flips it off in summary mode, LD for pre-computed adapters.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-bytegateenabled) |
+| <span id="getter-configuredfetchsizelimit">**configuredFetchSizeLimit**</span><br><code>number</code> | <span data-pagefind-ignore>The composing display's configured `fetchSizeLimit`, read straight from its config. Only evaluated when the derived gate is enabled (guarded by `derivedRegionTooLargeEnabled`), and every derived display extends `baseLinearDisplayConfigSchema`, which owns the slot — so the read is always valid where it fires. A display with a bespoke source can still override it.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-configuredfetchsizelimit) |
+| <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> | <span data-pagefind-ignore>Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-densitytoolarge) |
+| <span id="getter-adapterfetchsizelimit">**adapterFetchSizeLimit**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config. Read on the main thread, and only here — the estimate that crosses the worker boundary carries bytes and nothing else, so the banner and the worker budget have no second spelling of "the adapter's limit" to disagree about.<br><br>A slot **path off the live config**, not a read off `self.adapterConfig`: that getter is a snapshot, which by design omits slots sitting at their default, so a BAM's declared 5 Mb read back as `undefined` in every config that doesn't restate it. Resolved values come from a config node — see CONFIG_PATTERN.md §"Reading a slot: node, not snapshot".</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-adapterfetchsizelimit) |
+| <span id="getter-configforceload">**configForceLoad**</span><br><code>boolean</code> | <span data-pagefind-ignore>Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button). Read straight from the `forceLoad` config slot on `baseLinearDisplayConfigSchema` (same guard/ownership as `configuredFetchSizeLimit`), so every opt-in display honors it without per-display wiring.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-configforceload) |
+| <span id="getter-gatevisiblebp">**gateVisibleBp**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The span on screen, or undefined before the view is measured. The gate's only read of its container: `visibleBp` reads `view.width`, which throws before measurement and a bare getter must never throw, so the pre-init guard lives here once rather than at each reader.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatevisiblebp) |
+| <span id="getter-derivedregiontoolargeenabled">**derivedRegionTooLargeEnabled**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never an override, so a gate mixin's opt-in doesn't hinge on which side of `.compose()` it lands on. False for the non-byte displays (wiggle, manhattan, sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus` getters.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-derivedregiontoolargeenabled) |
+| <span id="getter-aboveforceloadfloor">**aboveForceLoadFloor**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before the view is measured.<br><br>Deliberately independent of the opt-in and of force-load, so a display whose *own* opt-in depends on the floor can read it without a cycle: MAF's `showSummary` swaps to the cheap summary adapter exactly where the detail fetch would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds the opt-in and exemption terms on top.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-aboveforceloadfloor) |
+| <span id="getter-bytegateexempt">**byteGateExempt**</span><br><code>boolean</code> | <span data-pagefind-ignore>True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button. One boolean is the whole force-load mechanism — there is no per-region ceiling to carry, expire, or reconcile between the two axes. A self-summarizing adapter (BigWig, HiC, sequence) needs no term here: it reports no byte estimate at all, which already keeps the byte axis out of the verdict.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-bytegateexempt) |
+| <span id="getter-estimatedbytesforvisiblespan">**estimatedBytesForVisibleSpan**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers. Rescaling is what makes the derived verdict a pure function of the current view and lets it self-release on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-estimatedbytesforvisiblespan) |
+| <span id="getter-gatebytelimit">**gateByteLimit**</span><br><code>number</code> | <span data-pagefind-ignore>The byte budget the gate enforces: the adapter's limit, else the display config. Also what `resolvedByteLimit()` hands the worker, so the two can't gate against different numbers. Force-load doesn't raise this — it exempts the track outright via `byteGateExempt`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatebytelimit) |
+| <span id="getter-gateactive">**gateActive**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.<br><br>The single home of that question. Everything downstream reads it instead of restating it: the verdict, the pre-flight (no estimate RPC when nothing could act on it), and the worker budgets, which go undefined together here rather than each re-deriving the floor. The floor used to be spelled out in three places at three layers, which is a standing invitation for them to disagree.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gateactive) |
+| <span id="getter-toolargestatus">**tooLargeStatus**</span><br><code>RegionTooLargeStatus</code> | <span data-pagefind-ignore>The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text). Derived from the rescaled estimate, so it releases itself on zoom-in; false whenever `gateActive` is false.<br><br>The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome` renders the banner from `regionTooLargeReason`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-toolargestatus) |
+| <span id="getter-regiontoolarge">**regionTooLarge**</span><br><code>boolean</code> |  | [RegionTooLargeMixin](../regiontoolargemixin#getter-regiontoolarge) |
+| <span id="getter-regiontoolargereason">**regionTooLargeReason**</span><br><code>string</code> | <span data-pagefind-ignore>Which axis tripped, as banner text: the estimated download size, or "Too many features". Empty string when the region isn't too large.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-regiontoolargereason) |
+| <span id="getter-isloading">**isLoading**</span><br><code>boolean</code> | <span data-pagefind-ignore>true while a fetch is active</span> | [FetchMixin](../fetchmixin#getter-isloading) |
+| <span id="getter-densitygateenabled">**densityGateEnabled**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the density (features-per-pixel) axis applies. Byte-only displays override this to `false`: e.g. `LinearMultiRowFeatureDisplay` paints features into fixed lanes, so a high total feature count is not a per-glyph render cost — only the download (byte) budget should gate it.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#getter-densitygateenabled) |
+| <span id="getter-visiblefeaturedensityperpx">**visibleFeatureDensityPerPx**</span><br><code>number</code> | <span data-pagefind-ignore>Current density across the visible regions at the debounced coarseBpPerPx, so the verdict shares the layout cadence and doesn't flicker mid-zoom.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#getter-visiblefeaturedensityperpx) |
+| <span id="getter-maxfeaturedensity">**maxFeatureDensity**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The density budget passed to the worker and used by the derived verdict: undefined (gate off) when nothing gates, otherwise the config. Force-load reaches this through the shared `gateActive`, so approving a track's *size* no longer half-disables its *density* axis by side effect — both axes read the one boolean now.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#getter-maxfeaturedensity) |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="method-colorbysubmenuitems">**colorBySubMenuItems**</span><br><details><summary><code>() =&gt; { label: string; type: "radio"; checked: boolean; onClick…</code></summary><pre><code>() =&gt; { label: string; type: "radio"; checked: boolean; onClick: () =&gt; void; }[]</code></pre></details> |  | LinearVariantDisplay |
+| <span id="method-activefilters">**activeFilters**</span><br><code>() =&gt; string[]</code> | <span data-pagefind-ignore>The filters actually applied, as `jexl:`-prefixed expressions. The runtime override shadows the config slot when set; otherwise the deferred-evaluation `jexlFilters` config slot is prefixed on read. This is the single source of truth for both the worker (via rpcProps) and the "Filter by..." dialog (so existing config filters show up and are editable).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-activefilters) |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; {…}</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-rpcprops) |
+| <span id="method-fitlayoutat">**fitLayoutAt**</span><br><details><summary><code>(memo: (rpcDataMap: ReadonlyMap&lt;number, FeatureDataResult&gt;, inp…</code></summary><pre><code>(memo: (rpcDataMap: ReadonlyMap&lt;number, FeatureDataResult&gt;, inputs: LayoutInputs) =&gt; Map&lt;number, FeatureDataResult&gt;, showLabels: boolean, showDescriptions: boolean) =&gt; Map&lt;...&gt;</code></pre></details> | <span data-pagefind-ignore>One fit-escalation candidate: the stack packed with the given label/description reservation, via that config's own memo instance so each keeps stable references across renders. Empty until initialized/in-bounds, so the GPU upload autorun has nothing to push.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-fitlayoutat) |
+| <span id="method-decimatedlayoutinputs">**decimatedLayoutInputs**</span><br><code>(labelRoomFactor: number) =&gt; LayoutInputs</code> | <span data-pagefind-ignore>Layout inputs for the `decimated` rung at one whitespace factor. Every probe and the committed layout go through this single builder, so the stack the solve measures cannot differ from the stack it commits by a forgotten field.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-decimatedlayoutinputs) |
+| <span id="method-solvelabelroomfactor">**solveLabelRoomFactor**</span><br><code>(trackHeight: number) =&gt; number &#124; undefined</code> | <span data-pagefind-ignore>The whitespace factor the `decimated` rung commits at: the smallest one whose packed stack fits `trackHeight` (smallest = most names kept), or undefined when even the most aggressive decimation overflows. The bisection and its probe live in `solveLabelRoomFactor` (fitLadder.ts), next to the ladder walk they serve.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-solvelabelroomfactor) |
+| <span id="method-getfeaturebyid">**getFeatureById**</span><br><code>(featureId: string) =&gt; FlatbushItem &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-getfeaturebyid) |
+| <span id="method-searchfeaturebyid">**searchFeatureByID**</span><br><details><summary><code>(id: string) =&gt; readonly [number, number, number, number] &#124; und…</code></summary><pre><code>(id: string) =&gt; readonly [number, number, number, number] &#124; undefined</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-searchfeaturebyid) |
+| <span id="method-rendersvg">**renderSvg**</span><br><details><summary><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></summary><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;...&gt; &#124; AwaitedReactNode&gt;</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-rendersvg) |
+| <span id="method-iscachevalid">**isCacheValid**</span><br><code>(displayedRegionIndex: number) =&gt; boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-iscachevalid) |
+| <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-showsubmenucheckboxitems) |
+| <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-showsubmenuradiogroups) |
+| <span id="method-showsubmenumenuitems">**showSubmenuMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | <span data-pagefind-ignore>Flattened "Show..." submenu: all checkbox toggles first, then the radio groups (each under its own subHeader). Composed from the two extension points above so subclasses inject toggles/groups in place without rebuilding trackMenuItems from scratch.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-showsubmenumenuitems) |
+| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | <span data-pagefind-ignore>The feature right-click menu (open details, zoom to, get sequence, highlight scopes, pin/solo/hide, copy).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-contextmenuitems) |
+| <span id="method-colormenuitems">**colorMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | <span data-pagefind-ignore>Color-related track menu entries: a single "Color by..." entry whose "Solid color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants) override to drop the gene-oriented UTR picker.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-colormenuitems) |
+| <span id="method-featureheightmenuitems">**featureHeightMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | <span data-pagefind-ignore>One "Feature height" menu with two independent radio groups: the size presets and, under a "Track sizing" subheader, how the track responds when there are more features than fit.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-featureheightmenuitems) |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#method-trackmenuitems) |
+| <span id="method-renderingprops">**renderingProps**</span><br><details><summary><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; {…</code></summary><pre><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }</code></pre></details> | <span data-pagefind-ignore>props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks</span> | [BaseDisplay](../basedisplay#method-renderingprops) |
+| <span id="method-resolvedbytelimit">**resolvedByteLimit**</span><br><code>() =&gt; number &#124; undefined</code> | <span data-pagefind-ignore>The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features. Undefined (unlimited) when nothing gates; otherwise the very number the banner compares against, so the worker can't reject a region the banner then calls fine. Lives here, not on the canvas gate that consumes it, because both its terms are this mixin's — canvas owns only the density axis.</span> | [RegionTooLargeMixin](../regiontoolargemixin#method-resolvedbytelimit) |
+| <span id="method-makestatuscallback">**makeStatusCallback**</span><br><code>() =&gt; (status: RpcStatus) =&gt; void</code> | <span data-pagefind-ignore>An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard at every call site.</span> | [FetchMixin](../fetchmixin#method-makestatuscallback) |
+| <span id="method-makeregionstatuscallback">**makeRegionStatusCallback**</span><br><code>(key: number) =&gt; (status: RpcStatus) =&gt; void</code> | <span data-pagefind-ignore>Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other. Same `isAlive` guard; `setRegionStatus` owns the throttling (it has to thin only the bar write, not the per-region bookkeeping).</span> | [FetchMixin](../fetchmixin#method-makeregionstatuscallback) |
+| <span id="method-observedmaxdensity">**observedMaxDensity**</span><br><code>(bpPerPx: number) =&gt; number</code> | <span data-pagefind-ignore>Highest features-per-pixel across the visible regions at `bpPerPx`, from the cached per-region counts.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#method-observedmaxdensity) |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setcolorlegenddismissed">**setColorLegendDismissed**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearVariantDisplay |
+| <span id="action-beginymorph">**beginYMorph**</span><br><code>(fromTops: Map&lt;string, number&gt;, fromMaxY: number) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-beginymorph) |
+| <span id="action-setmorphprogress">**setMorphProgress**</span><br><code>(t: number) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setmorphprogress) |
+| <span id="action-endymorph">**endYMorph**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-endymorph) |
+| <span id="action-setrpcdata">**setRpcData**</span><br><details><summary><code>(displayedRegionIndex: number, data: FeatureDataResult, loadedB…</code></summary><pre><code>(displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) =&gt; void</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setrpcdata) |
+| <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-cleardisplayspecificdata) |
+| <span id="action-prunerpcdatamaptovisible">**pruneRpcDataMapToVisible**</span><br><code>(visibleDisplayedRegionIndices: Set&lt;number&gt;) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-prunerpcdatamaptovisible) |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: CanvasFeatureRenderingBackend) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-startrenderingbackend) |
+| <span id="action-sethover">**setHover**</span><br><details><summary><code>(featureId: string &#124; null, subfeatureId: string &#124; null, tooltip…</code></summary><pre><code>(featureId: string &#124; null, subfeatureId: string &#124; null, tooltip: string &#124; undefined) =&gt; void</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-sethover) |
+| <span id="action-clearhover">**clearHover**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-clearhover) |
+| <span id="action-closecontextmenu">**closeContextMenu**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-closecontextmenu) |
+| <span id="action-togglepinnedfeature">**togglePinnedFeature**</span><br><code>(featureId: string) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-togglepinnedfeature) |
+| <span id="action-togglesolofeature">**toggleSoloFeature**</span><br><code>(featureId: string) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-togglesolofeature) |
+| <span id="action-clearsolo">**clearSolo**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-clearsolo) |
+| <span id="action-hidefeature">**hideFeature**</span><br><code>(featureId: string) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-hidefeature) |
+| <span id="action-showallhidden">**showAllHidden**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-showallhidden) |
+| <span id="action-setfeaturehighlights">**setFeatureHighlights**</span><br><code>(highlights: FeatureHighlight[]) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setfeaturehighlights) |
+| <span id="action-addfeaturehighlightforitem">**addFeatureHighlightForItem**</span><br><code>(target: HighlightTarget, refName: string) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-addfeaturehighlightforitem) |
+| <span id="action-removefeaturehighlightsforid">**removeFeatureHighlightsForId**</span><br><code>(featureId: string) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-removefeaturehighlightsforid) |
+| <span id="action-clearfeaturehighlights">**clearFeatureHighlights**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-clearfeaturehighlights) |
+| <span id="action-applysolo">**applySolo**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-applysolo) |
+| <span id="action-solofeature">**soloFeature**</span><br><code>(featureId: string) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-solofeature) |
+| <span id="action-clearallfeaturefilters">**clearAllFeatureFilters**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-clearallfeaturefilters) |
+| <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> | <span data-pagefind-ignore>Open the feature-details widget. The adapter's header metadata (VCF INFO/FORMAT descriptions, etc.) is fetched first and passed as `descriptions` so the widget can label attribute rows and — for the variant widget — resolve the ANN/CSQ column names; without it that table renders headerless. CoreGetMetadata returns null for adapters that expose none, so this is a no-op for those tracks.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-selectfeature) |
+| <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-clearselection) |
+| <span id="action-setshowlabels">**setShowLabels**</span><br><code>(value: "auto" &#124; "off" &#124; "on") =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setshowlabels) |
+| <span id="action-setshowdescriptions">**setShowDescriptions**</span><br><code>(value: boolean) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setshowdescriptions) |
+| <span id="action-setjexlfilters">**setJexlFilters**</span><br><code>(filters?: string[] &#124; undefined) =&gt; void</code> | <span data-pagefind-ignore>Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass undefined to clear it and fall back to the config `jexlFilters` slot.</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setjexlfilters) |
+| <span id="action-setshowoutline">**setShowOutline**</span><br><code>(value: boolean) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setshowoutline) |
+| <span id="action-setfeaturecolor">**setFeatureColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setfeaturecolor) |
+| <span id="action-setutrcolor">**setUtrColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setutrcolor) |
+| <span id="action-setsequencehoverposition">**setSequenceHoverPosition**</span><br><code>(pos: SequenceHoverPosition &#124; undefined) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setsequencehoverposition) |
+| <span id="action-opencontextmenu">**openContextMenu**</span><br><code>(info: FeatureContextMenuInfo) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-opencontextmenu) |
+| <span id="action-setdisplaymode">**setDisplayMode**</span><br><details><summary><code>(value: "normal" &#124; "compact" &#124; "superCompact" &#124; "collapsed") =&gt;…</code></summary><pre><code>(value: "normal" &#124; "compact" &#124; "superCompact" &#124; "collapsed") =&gt; void</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setdisplaymode) |
+| <span id="action-setheightmode">**setHeightMode**</span><br><code>(mode: "fixed" &#124; "grow" &#124; "fit") =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-setheightmode) |
+| <span id="action-opensetcolordialog">**openSetColorDialog**</span><br><code>(showUtrColor?: any) =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-opensetcolordialog) |
+| <span id="action-opencolorbyattributedialog">**openColorByAttributeDialog**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-opencolorbyattributedialog) |
+| <span id="action-openfilterdialog">**openFilterDialog**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-openfilterdialog) |
+| <span id="action-fetchfullfeature">**fetchFullFeature**</span><br><details><summary><code>(featureId: string, displayedRegionIndex: number) =&gt; Promise&lt;Si…</code></summary><pre><code>(featureId: string, displayedRegionIndex: number) =&gt; Promise&lt;SimpleFeature &#124; undefined&gt;</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-fetchfullfeature) |
+| <span id="action-selectfeaturebyid">**selectFeatureById**</span><br><details><summary><code>(featureId: string, subfeatureInfo: SubfeatureInfo &#124; undefined,…</code></summary><pre><code>(featureId: string, subfeatureInfo: SubfeatureInfo &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-selectfeaturebyid) |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-reload) |
+| <span id="action-fetchneeded">**fetchNeeded**</span><br><details><summary><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =…</code></summary><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =&gt; void</code></pre></details> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-fetchneeded) |
+| <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> | <span data-pagefind-ignore>A manual drag-resize means the user wants a fixed height; leave grow mode first, otherwise the reactive `height` getter re-derives grownHeight on the next layout change and the drag appears to do nothing. Read the displayed (grown) height before flipping and write `grown + distance` directly — the grow-exit bake skips when the slot is written during the exit, so this delta isn't clobbered (a plain `superResizeHeight` would read the stale slot post-flip and lose it).</span> | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-resizeheight) |
+| <span id="action-afterattach">**afterAttach**</span><br><code>() =&gt; void</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#action-afterattach) |
+| <span id="action-setignorepromoteddefaults">**setIgnorePromotedDefaults**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>see the `ignorePromotedDefaults` property</span> | [BaseDisplay](../basedisplay#action-setignorepromoteddefaults) |
+| <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |
+| <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-seterror) |
+| <span id="action-setrpcdrivername">**setRpcDriverName**</span><br><code>(rpcDriverName: string) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setrpcdrivername) |
+| <span id="action-setscrolltop">**setScrollTop**</span><br><code>(scrollTop: number) =&gt; void</code> |  | [TrackHeightMixin](../trackheightmixin#action-setscrolltop) |
+| <span id="action-setheight">**setHeight**</span><br><code>(displayHeight: number) =&gt; number</code> |  | [TrackHeightMixin](../trackheightmixin#action-setheight) |
+| <span id="action-setloadedregion">**setLoadedRegion**</span><br><code>(displayedRegionIndex: number, region: Region) =&gt; void</code> | <span data-pagefind-ignore>Action wrapper so callers after async boundaries stay in MST strict mode.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-setloadedregion) |
+| <span id="action-clearallrpcdata">**clearAllRpcData**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag. The too-large gate is derived (a pure function of the cached estimate × viewport), so it needs no explicit clear here — it self-releases when the viewport changes.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-clearallrpcdata) |
+| <span id="action-invalidateloadedregions">**invalidateLoadedRegions**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-invalidateloadedregions) |
+| <span id="action-onregiontoolarge">**onRegionTooLarge**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Overridable hook (no-op base): called when `regionTooLarge` transitions to true. Displays with transient hover/tooltip state override it to clear that state — the too-large banner replaces the rendered content, so a lingering hover would otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-onregiontoolarge) |
+| <span id="action-fetchregions">**fetchRegions**</span><br><details><summary><code>(needed: { region: Region; displayedRegionIndex: number; }[], w…</code></summary><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[], work: (ctx: FetchContext) =&gt; Promise&lt;void&gt;) =&gt; Promise&lt;void&gt;</code></pre></details> | <span data-pagefind-ignore>Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-fetchregions) |
+| <span id="action-setbyteestimate">**setByteEstimate**</span><br><code>(estimate: ByteEstimate) =&gt; void</code> | <span data-pagefind-ignore>Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen. `measuredSpanBp` must be the `visibleBp` captured when the measurement was *requested*, not read at commit time: a view that zoomed during the in-flight fetch would otherwise anchor the estimate to a span it never covered, and since `FetchVisibleRegions` skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner with no refetch to correct it. Harmless for non-gated displays (they ignore it).</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-setbyteestimate) |
+| <span id="action-clearbyteestimate">**clearByteEstimate**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drops the cached estimate. Chromosome navigation only: the estimate intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't flicker the banner.<br><br>`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring it on navigation is exactly the per-locus re-approval the button exists to avoid.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-clearbyteestimate) |
+| <span id="action-setforceloadtrack">**setForceLoadTrack**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>Exempt this track from the gate (or put it back under it). Separate from `forceLoad` so turning the gate off and refetching stay separable — a caller that just wants the flag (a revoke, a test) doesn't trigger a fetch, and `forceLoad` doesn't have to inline a volatile write.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-setforceloadtrack) |
+| <span id="action-forceload">**forceLoad**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Force-load: exempt this track from the gate and refetch. One click covers every region and both axes, informed by the size the banner just quoted. The display chrome calls this from TooLargeMessage's button; concrete display models override `reload()` to do the actual refetch.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-forceload) |
+| <span id="action-bytegateblocksfetch">**byteGateBlocksFetch**</span><br><details><summary><code>(regions: { refName: string; start: number; end: number; assemb…</code></summary><pre><code>(regions: { refName: string; start: number; end: number; assemblyName: string; }[], ctx: { isStale: () =&gt; boolean; }) =&gt; Promise&lt;boolean&gt;</code></pre></details> | <span data-pagefind-ignore>The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.<br><br>Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family, LD and arc from their own global fetches) calls this and returns on true. Sequencing the steps at a call site is what used to go wrong: the span is read here, *before* the await, so the estimate is anchored to the span it actually covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on screen, and since the fetch autoruns skip while `regionTooLarge` holds, an over-anchored estimate wedges the banner with no refetch to correct it.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-bytegateblocksfetch) |
+| <span id="action-markcanvasdrawn">**markCanvasDrawn**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-markcanvasdrawn) |
+| <span id="action-resetcanvasdrawn">**resetCanvasDrawn**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-resetcanvasdrawn) |
+| <span id="action-stoprenderingbackend">**stopRenderingBackend**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-stoprenderingbackend) |
+| <span id="action-rendernow">**renderNow**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-rendernow) |
+| <span id="action-setrendererror">**setRenderError**</span><br><code>(error: unknown) =&gt; void</code> | <span data-pagefind-ignore>set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.</span> | [RenderLifecycleMixin](../renderlifecyclemixin#action-setrendererror) |
+| <span id="action-attachrenderingbackend">**attachRenderingBackend**</span><br><code>&lt;B&gt;(backend: B, cbs: RenderingBackendCallbacks&lt;B&gt;) =&gt; void</code> | <span data-pagefind-ignore>attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)</span> | [RenderLifecycleMixin](../renderlifecyclemixin#action-attachrenderingbackend) |
+| <span id="action-throttlestatus">**throttleStatus**</span><br><code>(apply: () =&gt; void) =&gt; void</code> | <span data-pagefind-ignore>Run `apply` only if the throttle window has elapsed.</span> | [FetchMixin](../fetchmixin#action-throttlestatus) |
+| <span id="action-resetstatus">**resetStatus**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drop the active stop token and clear all status bookkeeping. Shared by both cancel paths and runFetch's cleanup.</span> | [FetchMixin](../fetchmixin#action-resetstatus) |
+| <span id="action-stopactivefetch">**stopActiveFetch**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Abort the in-flight fetch (if any) and clear its status. The shared preamble of both cancel paths; the difference between them is only what they do to `fetchCanceled` / `fetchGeneration` afterward.</span> | [FetchMixin](../fetchmixin#action-stopactivefetch) |
+| <span id="action-setregionstatus">**setRegionStatus**</span><br><code>(key: number, status?: RpcStatus &#124; undefined) =&gt; void</code> | <span data-pagefind-ignore>Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys. Pass undefined to drop a key. Used by displays that fan a single fetch out into parallel per-region RPCs.</span> | [FetchMixin](../fetchmixin#action-setregionstatus) |
+| <span id="action-cancelfetch">**cancelFetch**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the *internal* reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.</span> | [FetchMixin](../fetchmixin#action-cancelfetch) |
+| <span id="action-cancelfetchbyuser">**cancelFetchByUser**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.</span> | [FetchMixin](../fetchmixin#action-cancelfetchbyuser) |
+| <span id="action-beforedestroy">**beforeDestroy**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Release an in-flight fetch's stop token on teardown. Without this, a display destroyed mid-fetch (track/view closed while loading) never revokes its token — a blob-URL leak on the non-SAB fallback path — and never signals the worker to abort the now-useless work. MST auto-chains lifecycle hooks, so a composing display can still define its own beforeDestroy.</span> | [FetchMixin](../fetchmixin#action-beforedestroy) |
+| <span id="action-runfetch">**runFetch**</span><br><code>(work: (ctx: FetchContext) =&gt; Promise&lt;void&gt;) =&gt; Promise&lt;void&gt;</code> | <span data-pagefind-ignore>Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.</span> | [FetchMixin](../fetchmixin#action-runfetch) |
+| <span id="action-setdensitystats">**setDensityStats**</span><br><details><summary><code>(displayedRegionIndex: number, stats: RegionDensityStats) =&gt; vo…</code></summary><pre><code>(displayedRegionIndex: number, stats: RegionDensityStats) =&gt; void</code></pre></details> |  | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#action-setdensitystats) |
+| <span id="action-cleargatemeasurements">**clearGateMeasurements**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drop the cached per-region density stats on chromosome navigation (displayedRegion indices get reused, so a stale entry would gate the new region against the wrong stats). Driven by the mixin's own `afterAttach` below — no composing display has to wire it up. The byte estimate is dropped by `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun on the same trigger.<br><br>Measurements only. Force-load is a track-wide boolean that deliberately outlives navigation, so there is no per-region ceiling to expire here.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#action-cleargatemeasurements) |
+| <span id="action-commitgatemeasurements">**commitGateMeasurements**</span><br><details><summary><code>(measurements: RegionGateMeasurement[], measuredSpanBp: number)…</code></summary><pre><code>(measurements: RegionGateMeasurement[], measuredSpanBp: number) =&gt; void</code></pre></details> | <span data-pagefind-ignore>Commit a batch of per-region fetch outcomes: record the per-region byte **max** (not sum — each region is gated against the same per-region budget, so a multi-region view where every region individually fits is never blanked by the cross-region total) and the per-region density, then publish the byte estimate to `RegionTooLargeMixin` — bytes and nothing else, since the budget it is compared against is a main-thread config read (`gateByteLimit`), the same one that produced the worker's `resolvedByteLimit()`.</span> | [CanvasFeatureGateMixin](../canvasfeaturegatemixin#action-commitgatemeasurements) |

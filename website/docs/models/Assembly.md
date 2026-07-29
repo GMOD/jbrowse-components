@@ -9,260 +9,67 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts).
 
-## Overview
+## Properties
 
-## Members
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: types.safeReference(assemblyConfigType)</code> |  |
 
-| Member                                                                   | Kind       | Defined by | Description                                                                                                                                                                                      |
-| ------------------------------------------------------------------------ | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [configuration](#property-configuration)                                 | Properties | Assembly   |                                                                                                                                                                                                  |
-| [error](#volatile-error)                                                 | Volatiles  | Assembly   |                                                                                                                                                                                                  |
-| [loadingP](#volatile-loadingp)                                           | Volatiles  | Assembly   |                                                                                                                                                                                                  |
-| [adapterLoads](#volatile-adapterloads)                                   | Volatiles  | Assembly   |                                                                                                                                                                                                  |
-| [volatileRegions](#volatile-volatileregions)                             | Volatiles  | Assembly   |                                                                                                                                                                                                  |
-| [refNameAliases](#volatile-refnamealiases)                               | Volatiles  | Assembly   |                                                                                                                                                                                                  |
-| [canonicalToSeqAdapterRefNames](#volatile-canonicaltoseqadapterrefnames) | Volatiles  | Assembly   | Maps canonical refName -> sequence adapter refName (in FASTA).                                                                                                                                   |
-| [cytobands](#volatile-cytobands)                                         | Volatiles  | Assembly   |                                                                                                                                                                                                  |
-| [loadedGeneticCodes](#volatile-loadedgeneticcodes)                       | Volatiles  | Assembly   | refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with (and overridden by) the inline `geneticCodes` config slot                                                        |
-| [lowerCaseRefNameAliases](#volatile-lowercaserefnamealiases)             | Volatiles  | Assembly   | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded                                                                                 |
-| [name](#getter-name)                                                     | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [aliases](#getter-aliases)                                               | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [displayName](#getter-displayname)                                       | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [refNameColors](#getter-refnamecolors)                                   | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [allAliases](#getter-allaliases)                                         | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [initialized](#getter-initialized)                                       | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [regions](#getter-regions)                                               | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [allRefNames](#getter-allrefnames)                                       | Getters    | Assembly   | note: lowerCaseRefNameAliases not included here: this allows the list of refnames to be just the "normal casing", but things like getCanonicalRefName can resolve a lower-case name if needed    |
-| [rpcManager](#getter-rpcmanager)                                         | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [refNames](#getter-refnames)                                             | Getters    | Assembly   |                                                                                                                                                                                                  |
-| [refNameToIndex](#getter-refnametoindex)                                 | Getters    | Assembly   | memoized refName -> first region index, so getRefNameColor is O(1) instead of an O(n) indexOf per call (matters for assemblies with many contigs rendered in overview scalebars/rulers)          |
-| [getConf](#method-getconf)                                               | Methods    | Assembly   |                                                                                                                                                                                                  |
-| [hasName](#method-hasname)                                               | Methods    | Assembly   |                                                                                                                                                                                                  |
-| [getCanonicalRefName](#method-getcanonicalrefname)                       | Methods    | Assembly   | Returns the canonical refName for a given alias or refName.                                                                                                                                      |
-| [getRefNameColor](#method-getrefnamecolor)                               | Methods    | Assembly   |                                                                                                                                                                                                  |
-| [getGeneticCodeId](#method-getgeneticcodeid)                             | Methods    | Assembly   | NCBI genetic-code (translation table) id for a refName, from the assembly's `geneticCodes` config map (e.g. a mitochondrial contig = 2).                                                         |
-| [getSeqAdapterRefName](#method-getseqadapterrefname)                     | Methods    | Assembly   | Given a canonical refName, returns the refName used by the sequence adapter (what's in the FASTA file).                                                                                          |
-| [getCanonicalRefName2](#method-getcanonicalrefname2)                     | Methods    | Assembly   | Returns canonical refName, falling back to input if not found.                                                                                                                                   |
-| [isValidRefName](#method-isvalidrefname)                                 | Methods    | Assembly   |                                                                                                                                                                                                  |
-| [getRefNameMapForAdapter](#method-getrefnamemapforadapter)               | Methods    | Assembly   | get Map of `canonical-name -> adapter-specific-name`, memoized per adapter config so concurrent callers share one load                                                                           |
-| [setLoaded](#action-setloaded)                                           | Actions    | Assembly   | Applies all load-time state in a single transaction so dependent autoruns fire once, with the precomputed lowercase/name lookups already in place by the time refNameAliases becomes observable. |
-| [setError](#action-seterror)                                             | Actions    | Assembly   |                                                                                                                                                                                                  |
-| [setLoadingP](#action-setloadingp)                                       | Actions    | Assembly   |                                                                                                                                                                                                  |
-| [loadPre](#action-loadpre)                                               | Actions    | Assembly   |                                                                                                                                                                                                  |
-| [load](#action-load)                                                     | Actions    | Assembly   | Resolves once regions + refNameAliases are set, and rejects with the load failure.                                                                                                               |
+## Volatiles
 
-<details>
-<summary>Assembly - Properties</summary>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-error">**error**</span><br><code>error</code> |  |
+| <span id="volatile-loadingp">**loadingP**</span><br><code>loadingP: undefined as Promise&lt;void&gt; &#124; undefined</code> |  |
+| <span id="volatile-adapterloads">**adapterLoads**</span><br><details><summary><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({ m…</code></summary><pre><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;maxSize: 1000,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;})</code></pre></details> |  |
+| <span id="volatile-volatileregions">**volatileRegions**</span><br><code>volatileRegions: undefined as BasicRegion[] &#124; undefined</code> |  |
+| <span id="volatile-refnamealiases">**refNameAliases**</span><br><code>refNameAliases: undefined as RefNameAliases &#124; undefined</code> |  |
+| <span id="volatile-canonicaltoseqadapterrefnames">**canonicalToSeqAdapterRefNames**</span><br><details><summary><code>canonicalToSeqAdapterRefNames: undefined as &#124; Record&lt;string, st…</code></summary><pre><code>canonicalToSeqAdapterRefNames: undefined as&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; Record&lt;string, string&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined</code></pre></details> | Maps canonical refName -> sequence adapter refName (in FASTA). These may differ when refNameAliases with override:true remap names. |
+| <span id="volatile-cytobands">**cytobands**</span><br><code>cytobands: undefined as Feature[] &#124; undefined</code> |  |
+| <span id="volatile-loadedgeneticcodes">**loadedGeneticCodes**</span><br><details><summary><code>loadedGeneticCodes: undefined as Record&lt;string, number&gt; &#124; undef…</code></summary><pre><code>loadedGeneticCodes: undefined as Record&lt;string, number&gt; &#124; undefined</code></pre></details> | refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with (and overridden by) the inline `geneticCodes` config slot |
+| <span id="volatile-lowercaserefnamealiases">**lowerCaseRefNameAliases**</span><br><code>lowerCaseRefNameAliases: undefined as RefNameAliases &#124; undefined</code> | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded |
 
-| Member                                                 | Type                               |
-| ------------------------------------------------------ | ---------------------------------- |
-| <span id="property-configuration">configuration</span> | `IMaybe<IReferenceType<IAnyType>>` |
+## Getters
 
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-name">**name**</span><br><code>string</code> |  |
+| <span id="getter-aliases">**aliases**</span><br><code>string[]</code> |  |
+| <span id="getter-displayname">**displayName**</span><br><code>string</code> |  |
+| <span id="getter-refnamecolors">**refNameColors**</span><br><code>string[]</code> |  |
+| <span id="getter-allaliases">**allAliases**</span><br><code>string[]</code> |  |
+| <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
+| <span id="getter-regions">**regions**</span><br><code>BasicRegion[] &#124; undefined</code> |  |
+| <span id="getter-allrefnames">**allRefNames**</span><br><code>string[] &#124; undefined</code> | note: lowerCaseRefNameAliases not included here: this allows the list of refnames to be just the "normal casing", but things like getCanonicalRefName can resolve a lower-case name if needed |
+| <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
+| <span id="getter-refnames">**refNames**</span><br><code>string[] &#124; undefined</code> |  |
+| <span id="getter-refnametoindex">**refNameToIndex**</span><br><code>Map&lt;string, number&gt; &#124; undefined</code> | memoized refName -> first region index, so getRefNameColor is O(1) instead of an O(n) indexOf per call (matters for assemblies with many contigs rendered in overview scalebars/rulers) |
 
-<details>
-<summary>Assembly - Volatiles</summary>
+## Methods
 
-#### volatile: canonicalToSeqAdapterRefNames
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-getconf">**getConf**</span><br><code>(arg: string) =&gt; any</code> |  |
+| <span id="method-hasname">**hasName**</span><br><code>(name: string) =&gt; boolean</code> |  |
+| <span id="method-getcanonicalrefname">**getCanonicalRefName**</span><br><code>(refName: string) =&gt; string</code> | Returns the canonical refName for a given alias or refName. Note: The canonical name may differ from what's in the FASTA file when refNameAliases with override:true are configured. To get the name that matches the FASTA file, use getSeqAdapterRefName(). |
+| <span id="method-getrefnamecolor">**getRefNameColor**</span><br><code>(refName: string) =&gt; string &#124; undefined</code> |  |
+| <span id="method-getgeneticcodeid">**getGeneticCodeId**</span><br><code>(refName: string) =&gt; number</code> | NCBI genetic-code (translation table) id for a refName, from the assembly's `geneticCodes` config map (e.g. a mitochondrial contig = 2). Falls back to the standard code (1) for unlisted refNames. |
+| <span id="method-getseqadapterrefname">**getSeqAdapterRefName**</span><br><code>(canonicalRefName: string) =&gt; string</code> | Given a canonical refName, returns the refName used by the sequence adapter (what's in the FASTA file). Falls back to the input if no mapping exists. |
+| <span id="method-getcanonicalrefname2">**getCanonicalRefName2**</span><br><code>(refName: string) =&gt; string</code> | Returns canonical refName, falling back to input if not found. See getCanonicalRefName() for details. |
+| <span id="method-isvalidrefname">**isValidRefName**</span><br><code>(refName: string) =&gt; boolean</code> |  |
+| <span id="method-getrefnamemapforadapter">**getRefNameMapForAdapter**</span><br><details><summary><code>(adapterConf: AdapterConf, options: BaseOptions) =&gt; Promise&lt;Ref…</code></summary><pre><code>(adapterConf: AdapterConf, options: BaseOptions) =&gt; Promise&lt;RefNameAliases&gt;</code></pre></details> | get Map of `canonical-name -> adapter-specific-name`, memoized per adapter config so concurrent callers share one load |
 
-Maps canonical refName -> sequence adapter refName (in FASTA). These may differ
-when refNameAliases with override:true remap names.
+## Actions
 
-```ts
-// type signature
-type canonicalToSeqAdapterRefNames = Record<string, string> | undefined
-// code
-canonicalToSeqAdapterRefNames: undefined as Record<string, string> | undefined
-```
-
-#### volatile: loadedGeneticCodes
-
-refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with
-(and overridden by) the inline `geneticCodes` config slot
-
-```ts
-// type signature
-type loadedGeneticCodes = Record<string, number> | undefined
-// code
-loadedGeneticCodes: undefined as Record<string, number> | undefined
-```
-
-#### volatile: lowerCaseRefNameAliases
-
-Precomputed in loadPre to avoid expensive synchronous computation when MobX
-triggers the autorun after setLoaded
-
-```ts
-// type signature
-type lowerCaseRefNameAliases = RefNameAliases | undefined
-// code
-lowerCaseRefNameAliases: undefined as RefNameAliases | undefined
-```
-
-</details>
-
-<details>
-<summary>Assembly - Volatiles (other undocumented members)</summary>
-
-| Member                                                     | Type                                        |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| <span id="volatile-error">error</span>                     | `unknown`                                   |
-| <span id="volatile-loadingp">loadingP</span>               | `Promise<void> \| undefined`                |
-| <span id="volatile-adapterloads">adapterLoads</span>       | `QuickLRU<string, Promise<RefNameAliases>>` |
-| <span id="volatile-volatileregions">volatileRegions</span> | `BasicRegion[] \| undefined`                |
-| <span id="volatile-refnamealiases">refNameAliases</span>   | `RefNameAliases \| undefined`               |
-| <span id="volatile-cytobands">cytobands</span>             | `Feature[] \| undefined`                    |
-
-</details>
-
-<details>
-<summary>Assembly - Getters</summary>
-
-#### getter: allRefNames
-
-note: lowerCaseRefNameAliases not included here: this allows the list of
-refnames to be just the "normal casing", but things like getCanonicalRefName can
-resolve a lower-case name if needed
-
-```ts
-type allRefNames = string[] | undefined
-```
-
-#### getter: refNameToIndex
-
-memoized refName -> first region index, so getRefNameColor is O(1) instead of an
-O(n) indexOf per call (matters for assemblies with many contigs rendered in
-overview scalebars/rulers)
-
-```ts
-type refNameToIndex = Map<string, number> | undefined
-```
-
-</details>
-
-<details>
-<summary>Assembly - Getters (other undocumented members)</summary>
-
-| Member                                               | Type                         |
-| ---------------------------------------------------- | ---------------------------- |
-| <span id="getter-name">name</span>                   | `string`                     |
-| <span id="getter-aliases">aliases</span>             | `string[]`                   |
-| <span id="getter-displayname">displayName</span>     | `string`                     |
-| <span id="getter-refnamecolors">refNameColors</span> | `string[]`                   |
-| <span id="getter-allaliases">allAliases</span>       | `string[]`                   |
-| <span id="getter-initialized">initialized</span>     | `boolean`                    |
-| <span id="getter-regions">regions</span>             | `BasicRegion[] \| undefined` |
-| <span id="getter-rpcmanager">rpcManager</span>       | `RpcManager`                 |
-| <span id="getter-refnames">refNames</span>           | `string[] \| undefined`      |
-
-</details>
-
-<details>
-<summary>Assembly - Methods</summary>
-
-#### method: getCanonicalRefName
-
-Returns the canonical refName for a given alias or refName. Note: The canonical
-name may differ from what's in the FASTA file when refNameAliases with
-override:true are configured. To get the name that matches the FASTA file, use
-getSeqAdapterRefName().
-
-```ts
-type getCanonicalRefName = (refName: string) => string
-```
-
-#### method: getGeneticCodeId
-
-NCBI genetic-code (translation table) id for a refName, from the assembly's
-`geneticCodes` config map (e.g. a mitochondrial contig = 2). Falls back to the
-standard code (1) for unlisted refNames.
-
-```ts
-type getGeneticCodeId = (refName: string) => number
-```
-
-#### method: getSeqAdapterRefName
-
-Given a canonical refName, returns the refName used by the sequence adapter
-(what's in the FASTA file). Falls back to the input if no mapping exists.
-
-```ts
-type getSeqAdapterRefName = (canonicalRefName: string) => string
-```
-
-#### method: getCanonicalRefName2
-
-Returns canonical refName, falling back to input if not found. See
-getCanonicalRefName() for details.
-
-```ts
-type getCanonicalRefName2 = (refName: string) => string
-```
-
-#### method: getRefNameMapForAdapter
-
-get Map of `canonical-name -> adapter-specific-name`, memoized per adapter
-config so concurrent callers share one load
-
-```ts
-type getRefNameMapForAdapter = (
-  adapterConf: AdapterConf,
-  options: BaseOptions,
-) => Promise<RefNameAliases>
-```
-
-</details>
-
-<details>
-<summary>Assembly - Methods (other undocumented members)</summary>
-
-| Member                                                   | Type                                       |
-| -------------------------------------------------------- | ------------------------------------------ |
-| <span id="method-getconf">getConf</span>                 | `(arg: string) => any`                     |
-| <span id="method-hasname">hasName</span>                 | `(name: string) => boolean`                |
-| <span id="method-getrefnamecolor">getRefNameColor</span> | `(refName: string) => string \| undefined` |
-| <span id="method-isvalidrefname">isValidRefName</span>   | `(refName: string) => boolean`             |
-
-</details>
-
-<details>
-<summary>Assembly - Actions</summary>
-
-#### action: setLoaded
-
-Applies all load-time state in a single transaction so dependent autoruns fire
-once, with the precomputed lowercase/name lookups already in place by the time
-refNameAliases becomes observable.
-
-```ts
-type setLoaded = ({…}: RefNameMaps & { regions: Region[]; cytobands: Feature[]; geneticCodes: Record<…>; }) => void
-```
-
-#### action: load
-
-Resolves once regions + refNameAliases are set, and rejects with the load
-failure. Idempotent: concurrent callers share one attempt, and a failed attempt
-is discarded so the next call retries.
-
-The rejection is the authoritative signal for a caller that awaits it.
-`self.error` mirrors it for reactive consumers only (the UI renders it), and
-must not be consulted after an await: a concurrent retry clears it, so an
-awaiter reading it can see a cleared error and mistake a failed load for a
-successful one.
-
-```ts
-type load = () => Promise<void>
-```
-
-</details>
-
-<details>
-<summary>Assembly - Actions (other undocumented members)</summary>
-
-| Member                                           | Type                                       |
-| ------------------------------------------------ | ------------------------------------------ |
-| <span id="action-seterror">setError</span>       | `(e: unknown) => void`                     |
-| <span id="action-setloadingp">setLoadingP</span> | `(p?: Promise<void> \| undefined) => void` |
-| <span id="action-loadpre">loadPre</span>         | `() => Promise<void>`                      |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setloaded">**setLoaded**</span><br><details><summary><code>({…}: RefNameMaps &amp; { regions: Region[]; cytobands: Feature[];…</code></summary><pre><code>({…}: RefNameMaps &amp; { regions: Region[]; cytobands: Feature[]; geneticCodes: Record&lt;…&gt;; }) =&gt; void</code></pre></details> | Applies all load-time state in a single transaction so dependent autoruns fire once, with the precomputed lowercase/name lookups already in place by the time refNameAliases becomes observable. |
+| <span id="action-seterror">**setError**</span><br><code>(e: unknown) =&gt; void</code> |  |
+| <span id="action-setloadingp">**setLoadingP**</span><br><code>(p?: Promise&lt;void&gt; &#124; undefined) =&gt; void</code> |  |
+| <span id="action-loadpre">**loadPre**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  |
+| <span id="action-load">**load**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Resolves once regions + refNameAliases are set, and rejects with the load failure. Idempotent: concurrent callers share one attempt, and a failed attempt is discarded so the next call retries.<br><br>The rejection is the authoritative signal for a caller that awaits it. `self.error` mirrors it for reactive consumers only (the UI renders it), and must not be consulted after an await: a concurrent retry clears it, so an awaiter reading it can see a cleared error and mistake a failed load for a successful one. |

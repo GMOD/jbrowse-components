@@ -9,7 +9,22 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchema.ts).
 
-## Overview
+## Example usage
+
+```js
+{
+  type: 'LDTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'PlinkLDAdapter',
+    uri: 'https://example.com/study.ld',
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
 
 Adapter for reading pre-computed LD data from PLINK --r2 output. Loads the
 entire file into memory - suitable for small to medium files.
@@ -38,38 +53,20 @@ CHR_A  BP_A     SNP_A       CHR_B  BP_B     SNP_B       R2
 1      729679   rs4970383   1      754182   rs3131969   0.157316
 ```
 
-### PlinkLDAdapter - Pre-processor / simplified config
-
-Preprocessor to allow minimal config:
-
-```json
-{
-  "type": "PlinkLDAdapter",
-  "uri": "plink.ld"
-}
-```
-
 ## Related links
 
 - **Track:** [LDTrack](../ldtrack)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "PlinkLDAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                           | Type           | Description                                   |
-| ------------------------------ | -------------- | --------------------------------------------- |
-| [ldLocation](#slot-ldlocation) | `fileLocation` | Location of the PLINK LD file (.ld or .ld.gz) |
-
-<details>
-<summary>PlinkLDAdapter - Slots</summary>
-
-#### slot: ldLocation
-
-Location of the PLINK LD file (.ld or .ld.gz)
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/plink.ld', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-ldlocation">**ldLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/plink.ld', locationType: 'UriLocation' }</code> | Location of the PLINK LD file (.ld or .ld.gz) |

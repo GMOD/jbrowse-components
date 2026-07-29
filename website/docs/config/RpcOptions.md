@@ -11,36 +11,12 @@ Auto-generated config schema for the current JBrowse release — see the
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-<details>
-<summary>Advanced slots (2)</summary>
-
-| Slot                                 | Type     | Description                                                   |
-| ------------------------------------ | -------- | ------------------------------------------------------------- |
-| [defaultDriver](#slot-defaultdriver) | `string` | which RPC backend to use by default.                          |
-| [workerCount](#slot-workercount)     | `number` | number of web workers to spawn for the web worker RPC driver. |
-
-</details>
-
-<details>
-<summary>RpcOptions - Slots</summary>
-
-#### slot: defaultDriver
-
-which RPC backend to use by default. Empty means "use the host application's
-default" (web/desktop default to the web worker driver, embedded/headless to the
-main thread). A per-track or per-call `rpcDriverName` still overrides this.
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-· _advanced_
-
-#### slot: workerCount
-
-number of web workers to spawn for the web worker RPC driver. 0 lets JBrowse
-pick based on hardware concurrency.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
-_advanced_
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-defaultdriver">**defaultDriver**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | which RPC backend to use by default. Empty means "use the host application's default" (web/desktop default to the web worker driver, embedded/headless to the main thread). A per-track or per-call `rpcDriverName` still overrides this.<br>_advanced_ |
+| <span id="slot-workercount">**workerCount**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | number of web workers to spawn for the web worker RPC driver. 0 lets JBrowse pick based on hardware concurrency.<br>_advanced_ |

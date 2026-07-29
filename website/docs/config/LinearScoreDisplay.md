@@ -23,36 +23,17 @@ Config for the worked-example score display. Attaches to any `FeatureTrack`.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go on a display entry:
+`"displays": [{ "type": "LinearScoreDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type     | Description                                                             |
-| -------------------------------- | -------- | ----------------------------------------------------------------------- |
-| [height](#slot-height)           | `number` | height of the display in pixels                                         |
-| [color](#slot-color)             | `color`  | fill color for every score box                                          |
-| [scoreColumn](#slot-scorecolumn) | `string` | feature attribute read as the score (box height); normalized per region |
-
-<details>
-<summary>LinearScoreDisplay - Slots</summary>
-
-#### slot: height
-
-height of the display in pixels
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: color
-
-fill color for every score box
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#0068d1'`
-
-#### slot: scoreColumn
-
-feature attribute read as the score (box height); normalized per region
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'score'`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the display in pixels |
+| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | fill color for every score box |
+| <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'score'</code> | feature attribute read as the score (box height); normalized per region |

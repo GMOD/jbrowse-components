@@ -9,38 +9,22 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `data-management` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/PluginStoreWidget/model.ts).
 
-## Overview
-
 Widget backing the plugin store: holds the text filter applied to the
 installable plugin list and the view it was opened from.
 
-## Members
+## Properties
 
-| Member                                 | Kind       | Defined by        | Description |
-| -------------------------------------- | ---------- | ----------------- | ----------- |
-| [id](#property-id)                     | Properties | PluginStoreWidget |             |
-| [type](#property-type)                 | Properties | PluginStoreWidget |             |
-| [filterText](#property-filtertext)     | Properties | PluginStoreWidget |             |
-| [view](#property-view)                 | Properties | PluginStoreWidget |             |
-| [setFilterText](#action-setfiltertext) | Actions    | PluginStoreWidget |             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>type: types.literal('PluginStoreWidget')</code> |  |
+| <span id="property-filtertext">**filterText**</span><br><code>filterText: ''</code> |  |
+| <span id="property-view">**view**</span><br><details><summary><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></summary><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
 
-<details>
-<summary>PluginStoreWidget - Properties</summary>
+## Actions
 
-| Member                                           | Type                                               |
-| ------------------------------------------------ | -------------------------------------------------- |
-| <span id="property-id">id</span>                 | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-type">type</span>             | `ISimpleType<"PluginStoreWidget">`                 |
-| <span id="property-filtertext">filterText</span> | `string`                                           |
-| <span id="property-view">view</span>             | `IMaybe<IReferenceType<IAnyType>>`                 |
-
-</details>
-
-<details>
-<summary>PluginStoreWidget - Actions</summary>
-
-| Member                                               | Type                        |
-| ---------------------------------------------------- | --------------------------- |
-| <span id="action-setfiltertext">setFilterText</span> | `(newText: string) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setfiltertext">**setFilterText**</span><br><code>(newText: string) =&gt; void</code> |  |

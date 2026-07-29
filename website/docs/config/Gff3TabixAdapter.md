@@ -40,47 +40,17 @@ used to load bgzip-compressed, tabix-indexed GFF3 files
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "Gff3TabixAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                    | Type                    | Description                                                                                                                                      |
-| --------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [gffGzLocation](#slot-gffgzlocation)    | `fileLocation`          |                                                                                                                                                  |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                                                                                                                  |
-| [index.indexType](#slot-indexindextype) | `fileLocation`          |                                                                                                                                                  |
-| [dontRedispatch](#slot-dontredispatch)  | `stringArray`           | the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. |
-
-<details>
-<summary>Gff3TabixAdapter - Slots</summary>
-
-#### slot: gffGzLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.gff.gz', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.indexType
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.gff.gz.tbi', locationType: 'UriLocation' }`
-
-#### slot: dontRedispatch
-
-the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it
-finds inside that region extend outside the region we requested. you can disable
-this for certain feature types to avoid fetching e.g. the entire chromosome
-
-the defaults are the whole-sequence records the common GFF3 sources emit:
-`region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal
-sequences), plus `chromosome` and `contig`. They span an entire reference and
-have no children, so letting one expand the fetch would pull a whole chromosome
-to gain nothing
-
-**Type:** `stringArray` · **Default:**
-`[ 'chromosome', 'region', 'contig', 'supercontig', 'scaffold' ]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-gffgzlocation">**gffGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gff.gz', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gff.gz.tbi', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-dontredispatch">**dontRedispatch**</span><br>`stringArray` = <code>[ 'chromosome', 'region', 'contig', 'supercontig', 'scaffold' ]</code> | the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. you can disable this for certain feature types to avoid fetching e.g. the entire chromosome<br><br>the defaults are the whole-sequence records the common GFF3 sources emit: `region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal sequences), plus `chromosome` and `contig`. They span an entire reference and have no children, so letting one expand the fetch would pull a whole chromosome to gain nothing |

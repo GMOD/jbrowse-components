@@ -40,37 +40,17 @@ used to load MCScan (jcvi) `.anchors.simple` files with their two BED files
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "MCScanSimpleAnchorsAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                             | Type           | Description |
-| ---------------------------------------------------------------- | -------------- | ----------- |
-| [mcscanSimpleAnchorsLocation](#slot-mcscansimpleanchorslocation) | `fileLocation` |             |
-| [bed1Location](#slot-bed1location)                               | `fileLocation` |             |
-| [bed2Location](#slot-bed2location)                               | `fileLocation` |             |
-| [assemblyNames](#slot-assemblynames)                             | `stringArray`  |             |
-
-<details>
-<summary>MCScanSimpleAnchorsAdapter - Slots</summary>
-
-#### slot: mcscanSimpleAnchorsLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:**
-`{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLocation' }`
-
-#### slot: bed1Location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/file.bed', locationType: 'UriLocation' }`
-
-#### slot: bed2Location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/file.bed', locationType: 'UriLocation' }`
-
-#### slot: assemblyNames
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-mcscansimpleanchorslocation">**mcscanSimpleAnchorsLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLoca…</code></summary><pre><code>{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLocation' }</code></pre></details> |  |
+| <span id="slot-bed1location">**bed1Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-bed2location">**bed2Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> |  |

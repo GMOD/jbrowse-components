@@ -35,43 +35,16 @@ used to load BigWig quantitative signal files
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BigWigAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                   | Type           | Description                                    |
-| -------------------------------------- | -------------- | ---------------------------------------------- |
-| [bigWigLocation](#slot-bigwiglocation) | `fileLocation` |                                                |
-| [source](#slot-source)                 | `string`       | added as feature.get('source') on all features |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                               | Type     | Description                                                                                                                               |
-| -------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [resolutionMultiplier](#slot-resolutionmultiplier) | `number` | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points) |
-
-</details>
-
-<details>
-<summary>BigWigAdapter - Slots</summary>
-
-#### slot: bigWigLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bw', locationType: 'UriLocation' }`
-
-#### slot: source
-
-added as feature.get('source') on all features
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: resolutionMultiplier
-
-Resolution multiplier applied to every fetch: <1 fetches more points (higher
-resolution), >1 fetches fewer (e.g. 2 = half as many points)
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_advanced_
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bigwiglocation">**bigWigLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bw', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-source">**source**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | added as feature.get('source') on all features |
+| <span id="slot-resolutionmultiplier">**resolutionMultiplier**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points)<br>_advanced_ |

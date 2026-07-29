@@ -9,362 +9,79 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `linear-comparative-view` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts).
 
-## Overview
-
-## Members
-
-| Member                                                 | Kind       | Defined by                        | Description                                                                                                                                                               |
-| ------------------------------------------------------ | ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                     | Properties | LinearComparativeView             |                                                                                                                                                                           |
-| [type](#property-type)                                 | Properties | LinearComparativeView             | Abstract base: never registered or instantiated standalone, always composed into a concrete subclass (e.g. LinearSyntenyView) that overrides `type` with its own literal. |
-| [trackSelectorType](#property-trackselectortype)       | Properties | LinearComparativeView             | vestigial: the hierarchical selector is the only one that exists, so this value is ignored.                                                                               |
-| [showIntraviewLinks](#property-showintraviewlinks)     | Properties | LinearComparativeView             |                                                                                                                                                                           |
-| [linkViews](#property-linkviews)                       | Properties | LinearComparativeView             |                                                                                                                                                                           |
-| [levels](#property-levels)                             | Properties | LinearComparativeView             |                                                                                                                                                                           |
-| [views](#property-views)                               | Properties | LinearComparativeView             | N genome rows, with N-1 synteny `levels` between adjacent pairs.                                                                                                          |
-| [viewTrackConfigs](#property-viewtrackconfigs)         | Properties | LinearComparativeView             | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                 |
-| [width](#volatile-width)                               | Volatiles  | LinearComparativeView             |                                                                                                                                                                           |
-| [volatileError](#volatile-volatileerror)               | Volatiles  | LinearComparativeView             | View-level failure (e.g. an `init` block that couldn't be applied).                                                                                                       |
-| [scrollZoom](#getter-scrollzoom)                       | Getters    | LinearComparativeView             | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                     |
-| [initialized](#getter-initialized)                     | Getters    | LinearComparativeView             |                                                                                                                                                                           |
-| [error](#getter-error)                                 | Getters    | LinearComparativeView             |                                                                                                                                                                           |
-| [assemblyNames](#getter-assemblynames)                 | Getters    | LinearComparativeView             |                                                                                                                                                                           |
-| [allSyntenyDisplays](#getter-allsyntenydisplays)       | Getters    | LinearComparativeView             | Every synteny display across every level, flattened.                                                                                                                      |
-| [syntenyWarnings](#getter-syntenywarnings)             | Getters    | LinearComparativeView             | Data-quality warnings raised by every synteny display, e.g. a reversed assembly row order.                                                                                |
-| [isViewCompact](#method-isviewcompact)                 | Methods    | LinearComparativeView             |                                                                                                                                                                           |
-| [headerMenuItems](#method-headermenuitems)             | Methods    | LinearComparativeView             | includes a subset of view menu options because the full list is a little overwhelming.                                                                                    |
-| [showMenuItems](#method-showmenuitems)                 | Methods    | LinearComparativeView             | items for the "Show..." submenu in the header.                                                                                                                            |
-| [menuItems](#method-menuitems)                         | Methods    | LinearComparativeView             |                                                                                                                                                                           |
-| [rubberBandMenuItems](#method-rubberbandmenuitems)     | Methods    | LinearComparativeView             |                                                                                                                                                                           |
-| [reconcileLevels](#action-reconcilelevels)             | Actions    | LinearComparativeView             | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels).                                          |
-| [setWidth](#action-setwidth)                           | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [setError](#action-seterror)                           | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [setViews](#action-setviews)                           | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [addView](#action-addview)                             | Actions    | LinearComparativeView             | Push a new genome row.                                                                                                                                                    |
-| [removeLastRow](#action-removelastrow)                 | Actions    | LinearComparativeView             | Drop the bottom genome row and its synteny level.                                                                                                                         |
-| [setLinkViews](#action-setlinkviews)                   | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [setScrollZoom](#action-setscrollzoom)                 | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [activateTrackSelector](#action-activatetrackselector) | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [toggleTrack](#action-toggletrack)                     | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [showTrack](#action-showtrack)                         | Actions    | LinearComparativeView             | No-op for a level that doesn't exist, matching hideTrack/toggleTrack.                                                                                                     |
-| [hideTrack](#action-hidetrack)                         | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [squareView](#action-squareview)                       | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [clearView](#action-clearview)                         | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [toggleCompactView](#action-togglecompactview)         | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [compactAllViews](#action-compactallviews)             | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [expandAllViews](#action-expandallviews)               | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [autoScaleLevelHeights](#action-autoscalelevelheights) | Actions    | LinearComparativeView             |                                                                                                                                                                           |
-| [appendRow](#action-appendrow)                         | Actions    | LinearComparativeView             | Append an assembly to the bottom of the stack and optionally show a synteny track on the new level connecting it to the previous bottom row.                              |
-| [displayName](#property-displayname)                   | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                     |
-| [minimized](#property-minimized)                       | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                           |
-| [setDisplayName](#action-setdisplayname)               | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                           |
-| [setMinimized](#action-setminimized)                   | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                           |
-
-<details>
-<summary>LinearComparativeView - Properties</summary>
-
-#### property: type
-
-Abstract base: never registered or instantiated standalone, always composed into
-a concrete subclass (e.g. LinearSyntenyView) that overrides `type` with its own
-literal. Kept as `types.string` rather than a literal so subclass models stay
-assignable to this base type.
-
-```ts
-// type signature
-type type = ISimpleType<string>
-// code
-type: types.string
-```
-
-#### property: trackSelectorType
-
-vestigial: the hierarchical selector is the only one that exists, so this value
-is ignored. Retained because saved sessions and configs persist it.
-
-```ts
-// type signature
-type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-trackSelectorType: types.stripDefault(types.string, 'hierarchical')
-```
-
-#### property: views
-
-N genome rows, with N-1 synteny `levels` between adjacent pairs. The
-views/levels invariant is maintained by reconcileLevels().
-
-```ts
-// type signature
-type views = IArrayType<IModelType<_OverrideProps<_OverrideProps<…>, { ...; }>, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, { ...; }>>
-// code
-views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
-        )
-```
-
-#### property: viewTrackConfigs
-
-this represents tracks specific to this view specifically used for read vs ref
-dotplots where this track would not really apply elsewhere
-
-```ts
-// type signature
-type viewTrackConfigs = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
-// code
-viewTrackConfigs: types.stripDefault(
-  types.array(pluginManager.pluggableConfigSchemaType('track')),
-  [],
-)
-```
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Properties (other undocumented members)</summary>
-
-| Member                                                           | Type                                                |
-| ---------------------------------------------------------------- | --------------------------------------------------- |
-| <span id="property-id">id</span>                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| <span id="property-showintraviewlinks">showIntraviewLinks</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| <span id="property-linkviews">linkViews</span>                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| <span id="property-levels">levels</span>                         | `IArrayType<IAnyModelType>`                         |
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Volatiles</summary>
-
-#### volatile: volatileError
-
-View-level failure (e.g. an `init` block that couldn't be applied). Volatile on
-purpose: a reload re-runs the init autorun from a clean slate, so a transient
-failure stays recoverable.
-
-```ts
-// type signature
-type volatileError = unknown
-// code
-volatileError: undefined as unknown
-```
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Volatiles (other undocumented members)</summary>
-
-| Member                                 | Type                  |
-| -------------------------------------- | --------------------- |
-| <span id="volatile-width">width</span> | `number \| undefined` |
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Getters</summary>
-
-#### getter: scrollZoom
-
-scroll-to-zoom is a global, personal preference resolved from the session;
-toggling it in any view applies everywhere
-
-```ts
-type scrollZoom = boolean
-```
-
-#### getter: allSyntenyDisplays
-
-Every synteny display across every level, flattened. One memoized getter for the
-view-wide aggregates that would otherwise each re-flatten the levels.
-
-```ts
-type allSyntenyDisplays = any[]
-```
-
-#### getter: syntenyWarnings
-
-Data-quality warnings raised by every synteny display, e.g. a reversed assembly
-row order. Surfaced by the header's warning button and its dialog, which both
-read this rather than re-deriving it.
-
-```ts
-type syntenyWarnings = SyntenyWarning[]
-```
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Getters (other undocumented members)</summary>
-
-| Member                                               | Type       |
-| ---------------------------------------------------- | ---------- |
-| <span id="getter-initialized">initialized</span>     | `boolean`  |
-| <span id="getter-error">error</span>                 | `unknown`  |
-| <span id="getter-assemblynames">assemblyNames</span> | `string[]` |
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Methods</summary>
-
-#### method: headerMenuItems
-
-includes a subset of view menu options because the full list is a little
-overwhelming. overridden by subclasses
-
-```ts
-type headerMenuItems = () => MenuItem[]
-```
-
-#### method: showMenuItems
-
-items for the "Show..." submenu in the header. overridden by subclasses to add
-view-specific toggle options
-
-```ts
-type showMenuItems = () => MenuItem[]
-```
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Methods (other undocumented members)</summary>
-
-| Member                                                           | Type                                              |
-| ---------------------------------------------------------------- | ------------------------------------------------- |
-| <span id="method-isviewcompact">isViewCompact</span>             | `(idx: number) => boolean`                        |
-| <span id="method-menuitems">menuItems</span>                     | `() => MenuItem[]`                                |
-| <span id="method-rubberbandmenuitems">rubberBandMenuItems</span> | `() => { label: string; onClick: () => void; }[]` |
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Actions</summary>
-
-#### action: reconcileLevels
-
-Reconcile the levels array to the views array: exactly one synteny level per gap
-between adjacent views (N views -> N-1 levels). Grows or shrinks from the end,
-preserving existing levels and their tracks. The single source of truth for the
-views/levels invariant.
-
-```ts
-type reconcileLevels = () => void
-```
-
-#### action: addView
-
-Push a new genome row. The new trailing level starts with no synteny tracks.
-
-```ts
-type addView = (view: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<…>, { ...; }>>>) => void
-```
-
-#### action: removeLastRow
-
-Drop the bottom genome row and its synteny level. Only terminal removal is
-supported: a level's `level` index addresses views[level]/[level+1], so removing
-a middle row would require reindexing every level below it. Growth and shrinkage
-both happen at the end of the chain.
-
-```ts
-type removeLastRow = () => void
-```
-
-#### action: showTrack
-
-No-op for a level that doesn't exist, matching hideTrack/toggleTrack.
-reconcileLevels already materializes exactly one level per adjacent view pair,
-so a missing level means the caller named a gap that has no views (e.g. an
-`init.tracks` with more levels than `init.views` has gaps); creating one here
-would append a level whose views[level+1] is absent, which renders nothing and
-silently breaks the views/levels invariant.
-
-```ts
-type showTrack = (trackId: string, level?: any, initialSnapshot?: any) => void
-```
-
-#### action: appendRow
-
-Append an assembly to the bottom of the stack and optionally show a synteny
-track on the new level connecting it to the previous bottom row. A synteny
-dataset is an edge between two adjacent assemblies, so rows are only ever added
-at the chain's end.
-
-The new row is created with a LinearGenomeView `init` — its own afterAttach
-autorun loads the assembly regions and navigates (whole genome, or `loc` when
-given), so we don't reimplement that imperatively here.
-
-```ts
-type appendRow = ({
-  assembly,
-  loc,
-  syntenyTrackId,
-}: {
-  assembly: string
-  loc?: string | undefined
-  syntenyTrackId?: string | undefined
-}) => void
-```
-
-</details>
-
-<details>
-<summary>LinearComparativeView - Actions (other undocumented members)</summary>
-
-| Member                                                               | Type                                                                                                   |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <span id="action-setwidth">setWidth</span>                           | `(newWidth: number) => void`                                                                           |
-| <span id="action-seterror">setError</span>                           | `(e: unknown) => void`                                                                                 |
-| <span id="action-setviews">setViews</span>                           | `(views: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<…>, { ...; }>>>[]) => void` |
-| <span id="action-setlinkviews">setLinkViews</span>                   | `(arg: boolean) => void`                                                                               |
-| <span id="action-setscrollzoom">setScrollZoom</span>                 | `(arg: boolean) => void`                                                                               |
-| <span id="action-activatetrackselector">activateTrackSelector</span> | `(level: number) => Widget`                                                                            |
-| <span id="action-toggletrack">toggleTrack</span>                     | `(trackId: string, level?: any) => any`                                                                |
-| <span id="action-hidetrack">hideTrack</span>                         | `(trackId: string, level?: any) => void`                                                               |
-| <span id="action-squareview">squareView</span>                       | `() => void`                                                                                           |
-| <span id="action-clearview">clearView</span>                         | `() => void`                                                                                           |
-| <span id="action-togglecompactview">toggleCompactView</span>         | `(idx: number) => void`                                                                                |
-| <span id="action-compactallviews">compactAllViews</span>             | `() => void`                                                                                           |
-| <span id="action-expandallviews">expandAllViews</span>               | `() => void`                                                                                           |
-| <span id="action-autoscalelevelheights">autoScaleLevelHeights</span> | `() => void`                                                                                           |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseViewModel</summary>
-
-[BaseViewModel →](../baseviewmodel)
-
-**Properties**
-
-#### property: displayName
-
-displayName is displayed in the header of the view, or assembly names being used
-if none is specified
-
-```ts
-// type signature
-type displayName = IMaybe<ISimpleType<string>>
-// code
-displayName: types.maybe(types.string)
-```
-
-| Member                                         | Type                                                |
-| ---------------------------------------------- | --------------------------------------------------- |
-| <span id="property-minimized">minimized</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
-**Actions**
-
-| Member                                                 | Type                      |
-| ------------------------------------------------------ | ------------------------- |
-| <span id="action-setdisplayname">setDisplayName</span> | `(name: string) => void`  |
-| <span id="action-setminimized">setMinimized</span>     | `(flag: boolean) => void` |
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | LinearComparativeView |
+| <span id="property-type">**type**</span><br><code>type: types.string</code> | Abstract base: never registered or instantiated standalone, always composed into a concrete subclass (e.g. LinearSyntenyView) that overrides `type` with its own literal. Kept as `types.string` rather than a literal so subclass models stay assignable to this base type. | LinearComparativeView |
+| <span id="property-trackselectortype">**trackSelectorType**</span><br><details><summary><code>trackSelectorType: types.stripDefault(types.string, 'hierarchic…</code></summary><pre><code>trackSelectorType: types.stripDefault(types.string, 'hierarchical')</code></pre></details> | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. | LinearComparativeView |
+| <span id="property-showintraviewlinks">**showIntraviewLinks**</span><br><code>showIntraviewLinks: types.stripDefault(types.boolean, true)</code> |  | LinearComparativeView |
+| <span id="property-linkviews">**linkViews**</span><br><code>linkViews: types.stripDefault(types.boolean, false)</code> |  | LinearComparativeView |
+| <span id="property-levels">**levels**</span><br><code>levels: types.array(LinearSyntenyViewHelper)</code> |  | LinearComparativeView |
+| <span id="property-views">**views**</span><br><details><summary><code>views: types.array( pluginManager.getViewType('LinearGenomeView…</code></summary><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.getViewType('LinearGenomeView')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.stateModel as LinearGenomeViewStateModel,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> | N genome rows, with N-1 synteny `levels` between adjacent pairs. The views/levels invariant is maintained by reconcileLevels(). | LinearComparativeView |
+| <span id="property-viewtrackconfigs">**viewTrackConfigs**</span><br><details><summary><code>viewTrackConfigs: types.stripDefault( types.array(pluginManager…</code></summary><pre><code>viewTrackConfigs: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(pluginManager.pluggableConfigSchemaType('track')),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere | LinearComparativeView |
+| <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
+| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  | [BaseViewModel](../baseviewmodel#property-minimized) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-width">**width**</span><br><code>width: undefined as number &#124; undefined</code> |  |
+| <span id="volatile-volatileerror">**volatileError**</span><br><code>volatileError: undefined as unknown</code> | View-level failure (e.g. an `init` block that couldn't be applied). Volatile on purpose: a reload re-runs the init autorun from a clean slate, so a transient failure stays recoverable. |
+
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere |
+| <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
+| <span id="getter-error">**error**</span><br><code>unknown</code> |  |
+| <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
+| <span id="getter-allsyntenydisplays">**allSyntenyDisplays**</span><br><code>any[]</code> | Every synteny display across every level, flattened. One memoized getter for the view-wide aggregates that would otherwise each re-flatten the levels. |
+| <span id="getter-syntenywarnings">**syntenyWarnings**</span><br><code>SyntenyWarning[]</code> | Data-quality warnings raised by every synteny display, e.g. a reversed assembly row order. Surfaced by the header's warning button and its dialog, which both read this rather than re-deriving it. |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-isviewcompact">**isViewCompact**</span><br><code>(idx: number) =&gt; boolean</code> |  |
+| <span id="method-headermenuitems">**headerMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | includes a subset of view menu options because the full list is a little overwhelming. overridden by subclasses |
+| <span id="method-showmenuitems">**showMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | items for the "Show..." submenu in the header. overridden by subclasses to add view-specific toggle options |
+| <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
+| <span id="method-rubberbandmenuitems">**rubberBandMenuItems**</span><br><code>() =&gt; { label: string; onClick: () =&gt; void; }[]</code> |  |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-reconcilelevels">**reconcileLevels**</span><br><code>() =&gt; void</code> | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels). Grows or shrinks from the end, preserving existing levels and their tracks. The single source of truth for the views/levels invariant. | LinearComparativeView |
+| <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-seterror">**setError**</span><br><code>(e: unknown) =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-setviews">**setViews**</span><br><details><summary><code>(views: ModelCreationType&lt;ExtractCFromProps&lt;_OverrideProps&lt;_Ove…</code></summary><pre><code>(views: ModelCreationType&lt;ExtractCFromProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt;&gt;[]) =&gt; void</code></pre></details> |  | LinearComparativeView |
+| <span id="action-addview">**addView**</span><br><details><summary><code>(view: ModelCreationType&lt;ExtractCFromProps&lt;_OverrideProps&lt;_Over…</code></summary><pre><code>(view: ModelCreationType&lt;ExtractCFromProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt;&gt;) =&gt; void</code></pre></details> | Push a new genome row. The new trailing level starts with no synteny tracks. | LinearComparativeView |
+| <span id="action-removelastrow">**removeLastRow**</span><br><code>() =&gt; void</code> | Drop the bottom genome row and its synteny level. Only terminal removal is supported: a level's `level` index addresses views[level]/[level+1], so removing a middle row would require reindexing every level below it. Growth and shrinkage both happen at the end of the chain. | LinearComparativeView |
+| <span id="action-setlinkviews">**setLinkViews**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-setscrollzoom">**setScrollZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-activatetrackselector">**activateTrackSelector**</span><br><code>(level: number) =&gt; Widget</code> |  | LinearComparativeView |
+| <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string, level?: any) =&gt; any</code> |  | LinearComparativeView |
+| <span id="action-showtrack">**showTrack**</span><br><code>(trackId: string, level?: any, initialSnapshot?: any) =&gt; void</code> | No-op for a level that doesn't exist, matching hideTrack/toggleTrack. reconcileLevels already materializes exactly one level per adjacent view pair, so a missing level means the caller named a gap that has no views (e.g. an `init.tracks` with more levels than `init.views` has gaps); creating one here would append a level whose views[level+1] is absent, which renders nothing and silently breaks the views/levels invariant. | LinearComparativeView |
+| <span id="action-hidetrack">**hideTrack**</span><br><code>(trackId: string, level?: any) =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-squareview">**squareView**</span><br><code>() =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-clearview">**clearView**</span><br><code>() =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-togglecompactview">**toggleCompactView**</span><br><code>(idx: number) =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-compactallviews">**compactAllViews**</span><br><code>() =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-expandallviews">**expandAllViews**</span><br><code>() =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-autoscalelevelheights">**autoScaleLevelHeights**</span><br><code>() =&gt; void</code> |  | LinearComparativeView |
+| <span id="action-appendrow">**appendRow**</span><br><details><summary><code>({ assembly, loc, syntenyTrackId, }: { assembly: string; loc?:…</code></summary><pre><code>({ assembly, loc, syntenyTrackId, }: { assembly: string; loc?: string &#124; undefined; syntenyTrackId?: string &#124; undefined; }) =&gt; void</code></pre></details> | Append an assembly to the bottom of the stack and optionally show a synteny track on the new level connecting it to the previous bottom row. A synteny dataset is an edge between two adjacent assemblies, so rows are only ever added at the chain's end.<br><br>The new row is created with a LinearGenomeView `init` — its own afterAttach autorun loads the assembly regions and navigates (whole genome, or `loc` when given), so we don't reimplement that imperatively here. | LinearComparativeView |
+| <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |

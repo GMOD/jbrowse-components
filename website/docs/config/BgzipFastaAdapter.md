@@ -34,39 +34,17 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BgzipFastaAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                       | Type           | Description            |
-| ------------------------------------------ | -------------- | ---------------------- |
-| [fastaLocation](#slot-fastalocation)       | `fileLocation` |                        |
-| [faiLocation](#slot-failocation)           | `fileLocation` |                        |
-| [metadataLocation](#slot-metadatalocation) | `fileLocation` | Optional metadata file |
-| [gziLocation](#slot-gzilocation)           | `fileLocation` |                        |
-
-<details>
-<summary>BgzipFastaAdapter - Slots</summary>
-
-#### slot: fastaLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' }`
-
-#### slot: faiLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/seq.fa.gz.fai', locationType: 'UriLocation' }`
-
-#### slot: metadataLocation
-
-Optional metadata file
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
-
-#### slot: gziLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/seq.fa.gz.gzi', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-fastalocation">**fastaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-failocation">**faiLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa.gz.fai', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-metadatalocation">**metadataLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation'…</code></summary><pre><code>{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }</code></pre></details> | Optional metadata file |
+| <span id="slot-gzilocation">**gziLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa.gz.gzi', locationType: 'UriLocation' }</code> |  |

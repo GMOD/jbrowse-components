@@ -26,220 +26,73 @@ paired circular view; `assembly` resolves coordinates for both:
 }
 ```
 
-## Overview
-
 does not extend, but is a combination of a
 
 - [SpreadsheetView](../spreadsheetview)
 - [CircularView](../circularview)
 
-## Members
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
-| Member                                                                                             | Kind       | Defined by                        | Description                                                                                                            |
-| -------------------------------------------------------------------------------------------------- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                                                                 | Properties | SvInspectorView                   |                                                                                                                        |
-| [type](#property-type)                                                                             | Properties | SvInspectorView                   |                                                                                                                        |
-| [height](#property-height)                                                                         | Properties | SvInspectorView                   |                                                                                                                        |
-| [onlyDisplayRelevantRegionsInCircularView](#property-onlydisplayrelevantregionsincircularview)     | Properties | SvInspectorView                   |                                                                                                                        |
-| [spreadsheetWidthFraction](#property-spreadsheetwidthfraction)                                     | Properties | SvInspectorView                   | share of the view's width given to the spreadsheet, the rest goes to the circular view.                                |
-| [spreadsheetView](#property-spreadsheetview)                                                       | Properties | SvInspectorView                   |                                                                                                                        |
-| [circularView](#property-circularview)                                                             | Properties | SvInspectorView                   |                                                                                                                        |
-| [init](#property-init)                                                                             | Properties | SvInspectorView                   | used for initializing the view from a session snapshot                                                                 |
-| [width](#volatile-width)                                                                           | Volatiles  | SvInspectorView                   |                                                                                                                        |
-| [SpreadsheetViewReactComponent](#volatile-spreadsheetviewreactcomponent)                           | Volatiles  | SvInspectorView                   |                                                                                                                        |
-| [CircularViewReactComponent](#volatile-circularviewreactcomponent)                                 | Volatiles  | SvInspectorView                   |                                                                                                                        |
-| [circularViewOptionsBarHeight](#volatile-circularviewoptionsbarheight)                             | Volatiles  | SvInspectorView                   |                                                                                                                        |
-| [currentAssembly](#getter-currentassembly)                                                         | Getters    | SvInspectorView                   |                                                                                                                        |
-| [assemblyName](#getter-assemblyname)                                                               | Getters    | SvInspectorView                   |                                                                                                                        |
-| [showCircularView](#getter-showcircularview)                                                       | Getters    | SvInspectorView                   | gated on the same condition the spreadsheet renders its grid on, so the circle never appears alongside the import form |
-| [features](#getter-features)                                                                       | Getters    | SvInspectorView                   |                                                                                                                        |
-| [featuresAdapterConfigSnapshot](#getter-featuresadapterconfigsnapshot)                             | Getters    | SvInspectorView                   |                                                                                                                        |
-| [featureRefNames](#getter-featurerefnames)                                                         | Getters    | SvInspectorView                   |                                                                                                                        |
-| [canonicalFeatureRefNameSet](#getter-canonicalfeaturerefnameset)                                   | Getters    | SvInspectorView                   |                                                                                                                        |
-| [circularDisplayedRegions](#getter-circulardisplayedregions)                                       | Getters    | SvInspectorView                   | the regions the paired circular view should show.                                                                      |
-| [variantTrackId](#getter-varianttrackid)                                                           | Getters    | SvInspectorView                   |                                                                                                                        |
-| [featuresCircularTrackConfiguration](#getter-featurescirculartrackconfiguration)                   | Getters    | SvInspectorView                   |                                                                                                                        |
-| [menuItems](#method-menuitems)                                                                     | Methods    | SvInspectorView                   |                                                                                                                        |
-| [setWidth](#action-setwidth)                                                                       | Actions    | SvInspectorView                   |                                                                                                                        |
-| [setHeight](#action-setheight)                                                                     | Actions    | SvInspectorView                   |                                                                                                                        |
-| [setOnlyDisplayRelevantRegionsInCircularView](#action-setonlydisplayrelevantregionsincircularview) | Actions    | SvInspectorView                   |                                                                                                                        |
-| [resizeSpreadsheetWidth](#action-resizespreadsheetwidth)                                           | Actions    | SvInspectorView                   | move the divider between the two subviews.                                                                             |
-| [setInit](#action-setinit)                                                                         | Actions    | SvInspectorView                   |                                                                                                                        |
-| [resizeHeight](#action-resizeheight)                                                               | Actions    | SvInspectorView                   |                                                                                                                        |
-| [displayName](#property-displayname)                                                               | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified                  |
-| [minimized](#property-minimized)                                                                   | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                        |
-| [setDisplayName](#action-setdisplayname)                                                           | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                        |
-| [setMinimized](#action-setminimized)                                                               | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                        |
+## Properties
 
-<details>
-<summary>SvInspectorView - Properties</summary>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | SvInspectorView |
+| <span id="property-type">**type**</span><br><code>type: types.literal('SvInspectorView')</code> |  | SvInspectorView |
+| <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> |  | SvInspectorView |
+| <span id="property-onlydisplayrelevantregionsincircularview">**onlyDisplayRelevantRegionsInCircularView**</span><br><details><summary><code>onlyDisplayRelevantRegionsInCircularView: types.stripDefault( t…</code></summary><pre><code>onlyDisplayRelevantRegionsInCircularView: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.boolean,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;false,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | SvInspectorView |
+| <span id="property-spreadsheetwidthfraction">**spreadsheetWidthFraction**</span><br><code>spreadsheetWidthFraction: types.stripDefault(types.number, 0.66)</code> | share of the view's width given to the spreadsheet, the rest goes to the circular view. Persisted so dragging the divider survives both a window resize and a session reload | SvInspectorView |
+| <span id="property-spreadsheetview">**spreadsheetView**</span><br><details><summary><code>spreadsheetView: types.optional(SpreadsheetModel, () =&gt; Spreads…</code></summary><pre><code>spreadsheetView: types.optional(SpreadsheetModel, () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SpreadsheetModel.create({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;type: 'SpreadsheetView',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hideVerticalResizeHandle: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | SvInspectorView |
+| <span id="property-circularview">**circularView**</span><br><details><summary><code>circularView: types.optional(CircularModel, () =&gt; CircularModel…</code></summary><pre><code>circularView: types.optional(CircularModel, () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;CircularModel.create({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;type: 'CircularView',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hideVerticalResizeHandle: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hideTrackSelectorButton: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;disableImportForm: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | SvInspectorView |
+| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;SvInspectorViewInit &#124; undefined&gt;()</code> | used for initializing the view from a session snapshot | SvInspectorView |
+| <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
+| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  | [BaseViewModel](../baseviewmodel#property-minimized) |
 
-#### property: spreadsheetWidthFraction
+## Volatiles
 
-share of the view's width given to the spreadsheet, the rest goes to the
-circular view. Persisted so dragging the divider survives both a window resize
-and a session reload
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-width">**width**</span><br><code>width: 800</code> |  |
+| <span id="volatile-spreadsheetviewreactcomponent">**SpreadsheetViewReactComponent**</span><br><details><summary><code>SpreadsheetViewReactComponent: SpreadsheetViewType.ReactCompone…</code></summary><pre><code>SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent</code></pre></details> |  |
+| <span id="volatile-circularviewreactcomponent">**CircularViewReactComponent**</span><br><code>CircularViewReactComponent: CircularViewType.ReactComponent</code> |  |
+| <span id="volatile-circularviewoptionsbarheight">**circularViewOptionsBarHeight**</span><br><code>circularViewOptionsBarHeight: 52</code> |  |
 
-```ts
-// type signature
-type spreadsheetWidthFraction = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-spreadsheetWidthFraction: types.stripDefault(types.number, 0.66)
-```
+## Getters
 
-#### property: init
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-currentassembly">**currentAssembly**</span><br><details><summary><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTree…</code></summary><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></details> |  |
+| <span id="getter-assemblyname">**assemblyName**</span><br><code>string &#124; undefined</code> |  |
+| <span id="getter-showcircularview">**showCircularView**</span><br><code>boolean</code> | gated on the same condition the spreadsheet renders its grid on, so the circle never appears alongside the import form |
+| <span id="getter-features">**features**</span><br><code>SimpleFeatureSerialized[]</code> |  |
+| <span id="getter-featuresadapterconfigsnapshot">**featuresAdapterConfigSnapshot**</span><br><code>{ type: string; features: SimpleFeatureSerialized[]; }</code> |  |
+| <span id="getter-featurerefnames">**featureRefNames**</span><br><code>string[]</code> |  |
+| <span id="getter-canonicalfeaturerefnameset">**canonicalFeatureRefNameSet**</span><br><code>Set&lt;string&gt;</code> |  |
+| <span id="getter-circulardisplayedregions">**circularDisplayedRegions**</span><br><code>BasicRegion[] &#124; undefined</code> | the regions the paired circular view should show. An empty relevant-set means the features aren't parsed yet, so show everything rather than an empty circle |
+| <span id="getter-varianttrackid">**variantTrackId**</span><br><code>string</code> |  |
+| <span id="getter-featurescirculartrackconfiguration">**featuresCircularTrackConfiguration**</span><br><details><summary><code>{ type: string; trackId: string; name: string; adapter: {…}; as…</code></summary><pre><code>{ type: string; trackId: string; name: string; adapter: {…}; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }</code></pre></details> |  |
 
-used for initializing the view from a session snapshot
+## Methods
 
-```ts
-// type signature
-type init = IType<
-  SvInspectorViewInit | undefined,
-  SvInspectorViewInit | undefined,
-  SvInspectorViewInit | undefined
->
-// code
-init: types.frozen<SvInspectorViewInit | undefined>()
-```
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-menuitems">**menuItems**</span><br><details><summary><code>() =&gt; { label: string; icon: OverridableComponent&lt;SvgIconTypeMa…</code></summary><pre><code>() =&gt; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; onClick: () =&gt; void; }[]</code></pre></details> |  |
 
-</details>
+## Actions
 
-<details>
-<summary>SvInspectorView - Properties (other undocumented members)</summary>
-
-| Member                                                                                                       | Type                                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| <span id="property-id">id</span>                                                                             | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                   |
-| <span id="property-type">type</span>                                                                         | `ISimpleType<"SvInspectorView">`                                                                                                     |
-| <span id="property-height">height</span>                                                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                   |
-| <span id="property-onlydisplayrelevantregionsincircularview">onlyDisplayRelevantRegionsInCircularView</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                  |
-| <span id="property-spreadsheetview">spreadsheetView</span>                                                   | `IOptionalIType<IModelType<_OverrideProps<…>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; } \| { ...; }>, [...]>`   |
-| <span id="property-circularview">circularView</span>                                                         | `IOptionalIType<IModelType<_OverrideProps<…>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>` |
-
-</details>
-
-<details>
-<summary>SvInspectorView - Volatiles</summary>
-
-| Member                                                                                 | Type                |
-| -------------------------------------------------------------------------------------- | ------------------- |
-| <span id="volatile-width">width</span>                                                 | `number`            |
-| <span id="volatile-spreadsheetviewreactcomponent">SpreadsheetViewReactComponent</span> | `ViewComponentType` |
-| <span id="volatile-circularviewreactcomponent">CircularViewReactComponent</span>       | `ViewComponentType` |
-| <span id="volatile-circularviewoptionsbarheight">circularViewOptionsBarHeight</span>   | `number`            |
-
-</details>
-
-<details>
-<summary>SvInspectorView - Getters</summary>
-
-#### getter: showCircularView
-
-gated on the same condition the spreadsheet renders its grid on, so the circle
-never appears alongside the import form
-
-```ts
-type showCircularView = boolean
-```
-
-#### getter: circularDisplayedRegions
-
-the regions the paired circular view should show. An empty relevant-set means
-the features aren't parsed yet, so show everything rather than an empty circle
-
-```ts
-type circularDisplayedRegions = BasicRegion[] | undefined
-```
-
-</details>
-
-<details>
-<summary>SvInspectorView - Getters (other undocumented members)</summary>
-
-| Member                                                                                         | Type                                                                                                                                                                                  |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="getter-currentassembly">currentAssembly</span>                                       | `(ModelInstanceTypeProps<…> & {…} & ... 12 more ... & IStateTreeNode<…>) \| undefined`                                                                                                |
-| <span id="getter-assemblyname">assemblyName</span>                                             | `string \| undefined`                                                                                                                                                                 |
-| <span id="getter-features">features</span>                                                     | `SimpleFeatureSerialized[]`                                                                                                                                                           |
-| <span id="getter-featuresadapterconfigsnapshot">featuresAdapterConfigSnapshot</span>           | `{ type: string; features: SimpleFeatureSerialized[]; }`                                                                                                                              |
-| <span id="getter-featurerefnames">featureRefNames</span>                                       | `string[]`                                                                                                                                                                            |
-| <span id="getter-canonicalfeaturerefnameset">canonicalFeatureRefNameSet</span>                 | `Set<string>`                                                                                                                                                                         |
-| <span id="getter-varianttrackid">variantTrackId</span>                                         | `string`                                                                                                                                                                              |
-| <span id="getter-featurescirculartrackconfiguration">featuresCircularTrackConfiguration</span> | `{ type: string; trackId: string; name: string; adapter: {…}; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }` |
-
-</details>
-
-<details>
-<summary>SvInspectorView - Methods</summary>
-
-| Member                                       | Type                                                                                                                            |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="method-menuitems">menuItems</span> | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]` |
-
-</details>
-
-<details>
-<summary>SvInspectorView - Actions</summary>
-
-#### action: resizeSpreadsheetWidth
-
-move the divider between the two subviews. Stored as a fraction so the width
-binding can reapply it, rather than resizing the subviews directly and having
-the next parent resize overwrite it
-
-```ts
-type resizeSpreadsheetWidth = (distance: number) => void
-```
-
-</details>
-
-<details>
-<summary>SvInspectorView - Actions (other undocumented members)</summary>
-
-| Member                                                                                                           | Type                                                |
-| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| <span id="action-setwidth">setWidth</span>                                                                       | `(newWidth: number) => void`                        |
-| <span id="action-setheight">setHeight</span>                                                                     | `(newHeight: number) => number`                     |
-| <span id="action-setonlydisplayrelevantregionsincircularview">setOnlyDisplayRelevantRegionsInCircularView</span> | `(val: boolean) => void`                            |
-| <span id="action-setinit">setInit</span>                                                                         | `(init?: SvInspectorViewInit \| undefined) => void` |
-| <span id="action-resizeheight">resizeHeight</span>                                                               | `(distance: number) => number`                      |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseViewModel</summary>
-
-[BaseViewModel →](../baseviewmodel)
-
-**Properties**
-
-#### property: displayName
-
-displayName is displayed in the header of the view, or assembly names being used
-if none is specified
-
-```ts
-// type signature
-type displayName = IMaybe<ISimpleType<string>>
-// code
-displayName: types.maybe(types.string)
-```
-
-| Member                                         | Type                                                |
-| ---------------------------------------------- | --------------------------------------------------- |
-| <span id="property-minimized">minimized</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
-**Actions**
-
-| Member                                                 | Type                      |
-| ------------------------------------------------------ | ------------------------- |
-| <span id="action-setdisplayname">setDisplayName</span> | `(name: string) => void`  |
-| <span id="action-setminimized">setMinimized</span>     | `(flag: boolean) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> |  | SvInspectorView |
+| <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  | SvInspectorView |
+| <span id="action-setonlydisplayrelevantregionsincircularview">**setOnlyDisplayRelevantRegionsInCircularView**</span><br><code>(val: boolean) =&gt; void</code> |  | SvInspectorView |
+| <span id="action-resizespreadsheetwidth">**resizeSpreadsheetWidth**</span><br><code>(distance: number) =&gt; void</code> | move the divider between the two subviews. Stored as a fraction so the width binding can reapply it, rather than resizing the subviews directly and having the next parent resize overwrite it | SvInspectorView |
+| <span id="action-setinit">**setInit**</span><br><code>(init?: SvInspectorViewInit &#124; undefined) =&gt; void</code> |  | SvInspectorView |
+| <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  | SvInspectorView |
+| <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |

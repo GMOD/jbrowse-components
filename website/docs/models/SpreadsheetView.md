@@ -26,181 +26,51 @@ file (VCF/BED/CSV/etc) straight into the grid, skipping the import form;
 }
 ```
 
-## Overview
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
-## Members
+## Properties
 
-| Member                                                         | Kind       | Defined by                        | Description                                                                                                                                                                                    |
-| -------------------------------------------------------------- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                         | Properties | SpreadsheetView                   |                                                                                                                                                                                                |
-| [height](#property-height)                                     | Properties | SpreadsheetView                   |                                                                                                                                                                                                |
-| [hideVerticalResizeHandle](#property-hideverticalresizehandle) | Properties | SpreadsheetView                   |                                                                                                                                                                                                |
-| [importWizard](#property-importwizard)                         | Properties | SpreadsheetView                   |                                                                                                                                                                                                |
-| [spreadsheet](#property-spreadsheet)                           | Properties | SpreadsheetView                   |                                                                                                                                                                                                |
-| [init](#property-init)                                         | Properties | SpreadsheetView                   | used for initializing the view from a session snapshot                                                                                                                                         |
-| [width](#volatile-width)                                       | Volatiles  | SpreadsheetView                   |                                                                                                                                                                                                |
-| [menuItems](#method-menuitems)                                 | Methods    | SpreadsheetView                   |                                                                                                                                                                                                |
-| [setWidth](#action-setwidth)                                   | Actions    | SpreadsheetView                   |                                                                                                                                                                                                |
-| [setHeight](#action-setheight)                                 | Actions    | SpreadsheetView                   |                                                                                                                                                                                                |
-| [resizeHeight](#action-resizeheight)                           | Actions    | SpreadsheetView                   |                                                                                                                                                                                                |
-| [resizeWidth](#action-resizewidth)                             | Actions    | SpreadsheetView                   |                                                                                                                                                                                                |
-| [displaySpreadsheet](#action-displayspreadsheet)               | Actions    | SpreadsheetView                   | load a new spreadsheet and set our mode to display it.                                                                                                                                         |
-| [setInit](#action-setinit)                                     | Actions    | SpreadsheetView                   |                                                                                                                                                                                                |
-| [loadSpreadsheet](#action-loadspreadsheet)                     | Actions    | SpreadsheetView                   | the single load funnel: fetch+parse via the import wizard, then display the result.                                                                                                            |
-| [applyInit](#action-applyinit)                                 | Actions    | SpreadsheetView                   | apply a declarative init (from addView / sv-inspector): point the import wizard at the file and load it                                                                                        |
-| [returnToImportForm](#action-returntoimportform)               | Actions    | SpreadsheetView                   | drop the loaded sheet and the cached location together: leaving the cache behind makes afterAttach re-fetch the dismissed file on the next session load, putting the user back where they left |
-| [id](#property-id)                                             | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                |
-| [displayName](#property-displayname)                           | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                          |
-| [minimized](#property-minimized)                               | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                |
-| [setDisplayName](#action-setdisplayname)                       | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                |
-| [setMinimized](#action-setminimized)                           | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                |
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-type">**type**</span><br><code>type: types.literal('SpreadsheetView')</code> |  | SpreadsheetView |
+| <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> |  | SpreadsheetView |
+| <span id="property-hideverticalresizehandle">**hideVerticalResizeHandle**</span><br><details><summary><code>hideVerticalResizeHandle: types.stripDefault(types.boolean, fal…</code></summary><pre><code>hideVerticalResizeHandle: types.stripDefault(types.boolean, false)</code></pre></details> |  | SpreadsheetView |
+| <span id="property-importwizard">**importWizard**</span><br><details><summary><code>importWizard: types.optional(ImportWizardModel, () =&gt; ImportWiz…</code></summary><pre><code>importWizard: types.optional(ImportWizardModel, () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ImportWizardModel.create(),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | SpreadsheetView |
+| <span id="property-spreadsheet">**spreadsheet**</span><br><code>spreadsheet: types.maybe(Spreadsheet())</code> |  | SpreadsheetView |
+| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;SpreadsheetViewInit &#124; undefined&gt;()</code> | used for initializing the view from a session snapshot | SpreadsheetView |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseViewModel](../baseviewmodel#property-id) |
+| <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
+| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  | [BaseViewModel](../baseviewmodel#property-minimized) |
 
-<details>
-<summary>SpreadsheetView - Properties</summary>
+## Volatiles
 
-#### property: init
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-width">**width**</span><br><code>width: 400</code> |  |
 
-used for initializing the view from a session snapshot
+## Methods
 
-```ts
-// type signature
-type init = IType<
-  SpreadsheetViewInit | undefined,
-  SpreadsheetViewInit | undefined,
-  SpreadsheetViewInit | undefined
->
-// code
-init: types.frozen<SpreadsheetViewInit | undefined>()
-```
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-menuitems">**menuItems**</span><br><details><summary><code>() =&gt; { label: string; icon: OverridableComponent&lt;SvgIconTypeMa…</code></summary><pre><code>() =&gt; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; onClick: () =&gt; void; }[]</code></pre></details> |  |
 
-</details>
+## Actions
 
-<details>
-<summary>SpreadsheetView - Properties (other undocumented members)</summary>
-
-| Member                                                                       | Type                                                |
-| ---------------------------------------------------------------------------- | --------------------------------------------------- |
-| <span id="property-type">type</span>                                         | `ISimpleType<"SpreadsheetView">`                    |
-| <span id="property-height">height</span>                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-| <span id="property-hideverticalresizehandle">hideVerticalResizeHandle</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| <span id="property-importwizard">importWizard</span>                         | `IOptionalIType<IModelType<…>, [...]>`              |
-| <span id="property-spreadsheet">spreadsheet</span>                           | `IMaybe<IModelType<…>>`                             |
-
-</details>
-
-<details>
-<summary>SpreadsheetView - Volatiles</summary>
-
-| Member                                 | Type     |
-| -------------------------------------- | -------- |
-| <span id="volatile-width">width</span> | `number` |
-
-</details>
-
-<details>
-<summary>SpreadsheetView - Methods</summary>
-
-| Member                                       | Type                                                                                                                            |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="method-menuitems">menuItems</span> | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]` |
-
-</details>
-
-<details>
-<summary>SpreadsheetView - Actions</summary>
-
-#### action: displaySpreadsheet
-
-load a new spreadsheet and set our mode to display it. When the incoming data
-has the same columns as what's shown (i.e. a session-cached URI being re-fetched
-on reload), carry over the user's column-visibility and SV-type filter — a fresh
-parse only supplies columns/rowSet, so a plain replace would reset them. The
-column match keeps this from leaking view state across different files.
-
-```ts
-type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<…>> | undefined) => void
-```
-
-#### action: loadSpreadsheet
-
-the single load funnel: fetch+parse via the import wizard, then display the
-result. Every entry point (declarative init, cached reload, the import form's
-Open button) routes through here so the view stays the sole owner of
-displaySpreadsheet
-
-```ts
-type loadSpreadsheet = (assemblyName: string) => Promise<void>
-```
-
-#### action: applyInit
-
-apply a declarative init (from addView / sv-inspector): point the import wizard
-at the file and load it
-
-```ts
-type applyInit = (init: SpreadsheetViewInit) => Promise<void>
-```
-
-#### action: returnToImportForm
-
-drop the loaded sheet and the cached location together: leaving the cache behind
-makes afterAttach re-fetch the dismissed file on the next session load, putting
-the user back where they left
-
-```ts
-type returnToImportForm = () => void
-```
-
-</details>
-
-<details>
-<summary>SpreadsheetView - Actions (other undocumented members)</summary>
-
-| Member                                             | Type                                                |
-| -------------------------------------------------- | --------------------------------------------------- |
-| <span id="action-setwidth">setWidth</span>         | `(newWidth: number) => number`                      |
-| <span id="action-setheight">setHeight</span>       | `(newHeight: number) => number`                     |
-| <span id="action-resizeheight">resizeHeight</span> | `(distance: number) => number`                      |
-| <span id="action-resizewidth">resizeWidth</span>   | `(distance: number) => number`                      |
-| <span id="action-setinit">setInit</span>           | `(init?: SpreadsheetViewInit \| undefined) => void` |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseViewModel</summary>
-
-[BaseViewModel →](../baseviewmodel)
-
-**Properties**
-
-#### property: displayName
-
-displayName is displayed in the header of the view, or assembly names being used
-if none is specified
-
-```ts
-// type signature
-type displayName = IMaybe<ISimpleType<string>>
-// code
-displayName: types.maybe(types.string)
-```
-
-| Member                                         | Type                                                |
-| ---------------------------------------------- | --------------------------------------------------- |
-| <span id="property-id">id</span>               | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| <span id="property-minimized">minimized</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
-**Actions**
-
-| Member                                                 | Type                      |
-| ------------------------------------------------------ | ------------------------- |
-| <span id="action-setdisplayname">setDisplayName</span> | `(name: string) => void`  |
-| <span id="action-setminimized">setMinimized</span>     | `(flag: boolean) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; number</code> |  | SpreadsheetView |
+| <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  | SpreadsheetView |
+| <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  | SpreadsheetView |
+| <span id="action-resizewidth">**resizeWidth**</span><br><code>(distance: number) =&gt; number</code> |  | SpreadsheetView |
+| <span id="action-displayspreadsheet">**displaySpreadsheet**</span><br><details><summary><code>(spreadsheet?: ModelCreationType&lt;ExtractCFromProps&lt;…&gt;&gt; &#124; undefi…</code></summary><pre><code>(spreadsheet?: ModelCreationType&lt;ExtractCFromProps&lt;…&gt;&gt; &#124; undefined) =&gt; void</code></pre></details> | load a new spreadsheet and set our mode to display it. When the incoming data has the same columns as what's shown (i.e. a session-cached URI being re-fetched on reload), carry over the user's column-visibility and SV-type filter — a fresh parse only supplies columns/rowSet, so a plain replace would reset them. The column match keeps this from leaking view state across different files. | SpreadsheetView |
+| <span id="action-setinit">**setInit**</span><br><code>(init?: SpreadsheetViewInit &#124; undefined) =&gt; void</code> |  | SpreadsheetView |
+| <span id="action-loadspreadsheet">**loadSpreadsheet**</span><br><code>(assemblyName: string) =&gt; Promise&lt;void&gt;</code> | the single load funnel: fetch+parse via the import wizard, then display the result. Every entry point (declarative init, cached reload, the import form's Open button) routes through here so the view stays the sole owner of displaySpreadsheet | SpreadsheetView |
+| <span id="action-applyinit">**applyInit**</span><br><code>(init: SpreadsheetViewInit) =&gt; Promise&lt;void&gt;</code> | apply a declarative init (from addView / sv-inspector): point the import wizard at the file and load it | SpreadsheetView |
+| <span id="action-returntoimportform">**returnToImportForm**</span><br><code>() =&gt; void</code> | drop the loaded sheet and the cached location together: leaving the cache behind makes afterAttach re-fetch the dismissed file on the next session load, putting the user back where they left | SpreadsheetView |
+| <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |

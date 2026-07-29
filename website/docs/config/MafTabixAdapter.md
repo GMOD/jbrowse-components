@@ -8,19 +8,28 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
 
-## Overview
+## Example usage
 
-### MafTabixAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
-
-```json
+```js
 {
-  "type": "MafTabixAdapter",
-  "uri": "yourfile.bed.gz",
-  "samples": ["sample1", "sample2"]
+  type: 'MafTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MafTabixAdapter',
+    bedGzLocation: { uri: 'https://example.com/multiz.bed.gz' },
+    index: { location: { uri: 'https://example.com/multiz.bed.gz.tbi' } },
+    nhLocation: { uri: 'https://example.com/multiz.nh' },
+  },
 }
 ```
+
+_See the **Config slots** section below for all available configuration fields._
+
+Multiple alignment format converted to a bgzipped, tabix-indexed BED. The
+`nhLocation` newick tree orders and labels the species rows; `refAssemblyName`
+names the MAF's reference species when it differs from the assembly name.
 
 ## Related links
 
@@ -29,61 +38,20 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "MafTabixAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                         | Type                    | Description                                                                                                                                                                                 |
-| -------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [samples](#slot-samples)                     | `frozen`                | string[] or {id:string,label:string,color?:string}[]                                                                                                                                        |
-| [bedGzLocation](#slot-bedgzlocation)         | `fileLocation`          |                                                                                                                                                                                             |
-| [refAssemblyName](#slot-refassemblyname)     | `string`                |                                                                                                                                                                                             |
-| [index.location](#slot-indexlocation)        | `fileLocation`          |                                                                                                                                                                                             |
-| [index.indexType](#slot-indexindextype)      | `stringEnum` (TBI, CSI) |                                                                                                                                                                                             |
-| [nhLocation](#slot-nhlocation)               | `fileLocation`          | newick tree                                                                                                                                                                                 |
-| [annotationAdapter](#slot-annotationadapter) | `frozen`                | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it |
-
-<details>
-<summary>MafTabixAdapter - Slots</summary>
-
-#### slot: samples
-
-string[] or {id:string,label:string,color?:string}[]
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-#### slot: bedGzLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
-
-#### slot: refAssemblyName
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bed.gz.tbi' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: nhLocation
-
-newick tree
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.nh', locationType: 'UriLocation' }`
-
-#### slot: annotationAdapter
-
-optional sub-adapter (typically a BigBedAdapter over a UCSC
-multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the
-gene-structure overlay and codon view; null disables it
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-samples">**samples**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | string[] or {id:string,label:string,color?:string}[] |
+| <span id="slot-bedgzlocation">**bedGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-refassemblyname">**refAssemblyName**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz.tbi' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-nhlocation">**nhLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.nh', locationType: 'UriLocation' }</code> | newick tree |
+| <span id="slot-annotationadapter">**annotationAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it |

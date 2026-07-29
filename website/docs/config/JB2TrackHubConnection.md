@@ -29,58 +29,15 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 
 ## Config slots
 
+These slots are top-level fields of the connection's entry in `connections`.
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type           | Description                                                                                     |
-| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
-| [configJsonLocation](#slot-configjsonlocation) | `fileLocation` | location of the jb2 config file (usually called config.json)                                    |
-| [assemblyNames](#slot-assemblynames)           | `stringArray`  | optional list of genomes to import from this config.json, if empty all genomes will be imported |
-
-<details>
-<summary>JB2TrackHubConnection - Slots</summary>
-
-#### slot: configJsonLocation
-
-location of the jb2 config file (usually called config.json)
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: 'https://mysite.com/path/to/config.json',
-    locationType: 'UriLocation',
-  },
-}
-```
-
-#### slot: assemblyNames
-
-optional list of genomes to import from this config.json, if empty all genomes
-will be imported
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseConnection</summary>
-
-[BaseConnection config →](../baseconnection)
-
-#### slot: name
-
-a unique name for this connection
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'nameOfConnection'`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-configjsonlocation">**configJsonLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: 'https://mysite.com/path/to/config.json', locationType:…</code></summary><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: 'https://mysite.com/path/to/config.json',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></details> | location of the jb2 config file (usually called config.json) |  |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | optional list of genomes to import from this config.json, if empty all genomes will be imported |  |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'nameOfConnection'</code> | a unique name for this connection | [BaseConnection](../baseconnection) |

@@ -15,215 +15,36 @@ plugin.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
-
-| Slot                                         | Type                      | Description                                                                 |
-| -------------------------------------------- | ------------------------- | --------------------------------------------------------------------------- |
-| [ldMetric](#slot-ldmetric)                   | `stringEnum` (r2, dprime) | LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D) |
-| [showLegend](#slot-showlegend)               | `boolean`                 | Whether to show the legend                                                  |
-| [showLDTriangle](#slot-showldtriangle)       | `boolean`                 | Whether to show the LD triangle heatmap                                     |
-| [showRecombination](#slot-showrecombination) | `boolean`                 | Whether to show the recombination rate track                                |
-
-<details>
-<summary>Advanced slots (13)</summary>
-
-| Slot                                                           | Type          | Description                                                                                        |
-| -------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------- |
-| [minorAlleleFrequencyFilter](#slot-minorallelefrequencyfilter) | `number`      | Filter variants by minor allele frequency (0-1).                                                   |
-| [lengthCutoffFilter](#slot-lengthcutofffilter)                 | `number`      | Maximum length of variants to include (in bp)                                                      |
-| [lineZoneHeight](#slot-linezoneheight)                         | `number`      | Height of the zone for connecting lines at the top                                                 |
-| [recombinationZoneHeight](#slot-recombinationzoneheight)       | `number`      | Height of the recombination track zone at the top                                                  |
-| [fitToHeight](#slot-fittoheight)                               | `boolean`     | When true, squash the LD triangle to fit the display height                                        |
-| [hweFilterThreshold](#slot-hwefilterthreshold)                 | `number`      | HWE filter p-value threshold (variants with HWE p < this are excluded).                            |
-| [callRateFilter](#slot-callratefilter)                         | `number`      | Call rate filter threshold (0-1).                                                                  |
-| [showVerticalGuides](#slot-showverticalguides)                 | `boolean`     | Whether to show vertical guides at the connected genome positions on hover                         |
-| [showLabels](#slot-showlabels)                                 | `boolean`     | Whether to show variant labels above the tick marks                                                |
-| [tickHeight](#slot-tickheight)                                 | `number`      | Height of the vertical tick marks at the genomic position                                          |
-| [useGenomicPositions](#slot-usegenomicpositions)               | `boolean`     | When true, draw cells sized according to genomic distance between SNPs rather than uniform squares |
-| [signedLD](#slot-signedld)                                     | `boolean`     | When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1).                    |
-| [jexlFilters](#slot-jexlfilters)                               | `stringArray` | JEXL filter expressions to apply to variants (one per line, starting with jexl:)                   |
-
-</details>
-
-<details>
-<summary>SharedLDDisplay - Slots</summary>
-
-#### slot: minorAlleleFrequencyFilter
-
-Filter variants by minor allele frequency (0-1). Variants with MAF below this
-threshold will be hidden
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0.1`
-· _advanced_
-
-#### slot: lengthCutoffFilter
-
-Maximum length of variants to include (in bp)
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`Number.MAX_SAFE_INTEGER` · _advanced_
-
-#### slot: lineZoneHeight
-
-Height of the zone for connecting lines at the top
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-· _advanced_
-
-#### slot: ldMetric
-
-LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`r2`, `dprime`) · **Default:** `'r2'`
-
-#### slot: showLegend
-
-Whether to show the legend
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: showLDTriangle
-
-Whether to show the LD triangle heatmap
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showRecombination
-
-Whether to show the recombination rate track
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: recombinationZoneHeight
-
-Height of the recombination track zone at the top
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `50`
-· _advanced_
-
-#### slot: fitToHeight
-
-When true, squash the LD triangle to fit the display height
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: hweFilterThreshold
-
-HWE filter p-value threshold (variants with HWE p < this are excluded). Set to 0
-to disable HWE filtering
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
-_advanced_
-
-#### slot: callRateFilter
-
-Call rate filter threshold (0-1). Variants with fewer than this proportion of
-non-missing genotypes are excluded. Set to 0 to disable.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
-_advanced_
-
-#### slot: showVerticalGuides
-
-Whether to show vertical guides at the connected genome positions on hover
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true` · _advanced_
-
-#### slot: showLabels
-
-Whether to show variant labels above the tick marks
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: tickHeight
-
-Height of the vertical tick marks at the genomic position
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `6` ·
-_advanced_
-
-#### slot: useGenomicPositions
-
-When true, draw cells sized according to genomic distance between SNPs rather
-than uniform squares
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: signedLD
-
-When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1).
-For R², this shows R (correlation) instead. For D', this preserves the sign.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: jexlFilters
-
-JEXL filter expressions to apply to variants (one per line, starting with jexl:)
-
-**Type:** `stringArray` · **Default:** `[]` · _advanced_
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseLinearDisplay</summary>
-
-[BaseLinearDisplay config →](../baselineardisplay)
-
-#### slot: maxFeatureScreenDensity
-
-maximum features per pixel before showing a "too many features" message, used if
-byte size estimates are not available
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_advanced_
-
-#### slot: fetchSizeLimit
-
-maximum data to attempt to download for a given track, used if adapter doesn't
-specify one
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1_000_000` · _advanced_
-
-#### slot: forceLoad
-
-Declarative equivalent of the "Force load" button on the "too much data" banner:
-when true the display always renders, however large the region or dense the
-features. Off by default (the gate guards against huge downloads). Set it on a
-view no one can interact with — an embedded / notebook view, or a screenshot —
-where the region is known and you want it drawn without a click.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: height
-
-default height for the track
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: mouseover
-
-text to display when the cursor hovers over a feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-· **Callback args:** `feature`
-
-</details>
+These slots go on a display entry:
+`"displays": [{ "type": "SharedLDDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
+
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | Filter variants by minor allele frequency (0-1). Variants with MAF below this threshold will be hidden<br>_advanced_ |  |
+| <span id="slot-lengthcutofffilter">**lengthCutoffFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_SAFE_INTEGER</code> | Maximum length of variants to include (in bp)<br>_advanced_ |  |
+| <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Height of the zone for connecting lines at the top<br>_advanced_ |  |
+| <span id="slot-ldmetric">**ldMetric**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (r2, dprime) = <code>'r2'</code> | LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D) |  |
+| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Whether to show the legend |  |
+| <span id="slot-showldtriangle">**showLDTriangle**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether to show the LD triangle heatmap |  |
+| <span id="slot-showrecombination">**showRecombination**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Whether to show the recombination rate track |  |
+| <span id="slot-recombinationzoneheight">**recombinationZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>50</code> | Height of the recombination track zone at the top<br>_advanced_ |  |
+| <span id="slot-fittoheight">**fitToHeight**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, squash the LD triangle to fit the display height<br>_advanced_ |  |
+| <span id="slot-hwefilterthreshold">**hweFilterThreshold**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | HWE filter p-value threshold (variants with HWE p < this are excluded). Set to 0 to disable HWE filtering<br>_advanced_ |  |
+| <span id="slot-callratefilter">**callRateFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Call rate filter threshold (0-1). Variants with fewer than this proportion of non-missing genotypes are excluded. Set to 0 to disable.<br>_advanced_ |  |
+| <span id="slot-showverticalguides">**showVerticalGuides**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether to show vertical guides at the connected genome positions on hover<br>_advanced_ |  |
+| <span id="slot-showlabels">**showLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Whether to show variant labels above the tick marks<br>_advanced_ |  |
+| <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | Height of the vertical tick marks at the genomic position<br>_advanced_ |  |
+| <span id="slot-usegenomicpositions">**useGenomicPositions**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, draw cells sized according to genomic distance between SNPs rather than uniform squares<br>_advanced_ |  |
+| <span id="slot-signedld">**signedLD**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1). For R², this shows R (correlation) instead. For D', this preserves the sign.<br>_advanced_ |  |
+| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[]</code> | JEXL filter expressions to apply to variants (one per line, starting with jexl:)<br>_advanced_ |  |
+| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></summary><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></details> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` | [BaseLinearDisplay](../baselineardisplay) |

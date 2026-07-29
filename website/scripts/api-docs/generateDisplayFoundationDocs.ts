@@ -98,7 +98,7 @@ function renderTable(foundations: Foundation[]) {
 export function writeDisplayFoundationDocs({ check = false } = {}) {
   return rewriteMarkerBlock(
     'DISPLAY_FOUNDATIONS',
-    `<!-- prettier-ignore -->\n${renderTable(collectFoundations())}`,
+    renderTable(collectFoundations()),
     { check },
   )
 }

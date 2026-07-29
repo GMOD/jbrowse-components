@@ -17,53 +17,18 @@ used to configure BigMaf adapter
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BigMafAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                         | Type           | Description                                                                                                                                                                                 |
-| -------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [samples](#slot-samples)                     | `frozen`       | string[] or {id:string,label:string,color?:string}[]                                                                                                                                        |
-| [bigBedLocation](#slot-bigbedlocation)       | `fileLocation` |                                                                                                                                                                                             |
-| [nhLocation](#slot-nhlocation)               | `fileLocation` | newick tree                                                                                                                                                                                 |
-| [summaryAdapter](#slot-summaryadapter)       | `frozen`       | optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it                                                        |
-| [annotationAdapter](#slot-annotationadapter) | `frozen`       | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it |
-
-<details>
-<summary>BigMafAdapter - Slots</summary>
-
-#### slot: samples
-
-string[] or {id:string,label:string,color?:string}[]
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-#### slot: bigBedLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bb', locationType: 'UriLocation' }`
-
-#### slot: nhLocation
-
-newick tree
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.nh', locationType: 'UriLocation' }`
-
-#### slot: summaryAdapter
-
-optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb)
-used for cheap zoom-out rendering; null disables it
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null`
-
-#### slot: annotationAdapter
-
-optional sub-adapter (typically a BigBedAdapter over a UCSC
-multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the
-gene-structure overlay and codon view; null disables it
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-samples">**samples**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | string[] or {id:string,label:string,color?:string}[] |
+| <span id="slot-bigbedlocation">**bigBedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bb', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-nhlocation">**nhLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.nh', locationType: 'UriLocation' }</code> | newick tree |
+| <span id="slot-summaryadapter">**summaryAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it |
+| <span id="slot-annotationadapter">**annotationAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it |

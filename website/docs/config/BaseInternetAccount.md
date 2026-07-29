@@ -17,51 +17,28 @@ the "base" internet account type
 Every BaseInternetAccount has a unique `internetAccountId`, a required top-level
 field that identifies it (not one of the config slots below).
 
+## Related links
+
+- **Extended by:** [OAuthInternetAccount](../oauthinternetaccount)
+- **Extended by:**
+  [ExternalTokenInternetAccount](../externaltokeninternetaccount)
+- **Extended by:** [HTTPBasicInternetAccount](../httpbasicinternetaccount)
+
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+`BaseInternetAccount` is a shared base schema, not a type you name in a config.
+Set these slots on one of the configs under **Extended by** above, each of which
+lists them as inherited and shows the shape in its own example. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type          | Description                                                    |
-| -------------------------------- | ------------- | -------------------------------------------------------------- |
-| [name](#slot-name)               | `string`      | descriptive name of the internet account                       |
-| [description](#slot-description) | `string`      | a description of the internet account                          |
-| [authHeader](#slot-authheader)   | `string`      | request header for credentials                                 |
-| [tokenType](#slot-tokentype)     | `string`      | a custom name for a token to include in the header             |
-| [domains](#slot-domains)         | `stringArray` | array of valid domains the url can contain to use this account |
-
-<details>
-<summary>BaseInternetAccount - Slots</summary>
-
-#### slot: name
-
-descriptive name of the internet account
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: description
-
-a description of the internet account
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: authHeader
-
-request header for credentials
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'Authorization'`
-
-#### slot: tokenType
-
-a custom name for a token to include in the header
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: domains
-
-array of valid domains the url can contain to use this account
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the internet account |
+| <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the internet account |
+| <span id="slot-authheader">**authHeader**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Authorization'</code> | request header for credentials |
+| <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a custom name for a token to include in the header |
+| <span id="slot-domains">**domains**</span><br>`stringArray` = <code>[]</code> | array of valid domains the url can contain to use this account |

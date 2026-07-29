@@ -9,73 +9,32 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseModel/index.ts).
 
-## Overview
-
 built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
 config models are MST trees themselves, which is why this state model is allowed
 to build on one. Generally found on a property named rootModel.jbrowse
 
-## Members
+## Getters
 
-| Member                                                         | Kind    | Defined by          | Description                              |
-| -------------------------------------------------------------- | ------- | ------------------- | ---------------------------------------- |
-| [assemblyNames](#getter-assemblynames)                         | Getters | AppCoreJBrowseModel |                                          |
-| [rpcManager](#getter-rpcmanager)                               | Getters | AppCoreJBrowseModel |                                          |
-| [addAssemblyConf](#action-addassemblyconf)                     | Actions | AppCoreJBrowseModel |                                          |
-| [removeAssemblyConf](#action-removeassemblyconf)               | Actions | AppCoreJBrowseModel |                                          |
-| [addTrackConf](#action-addtrackconf)                           | Actions | AppCoreJBrowseModel |                                          |
-| [addConnectionConf](#action-addconnectionconf)                 | Actions | AppCoreJBrowseModel |                                          |
-| [deleteConnectionConf](#action-deleteconnectionconf)           | Actions | AppCoreJBrowseModel |                                          |
-| [deleteTrackConf](#action-deletetrackconf)                     | Actions | AppCoreJBrowseModel |                                          |
-| [updateTrackConf](#action-updatetrackconf)                     | Actions | AppCoreJBrowseModel | Updates an existing track configuration. |
-| [addPlugin](#action-addplugin)                                 | Actions | AppCoreJBrowseModel |                                          |
-| [removePlugin](#action-removeplugin)                           | Actions | AppCoreJBrowseModel |                                          |
-| [setDefaultSessionConf](#action-setdefaultsessionconf)         | Actions | AppCoreJBrowseModel |                                          |
-| [addInternetAccountConf](#action-addinternetaccountconf)       | Actions | AppCoreJBrowseModel |                                          |
-| [deleteInternetAccountConf](#action-deleteinternetaccountconf) | Actions | AppCoreJBrowseModel |                                          |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
+| <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
 
-<details>
-<summary>AppCoreJBrowseModel - Getters</summary>
+## Actions
 
-| Member                                               | Type         |
-| ---------------------------------------------------- | ------------ |
-| <span id="getter-assemblynames">assemblyNames</span> | `string[]`   |
-| <span id="getter-rpcmanager">rpcManager</span>       | `RpcManager` |
-
-</details>
-
-<details>
-<summary>AppCoreJBrowseModel - Actions</summary>
-
-#### action: updateTrackConf
-
-Updates an existing track configuration. Used to sync editable configs back to
-the frozen tracks array.
-
-```ts
-type updateTrackConf = (trackConf: {
-  [key: string]: unknown
-  trackId: string
-}) => void
-```
-
-</details>
-
-<details>
-<summary>AppCoreJBrowseModel - Actions (other undocumented members)</summary>
-
-| Member                                                                       | Type                                                                                                                                                                                  |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-addassemblyconf">addAssemblyConf</span>                     | `(conf: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => ModelInstanceTypeProps<…> & ... 1 more ... & IStateTreeNode<…>`                                                       |
-| <span id="action-removeassemblyconf">removeAssemblyConf</span>               | `(assemblyName: string) => void`                                                                                                                                                      |
-| <span id="action-addtrackconf">addTrackConf</span>                           | `(trackConf: { trackId: string; type: string; }) => { [key: string]: unknown; trackId: string; } \| undefined`                                                                        |
-| <span id="action-addconnectionconf">addConnectionConf</span>                 | `(connectionConf: ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<…>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<…>) => any` |
-| <span id="action-deleteconnectionconf">deleteConnectionConf</span>           | `(configuration: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => boolean`                                                                                                     |
-| <span id="action-deletetrackconf">deleteTrackConf</span>                     | `(trackConf: (ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) \| { ...; }) => void`                                                                                              |
-| <span id="action-addplugin">addPlugin</span>                                 | `(pluginDefinition: PluginDefinition) => void`                                                                                                                                        |
-| <span id="action-removeplugin">removePlugin</span>                           | `(pluginDefinition: PluginDefinition) => void`                                                                                                                                        |
-| <span id="action-setdefaultsessionconf">setDefaultSessionConf</span>         | `(sessionConf: ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<…>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void` |
-| <span id="action-addinternetaccountconf">addInternetAccountConf</span>       | `(internetAccountConf: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => any`                                                                                                   |
-| <span id="action-deleteinternetaccountconf">deleteInternetAccountConf</span> | `(configuration: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => boolean`                                                                                                     |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-addassemblyconf">**addAssemblyConf**</span><br><details><summary><code>(conf: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) =&gt;…</code></summary><pre><code>(conf: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) =&gt; ModelInstanceTypeProps&lt;…&gt; &amp; ... 1 more ... &amp; IStateTreeNode&lt;…&gt;</code></pre></details> |  |
+| <span id="action-removeassemblyconf">**removeAssemblyConf**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
+| <span id="action-addtrackconf">**addTrackConf**</span><br><details><summary><code>(trackConf: { trackId: string; type: string; }) =&gt; { [key: stri…</code></summary><pre><code>(trackConf: { trackId: string; type: string; }) =&gt; { [key: string]: unknown; trackId: string; } &#124; undefined</code></pre></details> |  |
+| <span id="action-addconnectionconf">**addConnectionConf**</span><br><details><summary><code>(connectionConf: ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slo…</code></summary><pre><code>(connectionConf: ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;…&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;…&gt;) =&gt; any</code></pre></details> |  |
+| <span id="action-deleteconnectionconf">**deleteConnectionConf**</span><br><details><summary><code>(configuration: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNod…</code></summary><pre><code>(configuration: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) =&gt; boolean</code></pre></details> |  |
+| <span id="action-deletetrackconf">**deleteTrackConf**</span><br><details><summary><code>(trackConf: (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;……</code></summary><pre><code>(trackConf: (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) &#124; { ...; }) =&gt; void</code></pre></details> |  |
+| <span id="action-updatetrackconf">**updateTrackConf**</span><br><details><summary><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; vo…</code></summary><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></details> | Updates an existing track configuration. Used to sync editable configs back to the frozen tracks array. |
+| <span id="action-addplugin">**addPlugin**</span><br><code>(pluginDefinition: PluginDefinition) =&gt; void</code> |  |
+| <span id="action-removeplugin">**removePlugin**</span><br><code>(pluginDefinition: PluginDefinition) =&gt; void</code> |  |
+| <span id="action-setdefaultsessionconf">**setDefaultSessionConf**</span><br><details><summary><code>(sessionConf: ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotNa…</code></summary><pre><code>(sessionConf: ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;…&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;) =&gt; void</code></pre></details> |  |
+| <span id="action-addinternetaccountconf">**addInternetAccountConf**</span><br><details><summary><code>(internetAccountConf: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateT…</code></summary><pre><code>(internetAccountConf: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) =&gt; any</code></pre></details> |  |
+| <span id="action-deleteinternetaccountconf">**deleteInternetAccountConf**</span><br><details><summary><code>(configuration: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNod…</code></summary><pre><code>(configuration: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) =&gt; boolean</code></pre></details> |  |

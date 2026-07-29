@@ -61,44 +61,17 @@ the display by mate assembly to read them as a lane apiece.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "MCScanBlocksAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                               | Type           | Description                                                                                                                                                                                       |
-| -------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [mcscanBlocksLocation](#slot-mcscanblockslocation) | `fileLocation` |                                                                                                                                                                                                   |
-| [blockAssemblies](#slot-blockassemblies)           | `stringArray`  | one assembly name per column of the blocks file, in column order (column 0 is the reference)                                                                                                      |
-| [bedLocations](#slot-bedlocations)                 | `frozen`       | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates                                                                  |
-| [assemblyNames](#slot-assemblynames)               | `stringArray`  | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. |
-
-<details>
-<summary>MCScanBlocksAdapter - Slots</summary>
-
-#### slot: mcscanBlocksLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }`
-
-#### slot: blockAssemblies
-
-one assembly name per column of the blocks file, in column order (column 0 is
-the reference)
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: bedLocations
-
-one BED fileLocation per column of the blocks file, parallel to blockAssemblies,
-resolving that column's gene ids to coordinates
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-#### slot: assemblyNames
-
-the assemblies this track can render; list all of blockAssemblies to let one
-track back every band of a multi-way view (the view picks each band's pair), or
-just two to pin it to a single pair. Every entry must appear in blockAssemblies
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-mcscanblockslocation">**mcscanBlocksLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-blockassemblies">**blockAssemblies**</span><br>`stringArray` = <code>[]</code> | one assembly name per column of the blocks file, in column order (column 0 is the reference) |
+| <span id="slot-bedlocations">**bedLocations**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. Every entry must appear in blockAssemblies |

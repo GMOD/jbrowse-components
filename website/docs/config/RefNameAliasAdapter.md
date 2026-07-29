@@ -27,44 +27,16 @@ preprocessor to allow minimal config:
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "RefNameAliasAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                       | Type           | Description |
-| -------------------------- | -------------- | ----------- |
-| [location](#slot-location) | `fileLocation` |             |
-
-<details>
-<summary>Advanced slots (2)</summary>
-
-| Slot                                                     | Type     | Description                                                                                                                |
-| -------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
-| [refNameColumn](#slot-refnamecolumn)                     | `number` | by default, the "ref names that match the fasta" are assumed to be in the first column (0), change this variable if needed |
-| [refNameColumnHeaderName](#slot-refnamecolumnheadername) | `string` | refNameColumnHeaderName                                                                                                    |
-
-</details>
-
-<details>
-<summary>RefNameAliasAdapter - Slots</summary>
-
-#### slot: location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my/aliases.txt', locationType: 'UriLocation' }`
-
-#### slot: refNameColumn
-
-by default, the "ref names that match the fasta" are assumed to be in the first
-column (0), change this variable if needed
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
-_advanced_
-
-#### slot: refNameColumnHeaderName
-
-refNameColumnHeaderName
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-· _advanced_
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-location">**location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my/aliases.txt', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-refnamecolumn">**refNameColumn**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | by default, the "ref names that match the fasta" are assumed to be in the first column (0), change this variable if needed<br>_advanced_ |
+| <span id="slot-refnamecolumnheadername">**refNameColumnHeaderName**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | refNameColumnHeaderName<br>_advanced_ |

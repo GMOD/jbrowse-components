@@ -13,26 +13,12 @@ generally exists on the config.json or root config as configuration.formatAbout
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                                         | Type      | Description                                  |
-| ---------------------------------------------------------------------------- | --------- | -------------------------------------------- |
-| [configuration.formatAbout.config](#slot-configurationformataboutconfig)     | `frozen`  | formats configuration object in about dialog |
-| [configuration.formatAbout.hideUris](#slot-configurationformatabouthideuris) | `boolean` |                                              |
-
-<details>
-<summary>FormatAbout - Slots</summary>
-
-#### slot: configuration.formatAbout.config
-
-formats configuration object in about dialog
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `config`
-
-#### slot: configuration.formatAbout.hideUris
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-configurationformataboutconfig">**configuration.formatAbout.config**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | formats configuration object in about dialog<br>_callback args:_ `config` |
+| <span id="slot-configurationformatabouthideuris">**configuration.formatAbout.hideUris**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |

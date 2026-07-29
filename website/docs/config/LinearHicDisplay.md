@@ -50,144 +50,28 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go on a display entry:
+`"displays": [{ "type": "LinearHicDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                   | Type                                   | Description                                                                                                                    |
-| ------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| [height](#slot-height)                                 | `number`                               | default height for the Hi-C track                                                                                              |
-| [colorScheme](#slot-colorscheme)                       | `stringEnum` (fall, juicebox, viridis) | color ramp used to render contact intensity                                                                                    |
-| [showLegend](#slot-showlegend)                         | `boolean`                              | show the color scale legend                                                                                                    |
-| [resolutionBias](#slot-resolutionbias)                 | `number`                               | Signed integer offset from the zoom-derived auto-picked binsize.                                                               |
-| [useLogScale](#slot-uselogscale)                       | `boolean`                              | map contact counts to color on a log2 scale                                                                                    |
-| [useColorPercentile](#slot-usecolorpercentile)         | `boolean`                              | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |
-| [showResolutionControls](#slot-showresolutioncontrols) | `boolean`                              | show the on-figure resolution dropdown in the overlay                                                                          |
-| [selectedNormalization](#slot-selectednormalization)   | `string`                               | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE).                                                      |
-| [fitToHeight](#slot-fittoheight)                       | `boolean`                              | squash the triangle vertically to fit the display height instead of drawing square bins                                        |
-
-<details>
-<summary>LinearHicDisplay - Slots</summary>
-
-#### slot: height
-
-default height for the Hi-C track
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `300`
-
-#### slot: colorScheme
-
-color ramp used to render contact intensity
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`fall`, `juicebox`, `viridis`) · **Default:** `'juicebox'`
-
-#### slot: showLegend
-
-show the color scale legend
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: resolutionBias
-
-Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure
-auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an
-absolute binsize) keeps the intent valid across zoom.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0`
-
-#### slot: useLogScale
-
-map contact counts to color on a log2 scale
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: useColorPercentile
-
-false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of
-counts, so off-diagonal contacts read more strongly.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showResolutionControls
-
-show the on-figure resolution dropdown in the overlay
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: selectedNormalization
-
-The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE).
-Resolved at runtime against what the `.hic` file actually provides — see the
-model's `activeNormalization` getter.
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'KR'`
-
-#### slot: fitToHeight
-
-squash the triangle vertically to fit the display height instead of drawing
-square bins
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseLinearDisplay</summary>
-
-[BaseLinearDisplay config →](../baselineardisplay)
-
-#### slot: maxFeatureScreenDensity
-
-maximum features per pixel before showing a "too many features" message, used if
-byte size estimates are not available
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_advanced_
-
-#### slot: fetchSizeLimit
-
-maximum data to attempt to download for a given track, used if adapter doesn't
-specify one
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1_000_000` · _advanced_
-
-#### slot: forceLoad
-
-Declarative equivalent of the "Force load" button on the "too much data" banner:
-when true the display always renders, however large the region or dense the
-features. Off by default (the gate guards against huge downloads). Set it on a
-view no one can interact with — an embedded / notebook view, or a screenshot —
-where the region is known and you want it drawn without a click.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: mouseover
-
-text to display when the cursor hovers over a feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-· **Callback args:** `feature`
-
-#### slot: jexlFilters
-
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
-
-**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |  |
+| <span id="slot-colorscheme">**colorScheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fall, juicebox, viridis) = <code>'juicebox'</code> | color ramp used to render contact intensity |  |
+| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend |  |
+| <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an absolute binsize) keeps the intent valid across zoom. |  |
+| <span id="slot-uselogscale">**useLogScale**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | map contact counts to color on a log2 scale |  |
+| <span id="slot-usecolorpercentile">**useColorPercentile**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |  |
+| <span id="slot-showresolutioncontrols">**showResolutionControls**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the on-figure resolution dropdown in the overlay |  |
+| <span id="slot-selectednormalization">**selectedNormalization**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'KR'</code> | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE). Resolved at runtime against what the `.hic` file actually provides — see the model's `activeNormalization` getter. |  |
+| <span id="slot-fittoheight">**fitToHeight**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | squash the triangle vertically to fit the display height instead of drawing square bins |  |
+| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></summary><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></details> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[`get(feature,'gbkey')!='Src'`]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config | [BaseLinearDisplay](../baselineardisplay) |

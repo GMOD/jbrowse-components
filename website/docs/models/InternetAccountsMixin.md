@@ -9,33 +9,18 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/InternetAccounts.ts).
 
-## Overview
+## Properties
 
-## Members
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-internetaccounts">**internetAccounts**</span><br><details><summary><code>internetAccounts: types.array( pluginManager.pluggableMstType('…</code></summary><pre><code>internetAccounts: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('internet account', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
 
-| Member                                                                   | Kind       | Defined by            | Description |
-| ------------------------------------------------------------------------ | ---------- | --------------------- | ----------- |
-| [internetAccounts](#property-internetaccounts)                           | Properties | InternetAccountsMixin |             |
-| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    | InternetAccountsMixin |             |
-| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    | InternetAccountsMixin |             |
-| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    | InternetAccountsMixin |             |
+## Actions
 
-<details>
-<summary>InternetAccountsMixin - Properties</summary>
-
-| Member                                                       | Type                   |
-| ------------------------------------------------------------ | ---------------------- |
-| <span id="property-internetaccounts">internetAccounts</span> | `IArrayType<IAnyType>` |
-
-</details>
-
-<details>
-<summary>InternetAccountsMixin - Actions</summary>
-
-| Member                                                                                 | Type                                                                                                         |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| <span id="action-initializeinternetaccount">initializeInternetAccount</span>           | `(internetAccountConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, initialSnapshot?: any) => any` |
-| <span id="action-createephemeralinternetaccount">createEphemeralInternetAccount</span> | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                  |
-| <span id="action-findappropriateinternetaccount">findAppropriateInternetAccount</span> | `(location: UriLocation) => any`                                                                             |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-initializeinternetaccount">**initializeInternetAccount**</span><br><details><summary><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStat…</code></summary><pre><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;, initialSnapshot?: any) =&gt; any</code></pre></details> |  |
+| <span id="action-createephemeralinternetaccount">**createEphemeralInternetAccount**</span><br><details><summary><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unk…</code></summary><pre><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unknown&gt;, url: string) =&gt; any</code></pre></details> |  |
+| <span id="action-findappropriateinternetaccount">**findAppropriateInternetAccount**</span><br><code>(location: UriLocation) =&gt; any</code> |  |

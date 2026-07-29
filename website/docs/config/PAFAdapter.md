@@ -50,41 +50,17 @@ and the ordering can't be misread.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "PAFAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                   | Type           | Description                                            |
-| -------------------------------------- | -------------- | ------------------------------------------------------ |
-| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file.          |
-| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames: the target assembly name |
-| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames: the query assembly name  |
-| [pafLocation](#slot-paflocation)       | `fileLocation` |                                                        |
-
-<details>
-<summary>PAFAdapter - Slots</summary>
-
-#### slot: assemblyNames
-
-Array of assembly names to use for this file. The query assembly name is the
-first value in the array, target assembly name is the second
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: targetAssembly
-
-Alternative to assemblyNames: the target assembly name
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: queryAssembly
-
-Alternative to assemblyNames: the query assembly name
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: pafLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/file.paf', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames: the target assembly name |
+| <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames: the query assembly name |
+| <span id="slot-paflocation">**pafLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.paf', locationType: 'UriLocation' }</code> |  |

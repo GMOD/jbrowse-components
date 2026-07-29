@@ -9,80 +9,33 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/Assemblies/AssembliesMixin.ts).
 
-## Overview
-
 Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
 
-## Members
+## Properties
 
-| Member                                                     | Kind       | Defined by      | Description                                                 |
-| ---------------------------------------------------------- | ---------- | --------------- | ----------------------------------------------------------- |
-| [sessionAssemblies](#property-sessionassemblies)           | Properties | AssembliesMixin |                                                             |
-| [temporaryAssemblies](#property-temporaryassemblies)       | Properties | AssembliesMixin |                                                             |
-| [assemblies](#getter-assemblies)                           | Getters    | AssembliesMixin | sessionAssemblies plus jbrowse config assemblies.           |
-| [assemblyNames](#getter-assemblynames)                     | Getters    | AssembliesMixin | names of the assemblies returned by the `assemblies` getter |
-| [addSessionAssembly](#action-addsessionassembly)           | Actions    | AssembliesMixin |                                                             |
-| [addAssembly](#action-addassembly)                         | Actions    | AssembliesMixin |                                                             |
-| [removeAssembly](#action-removeassembly)                   | Actions    | AssembliesMixin |                                                             |
-| [removeSessionAssembly](#action-removesessionassembly)     | Actions    | AssembliesMixin |                                                             |
-| [addTemporaryAssembly](#action-addtemporaryassembly)       | Actions    | AssembliesMixin | used for read vs ref type assemblies.                       |
-| [removeTemporaryAssembly](#action-removetemporaryassembly) | Actions    | AssembliesMixin |                                                             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-sessionassemblies">**sessionAssemblies**</span><br><details><summary><code>sessionAssemblies: types.stripDefault( types.array(assemblyConf…</code></summary><pre><code>sessionAssemblies: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(assemblyConfigSchemasType),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
+| <span id="property-temporaryassemblies">**temporaryAssemblies**</span><br><details><summary><code>temporaryAssemblies: types.stripDefault( types.array(assemblyCo…</code></summary><pre><code>temporaryAssemblies: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(assemblyConfigSchemasType),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
 
-<details>
-<summary>AssembliesMixin - Properties</summary>
+## Getters
 
-| Member                                                             | Type                                                                  |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| <span id="property-sessionassemblies">sessionAssemblies</span>     | `IOptionalIType<IArrayType<ConfigurationSchemaType<…>>, [undefined]>` |
-| <span id="property-temporaryassemblies">temporaryAssemblies</span> | `IOptionalIType<IArrayType<ConfigurationSchemaType<…>>, [undefined]>` |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-assemblies">**assemblies**</span><br><details><summary><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, d…</code></summary><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;)[]</code></pre></details> | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
+| <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> | names of the assemblies returned by the `assemblies` getter |
 
-</details>
+## Actions
 
-<details>
-<summary>AssembliesMixin - Getters</summary>
-
-#### getter: assemblies
-
-sessionAssemblies plus jbrowse config assemblies. Does not include
-temporaryAssemblies; this is the list shown in the AssemblySelector dropdown.
-
-```ts
-type assemblies = (ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
-```
-
-#### getter: assemblyNames
-
-names of the assemblies returned by the `assemblies` getter
-
-```ts
-type assemblyNames = string[]
-```
-
-</details>
-
-<details>
-<summary>AssembliesMixin - Actions</summary>
-
-#### action: addTemporaryAssembly
-
-used for read vs ref type assemblies.
-
-```ts
-type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>
-```
-
-</details>
-
-<details>
-<summary>AssembliesMixin - Actions (other undocumented members)</summary>
-
-| Member                                                                   | Type                                                                              |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| <span id="action-addsessionassembly">addSessionAssembly</span>           | `(conf: AnyConfiguration) => ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>` |
-| <span id="action-addassembly">addAssembly</span>                         | `(conf: AnyConfiguration) => void`                                                |
-| <span id="action-removeassembly">removeAssembly</span>                   | `(name: string) => void`                                                          |
-| <span id="action-removesessionassembly">removeSessionAssembly</span>     | `(assemblyName: string) => void`                                                  |
-| <span id="action-removetemporaryassembly">removeTemporaryAssembly</span> | `(name: string) => void`                                                          |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-addsessionassembly">**addSessionAssembly**</span><br><details><summary><code>(conf: AnyConfiguration) =&gt; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; I…</code></summary><pre><code>(conf: AnyConfiguration) =&gt; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;</code></pre></details> |  |
+| <span id="action-addassembly">**addAssembly**</span><br><code>(conf: AnyConfiguration) =&gt; void</code> |  |
+| <span id="action-removeassembly">**removeAssembly**</span><br><code>(name: string) =&gt; void</code> |  |
+| <span id="action-removesessionassembly">**removeSessionAssembly**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
+| <span id="action-addtemporaryassembly">**addTemporaryAssembly**</span><br><details><summary><code>(conf: AnyConfiguration) =&gt; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; I…</code></summary><pre><code>(conf: AnyConfiguration) =&gt; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;</code></pre></details> | used for read vs ref type assemblies. |
+| <span id="action-removetemporaryassembly">**removeTemporaryAssembly**</span><br><code>(name: string) =&gt; void</code> |  |

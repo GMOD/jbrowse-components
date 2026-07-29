@@ -9,93 +9,56 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
-## Overview
-
 Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
 tree, sidebar width and subtree filter, plus the hover/canvas volatile state
 used while drawing the tree.
 
-## Members
+## Properties
 
-| Member                                                     | Kind       | Defined by       | Description |
-| ---------------------------------------------------------- | ---------- | ---------------- | ----------- |
-| [layout](#property-layout)                                 | Properties | TreeSidebarMixin |             |
-| [clusterTree](#property-clustertree)                       | Properties | TreeSidebarMixin |             |
-| [treeAreaWidth](#property-treeareawidth)                   | Properties | TreeSidebarMixin |             |
-| [subtreeFilter](#property-subtreefilter)                   | Properties | TreeSidebarMixin |             |
-| [hoveredTreeNode](#volatile-hoveredtreenode)               | Volatiles  | TreeSidebarMixin |             |
-| [treeCanvas](#volatile-treecanvas)                         | Volatiles  | TreeSidebarMixin |             |
-| [mouseoverCanvas](#volatile-mouseovercanvas)               | Volatiles  | TreeSidebarMixin |             |
-| [parsedTree](#getter-parsedtree)                           | Getters    | TreeSidebarMixin |             |
-| [root](#getter-root)                                       | Getters    | TreeSidebarMixin |             |
-| [treeHasBranchLengths](#getter-treehasbranchlengths)       | Getters    | TreeSidebarMixin |             |
-| [willClearTree](#method-willcleartree)                     | Methods    | TreeSidebarMixin |             |
-| [setLayout](#action-setlayout)                             | Actions    | TreeSidebarMixin |             |
-| [clearLayout](#action-clearlayout)                         | Actions    | TreeSidebarMixin |             |
-| [setClusterTree](#action-setclustertree)                   | Actions    | TreeSidebarMixin |             |
-| [setLayoutAndClusterTree](#action-setlayoutandclustertree) | Actions    | TreeSidebarMixin |             |
-| [setTreeAreaWidth](#action-settreeareawidth)               | Actions    | TreeSidebarMixin |             |
-| [setSubtreeFilter](#action-setsubtreefilter)               | Actions    | TreeSidebarMixin |             |
-| [setHoveredTreeNode](#action-sethoveredtreenode)           | Actions    | TreeSidebarMixin |             |
-| [setTreeCanvasRef](#action-settreecanvasref)               | Actions    | TreeSidebarMixin |             |
-| [setMouseoverCanvasRef](#action-setmouseovercanvasref)     | Actions    | TreeSidebarMixin |             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-layout">**layout**</span><br><code>layout: types.stripDefault(types.frozen&lt;S[]&gt;(), [])</code> |  |
+| <span id="property-clustertree">**clusterTree**</span><br><details><summary><code>clusterTree: types.stripDefault(types.maybe(types.string), unde…</code></summary><pre><code>clusterTree: types.stripDefault(types.maybe(types.string), undefined)</code></pre></details> |  |
+| <span id="property-treeareawidth">**treeAreaWidth**</span><br><code>treeAreaWidth: types.stripDefault(types.number, 80)</code> |  |
+| <span id="property-subtreefilter">**subtreeFilter**</span><br><details><summary><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></summary><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
 
-<details>
-<summary>TreeSidebarMixin - Properties</summary>
+## Volatiles
 
-| Member                                                 | Type                                                                   |
-| ------------------------------------------------------ | ---------------------------------------------------------------------- |
-| <span id="property-layout">layout</span>               | `IOptionalIType<IType<S[], S[], S[]>, [undefined]>`                    |
-| <span id="property-clustertree">clusterTree</span>     | `IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>`             |
-| <span id="property-treeareawidth">treeAreaWidth</span> | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-| <span id="property-subtreefilter">subtreeFilter</span> | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-hoveredtreenode">**hoveredTreeNode**</span><br><code>hoveredTreeNode: undefined as HoveredTreeNode &#124; undefined</code> |  |
+| <span id="volatile-treecanvas">**treeCanvas**</span><br><code>treeCanvas: null as HTMLCanvasElement &#124; null</code> |  |
+| <span id="volatile-mouseovercanvas">**mouseoverCanvas**</span><br><code>mouseoverCanvas: null as HTMLCanvasElement &#124; null</code> |  |
 
-</details>
+## Getters
 
-<details>
-<summary>TreeSidebarMixin - Volatiles</summary>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
+| <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
+| <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  |
 
-| Member                                                     | Type                           |
-| ---------------------------------------------------------- | ------------------------------ |
-| <span id="volatile-hoveredtreenode">hoveredTreeNode</span> | `HoveredTreeNode \| undefined` |
-| <span id="volatile-treecanvas">treeCanvas</span>           | `HTMLCanvasElement \| null`    |
-| <span id="volatile-mouseovercanvas">mouseoverCanvas</span> | `HTMLCanvasElement \| null`    |
+## Methods
 
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-willcleartree">**willClearTree**</span><br><code>(next: S[]) =&gt; boolean</code> |  |
 
-<details>
-<summary>TreeSidebarMixin - Getters</summary>
+## Actions
 
-| Member                                                             | Type                                     |
-| ------------------------------------------------------------------ | ---------------------------------------- |
-| <span id="getter-parsedtree">parsedTree</span>                     | `HierarchyNode<NewickNode> \| undefined` |
-| <span id="getter-root">root</span>                                 | `HierarchyNode<NewickNode> \| undefined` |
-| <span id="getter-treehasbranchlengths">treeHasBranchLengths</span> | `boolean`                                |
-
-</details>
-
-<details>
-<summary>TreeSidebarMixin - Methods</summary>
-
-| Member                                               | Type                     |
-| ---------------------------------------------------- | ------------------------ |
-| <span id="method-willcleartree">willClearTree</span> | `(next: S[]) => boolean` |
-
-</details>
-
-<details>
-<summary>TreeSidebarMixin - Actions</summary>
-
-| Member                                                                   | Type                                                |
-| ------------------------------------------------------------------------ | --------------------------------------------------- |
-| <span id="action-setlayout">setLayout</span>                             | `(layout: S[]) => void`                             |
-| <span id="action-clearlayout">clearLayout</span>                         | `() => void`                                        |
-| <span id="action-setclustertree">setClusterTree</span>                   | `(tree?: string \| undefined) => void`              |
-| <span id="action-setlayoutandclustertree">setLayoutAndClusterTree</span> | `(layout: S[], tree?: string \| undefined) => void` |
-| <span id="action-settreeareawidth">setTreeAreaWidth</span>               | `(width: number) => void`                           |
-| <span id="action-setsubtreefilter">setSubtreeFilter</span>               | `(names?: string[] \| undefined) => void`           |
-| <span id="action-sethoveredtreenode">setHoveredTreeNode</span>           | `(node?: HoveredTreeNode \| undefined) => void`     |
-| <span id="action-settreecanvasref">setTreeCanvasRef</span>               | `(ref: HTMLCanvasElement \| null) => void`          |
-| <span id="action-setmouseovercanvasref">setMouseoverCanvasRef</span>     | `(ref: HTMLCanvasElement \| null) => void`          |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-setlayout">**setLayout**</span><br><code>(layout: S[]) =&gt; void</code> |  |
+| <span id="action-clearlayout">**clearLayout**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-setclustertree">**setClusterTree**</span><br><code>(tree?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setlayoutandclustertree">**setLayoutAndClusterTree**</span><br><code>(layout: S[], tree?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-settreeareawidth">**setTreeAreaWidth**</span><br><code>(width: number) =&gt; void</code> |  |
+| <span id="action-setsubtreefilter">**setSubtreeFilter**</span><br><code>(names?: string[] &#124; undefined) =&gt; void</code> |  |
+| <span id="action-sethoveredtreenode">**setHoveredTreeNode**</span><br><code>(node?: HoveredTreeNode &#124; undefined) =&gt; void</code> |  |
+| <span id="action-settreecanvasref">**setTreeCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |
+| <span id="action-setmouseovercanvasref">**setMouseoverCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |

@@ -14,44 +14,14 @@ configuration.formatDetails
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                                                   | Type     | Description                                                                                                                                             |
-| -------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [configuration.formatDetails.feature](#slot-configurationformatdetailsfeature)         | `frozen` | adds extra fields to the feature details                                                                                                                |
-| [configuration.formatDetails.subfeatures](#slot-configurationformatdetailssubfeatures) | `frozen` | adds extra fields to the subfeatures of a feature                                                                                                       |
-| [configuration.formatDetails.depth](#slot-configurationformatdetailsdepth)             | `number` | depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures) |
-| [configuration.formatDetails.maxDepth](#slot-configurationformatdetailsmaxdepth)       | `number` | hide subfeatures greater than a certain depth                                                                                                           |
-
-<details>
-<summary>FormatDetails - Slots</summary>
-
-#### slot: configuration.formatDetails.feature
-
-adds extra fields to the feature details
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `feature`
-
-#### slot: configuration.formatDetails.subfeatures
-
-adds extra fields to the subfeatures of a feature
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `feature`
-
-#### slot: configuration.formatDetails.depth
-
-depth to iterate the formatDetails->subfeatures callback on subfeatures (used
-for example to only apply the callback to the first layer of subfeatures)
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
-
-#### slot: configuration.formatDetails.maxDepth
-
-hide subfeatures greater than a certain depth
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`10000`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-configurationformatdetailsfeature">**configuration.formatDetails.feature**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | adds extra fields to the feature details<br>_callback args:_ `feature` |
+| <span id="slot-configurationformatdetailssubfeatures">**configuration.formatDetails.subfeatures**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | adds extra fields to the subfeatures of a feature<br>_callback args:_ `feature` |
+| <span id="slot-configurationformatdetailsdepth">**configuration.formatDetails.depth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>2</code> | depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures) |
+| <span id="slot-configurationformatdetailsmaxdepth">**configuration.formatDetails.maxDepth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | hide subfeatures greater than a certain depth |

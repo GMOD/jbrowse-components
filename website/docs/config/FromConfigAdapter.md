@@ -41,26 +41,15 @@ small feature sets added via a URL or session spec
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "FromConfigAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                         | Type     | Description                                                                                             |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| [adapterId](#slot-adapterid) | `string` | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. |
-| [features](#slot-features)   | `frozen` |                                                                                                         |
-
-<details>
-<summary>FromConfigAdapter - Slots</summary>
-
-#### slot: adapterId
-
-stable identifier used as the adapter cache key; avoids hashing the (potentially
-large) features array. optional — falls back to hash.
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: features
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
+| <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> |  |

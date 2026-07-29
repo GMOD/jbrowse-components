@@ -117,13 +117,9 @@ function renderTable(points: ExtensionPoint[]) {
 // used by CI to fail when an extension point was added but the docs were not
 // regenerated.
 export function writeExtensionPointDocs({ check = false } = {}) {
-  // `prettier-ignore` pins the compact table `markdownTable` emits, for the same
-  // reason as the color/file-type tables — see generateColorDocs. Without it
-  // prettier padded the block every `pnpm format` while this generator emitted
-  // it compact, and the whitespace-insensitive --check never caught the churn.
   return rewriteMarkerBlock(
     'EXTENSION_POINTS_INDEX',
-    `<!-- prettier-ignore -->\n${renderTable(collectExtensionPoints())}`,
+    renderTable(collectExtensionPoints()),
     { check },
   )
 }

@@ -133,9 +133,7 @@ export function writeFileTypeDocs(files: string[], { check = false } = {}) {
           `${file}: FILE_TYPES group "${group}" has no #fileFormat-tagged adapters`,
         )
       }
-      // `prettier-ignore` pins the compact table `markdownTable` emits, for the
-      // same reason as the color tables — see generateColorDocs.
-      return `<!-- prettier-ignore -->\n${renderTable(rows)}`
+      return renderTable(rows)
     },
     { check },
   )
@@ -182,7 +180,7 @@ export function writeDisplayTypeDocs(
     )
   return rewriteMarkerBlock(
     'DISPLAY_TYPES',
-    `<!-- prettier-ignore -->\n${markdownTable(['Track type', 'Display types'], rows)}`,
+    markdownTable(['Track type', 'Display types'], rows),
     { check },
   )
 }

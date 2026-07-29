@@ -42,48 +42,17 @@ automatically supplies it from the enclosing assembly's sequence track.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BamAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                    | Type                    | Description |
-| --------------------------------------- | ----------------------- | ----------- |
-| [bamLocation](#slot-bamlocation)        | `fileLocation`          |             |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (BAI, CSI) |             |
-| [index.location](#slot-indexlocation)   | `fileLocation`          |             |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                   | Type     | Description                                                                                           |
-| -------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
-| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | size to fetch in bytes over which to display a warning to the user that too much data will be fetched |
-
-</details>
-
-<details>
-<summary>BamAdapter - Slots</summary>
-
-#### slot: bamLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bam', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`BAI`, `CSI`) · **Default:** `'BAI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }`
-
-#### slot: fetchSizeLimit
-
-size to fetch in bytes over which to display a warning to the user that too much
-data will be fetched
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`5_000_000` · _advanced_
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bamlocation">**bamLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (BAI, CSI) = <code>'BAI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5_000_000</code> | size to fetch in bytes over which to display a warning to the user that too much data will be fetched<br>_advanced_ |

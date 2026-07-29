@@ -50,45 +50,18 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go on a display entry:
+`"displays": [{ "type": "LinearReferenceSequenceDisplay", ... }]`, or in the
+track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays)
+when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are
+explained in the [config slot types reference](/docs/config_guides/slot_types).
+Slots a base configuration contributes are listed here too, so this table is the
+whole surface.
 
-| Slot                                     | Type          | Description                                                                                                |
-| ---------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------- |
-| [height](#slot-height)                   | `maybeNumber` | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. |
-| [showForward](#slot-showforward)         | `boolean`     | show the forward-strand sequence row                                                                       |
-| [showReverse](#slot-showreverse)         | `boolean`     | show the reverse-complement sequence row (DNA only)                                                        |
-| [showTranslation](#slot-showtranslation) | `boolean`     | show the translation frame rows (DNA only)                                                                 |
-
-<details>
-<summary>LinearReferenceSequenceDisplay - Slots</summary>
-
-#### slot: height
-
-explicit display height (e.g. from a drag-resize); unset means auto-fit to the
-zoom-aware computed height. See the model's `height` getter.
-
-**Type:** `maybeNumber` · **Default:** `undefined`
-
-#### slot: showForward
-
-show the forward-strand sequence row
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showReverse
-
-show the reverse-complement sequence row (DNA only)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showTranslation
-
-show the translation frame rows (DNA only)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-height">**height**</span><br>`maybeNumber` = <code>undefined</code> | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. See the model's `height` getter. |
+| <span id="slot-showforward">**showForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the forward-strand sequence row |
+| <span id="slot-showreverse">**showReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the reverse-complement sequence row (DNA only) |
+| <span id="slot-showtranslation">**showTranslation**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the translation frame rows (DNA only) |

@@ -9,48 +9,29 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `config` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
 
-## Overview
-
 Widget for editing a config model's slots in a form: holds the target
 configuration and debounce-saves edits back to the session.
 
-## Members
+## Properties
 
-| Member                                               | Kind       | Defined by                | Description |
-| ---------------------------------------------------- | ---------- | ------------------------- | ----------- |
-| [id](#property-id)                                   | Properties | ConfigurationEditorWidget |             |
-| [type](#property-type)                               | Properties | ConfigurationEditorWidget |             |
-| [target](#volatile-target)                           | Volatiles  | ConfigurationEditorWidget |             |
-| [expandedDisplayId](#volatile-expandeddisplayid)     | Volatiles  | ConfigurationEditorWidget |             |
-| [setTarget](#action-settarget)                       | Actions    | ConfigurationEditorWidget |             |
-| [setExpandedDisplayId](#action-setexpandeddisplayid) | Actions    | ConfigurationEditorWidget |             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>type: types.literal('ConfigurationEditorWidget')</code> |  |
 
-<details>
-<summary>ConfigurationEditorWidget - Properties</summary>
+## Volatiles
 
-| Member                               | Type                                               |
-| ------------------------------------ | -------------------------------------------------- |
-| <span id="property-id">id</span>     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-type">type</span> | `ISimpleType<"ConfigurationEditorWidget">`         |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-target">**target**</span><br><code>target: undefined as AnyConfigurationModel &#124; undefined</code> |  |
+| <span id="volatile-expandeddisplayid">**expandedDisplayId**</span><br><code>expandedDisplayId: undefined as string &#124; undefined</code> |  |
 
-</details>
+## Actions
 
-<details>
-<summary>ConfigurationEditorWidget - Volatiles</summary>
-
-| Member                                                         | Type                                                                                                                                                                          |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="volatile-target">target</span>                       | `(ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<…>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined` |
-| <span id="volatile-expandeddisplayid">expandedDisplayId</span> | `string \| undefined`                                                                                                                                                         |
-
-</details>
-
-<details>
-<summary>ConfigurationEditorWidget - Actions</summary>
-
-| Member                                                             | Type                                                                                      |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| <span id="action-settarget">setTarget</span>                       | `(newTarget: (ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) \| undefined) => void` |
-| <span id="action-setexpandeddisplayid">setExpandedDisplayId</span> | `(displayId: string \| undefined) => void`                                                |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-settarget">**setTarget**</span><br><details><summary><code>(newTarget: (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;……</code></summary><pre><code>(newTarget: (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) &#124; undefined) =&gt; void</code></pre></details> |  |
+| <span id="action-setexpandeddisplayid">**setExpandedDisplayId**</span><br><code>(displayId: string &#124; undefined) =&gt; void</code> |  |

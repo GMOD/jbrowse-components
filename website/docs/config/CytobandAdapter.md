@@ -23,19 +23,14 @@ preprocessor to allow minimal config:
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "CytobandAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                       | Type           | Description |
-| ------------------------------------------ | -------------- | ----------- |
-| [cytobandLocation](#slot-cytobandlocation) | `fileLocation` |             |
-
-<details>
-<summary>CytobandAdapter - Slots</summary>
-
-#### slot: cytobandLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/cytoband.txt.gz' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-cytobandlocation">**cytobandLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/cytoband.txt.gz' }</code> |  |

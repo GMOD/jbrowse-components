@@ -51,74 +51,20 @@ that identifies it (not one of the config slots below).
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots are top-level fields of the track config, alongside `trackId` and
+`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                              | Type      | Description                                                                 |
-| ------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
-| [adapter](#slot-adapter)                          |           | configuration for track adapter                                             |
-| [displays](#slot-displays)                        |           | configuration for the displays e.g. LinearReferenceSequenceDisplay          |
-| [name](#slot-name)                                | `string`  | optional track name, otherwise uses the "Reference sequence (assemblyName)" |
-| [sequenceType](#slot-sequencetype)                | `string`  | either dna or pep                                                           |
-| [description](#slot-description)                  | `string`  | a description of the track                                                  |
-| [metadata](#slot-metadata)                        | `frozen`  | anything to add about this track                                            |
-| [formatAbout.config](#slot-formataboutconfig)     | `frozen`  | formats configuration in about dialog                                       |
-| [formatAbout.hideUris](#slot-formatabouthideuris) | `boolean` |                                                                             |
-
-<details>
-<summary>ReferenceSequenceTrack - Slots</summary>
-
-#### slot: adapter
-
-configuration for track adapter
-
-```js
-pluginManager.pluggableConfigSchemaType('adapter')
-```
-
-#### slot: displays
-
-configuration for the displays e.g. LinearReferenceSequenceDisplay
-
-```js
-types.array(pluginManager.pluggableConfigSchemaType('display'))
-```
-
-#### slot: name
-
-optional track name, otherwise uses the "Reference sequence (assemblyName)"
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: sequenceType
-
-either dna or pep
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'dna'`
-
-#### slot: description
-
-a description of the track
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: metadata
-
-anything to add about this track
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-#### slot: formatAbout.config
-
-formats configuration in about dialog
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-· **Callback args:** `config`
-
-#### slot: formatAbout.hideUris
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-adapter">**adapter**</span><br><code>pluginManager.pluggableConfigSchemaType('adapter')</code> | configuration for track adapter |
+| <span id="slot-displays">**displays**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('display'))</code> | configuration for the displays e.g. LinearReferenceSequenceDisplay |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | optional track name, otherwise uses the "Reference sequence (assemblyName)" |
+| <span id="slot-sequencetype">**sequenceType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'dna'</code> | either dna or pep |
+| <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
+| <span id="slot-metadata">**metadata**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | anything to add about this track |
+| <span id="slot-formataboutconfig">**formatAbout.config**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | formats configuration in about dialog<br>_callback args:_ `config` |
+| <span id="slot-formatabouthideuris">**formatAbout.hideUris**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |

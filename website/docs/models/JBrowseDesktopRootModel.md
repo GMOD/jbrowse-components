@@ -8,315 +8,71 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
 see [pluggable elements](/docs/developer_guide/) for concepts.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/rootModel.ts).
 
-## Overview
-
 note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
-## Members
-
-| Member                                                                   | Kind       | Defined by                                          | Description                                                                                                                                                                  |
-| ------------------------------------------------------------------------ | ---------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [jobsManager](#property-jobsmanager)                                     | Properties | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [version](#volatile-version)                                             | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [adminMode](#volatile-adminmode)                                         | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [openNewSessionCallback](#volatile-opennewsessioncallback)               | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [openLinkCallback](#volatile-openlinkcallback)                           | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [returnToStartScreenCallback](#volatile-returntostartscreencallback)     | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [menus](#method-menus)                                                   | Methods    | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [setOpenNewSessionCallback](#action-setopennewsessioncallback)           | Actions    | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [setOpenLinkCallback](#action-setopenlinkcallback)                       | Actions    | JBrowseDesktopRootModel                             | Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns plugin-manager lifecycle, as with openNewSessionCallback).                                  |
-| [setReturnToStartScreenCallback](#action-setreturntostartscreencallback) | Actions    | JBrowseDesktopRootModel                             | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle).                                                   |
-| [saveSession](#action-savesession)                                       | Actions    | JBrowseDesktopRootModel                             |                                                                                                                                                                              |
-| [setPluginsUpdated](#action-setpluginsupdated)                           | Actions    | JBrowseDesktopRootModel                             | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect (Loader wires openNewSessionCallback to reload from the session path). |
-| [jbrowse](#property-jbrowse)                                             | Properties | [BaseRootModel](../baserootmodel)                   | `jbrowse` is a mapping of the config.json into the in-memory state tree                                                                                                      |
-| [session](#property-session)                                             | Properties | [BaseRootModel](../baserootmodel)                   | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc.                                                          |
-| [sessionPath](#property-sessionpath)                                     | Properties | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [assemblyManager](#property-assemblymanager)                             | Properties | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [error](#volatile-error)                                                 | Volatiles  | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [textSearchManager](#volatile-textsearchmanager)                         | Volatiles  | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [pluginManager](#volatile-pluginmanager)                                 | Volatiles  | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [setError](#action-seterror)                                             | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [setSession](#action-setsession)                                         | Actions    | [BaseRootModel](../baserootmodel)                   | Sets the active session.                                                                                                                                                     |
-| [setDefaultSession](#action-setdefaultsession)                           | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [setSessionPath](#action-setsessionpath)                                 | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [renameCurrentSession](#action-renamecurrentsession)                     | Actions    | [BaseRootModel](../baserootmodel)                   |                                                                                                                                                                              |
-| [internetAccounts](#property-internetaccounts)                           | Properties | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                                                                              |
-| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                                                                              |
-| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                                                                              |
-| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin)   |                                                                                                                                                                              |
-| [history](#property-history)                                             | Properties | [HistoryManagementMixin](../historymanagementmixin) | used for undo/redo                                                                                                                                                           |
-| [mutableMenuActions](#volatile-mutablemenuactions)                       | Volatiles  | [RootAppMenuMixin](../rootappmenumixin)             |                                                                                                                                                                              |
-| [setMenus](#action-setmenus)                                             | Actions    | [RootAppMenuMixin](../rootappmenumixin)             |                                                                                                                                                                              |
-| [appendMenu](#action-appendmenu)                                         | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Add a top-level menu                                                                                                                                                         |
-| [insertMenu](#action-insertmenu)                                         | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Insert a top-level menu                                                                                                                                                      |
-| [appendToMenu](#action-appendtomenu)                                     | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Add a menu item to a top-level menu                                                                                                                                          |
-| [insertInMenu](#action-insertinmenu)                                     | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Insert a menu item into a top-level menu                                                                                                                                     |
-| [appendToSubMenu](#action-appendtosubmenu)                               | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Add a menu item to a sub-menu                                                                                                                                                |
-| [insertInSubMenu](#action-insertinsubmenu)                               | Actions    | [RootAppMenuMixin](../rootappmenumixin)             | Insert a menu item into a sub-menu                                                                                                                                           |
-
-<details>
-<summary>JBrowseDesktopRootModel - Properties</summary>
-
-| Member                                             | Type                                   |
-| -------------------------------------------------- | -------------------------------------- |
-| <span id="property-jobsmanager">jobsManager</span> | `IOptionalIType<IModelType<…>, [...]>` |
-
-</details>
-
-<details>
-<summary>JBrowseDesktopRootModel - Volatiles</summary>
-
-| Member                                                                             | Type                               |
-| ---------------------------------------------------------------------------------- | ---------------------------------- |
-| <span id="volatile-version">version</span>                                         | `string`                           |
-| <span id="volatile-adminmode">adminMode</span>                                     | `true`                             |
-| <span id="volatile-rpcmanager">rpcManager</span>                                   | `RpcManager`                       |
-| <span id="volatile-opennewsessioncallback">openNewSessionCallback</span>           | `(_path: string) => Promise<void>` |
-| <span id="volatile-openlinkcallback">openLinkCallback</span>                       | `(_link: string) => Promise<void>` |
-| <span id="volatile-returntostartscreencallback">returnToStartScreenCallback</span> | `() => void`                       |
-
-</details>
-
-<details>
-<summary>JBrowseDesktopRootModel - Methods</summary>
-
-| Member                               | Type           |
-| ------------------------------------ | -------------- |
-| <span id="method-menus">menus</span> | `() => Menu[]` |
-
-</details>
-
-<details>
-<summary>JBrowseDesktopRootModel - Actions</summary>
-
-#### action: setOpenLinkCallback
-
-Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns
-plugin-manager lifecycle, as with openNewSessionCallback).
-
-```ts
-type setOpenLinkCallback = (cb: (arg: string) => Promise<void>) => void
-```
-
-#### action: setReturnToStartScreenCallback
-
-Wired by the Loader to tear down this plugin manager and show the start screen
-(the Loader owns plugin-manager lifecycle).
-
-```ts
-type setReturnToStartScreenCallback = (cb: () => void) => void
-```
-
-#### action: setPluginsUpdated
-
-Persist the session, then rebuild the plugin manager from disk so the changed
-plugin set takes effect (Loader wires openNewSessionCallback to reload from the
-session path).
-
-```ts
-type setPluginsUpdated = () => Promise<void>
-```
-
-</details>
-
-<details>
-<summary>JBrowseDesktopRootModel - Actions (other undocumented members)</summary>
-
-| Member                                                                       | Type                                           |
-| ---------------------------------------------------------------------------- | ---------------------------------------------- |
-| <span id="action-setopennewsessioncallback">setOpenNewSessionCallback</span> | `(cb: (arg: string) => Promise<void>) => void` |
-| <span id="action-savesession">saveSession</span>                             | `(val: unknown) => Promise<void>`              |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseRootModel</summary>
-
-[BaseRootModel →](../baserootmodel)
-
-**Properties**
-
-#### property: jbrowse
-
-`jbrowse` is a mapping of the config.json into the in-memory state tree
-
-```ts
-// type signature
-type jbrowse = IAnyType
-// code
-jbrowse: jbrowseModelType
-```
-
-#### property: session
-
-`session` encompasses the currently active state of the app, including views
-open, tracks open in those views, etc.
-
-```ts
-// type signature
-type session = IMaybe<IAnyType>
-// code
-session: types.maybe(sessionModelType)
-```
-
-| Member                                                     | Type                                               |
-| ---------------------------------------------------------- | -------------------------------------------------- |
-| <span id="property-sessionpath">sessionPath</span>         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-assemblymanager">assemblyManager</span> | `IOptionalIType<IModelType<…>, [undefined]>`       |
-
-**Volatiles**
-
-| Member                                                         | Type                |
-| -------------------------------------------------------------- | ------------------- |
-| <span id="volatile-error">error</span>                         | `unknown`           |
-| <span id="volatile-textsearchmanager">textSearchManager</span> | `TextSearchManager` |
-| <span id="volatile-pluginmanager">pluginManager</span>         | `PluginManager`     |
-
-**Actions**
-
-#### action: setSession
-
-Sets the active session. Remaps any legacy display type names (e.g.
-LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST
-tree to drop open tracks whose config can't hydrate so shared sessions still
-load when referencing tracks that no longer exist. Dropped tracks are surfaced
-to the user via a snackbar. If filtering throws, the previous session is
-restored.
-
-```ts
-type setSession = (sessionSnapshot?: any) => void
-```
-
-| Member                                                             | Type                        |
-| ------------------------------------------------------------------ | --------------------------- |
-| <span id="action-seterror">setError</span>                         | `(error: unknown) => void`  |
-| <span id="action-setdefaultsession">setDefaultSession</span>       | `() => void`                |
-| <span id="action-setsessionpath">setSessionPath</span>             | `(path: string) => void`    |
-| <span id="action-renamecurrentsession">renameCurrentSession</span> | `(newName: string) => void` |
-
-</details>
-
-<details>
-<summary>Derived from InternetAccountsMixin</summary>
-
-[InternetAccountsMixin →](../internetaccountsmixin)
-
-**Properties**
-
-| Member                                                       | Type                   |
-| ------------------------------------------------------------ | ---------------------- |
-| <span id="property-internetaccounts">internetAccounts</span> | `IArrayType<IAnyType>` |
-
-**Actions**
-
-| Member                                                                                 | Type                                                                                                         |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| <span id="action-initializeinternetaccount">initializeInternetAccount</span>           | `(internetAccountConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>, initialSnapshot?: any) => any` |
-| <span id="action-createephemeralinternetaccount">createEphemeralInternetAccount</span> | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                  |
-| <span id="action-findappropriateinternetaccount">findAppropriateInternetAccount</span> | `(location: UriLocation) => any`                                                                             |
-
-</details>
-
-<details>
-<summary>Derived from HistoryManagementMixin</summary>
-
-[HistoryManagementMixin →](../historymanagementmixin)
-
-**Properties**
-
-#### property: history
-
-used for undo/redo
-
-```ts
-// type signature
-type history = IOptionalIType<IModelType<…>, [...]>
-// code
-history: types.optional(TimeTraveller, { targetPath: '../session' })
-```
-
-</details>
-
-<details>
-<summary>Derived from RootAppMenuMixin</summary>
-
-[RootAppMenuMixin →](../rootappmenumixin)
-
-**Volatiles**
-
-| Member                                                           | Type           |
-| ---------------------------------------------------------------- | -------------- |
-| <span id="volatile-mutablemenuactions">mutableMenuActions</span> | `MenuAction[]` |
-
-**Actions**
-
-#### action: appendMenu
-
-Add a top-level menu
-
-```ts
-type appendMenu = (menuName: string) => void
-```
-
-#### action: insertMenu
-
-Insert a top-level menu
-
-```ts
-type insertMenu = (menuName: string, position: number) => void
-```
-
-#### action: appendToMenu
-
-Add a menu item to a top-level menu
-
-```ts
-type appendToMenu = (menuName: string, menuItem: MenuItem) => void
-```
-
-#### action: insertInMenu
-
-Insert a menu item into a top-level menu
-
-```ts
-type insertInMenu = (
-  menuName: string,
-  menuItem: MenuItem,
-  position: number,
-) => void
-```
-
-#### action: appendToSubMenu
-
-Add a menu item to a sub-menu
-
-```ts
-type appendToSubMenu = (menuPath: string[], menuItem: MenuItem) => void
-```
-
-#### action: insertInSubMenu
-
-Insert a menu item into a sub-menu
-
-```ts
-type insertInSubMenu = (
-  menuPath: string[],
-  menuItem: MenuItem,
-  position: number,
-) => void
-```
-
-| Member                                     | Type                         |
-| ------------------------------------------ | ---------------------------- |
-| <span id="action-setmenus">setMenus</span> | `(newMenus: Menu[]) => void` |
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-jobsmanager">**jobsManager**</span><br><code>jobsManager: types.optional(JobsManager, {})</code> |  | JBrowseDesktopRootModel |
+| <span id="property-jbrowse">**jbrowse**</span><br><code>jbrowse: jbrowseModelType</code> | <span data-pagefind-ignore>`jbrowse` is a mapping of the config.json into the in-memory state tree</span> | [BaseRootModel](../baserootmodel#property-jbrowse) |
+| <span id="property-session">**session**</span><br><code>session: types.maybe(sessionModelType)</code> | <span data-pagefind-ignore>`session` encompasses the currently active state of the app, including views open, tracks open in those views, etc.</span> | [BaseRootModel](../baserootmodel#property-session) |
+| <span id="property-sessionpath">**sessionPath**</span><br><code>sessionPath: types.stripDefault(types.string, '')</code> |  | [BaseRootModel](../baserootmodel#property-sessionpath) |
+| <span id="property-assemblymanager">**assemblyManager**</span><br><details><summary><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></summary><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [BaseRootModel](../baserootmodel#property-assemblymanager) |
+| <span id="property-internetaccounts">**internetAccounts**</span><br><details><summary><code>internetAccounts: types.array( pluginManager.pluggableMstType('…</code></summary><pre><code>internetAccounts: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('internet account', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#property-internetaccounts) |
+| <span id="property-history">**history**</span><br><details><summary><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></summary><pre><code>history: types.optional(TimeTraveller, { targetPath: '../session' })</code></pre></details> | <span data-pagefind-ignore>used for undo/redo</span> | [HistoryManagementMixin](../historymanagementmixin#property-history) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-version">**version**</span><br><code>version: packageJSON.version</code> |  | JBrowseDesktopRootModel |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>adminMode: true</code> |  | JBrowseDesktopRootModel |
+| <span id="volatile-rpcmanager">**rpcManager**</span><br><details><summary><code>rpcManager: new RpcManager( pluginManager, self.jbrowse.configu…</code></summary><pre><code>rpcManager: new RpcManager(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;self.jbrowse.configuration.rpc,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{ makeWorkerInstance, defaultDriverName: 'WebWorkerRpcDriver' },&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | JBrowseDesktopRootModel |
+| <span id="volatile-opennewsessioncallback">**openNewSessionCallback**</span><br><details><summary><code>openNewSessionCallback: async (_path: string) =&gt; { console.erro…</code></summary><pre><code>openNewSessionCallback: async (_path: string) =&gt; {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;console.error('openNewSessionCallback unimplemented')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}</code></pre></details> |  | JBrowseDesktopRootModel |
+| <span id="volatile-openlinkcallback">**openLinkCallback**</span><br><details><summary><code>openLinkCallback: async (_link: string) =&gt; { console.error('ope…</code></summary><pre><code>openLinkCallback: async (_link: string) =&gt; {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;console.error('openLinkCallback unimplemented')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}</code></pre></details> |  | JBrowseDesktopRootModel |
+| <span id="volatile-returntostartscreencallback">**returnToStartScreenCallback**</span><br><details><summary><code>returnToStartScreenCallback: () =&gt; { console.error('returnToSta…</code></summary><pre><code>returnToStartScreenCallback: () =&gt; {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;console.error('returnToStartScreenCallback unimplemented')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}</code></pre></details> |  | JBrowseDesktopRootModel |
+| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseRootModel](../baserootmodel#volatile-error) |
+| <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>textSearchManager: new TextSearchManager(pluginManager)</code> |  | [BaseRootModel](../baserootmodel#volatile-textsearchmanager) |
+| <span id="volatile-pluginmanager">**pluginManager**</span><br><code>pluginManager</code> |  | [BaseRootModel](../baserootmodel#volatile-pluginmanager) |
+| <span id="volatile-mutablemenuactions">**mutableMenuActions**</span><br><code>mutableMenuActions: [] as MenuAction[]</code> |  | [RootAppMenuMixin](../rootappmenumixin#volatile-mutablemenuactions) |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-menus">**menus**</span><br><code>() =&gt; Menu[]</code> |  |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setopennewsessioncallback">**setOpenNewSessionCallback**</span><br><code>(cb: (arg: string) =&gt; Promise&lt;void&gt;) =&gt; void</code> |  | JBrowseDesktopRootModel |
+| <span id="action-setopenlinkcallback">**setOpenLinkCallback**</span><br><code>(cb: (arg: string) =&gt; Promise&lt;void&gt;) =&gt; void</code> | Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns plugin-manager lifecycle, as with openNewSessionCallback). | JBrowseDesktopRootModel |
+| <span id="action-setreturntostartscreencallback">**setReturnToStartScreenCallback**</span><br><code>(cb: () =&gt; void) =&gt; void</code> | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle). | JBrowseDesktopRootModel |
+| <span id="action-savesession">**saveSession**</span><br><code>(val: unknown) =&gt; Promise&lt;void&gt;</code> |  | JBrowseDesktopRootModel |
+| <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect (Loader wires openNewSessionCallback to reload from the session path). | JBrowseDesktopRootModel |
+| <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-seterror) |
+| <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot?: any) =&gt; void</code> | <span data-pagefind-ignore>Sets the active session. Remaps any legacy display type names (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST tree to drop open tracks whose config can't hydrate so shared sessions still load when referencing tracks that no longer exist. Dropped tracks are surfaced to the user via a snackbar. If filtering throws, the previous session is restored.</span> | [BaseRootModel](../baserootmodel#action-setsession) |
+| <span id="action-setdefaultsession">**setDefaultSession**</span><br><code>() =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-setdefaultsession) |
+| <span id="action-setsessionpath">**setSessionPath**</span><br><code>(path: string) =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-setsessionpath) |
+| <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(newName: string) =&gt; void</code> |  | [BaseRootModel](../baserootmodel#action-renamecurrentsession) |
+| <span id="action-initializeinternetaccount">**initializeInternetAccount**</span><br><details><summary><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStat…</code></summary><pre><code>(internetAccountConfig: ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;, initialSnapshot?: any) =&gt; any</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#action-initializeinternetaccount) |
+| <span id="action-createephemeralinternetaccount">**createEphemeralInternetAccount**</span><br><details><summary><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unk…</code></summary><pre><code>(internetAccountId: string, initialSnapshot: Record&lt;string, unknown&gt;, url: string) =&gt; any</code></pre></details> |  | [InternetAccountsMixin](../internetaccountsmixin#action-createephemeralinternetaccount) |
+| <span id="action-findappropriateinternetaccount">**findAppropriateInternetAccount**</span><br><code>(location: UriLocation) =&gt; any</code> |  | [InternetAccountsMixin](../internetaccountsmixin#action-findappropriateinternetaccount) |
+| <span id="action-setmenus">**setMenus**</span><br><code>(newMenus: Menu[]) =&gt; void</code> |  | [RootAppMenuMixin](../rootappmenumixin#action-setmenus) |
+| <span id="action-appendmenu">**appendMenu**</span><br><code>(menuName: string) =&gt; void</code> | <span data-pagefind-ignore>Add a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-appendmenu) |
+| <span id="action-insertmenu">**insertMenu**</span><br><code>(menuName: string, position: number) =&gt; void</code> | <span data-pagefind-ignore>Insert a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-insertmenu) |
+| <span id="action-appendtomenu">**appendToMenu**</span><br><code>(menuName: string, menuItem: MenuItem) =&gt; void</code> | <span data-pagefind-ignore>Add a menu item to a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-appendtomenu) |
+| <span id="action-insertinmenu">**insertInMenu**</span><br><code>(menuName: string, menuItem: MenuItem, position: number) =&gt; void</code> | <span data-pagefind-ignore>Insert a menu item into a top-level menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-insertinmenu) |
+| <span id="action-appendtosubmenu">**appendToSubMenu**</span><br><code>(menuPath: string[], menuItem: MenuItem) =&gt; void</code> | <span data-pagefind-ignore>Add a menu item to a sub-menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-appendtosubmenu) |
+| <span id="action-insertinsubmenu">**insertInSubMenu**</span><br><details><summary><code>(menuPath: string[], menuItem: MenuItem, position: number) =&gt; v…</code></summary><pre><code>(menuPath: string[], menuItem: MenuItem, position: number) =&gt; void</code></pre></details> | <span data-pagefind-ignore>Insert a menu item into a sub-menu</span> | [RootAppMenuMixin](../rootappmenumixin#action-insertinsubmenu) |

@@ -71,196 +71,34 @@ the same slots against different track types, so the slots live here once.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
-
-| Slot                                       | Type                                   | Description                                                                                                                                                                                                                                                                    |
-| ------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [windowSize](#slot-windowsize)             | `number`                               | Number of bases per GC measurement window.                                                                                                                                                                                                                                     |
-| [windowDelta](#slot-windowdelta)           | `number`                               | Step between successive windows; smaller than `windowSize` means overlapping windows (a smoother signal).                                                                                                                                                                      |
-| [gcMode](#slot-gcmode)                     | `stringEnum` (content, skew)           | `content` for GC percentage, `skew` for (G-C)/(G+C) strand skew.                                                                                                                                                                                                               |
-| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces posColor-only rendering (buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides negative GC-skew as if it were positive. |
-
-<details>
-<summary>SharedGCContentDisplay - Slots</summary>
-
-#### slot: windowSize
-
-Number of bases per GC measurement window.
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: windowDelta
-
-Step between successive windows; smaller than `windowSize` means overlapping
-windows (a smoother signal).
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: gcMode
-
-`content` for GC percentage, `skew` for (G-C)/(G+C) strand skew.
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`content`, `skew`) · **Default:** `'content'`
-
-#### slot: summaryScoreMode
-
-GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers'
-default has no summary to draw — it just forces posColor-only rendering
-(buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides
-negative GC-skew as if it were positive.
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`max`, `min`, `avg`, `whiskers`) · **Default:** `'avg'`
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from LinearWiggleDisplay</summary>
-
-[LinearWiggleDisplay config →](../linearwiggledisplay)
-
-#### slot: defaultRendering
-
-Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`xyplot`, `density`, `line`, `linecenter`, `scatter`) · **Default:** `'xyplot'`
-
-**Example:**
-
-```json
-{
-  "type": "LinearWiggleDisplay",
-  "defaultRendering": "density"
-}
-```
-
-#### slot: height
-
-Default height of the track
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
-
-#### slot: useBicolor
-
-When true (the default), positive scores use posColor and negative use negColor;
-when false, all bars use the single color slot. Setting color alone, with no
-posColor/negColor/useBicolor, turns this off for you.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: color
-
-Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per
-feature, so jexl callbacks do not apply. Set alone it implies useBicolor false;
-alongside posColor/negColor it goes unused. Density rendering always draws from
-posColor.
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#0068d1'`
-
-#### slot: minimalTicks
-
-Draw only the min/max Y-axis ticks
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: posColor
-
-Fill color for positive scores, used when useBicolor is true (the default)
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#0068d1'`
-
-#### slot: negColor
-
-Fill color for negative scores, used when useBicolor is true (the default)
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#e01e26'`
-
-#### slot: bicolorPivot
-
-Pivot value for bicolor mode
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
-_advanced_
-
-#### slot: minScore
-
-Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning
-"unset, use autoscale"
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`Number.MIN_VALUE` · _advanced_
-
-#### slot: maxScore
-
-Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning
-"unset, use autoscale"
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`Number.MAX_VALUE` · _advanced_
-
-#### slot: scaleType
-
-Scale type (linear or log)
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`linear`, `log`) · **Default:** `'linear'`
-
-#### slot: autoscale
-
-Autoscale type: "local" uses the min/max in the visible region, "localsd" uses
-mean ± numStdDev standard deviations, "localpercentile" uses the numQuantile-th
-percentile score as the max (robust to skewed/peaky data)
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`local`, `localsd`, `localpercentile`) · **Default:** `'localpercentile'`
-
-#### slot: numStdDev
-
-Number of standard deviations to use for the localsd autoscale type
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `3` ·
-_advanced_
-
-#### slot: numQuantile
-
-Percentile used to clip outliers for the localpercentile autoscale type (e.g.
-0.99 clips the outermost 1% of each sign). Positive and negative extents are
-computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP
-acceleration) stays visible; all-positive data pins the min at 0
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`0.99` · _advanced_
-
-#### slot: scatterPointSize
-
-Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset
-(the default) follows the session-wide default for this display type, falling
-back to 2
-
-**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:** `2` ·
-_advanced, promotable_
-
-#### slot: lineWidth
-
-Line thickness in px for line ("line"/"multiline") rendering. Unset (the
-default) follows the session-wide default for this display type, falling back to
-1
-
-**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:** `1` ·
-_advanced, promotable_
-
-</details>
+These slots go on a display entry:
+`"displays": [{ "type": "SharedGCContentDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
+
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-windowsize">**windowSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Number of bases per GC measurement window. |  |
+| <span id="slot-windowdelta">**windowDelta**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Step between successive windows; smaller than `windowSize` means overlapping windows (a smoother signal). |  |
+| <span id="slot-gcmode">**gcMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | `content` for GC percentage, `skew` for (G-C)/(G+C) strand skew. |  |
+| <span id="slot-summaryscoremode">**summaryScoreMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (max, min, avg, whiskers) = <code>'avg'</code> | GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces posColor-only rendering (buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides negative GC-skew as if it were positive. |  |
+| <span id="slot-defaultrendering">**defaultRendering**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (xyplot, density, line, linecenter, scatter) = <code>'xyplot'</code> | Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or `scatter`.<br><details><summary>example</summary><pre><code>{&#10;&#160;&#160;"type": "LinearWiggleDisplay",&#10;&#160;&#160;"defaultRendering": "density"&#10;}</code></pre></details> | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Default height of the track | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-usebicolor">**useBicolor**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you. | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor. | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-minimalticks">**minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw only the min/max Y-axis ticks<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-poscolor">**posColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | Fill color for positive scores, used when useBicolor is true (the default) | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-negcolor">**negColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#e01e26'</code> | Fill color for negative scores, used when useBicolor is true (the default) | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-bicolorpivot">**bicolorPivot**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Pivot value for bicolor mode<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-minscore">**minScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MIN_VALUE</code> | Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning "unset, use autoscale"<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-maxscore">**maxScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_VALUE</code> | Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning "unset, use autoscale"<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-scaletype">**scaleType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | Scale type (linear or log) | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-autoscale">**autoscale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (local, localsd, localpercentile) = <code>'localpercentile'</code> | Autoscale type: "local" uses the min/max in the visible region, "localsd" uses mean ± numStdDev standard deviations, "localpercentile" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data) | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-numstddev">**numStdDev**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3</code> | Number of standard deviations to use for the localsd autoscale type<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-numquantile">**numQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.99</code> | Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-scatterpointsize">**scatterPointSize**</span><br>`maybeNumber` = <code>2</code> _promotable_ | Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 2<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |
+| <span id="slot-linewidth">**lineWidth**</span><br>`maybeNumber` = <code>1</code> _promotable_ | Line thickness in px for line ("line"/"multiline") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 1<br>_advanced_ | [LinearWiggleDisplay](../linearwiggledisplay) |

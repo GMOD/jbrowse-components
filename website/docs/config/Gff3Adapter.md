@@ -38,19 +38,14 @@ the Gff3TabixAdapter for large files.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "Gff3Adapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type           | Description |
-| -------------------------------- | -------------- | ----------- |
-| [gffLocation](#slot-gfflocation) | `fileLocation` |             |
-
-<details>
-<summary>Gff3Adapter - Slots</summary>
-
-#### slot: gffLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.gff', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-gfflocation">**gffLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gff', locationType: 'UriLocation' }</code> |  |

@@ -35,44 +35,17 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BigBedAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                               | Type           | Description                                                                           |
-| -------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
-| [bigBedLocation](#slot-bigbedlocation)             | `fileLocation` |                                                                                       |
-| [scoreColumn](#slot-scorecolumn)                   | `string`       | The column to use as a "score" attribute                                              |
-| [aggregateField](#slot-aggregatefield)             | `string`       | An attribute to aggregate features with                                               |
-| [disableGeneHeuristic](#slot-disablegeneheuristic) | `boolean`      | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. |
-
-<details>
-<summary>BigBedAdapter - Slots</summary>
-
-#### slot: bigBedLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bb', locationType: 'UriLocation' }`
-
-#### slot: scoreColumn
-
-The column to use as a "score" attribute
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: aggregateField
-
-An attribute to aggregate features with
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'geneName2'`
-
-#### slot: disableGeneHeuristic
-
-Disable the heuristic that auto-detects BED12 features as gene/transcript
-structures. Useful for files that have BED12-like structure but are not genes
-(e.g. tandem duplications)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bigbedlocation">**bigBedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bb', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The column to use as a "score" attribute |
+| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'geneName2'</code> | An attribute to aggregate features with |
+| <span id="slot-disablegeneheuristic">**disableGeneHeuristic**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications) |

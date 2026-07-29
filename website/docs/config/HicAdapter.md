@@ -34,19 +34,14 @@ used to load Hi-C contact matrix data from a `.hic` file
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "HicAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type           | Description |
-| -------------------------------- | -------------- | ----------- |
-| [hicLocation](#slot-hiclocation) | `fileLocation` |             |
-
-<details>
-<summary>HicAdapter - Slots</summary>
-
-#### slot: hicLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.hic', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-hiclocation">**hicLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.hic', locationType: 'UriLocation' }</code> |  |

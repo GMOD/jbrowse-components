@@ -16,65 +16,18 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Config slots
 
+These slots are top-level fields of the account's entry in `internetAccounts`.
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                       | Type      | Description                                            |
-| ------------------------------------------ | --------- | ------------------------------------------------------ |
-| [validateWithHEAD](#slot-validatewithhead) | `boolean` | validate the token with a HEAD request before using it |
-
-<details>
-<summary>ExternalTokenInternetAccount - Slots</summary>
-
-#### slot: validateWithHEAD
-
-validate the token with a HEAD request before using it
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseInternetAccount</summary>
-
-[BaseInternetAccount config →](../baseinternetaccount)
-
-#### slot: name
-
-descriptive name of the internet account
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: description
-
-a description of the internet account
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: authHeader
-
-request header for credentials
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'Authorization'`
-
-#### slot: tokenType
-
-a custom name for a token to include in the header
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: domains
-
-array of valid domains the url can contain to use this account
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-validatewithhead">**validateWithHEAD**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | validate the token with a HEAD request before using it |  |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the internet account | [BaseInternetAccount](../baseinternetaccount) |
+| <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the internet account | [BaseInternetAccount](../baseinternetaccount) |
+| <span id="slot-authheader">**authHeader**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Authorization'</code> | request header for credentials | [BaseInternetAccount](../baseinternetaccount) |
+| <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a custom name for a token to include in the header | [BaseInternetAccount](../baseinternetaccount) |
+| <span id="slot-domains">**domains**</span><br>`stringArray` = <code>[]</code> | array of valid domains the url can contain to use this account | [BaseInternetAccount](../baseinternetaccount) |

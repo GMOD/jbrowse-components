@@ -190,6 +190,22 @@ const mdHref = isRealDoc
     font-weight: 700;
     color: var(--color-text);
   }
+  /* A <details> inside a table cell is a fold over one value — a long type
+     signature, a jexl default, an #example — not a section heading, so it drops
+     the heading styling above (which rendered a jexl default at 1.25rem bold)
+     and the section spacing. */
+  .docs-content :global(td details) {
+    margin-top: 0;
+  }
+  .docs-content :global(td details > summary) {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .docs-content :global(td pre) {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
   .docs-content :global(.heading-anchor) {
     opacity: 0;
     margin-left: 0.4rem;

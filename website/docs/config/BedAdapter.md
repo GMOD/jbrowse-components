@@ -48,73 +48,21 @@ the BedTabixAdapter for large files.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BedAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                               | Type           | Description                                                                           |
-| -------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
-| [bedLocation](#slot-bedlocation)                   | `fileLocation` | path to bed file, also allows gzipped bed                                             |
-| [columnNames](#slot-columnnames)                   | `stringArray`  | List of column names                                                                  |
-| [scoreColumn](#slot-scorecolumn)                   | `string`       | The column to use as a "score" attribute                                              |
-| [autoSql](#slot-autosql)                           | `string`       | The autoSql definition for the data fields in the file                                |
-| [colRef](#slot-colref)                             | `number`       | The column to use as a "refName" attribute                                            |
-| [colStart](#slot-colstart)                         | `number`       | The column to use as a "start" attribute                                              |
-| [colEnd](#slot-colend)                             | `number`       | The column to use as a "end" attribute                                                |
-| [disableGeneHeuristic](#slot-disablegeneheuristic) | `boolean`      | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. |
-
-<details>
-<summary>BedAdapter - Slots</summary>
-
-#### slot: bedLocation
-
-path to bed file, also allows gzipped bed
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
-
-#### slot: columnNames
-
-List of column names
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: scoreColumn
-
-The column to use as a "score" attribute
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: autoSql
-
-The autoSql definition for the data fields in the file
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-#### slot: colRef
-
-The column to use as a "refName" attribute
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0`
-
-#### slot: colStart
-
-The column to use as a "start" attribute
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1`
-
-#### slot: colEnd
-
-The column to use as a "end" attribute
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
-
-#### slot: disableGeneHeuristic
-
-Disable the heuristic that auto-detects BED12 features as gene/transcript
-structures. Useful for files that have BED12-like structure but are not genes
-(e.g. tandem duplications)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-bedlocation">**bedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }</code> | path to bed file, also allows gzipped bed |
+| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |
+| <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The column to use as a "score" attribute |
+| <span id="slot-autosql">**autoSql**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The autoSql definition for the data fields in the file |
+| <span id="slot-colref">**colRef**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The column to use as a "refName" attribute |
+| <span id="slot-colstart">**colStart**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | The column to use as a "start" attribute |
+| <span id="slot-colend">**colEnd**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>2</code> | The column to use as a "end" attribute |
+| <span id="slot-disablegeneheuristic">**disableGeneHeuristic**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications) |

@@ -36,20 +36,14 @@ or whole-genome/synteny views where the base-level sequence isn't needed.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "ChromSizesAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type           | Description |
-| ---------------------------------------------- | -------------- | ----------- |
-| [chromSizesLocation](#slot-chromsizeslocation) | `fileLocation` |             |
-
-<details>
-<summary>ChromSizesAdapter - Slots</summary>
-
-#### slot: chromSizesLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:**
-`{ uri: '/path/to/species.chrom.sizes', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-chromsizeslocation">**chromSizesLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/species.chrom.sizes', locationType: 'UriLocati…</code></summary><pre><code>{ uri: '/path/to/species.chrom.sizes', locationType: 'UriLocation' }</code></pre></details> |  |

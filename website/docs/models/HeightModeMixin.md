@@ -9,8 +9,6 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `linear-genome-view` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/HeightModeMixin.ts).
 
-## Overview
-
 The resolved track-height views every display with a promotable `heightMode`
 config slot shares (the canvas feature display, the alignments display), so the
 fixed/grow/fit vocabulary is identical by construction rather than by two call
@@ -26,65 +24,13 @@ conveniences derived from it. `fitTargetHeight` is the raw drag-resizable
 so routing the layout through it would make that height depend on itself (a MobX
 computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
 
-## Members
+## Getters
 
-| Member                                           | Kind    | Defined by      | Description                                                                                                                     |
-| ------------------------------------------------ | ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [heightMode](#getter-heightmode)                 | Getters | HeightModeMixin | The resolved track-height strategy (`fixed`/`grow`/`fit`).                                                                      |
-| [fitTargetHeight](#getter-fittargetheight)       | Getters | HeightModeMixin | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. |
-| [growMaxHeight](#getter-growmaxheight)           | Getters | HeightModeMixin | Ceiling `grow` mode sizes the track to, in px (content past it scrolls).                                                        |
-| [autoHeight](#getter-autoheight)                 | Getters | HeightModeMixin | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                           |
-| [fitHeightToDisplay](#getter-fitheighttodisplay) | Getters | HeightModeMixin | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                            |
-
-<details>
-<summary>HeightModeMixin - Getters</summary>
-
-#### getter: heightMode
-
-The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel
-slot: resolveConf walks the customized-track -> session-default -> `fixed`
-cascade and never returns the `inherit` sentinel.
-
-```ts
-type heightMode = 'fixed' | 'grow' | 'fit'
-```
-
-#### getter: fitTargetHeight
-
-The drag-resizable track height as stored in the config slot — the fit target
-the fit/grow layout scales or packs content into. Read there instead of the
-reactive `height` getter to break the grow-mode cycle
-(`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
-
-```ts
-type fitTargetHeight = number
-```
-
-#### getter: growMaxHeight
-
-Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives
-here rather than as a constant so a track whose whole point is a deep pileup can
-raise it; both displays that own a `grownHeight` read this, so the two can't
-diverge.
-
-```ts
-type growMaxHeight = number
-```
-
-#### getter: autoHeight
-
-`grow` mode as a boolean, derived from the unified `heightMode` slot.
-
-```ts
-type autoHeight = boolean
-```
-
-#### getter: fitHeightToDisplay
-
-`fit` mode as a boolean, derived from the unified `heightMode` slot.
-
-```ts
-type fitHeightToDisplay = boolean
-```
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-heightmode">**heightMode**</span><br><code>"fixed" &#124; "grow" &#124; "fit"</code> | The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: resolveConf walks the customized-track -> session-default -> `fixed` cascade and never returns the `inherit` sentinel. |
+| <span id="getter-fittargetheight">**fitTargetHeight**</span><br><code>number</code> | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. Read there instead of the reactive `height` getter to break the grow-mode cycle (`height`->grownHeight->layout->height). Equals `height` in fixed/fit. |
+| <span id="getter-growmaxheight">**growMaxHeight**</span><br><code>number</code> | Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives here rather than as a constant so a track whose whole point is a deep pileup can raise it; both displays that own a `grownHeight` read this, so the two can't diverge. |
+| <span id="getter-autoheight">**autoHeight**</span><br><code>boolean</code> | `grow` mode as a boolean, derived from the unified `heightMode` slot. |
+| <span id="getter-fitheighttodisplay">**fitHeightToDisplay**</span><br><code>boolean</code> | `fit` mode as a boolean, derived from the unified `heightMode` slot. |

@@ -40,42 +40,16 @@ automatically supplies it from the enclosing assembly's sequence track.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "CramAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                               | Type           | Description |
-| ---------------------------------- | -------------- | ----------- |
-| [cramLocation](#slot-cramlocation) | `fileLocation` |             |
-| [craiLocation](#slot-crailocation) | `fileLocation` |             |
-
-<details>
-<summary>Advanced slots (1)</summary>
-
-| Slot                                   | Type     | Description                                                                                  |
-| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
-| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | size in bytes over which to display a warning to the user that too much data will be fetched |
-
-</details>
-
-<details>
-<summary>CramAdapter - Slots</summary>
-
-#### slot: fetchSizeLimit
-
-size in bytes over which to display a warning to the user that too much data
-will be fetched
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`3_000_000` · _advanced_
-
-#### slot: cramLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.cram', locationType: 'UriLocation' }`
-
-#### slot: craiLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3_000_000</code> | size in bytes over which to display a warning to the user that too much data will be fetched<br>_advanced_ |
+| <span id="slot-cramlocation">**cramLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-crailocation">**craiLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }</code> |  |

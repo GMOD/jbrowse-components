@@ -37,2207 +37,267 @@ species in track order; `rowHeight` sets the per-sample band height in px (or
 }
 ```
 
-## Overview
-
-## Members
-
-| Member                                                               | Kind       | Defined by                                            | Description                                                                                                                                                                                                                                                                       |
-| -------------------------------------------------------------------- | ---------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                               | Properties | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [configuration](#property-configuration)                             | Properties | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [rpcDataMap](#volatile-rpcdatamap)                                   | Volatiles  | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [summaryDataMap](#volatile-summarydatamap)                           | Volatiles  | LinearMafDisplay                                      | Per-region `bigMafSummary` rows for the zoom-out path, populated by `fetchMafSummaryData` only while `showSummary` is active.                                                                                                                                                     |
-| [framesDataMap](#volatile-framesdatamap)                             | Volatiles  | LinearMafDisplay                                      | Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay, populated by the frames RPC in parallel with the main fetch.                                                                                                                                             |
-| [prefersOffset](#volatile-prefersoffset)                             | Volatiles  | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [sourcesVolatile](#volatile-sourcesvolatile)                         | Volatiles  | LinearMafDisplay                                      | The worker's authoritative row set, in tree (leaf) order.                                                                                                                                                                                                                         |
-| [treeNewickVolatile](#volatile-treenewickvolatile)                   | Volatiles  | LinearMafDisplay                                      | The worker's guide-tree Newick (the default, before any reorder).                                                                                                                                                                                                                 |
-| [sampleSetGeneration](#volatile-samplesetgeneration)                 | Volatiles  | LinearMafDisplay                                      | Bumped by `setSamples` when the worker reports a row set that differs from the one already established — never on the first fetch populating an empty set.                                                                                                                        |
-| [resizing](#volatile-resizing)                                       | Volatiles  | LinearMafDisplay                                      | True during an active height drag.                                                                                                                                                                                                                                                |
-| [resizeSettleTimer](#volatile-resizesettletimer)                     | Volatiles  | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [rowHeight](#getter-rowheight)                                       | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [rowProportion](#getter-rowproportion)                               | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showAllLetters](#getter-showallletters)                             | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [mismatchRendering](#getter-mismatchrendering)                       | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showAsUpperCase](#getter-showasuppercase)                           | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showTree](#getter-showtree)                                         | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showBranchLength](#getter-showbranchlength)                         | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showCoverage](#getter-showcoverage)                                 | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showAlignments](#getter-showalignments)                             | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [coverageHeight](#getter-coverageheight)                             | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showConservation](#getter-showconservation)                         | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [conservationHeight](#getter-conservationheight)                     | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [conservationMode](#getter-conservationmode)                         | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [rowIdentityMode](#getter-rowidentitymode)                           | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [rowIdentityAutoZoom](#getter-rowidentityautozoom)                   | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showAnnotations](#getter-showannotations)                           | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showTranslation](#getter-showtranslation)                           | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [colorByChromosome](#getter-colorbychromosome)                       | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [showInversions](#getter-showinversions)                             | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [conf](#getter-conf)                                                 | Getters    | LinearMafDisplay                                      | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`)                                                                                      |
-| [lgv](#getter-lgv)                                                   | Getters    | LinearMafDisplay                                      | The containing LGV, typed once here so views/actions don't each repeat the `getContainingView(self) as LinearGenomeViewModel` cast.                                                                                                                                               |
-| [annotationAdapterConfig](#getter-annotationadapterconfig)           | Getters    | LinearMafDisplay                                      | The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`), or undefined when unset.                                                                                                                                                                                 |
-| [annotationsActive](#getter-annotationsactive)                       | Getters    | LinearMafDisplay                                      | Whether the per-species CDS frame _strip_ should draw: an annotation adapter is configured and the "Show CDS frames" toggle is on.                                                                                                                                                |
-| [annotationDataActive](#getter-annotationdataactive)                 | Getters    | LinearMafDisplay                                      | Whether the frames data needs to be fetched: an annotation adapter is configured and either the strip or the codon view wants it.                                                                                                                                                 |
-| [editableSources](#getter-editablesources)                           | Getters    | LinearMafDisplay                                      | The full row set with the user's arrangement applied: `layout` supplies order + label/color overrides, merged over the worker's `sourcesVolatile` by name.                                                                                                                        |
-| [sources](#getter-sources)                                           | Getters    | LinearMafDisplay                                      | The display rows: `editableSources` narrowed to the selected subtree.                                                                                                                                                                                                             |
-| [samples](#getter-samples)                                           | Getters    | LinearMafDisplay                                      | Sample list keyed by sample id (alias of `sources` mapped to the project's canonical `{ id, label, color }` shape).                                                                                                                                                               |
-| [orderedSampleIds](#getter-orderedsampleids)                         | Getters    | LinearMafDisplay                                      | Display row order shipped to the worker so its block `rowIndex` matches the on-screen row.                                                                                                                                                                                        |
-| [rowIndexBySrc](#getter-rowindexbysrc)                               | Getters    | LinearMafDisplay                                      | Maps a `src` (species) to its display row index.                                                                                                                                                                                                                                  |
-| [defaultCodonSpecies](#getter-defaultcodonspecies)                   | Getters    | LinearMafDisplay                                      | The anchor species whose `mafFrames` reading frame is used to translate every row (UCSC `codonDefault`).                                                                                                                                                                          |
-| [coverageDisplayHeight](#getter-coveragedisplayheight)               | Getters    | LinearMafDisplay                                      | Height of the coverage band above the rows (0 when hidden).                                                                                                                                                                                                                       |
-| [conservationDisplayHeight](#getter-conservationdisplayheight)       | Getters    | LinearMafDisplay                                      | Height of the conservation (percent identity) band (0 when hidden).                                                                                                                                                                                                               |
-| [rowsTopOffset](#getter-rowstopoffset)                               | Getters    | LinearMafDisplay                                      | Top offset of the per-sample rows area = the stacked band heights above it (coverage + conservation).                                                                                                                                                                             |
-| [nrow](#getter-nrow)                                                 | Getters    | LinearMafDisplay                                      | Number of displayed rows (at least 1, so the fit-mode division is safe).                                                                                                                                                                                                          |
-| [maxRowsHeight](#getter-maxrowsheight)                               | Getters    | LinearMafDisplay                                      | Max CSS-px height the rows canvas may take before its backing store (`× dpr`) hits the browser/GPU canvas limit.                                                                                                                                                                  |
-| [fitTargetHeight](#getter-fittargetheight)                           | Getters    | LinearMafDisplay                                      | The track height that fit-to-height mode divides among rows.                                                                                                                                                                                                                      |
-| [autoRowHeight](#getter-autorowheight)                               | Getters    | LinearMafDisplay                                      | Per-row height in fit-to-height mode: the rows area (track height minus the fixed bands) split evenly across rows.                                                                                                                                                                |
-| [effectiveRowHeight](#getter-effectiverowheight)                     | Getters    | LinearMafDisplay                                      | Resolved per-row height.                                                                                                                                                                                                                                                          |
-| [rowsHeight](#getter-rowsheight)                                     | Getters    | LinearMafDisplay                                      | Height of the per-sample rows area (excludes the coverage band).                                                                                                                                                                                                                  |
-| [totalHeight](#getter-totalheight)                                   | Getters    | LinearMafDisplay                                      | Full display height = rows area + stacked bands.                                                                                                                                                                                                                                  |
-| [height](#getter-height)                                             | Getters    | LinearMafDisplay                                      | Override BaseLinearDisplay.height so the track container matches the rendering canvas height exactly (coverage band + rows × rowHeight).                                                                                                                                          |
-| [hierarchy](#getter-hierarchy)                                       | Getters    | LinearMafDisplay                                      | Positioned tree hierarchy.                                                                                                                                                                                                                                                        |
-| [spatialIndex](#getter-spatialindex)                                 | Getters    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [colorPalette](#getter-colorpalette)                                 | Getters    | LinearMafDisplay                                      | Theme-derived color palette (per-base colors + match/gap/mismatch/ unknown/insertion), read by `gpuProps()` and `renderState`.                                                                                                                                                    |
-| [renderState](#getter-renderstate)                                   | Getters    | LinearMafDisplay                                      | Render state passed to GPU/Canvas2D backend each frame.                                                                                                                                                                                                                           |
-| [coverageStats](#getter-coveragestats)                               | Getters    | LinearMafDisplay                                      | Per-position depth stats across the currently visible content blocks, derived from the worker-shipped `coverage.coverageDepths` arrays (which already reflect the active subtree — see `rpcProps`).                                                                               |
-| [coverageDomain](#getter-coveragedomain)                             | Getters    | LinearMafDisplay                                      | [min, max] coverage domain for the visible blocks.                                                                                                                                                                                                                                |
-| [coverageTicks](#getter-coverageticks)                               | Getters    | LinearMafDisplay                                      | Y-axis tick marks for the coverage band.                                                                                                                                                                                                                                          |
-| [visibleEmptyLines](#getter-visibleemptylines)                       | Getters    | LinearMafDisplay                                      | Positioned bridge-line segments for `e`-line (empty/bridged) rows.                                                                                                                                                                                                                |
-| [visibleInsertions](#getter-visibleinsertions)                       | Getters    | LinearMafDisplay                                      | Positioned insertion markers (interbase) for the visible aligned rows.                                                                                                                                                                                                            |
-| [visibleDeletions](#getter-visibledeletions)                         | Getters    | LinearMafDisplay                                      | Positioned deletion runs for the visible aligned rows; the overlay draws the deleted-base count inside each run when it fits.                                                                                                                                                     |
-| [visibleInversions](#getter-visibleinversions)                       | Getters    | LinearMafDisplay                                      | Positioned strand-flip (inversion) markers for the visible aligned rows.                                                                                                                                                                                                          |
-| [showSummary](#getter-showsummary)                                   | Getters    | LinearMafDisplay                                      | Use the cheap summary path when a `bigMafSummary` sub-adapter is configured and the view is zoomed out past the force-load threshold — exactly where the full alignment fetch would be blocked by the byte gate.                                                                  |
-| [zoomedToBaseLevel](#getter-zoomedtobaselevel)                       | Getters    | LinearMafDisplay                                      | At base level each reference base spans at least a pixel, so individual bases / SNP marks are legible (UCSC's `zoomedToBaseLevel`).                                                                                                                                               |
-| [codonViewActive](#getter-codonviewactive)                           | Getters    | LinearMafDisplay                                      | The codon view is on: the toggle is set, frame data is available to define the reading frame, and we're zoomed to base level (so codons are meaningful) and not in the cheap summary path.                                                                                        |
-| [activeRowRendering](#getter-activerowrendering)                     | Getters    | LinearMafDisplay                                      | Single source of truth for what the per-sample rows area draws right now: `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring from `mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or a per-row identity style (`heatmap` / `xyplot`).      |
-| [visibleLabels](#getter-visiblelabels)                               | Getters    | LinearMafDisplay                                      | Positioned per-base SNP/sequence letters.                                                                                                                                                                                                                                         |
-| [visibleSummaryBars](#getter-visiblesummarybars)                     | Getters    | LinearMafDisplay                                      | Positioned per-species presence bars for the zoom-out summary overlay.                                                                                                                                                                                                            |
-| [visibleFrames](#getter-visibleframes)                               | Getters    | LinearMafDisplay                                      | Positioned per-species CDS frame boxes for the annotation overlay.                                                                                                                                                                                                                |
-| [codonCellsActive](#getter-codoncellsactive)                         | Getters    | LinearMafDisplay                                      | The codon overlay is what the rows area is painting.                                                                                                                                                                                                                              |
-| [codonConservationActive](#getter-codonconservationactive)           | Getters    | LinearMafDisplay                                      | The conservation band is in per-codon (amino-acid identity) mode, with frames to define codons and per-base blocks to translate — the cheap summary path ships neither.                                                                                                           |
-| [locatedCodons](#getter-locatedcodons)                               | Getters    | LinearMafDisplay                                      | Every reference codon the fetched blocks resolve, in the anchor species' reading frame — the shared spine of the codon cells and the codon conservation band.                                                                                                                     |
-| [visibleCodons](#getter-visiblecodons)                               | Getters    | LinearMafDisplay                                      | Per-species codon cells for the codon view (the per-codon change coloring that replaces the SNP cells).                                                                                                                                                                           |
-| [visibleCodonConservation](#getter-visiblecodonconservation)         | Getters    | LinearMafDisplay                                      | Per-codon amino-acid conservation bars for the conservation band's codon mode.                                                                                                                                                                                                    |
-| [legendItems](#getter-legenditems)                                   | Getters    | LinearMafDisplay                                      | The color key for whatever `activeRowRendering` is painting, or empty where the rendering needs no key (plain bases).                                                                                                                                                             |
-| [msaHighlights](#getter-msahighlights)                               | Getters    | LinearMafDisplay                                      | Get highlight regions from connected MSA views                                                                                                                                                                                                                                    |
-| [byteGateEnabled](#getter-bytegateenabled)                           | Getters    | LinearMafDisplay                                      | Enable byte-estimate gating: above ~20kb visible, the adapter's MAF-aware byte estimate (per-species sequence × span) is checked against `fetchSizeLimit`, blocking the detail fetch with a force-load prompt rather than downloading hundreds of species' bases at genome scale. |
-| [gpuProps](#method-gpuprops)                                         | Methods    | LinearMafDisplay                                      | Inputs to the main-thread GPU instance encoder.                                                                                                                                                                                                                                   |
-| [rpcProps](#method-rpcprops)                                         | Methods    | LinearMafDisplay                                      | Worker-fetch inputs that invalidate cached data when changed (tier-1, via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).                                                                                                                                      |
-| [rowHoverInfo](#method-rowhoverinfo)                                 | Methods    | LinearMafDisplay                                      | Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per worker-output convention): an aligned base (`cell`) or a bridged/empty region (`empty`), each tagged with the sample label.                                                                               |
-| [frameHoverInfo](#method-framehoverinfo)                             | Methods    | LinearMafDisplay                                      | The CDS frame record covering absolute genomic `bp` (uint32) on display `rowIndex`, or undefined when no frame overlaps there (or no frames data is loaded).                                                                                                                      |
-| [coverageTooltipBin](#method-coveragetooltipbin)                     | Methods    | LinearMafDisplay                                      | Build a per-position coverage tooltip bin (depth + SNP base counts) for the given absolute genomic bp + region index.                                                                                                                                                             |
-| [coverageInsertionHit](#method-coverageinsertionhit)                 | Methods    | LinearMafDisplay                                      | Hit-test an insertion bar in the coverage band at fractional genomic `gposFrac`.                                                                                                                                                                                                  |
-| [codonHoverInfo](#method-codonhoverinfo)                             | Methods    | LinearMafDisplay                                      | The codon under the cursor on display `rowIndex` at absolute genomic `bp`, when the codon view is the active rendering: the species' codon + amino acid, the reference codon + amino acid, and the syn/nonsyn/stop classification.                                                |
-| [trackMenuItems](#method-trackmenuitems)                             | Methods    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [isCacheValid](#method-iscachevalid)                                 | Methods    | LinearMafDisplay                                      | Force a refetch when the loaded data is the wrong kind for the current zoom: crossing the summary↔detail threshold within an already-loaded region wouldn't trip the bounds-based coverage check, so the mode is keyed on which map holds the region.                             |
-| [setRowHeight](#action-setrowheight)                                 | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setResizing](#action-setresizing)                                   | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setRowProportion](#action-setrowproportion)                         | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowAllLetters](#action-setshowallletters)                       | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setMismatchRendering](#action-setmismatchrendering)                 | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setSamples](#action-setsamples)                                     | Actions    | LinearMafDisplay                                      | Receive the worker's `samples` + serialized Newick tree.                                                                                                                                                                                                                          |
-| [setShowAsUpperCase](#action-setshowasuppercase)                     | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowTree](#action-setshowtree)                                   | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowBranchLength](#action-setshowbranchlength)                   | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowCoverage](#action-setshowcoverage)                           | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowAlignments](#action-setshowalignments)                       | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setCoverageHeight](#action-setcoverageheight)                       | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [resizeCoverageHeight](#action-resizecoverageheight)                 | Actions    | LinearMafDisplay                                      | Apply one drag delta to the coverage band.                                                                                                                                                                                                                                        |
-| [setShowConservation](#action-setshowconservation)                   | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setConservationMode](#action-setconservationmode)                   | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setRowIdentityMode](#action-setrowidentitymode)                     | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setRowIdentityAutoZoom](#action-setrowidentityautozoom)             | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowAnnotations](#action-setshowannotations)                     | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowTranslation](#action-setshowtranslation)                     | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setColorByChromosome](#action-setcolorbychromosome)                 | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setShowInversions](#action-setshowinversions)                       | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setConservationHeight](#action-setconservationheight)               | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [resizeConservationHeight](#action-resizeconservationheight)         | Actions    | LinearMafDisplay                                      | Per-frame drag delta for the conservation band — see `resizeCoverageHeight` for why this reads the height itself.                                                                                                                                                                 |
-| [clearLayout](#action-clearlayout)                                   | Actions    | LinearMafDisplay                                      | Drop the custom arrangement and restore the worker's guide tree (the base `clearLayout` only clears it — the worker tree lives in `treeNewickVolatile`).                                                                                                                          |
-| [setFitToHeight](#action-setfittoheight)                             | Actions    | LinearMafDisplay                                      | Switch to fit-to-height mode: rows stretch to fill the track height.                                                                                                                                                                                                              |
-| [resizeHeight](#action-resizeheight)                                 | Actions    | LinearMafDisplay                                      | Drag-resize.                                                                                                                                                                                                                                                                      |
-| [setRpcData](#action-setrpcdata)                                     | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setSummaryData](#action-setsummarydata)                             | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [setFramesData](#action-setframesdata)                               | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [clearAlignmentData](#action-clearalignmentdata)                     | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [clearDisplaySpecificData](#action-cleardisplayspecificdata)         | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [startRenderingBackend](#action-startrenderingbackend)               | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [fetchNeeded](#action-fetchneeded)                                   | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [renderSvg](#action-rendersvg)                                       | Actions    | LinearMafDisplay                                      |                                                                                                                                                                                                                                                                                   |
-| [id](#property-id)                                                   | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [rpcDriverName](#property-rpcdrivername)                             | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [ignorePromotedDefaults](#property-ignorepromoteddefaults)           | Properties | [BaseDisplay](../basedisplay)                         | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                                                                                               |
-| [error](#volatile-error)                                             | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [statusMessage](#volatile-statusmessage)                             | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [statusProgress](#volatile-statusprogress)                           | Volatiles  | [BaseDisplay](../basedisplay)                         | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                                                                                               |
-| [parentTrack](#getter-parenttrack)                                   | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [parentDisplay](#getter-parentdisplay)                               | Getters    | [BaseDisplay](../basedisplay)                         | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                  |
-| [RenderingComponent](#getter-renderingcomponent)                     | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [DisplayBlurb](#getter-displayblurb)                                 | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [adapterConfig](#getter-adapterconfig)                               | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [isMinimized](#getter-isminimized)                                   | Getters    | [BaseDisplay](../basedisplay)                         | Returns true if the parent track is minimized.                                                                                                                                                                                                                                    |
-| [effectiveRpcDriverName](#getter-effectiverpcdrivername)             | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                              |
-| [DisplayMessageComponent](#getter-displaymessagecomponent)           | Getters    | [BaseDisplay](../basedisplay)                         | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                        |
-| [renderingProps](#method-renderingprops)                             | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                                       |
-| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)       | Actions    | [BaseDisplay](../basedisplay)                         | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                         |
-| [setStatusMessage](#action-setstatusmessage)                         | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [setError](#action-seterror)                                         | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [setRpcDriverName](#action-setrpcdrivername)                         | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                   |
-| [reload](#action-reload)                                             | Actions    | [BaseDisplay](../basedisplay)                         | base display reload does nothing, see specialized displays for details                                                                                                                                                                                                            |
-| [scrollTop](#volatile-scrolltop)                                     | Volatiles  | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setScrollTop](#action-setscrolltop)                                 | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setHeight](#action-setheight)                                       | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                   |
-| [loadedRegions](#volatile-loadedregions)                             | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                            |
-| [canRender](#getter-canrender)                                       | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                 |
-| [isReady](#getter-isready)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                        |
-| [viewportWithinLoadedData](#getter-viewportwithinloadeddata)         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                            |
-| [dataCurrent](#getter-datacurrent)                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now.                                                                                                             |
-| [svgReady](#getter-svgready)                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data.                                                                                                                                                                                                         |
-| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)               | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data.                                                                                                                                |
-| [layoutReady](#getter-layoutready)                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): whether a searchable feature layout currently exists.                                                                                                                                                                                           |
-| [renderBlocks](#getter-renderblocks)                                 | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display.                                                                                                                                                                                                                               |
-| [displayPhase](#getter-displayphase)                                 | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`.                                                                                                                                                                                |
-| [rpcPropsCacheKey](#getter-rpcpropscachekey)                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string.                                                                                                                                                                   |
-| [setLoadedRegion](#action-setloadedregion)                           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                         |
-| [clearAllRpcData](#action-clearallrpcdata)                           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag.                                                                                                                                                                         |
-| [invalidateLoadedRegions](#action-invalidateloadedregions)           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                    |
-| [onRegionTooLarge](#action-onregiontoolarge)                         | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (no-op base): called when `regionTooLarge` transitions to true.                                                                                                                                                                                                  |
-| [fetchRegions](#action-fetchregions)                                 | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating.                                                                                                                                                                                                                                 |
-| [afterAttach](#action-afterattach)                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)                                                                                                      |
-| [forceLoadTrack](#volatile-forceloadtrack)                           | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                                                   |
-| [byteEstimate](#volatile-byteestimate)                               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now.                                                                                                          |
-| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                                                             |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)         | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                                                               |
-| [densityTooLarge](#getter-densitytoolarge)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                                                             |
-| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                                                   |
-| [configForceLoad](#getter-configforceload)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                                                 |
-| [gateVisibleBp](#getter-gatevisiblebp)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The span on screen, or undefined before the view is measured.                                                                                                                                                                                                                     |
-| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`).                                                     |
-| [aboveForceLoadFloor](#getter-aboveforceloadfloor)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else.                                                                                                                                |
-| [byteGateExempt](#getter-bytegateexempt)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button.                                                                                                                                     |
-| [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers.                                                                                                                              |
-| [gateByteLimit](#getter-gatebytelimit)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                                                  |
-| [gateActive](#getter-gateactive)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.                                                                                                                                      |
-| [tooLargeStatus](#getter-toolargestatus)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text).                                 |
-| [regionTooLarge](#getter-regiontoolarge)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                   |
-| [regionTooLargeReason](#getter-regiontoolargereason)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                                                          |
-| [resolvedByteLimit](#method-resolvedbytelimit)                       | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features.                                                                                                                                                        |
-| [setByteEstimate](#action-setbyteestimate)                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                                              |
-| [clearByteEstimate](#action-clearbyteestimate)                       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Drops the cached estimate.                                                                                                                                                                                                                                                        |
-| [setForceLoadTrack](#action-setforceloadtrack)                       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                                                        |
-| [forceLoad](#action-forceload)                                       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                                                          |
-| [byteGateBlocksFetch](#action-bytegateblocksfetch)                   | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.                                                              |
-| [canvasDrawn](#volatile-canvasdrawn)                                 | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                |
-| [currentRenderingBackend](#volatile-currentrenderingbackend)         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery.                                                                                                                                                                                                                      |
-| [renderTick](#volatile-rendertick)                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                  |
-| [autorunsInstalled](#volatile-autorunsinstalled)                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                        |
-| [renderError](#volatile-rendererror)                                 | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                                                                                                                       |
-| [markCanvasDrawn](#action-markcanvasdrawn)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                   |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                   |
-| [stopRenderingBackend](#action-stoprenderingbackend)                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                   |
-| [renderNow](#action-rendernow)                                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                   |
-| [setRenderError](#action-setrendererror)                             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | set/clear the render-backend error.                                                                                                                                                                                                                                               |
-| [attachRenderingBackend](#action-attachrenderingbackend)             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                       |
-| [activeStopToken](#volatile-activestoptoken)                         | Volatiles  | [FetchMixin](../fetchmixin)                           | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                         |
-| [fetchGeneration](#volatile-fetchgeneration)                         | Volatiles  | [FetchMixin](../fetchmixin)                           | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                  |
-| [fetchCanceled](#volatile-fetchcanceled)                             | Volatiles  | [FetchMixin](../fetchmixin)                           | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                                                        |
-| [regionStatuses](#volatile-regionstatuses)                           | Volatiles  | [FetchMixin](../fetchmixin)                           | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                                                                    |
-| [isLoading](#getter-isloading)                                       | Getters    | [FetchMixin](../fetchmixin)                           | true while a fetch is active                                                                                                                                                                                                                                                      |
-| [makeStatusCallback](#method-makestatuscallback)                     | Methods    | [FetchMixin](../fetchmixin)                           | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op.                                      |
-| [makeRegionStatusCallback](#method-makeregionstatuscallback)         | Methods    | [FetchMixin](../fetchmixin)                           | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                                                                  |
-| [throttleStatus](#action-throttlestatus)                             | Actions    | [FetchMixin](../fetchmixin)                           | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                                                              |
-| [resetStatus](#action-resetstatus)                                   | Actions    | [FetchMixin](../fetchmixin)                           | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                                                      |
-| [stopActiveFetch](#action-stopactivefetch)                           | Actions    | [FetchMixin](../fetchmixin)                           | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                                                          |
-| [setRegionStatus](#action-setregionstatus)                           | Actions    | [FetchMixin](../fetchmixin)                           | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                                                         |
-| [cancelFetch](#action-cancelfetch)                                   | Actions    | [FetchMixin](../fetchmixin)                           | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight).                                                                                                                                      |
-| [cancelFetchByUser](#action-cancelfetchbyuser)                       | Actions    | [FetchMixin](../fetchmixin)                           | User-initiated cancel from the loading overlay.                                                                                                                                                                                                                                   |
-| [beforeDestroy](#action-beforedestroy)                               | Actions    | [FetchMixin](../fetchmixin)                           | Release an in-flight fetch's stop token on teardown.                                                                                                                                                                                                                              |
-| [runFetch](#action-runfetch)                                         | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                                                      |
-| [layout](#property-layout)                                           | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [clusterTree](#property-clustertree)                                 | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [treeAreaWidth](#property-treeareawidth)                             | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [subtreeFilter](#property-subtreefilter)                             | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [hoveredTreeNode](#volatile-hoveredtreenode)                         | Volatiles  | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [treeCanvas](#volatile-treecanvas)                                   | Volatiles  | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [mouseoverCanvas](#volatile-mouseovercanvas)                         | Volatiles  | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [parsedTree](#getter-parsedtree)                                     | Getters    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [root](#getter-root)                                                 | Getters    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [treeHasBranchLengths](#getter-treehasbranchlengths)                 | Getters    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [willClearTree](#method-willcleartree)                               | Methods    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setLayout](#action-setlayout)                                       | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setClusterTree](#action-setclustertree)                             | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setLayoutAndClusterTree](#action-setlayoutandclustertree)           | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setTreeAreaWidth](#action-settreeareawidth)                         | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setSubtreeFilter](#action-setsubtreefilter)                         | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setHoveredTreeNode](#action-sethoveredtreenode)                     | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setTreeCanvasRef](#action-settreecanvasref)                         | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-| [setMouseoverCanvasRef](#action-setmouseovercanvasref)               | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                   |
-
-### LinearMafDisplay - Configuration
-
 The configuration slots for this model are documented on its
 [config schema page](../../config/linearmafdisplay).
 
-<details>
-<summary>LinearMafDisplay - Properties</summary>
-
-| Member                                                 | Type                                                  |
-| ------------------------------------------------------ | ----------------------------------------------------- |
-| <span id="property-type">type</span>                   | `ISimpleType<"LinearMafDisplay">`                     |
-| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Volatiles</summary>
-
-#### volatile: summaryDataMap
-
-Per-region `bigMafSummary` rows for the zoom-out path, populated by
-`fetchMafSummaryData` only while `showSummary` is active. Kept separate from
-`rpcDataMap` so the GPU sequence canvas and the summary overlay never read each
-other's data.
-
-```ts
-// type signature
-type summaryDataMap = ObservableMap<number, MafSummaryRecord[]>
-// code
-summaryDataMap: observable.map<number, MafSummaryRecord[]>()
-```
-
-#### volatile: framesDataMap
-
-Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
-populated by the frames RPC in parallel with the main fetch. Kept separate from
-the alignment/summary maps so the overlay survives the summary↔detail data swap.
-
-```ts
-// type signature
-type framesDataMap = ObservableMap<number, MafFrameRecord[]>
-// code
-framesDataMap: observable.map<number, MafFrameRecord[]>()
-```
-
-#### volatile: sourcesVolatile
-
-The worker's authoritative row set, in tree (leaf) order. `layout` overlays any
-user reorder/relabel on top; `editableSources` merges the two and `sources`
-narrows that by the subtree filter.
-
-```ts
-// type signature
-type sourcesVolatile = MafSource[]
-// code
-sourcesVolatile: [] as MafSource[]
-```
-
-#### volatile: treeNewickVolatile
-
-The worker's guide-tree Newick (the default, before any reorder). The active
-displayed tree lives in the mixin's `clusterTree`, which a reorder clears (rows
-no longer match the dendrogram) and "Clear arrangement" restores from here — so
-we keep the worker tree separately rather than re-fetching it.
-
-```ts
-// type signature
-type treeNewickVolatile = string | undefined
-// code
-treeNewickVolatile: undefined as string | undefined
-```
-
-#### volatile: sampleSetGeneration
-
-Bumped by `setSamples` when the worker reports a row set that differs from the
-one already established — never on the first fetch populating an empty set. It's
-the invalidation half of the sample set, split out so `rpcProps()` can key on
-"the set changed" without keying on the set itself (which is fetch-derived, and
-made every track fetch twice). See `rpcProps`.
-
-```ts
-// type signature
-type sampleSetGeneration = number
-// code
-sampleSetGeneration: 0
-```
-
-#### volatile: resizing
-
-True during an active height drag. Gates the dense per-base letter overlay (a
-Canvas2D pass that re-scans every visible cell and redraws thousands of glyphs
-each frame) so the drag only restretches the cheap GPU cell canvas; letters snap
-back when the drag settles.
-
-```ts
-// type signature
-type resizing = false
-// code
-resizing: false
-```
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Volatiles (other undocumented members)</summary>
-
-| Member                                                         | Type                                   |
-| -------------------------------------------------------------- | -------------------------------------- |
-| <span id="volatile-rpcdatamap">rpcDataMap</span>               | `ObservableMap<number, MafRegionData>` |
-| <span id="volatile-prefersoffset">prefersOffset</span>         | `true`                                 |
-| <span id="volatile-resizesettletimer">resizeSettleTimer</span> | `Timeout \| undefined`                 |
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Getters</summary>
-
-#### getter: conf
-
-the config typed off the concrete schema; `ConfigurationReference` erases
-`self.configuration` to `any`, so direct reads route through this to stay typed
-(same move as `BaseAdapter<CONF>`)
-
-```ts
-type conf = ModelInstanceTypeProps<Record<…>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
-
-#### getter: lgv
-
-The containing LGV, typed once here so views/actions don't each repeat the
-`getContainingView(self) as LinearGenomeViewModel` cast.
-
-```ts
-type lgv = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<…>, { ...; }>> & ... 20 more ... & IStateTreeNode<...>
-```
-
-#### getter: annotationAdapterConfig
-
-The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`), or
-undefined when unset. Read from the MAF _adapter_ config as a swappable
-sub-adapter (alongside `summaryAdapter`), not the display — a frozen slot, so
-this is a plain snapshot the frames RPC hands straight to `getAdapter`.
-
-```ts
-type annotationAdapterConfig = Record<string, unknown> | undefined
-```
-
-#### getter: annotationsActive
-
-Whether the per-species CDS frame _strip_ should draw: an annotation adapter is
-configured and the "Show CDS frames" toggle is on. The codon view consumes the
-same frames data but is gated separately (see `annotationDataActive`), so the
-strip can be off while codon view is on.
-
-```ts
-type annotationsActive = boolean
-```
-
-#### getter: annotationDataActive
-
-Whether the frames data needs to be fetched: an annotation adapter is configured
-and either the strip or the codon view wants it. Gates the frames RPC and keys
-the fetch cache so toggling _either_ consumer on triggers the fetch.
-
-```ts
-type annotationDataActive = boolean
-```
-
-#### getter: editableSources
-
-The full row set with the user's arrangement applied: `layout` supplies order +
-label/color overrides, merged over the worker's `sourcesVolatile` by name. Empty
-`layout` (no customization) passes the worker set through. Not subtree-filtered
-— this is what the arrangement dialog edits. Undefined until the first fetch
-populates the worker set.
-
-```ts
-type editableSources = MafSource[] | undefined
-```
-
-#### getter: sources
-
-The display rows: `editableSources` narrowed to the selected subtree.
-
-```ts
-type sources = MafSource[] | undefined
-```
-
-#### getter: samples
-
-Sample list keyed by sample id (alias of `sources` mapped to the project's
-canonical `{ id, label, color }` shape). Consumed by MafSequenceWidget, color
-legend, etc.
-
-```ts
-type samples = Sample[] | undefined
-```
-
-#### getter: orderedSampleIds
-
-Display row order shipped to the worker so its block `rowIndex` matches the
-on-screen row. The alignment-fetch RPC argument only — deliberately NOT the
-cache key, which keys on the user-controlled inputs behind this instead (see
-`rpcProps`).
-
-```ts
-type orderedSampleIds = string[] | undefined
-```
-
-#### getter: rowIndexBySrc
-
-Maps a `src` (species) to its display row index. The single source for the
-`src`→row projection used by the summary-bar and CDS-frame overlays and the
-frame hover lookup, so they can't disagree on row placement.
-
-```ts
-type rowIndexBySrc = Map<string, number>
-```
-
-#### getter: defaultCodonSpecies
-
-The anchor species whose `mafFrames` reading frame is used to translate every
-row (UCSC `codonDefault`). Tied to the _reference assembly_, not the top display
-row: every species' codon is compared against the reference sequence
-(`block.refSeqBytes`), so the frame must be enumerated from the reference's own
-frames. A row reorder (layout) can move a non-reference species to row 0 —
-reading `sources[0]` there would enumerate codons in the wrong frame. Falls back
-to the worker's canonical first row (pre-reorder) when the reference isn't
-itself a listed sample.
-
-```ts
-type defaultCodonSpecies = string | undefined
-```
-
-#### getter: coverageDisplayHeight
-
-Height of the coverage band above the rows (0 when hidden).
-
-```ts
-type coverageDisplayHeight = number
-```
-
-#### getter: conservationDisplayHeight
-
-Height of the conservation (percent identity) band (0 when hidden).
-
-```ts
-type conservationDisplayHeight = number
-```
-
-#### getter: rowsTopOffset
-
-Top offset of the per-sample rows area = the stacked band heights above it
-(coverage + conservation). The single source of truth for "where the rows start"
-— every rows hit-test / draw / export offset routes through this so adding a
-band can't desync them.
-
-```ts
-type rowsTopOffset = number
-```
-
-#### getter: nrow
-
-Number of displayed rows (at least 1, so the fit-mode division is safe).
-
-```ts
-type nrow = number
-```
-
-#### getter: maxRowsHeight
-
-Max CSS-px height the rows canvas may take before its backing store (`× dpr`)
-hits the browser/GPU canvas limit. The single ceiling both the fit-target sizing
-and the `rowHeight` cap respect.
-
-```ts
-type maxRowsHeight = number
-```
-
-#### getter: fitTargetHeight
-
-The track height that fit-to-height mode divides among rows. Once the user
-drags, the explicit `height` config slot wins; before any drag we size to show
-every row at the default px height, so a typical alignment looks exactly like
-fixed mode. Huge alignments are bounded by the `rowHeight` cap, not here, so
-this needs no cap of its own.
-
-```ts
-type fitTargetHeight = number
-```
-
-#### getter: autoRowHeight
-
-Per-row height in fit-to-height mode: the rows area (track height minus the
-fixed bands) split evenly across rows.
-
-```ts
-type autoRowHeight = number
-```
-
-#### getter: effectiveRowHeight
-
-Resolved per-row height. `rowHeight === 0` is fit-to-height (rows stretch to the
-dragged track height); any positive value is a pinned px height. Every consumer
-reads this getter, never the raw `rowHeight` property.
-
-Capped so the rows canvas backing store (`rowsHeight × dpr`) can never exceed
-the browser/GPU max canvas size: a fixed px height across hundreds of species
-would otherwise throw `Canvas exceeds max size`. The cap shrinks rows to fit
-instead of crashing (or clipping); fit mode already stays small so it never
-engages there. Bands have their own small canvases, so the rows-only ceiling is
-the whole limit.
-
-```ts
-type effectiveRowHeight = number
-```
-
-#### getter: rowsHeight
-
-Height of the per-sample rows area (excludes the coverage band). Zero when
-alignments are hidden, collapsing the display to the coverage band.
-
-```ts
-type rowsHeight = number
-```
-
-#### getter: totalHeight
-
-Full display height = rows area + stacked bands.
-
-```ts
-type totalHeight = number
-```
-
-#### getter: height
-
-Override BaseLinearDisplay.height so the track container matches the rendering
-canvas height exactly (coverage band + rows × rowHeight).
-
-```ts
-type height = number
-```
-
-#### getter: hierarchy
-
-Positioned tree hierarchy. Coordinates are computed against
-`(rowsHeight, treeAreaWidth)` so leaf rows align with row tops; the coverage
-band is offset separately by the React layer.
-
-```ts
-type hierarchy = ClusterHierarchyNode | undefined
-```
-
-#### getter: colorPalette
-
-Theme-derived color palette (per-base colors + match/gap/mismatch/
-unknown/insertion), read by `gpuProps()` and `renderState`. Derived from the
-session theme so it's always available — including headless SVG export and RPC,
-where no component mounts to seed it. Theme changes trigger a main-thread
-re-encode but never an RPC refetch.
-
-```ts
-type colorPalette = MafColorPalette
-```
-
-#### getter: renderState
-
-Render state passed to GPU/Canvas2D backend each frame. Uses the rows- only
-height so the GPU canvas only paints the per-sample band; the coverage band is
-drawn on a separate Canvas2D overlay above.
-
-```ts
-type renderState = MafGPURenderState
-```
-
-#### getter: coverageStats
-
-Per-position depth stats across the currently visible content blocks, derived
-from the worker-shipped `coverage.coverageDepths` arrays (which already reflect
-the active subtree — see `rpcProps`). Feeds `coverageDomain` → `coverageTicks`.
-
-```ts
-type coverageStats = ScoreStats | undefined
-```
-
-#### getter: coverageDomain
-
-[min, max] coverage domain for the visible blocks. Linear scale only for MAF —
-sample counts are already bounded and well-distributed.
-
-```ts
-type coverageDomain = [number, number] | undefined
-```
-
-#### getter: coverageTicks
-
-Y-axis tick marks for the coverage band.
-
-```ts
-type coverageTicks = YScaleTicks | undefined
-```
-
-#### getter: visibleEmptyLines
-
-Positioned bridge-line segments for `e`-line (empty/bridged) rows.
-
-```ts
-type visibleEmptyLines = EmptyLineSegment[]
-```
-
-#### getter: visibleInsertions
-
-Positioned insertion markers (interbase) for the visible aligned rows.
-
-```ts
-type visibleInsertions = InsertionMarker[]
-```
-
-#### getter: visibleDeletions
-
-Positioned deletion runs for the visible aligned rows; the overlay draws the
-deleted-base count inside each run when it fits.
-
-```ts
-type visibleDeletions = DeletionMarker[]
-```
-
-#### getter: visibleInversions
-
-Positioned strand-flip (inversion) markers for the visible aligned rows. Empty
-unless the indicator is toggled on.
-
-```ts
-type visibleInversions = InversionMarker[]
-```
-
-#### getter: showSummary
-
-Use the cheap summary path when a `bigMafSummary` sub-adapter is configured and
-the view is zoomed out past the force-load threshold — exactly where the full
-alignment fetch would be blocked by the byte gate. Tracks without a summary
-never enter this path.
-
-`aboveForceLoadFloor` is the gate's own comparison against that threshold
-(`RegionTooLargeMixin`), read rather than restated so the swap and the gate
-can't end up disagreeing about where the floor is. It deliberately excludes the
-opt-in terms, which is what keeps this from being a cycle — `byteGateEnabled`
-below is false while we summarize.
-
-```ts
-type showSummary = boolean
-```
-
-#### getter: zoomedToBaseLevel
-
-At base level each reference base spans at least a pixel, so individual bases /
-SNP marks are legible (UCSC's `zoomedToBaseLevel`). Read off the debounced
-`coarseBpPerPx` so the rendering swap it gates doesn't thrash mid-zoom. False
-until the view is initialized.
-
-```ts
-type zoomedToBaseLevel = boolean
-```
-
-#### getter: codonViewActive
-
-The codon view is on: the toggle is set, frame data is available to define the
-reading frame, and we're zoomed to base level (so codons are meaningful) and not
-in the cheap summary path. When active it replaces the per-base SNP rendering
-with per-codon change coloring.
-
-```ts
-type codonViewActive = boolean
-```
-
-#### getter: activeRowRendering
-
-Single source of truth for what the per-sample rows area draws right now:
-`bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring from
-`mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or a per-row
-identity style (`heatmap` / `xyplot`). Codon view takes precedence when on, then
-color-by-chromosome (an explicit SV toggle, but not in the cheap summary path
-which carries no per-row chr); otherwise, with `rowIdentityAutoZoom` (default)
-it emulates UCSC `wigMaf` — bases at base level, the identity plot when zoomed
-out; with auto off the selected mode is pinned. The GPU canvas, the
-identity/chromosome canvases, the codon overlay, and SVG export all branch on
-this one getter so they can't disagree about what's on screen.
-
-```ts
-type activeRowRendering = 'codon' | 'bases' | 'sourceChrom' | RowIdentityMode
-```
-
-#### getter: visibleLabels
-
-Positioned per-base SNP/sequence letters. Suppressed in any non-base rendering
-(the identity plot and codon view both replace the letters).
-
-```ts
-type visibleLabels = VisibleLabel[]
-```
-
-#### getter: visibleSummaryBars
-
-Positioned per-species presence bars for the zoom-out summary overlay. Empty
-unless `showSummary` is active. Unmatched `src` rows drop via the `sources`
-index, keeping the render robust to summary files that list extra species.
-
-```ts
-type visibleSummaryBars = SummaryBar[]
-```
-
-#### getter: visibleFrames
-
-Positioned per-species CDS frame boxes for the annotation overlay. Empty unless
-an annotation adapter is configured and the overlay is on. Reuses the `src`→row
-mapping the summary bars established, so frame rows for species the track
-doesn't list drop out.
-
-```ts
-type visibleFrames = FrameMarker[]
-```
-
-#### getter: codonCellsActive
-
-The codon overlay is what the rows area is painting.
-
-```ts
-type codonCellsActive = boolean
-```
-
-#### getter: codonConservationActive
-
-The conservation band is in per-codon (amino-acid identity) mode, with frames to
-define codons and per-base blocks to translate — the cheap summary path ships
-neither.
-
-```ts
-type codonConservationActive = boolean
-```
-
-#### getter: locatedCodons
-
-Every reference codon the fetched blocks resolve, in the anchor species' reading
-frame — the shared spine of the codon cells and the codon conservation band. A
-memoized computed rather than a call inside each consumer: the resolution
-(enumerate the anchor's codons, index every block's reference columns, locate
-each codon) is the expensive half, and with both modes on it used to run twice
-per frame. Empty when neither consumer is active, so a track with codon view off
-pays nothing.
-
-```ts
-type locatedCodons = LocatedCodon[]
-```
-
-#### getter: visibleCodons
-
-Per-species codon cells for the codon view (the per-codon change coloring that
-replaces the SNP cells). Empty unless codon view is the active rendering and an
-anchor species is known.
-
-```ts
-type visibleCodons = CodonMarker[]
-```
-
-#### getter: visibleCodonConservation
-
-Per-codon amino-acid conservation bars for the conservation band's codon mode.
-Draws only inside the CDS (where frames define codons); everywhere else the band
-is blank.
-
-```ts
-type visibleCodonConservation = CodonConservationBar[]
-```
-
-#### getter: legendItems
-
-The color key for whatever `activeRowRendering` is painting, or empty where the
-rendering needs no key (plain bases). One getter rather than a component per
-mode, because both the on-screen legend and the SVG export read it — an exported
-codon or source-chromosome figure whose swatches are its only decoder used to
-ship with no key at all.
-
-Source-chromosome coloring is by each row's per-row chromosome RANK (see
-`perRowChromRanks`), not by chromosome name, so its key is this short fixed
-scheme rather than a per-scaffold rainbow: one entry per rank actually present
-in view, and a lone "Main chromosome" entry means nothing rearranges here.
-
-```ts
-type legendItems = { label: string; color?: string | undefined }[]
-```
-
-#### getter: msaHighlights
-
-Get highlight regions from connected MSA views
-
-```ts
-type msaHighlights = MsaHighlight[]
-```
-
-#### getter: byteGateEnabled
-
-Enable byte-estimate gating: above ~20kb visible, the adapter's MAF-aware byte
-estimate (per-species sequence × span) is checked against `fetchSizeLimit`,
-blocking the detail fetch with a force-load prompt rather than downloading
-hundreds of species' bases at genome scale.
-
-Off in summary mode — the summary read is cheap (zoom-reduced BigBed), so it
-must never be blocked by the gate.
-
-```ts
-type byteGateEnabled = boolean
-```
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Getters (other undocumented members)</summary>
-
-| Member                                                           | Type                                                               |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------ |
-| <span id="getter-rowheight">rowHeight</span>                     | `number`                                                           |
-| <span id="getter-rowproportion">rowProportion</span>             | `number`                                                           |
-| <span id="getter-showallletters">showAllLetters</span>           | `boolean`                                                          |
-| <span id="getter-mismatchrendering">mismatchRendering</span>     | `boolean`                                                          |
-| <span id="getter-showasuppercase">showAsUpperCase</span>         | `boolean`                                                          |
-| <span id="getter-showtree">showTree</span>                       | `boolean`                                                          |
-| <span id="getter-showbranchlength">showBranchLength</span>       | `boolean`                                                          |
-| <span id="getter-showcoverage">showCoverage</span>               | `boolean`                                                          |
-| <span id="getter-showalignments">showAlignments</span>           | `boolean`                                                          |
-| <span id="getter-coverageheight">coverageHeight</span>           | `number`                                                           |
-| <span id="getter-showconservation">showConservation</span>       | `boolean`                                                          |
-| <span id="getter-conservationheight">conservationHeight</span>   | `number`                                                           |
-| <span id="getter-conservationmode">conservationMode</span>       | `"base" \| "codon"`                                                |
-| <span id="getter-rowidentitymode">rowIdentityMode</span>         | `"none" \| "xyplot" \| "heatmap"`                                  |
-| <span id="getter-rowidentityautozoom">rowIdentityAutoZoom</span> | `boolean`                                                          |
-| <span id="getter-showannotations">showAnnotations</span>         | `boolean`                                                          |
-| <span id="getter-showtranslation">showTranslation</span>         | `boolean`                                                          |
-| <span id="getter-colorbychromosome">colorByChromosome</span>     | `boolean`                                                          |
-| <span id="getter-showinversions">showInversions</span>           | `boolean`                                                          |
-| <span id="getter-spatialindex">spatialIndex</span>               | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Methods</summary>
-
-#### method: gpuProps
-
-Inputs to the main-thread GPU instance encoder. Changes here re-encode in the
-per-region encode autorun — no RPC roundtrip. Intentionally excludes
-`showAsUpperCase` (label-only) and view-shape props (rowHeight, rowProportion —
-driven by shader uniforms).
-
-```ts
-type gpuProps = () => MafGpuProps
-```
-
-#### method: rpcProps
-
-Worker-fetch inputs that invalidate cached data when changed (tier-1, via
-MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
-
-The fetch argument that actually decides row placement is `orderedSampleIds`
-(see `fetchMafAlignmentData`), but this keys on the three _inputs_ that produce
-it instead of on the value: `layout` order and `subtreeFilter` are user-driven
-and already settled before the first fetch, while `sampleSetGeneration` carries
-the one thing only the worker can tell us — that the row set changed out from
-under already-fetched rows.
-
-Keying on `orderedSampleIds` itself is what this replaces: it is undefined until
-the first fetch lands and defined after, so the key flipped on every track load
-and `SettingsInvalidate` threw away the region that had just arrived — a
-measured 2 × `LinearMafGetAlignmentData` per region, on the heaviest payload in
-the plugin. Loop-safe but not free, which is exactly the case ARCHITECTURE.md's
-"rpcProps() must read only user-controlled settings" is about. Pinned by
-`singleFetchPerRegion.test.ts`.
-
-Reorder and subtree-filter changes still refetch, deliberately: the worker
-assigns `rowIndex` from the order and scopes coverage/identity to the set, so
-both have to go back through it.
-
-```ts
-type rpcProps = () => {
-  layoutOrder: string[]
-  subtreeFilter: string[] | undefined
-  sampleSetGeneration: number
-  annotationDataActive: boolean
-}
-```
-
-#### method: rowHoverInfo
-
-Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per
-worker-output convention): an aligned base (`cell`) or a bridged/empty region
-(`empty`), each tagged with the sample label. Returns undefined when no fetched
-block covers the bp, the row is out of range, or the cell is a gap.
-
-```ts
-type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => {…} | { ...; } | { ...; } | { ...; } | undefined
-```
-
-#### method: frameHoverInfo
-
-The CDS frame record covering absolute genomic `bp` (uint32) on display
-`rowIndex`, or undefined when no frame overlaps there (or no frames data is
-loaded). Gated on `annotationDataActive` not the strip toggle, so the gene name
-still reads on hover in codon view with the strip off. The species is matched by
-the same `src`→row projection the overlay draws with, so the tooltip and the
-strip can't disagree about which row a gene is on.
-
-```ts
-type frameHoverInfo = (
-  displayedRegionIndex: number,
-  bp: number,
-  rowIndex: number,
-) => { name: string } | undefined
-```
-
-#### method: coverageTooltipBin
-
-Build a per-position coverage tooltip bin (depth + SNP base counts) for the
-given absolute genomic bp + region index. Delegates the math to
-alignments-core's `buildCoverageTooltipBin` — same code path the alignments
-display uses. Insertions are reported separately via `coverageInsertionHit`, so
-they never mix into the depth/SNP table. Returns undefined when the region has
-no fetched data or depth is zero.
-
-```ts
-type coverageTooltipBin = (displayedRegionIndex: number, position: number, bpPerPx: number) => {…} | undefined
-```
-
-#### method: coverageInsertionHit
-
-Hit-test an insertion bar in the coverage band at fractional genomic `gposFrac`.
-Returns the interbase summary (count + length range + interbaseDepth) when the
-cursor is on the bar, else undefined — drives the dedicated interbase tooltip,
-kept separate from the depth/SNP one.
-
-```ts
-type coverageInsertionHit = (
-  displayedRegionIndex: number,
-  gposFrac: number,
-  bpPerPx: number,
-) => CoverageInsertionHit | undefined
-```
-
-#### method: codonHoverInfo
-
-The codon under the cursor on display `rowIndex` at absolute genomic `bp`, when
-the codon view is the active rendering: the species' codon + amino acid, the
-reference codon + amino acid, and the syn/nonsyn/stop classification. Reuses the
-same anchor frames + reference comparison the colored cells are drawn from
-(`findCodonAt`), so the tooltip and the cell agree. Undefined off codon view or
-where no codon covers the row there.
-
-```ts
-type codonHoverInfo = (
-  displayedRegionIndex: number,
-  bp: number,
-  rowIndex: number,
-) => CodonHit | undefined
-```
-
-#### method: isCacheValid
-
-Force a refetch when the loaded data is the wrong kind for the current zoom:
-crossing the summary↔detail threshold within an already-loaded region wouldn't
-trip the bounds-based coverage check, so the mode is keyed on which map holds
-the region.
-
-```ts
-type isCacheValid = (displayedRegionIndex: number) => boolean
-```
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Methods (other undocumented members)</summary>
-
-| Member                                                 | Type               |
-| ------------------------------------------------------ | ------------------ |
-| <span id="method-trackmenuitems">trackMenuItems</span> | `() => MenuItem[]` |
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Actions</summary>
-
-#### action: setSamples
-
-Receive the worker's `samples` + serialized Newick tree.
-
-`samplesCanonical` says whether that set is authoritative. Config- and
-tree-derived sets are: they're complete and identical on every region fetch, so
-they replace, and a species dropped from the config stops being a row. A
-sample-discovery set is not: it names only the genomes the fetched region's
-blocks contained, so it is unioned into the rows already known (`unionSources`).
-Replacing there dropped rows — the worker indexes blocks by the client's order
-and discards samples missing from it, so a genome only one region aligns
-rendered nothing, and a region with no blocks at all (or the summary path, which
-never discovers) blanked every row.
-
-With either resolution the deepEqual guard makes this fire once and skips the
-redundant frozen-array reassignment (and downstream `sources`/instance-buffer
-recompute) on later scroll/zoom. The active `clusterTree` is set from the worker
-tree only when there's no custom arrangement — a reorder has cleared it and must
-keep it cleared until the user clears the layout.
-
-The guard covers the sample set only: a tree can change while the set doesn't
-(an edited `.nh`), and folding it in left `treeNewickVolatile` — and so what
-"Clear arrangement" restores — pinned to the first tree the session ever saw.
-
-A set that _changes_ after one was already established bumps
-`sampleSetGeneration`, which invalidates the fetched rows through `rpcProps()`:
-they carry `rowIndex`es assigned against the old set. That only happens on a
-sample-discovery track whose regions align different genomes — where the union
-means it happens once per newly seen genome, not once per region whose set
-differs from the last one's. The first fetch populating an empty set does NOT
-bump — that transition is not a change of anything, and treating it as one is
-what made every MAF track fetch its alignment twice.
-
-The bump has to route through the cache key rather than clearing here:
-`fetchRegions` calls `setLoadedRegion` _after_ this commit returns, so an
-imperative clear would be immediately overwritten by the very regions that were
-fetched against the old set.
-
-```ts
-type setSamples = ({
-  samples,
-  treeNewick,
-  samplesCanonical,
-}: {
-  samples: Sample[]
-  treeNewick: string | undefined
-  samplesCanonical: boolean
-}) => void
-```
-
-#### action: resizeCoverageHeight
-
-Apply one drag delta to the coverage band. Reads the current height inside the
-action rather than taking an absolute target: `ResizeHandle` emits one delta per
-animation frame, so a component computing `renderHeight + delta` drops every
-tick that lands before React re-renders. Mirrors `resizeHeight`.
-
-```ts
-type resizeCoverageHeight = (distance: number) => void
-```
-
-#### action: resizeConservationHeight
-
-Per-frame drag delta for the conservation band — see `resizeCoverageHeight` for
-why this reads the height itself.
-
-```ts
-type resizeConservationHeight = (distance: number) => void
-```
-
-#### action: clearLayout
-
-Drop the custom arrangement and restore the worker's guide tree (the base
-`clearLayout` only clears it — the worker tree lives in `treeNewickVolatile`).
-
-```ts
-type clearLayout = () => void
-```
-
-#### action: setFitToHeight
-
-Switch to fit-to-height mode: rows stretch to fill the track height. Seeds the
-`height` config slot from the current content height so toggling on doesn't
-jump, then `rowHeight = 0` makes `effectiveRowHeight` derive from it.
-
-```ts
-type setFitToHeight = () => void
-```
-
-#### action: resizeHeight
-
-Drag-resize. In fit mode the new height drives `autoRowHeight` (rows stretch).
-In fixed mode the pinned `rowHeight` scales proportionally so dragging still
-resizes rows. Mirrors the variants display.
-
-Flips `resizing` for the duration of the drag (cleared a beat after the last
-tick) so the dense letter overlay sits out the frame-by-frame restretch — see
-the `resizing` volatile.
-
-```ts
-type resizeHeight = (distance: number) => number
-```
-
-</details>
-
-<details>
-<summary>LinearMafDisplay - Actions (other undocumented members)</summary>
-
-| Member                                                                     | Type                                                                                                                                                 |
-| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-setrowheight">setRowHeight</span>                         | `(n: number) => void`                                                                                                                                |
-| <span id="action-setresizing">setResizing</span>                           | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setrowproportion">setRowProportion</span>                 | `(n: number) => void`                                                                                                                                |
-| <span id="action-setshowallletters">setShowAllLetters</span>               | `(f: boolean) => void`                                                                                                                               |
-| <span id="action-setmismatchrendering">setMismatchRendering</span>         | `(f: boolean) => void`                                                                                                                               |
-| <span id="action-setshowasuppercase">setShowAsUpperCase</span>             | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowtree">setShowTree</span>                           | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowbranchlength">setShowBranchLength</span>           | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowcoverage">setShowCoverage</span>                   | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowalignments">setShowAlignments</span>               | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setcoverageheight">setCoverageHeight</span>               | `(arg: number) => void`                                                                                                                              |
-| <span id="action-setshowconservation">setShowConservation</span>           | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setconservationmode">setConservationMode</span>           | `(arg: "base" \| "codon") => void`                                                                                                                   |
-| <span id="action-setrowidentitymode">setRowIdentityMode</span>             | `(arg: "none" \| "xyplot" \| "heatmap") => void`                                                                                                     |
-| <span id="action-setrowidentityautozoom">setRowIdentityAutoZoom</span>     | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowannotations">setShowAnnotations</span>             | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowtranslation">setShowTranslation</span>             | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setcolorbychromosome">setColorByChromosome</span>         | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setshowinversions">setShowInversions</span>               | `(arg: boolean) => void`                                                                                                                             |
-| <span id="action-setconservationheight">setConservationHeight</span>       | `(arg: number) => void`                                                                                                                              |
-| <span id="action-setrpcdata">setRpcData</span>                             | `(regionIndex: number, data: MafRegionData) => void`                                                                                                 |
-| <span id="action-setsummarydata">setSummaryData</span>                     | `(regionIndex: number, records: MafSummaryRecord[]) => void`                                                                                         |
-| <span id="action-setframesdata">setFramesData</span>                       | `(regionIndex: number, records: MafFrameRecord[]) => void`                                                                                           |
-| <span id="action-clearalignmentdata">clearAlignmentData</span>             | `() => void`                                                                                                                                         |
-| <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span> | `() => void`                                                                                                                                         |
-| <span id="action-startrenderingbackend">startRenderingBackend</span>       | `(backend: MafRenderingBackend) => void`                                                                                                             |
-| <span id="action-fetchneeded">fetchNeeded</span>                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                     |
-| <span id="action-rendersvg">renderSvg</span>                               | `(opts: ExportSvgDisplayOptions) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| AwaitedReactNode>` |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseDisplay</summary>
-
-[BaseDisplay →](../basedisplay)
-
-**Properties**
-
-#### property: ignorePromotedDefaults
-
-true for a display that arrived inside a session received from someone else (a
-share link, an encoded/json session, a `spec-` URL). Such a display resolves its
-`promotable` config slots from its own config only, never from this browser's
-promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the
-received session is a record of what the sender saw, and a local preference
-silently repainting it would make it a lie. A track opened _afterwards_ in that
-same session is a fresh track of this user's, so it never gets the flag and
-picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user
-deliberately makes the display follow a default.
-
-```ts
-// type signature
-type ignorePromotedDefaults = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-ignorePromotedDefaults: types.stripDefault(types.boolean, false)
-```
-
-| Member                                                 | Type                                               |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| <span id="property-id">id</span>                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-rpcdrivername">rpcDriverName</span> | `IMaybe<ISimpleType<string>>`                      |
-
-**Volatiles**
-
-#### volatile: statusProgress
-
-determinate progress fraction [0,1] for the current status, or undefined when
-the in-flight phase is indeterminate. Set alongside `statusMessage` by
-`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
-
-```ts
-// type signature
-type statusProgress = number | undefined
-// code
-statusProgress: undefined as number | undefined
-```
-
-| Member                                                 | Type                  |
-| ------------------------------------------------------ | --------------------- |
-| <span id="volatile-error">error</span>                 | `unknown`             |
-| <span id="volatile-statusmessage">statusMessage</span> | `string \| undefined` |
-
-**Getters**
-
-#### getter: parentDisplay
-
-Returns the parent display if this display is nested within another display
-(e.g., PileupDisplay inside LinearAlignmentsDisplay)
-
-```ts
-type parentDisplay =
-  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
-  | undefined
-```
-
-#### getter: isMinimized
-
-Returns true if the parent track is minimized. Used to skip expensive operations
-like autoruns when track is not visible.
-
-```ts
-type isMinimized = boolean
-```
-
-#### getter: effectiveRpcDriverName
-
-Returns the effective RPC driver name with hierarchical fallback:
-
-1. This display's explicit rpcDriverName
-2. Parent display's effectiveRpcDriverName (for nested displays)
-3. Track config's rpcDriverName
-
-```ts
-type effectiveRpcDriverName = any
-```
-
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead, make this return a react
-component
-
-```ts
-type DisplayMessageComponent = FC<any> | undefined
-```
-
-| Member                                                         | Type                                                                                            |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <span id="getter-parenttrack">parentTrack</span>               | `AbstractTrackModel`                                                                            |
-| <span id="getter-renderingcomponent">RenderingComponent</span> | `FC<…>`                                                                                         |
-| <span id="getter-displayblurb">DisplayBlurb</span>             | `FC<{ model: ModelInstanceTypeProps<…> & { ...; } & { ...; } & IStateTreeNode<...>; }> \| null` |
-| <span id="getter-adapterconfig">adapterConfig</span>           | `any`                                                                                           |
-
-**Methods**
-
-#### method: renderingProps
-
-props passed to the renderer's React "Rendering" component. these are
-client-side only and never sent to the worker. includes displayModel and
-callbacks
-
-```ts
-type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
-```
-
-**Actions**
-
-#### action: setIgnorePromotedDefaults
-
-see the `ignorePromotedDefaults` property
-
-```ts
-type setIgnorePromotedDefaults = (flag: boolean) => void
-```
-
-#### action: reload
-
-base display reload does nothing, see specialized displays for details
-
-```ts
-type reload = () => void
-```
-
-| Member                                                     | Type                                        |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
-| <span id="action-seterror">setError</span>                 | `(error?: unknown) => void`                 |
-| <span id="action-setrpcdrivername">setRpcDriverName</span> | `(rpcDriverName: string) => void`           |
-
-</details>
-
-<details>
-<summary>Derived from TrackHeightMixin</summary>
-
-[TrackHeightMixin →](../trackheightmixin)
-
-**Volatiles**
-
-| Member                                         | Type     |
-| ---------------------------------------------- | -------- |
-| <span id="volatile-scrolltop">scrollTop</span> | `number` |
-
-**Actions**
-
-| Member                                             | Type                                |
-| -------------------------------------------------- | ----------------------------------- |
-| <span id="action-setscrolltop">setScrollTop</span> | `(scrollTop: number) => void`       |
-| <span id="action-setheight">setHeight</span>       | `(displayHeight: number) => number` |
-
-</details>
-
-<details>
-<summary>Derived from MultiRegionDisplayMixin</summary>
-
-[MultiRegionDisplayMixin →](../multiregiondisplaymixin)
-
-**Volatiles**
-
-#### volatile: loadedRegions
-
-regions whose data has been fetched and committed, keyed by
-displayedRegionIndex; populated only after the fetch work callback returns
-
-```ts
-// type signature
-type loadedRegions = ObservableMap<number, Region>
-// code
-loadedRegions: observable.map<number, Region>()
-```
-
-**Getters**
-
-#### getter: canRender
-
-The render-lifecycle precondition for every LGV display (overrides
-`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
-callbacks until the view is measured. Before that, `renderBlocks` →
-`visibleRegions` → `view.width` throws by design, and the render autorun's catch
-would show that as a GPU render-error banner. Gating here — once, for all of
-them — is what lets a display's `renderState` be a plain resolved getter and its
-render callback gate only on its own data. The render-lifecycle twin of
-`autorunOnReadyView`.
-
-```ts
-type canRender = boolean
-```
-
-#### getter: isReady
-
-true once the canvas has painted and no fetch is in flight
-
-```ts
-type isReady = boolean
-```
-
-#### getter: viewportWithinLoadedData
-
-true when every visible block lies within an already-fetched region — i.e. the
-viewport shows data we actually loaded, not the stale fringe left after a
-zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
-Spatial only; see CLAUDE.md for why this is exact and for the
-resolution-staleness gap.
-
-```ts
-type viewportWithinLoadedData = boolean
-```
-
-#### getter: dataCurrent
-
-This family's answer to the shared freshness question every display foundation
-must answer (`dataCurrent`): the held data corresponds to what is on screen
-right now. Here that is spatial — every visible block lies within a fetched
-region — plus `loadedRegions.size`, which rules out the vacuously-true empty
-viewport. Regions stream in one at a time, so this (not "the first datum
-arrived") is what keeps a multi-region/whole-genome export complete.
-
-Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate
-the fetch autorun and the loading overlay use.
-
-```ts
-type dataCurrent = boolean
-```
-
-#### getter: svgReady
-
-true once an off-screen (SVG) export can safely read this display's data. Policy
-single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent`
-predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
-inlining the condition.
-
-```ts
-type svgReady = boolean
-```
-
-#### getter: svgReadyExtraTerminal
-
-Overridable hook (default false): a subclass returns true to mark an extra
-terminal state where off-screen export can proceed with no loaded data. Sequence
-sets it when zoomed past base resolution — it renders a static "zoom in" message
-and fetches nothing, so `svgReady` would otherwise never resolve.
-
-```ts
-type svgReadyExtraTerminal = boolean
-```
-
-#### getter: layoutReady
-
-Overridable hook (default false): whether a searchable feature layout currently
-exists. Any display defining a feature-lookup method (`searchFeatureByID`,
-`getFeatureById`) must override it, so callers can tell "laid out, but
-off-display" from "no layout exists yet" — a distinction only the display can
-make. See BaseLinearDisplay/CLAUDE.md, "The three readiness axes".
-
-```ts
-type layoutReady = boolean
-```
-
-#### getter: renderBlocks
-
-Shared cached view for every LGV-based GPU display. A single displayedRegion may
-produce multiple render blocks (shared GPU buffer, different scissor clips on
-screen). Plugins that want to suppress rendering in certain states (e.g. no
-domain yet) can override this getter to return [] — the autorun lifecycle will
-then issue an empty-blocks render that clears the canvas.
-
-```ts
-type renderBlocks = RenderBlock[]
-```
-
-#### getter: displayPhase
-
-The display's mutually-exclusive visual state, precedence single-sourced in
-`computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
-(viewport past loaded) is still on screen through the pre-refetch debounce.
-
-```ts
-type displayPhase = DisplayPhase
-```
-
-#### getter: rpcPropsCacheKey
-
-The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()`
-payload serialized to a string. `serializeRpcProps` owns the why;
-`installGlobalFetchAutorun` keys its global-family counterpart on the same
-function, so the two families invalidate on the same axis.
-
-```ts
-type rpcPropsCacheKey = string
-```
-
-**Actions**
-
-#### action: setLoadedRegion
-
-Action wrapper so callers after async boundaries stay in MST strict mode.
-
-```ts
-type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
-```
-
-#### action: clearAllRpcData
-
-full reset: cancels fetch, clears error, loadedRegions, display-specific data,
-and the canvas-drawn flag. The too-large gate is derived (a pure function of the
-cached estimate × viewport), so it needs no explicit clear here — it
-self-releases when the viewport changes.
-
-```ts
-type clearAllRpcData = () => void
-```
-
-#### action: invalidateLoadedRegions
-
-lighter reset: cancels fetch and clears loadedRegions, leaving error and
-regionTooLarge intact
-
-```ts
-type invalidateLoadedRegions = () => void
-```
-
-#### action: onRegionTooLarge
-
-Overridable hook (no-op base): called when `regionTooLarge` transitions to true.
-Displays with transient hover/tooltip state override it to clear that state —
-the too-large banner replaces the rendered content, so a lingering hover would
-otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge`
-autorun, fired by the derived too-large gate.
-
-```ts
-type onRegionTooLarge = () => void
-```
-
-#### action: fetchRegions
-
-Run a per-region fetch with byte-estimate gating. Marks regions as loaded only
-AFTER the work callback has populated display-specific data (rpcDataMap,
-cellData, etc) so the GPU upload autorun sees committed data when it observes
-loadedRegions.
-
-```ts
-type fetchRegions = (
-  needed: { region: Region; displayedRegionIndex: number }[],
-  work: (ctx: FetchContext) => Promise<void>,
-) => Promise<void>
-```
-
-#### action: afterAttach
-
-installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
-FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
-ClearHoverOnRegionTooLarge)
-
-```ts
-type afterAttach = () => void
-```
-
-</details>
-
-<details>
-<summary>Derived from RegionTooLargeMixin</summary>
-
-[RegionTooLargeMixin →](../regiontoolargemixin)
-
-**Volatiles**
-
-#### volatile: forceLoadTrack
-
-The force-load button's answer: render this track regardless of region size or
-feature density. One boolean for the whole track, not a raised ceiling per
-region — the banner already tells the user how much data is involved, so one
-informed click approves the track and they never have to re-approve it per
-locus.
-
-Volatile, not persisted, so it can't leak a disabled gate into a saved or shared
-session (a recipient would download the same data with no warning and no way to
-see why). A page load re-arms the gate. The durable, declarative equivalent is
-the `forceLoad` config slot, for session specs, embeds and
-`jbrowse-img --force`.
-
-```ts
-// type signature
-type forceLoadTrack = false
-// code
-forceLoadTrack: false
-```
-
-#### volatile: byteEstimate
-
-The last byte measurement for this display: the estimated bytes **and the span
-they cover**, which is what lets the derived gate rescale them to the span on
-screen now. One volatile rather than two, because the pair is a single
-measurement — written together by `setByteEstimate`, dropped together by
-`clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an
-ordinary viewport change doesn't flicker the banner; only chromosome navigation
-drops it. Ignored unless `derivedRegionTooLargeEnabled`.
-
-```ts
-// type signature
-type byteEstimate = ByteEstimate | undefined
-// code
-byteEstimate: undefined as ByteEstimate | undefined
-```
-
-**Getters**
-
-#### getter: gateFoldedIntoFetch
-
-Additive opt-in for displays that measure the estimate inside their own feature
-RPC instead of a pre-flight (canvas). Kept separate from
-`derivedRegionTooLargeEnabled` so a gate mixin contributes by setting _this_
-rather than overriding the verdict switch — the two would otherwise race on
-composition order, and the later `.compose()` argument silently winning is
-invisible to both the type system and the tests.
-
-```ts
-type gateFoldedIntoFetch = boolean
-```
-
-#### getter: configuredFetchSizeLimit
-
-The composing display's configured `fetchSizeLimit`, read straight from its
-config. Only evaluated when the derived gate is enabled (guarded by
-`derivedRegionTooLargeEnabled`), and every derived display extends
-`baseLinearDisplayConfigSchema`, which owns the slot — so the read is always
-valid where it fires. A display with a bespoke source can still override it.
-
-```ts
-type configuredFetchSizeLimit = number
-```
-
-#### getter: densityTooLarge
-
-Second (non-byte) too-large axis folded into the derived verdict — canvas
-overrides it with its feature-density gate. Byte-only derived displays leave it
-false.
-
-```ts
-type densityTooLarge = boolean
-```
-
-#### getter: adapterFetchSizeLimit
-
-The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
-declares none); `resolveByteLimit` prefers it over the display config. Read on
-the main thread, and only here — the estimate that crosses the worker boundary
-carries bytes and nothing else, so the banner and the worker budget have no
-second spelling of "the adapter's limit" to disagree about.
-
-A slot **path off the live config**, not a read off `self.adapterConfig`: that
-getter is a snapshot, which by design omits slots sitting at their default, so a
-BAM's declared 5 Mb read back as `undefined` in every config that doesn't
-restate it. Resolved values come from a config node — see CONFIG_PATTERN.md
-§"Reading a slot: node, not snapshot".
-
-```ts
-type adapterFetchSizeLimit = number | undefined
-```
-
-#### getter: configForceLoad
-
-Declarative force-load: when true the display always renders regardless of
-region size / feature density (the config-driven equivalent of the force-load
-button). Read straight from the `forceLoad` config slot on
-`baseLinearDisplayConfigSchema` (same guard/ownership as
-`configuredFetchSizeLimit`), so every opt-in display honors it without
-per-display wiring.
-
-```ts
-type configForceLoad = boolean
-```
-
-#### getter: gateVisibleBp
-
-The span on screen, or undefined before the view is measured. The gate's only
-read of its container: `visibleBp` reads `view.width`, which throws before
-measurement and a bare getter must never throw, so the pre-init guard lives here
-once rather than at each reader.
-
-```ts
-type gateVisibleBp = number | undefined
-```
-
-#### getter: derivedRegionTooLargeEnabled
-
-Whether the derived, self-releasing gate is live at all — the union of the two
-ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte
-check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never
-an override, so a gate mixin's opt-in doesn't hinge on which side of
-`.compose()` it lands on. False for the non-byte displays (wiggle, manhattan,
-sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus`
-getters.
-
-```ts
-type derivedRegionTooLargeEnabled = boolean
-```
-
-#### getter: aboveForceLoadFloor
-
-Whether the span on screen is wide enough for the gate to have an opinion at all
-— the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before
-the view is measured.
-
-Deliberately independent of the opt-in and of force-load, so a display whose
-_own_ opt-in depends on the floor can read it without a cycle: MAF's
-`showSummary` swaps to the cheap summary adapter exactly where the detail fetch
-would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds
-the opt-in and exemption terms on top.
-
-```ts
-type aboveForceLoadFloor = boolean
-```
-
-#### getter: byteGateExempt
-
-True when nothing may gate, on either axis and in both the worker and the
-banner: the declarative `forceLoad` slot, or the force-load button. One boolean
-is the whole force-load mechanism — there is no per-region ceiling to carry,
-expire, or reconcile between the two axes. A self-summarizing adapter (BigWig,
-HiC, sequence) needs no term here: it reports no byte estimate at all, which
-already keeps the byte axis out of the verdict.
-
-```ts
-type byteGateExempt = boolean
-```
-
-#### getter: estimatedBytesForVisibleSpan
-
-How many bytes we estimate a fetch of the span on screen right now would pull,
-obtained by rescaling the stored measurement from the span it covers. Rescaling
-is what makes the derived verdict a pure function of the current view and lets
-it self-release on zoom-in — without it a large zoomed-out estimate stays above
-the limit forever and gates refetch. Only meaningful when
-`derivedRegionTooLargeEnabled`.
-
-```ts
-type estimatedBytesForVisibleSpan = number | undefined
-```
-
-#### getter: gateByteLimit
-
-The byte budget the gate enforces: the adapter's limit, else the display config.
-Also what `resolvedByteLimit()` hands the worker, so the two can't gate against
-different numbers. Force-load doesn't raise this — it exempts the track outright
-via `byteGateExempt`.
-
-```ts
-type gateByteLimit = number
-```
-
-#### getter: gateActive
-
-Whether anything may gate at this moment: the display opted in, nothing exempts
-it, and the view is measured and above the force-load floor.
-
-The single home of that question. Everything downstream reads it instead of
-restating it: the verdict, the pre-flight (no estimate RPC when nothing could
-act on it), and the worker budgets, which go undefined together here rather than
-each re-deriving the floor. The floor used to be spelled out in three places at
-three layers, which is a standing invitation for them to disagree.
-
-```ts
-type gateActive = boolean
-```
-
-#### getter: tooLargeStatus
-
-The verdict the whole mixin exists to produce, with the banner text: true when
-the estimated download for the span on screen exceeds the resolved byte budget,
-or when the display's own density axis trips (bytes take precedence for the
-text). Derived from the rescaled estimate, so it releases itself on zoom-in;
-false whenever `gateActive` is false.
-
-The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome`
-renders the banner from `regionTooLargeReason`.
-
-```ts
-type tooLargeStatus = RegionTooLargeStatus
-```
-
-#### getter: regionTooLargeReason
-
-Which axis tripped, as banner text: the estimated download size, or "Too many
-features". Empty string when the region isn't too large.
-
-```ts
-type regionTooLargeReason = string
-```
-
-| Member                                                 | Type      |
-| ------------------------------------------------------ | --------- |
-| <span id="getter-regiontoolarge">regionTooLarge</span> | `boolean` |
-
-**Methods**
-
-#### method: resolvedByteLimit
-
-The byte budget a fetch RPC enforces worker-side, short-circuiting an
-over-budget region before it downloads any features. Undefined (unlimited) when
-nothing gates; otherwise the very number the banner compares against, so the
-worker can't reject a region the banner then calls fine. Lives here, not on the
-canvas gate that consumes it, because both its terms are this mixin's — canvas
-owns only the density axis.
-
-```ts
-type resolvedByteLimit = () => number | undefined
-```
-
-**Actions**
-
-#### action: setByteEstimate
-
-Commits a byte measurement: the estimate together with the span it covers, so
-the derived gate can rescale it to the span on screen. `measuredSpanBp` must be
-the `visibleBp` captured when the measurement was _requested_, not read at
-commit time: a view that zoomed during the in-flight fetch would otherwise
-anchor the estimate to a span it never covered, and since `FetchVisibleRegions`
-skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner
-with no refetch to correct it. Harmless for non-gated displays (they ignore it).
-
-```ts
-type setByteEstimate = (estimate: ByteEstimate) => void
-```
-
-#### action: clearByteEstimate
-
-Drops the cached estimate. Chromosome navigation only: the estimate
-intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't
-flicker the banner.
-
-`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring
-it on navigation is exactly the per-locus re-approval the button exists to
-avoid.
-
-```ts
-type clearByteEstimate = () => void
-```
-
-#### action: setForceLoadTrack
-
-Exempt this track from the gate (or put it back under it). Separate from
-`forceLoad` so turning the gate off and refetching stay separable — a caller
-that just wants the flag (a revoke, a test) doesn't trigger a fetch, and
-`forceLoad` doesn't have to inline a volatile write.
-
-```ts
-type setForceLoadTrack = (flag: boolean) => void
-```
-
-#### action: forceLoad
-
-Force-load: exempt this track from the gate and refetch. One click covers every
-region and both axes, informed by the size the banner just quoted. The display
-chrome calls this from TooLargeMessage's button; concrete display models
-override `reload()` to do the actual refetch.
-
-```ts
-type forceLoad = () => void
-```
-
-#### action: byteGateBlocksFetch
-
-The entire pre-flight gate for one fetch: measure the region set, commit the
-estimate with the span it covers, and answer whether the caller must abandon the
-fetch — either superseded mid-measure, or over budget.
-
-Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family,
-LD and arc from their own global fetches) calls this and returns on true.
-Sequencing the steps at a call site is what used to go wrong: the span is read
-here, _before_ the await, so the estimate is anchored to the span it actually
-covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on
-screen, and since the fetch autoruns skip while `regionTooLarge` holds, an
-over-anchored estimate wedges the banner with no refetch to correct it.
-
-```ts
-type byteGateBlocksFetch = (
-  regions: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }[],
-  ctx: { isStale: () => boolean },
-) => Promise<boolean>
-```
-
-</details>
-
-<details>
-<summary>Derived from RenderLifecycleMixin</summary>
-
-[RenderLifecycleMixin →](../renderlifecyclemixin)
-
-**Volatiles**
-
-#### volatile: canvasDrawn
-
-flips true on first paint; read by test selectors to detect render
-
-```ts
-// type signature
-type canvasDrawn = false
-// code
-canvasDrawn: false
-```
-
-#### volatile: currentRenderingBackend
-
-current backend reference, updated on context-loss recovery. Typed `unknown`
-(not generic `B`) on purpose: this mixin is composed by every display via a
-non-generic factory, so the per-display backend type `B` isn't known here — it's
-supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
-autoruns. Don't "fix" the cast.
-
-```ts
-// type signature
-type currentRenderingBackend = undefined
-// code
-currentRenderingBackend: undefined
-```
-
-#### volatile: renderTick
-
-counter the render autorun observes; bumped to force a re-render
-
-```ts
-// type signature
-type renderTick = number
-// code
-renderTick: 0
-```
-
-#### volatile: autorunsInstalled
-
-guards attachRenderingBackend so the autorun pair spawns once per instance
-
-```ts
-// type signature
-type autorunsInstalled = false
-// code
-autorunsInstalled: false
-```
-
-#### volatile: renderError
-
-the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
-Single source of truth for the render-error terminal state:
-`useRenderingBackend` writes it from the canvas-init mechanism so the model —
-not React-local hook state — owns every terminal state. Read by `displayPhase`
-(whose `renderError` term outranks `loading`, suppressing the scrim) and by
-`DisplayChrome` (shows the retry overlay).
-
-```ts
-// type signature
-type renderError = undefined
-// code
-renderError: undefined
-```
-
-**Actions**
-
-#### action: setRenderError
-
-set/clear the render-backend error. Called by `useRenderingBackend`: with the
-error when the canvas factory rejects (or context-loss re-init fails), and with
-`undefined` on successful (re)init and on retry.
-
-```ts
-type setRenderError = (error: unknown) => void
-```
-
-#### action: attachRenderingBackend
-
-attach a GPU/Canvas2D backend and install the upload + render autorun pair
-(idempotent — re-calling only swaps the backend)
-
-```ts
-type attachRenderingBackend = <B>(
-  backend: B,
-  cbs: RenderingBackendCallbacks<B>,
-) => void
-```
-
-| Member                                                             | Type         |
-| ------------------------------------------------------------------ | ------------ |
-| <span id="action-markcanvasdrawn">markCanvasDrawn</span>           | `() => void` |
-| <span id="action-resetcanvasdrawn">resetCanvasDrawn</span>         | `() => void` |
-| <span id="action-stoprenderingbackend">stopRenderingBackend</span> | `() => void` |
-| <span id="action-rendernow">renderNow</span>                       | `() => void` |
-
-</details>
-
-<details>
-<summary>Derived from FetchMixin</summary>
-
-[FetchMixin →](../fetchmixin)
-
-**Volatiles**
-
-#### volatile: activeStopToken
-
-stop token of the in-flight fetch, or undefined when idle
-
-```ts
-// type signature
-type activeStopToken = StopToken | undefined
-// code
-activeStopToken: undefined as StopToken | undefined
-```
-
-#### volatile: fetchGeneration
-
-bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
-staleness epoch inside runFetch
-
-```ts
-// type signature
-type fetchGeneration = number
-// code
-fetchGeneration: 0
-```
-
-#### volatile: fetchCanceled
-
-true after the user explicitly cancels a load (the loading overlay's cancel
-button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
-it does not retrigger the fetch autoruns — so the load stays stopped until the
-user retries (`reload`) or the viewport changes. Any new fetch clears it
-(`runFetch` resets it at the start).
-
-```ts
-// type signature
-type fetchCanceled = false
-// code
-fetchCanceled: false
-```
-
-#### volatile: regionStatuses
-
-latest status of each concurrent in-flight operation, keyed by an arbitrary id
-(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
-reactively; setRegionStatus derives the observable statusMessage/statusProgress
-from it on every update so N parallel region fetches aggregate into one bar
-instead of clobbering.
-
-```ts
-// type signature
-type regionStatuses = Map<number, RpcStatus>
-// code
-regionStatuses: new Map<number, RpcStatus>()
-```
-
-**Getters**
-
-#### getter: isLoading
-
-true while a fetch is active
-
-```ts
-type isLoading = boolean
-```
-
-**Methods**
-
-#### method: makeStatusCallback
-
-An RPC `statusCallback` bound to this display: forwards progress to the shared
-`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
-torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
-Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
-at every call site.
-
-```ts
-type makeStatusCallback = () => (status: RpcStatus) => void
-```
-
-#### method: makeRegionStatusCallback
-
-Per-region variant of `makeStatusCallback`: routes progress through
-`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard;
-`setRegionStatus` owns the throttling (it has to thin only the bar write, not
-the per-region bookkeeping).
-
-```ts
-type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
-```
-
-**Actions**
-
-#### action: throttleStatus
-
-Run `apply` only if the throttle window has elapsed.
-
-```ts
-type throttleStatus = (apply: () => void) => void
-```
-
-#### action: resetStatus
-
-Drop the active stop token and clear all status bookkeeping. Shared by both
-cancel paths and runFetch's cleanup.
-
-```ts
-type resetStatus = () => void
-```
-
-#### action: stopActiveFetch
-
-Abort the in-flight fetch (if any) and clear its status. The shared preamble of
-both cancel paths; the difference between them is only what they do to
-`fetchCanceled` / `fetchGeneration` afterward.
-
-```ts
-type stopActiveFetch = () => void
-```
-
-#### action: setRegionStatus
-
-Record one concurrent operation's latest status (keyed) and recompute the shared
-statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
-undefined to drop a key. Used by displays that fan a single fetch out into
-parallel per-region RPCs.
-
-```ts
-type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
-```
-
-#### action: cancelFetch
-
-cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
-can retrigger fetch autoruns even when nothing was in flight). This is the
-_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
-user-cancel flag so the retrigger actually re-fetches.
-
-```ts
-type cancelFetch = () => void
-```
-
-#### action: cancelFetchByUser
-
-User-initiated cancel from the loading overlay. Stops the in-flight fetch and
-lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
-fetchGeneration — so the fetch autoruns don't immediately restart the load. The
-user retries via `reload` (the overlay's retry button), or it clears on the next
-viewport change.
-
-```ts
-type cancelFetchByUser = () => void
-```
-
-#### action: beforeDestroy
-
-Release an in-flight fetch's stop token on teardown. Without this, a display
-destroyed mid-fetch (track/view closed while loading) never revokes its token —
-a blob-URL leak on the non-SAB fallback path — and never signals the worker to
-abort the now-useless work. MST auto-chains lifecycle hooks, so a composing
-display can still define its own beforeDestroy.
-
-```ts
-type beforeDestroy = () => void
-```
-
-#### action: runFetch
-
-Run a cancel-safe fetch (cancels any prior). The work callback gets a
-FetchContext with a stopToken to forward to the RPC and an isStale() check to
-short-circuit commits once the user has moved on. Abort errors are swallowed;
-others are stored in `error` if not stale.
-
-```ts
-type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
-```
-
-</details>
-
-<details>
-<summary>Derived from TreeSidebarMixin</summary>
-
-[TreeSidebarMixin →](../treesidebarmixin)
-
-**Properties**
-
-| Member                                                 | Type                                                                   |
-| ------------------------------------------------------ | ---------------------------------------------------------------------- |
-| <span id="property-layout">layout</span>               | `IOptionalIType<IType<S[], S[], S[]>, [undefined]>`                    |
-| <span id="property-clustertree">clusterTree</span>     | `IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>`             |
-| <span id="property-treeareawidth">treeAreaWidth</span> | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-| <span id="property-subtreefilter">subtreeFilter</span> | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
-
-**Volatiles**
-
-| Member                                                     | Type                           |
-| ---------------------------------------------------------- | ------------------------------ |
-| <span id="volatile-hoveredtreenode">hoveredTreeNode</span> | `HoveredTreeNode \| undefined` |
-| <span id="volatile-treecanvas">treeCanvas</span>           | `HTMLCanvasElement \| null`    |
-| <span id="volatile-mouseovercanvas">mouseoverCanvas</span> | `HTMLCanvasElement \| null`    |
-
-**Getters**
-
-| Member                                                             | Type                                     |
-| ------------------------------------------------------------------ | ---------------------------------------- |
-| <span id="getter-parsedtree">parsedTree</span>                     | `HierarchyNode<NewickNode> \| undefined` |
-| <span id="getter-root">root</span>                                 | `HierarchyNode<NewickNode> \| undefined` |
-| <span id="getter-treehasbranchlengths">treeHasBranchLengths</span> | `boolean`                                |
-
-**Methods**
-
-| Member                                               | Type                     |
-| ---------------------------------------------------- | ------------------------ |
-| <span id="method-willcleartree">willClearTree</span> | `(next: S[]) => boolean` |
-
-**Actions**
-
-| Member                                                                   | Type                                                |
-| ------------------------------------------------------------------------ | --------------------------------------------------- |
-| <span id="action-setlayout">setLayout</span>                             | `(layout: S[]) => void`                             |
-| <span id="action-setclustertree">setClusterTree</span>                   | `(tree?: string \| undefined) => void`              |
-| <span id="action-setlayoutandclustertree">setLayoutAndClusterTree</span> | `(layout: S[], tree?: string \| undefined) => void` |
-| <span id="action-settreeareawidth">setTreeAreaWidth</span>               | `(width: number) => void`                           |
-| <span id="action-setsubtreefilter">setSubtreeFilter</span>               | `(names?: string[] \| undefined) => void`           |
-| <span id="action-sethoveredtreenode">setHoveredTreeNode</span>           | `(node?: HoveredTreeNode \| undefined) => void`     |
-| <span id="action-settreecanvasref">setTreeCanvasRef</span>               | `(ref: HTMLCanvasElement \| null) => void`          |
-| <span id="action-setmouseovercanvasref">setMouseoverCanvasRef</span>     | `(ref: HTMLCanvasElement \| null) => void`          |
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-type">**type**</span><br><code>type: types.literal('LinearMafDisplay')</code> |  | LinearMafDisplay |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | LinearMafDisplay |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
+| <span id="property-rpcdrivername">**rpcDriverName**</span><br><code>rpcDriverName: types.maybe(types.string)</code> |  | [BaseDisplay](../basedisplay#property-rpcdrivername) |
+| <span id="property-ignorepromoteddefaults">**ignorePromotedDefaults**</span><br><code>ignorePromotedDefaults: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL). Such a display resolves its `promotable` config slots from its own config only, never from this browser's promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the received session is a record of what the sender saw, and a local preference silently repainting it would make it a lie. A track opened *afterwards* in that same session is a fresh track of this user's, so it never gets the flag and picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user deliberately makes the display follow a default.</span> | [BaseDisplay](../basedisplay#property-ignorepromoteddefaults) |
+| <span id="property-layout">**layout**</span><br><code>layout: types.stripDefault(types.frozen&lt;S[]&gt;(), [])</code> |  | [TreeSidebarMixin](../treesidebarmixin#property-layout) |
+| <span id="property-clustertree">**clusterTree**</span><br><details><summary><code>clusterTree: types.stripDefault(types.maybe(types.string), unde…</code></summary><pre><code>clusterTree: types.stripDefault(types.maybe(types.string), undefined)</code></pre></details> |  | [TreeSidebarMixin](../treesidebarmixin#property-clustertree) |
+| <span id="property-treeareawidth">**treeAreaWidth**</span><br><code>treeAreaWidth: types.stripDefault(types.number, 80)</code> |  | [TreeSidebarMixin](../treesidebarmixin#property-treeareawidth) |
+| <span id="property-subtreefilter">**subtreeFilter**</span><br><details><summary><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></summary><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [TreeSidebarMixin](../treesidebarmixin#property-subtreefilter) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: observable.map&lt;number, MafRegionData&gt;()</code> |  | LinearMafDisplay |
+| <span id="volatile-summarydatamap">**summaryDataMap**</span><br><code>summaryDataMap: observable.map&lt;number, MafSummaryRecord[]&gt;()</code> | Per-region `bigMafSummary` rows for the zoom-out path, populated by `fetchMafSummaryData` only while `showSummary` is active. Kept separate from `rpcDataMap` so the GPU sequence canvas and the summary overlay never read each other's data. | LinearMafDisplay |
+| <span id="volatile-framesdatamap">**framesDataMap**</span><br><code>framesDataMap: observable.map&lt;number, MafFrameRecord[]&gt;()</code> | Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay, populated by the frames RPC in parallel with the main fetch. Kept separate from the alignment/summary maps so the overlay survives the summary↔detail data swap. | LinearMafDisplay |
+| <span id="volatile-prefersoffset">**prefersOffset**</span><br><code>prefersOffset: true</code> |  | LinearMafDisplay |
+| <span id="volatile-sourcesvolatile">**sourcesVolatile**</span><br><code>sourcesVolatile: [] as MafSource[]</code> | The worker's authoritative row set, in tree (leaf) order. `layout` overlays any user reorder/relabel on top; `editableSources` merges the two and `sources` narrows that by the subtree filter. | LinearMafDisplay |
+| <span id="volatile-treenewickvolatile">**treeNewickVolatile**</span><br><code>treeNewickVolatile: undefined as string &#124; undefined</code> | The worker's guide-tree Newick (the default, before any reorder). The active displayed tree lives in the mixin's `clusterTree`, which a reorder clears (rows no longer match the dendrogram) and "Clear arrangement" restores from here — so we keep the worker tree separately rather than re-fetching it. | LinearMafDisplay |
+| <span id="volatile-samplesetgeneration">**sampleSetGeneration**</span><br><code>sampleSetGeneration: 0</code> | Bumped by `setSamples` when the worker reports a row set that differs from the one already established — never on the first fetch populating an empty set. It's the invalidation half of the sample set, split out so `rpcProps()` can key on "the set changed" without keying on the set itself (which is fetch-derived, and made every track fetch twice). See `rpcProps`. | LinearMafDisplay |
+| <span id="volatile-resizing">**resizing**</span><br><code>resizing: false</code> | True during an active height drag. Gates the dense per-base letter overlay (a Canvas2D pass that re-scans every visible cell and redraws thousands of glyphs each frame) so the drag only restretches the cheap GPU cell canvas; letters snap back when the drag settles. | LinearMafDisplay |
+| <span id="volatile-resizesettletimer">**resizeSettleTimer**</span><br><details><summary><code>resizeSettleTimer: undefined as &#124; ReturnType&lt;typeof setTimeout&gt;…</code></summary><pre><code>resizeSettleTimer: undefined as&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; ReturnType&lt;typeof setTimeout&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined</code></pre></details> |  | LinearMafDisplay |
+| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
+| <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
+| <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
+| <span id="volatile-scrolltop">**scrollTop**</span><br><code>scrollTop: 0</code> |  | [TrackHeightMixin](../trackheightmixin#volatile-scrolltop) |
+| <span id="volatile-loadedregions">**loadedRegions**</span><br><code>loadedRegions: observable.map&lt;number, Region&gt;()</code> | <span data-pagefind-ignore>regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#volatile-loadedregions) |
+| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>forceLoadTrack: false</code> | <span data-pagefind-ignore>The force-load button's answer: render this track regardless of region size or feature density. One boolean for the whole track, not a raised ceiling per region — the banner already tells the user how much data is involved, so one informed click approves the track and they never have to re-approve it per locus.<br><br>Volatile, not persisted, so it can't leak a disabled gate into a saved or shared session (a recipient would download the same data with no warning and no way to see why). A page load re-arms the gate. The durable, declarative equivalent is the `forceLoad` config slot, for session specs, embeds and `jbrowse-img --force`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#volatile-forceloadtrack) |
+| <span id="volatile-byteestimate">**byteEstimate**</span><br><code>byteEstimate: undefined as ByteEstimate &#124; undefined</code> | <span data-pagefind-ignore>The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now. One volatile rather than two, because the pair is a single measurement — written together by `setByteEstimate`, dropped together by `clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an ordinary viewport change doesn't flicker the banner; only chromosome navigation drops it. Ignored unless `derivedRegionTooLargeEnabled`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#volatile-byteestimate) |
+| <span id="volatile-canvasdrawn">**canvasDrawn**</span><br><code>canvasDrawn: false</code> | <span data-pagefind-ignore>flips true on first paint; read by test selectors to detect render</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-canvasdrawn) |
+| <span id="volatile-currentrenderingbackend">**currentRenderingBackend**</span><br><code>currentRenderingBackend: undefined</code> | <span data-pagefind-ignore>current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-currentrenderingbackend) |
+| <span id="volatile-rendertick">**renderTick**</span><br><code>renderTick: 0</code> | <span data-pagefind-ignore>counter the render autorun observes; bumped to force a re-render</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-rendertick) |
+| <span id="volatile-autorunsinstalled">**autorunsInstalled**</span><br><code>autorunsInstalled: false</code> | <span data-pagefind-ignore>guards attachRenderingBackend so the autorun pair spawns once per instance</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-autorunsinstalled) |
+| <span id="volatile-rendererror">**renderError**</span><br><code>renderError: undefined</code> | <span data-pagefind-ignore>the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-rendererror) |
+| <span id="volatile-activestoptoken">**activeStopToken**</span><br><code>activeStopToken: undefined as StopToken &#124; undefined</code> | <span data-pagefind-ignore>stop token of the in-flight fetch, or undefined when idle</span> | [FetchMixin](../fetchmixin#volatile-activestoptoken) |
+| <span id="volatile-fetchgeneration">**fetchGeneration**</span><br><code>fetchGeneration: 0</code> | <span data-pagefind-ignore>bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch</span> | [FetchMixin](../fetchmixin#volatile-fetchgeneration) |
+| <span id="volatile-fetchcanceled">**fetchCanceled**</span><br><code>fetchCanceled: false</code> | <span data-pagefind-ignore>true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`, it does not retrigger the fetch autoruns — so the load stays stopped until the user retries (`reload`) or the viewport changes. Any new fetch clears it (`runFetch` resets it at the start).</span> | [FetchMixin](../fetchmixin#volatile-fetchcanceled) |
+| <span id="volatile-regionstatuses">**regionStatuses**</span><br><code>regionStatuses: new Map&lt;number, RpcStatus&gt;()</code> | <span data-pagefind-ignore>latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex). Plain bookkeeping — not read reactively; setRegionStatus derives the observable statusMessage/statusProgress from it on every update so N parallel region fetches aggregate into one bar instead of clobbering.</span> | [FetchMixin](../fetchmixin#volatile-regionstatuses) |
+| <span id="volatile-hoveredtreenode">**hoveredTreeNode**</span><br><code>hoveredTreeNode: undefined as HoveredTreeNode &#124; undefined</code> |  | [TreeSidebarMixin](../treesidebarmixin#volatile-hoveredtreenode) |
+| <span id="volatile-treecanvas">**treeCanvas**</span><br><code>treeCanvas: null as HTMLCanvasElement &#124; null</code> |  | [TreeSidebarMixin](../treesidebarmixin#volatile-treecanvas) |
+| <span id="volatile-mouseovercanvas">**mouseoverCanvas**</span><br><code>mouseoverCanvas: null as HTMLCanvasElement &#124; null</code> |  | [TreeSidebarMixin](../treesidebarmixin#volatile-mouseovercanvas) |
+
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> |  | LinearMafDisplay |
+| <span id="getter-rowproportion">**rowProportion**</span><br><code>number</code> |  | LinearMafDisplay |
+| <span id="getter-showallletters">**showAllLetters**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-mismatchrendering">**mismatchRendering**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showasuppercase">**showAsUpperCase**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showtree">**showTree**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showbranchlength">**showBranchLength**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showalignments">**showAlignments**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  | LinearMafDisplay |
+| <span id="getter-showconservation">**showConservation**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-conservationheight">**conservationHeight**</span><br><code>number</code> |  | LinearMafDisplay |
+| <span id="getter-conservationmode">**conservationMode**</span><br><code>"base" &#124; "codon"</code> |  | LinearMafDisplay |
+| <span id="getter-rowidentitymode">**rowIdentityMode**</span><br><code>"none" &#124; "xyplot" &#124; "heatmap"</code> |  | LinearMafDisplay |
+| <span id="getter-rowidentityautozoom">**rowIdentityAutoZoom**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showannotations">**showAnnotations**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showtranslation">**showTranslation**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-colorbychromosome">**colorByChromosome**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-showinversions">**showInversions**</span><br><code>boolean</code> |  | LinearMafDisplay |
+| <span id="getter-conf">**conf**</span><br><details><summary><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: st…</code></summary><pre><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;</code></pre></details> | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`) | LinearMafDisplay |
+| <span id="getter-lgv">**lgv**</span><br><details><summary><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...;…</code></summary><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; ... 20 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></details> | The containing LGV, typed once here so views/actions don't each repeat the `getContainingView(self) as LinearGenomeViewModel` cast. | LinearMafDisplay |
+| <span id="getter-annotationadapterconfig">**annotationAdapterConfig**</span><br><code>Record&lt;string, unknown&gt; &#124; undefined</code> | The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`), or undefined when unset. Read from the MAF *adapter* config as a swappable sub-adapter (alongside `summaryAdapter`), not the display — a frozen slot, so this is a plain snapshot the frames RPC hands straight to `getAdapter`. | LinearMafDisplay |
+| <span id="getter-annotationsactive">**annotationsActive**</span><br><code>boolean</code> | Whether the per-species CDS frame *strip* should draw: an annotation adapter is configured and the "Show CDS frames" toggle is on. The codon view consumes the same frames data but is gated separately (see `annotationDataActive`), so the strip can be off while codon view is on. | LinearMafDisplay |
+| <span id="getter-annotationdataactive">**annotationDataActive**</span><br><code>boolean</code> | Whether the frames data needs to be fetched: an annotation adapter is configured and either the strip or the codon view wants it. Gates the frames RPC and keys the fetch cache so toggling *either* consumer on triggers the fetch. | LinearMafDisplay |
+| <span id="getter-editablesources">**editableSources**</span><br><code>MafSource[] &#124; undefined</code> | The full row set with the user's arrangement applied: `layout` supplies order + label/color overrides, merged over the worker's `sourcesVolatile` by name. Empty `layout` (no customization) passes the worker set through. Not subtree-filtered — this is what the arrangement dialog edits. Undefined until the first fetch populates the worker set. | LinearMafDisplay |
+| <span id="getter-sources">**sources**</span><br><code>MafSource[] &#124; undefined</code> | The display rows: `editableSources` narrowed to the selected subtree. | LinearMafDisplay |
+| <span id="getter-samples">**samples**</span><br><code>Sample[] &#124; undefined</code> | Sample list keyed by sample id (alias of `sources` mapped to the project's canonical `{ id, label, color }` shape). Consumed by MafSequenceWidget, color legend, etc. | LinearMafDisplay |
+| <span id="getter-orderedsampleids">**orderedSampleIds**</span><br><code>string[] &#124; undefined</code> | Display row order shipped to the worker so its block `rowIndex` matches the on-screen row. The alignment-fetch RPC argument only — deliberately NOT the cache key, which keys on the user-controlled inputs behind this instead (see `rpcProps`). | LinearMafDisplay |
+| <span id="getter-rowindexbysrc">**rowIndexBySrc**</span><br><code>Map&lt;string, number&gt;</code> | Maps a `src` (species) to its display row index. The single source for the `src`→row projection used by the summary-bar and CDS-frame overlays and the frame hover lookup, so they can't disagree on row placement. | LinearMafDisplay |
+| <span id="getter-defaultcodonspecies">**defaultCodonSpecies**</span><br><code>string &#124; undefined</code> | The anchor species whose `mafFrames` reading frame is used to translate every row (UCSC `codonDefault`). Tied to the *reference assembly*, not the top display row: every species' codon is compared against the reference sequence (`block.refSeqBytes`), so the frame must be enumerated from the reference's own frames. A row reorder (layout) can move a non-reference species to row 0 — reading `sources[0]` there would enumerate codons in the wrong frame. Falls back to the worker's canonical first row (pre-reorder) when the reference isn't itself a listed sample. | LinearMafDisplay |
+| <span id="getter-coveragedisplayheight">**coverageDisplayHeight**</span><br><code>number</code> | Height of the coverage band above the rows (0 when hidden). | LinearMafDisplay |
+| <span id="getter-conservationdisplayheight">**conservationDisplayHeight**</span><br><code>number</code> | Height of the conservation (percent identity) band (0 when hidden). | LinearMafDisplay |
+| <span id="getter-rowstopoffset">**rowsTopOffset**</span><br><code>number</code> | Top offset of the per-sample rows area = the stacked band heights above it (coverage + conservation). The single source of truth for "where the rows start" — every rows hit-test / draw / export offset routes through this so adding a band can't desync them. | LinearMafDisplay |
+| <span id="getter-nrow">**nrow**</span><br><code>number</code> | Number of displayed rows (at least 1, so the fit-mode division is safe). | LinearMafDisplay |
+| <span id="getter-maxrowsheight">**maxRowsHeight**</span><br><code>number</code> | Max CSS-px height the rows canvas may take before its backing store (`× dpr`) hits the browser/GPU canvas limit. The single ceiling both the fit-target sizing and the `rowHeight` cap respect. | LinearMafDisplay |
+| <span id="getter-fittargetheight">**fitTargetHeight**</span><br><code>number</code> | The track height that fit-to-height mode divides among rows. Once the user drags, the explicit `height` config slot wins; before any drag we size to show every row at the default px height, so a typical alignment looks exactly like fixed mode. Huge alignments are bounded by the `rowHeight` cap, not here, so this needs no cap of its own. | LinearMafDisplay |
+| <span id="getter-autorowheight">**autoRowHeight**</span><br><code>number</code> | Per-row height in fit-to-height mode: the rows area (track height minus the fixed bands) split evenly across rows. | LinearMafDisplay |
+| <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. `rowHeight === 0` is fit-to-height (rows stretch to the dragged track height); any positive value is a pinned px height. Every consumer reads this getter, never the raw `rowHeight` property.<br><br>Capped so the rows canvas backing store (`rowsHeight × dpr`) can never exceed the browser/GPU max canvas size: a fixed px height across hundreds of species would otherwise throw `Canvas exceeds max size`. The cap shrinks rows to fit instead of crashing (or clipping); fit mode already stays small so it never engages there. Bands have their own small canvases, so the rows-only ceiling is the whole limit. | LinearMafDisplay |
+| <span id="getter-rowsheight">**rowsHeight**</span><br><code>number</code> | Height of the per-sample rows area (excludes the coverage band). Zero when alignments are hidden, collapsing the display to the coverage band. | LinearMafDisplay |
+| <span id="getter-totalheight">**totalHeight**</span><br><code>number</code> | Full display height = rows area + stacked bands. | LinearMafDisplay |
+| <span id="getter-height">**height**</span><br><code>number</code> | Override BaseLinearDisplay.height so the track container matches the rendering canvas height exactly (coverage band + rows × rowHeight). | LinearMafDisplay |
+| <span id="getter-hierarchy">**hierarchy**</span><br><code>ClusterHierarchyNode &#124; undefined</code> | Positioned tree hierarchy. Coordinates are computed against `(rowsHeight, treeAreaWidth)` so leaf rows align with row tops; the coverage band is offset separately by the React layer. | LinearMafDisplay |
+| <span id="getter-spatialindex">**spatialIndex**</span><br><code>{ index: Flatbush; nodes: ClusterHierarchyNode[]; } &#124; undefined</code> |  | LinearMafDisplay |
+| <span id="getter-colorpalette">**colorPalette**</span><br><code>MafColorPalette</code> | Theme-derived color palette (per-base colors + match/gap/mismatch/ unknown/insertion), read by `gpuProps()` and `renderState`. Derived from the session theme so it's always available — including headless SVG export and RPC, where no component mounts to seed it. Theme changes trigger a main-thread re-encode but never an RPC refetch. | LinearMafDisplay |
+| <span id="getter-renderstate">**renderState**</span><br><code>MafGPURenderState</code> | Render state passed to GPU/Canvas2D backend each frame. Uses the rows- only height so the GPU canvas only paints the per-sample band; the coverage band is drawn on a separate Canvas2D overlay above. | LinearMafDisplay |
+| <span id="getter-coveragestats">**coverageStats**</span><br><code>ScoreStats &#124; undefined</code> | Per-position depth stats across the currently visible content blocks, derived from the worker-shipped `coverage.coverageDepths` arrays (which already reflect the active subtree — see `rpcProps`). Feeds `coverageDomain` → `coverageTicks`. | LinearMafDisplay |
+| <span id="getter-coveragedomain">**coverageDomain**</span><br><code>[number, number] &#124; undefined</code> | [min, max] coverage domain for the visible blocks. Linear scale only for MAF — sample counts are already bounded and well-distributed. | LinearMafDisplay |
+| <span id="getter-coverageticks">**coverageTicks**</span><br><code>YScaleTicks &#124; undefined</code> | Y-axis tick marks for the coverage band. | LinearMafDisplay |
+| <span id="getter-visibleemptylines">**visibleEmptyLines**</span><br><code>EmptyLineSegment[]</code> | Positioned bridge-line segments for `e`-line (empty/bridged) rows. | LinearMafDisplay |
+| <span id="getter-visibleinsertions">**visibleInsertions**</span><br><code>InsertionMarker[]</code> | Positioned insertion markers (interbase) for the visible aligned rows. | LinearMafDisplay |
+| <span id="getter-visibledeletions">**visibleDeletions**</span><br><code>DeletionMarker[]</code> | Positioned deletion runs for the visible aligned rows; the overlay draws the deleted-base count inside each run when it fits. | LinearMafDisplay |
+| <span id="getter-visibleinversions">**visibleInversions**</span><br><code>InversionMarker[]</code> | Positioned strand-flip (inversion) markers for the visible aligned rows. Empty unless the indicator is toggled on. | LinearMafDisplay |
+| <span id="getter-showsummary">**showSummary**</span><br><code>boolean</code> | Use the cheap summary path when a `bigMafSummary` sub-adapter is configured and the view is zoomed out past the force-load threshold — exactly where the full alignment fetch would be blocked by the byte gate. Tracks without a summary never enter this path.<br><br>`aboveForceLoadFloor` is the gate's own comparison against that threshold (`RegionTooLargeMixin`), read rather than restated so the swap and the gate can't end up disagreeing about where the floor is. It deliberately excludes the opt-in terms, which is what keeps this from being a cycle — `byteGateEnabled` below is false while we summarize. | LinearMafDisplay |
+| <span id="getter-zoomedtobaselevel">**zoomedToBaseLevel**</span><br><code>boolean</code> | At base level each reference base spans at least a pixel, so individual bases / SNP marks are legible (UCSC's `zoomedToBaseLevel`). Read off the debounced `coarseBpPerPx` so the rendering swap it gates doesn't thrash mid-zoom. False until the view is initialized. | LinearMafDisplay |
+| <span id="getter-codonviewactive">**codonViewActive**</span><br><code>boolean</code> | The codon view is on: the toggle is set, frame data is available to define the reading frame, and we're zoomed to base level (so codons are meaningful) and not in the cheap summary path. When active it replaces the per-base SNP rendering with per-codon change coloring. | LinearMafDisplay |
+| <span id="getter-activerowrendering">**activeRowRendering**</span><br><code>"codon" &#124; "bases" &#124; "sourceChrom" &#124; RowIdentityMode</code> | Single source of truth for what the per-sample rows area draws right now: `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring from `mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or a per-row identity style (`heatmap` / `xyplot`). Codon view takes precedence when on, then color-by-chromosome (an explicit SV toggle, but not in the cheap summary path which carries no per-row chr); otherwise, with `rowIdentityAutoZoom` (default) it emulates UCSC `wigMaf` — bases at base level, the identity plot when zoomed out; with auto off the selected mode is pinned. The GPU canvas, the identity/chromosome canvases, the codon overlay, and SVG export all branch on this one getter so they can't disagree about what's on screen. | LinearMafDisplay |
+| <span id="getter-visiblelabels">**visibleLabels**</span><br><code>VisibleLabel[]</code> | Positioned per-base SNP/sequence letters. Suppressed in any non-base rendering (the identity plot and codon view both replace the letters). | LinearMafDisplay |
+| <span id="getter-visiblesummarybars">**visibleSummaryBars**</span><br><code>SummaryBar[]</code> | Positioned per-species presence bars for the zoom-out summary overlay. Empty unless `showSummary` is active. Unmatched `src` rows drop via the `sources` index, keeping the render robust to summary files that list extra species. | LinearMafDisplay |
+| <span id="getter-visibleframes">**visibleFrames**</span><br><code>FrameMarker[]</code> | Positioned per-species CDS frame boxes for the annotation overlay. Empty unless an annotation adapter is configured and the overlay is on. Reuses the `src`→row mapping the summary bars established, so frame rows for species the track doesn't list drop out. | LinearMafDisplay |
+| <span id="getter-codoncellsactive">**codonCellsActive**</span><br><code>boolean</code> | The codon overlay is what the rows area is painting. | LinearMafDisplay |
+| <span id="getter-codonconservationactive">**codonConservationActive**</span><br><code>boolean</code> | The conservation band is in per-codon (amino-acid identity) mode, with frames to define codons and per-base blocks to translate — the cheap summary path ships neither. | LinearMafDisplay |
+| <span id="getter-locatedcodons">**locatedCodons**</span><br><code>LocatedCodon[]</code> | Every reference codon the fetched blocks resolve, in the anchor species' reading frame — the shared spine of the codon cells and the codon conservation band. A memoized computed rather than a call inside each consumer: the resolution (enumerate the anchor's codons, index every block's reference columns, locate each codon) is the expensive half, and with both modes on it used to run twice per frame. Empty when neither consumer is active, so a track with codon view off pays nothing. | LinearMafDisplay |
+| <span id="getter-visiblecodons">**visibleCodons**</span><br><code>CodonMarker[]</code> | Per-species codon cells for the codon view (the per-codon change coloring that replaces the SNP cells). Empty unless codon view is the active rendering and an anchor species is known. | LinearMafDisplay |
+| <span id="getter-visiblecodonconservation">**visibleCodonConservation**</span><br><code>CodonConservationBar[]</code> | Per-codon amino-acid conservation bars for the conservation band's codon mode. Draws only inside the CDS (where frames define codons); everywhere else the band is blank. | LinearMafDisplay |
+| <span id="getter-legenditems">**legendItems**</span><br><code>{ label: string; color?: string &#124; undefined; }[]</code> | The color key for whatever `activeRowRendering` is painting, or empty where the rendering needs no key (plain bases). One getter rather than a component per mode, because both the on-screen legend and the SVG export read it — an exported codon or source-chromosome figure whose swatches are its only decoder used to ship with no key at all.<br><br>Source-chromosome coloring is by each row's per-row chromosome RANK (see `perRowChromRanks`), not by chromosome name, so its key is this short fixed scheme rather than a per-scaffold rainbow: one entry per rank actually present in view, and a lone "Main chromosome" entry means nothing rearranges here. | LinearMafDisplay |
+| <span id="getter-msahighlights">**msaHighlights**</span><br><code>MsaHighlight[]</code> | Get highlight regions from connected MSA views | LinearMafDisplay |
+| <span id="getter-bytegateenabled">**byteGateEnabled**</span><br><code>boolean</code> | Enable byte-estimate gating: above ~20kb visible, the adapter's MAF-aware byte estimate (per-species sequence × span) is checked against `fetchSizeLimit`, blocking the detail fetch with a force-load prompt rather than downloading hundreds of species' bases at genome scale.<br><br>Off in summary mode — the summary read is cheap (zoom-reduced BigBed), so it must never be blocked by the gate. | LinearMafDisplay |
+| <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
+| <span id="getter-parentdisplay">**parentDisplay**</span><br><details><summary><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124;…</code></summary><pre><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124; undefined; } &#124; undefined</code></pre></details> | <span data-pagefind-ignore>Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)</span> | [BaseDisplay](../basedisplay#getter-parentdisplay) |
+| <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |
+| <span id="getter-displayblurb">**DisplayBlurb**</span><br><details><summary><code>FC&lt;{ model: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; I…</code></summary><pre><code>FC&lt;{ model: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }&gt; &#124; null</code></pre></details> |  | [BaseDisplay](../basedisplay#getter-displayblurb) |
+| <span id="getter-adapterconfig">**adapterConfig**</span><br><code>any</code> |  | [BaseDisplay](../basedisplay#getter-adapterconfig) |
+| <span id="getter-isminimized">**isMinimized**</span><br><code>boolean</code> | <span data-pagefind-ignore>Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.</span> | [BaseDisplay](../basedisplay#getter-isminimized) |
+| <span id="getter-effectiverpcdrivername">**effectiveRpcDriverName**</span><br><code>any</code> | <span data-pagefind-ignore>Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName</span> | [BaseDisplay](../basedisplay#getter-effectiverpcdrivername) |
+| <span id="getter-displaymessagecomponent">**DisplayMessageComponent**</span><br><code>FC&lt;any&gt; &#124; undefined</code> | <span data-pagefind-ignore>if a display-level message should be displayed instead, make this return a react component</span> | [BaseDisplay](../basedisplay#getter-displaymessagecomponent) |
+| <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | <span data-pagefind-ignore>The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured. Before that, `renderBlocks` → `visibleRegions` → `view.width` throws by design, and the render autorun's catch would show that as a GPU render-error banner. Gating here — once, for all of them — is what lets a display's `renderState` be a plain resolved getter and its render callback gate only on its own data. The render-lifecycle twin of `autorunOnReadyView`.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-canrender) |
+| <span id="getter-isready">**isReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>true once the canvas has painted and no fetch is in flight</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-isready) |
+| <span id="getter-viewportwithinloadeddata">**viewportWithinLoadedData**</span><br><code>boolean</code> | <span data-pagefind-ignore>true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan. Drives the loading overlay through the pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact and for the resolution-staleness gap.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-viewportwithinloadeddata) |
+| <span id="getter-datacurrent">**dataCurrent**</span><br><code>boolean</code> | <span data-pagefind-ignore>This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now. Here that is spatial — every visible block lies within a fetched region — plus `loadedRegions.size`, which rules out the vacuously-true empty viewport. Regions stream in one at a time, so this (not "the first datum arrived") is what keeps a multi-region/whole-genome export complete.<br><br>Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate the fetch autorun and the loading overlay use.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-datacurrent) |
+| <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>true once an off-screen (SVG) export can safely read this display's data. Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of inlining the condition.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-svgready) |
+| <span id="getter-svgreadyextraterminal">**svgReadyExtraTerminal**</span><br><code>boolean</code> | <span data-pagefind-ignore>Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data. Sequence sets it when zoomed past base resolution — it renders a static "zoom in" message and fetches nothing, so `svgReady` would otherwise never resolve.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-svgreadyextraterminal) |
+| <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>Overridable hook (default false): whether a searchable feature layout currently exists. Any display defining a feature-lookup method (`searchFeatureByID`, `getFeatureById`) must override it, so callers can tell "laid out, but off-display" from "no layout exists yet" — a distinction only the display can make. See BaseLinearDisplay/CLAUDE.md, "The three readiness axes".</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-layoutready) |
+| <span id="getter-renderblocks">**renderBlocks**</span><br><code>RenderBlock[]</code> | <span data-pagefind-ignore>Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-renderblocks) |
+| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | <span data-pagefind-ignore>The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-displayphase) |
+| <span id="getter-rpcpropscachekey">**rpcPropsCacheKey**</span><br><code>string</code> | <span data-pagefind-ignore>The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string. `serializeRpcProps` owns the why; `installGlobalFetchAutorun` keys its global-family counterpart on the same function, so the two families invalidate on the same axis.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-rpcpropscachekey) |
+| <span id="getter-gatefoldedintofetch">**gateFoldedIntoFetch**</span><br><code>boolean</code> | <span data-pagefind-ignore>Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas). Kept separate from `derivedRegionTooLargeEnabled` so a gate mixin contributes by setting *this* rather than overriding the verdict switch — the two would otherwise race on composition order, and the later `.compose()` argument silently winning is invisible to both the type system and the tests.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatefoldedintofetch) |
+| <span id="getter-configuredfetchsizelimit">**configuredFetchSizeLimit**</span><br><code>number</code> | <span data-pagefind-ignore>The composing display's configured `fetchSizeLimit`, read straight from its config. Only evaluated when the derived gate is enabled (guarded by `derivedRegionTooLargeEnabled`), and every derived display extends `baseLinearDisplayConfigSchema`, which owns the slot — so the read is always valid where it fires. A display with a bespoke source can still override it.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-configuredfetchsizelimit) |
+| <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> | <span data-pagefind-ignore>Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-densitytoolarge) |
+| <span id="getter-adapterfetchsizelimit">**adapterFetchSizeLimit**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config. Read on the main thread, and only here — the estimate that crosses the worker boundary carries bytes and nothing else, so the banner and the worker budget have no second spelling of "the adapter's limit" to disagree about.<br><br>A slot **path off the live config**, not a read off `self.adapterConfig`: that getter is a snapshot, which by design omits slots sitting at their default, so a BAM's declared 5 Mb read back as `undefined` in every config that doesn't restate it. Resolved values come from a config node — see CONFIG_PATTERN.md §"Reading a slot: node, not snapshot".</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-adapterfetchsizelimit) |
+| <span id="getter-configforceload">**configForceLoad**</span><br><code>boolean</code> | <span data-pagefind-ignore>Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button). Read straight from the `forceLoad` config slot on `baseLinearDisplayConfigSchema` (same guard/ownership as `configuredFetchSizeLimit`), so every opt-in display honors it without per-display wiring.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-configforceload) |
+| <span id="getter-gatevisiblebp">**gateVisibleBp**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The span on screen, or undefined before the view is measured. The gate's only read of its container: `visibleBp` reads `view.width`, which throws before measurement and a bare getter must never throw, so the pre-init guard lives here once rather than at each reader.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatevisiblebp) |
+| <span id="getter-derivedregiontoolargeenabled">**derivedRegionTooLargeEnabled**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never an override, so a gate mixin's opt-in doesn't hinge on which side of `.compose()` it lands on. False for the non-byte displays (wiggle, manhattan, sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus` getters.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-derivedregiontoolargeenabled) |
+| <span id="getter-aboveforceloadfloor">**aboveForceLoadFloor**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before the view is measured.<br><br>Deliberately independent of the opt-in and of force-load, so a display whose *own* opt-in depends on the floor can read it without a cycle: MAF's `showSummary` swaps to the cheap summary adapter exactly where the detail fetch would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds the opt-in and exemption terms on top.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-aboveforceloadfloor) |
+| <span id="getter-bytegateexempt">**byteGateExempt**</span><br><code>boolean</code> | <span data-pagefind-ignore>True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button. One boolean is the whole force-load mechanism — there is no per-region ceiling to carry, expire, or reconcile between the two axes. A self-summarizing adapter (BigWig, HiC, sequence) needs no term here: it reports no byte estimate at all, which already keeps the byte axis out of the verdict.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-bytegateexempt) |
+| <span id="getter-estimatedbytesforvisiblespan">**estimatedBytesForVisibleSpan**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers. Rescaling is what makes the derived verdict a pure function of the current view and lets it self-release on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-estimatedbytesforvisiblespan) |
+| <span id="getter-gatebytelimit">**gateByteLimit**</span><br><code>number</code> | <span data-pagefind-ignore>The byte budget the gate enforces: the adapter's limit, else the display config. Also what `resolvedByteLimit()` hands the worker, so the two can't gate against different numbers. Force-load doesn't raise this — it exempts the track outright via `byteGateExempt`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatebytelimit) |
+| <span id="getter-gateactive">**gateActive**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.<br><br>The single home of that question. Everything downstream reads it instead of restating it: the verdict, the pre-flight (no estimate RPC when nothing could act on it), and the worker budgets, which go undefined together here rather than each re-deriving the floor. The floor used to be spelled out in three places at three layers, which is a standing invitation for them to disagree.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gateactive) |
+| <span id="getter-toolargestatus">**tooLargeStatus**</span><br><code>RegionTooLargeStatus</code> | <span data-pagefind-ignore>The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text). Derived from the rescaled estimate, so it releases itself on zoom-in; false whenever `gateActive` is false.<br><br>The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome` renders the banner from `regionTooLargeReason`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-toolargestatus) |
+| <span id="getter-regiontoolarge">**regionTooLarge**</span><br><code>boolean</code> |  | [RegionTooLargeMixin](../regiontoolargemixin#getter-regiontoolarge) |
+| <span id="getter-regiontoolargereason">**regionTooLargeReason**</span><br><code>string</code> | <span data-pagefind-ignore>Which axis tripped, as banner text: the estimated download size, or "Too many features". Empty string when the region isn't too large.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-regiontoolargereason) |
+| <span id="getter-isloading">**isLoading**</span><br><code>boolean</code> | <span data-pagefind-ignore>true while a fetch is active</span> | [FetchMixin](../fetchmixin#getter-isloading) |
+| <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  | [TreeSidebarMixin](../treesidebarmixin#getter-parsedtree) |
+| <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  | [TreeSidebarMixin](../treesidebarmixin#getter-root) |
+| <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  | [TreeSidebarMixin](../treesidebarmixin#getter-treehasbranchlengths) |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="method-gpuprops">**gpuProps**</span><br><code>() =&gt; MafGpuProps</code> | Inputs to the main-thread GPU instance encoder. Changes here re-encode in the per-region encode autorun — no RPC roundtrip. Intentionally excludes `showAsUpperCase` (label-only) and view-shape props (rowHeight, rowProportion — driven by shader uniforms). | LinearMafDisplay |
+| <span id="method-rpcprops">**rpcProps**</span><br><details><summary><code>() =&gt; { layoutOrder: string[]; subtreeFilter: string[] &#124; undefi…</code></summary><pre><code>() =&gt; { layoutOrder: string[]; subtreeFilter: string[] &#124; undefined; sampleSetGeneration: number; annotationDataActive: boolean; }</code></pre></details> | Worker-fetch inputs that invalidate cached data when changed (tier-1, via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).<br><br>The fetch argument that actually decides row placement is `orderedSampleIds` (see `fetchMafAlignmentData`), but this keys on the three *inputs* that produce it instead of on the value: `layout` order and `subtreeFilter` are user-driven and already settled before the first fetch, while `sampleSetGeneration` carries the one thing only the worker can tell us — that the row set changed out from under already-fetched rows.<br><br>Keying on `orderedSampleIds` itself is what this replaces: it is undefined until the first fetch lands and defined after, so the key flipped on every track load and `SettingsInvalidate` threw away the region that had just arrived — a measured 2 × `LinearMafGetAlignmentData` per region, on the heaviest payload in the plugin. Loop-safe but not free, which is exactly the case ARCHITECTURE.md's "rpcProps() must read only user-controlled settings" is about. Pinned by `singleFetchPerRegion.test.ts`.<br><br>Reorder and subtree-filter changes still refetch, deliberately: the worker assigns `rowIndex` from the order and scopes coverage/identity to the set, so both have to go back through it. | LinearMafDisplay |
+| <span id="method-rowhoverinfo">**rowHoverInfo**</span><br><details><summary><code>(displayedRegionIndex: number, gposFrac: number, rowIndex: numb…</code></summary><pre><code>(displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) =&gt; {…} &#124; { ...; } &#124; { ...; } &#124; { ...; } &#124; undefined</code></pre></details> | Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per worker-output convention): an aligned base (`cell`) or a bridged/empty region (`empty`), each tagged with the sample label. Returns undefined when no fetched block covers the bp, the row is out of range, or the cell is a gap. | LinearMafDisplay |
+| <span id="method-framehoverinfo">**frameHoverInfo**</span><br><details><summary><code>(displayedRegionIndex: number, bp: number, rowIndex: number) =&gt;…</code></summary><pre><code>(displayedRegionIndex: number, bp: number, rowIndex: number) =&gt; { name: string; } &#124; undefined</code></pre></details> | The CDS frame record covering absolute genomic `bp` (uint32) on display `rowIndex`, or undefined when no frame overlaps there (or no frames data is loaded). Gated on `annotationDataActive` not the strip toggle, so the gene name still reads on hover in codon view with the strip off. The species is matched by the same `src`→row projection the overlay draws with, so the tooltip and the strip can't disagree about which row a gene is on. | LinearMafDisplay |
+| <span id="method-coveragetooltipbin">**coverageTooltipBin**</span><br><details><summary><code>(displayedRegionIndex: number, position: number, bpPerPx: numbe…</code></summary><pre><code>(displayedRegionIndex: number, position: number, bpPerPx: number) =&gt; {…} &#124; undefined</code></pre></details> | Build a per-position coverage tooltip bin (depth + SNP base counts) for the given absolute genomic bp + region index. Delegates the math to alignments-core's `buildCoverageTooltipBin` — same code path the alignments display uses. Insertions are reported separately via `coverageInsertionHit`, so they never mix into the depth/SNP table. Returns undefined when the region has no fetched data or depth is zero. | LinearMafDisplay |
+| <span id="method-coverageinsertionhit">**coverageInsertionHit**</span><br><details><summary><code>(displayedRegionIndex: number, gposFrac: number, bpPerPx: numbe…</code></summary><pre><code>(displayedRegionIndex: number, gposFrac: number, bpPerPx: number) =&gt; CoverageInsertionHit &#124; undefined</code></pre></details> | Hit-test an insertion bar in the coverage band at fractional genomic `gposFrac`. Returns the interbase summary (count + length range + interbaseDepth) when the cursor is on the bar, else undefined — drives the dedicated interbase tooltip, kept separate from the depth/SNP one. | LinearMafDisplay |
+| <span id="method-codonhoverinfo">**codonHoverInfo**</span><br><details><summary><code>(displayedRegionIndex: number, bp: number, rowIndex: number) =&gt;…</code></summary><pre><code>(displayedRegionIndex: number, bp: number, rowIndex: number) =&gt; CodonHit &#124; undefined</code></pre></details> | The codon under the cursor on display `rowIndex` at absolute genomic `bp`, when the codon view is the active rendering: the species' codon + amino acid, the reference codon + amino acid, and the syn/nonsyn/stop classification. Reuses the same anchor frames + reference comparison the colored cells are drawn from (`findCodonAt`), so the tooltip and the cell agree. Undefined off codon view or where no codon covers the row there. | LinearMafDisplay |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearMafDisplay |
+| <span id="method-iscachevalid">**isCacheValid**</span><br><code>(displayedRegionIndex: number) =&gt; boolean</code> | Force a refetch when the loaded data is the wrong kind for the current zoom: crossing the summary↔detail threshold within an already-loaded region wouldn't trip the bounds-based coverage check, so the mode is keyed on which map holds the region. | LinearMafDisplay |
+| <span id="method-renderingprops">**renderingProps**</span><br><details><summary><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; {…</code></summary><pre><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }</code></pre></details> | <span data-pagefind-ignore>props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks</span> | [BaseDisplay](../basedisplay#method-renderingprops) |
+| <span id="method-resolvedbytelimit">**resolvedByteLimit**</span><br><code>() =&gt; number &#124; undefined</code> | <span data-pagefind-ignore>The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features. Undefined (unlimited) when nothing gates; otherwise the very number the banner compares against, so the worker can't reject a region the banner then calls fine. Lives here, not on the canvas gate that consumes it, because both its terms are this mixin's — canvas owns only the density axis.</span> | [RegionTooLargeMixin](../regiontoolargemixin#method-resolvedbytelimit) |
+| <span id="method-makestatuscallback">**makeStatusCallback**</span><br><code>() =&gt; (status: RpcStatus) =&gt; void</code> | <span data-pagefind-ignore>An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard at every call site.</span> | [FetchMixin](../fetchmixin#method-makestatuscallback) |
+| <span id="method-makeregionstatuscallback">**makeRegionStatusCallback**</span><br><code>(key: number) =&gt; (status: RpcStatus) =&gt; void</code> | <span data-pagefind-ignore>Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other. Same `isAlive` guard; `setRegionStatus` owns the throttling (it has to thin only the bar write, not the per-region bookkeeping).</span> | [FetchMixin](../fetchmixin#method-makeregionstatuscallback) |
+| <span id="method-willcleartree">**willClearTree**</span><br><code>(next: S[]) =&gt; boolean</code> |  | [TreeSidebarMixin](../treesidebarmixin#method-willcleartree) |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-setrowheight">**setRowHeight**</span><br><code>(n: number) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setresizing">**setResizing**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowallletters">**setShowAllLetters**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setmismatchrendering">**setMismatchRendering**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setsamples">**setSamples**</span><br><details><summary><code>({ samples, treeNewick, samplesCanonical, }: { samples: Sample[…</code></summary><pre><code>({ samples, treeNewick, samplesCanonical, }: { samples: Sample[]; treeNewick: string &#124; undefined; samplesCanonical: boolean; }) =&gt; void</code></pre></details> | Receive the worker's `samples` + serialized Newick tree.<br><br>`samplesCanonical` says whether that set is authoritative. Config- and tree-derived sets are: they're complete and identical on every region fetch, so they replace, and a species dropped from the config stops being a row. A sample-discovery set is not: it names only the genomes the fetched region's blocks contained, so it is unioned into the rows already known (`unionSources`). Replacing there dropped rows — the worker indexes blocks by the client's order and discards samples missing from it, so a genome only one region aligns rendered nothing, and a region with no blocks at all (or the summary path, which never discovers) blanked every row.<br><br>With either resolution the deepEqual guard makes this fire once and skips the redundant frozen-array reassignment (and downstream `sources`/instance-buffer recompute) on later scroll/zoom. The active `clusterTree` is set from the worker tree only when there's no custom arrangement — a reorder has cleared it and must keep it cleared until the user clears the layout.<br><br>The guard covers the sample set only: a tree can change while the set doesn't (an edited `.nh`), and folding it in left `treeNewickVolatile` — and so what "Clear arrangement" restores — pinned to the first tree the session ever saw.<br><br>A set that *changes* after one was already established bumps `sampleSetGeneration`, which invalidates the fetched rows through `rpcProps()`: they carry `rowIndex`es assigned against the old set. That only happens on a sample-discovery track whose regions align different genomes — where the union means it happens once per newly seen genome, not once per region whose set differs from the last one's. The first fetch populating an empty set does NOT bump — that transition is not a change of anything, and treating it as one is what made every MAF track fetch its alignment twice.<br><br>The bump has to route through the cache key rather than clearing here: `fetchRegions` calls `setLoadedRegion` *after* this commit returns, so an imperative clear would be immediately overwritten by the very regions that were fetched against the old set. | LinearMafDisplay |
+| <span id="action-setshowasuppercase">**setShowAsUpperCase**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowtree">**setShowTree**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowbranchlength">**setShowBranchLength**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowalignments">**setShowAlignments**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setcoverageheight">**setCoverageHeight**</span><br><code>(arg: number) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-resizecoverageheight">**resizeCoverageHeight**</span><br><code>(distance: number) =&gt; void</code> | Apply one drag delta to the coverage band. Reads the current height inside the action rather than taking an absolute target: `ResizeHandle` emits one delta per animation frame, so a component computing `renderHeight + delta` drops every tick that lands before React re-renders. Mirrors `resizeHeight`. | LinearMafDisplay |
+| <span id="action-setshowconservation">**setShowConservation**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setconservationmode">**setConservationMode**</span><br><code>(arg: "base" &#124; "codon") =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setrowidentitymode">**setRowIdentityMode**</span><br><code>(arg: "none" &#124; "xyplot" &#124; "heatmap") =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setrowidentityautozoom">**setRowIdentityAutoZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowannotations">**setShowAnnotations**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowtranslation">**setShowTranslation**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setcolorbychromosome">**setColorByChromosome**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setshowinversions">**setShowInversions**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setconservationheight">**setConservationHeight**</span><br><code>(arg: number) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-resizeconservationheight">**resizeConservationHeight**</span><br><code>(distance: number) =&gt; void</code> | Per-frame drag delta for the conservation band — see `resizeCoverageHeight` for why this reads the height itself. | LinearMafDisplay |
+| <span id="action-clearlayout">**clearLayout**</span><br><code>() =&gt; void</code> | Drop the custom arrangement and restore the worker's guide tree (the base `clearLayout` only clears it — the worker tree lives in `treeNewickVolatile`). | LinearMafDisplay |
+| <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Switch to fit-to-height mode: rows stretch to fill the track height. Seeds the `height` config slot from the current content height so toggling on doesn't jump, then `rowHeight = 0` makes `effectiveRowHeight` derive from it. | LinearMafDisplay |
+| <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> | Drag-resize. In fit mode the new height drives `autoRowHeight` (rows stretch). In fixed mode the pinned `rowHeight` scales proportionally so dragging still resizes rows. Mirrors the variants display.<br><br>Flips `resizing` for the duration of the drag (cleared a beat after the last tick) so the dense letter overlay sits out the frame-by-frame restretch — see the `resizing` volatile. | LinearMafDisplay |
+| <span id="action-setrpcdata">**setRpcData**</span><br><code>(regionIndex: number, data: MafRegionData) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setsummarydata">**setSummaryData**</span><br><code>(regionIndex: number, records: MafSummaryRecord[]) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setframesdata">**setFramesData**</span><br><code>(regionIndex: number, records: MafFrameRecord[]) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-clearalignmentdata">**clearAlignmentData**</span><br><code>() =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: MafRenderingBackend) =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-fetchneeded">**fetchNeeded**</span><br><details><summary><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =…</code></summary><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =&gt; Promise&lt;void&gt;</code></pre></details> |  | LinearMafDisplay |
+| <span id="action-rendersvg">**renderSvg**</span><br><details><summary><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactElement&lt;unknown…</code></summary><pre><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></details> |  | LinearMafDisplay |
+| <span id="action-setignorepromoteddefaults">**setIgnorePromotedDefaults**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>see the `ignorePromotedDefaults` property</span> | [BaseDisplay](../basedisplay#action-setignorepromoteddefaults) |
+| <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |
+| <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-seterror) |
+| <span id="action-setrpcdrivername">**setRpcDriverName**</span><br><code>(rpcDriverName: string) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setrpcdrivername) |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>base display reload does nothing, see specialized displays for details</span> | [BaseDisplay](../basedisplay#action-reload) |
+| <span id="action-setscrolltop">**setScrollTop**</span><br><code>(scrollTop: number) =&gt; void</code> |  | [TrackHeightMixin](../trackheightmixin#action-setscrolltop) |
+| <span id="action-setheight">**setHeight**</span><br><code>(displayHeight: number) =&gt; number</code> |  | [TrackHeightMixin](../trackheightmixin#action-setheight) |
+| <span id="action-setloadedregion">**setLoadedRegion**</span><br><code>(displayedRegionIndex: number, region: Region) =&gt; void</code> | <span data-pagefind-ignore>Action wrapper so callers after async boundaries stay in MST strict mode.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-setloadedregion) |
+| <span id="action-clearallrpcdata">**clearAllRpcData**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag. The too-large gate is derived (a pure function of the cached estimate × viewport), so it needs no explicit clear here — it self-releases when the viewport changes.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-clearallrpcdata) |
+| <span id="action-invalidateloadedregions">**invalidateLoadedRegions**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-invalidateloadedregions) |
+| <span id="action-onregiontoolarge">**onRegionTooLarge**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Overridable hook (no-op base): called when `regionTooLarge` transitions to true. Displays with transient hover/tooltip state override it to clear that state — the too-large banner replaces the rendered content, so a lingering hover would otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-onregiontoolarge) |
+| <span id="action-fetchregions">**fetchRegions**</span><br><details><summary><code>(needed: { region: Region; displayedRegionIndex: number; }[], w…</code></summary><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[], work: (ctx: FetchContext) =&gt; Promise&lt;void&gt;) =&gt; Promise&lt;void&gt;</code></pre></details> | <span data-pagefind-ignore>Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-fetchregions) |
+| <span id="action-afterattach">**afterAttach**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-afterattach) |
+| <span id="action-setbyteestimate">**setByteEstimate**</span><br><code>(estimate: ByteEstimate) =&gt; void</code> | <span data-pagefind-ignore>Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen. `measuredSpanBp` must be the `visibleBp` captured when the measurement was *requested*, not read at commit time: a view that zoomed during the in-flight fetch would otherwise anchor the estimate to a span it never covered, and since `FetchVisibleRegions` skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner with no refetch to correct it. Harmless for non-gated displays (they ignore it).</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-setbyteestimate) |
+| <span id="action-clearbyteestimate">**clearByteEstimate**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drops the cached estimate. Chromosome navigation only: the estimate intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't flicker the banner.<br><br>`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring it on navigation is exactly the per-locus re-approval the button exists to avoid.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-clearbyteestimate) |
+| <span id="action-setforceloadtrack">**setForceLoadTrack**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>Exempt this track from the gate (or put it back under it). Separate from `forceLoad` so turning the gate off and refetching stay separable — a caller that just wants the flag (a revoke, a test) doesn't trigger a fetch, and `forceLoad` doesn't have to inline a volatile write.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-setforceloadtrack) |
+| <span id="action-forceload">**forceLoad**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Force-load: exempt this track from the gate and refetch. One click covers every region and both axes, informed by the size the banner just quoted. The display chrome calls this from TooLargeMessage's button; concrete display models override `reload()` to do the actual refetch.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-forceload) |
+| <span id="action-bytegateblocksfetch">**byteGateBlocksFetch**</span><br><details><summary><code>(regions: { refName: string; start: number; end: number; assemb…</code></summary><pre><code>(regions: { refName: string; start: number; end: number; assemblyName: string; }[], ctx: { isStale: () =&gt; boolean; }) =&gt; Promise&lt;boolean&gt;</code></pre></details> | <span data-pagefind-ignore>The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.<br><br>Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family, LD and arc from their own global fetches) calls this and returns on true. Sequencing the steps at a call site is what used to go wrong: the span is read here, *before* the await, so the estimate is anchored to the span it actually covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on screen, and since the fetch autoruns skip while `regionTooLarge` holds, an over-anchored estimate wedges the banner with no refetch to correct it.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-bytegateblocksfetch) |
+| <span id="action-markcanvasdrawn">**markCanvasDrawn**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-markcanvasdrawn) |
+| <span id="action-resetcanvasdrawn">**resetCanvasDrawn**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-resetcanvasdrawn) |
+| <span id="action-stoprenderingbackend">**stopRenderingBackend**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-stoprenderingbackend) |
+| <span id="action-rendernow">**renderNow**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-rendernow) |
+| <span id="action-setrendererror">**setRenderError**</span><br><code>(error: unknown) =&gt; void</code> | <span data-pagefind-ignore>set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.</span> | [RenderLifecycleMixin](../renderlifecyclemixin#action-setrendererror) |
+| <span id="action-attachrenderingbackend">**attachRenderingBackend**</span><br><code>&lt;B&gt;(backend: B, cbs: RenderingBackendCallbacks&lt;B&gt;) =&gt; void</code> | <span data-pagefind-ignore>attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)</span> | [RenderLifecycleMixin](../renderlifecyclemixin#action-attachrenderingbackend) |
+| <span id="action-throttlestatus">**throttleStatus**</span><br><code>(apply: () =&gt; void) =&gt; void</code> | <span data-pagefind-ignore>Run `apply` only if the throttle window has elapsed.</span> | [FetchMixin](../fetchmixin#action-throttlestatus) |
+| <span id="action-resetstatus">**resetStatus**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drop the active stop token and clear all status bookkeeping. Shared by both cancel paths and runFetch's cleanup.</span> | [FetchMixin](../fetchmixin#action-resetstatus) |
+| <span id="action-stopactivefetch">**stopActiveFetch**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Abort the in-flight fetch (if any) and clear its status. The shared preamble of both cancel paths; the difference between them is only what they do to `fetchCanceled` / `fetchGeneration` afterward.</span> | [FetchMixin](../fetchmixin#action-stopactivefetch) |
+| <span id="action-setregionstatus">**setRegionStatus**</span><br><code>(key: number, status?: RpcStatus &#124; undefined) =&gt; void</code> | <span data-pagefind-ignore>Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys. Pass undefined to drop a key. Used by displays that fan a single fetch out into parallel per-region RPCs.</span> | [FetchMixin](../fetchmixin#action-setregionstatus) |
+| <span id="action-cancelfetch">**cancelFetch**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the *internal* reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.</span> | [FetchMixin](../fetchmixin#action-cancelfetch) |
+| <span id="action-cancelfetchbyuser">**cancelFetchByUser**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.</span> | [FetchMixin](../fetchmixin#action-cancelfetchbyuser) |
+| <span id="action-beforedestroy">**beforeDestroy**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Release an in-flight fetch's stop token on teardown. Without this, a display destroyed mid-fetch (track/view closed while loading) never revokes its token — a blob-URL leak on the non-SAB fallback path — and never signals the worker to abort the now-useless work. MST auto-chains lifecycle hooks, so a composing display can still define its own beforeDestroy.</span> | [FetchMixin](../fetchmixin#action-beforedestroy) |
+| <span id="action-runfetch">**runFetch**</span><br><code>(work: (ctx: FetchContext) =&gt; Promise&lt;void&gt;) =&gt; Promise&lt;void&gt;</code> | <span data-pagefind-ignore>Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.</span> | [FetchMixin](../fetchmixin#action-runfetch) |
+| <span id="action-setlayout">**setLayout**</span><br><code>(layout: S[]) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-setlayout) |
+| <span id="action-setclustertree">**setClusterTree**</span><br><code>(tree?: string &#124; undefined) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-setclustertree) |
+| <span id="action-setlayoutandclustertree">**setLayoutAndClusterTree**</span><br><code>(layout: S[], tree?: string &#124; undefined) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-setlayoutandclustertree) |
+| <span id="action-settreeareawidth">**setTreeAreaWidth**</span><br><code>(width: number) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-settreeareawidth) |
+| <span id="action-setsubtreefilter">**setSubtreeFilter**</span><br><code>(names?: string[] &#124; undefined) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-setsubtreefilter) |
+| <span id="action-sethoveredtreenode">**setHoveredTreeNode**</span><br><code>(node?: HoveredTreeNode &#124; undefined) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-sethoveredtreenode) |
+| <span id="action-settreecanvasref">**setTreeCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-settreecanvasref) |
+| <span id="action-setmouseovercanvasref">**setMouseoverCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  | [TreeSidebarMixin](../treesidebarmixin#action-setmouseovercanvasref) |

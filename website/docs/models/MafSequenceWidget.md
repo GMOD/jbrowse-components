@@ -9,52 +9,31 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `maf` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
 
-## Overview
-
 Widget showing multiple-alignment (MAF) sequence for a set of samples over the
 connected view's regions, with per-row hover highlight state.
 
-## Members
+## Properties
 
-| Member                                         | Kind       | Defined by        | Description |
-| ---------------------------------------------- | ---------- | ----------------- | ----------- |
-| [id](#property-id)                             | Properties | MafSequenceWidget |             |
-| [type](#property-type)                         | Properties | MafSequenceWidget |             |
-| [adapterConfig](#property-adapterconfig)       | Properties | MafSequenceWidget |             |
-| [samples](#property-samples)                   | Properties | MafSequenceWidget |             |
-| [regions](#property-regions)                   | Properties | MafSequenceWidget |             |
-| [connectedViewId](#property-connectedviewid)   | Properties | MafSequenceWidget |             |
-| [hoverHighlight](#volatile-hoverhighlight)     | Volatiles  | MafSequenceWidget |             |
-| [setHoverHighlight](#action-sethoverhighlight) | Actions    | MafSequenceWidget |             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-id">**id**</span><br><code>id: types.identifier</code> |  |
+| <span id="property-type">**type**</span><br><code>type: types.literal('MafSequenceWidget')</code> |  |
+| <span id="property-adapterconfig">**adapterConfig**</span><br><details><summary><code>adapterConfig: types.frozen&lt;AnyConfigurationModel &#124; undefined&gt;(…</code></summary><pre><code>adapterConfig: types.frozen&lt;AnyConfigurationModel &#124; undefined&gt;(undefined)</code></pre></details> |  |
+| <span id="property-samples">**samples**</span><br><code>samples: types.frozen&lt;Sample[] &#124; undefined&gt;(undefined)</code> |  |
+| <span id="property-regions">**regions**</span><br><details><summary><code>regions: types.frozen&lt; &#124; { refName: string start: number end: n…</code></summary><pre><code>regions: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;refName: string&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;start: number&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;end: number&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyName: string&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}[]&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&gt;(undefined)</code></pre></details> |  |
+| <span id="property-connectedviewid">**connectedViewId**</span><br><code>connectedViewId: types.maybe(types.string)</code> |  |
 
-<details>
-<summary>MafSequenceWidget - Properties</summary>
+## Volatiles
 
-| Member                                                     | Type                                                                                 |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| <span id="property-id">id</span>                           | `ISimpleType<string>`                                                                |
-| <span id="property-type">type</span>                       | `ISimpleType<"MafSequenceWidget">`                                                   |
-| <span id="property-adapterconfig">adapterConfig</span>     | `IType<…>`                                                                           |
-| <span id="property-samples">samples</span>                 | `IType<Sample[] \| null \| undefined, Sample[] \| undefined, Sample[] \| undefined>` |
-| <span id="property-regions">regions</span>                 | `IType<…>`                                                                           |
-| <span id="property-connectedviewid">connectedViewId</span> | `IMaybe<ISimpleType<string>>`                                                        |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-hoverhighlight">**hoverHighlight**</span><br><code>hoverHighlight: undefined as HoverHighlight &#124; undefined</code> |  |
 
-</details>
+## Actions
 
-<details>
-<summary>MafSequenceWidget - Volatiles</summary>
-
-| Member                                                   | Type                          |
-| -------------------------------------------------------- | ----------------------------- |
-| <span id="volatile-hoverhighlight">hoverHighlight</span> | `HoverHighlight \| undefined` |
-
-</details>
-
-<details>
-<summary>MafSequenceWidget - Actions</summary>
-
-| Member                                                       | Type                                               |
-| ------------------------------------------------------------ | -------------------------------------------------- |
-| <span id="action-sethoverhighlight">setHoverHighlight</span> | `(highlight: HoverHighlight \| undefined) => void` |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-sethoverhighlight">**setHoverHighlight**</span><br><code>(highlight: HoverHighlight &#124; undefined) =&gt; void</code> |  |

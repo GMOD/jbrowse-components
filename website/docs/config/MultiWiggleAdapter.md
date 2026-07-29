@@ -83,27 +83,15 @@ combines multiple BigWig files into a single multi-row quantitative track
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "MultiWiggleAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                             | Type     | Description                                                     |
-| -------------------------------- | -------- | --------------------------------------------------------------- |
-| [subadapters](#slot-subadapters) | `frozen` | array of subadapter JSON objects                                |
-| [bigWigs](#slot-bigwigs)         | `frozen` | array of BigWig URLs/paths, alternative to the subadapters slot |
-
-<details>
-<summary>MultiWiggleAdapter - Slots</summary>
-
-#### slot: subadapters
-
-array of subadapter JSON objects
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-#### slot: bigWigs
-
-array of BigWig URLs/paths, alternative to the subadapters slot
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-subadapters">**subadapters**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | array of subadapter JSON objects |
+| <span id="slot-bigwigs">**bigWigs**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | array of BigWig URLs/paths, alternative to the subadapters slot |

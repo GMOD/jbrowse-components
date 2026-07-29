@@ -74,2556 +74,363 @@ Long reads with soft-clipping shown and split/mate reads connected by arcs:
 }
 ```
 
-## Overview
-
 State model factory for LinearAlignmentsDisplay
-
-## Members
-
-| Member                                                                                 | Kind       | Defined by                                            | Description                                                                                                                                                                                                                                                                                                                     |
-| -------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                                                 | Properties | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [configuration](#property-configuration)                                               | Properties | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [featureIdUnderMouse](#volatile-featureidundermouse)                                   | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [mouseoverExtraInformation](#volatile-mouseoverextrainformation)                       | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [contextMenuFeature](#volatile-contextmenufeature)                                     | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [contextMenuFeatureId](#volatile-contextmenufeatureid)                                 | Volatiles  | LinearAlignmentsDisplay                               | The read/feature id under a right-click, known synchronously (the hit test carries it) unlike `contextMenuFeature`, which only lands after an RPC.                                                                                                                                                                              |
-| [contextMenuCoord](#volatile-contextmenucoord)                                         | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [contextMenuCigarHit](#volatile-contextmenucigarhit)                                   | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [contextMenuIndicatorHit](#volatile-contextmenuindicatorhit)                           | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [contextMenuModHit](#volatile-contextmenumodhit)                                       | Volatiles  | LinearAlignmentsDisplay                               | Per-read base modification under a right-click, so "Open modification details" is reachable from the menu (not just left-click).                                                                                                                                                                                                |
-| [contextMenuGenomicPos](#volatile-contextmenugenomicpos)                               | Volatiles  | LinearAlignmentsDisplay                               | Genomic column under a right-click, anchoring the read menu's "sort at the clicked position" items.                                                                                                                                                                                                                             |
-| [contextMenuBlock](#volatile-contextmenublock)                                         | Volatiles  | LinearAlignmentsDisplay                               | The block under a right-click (refName + block-level worker result + bp range).                                                                                                                                                                                                                                                 |
-| [rpcDataMap](#volatile-rpcdatamap)                                                     | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [scrollTop](#volatile-scrolltop)                                                       | Volatiles  | LinearAlignmentsDisplay                               | pileup vertical scroll offset in px.                                                                                                                                                                                                                                                                                            |
-| [collapsedGroups](#volatile-collapsedgroups)                                           | Volatiles  | LinearAlignmentsDisplay                               | Group keys whose pileup is collapsed to just its coverage band (in-track grouping).                                                                                                                                                                                                                                             |
-| [groupMaxHeightOverrides](#volatile-groupmaxheightoverrides)                           | Volatiles  | LinearAlignmentsDisplay                               | Per-group pileup height override in px (in-track grouping).                                                                                                                                                                                                                                                                     |
-| [fittedHeightPx](#volatile-fittedheightpx)                                             | Volatiles  | LinearAlignmentsDisplay                               | Cache of the current fitted read height in px, kept in sync by the afterAttach autorun while `fitHeightToDisplay` is on.                                                                                                                                                                                                        |
-| [highlightedChainIds](#volatile-highlightedchainids)                                   | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [selectedChainIds](#volatile-selectedchainids)                                         | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [colorTagMap](#volatile-colortagmap)                                                   | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [detectedModifications](#volatile-detectedmodifications)                               | Volatiles  | LinearAlignmentsDisplay                               | Modification type code -> painted color, for every type seen in the fetched reads.                                                                                                                                                                                                                                              |
-| [modificationsReady](#volatile-modificationsready)                                     | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [overCigarItem](#volatile-overcigaritem)                                               | Volatiles  | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [hoverCoverageBand](#volatile-hovercoverageband)                                       | Volatiles  | LinearAlignmentsDisplay                               | Screen-px coverage band of the section currently under a coverage/indicator hover.                                                                                                                                                                                                                                              |
-| [linkedReads](#getter-linkedreads)                                                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [pairsDisplayTypeDefault](#getter-pairsdisplaytypedefault)                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showBezierConnections](#getter-showbezierconnections)                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showCoverage](#getter-showcoverage)                                                   | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showPileup](#getter-showpileup)                                                       | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [coverageHeight](#getter-coverageheight)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showMismatches](#getter-showmismatches)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showInterbaseIndicators](#getter-showinterbaseindicators)                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [drawSingletons](#getter-drawsingletons)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [drawProperPairs](#getter-drawproperpairs)                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showOnlySplitAlignments](#getter-showonlysplitalignments)                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [flipStrandLongReadChains](#getter-flipstrandlongreadchains)                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [colorSupplementaryChains](#getter-colorsupplementarychains)                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [drawInter](#getter-drawinter)                                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [drawLongRange](#getter-drawlongrange)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [arcColorByType](#getter-arccolorbytype)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readConnections](#getter-readconnections)                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [arcsDisplayTypeDefault](#getter-arcsdisplaytypedefault)                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readCloudDisplayTypeDefault](#getter-readclouddisplaytypedefault)                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readConnectionsDown](#getter-readconnectionsdown)                                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readConnectionsDownDisplayTypeDefault](#getter-readconnectionsdowndisplaytypedefault) | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showSashimiArcs](#getter-showsashimiarcs)                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [sashimiArcsMode](#getter-sashimiarcsmode)                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [minSashimiScore](#getter-minsashimiscore)                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [sashimiArcsHeight](#getter-sashimiarcsheight)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readConnectionsHeight](#getter-readconnectionsheight)                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showSoftClipping](#getter-showsoftclipping)                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [softClippingDisplayTypeDefault](#getter-softclippingdisplaytypedefault)               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [isChainMode](#getter-ischainmode)                                                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showLinkedReadLines](#getter-showlinkedreadlines)                                     | Getters    | LinearAlignmentsDisplay                               | Whether to draw the straight-line pass connecting normal read-pairs in pileup layout.                                                                                                                                                                                                                                           |
-| [scaleType](#getter-scaletype)                                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [autoscaleType](#getter-autoscaletype)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [minScore](#getter-minscore)                                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [maxScore](#getter-maxscore)                                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [minScoreBound](#getter-minscorebound)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [maxScoreBound](#getter-maxscorebound)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [numStdDev](#getter-numstddev)                                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [hiddenGroupKeys](#getter-hiddengroupkeys)                                             | Getters    | LinearAlignmentsDisplay                               | Group keys that `groupOrder` drops, so a display can hide a lane its own grouping produces without every consumer of the order learning about it.                                                                                                                                                                               |
-| [featureWidgetType](#getter-featurewidgettype)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [selectedFeatureId](#getter-selectedfeatureid)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [TooltipComponent](#getter-tooltipcomponent)                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [detectedModificationTypes](#getter-detectedmodificationtypes)                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [colorBy](#getter-colorby)                                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [filterBy](#getter-filterby)                                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [isFitting](#getter-isfitting)                                                         | Getters    | LinearAlignmentsDisplay                               | True when fit-to-display mode is on AND a pitch has been computed (`fittedHeightPx > 0`, i.e. there are rows and room to fit them).                                                                                                                                                                                             |
-| [featureHeight](#getter-featureheight)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [featureSpacing](#getter-featurespacing)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [rowHeight](#getter-rowheight)                                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [configuredFeatureHeight](#getter-configuredfeatureheight)                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [maxHeight](#getter-maxheight)                                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showSashimiLabels](#getter-showsashimilabels)                                         | Getters    | LinearAlignmentsDisplay                               | Whether to draw the supporting-read count on each sashimi arc.                                                                                                                                                                                                                                                                  |
-| [showSashimiLabelsDisplayTypeDefault](#getter-showsashimilabelsdisplaytypedefault)     | Getters    | LinearAlignmentsDisplay                               | "make the current sashimi-label state the default for all tracks" control (pin): symmetric, so it promotes whichever value the track currently shows.                                                                                                                                                                           |
-| [chainIdMap](#getter-chainidmap)                                                       | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showLowFreqMismatches](#getter-showlowfreqmismatches)                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [filterMismatchesByFrequency](#getter-filtermismatchesbyfrequency)                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [mismatchAlpha](#getter-mismatchalpha)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [mismatchAlphaDisplayTypeDefault](#getter-mismatchalphadisplaytypedefault)             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showLegend](#getter-showlegend)                                                       | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [sortedBy](#getter-sortedby)                                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [largeFeaturesFirst](#getter-largefeaturesfirst)                                       | Getters    | LinearAlignmentsDisplay                               | Lay out the widest features in the lowest pileup rows (main-thread tier-2 relayout via laidOutPileupMap).                                                                                                                                                                                                                       |
-| [groupBy](#getter-groupby)                                                             | Getters    | LinearAlignmentsDisplay                               | In-track stacked grouping dimension (undefined = ungrouped).                                                                                                                                                                                                                                                                    |
-| [prefersOffset](#getter-prefersoffset)                                                 | Getters    | LinearAlignmentsDisplay                               | Offset the track label above the visualization when grouping, so the stacked group sections aren't hidden behind an overlapping label.                                                                                                                                                                                          |
-| [collapseGroupRows](#getter-collapsegrouprows)                                         | Getters    | LinearAlignmentsDisplay                               | Whether each group draws as a single row, its overlap depth carried by the tint layer rather than by stacking.                                                                                                                                                                                                                  |
-| [coverageIsLog](#getter-coverageislog)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [coverageStats](#getter-coveragestats)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [coverageDomain](#getter-coveragedomain)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [coverageTicks](#getter-coverageticks)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [colorLegendCategories](#getter-colorlegendcategories)                                 | Getters    | LinearAlignmentsDisplay                               | Read-color buckets actually present across the rendered reads, the single input that lets the legend list only relevant swatches (see legendUtils).                                                                                                                                                                             |
-| [colorPalette](#getter-colorpalette)                                                   | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [arcLegendCategories](#getter-arclegendcategories)                                     | Getters    | LinearAlignmentsDisplay                               | The arc color slots actually plotted, mapped to legend buckets — curved paired-end arcs and the read cloud's flat lines and endpoint squares alike, since both paint from `arcColorByType`.                                                                                                                                     |
-| [arcColorsMatchReads](#getter-arccolorsmatchreads)                                     | Getters    | LinearAlignmentsDisplay                               | Whether the overlay speaks the reads' own color vocabulary — arc mode against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME).                                                                                                                                                                                       |
-| [arcLegendTitle](#getter-arclegendtitle)                                               | Getters    | LinearAlignmentsDisplay                               | Heading for the overlay's own color key, named after the overlay the reader is looking at: flat read-cloud lines are not arcs.                                                                                                                                                                                                  |
-| [arcBandInput](#getter-arcbandinput)                                                   | Getters    | LinearAlignmentsDisplay                               | The fields `computeArcBand` reads.                                                                                                                                                                                                                                                                                              |
-| [belowCoverageBandsInput](#getter-belowcoveragebandsinput)                             | Getters    | LinearAlignmentsDisplay                               | Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus whether any sashimi junction is present.                                                                                                                                                                                                         |
-| [laidOutByGroup](#getter-laidoutbygroup)                                               | Getters    | LinearAlignmentsDisplay                               | Per-group laid-out data: group key → (region index → laid-out data).                                                                                                                                                                                                                                                            |
-| [groupLayoutContext](#getter-grouplayoutcontext)                                       | Getters    | LinearAlignmentsDisplay                               | The layout mechanics (grouping, sort, soft-clip, colors) shared by the viewport fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays every group out uncapped to count rows.                                                                                                                                 |
-| [groupOrder](#getter-grouporder)                                                       | Getters    | LinearAlignmentsDisplay                               | Group keys + labels in stacking order; a single entry (key '') when ungrouped.                                                                                                                                                                                                                                                  |
-| [laidOutPileupMap](#getter-laidoutpileupmap)                                           | Getters    | LinearAlignmentsDisplay                               | Renderer-facing per-region layout.                                                                                                                                                                                                                                                                                              |
-| [maxY](#getter-maxy)                                                                   | Getters    | LinearAlignmentsDisplay                               | Row count of the primary group across its regions.                                                                                                                                                                                                                                                                              |
-| [pileupTruncated](#getter-pileuptruncated)                                             | Getters    | LinearAlignmentsDisplay                               | True when the ungrouped pileup hit `maxHeight` and overflow reads were collapsed — drives the "max height reached" / "show all" banner.                                                                                                                                                                                         |
-| [rawDataByGroup](#getter-rawdatabygroup)                                               | Getters    | LinearAlignmentsDisplay                               | Raw (un-laid-out) data regrouped as group key → (region idx → data), insertion-ordered so the first key is the primary group.                                                                                                                                                                                                   |
-| [arcsByGroup](#getter-arcsbygroup)                                                     | Getters    | LinearAlignmentsDisplay                               | Per-group arc upload feed: group key → (region idx → `ArcsUploadData`).                                                                                                                                                                                                                                                         |
-| [modificationThreshold](#getter-modificationthreshold)                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [colorSchemeIndex](#getter-colorschemeindex)                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showModifications](#getter-showmodifications)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showPerBaseQuality](#getter-showperbasequality)                                       | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showPerBaseLetter](#getter-showperbaseletter)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [readIdIndexMap](#getter-readidindexmap)                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [layoutReady](#getter-layoutready)                                                     | Getters    | LinearAlignmentsDisplay                               | Whether `searchFeatureByID` has a pileup to search.                                                                                                                                                                                                                                                                             |
-| [readConnectionsLineWidth](#getter-readconnectionslinewidth)                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [belowCoverageBands](#getter-belowcoveragebands)                                       | Getters    | LinearAlignmentsDisplay                               | Geometry of the bands stacked below coverage in arcs-down mode, top to bottom: coverage → paired-end arcs → sashimi.                                                                                                                                                                                                            |
-| [coverageDisplayHeight](#getter-coveragedisplayheight)                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [sections](#getter-sections)                                                           | Getters    | LinearAlignmentsDisplay                               | Single source of all vertical band geometry, one entry per stacked group.                                                                                                                                                                                                                                                       |
-| [renderSections](#getter-rendersections)                                               | Getters    | LinearAlignmentsDisplay                               | Per-section data + content-space band tops for the overlay/hit-test pipeline (labels, highlights, hit-test).                                                                                                                                                                                                                    |
-| [sourceSections](#getter-sourcesections)                                               | Getters    | LinearAlignmentsDisplay                               | Per-section upload input, in stacking order: each section's laid-out region map + arc feed, keyed by group so the renderers can namespace HAL region keys per section.                                                                                                                                                          |
-| [bezierPairSections](#getter-bezierpairsections)                                       | Getters    | LinearAlignmentsDisplay                               | Scroll/pan-invariant half of the bezier connection overlay: the linked pairs of each section, resolved once per relayout.                                                                                                                                                                                                       |
-| [bezierConnectionColorTypes](#getter-bezierconnectioncolortypes)                       | Getters    | LinearAlignmentsDisplay                               | Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line arcs in view, the input that lets the legend list only the connection colors present.                                                                                                                                                                      |
-| [sashimiArcSections](#getter-sashimiarcsections)                                       | Getters    | LinearAlignmentsDisplay                               | Per-section sashimi arcs, in stacking order: each group's junction geometry (sashimi counts live per-group) already split into the two sub-bands, paired with their content-space tops — `coverageOverlayTop` for `up` arcs drawn over the coverage histogram, `sashimiBandTop` for `down` arcs in the reserved strip below it. |
-| [featureNoun](#getter-featurenoun)                                                     | Getters    | LinearAlignmentsDisplay                               | What one row of this pileup is called, for UI text built from the model alone (the group-label chips).                                                                                                                                                                                                                          |
-| [isGrouped](#getter-isgrouped)                                                         | Getters    | LinearAlignmentsDisplay                               | True when reads are stacked into >1 group section.                                                                                                                                                                                                                                                                              |
-| [showsGroupLabels](#getter-showsgrouplabels)                                           | Getters    | LinearAlignmentsDisplay                               | Whether the stacked section labels + dividers are drawn.                                                                                                                                                                                                                                                                        |
-| [scrollModel](#getter-scrollmodel)                                                     | Getters    | LinearAlignmentsDisplay                               | The scroll-projection inputs (`sectionScreen.ts`) every overlay needs to map a content-space Y into screen space.                                                                                                                                                                                                               |
-| [pileupViewportHeight](#getter-pileupviewportheight)                                   | Getters    | LinearAlignmentsDisplay                               | Height of the scrollable viewport.                                                                                                                                                                                                                                                                                              |
-| [pileupContentHeight](#getter-pileupcontentheight)                                     | Getters    | LinearAlignmentsDisplay                               | Total scrollable content height.                                                                                                                                                                                                                                                                                                |
-| [grownHeight](#getter-grownheight)                                                     | Getters    | LinearAlignmentsDisplay                               | Target track height for `grow` mode: the full laid-out content height (coverage + pileup + arcs), capped at the `growMaxHeight` slot so a deep pileup doesn't grow the track to thousands of px (a taller pileup fits to the cap and scrolls the remainder).                                                                    |
-| [height](#getter-height)                                                               | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [scalebarOverlapLeft](#getter-scalebaroverlapleft)                                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [showOutline](#getter-showoutline)                                                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [visibleLabels](#getter-visiblelabels)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [highlightChainIds](#getter-highlightchainids)                                         | Getters    | LinearAlignmentsDisplay                               | Chain member ids to highlight, empty unless in `normal` linked-read mode.                                                                                                                                                                                                                                                       |
-| [highlightBoxes](#getter-highlightboxes)                                               | Getters    | LinearAlignmentsDisplay                               | Screen boxes for the hovered read / chain, painted by the `HighlightOverlay` div.                                                                                                                                                                                                                                               |
-| [fittedFeatureHeight](#getter-fittedfeatureheight)                                     | Getters    | LinearAlignmentsDisplay                               | The read height that makes every uncollapsed group's reads fill the display without scrolling.                                                                                                                                                                                                                                  |
-| [scrollableHeight](#getter-scrollableheight)                                           | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [sortTag](#getter-sorttag)                                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [renderState](#getter-renderstate)                                                     | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [arcsYDomainBp](#getter-arcsydomainbp)                                                 | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [insertSizeTicks](#getter-insertsizeticks)                                             | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [featureUnderMouse](#getter-featureundermouse)                                         | Getters    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [byteGateEnabled](#getter-bytegateenabled)                                             | Getters    | LinearAlignmentsDisplay                               | Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the region set with `CoreGetRegionByteEstimate` before downloading reads.                                                                                                                                                                                     |
-| [sashimiArcsModeDisplayTypeDefault](#method-sashimiarcsmodedisplaytypedefault)         | Methods    | LinearAlignmentsDisplay                               | "make this arc placement the default for all tracks" control (pin), one per option of the radio group.                                                                                                                                                                                                                          |
-| [isGroupCollapsed](#method-isgroupcollapsed)                                           | Methods    | LinearAlignmentsDisplay                               | Whether a stacked group's pileup is collapsed to just its coverage.                                                                                                                                                                                                                                                             |
-| [hasGroupHeightOverride](#method-hasgroupheightoverride)                               | Methods    | LinearAlignmentsDisplay                               | Whether a stacked group carries a custom pileup-height override — set by expanding it (show all reads) or dragging its resize handle (taller or shorter).                                                                                                                                                                       |
-| [legendItems](#method-legenditems)                                                     | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [arcLegendItems](#method-arclegenditems)                                               | Methods    | LinearAlignmentsDisplay                               | Key for the paired-end arc / read-cloud colors.                                                                                                                                                                                                                                                                                 |
-| [groupLaidOutMap](#method-grouplaidoutmap)                                             | Methods    | LinearAlignmentsDisplay                               | Laid-out region map for one group key, or an empty map for a key with no data.                                                                                                                                                                                                                                                  |
-| [isGroupTruncated](#method-isgrouptruncated)                                           | Methods    | LinearAlignmentsDisplay                               | True when the row cap clipped reads from a group's pileup and the user hasn't explicitly sized that group (a height drag/expand makes any truncation intentional, so it isn't flagged).                                                                                                                                         |
-| [findFeatureInRpcData](#method-findfeatureinrpcdata)                                   | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [bezierLegendItems](#method-bezierlegenditems)                                         | Methods    | LinearAlignmentsDisplay                               | Legend swatches for the linked-read connection curves, empty unless the bezier overlay is on and at least one connection is in view.                                                                                                                                                                                            |
-| [groupPileupOffset](#method-grouppileupoffset)                                         | Methods    | LinearAlignmentsDisplay                               | Content-space Y of a group's pileup relative to the FIRST section's pileup top, i.e. how far a read's row shifts because its group is stacked below the others.                                                                                                                                                                 |
-| [searchFeatureByID](#method-searchfeaturebyid)                                         | Methods    | LinearAlignmentsDisplay                               | Layout rect of a read, for cross-view overlays (BreakpointSplitView's connection curves).                                                                                                                                                                                                                                       |
-| [chainIdsForRead](#method-chainidsforread)                                             | Methods    | LinearAlignmentsDisplay                               | Chain IDs sharing a QNAME with the read at `index` in `rpcData`.                                                                                                                                                                                                                                                                |
-| [getFeatureInfoById](#method-getfeatureinfobyid)                                       | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [rpcProps](#method-rpcprops)                                                           | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [trackMenuItems](#method-trackmenuitems)                                               | Methods    | LinearAlignmentsDisplay                               | Track menu items                                                                                                                                                                                                                                                                                                                |
-| [contextMenuItems](#method-contextmenuitems)                                           | Methods    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [clearMouseoverState](#action-clearmouseoverstate)                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setError](#action-seterror)                                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [onRegionTooLarge](#action-onregiontoolarge)                                           | Actions    | LinearAlignmentsDisplay                               | Clear the hover/tooltip when the region goes too large (the banner replaces the pileup).                                                                                                                                                                                                                                        |
-| [setRpcData](#action-setrpcdata)                                                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [clearDisplaySpecificData](#action-cleardisplayspecificdata)                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setOverCigarItem](#action-setovercigaritem)                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setScrollTop](#action-setscrolltop)                                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setHighlightedChainIds](#action-sethighlightedchainids)                               | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [clearHighlights](#action-clearhighlights)                                             | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [clearSelection](#action-clearselection)                                               | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setSelectedChainIds](#action-setselectedchainids)                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setColorScheme](#action-setcolorscheme)                                               | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [updateColorTagMap](#action-updatecolortagmap)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setFilterBy](#action-setfilterby)                                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowSoftClipping](#action-setshowsoftclipping)                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setMismatchAlpha](#action-setmismatchalpha)                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setSortedBy](#action-setsortedby)                                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setSortSlot](#action-setsortslot)                                                     | Actions    | LinearAlignmentsDisplay                               | Commit a sort, the single place the `sortedBy` slot is written.                                                                                                                                                                                                                                                                 |
-| [setSortedByAtPosition](#action-setsortedbyatposition)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [clearSortedBy](#action-clearsortedby)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setLargeFeaturesFirst](#action-setlargefeaturesfirst)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setGroupBy](#action-setgroupby)                                                       | Actions    | LinearAlignmentsDisplay                               | Set (or remove, when undefined) the in-track stacked grouping dimension.                                                                                                                                                                                                                                                        |
-| [setCollapseGroupRows](#action-setcollapsegrouprows)                                   | Actions    | LinearAlignmentsDisplay                               | Draw each group as one row (overlap depth shows as tint shading) rather than as its own stack.                                                                                                                                                                                                                                  |
-| [toggleGroupCollapsed](#action-togglegroupcollapsed)                                   | Actions    | LinearAlignmentsDisplay                               | Collapse/expand a stacked group's pileup (coverage stays visible).                                                                                                                                                                                                                                                              |
-| [toggleGroupExpanded](#action-togglegroupexpanded)                                     | Actions    | LinearAlignmentsDisplay                               | Expand a fit-to-viewport group back to the full `maxHeight` cap (show all its reads), or, if it already carries a height override (from expand or a drag), drop the override to return it to the fit budget.                                                                                                                    |
-| [resizeGroupHeight](#action-resizegroupheight)                                         | Actions    | LinearAlignmentsDisplay                               | Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many rows that group lays out.                                                                                                                                                                                                                        |
-| [setScaleType](#action-setscaletype)                                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setAutoscale](#action-setautoscale)                                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setMinScore](#action-setminscore)                                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setMaxScore](#action-setmaxscore)                                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setFeatureHeight](#action-setfeatureheight)                                           | Actions    | LinearAlignmentsDisplay                               | Set the per-read pixel size.                                                                                                                                                                                                                                                                                                    |
-| [setMaxHeight](#action-setmaxheight)                                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setHeightMode](#action-setheightmode)                                                 | Actions    | LinearAlignmentsDisplay                               | Set the track-height strategy by writing the unified `heightMode` slot; the modes are mutually exclusive by construction.                                                                                                                                                                                                       |
-| [setFittedHeightPx](#action-setfittedheightpx)                                         | Actions    | LinearAlignmentsDisplay                               | Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can split it into a body + derived gap.                                                                                                                                                                                                            |
-| [setShowSashimiArcs](#action-setshowsashimiarcs)                                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setReadConnections](#action-setreadconnections)                                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setReadConnectionsDown](#action-setreadconnectionsdown)                               | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowCoverage](#action-setshowcoverage)                                             | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowPileup](#action-setshowpileup)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setCoverageHeight](#action-setcoverageheight)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setReadConnectionsHeight](#action-setreadconnectionsheight)                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setSashimiArcsHeight](#action-setsashimiarcsheight)                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setMinSashimiScore](#action-setminsashimiscore)                                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setSashimiArcsMode](#action-setsashimiarcsmode)                                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowSashimiLabels](#action-setshowsashimilabels)                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setReadConnectionsLineWidth](#action-setreadconnectionslinewidth)                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setDrawInter](#action-setdrawinter)                                                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setDrawLongRange](#action-setdrawlongrange)                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setArcColorByType](#action-setarccolorbytype)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowMismatches](#action-setshowmismatches)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowLegend](#action-setshowlegend)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setDrawSingletons](#action-setdrawsingletons)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setDrawProperPairs](#action-setdrawproperpairs)                                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowOnlySplitAlignments](#action-setshowonlysplitalignments)                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowInterbaseIndicators](#action-setshowinterbaseindicators)                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setFlipStrandLongReadChains](#action-setflipstrandlongreadchains)                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setColorSupplementaryChains](#action-setcolorsupplementarychains)                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setLinkedReads](#action-setlinkedreads)                                               | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setShowBezierConnections](#action-setshowbezierconnections)                           | Actions    | LinearAlignmentsDisplay                               | Toggle the paired-read connection overlay.                                                                                                                                                                                                                                                                                      |
-| [updateVisibleModifications](#action-updatevisiblemodifications)                       | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setModificationsReady](#action-setmodificationsready)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setFeatureIdUnderMouse](#action-setfeatureidundermouse)                               | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setMouseoverExtraInformation](#action-setmouseoverextrainformation)                   | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setHoverState](#action-sethoverstate)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [setContextMenuFeature](#action-setcontextmenufeature)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [closeContextMenu](#action-closecontextmenu)                                           | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [selectFeature](#action-selectfeature)                                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [startRenderingBackend](#action-startrenderingbackend)                                 | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [withFeatureById](#action-withfeaturebyid)                                             | Actions    | LinearAlignmentsDisplay                               | Fetch the feature behind `featureId` and hand it to `onFeat`.                                                                                                                                                                                                                                                                   |
-| [selectFeatureById](#action-selectfeaturebyid)                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [openContextMenu](#action-opencontextmenu)                                             | Actions    | LinearAlignmentsDisplay                               | Open the right-click menu over a hit.                                                                                                                                                                                                                                                                                           |
-| [fetchNeeded](#action-fetchneeded)                                                     | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [renderSvg](#action-rendersvg)                                                         | Actions    | LinearAlignmentsDisplay                               |                                                                                                                                                                                                                                                                                                                                 |
-| [resizeHeight](#action-resizeheight)                                                   | Actions    | LinearAlignmentsDisplay                               | A manual drag-resize means the user wants a fixed height; leave grow mode first, otherwise the grow autorun snaps the height back on the next relayout and the drag appears to do nothing (mirrors canvas).                                                                                                                     |
-| [id](#property-id)                                                                     | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [rpcDriverName](#property-rpcdrivername)                                               | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [ignorePromotedDefaults](#property-ignorepromoteddefaults)                             | Properties | [BaseDisplay](../basedisplay)                         | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL).                                                                                                                                                                                             |
-| [error](#volatile-error)                                                               | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [statusMessage](#volatile-statusmessage)                                               | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [statusProgress](#volatile-statusprogress)                                             | Volatiles  | [BaseDisplay](../basedisplay)                         | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate.                                                                                                                                                                                                             |
-| [parentTrack](#getter-parenttrack)                                                     | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [parentDisplay](#getter-parentdisplay)                                                 | Getters    | [BaseDisplay](../basedisplay)                         | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                                                                |
-| [RenderingComponent](#getter-renderingcomponent)                                       | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [DisplayBlurb](#getter-displayblurb)                                                   | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [adapterConfig](#getter-adapterconfig)                                                 | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [isMinimized](#getter-isminimized)                                                     | Getters    | [BaseDisplay](../basedisplay)                         | Returns true if the parent track is minimized.                                                                                                                                                                                                                                                                                  |
-| [effectiveRpcDriverName](#getter-effectiverpcdrivername)                               | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1.                                                                                                                                                                                                                                                            |
-| [DisplayMessageComponent](#getter-displaymessagecomponent)                             | Getters    | [BaseDisplay](../basedisplay)                         | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                                      |
-| [renderingProps](#method-renderingprops)                                               | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component.                                                                                                                                                                                                                                                                     |
-| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)                         | Actions    | [BaseDisplay](../basedisplay)                         | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                                                                       |
-| [setStatusMessage](#action-setstatusmessage)                                           | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [setRpcDriverName](#action-setrpcdrivername)                                           | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                 |
-| [reload](#action-reload)                                                               | Actions    | [BaseDisplay](../basedisplay)                         | base display reload does nothing, see specialized displays for details                                                                                                                                                                                                                                                          |
-| [setHeight](#action-setheight)                                                         | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                 |
-| [heightMode](#getter-heightmode)                                                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | The resolved track-height strategy (`fixed`/`grow`/`fit`).                                                                                                                                                                                                                                                                      |
-| [fitTargetHeight](#getter-fittargetheight)                                             | Getters    | [HeightModeMixin](../heightmodemixin)                 | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into.                                                                                                                                                                                                 |
-| [growMaxHeight](#getter-growmaxheight)                                                 | Getters    | [HeightModeMixin](../heightmodemixin)                 | Ceiling `grow` mode sizes the track to, in px (content past it scrolls).                                                                                                                                                                                                                                                        |
-| [autoHeight](#getter-autoheight)                                                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                           |
-| [fitHeightToDisplay](#getter-fitheighttodisplay)                                       | Getters    | [HeightModeMixin](../heightmodemixin)                 | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                            |
-| [loadedRegions](#volatile-loadedregions)                                               | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                          |
-| [canRender](#getter-canrender)                                                         | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured.                                                                                                                                               |
-| [isReady](#getter-isready)                                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                      |
-| [viewportWithinLoadedData](#getter-viewportwithinloadeddata)                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan.                                                                                                                                                          |
-| [dataCurrent](#getter-datacurrent)                                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now.                                                                                                                                                           |
-| [svgReady](#getter-svgready)                                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data.                                                                                                                                                                                                                                                       |
-| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                                 | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data.                                                                                                                                                                              |
-| [renderBlocks](#getter-renderblocks)                                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display.                                                                                                                                                                                                                                                                             |
-| [displayPhase](#getter-displayphase)                                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`.                                                                                                                                                                                                                              |
-| [rpcPropsCacheKey](#getter-rpcpropscachekey)                                           | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string.                                                                                                                                                                                                                 |
-| [isCacheValid](#method-iscachevalid)                                                   | Methods    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook: return `false` to force re-fetch at the current zoom (wiggle uses this for zoom-level changes).                                                                                                                                                                                                               |
-| [setLoadedRegion](#action-setloadedregion)                                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                       |
-| [clearAllRpcData](#action-clearallrpcdata)                                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag.                                                                                                                                                                                                                       |
-| [invalidateLoadedRegions](#action-invalidateloadedregions)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                                                  |
-| [fetchRegions](#action-fetchregions)                                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating.                                                                                                                                                                                                                                                                               |
-| [afterAttach](#action-afterattach)                                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)                                                                                                                                                    |
-| [forceLoadTrack](#volatile-forceloadtrack)                                             | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The force-load button's answer: render this track regardless of region size or feature density.                                                                                                                                                                                                                                 |
-| [byteEstimate](#volatile-byteestimate)                                                 | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now.                                                                                                                                                        |
-| [gateFoldedIntoFetch](#getter-gatefoldedintofetch)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas).                                                                                                                                                                                                           |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The composing display's configured `fetchSizeLimit`, read straight from its config.                                                                                                                                                                                                                                             |
-| [densityTooLarge](#getter-densitytoolarge)                                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate.                                                                                                                                                                                                           |
-| [adapterFetchSizeLimit](#getter-adapterfetchsizelimit)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config.                                                                                                                                                                                 |
-| [configForceLoad](#getter-configforceload)                                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button).                                                                                                                                                               |
-| [gateVisibleBp](#getter-gatevisiblebp)                                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The span on screen, or undefined before the view is measured.                                                                                                                                                                                                                                                                   |
-| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`).                                                                                                   |
-| [aboveForceLoadFloor](#getter-aboveforceloadfloor)                                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else.                                                                                                                                                                              |
-| [byteGateExempt](#getter-bytegateexempt)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button.                                                                                                                                                                                   |
-| [estimatedBytesForVisibleSpan](#getter-estimatedbytesforvisiblespan)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers.                                                                                                                                                                            |
-| [gateByteLimit](#getter-gatebytelimit)                                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget the gate enforces: the adapter's limit, else the display config.                                                                                                                                                                                                                                                |
-| [gateActive](#getter-gateactive)                                                       | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.                                                                                                                                                                                    |
-| [tooLargeStatus](#getter-toolargestatus)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text).                                                                               |
-| [regionTooLarge](#getter-regiontoolarge)                                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                 |
-| [regionTooLargeReason](#getter-regiontoolargereason)                                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Which axis tripped, as banner text: the estimated download size, or "Too many features".                                                                                                                                                                                                                                        |
-| [resolvedByteLimit](#method-resolvedbytelimit)                                         | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features.                                                                                                                                                                                                      |
-| [setByteEstimate](#action-setbyteestimate)                                             | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen.                                                                                                                                                                                            |
-| [clearByteEstimate](#action-clearbyteestimate)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Drops the cached estimate.                                                                                                                                                                                                                                                                                                      |
-| [setForceLoadTrack](#action-setforceloadtrack)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Exempt this track from the gate (or put it back under it).                                                                                                                                                                                                                                                                      |
-| [forceLoad](#action-forceload)                                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Force-load: exempt this track from the gate and refetch.                                                                                                                                                                                                                                                                        |
-| [byteGateBlocksFetch](#action-bytegateblocksfetch)                                     | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.                                                                                                            |
-| [canvasDrawn](#volatile-canvasdrawn)                                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                              |
-| [currentRenderingBackend](#volatile-currentrenderingbackend)                           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery.                                                                                                                                                                                                                                                                    |
-| [renderTick](#volatile-rendertick)                                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                |
-| [autorunsInstalled](#volatile-autorunsinstalled)                                       | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                      |
-| [renderError](#volatile-rendererror)                                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.                                                                                                                                                                                                                                                     |
-| [markCanvasDrawn](#action-markcanvasdrawn)                                             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                 |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                 |
-| [stopRenderingBackend](#action-stoprenderingbackend)                                   | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                 |
-| [renderNow](#action-rendernow)                                                         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                 |
-| [setRenderError](#action-setrendererror)                                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | set/clear the render-backend error.                                                                                                                                                                                                                                                                                             |
-| [attachRenderingBackend](#action-attachrenderingbackend)                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                     |
-| [activeStopToken](#volatile-activestoptoken)                                           | Volatiles  | [FetchMixin](../fetchmixin)                           | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                                                                       |
-| [fetchGeneration](#volatile-fetchgeneration)                                           | Volatiles  | [FetchMixin](../fetchmixin)                           | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                                                                |
-| [fetchCanceled](#volatile-fetchcanceled)                                               | Volatiles  | [FetchMixin](../fetchmixin)                           | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`).                                                                                                                                                                                                                      |
-| [regionStatuses](#volatile-regionstatuses)                                             | Volatiles  | [FetchMixin](../fetchmixin)                           | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex).                                                                                                                                                                                                  |
-| [isLoading](#getter-isloading)                                                         | Getters    | [FetchMixin](../fetchmixin)                           | true while a fetch is active                                                                                                                                                                                                                                                                                                    |
-| [makeStatusCallback](#method-makestatuscallback)                                       | Methods    | [FetchMixin](../fetchmixin)                           | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op.                                                                                    |
-| [makeRegionStatusCallback](#method-makeregionstatuscallback)                           | Methods    | [FetchMixin](../fetchmixin)                           | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other.                                                                                                                                |
-| [throttleStatus](#action-throttlestatus)                                               | Actions    | [FetchMixin](../fetchmixin)                           | Run `apply` only if the throttle window has elapsed.                                                                                                                                                                                                                                                                            |
-| [resetStatus](#action-resetstatus)                                                     | Actions    | [FetchMixin](../fetchmixin)                           | Drop the active stop token and clear all status bookkeeping.                                                                                                                                                                                                                                                                    |
-| [stopActiveFetch](#action-stopactivefetch)                                             | Actions    | [FetchMixin](../fetchmixin)                           | Abort the in-flight fetch (if any) and clear its status.                                                                                                                                                                                                                                                                        |
-| [setRegionStatus](#action-setregionstatus)                                             | Actions    | [FetchMixin](../fetchmixin)                           | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys.                                                                                                                                                                       |
-| [cancelFetch](#action-cancelfetch)                                                     | Actions    | [FetchMixin](../fetchmixin)                           | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight).                                                                                                                                                                                    |
-| [cancelFetchByUser](#action-cancelfetchbyuser)                                         | Actions    | [FetchMixin](../fetchmixin)                           | User-initiated cancel from the loading overlay.                                                                                                                                                                                                                                                                                 |
-| [beforeDestroy](#action-beforedestroy)                                                 | Actions    | [FetchMixin](../fetchmixin)                           | Release an in-flight fetch's stop token on teardown.                                                                                                                                                                                                                                                                            |
-| [runFetch](#action-runfetch)                                                           | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior).                                                                                                                                                                                                                                                                                    |
-
-### LinearAlignmentsDisplay - Configuration
 
 The configuration slots for this model are documented on its
 [config schema page](../../config/linearalignmentsdisplay).
 
-<details>
-<summary>LinearAlignmentsDisplay - Properties</summary>
-
-| Member                                                 | Type                                                  |
-| ------------------------------------------------------ | ----------------------------------------------------- |
-| <span id="property-type">type</span>                   | `ISimpleType<"LinearAlignmentsDisplay">`              |
-| <span id="property-configuration">configuration</span> | `IConfigurationReference<ConfigurationSchemaType<…>>` |
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Volatiles</summary>
-
-#### volatile: contextMenuFeatureId
-
-The read/feature id under a right-click, known synchronously (the hit test
-carries it) unlike `contextMenuFeature`, which only lands after an RPC. A menu
-item that can act from the id alone — or fetch the feature in its own onClick —
-reads this, so it doesn't blink into existence a fetch later.
-
-```ts
-// type signature
-type contextMenuFeatureId = string | undefined
-// code
-contextMenuFeatureId: undefined as string | undefined
-```
-
-#### volatile: contextMenuModHit
-
-Per-read base modification under a right-click, so "Open modification details"
-is reachable from the menu (not just left-click). Set with the block/hits as a
-unit.
-
-```ts
-// type signature
-type contextMenuModHit = ModificationHitResult | undefined
-// code
-contextMenuModHit: undefined as ModificationHitResult | undefined
-```
-
-#### volatile: contextMenuGenomicPos
-
-Genomic column under a right-click, anchoring the read menu's "sort at the
-clicked position" items. Set with the block/hits as a unit.
-
-```ts
-// type signature
-type contextMenuGenomicPos = number | undefined
-// code
-contextMenuGenomicPos: undefined as number | undefined
-```
-
-#### volatile: contextMenuBlock
-
-The block under a right-click (refName + block-level worker result + bp range).
-The position sort reads its refName and the indicator/coverage detail items read
-its rpcData to open the aggregate widget (mirrors the left-click path in
-useAlignmentsBase).
-
-```ts
-// type signature
-type contextMenuBlock = ResolvedBlock | undefined
-// code
-contextMenuBlock: undefined as ResolvedBlock | undefined
-```
-
-#### volatile: scrollTop
-
-pileup vertical scroll offset in px. Also read by the BreakpointSplitView
-overlay to position its SVG curves.
-
-```ts
-// type signature
-type scrollTop = number
-// code
-scrollTop: 0
-```
-
-#### volatile: collapsedGroups
-
-Group keys whose pileup is collapsed to just its coverage band (in-track
-grouping). Keyed by group key so it survives re-fetches; volatile so it resets
-on reload. Stale keys from a prior grouping dimension are harmless — they never
-match the new keys.
-
-```ts
-// type signature
-type collapsedGroups = ObservableSet<string>
-// code
-collapsedGroups: observable.set<string>()
-```
-
-#### volatile: groupMaxHeightOverrides
-
-Per-group pileup height override in px (in-track grouping). Keyed by group key,
-volatile like `collapsedGroups`; absent keys fall back to the display-wide
-`maxHeight`. Lets a dense section be shrunk independently. Cleared by
-`setGroupBy`.
-
-```ts
-// type signature
-type groupMaxHeightOverrides = ObservableMap<string, number>
-// code
-groupMaxHeightOverrides: observable.map<string, number>()
-```
-
-#### volatile: fittedHeightPx
-
-Cache of the current fitted read height in px, kept in sync by the afterAttach
-autorun while `fitHeightToDisplay` is on. A volatile (not a getter) because the
-fit height derives from late layout getters that the early `featureHeight`
-getter can't reference — the autorun bridges that ordering. 0 until first
-computed / when nothing fits.
-
-```ts
-// type signature
-type fittedHeightPx = number
-// code
-fittedHeightPx: 0
-```
-
-#### volatile: detectedModifications
-
-Modification type code -> painted color, for every type seen in the fetched
-reads. This is what the data CONTAINS; what is actually drawn is filtered
-separately by isModificationTypeVisible, so don't rename this back to "visible".
-
-```ts
-// type signature
-type detectedModifications = ObservableMap<string, string>
-// code
-detectedModifications: observable.map<string, string>({})
-```
-
-#### volatile: hoverCoverageBand
-
-Screen-px coverage band of the section currently under a coverage/indicator
-hover. Drives the tooltip's vertical hover bar so it lands on the hovered
-group's coverage band, not always the top one. `undefined` when not hovering
-coverage.
-
-```ts
-// type signature
-type hoverCoverageBand =
-  { topOffset: number; coverageHeight: number } | undefined
-// code
-hoverCoverageBand: undefined as
-  { topOffset: number; coverageHeight: number } | undefined
-```
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Volatiles (other undocumented members)</summary>
-
-| Member                                                                         | Type                                             |
-| ------------------------------------------------------------------------------ | ------------------------------------------------ |
-| <span id="volatile-featureidundermouse">featureIdUnderMouse</span>             | `string \| undefined`                            |
-| <span id="volatile-mouseoverextrainformation">mouseoverExtraInformation</span> | `TooltipPayload \| undefined`                    |
-| <span id="volatile-contextmenufeature">contextMenuFeature</span>               | `Feature \| undefined`                           |
-| <span id="volatile-contextmenucoord">contextMenuCoord</span>                   | `[number, number] \| undefined`                  |
-| <span id="volatile-contextmenucigarhit">contextMenuCigarHit</span>             | `CigarHitResult \| undefined`                    |
-| <span id="volatile-contextmenuindicatorhit">contextMenuIndicatorHit</span>     | `IndicatorHitResult \| undefined`                |
-| <span id="volatile-rpcdatamap">rpcDataMap</span>                               | `ObservableMap<number, GroupedAlignmentsResult>` |
-| <span id="volatile-highlightedchainids">highlightedChainIds</span>             | `string[]`                                       |
-| <span id="volatile-selectedchainids">selectedChainIds</span>                   | `string[]`                                       |
-| <span id="volatile-colortagmap">colorTagMap</span>                             | `Record<string, string>`                         |
-| <span id="volatile-modificationsready">modificationsReady</span>               | `false`                                          |
-| <span id="volatile-overcigaritem">overCigarItem</span>                         | `false`                                          |
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Getters</summary>
-
-#### getter: showLinkedReadLines
-
-Whether to draw the straight-line pass connecting normal read-pairs in pileup
-layout. Only meaningful when bezier connections are on AND we are in pileup mode
-— chain layout has its own connecting-line pass that already covers normal
-pairs.
-
-```ts
-type showLinkedReadLines = boolean
-```
-
-#### getter: hiddenGroupKeys
-
-Group keys that `groupOrder` drops, so a display can hide a lane its own
-grouping produces without every consumer of the order learning about it. Empty
-here; LGVSyntenyDisplay overrides it to hide the self-alignment lane of an
-all-vs-all track.
-
-```ts
-type hiddenGroupKeys = ReadonlySet<string>
-```
-
-#### getter: isFitting
-
-True when fit-to-display mode is on AND a pitch has been computed
-(`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The single
-gate both size getters read, so it's obvious they either both split the fitted
-pitch or both fall back to config — never a mix.
-
-```ts
-type isFitting = boolean
-```
-
-#### getter: showSashimiLabels
-
-Whether to draw the supporting-read count on each sashimi arc. Resolved through
-the promotable-slot tiers (resolveConf): an explicit track value pins labels on
-or off; otherwise it follows the session-wide default, falling back to off. A
-`maybeBoolean` slot, so (like mismatchAlpha) a session default of "on" can be
-customized back off on a single track.
-
-```ts
-type showSashimiLabels = boolean
-```
-
-#### getter: showSashimiLabelsDisplayTypeDefault
-
-"make the current sashimi-label state the default for all tracks" control (pin):
-symmetric, so it promotes whichever value the track currently shows.
-
-```ts
-type showSashimiLabelsDisplayTypeDefault = DisplayTypeDefaultControl
-```
-
-#### getter: largeFeaturesFirst
-
-Lay out the widest features in the lowest pileup rows (main-thread tier-2
-relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it on. Ignored while
-an explicit `sortedBy` position sort is active.
-
-```ts
-type largeFeaturesFirst = boolean
-```
-
-#### getter: groupBy
-
-In-track stacked grouping dimension (undefined = ungrouped). Falls back to the
-`groupBy` config slot, so a track can be pre-grouped declaratively. Sent to the
-worker via rpcProps; the worker partitions one fetch into N sections. The slot
-is `frozen` (unvalidated JSON), so `normalizeGroupBy` is the chokepoint that
-keeps an unrecognized type or a tag grouping with no tag name from reaching the
-worker.
-
-```ts
-type groupBy = GroupBy | undefined
-```
-
-#### getter: prefersOffset
-
-Offset the track label above the visualization when grouping, so the stacked
-group sections aren't hidden behind an overlapping label.
-
-Asks whether the grouping will be HONORED, not merely whether it is set: chain
-mode drops a per-read dimension (`groupByForMode`), and reserving label room for
-sections that then never get drawn leaves dead space above the plot. Unlike
-`showsGroupLabels` this can't read the fetched sections — the track label is
-positioned before any data arrives, and flipping once it lands would jump the
-layout — but the degradation is decidable from the two settings alone, so no
-data is needed.
-
-```ts
-type prefersOffset = boolean
-```
-
-#### getter: collapseGroupRows
-
-Whether each group draws as a single row, its overlap depth carried by the tint
-layer rather than by stacking. Gated on the grouping actually being honored
-(`prefersOffset`), so the slot can be a track-config default without an
-ungrouped view silently flattening its whole pileup onto one row.
-
-```ts
-type collapseGroupRows = boolean
-```
-
-#### getter: colorLegendCategories
-
-Read-color buckets actually present across the rendered reads, the single input
-that lets the legend list only relevant swatches (see legendUtils). Shares
-readColorCategory with the renderer so the two can't disagree. Empty while the
-legend is hidden so the O(reads) scan is skipped; MobX memoizes it against
-rpcDataMap + scheme + mode.
-
-```ts
-type colorLegendCategories = Set<ReadColorCategory>
-```
-
-#### getter: arcLegendCategories
-
-The arc color slots actually plotted, mapped to legend buckets — curved
-paired-end arcs and the read cloud's flat lines and endpoint squares alike,
-since both paint from `arcColorByType`. Its own vocabulary when the fills use a
-different scheme (a track colored by strand still draws insert-size-colored
-arcs), so it keys its own legend section then and folds into the read key
-otherwise — see `arcColorsMatchReads`. Empty unless an overlay is on with the
-legend shown.
-
-```ts
-type arcLegendCategories = Set<ReadColorCategory>
-```
-
-#### getter: arcColorsMatchReads
-
-Whether the overlay speaks the reads' own color vocabulary — arc mode against
-its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME). The swatches are
-then identical categories in identical palette colors, so keying both sections
-lists the same colors twice under two headings; the arc buckets fold into the
-read key instead.
-
-```ts
-type arcColorsMatchReads = boolean
-```
-
-#### getter: arcLegendTitle
-
-Heading for the overlay's own color key, named after the overlay the reader is
-looking at: flat read-cloud lines are not arcs.
-
-```ts
-type arcLegendTitle = 'Read cloud colors' | 'Arc colors'
-```
-
-#### getter: arcBandInput
-
-The fields `computeArcBand` reads. One source so the drawn arc band
-(`sections`/`buildSectionRenders`) and the insert-size ruler that must land on
-its apexes (`insertSizeTicks`) can't be assembled differently.
-
-```ts
-type arcBandInput = {
-  showCoverage: boolean
-  coverageHeight: number
-  coverageYOffset: number
-  readConnections: 'off' | 'arc' | 'cloud'
-  readConnectionsDown: boolean
-  readConnectionsHeight: number
-}
-```
-
-#### getter: belowCoverageBandsInput
-
-Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus
-whether any sashimi junction is present. Defined here (an earlier .views block
-than `belowCoverageBands`) so the fit-budget `laidOutByGroup` and the
-`belowCoverageBands` getter share one source.
-
-```ts
-type belowCoverageBandsInput = {…}
-```
-
-#### getter: laidOutByGroup
-
-Per-group laid-out data: group key → (region index → laid-out data). Each group
-lays out independently (own `maxRows` cap) so a dense group can't starve the
-rest. When grouped, the default cap fits all sections into the viewport
-(`fitGroupMaxRows`) so the stack doesn't tower and need scrolling; a per-group
-height drag / expand still overrides it. Tag colors are baked here (not in the
-worker) so colorTagMap stays a main-thread tier-2 setting — see readTagColors.
-
-```ts
-type laidOutByGroup = LaidOutByGroup
-```
-
-#### getter: groupLayoutContext
-
-The layout mechanics (grouping, sort, soft-clip, colors) shared by the viewport
-fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays every
-group out uncapped to count rows. Kept apart from the fit policy (row caps),
-which varies per call.
-
-```ts
-type groupLayoutContext = { order: GroupId[]; rawByGroup: Map<string, Map<number, PileupDataResult>>; isChainMode: boolean; sortedBy: SortedBy | undefined; ... 6 more ...; collapseGroupRows: boolean; }
-```
-
-#### getter: groupOrder
-
-Group keys + labels in stacking order; a single entry (key '') when ungrouped.
-Derived straight from the fetched `rpcDataMap` (not from the layout pass), so
-group identity/order stays stable across relayouts.
-
-```ts
-type groupOrder = GroupId[]
-```
-
-#### getter: laidOutPileupMap
-
-Renderer-facing per-region layout. Stage 2 draws a single section, so this
-exposes the first (for ungrouped, the only) group; Stage 3 switches the
-renderers to loop `sections` directly.
-
-```ts
-type laidOutPileupMap = Map<number, PileupDataResult>
-```
-
-#### getter: maxY
-
-Row count of the primary group across its regions. This reads only the first
-group (`laidOutPileupMap`), so it is meaningful only on the
-single-section/ungrouped path. Grouped layout sizes each section from its own
-`groupMaxY`; don't use this as a cross-group aggregate.
-
-```ts
-type maxY = number
-```
-
-#### getter: pileupTruncated
-
-True when the ungrouped pileup hit `maxHeight` and overflow reads were collapsed
-— drives the "max height reached" / "show all" banner. Only the ungrouped
-(single-group) case: grouped sections surface their own truncation per-label
-(`isGroupTruncated`), where raising `maxHeight` wouldn't lift the
-fit-to-viewport cap anyway — expanding the group does. Suppressed in
-fit-to-display mode for the same reason: reads there are already clamped to a
-1px floor, so "Show all" can't deliver a fit — it only deepens the 1px scroll.
-The overflow indicator still flags the scroll in that case.
-
-```ts
-type pileupTruncated = boolean
-```
-
-#### getter: rawDataByGroup
-
-Raw (un-laid-out) data regrouped as group key → (region idx → data),
-insertion-ordered so the first key is the primary group. The arc compute and the
-per-section sashimi overlay both read one group's raw map from here; ungrouped
-is the single key `''`.
-
-```ts
-type rawDataByGroup = Map<string, Map<number, PileupDataResult>>
-```
-
-#### getter: arcsByGroup
-
-Per-group arc upload feed: group key → (region idx → `ArcsUploadData`). The
-heavy `computeArcsFromPileupData` pass runs once per group (arcs are pre-grouped
-by refName so each region lookup is O(1)); ungrouped is the single-group case.
-Empty map when read-connections are off, so the off-path skips the per-read
-region scan entirely. Source of truth for the per-section arc feed
-(`sourceSections`) and the shared cross-group `arcsYDomainBp`.
-
-```ts
-type arcsByGroup = Map<string, Map<number, ArcsUploadData>>
-```
-
-#### getter: layoutReady
-
-Whether `searchFeatureByID` has a pileup to search. Same name and meaning as the
-canvas display's; see MultiRegionDisplayMixin.
-
-```ts
-type layoutReady = boolean
-```
-
-#### getter: belowCoverageBands
-
-Geometry of the bands stacked below coverage in arcs-down mode, top to bottom:
-coverage → paired-end arcs → sashimi. Single source of truth so the layout
-height, the renderers, and the three resize handles can't drift apart.
-`arcsBandTop`/`sashimiBandTop` are each band's top edge; `bottom` is where the
-pileup begins (== coverageDisplayHeight).
-
-```ts
-type belowCoverageBands = {
-  hasArcsBand: boolean
-  hasSashimiBand: boolean
-  arcsBandTop: number
-  sashimiBandTop: number
-  bottom: number
-}
-```
-
-#### getter: sections
-
-Single source of all vertical band geometry, one entry per stacked group.
-`computeStackedSections` reproduces the prior ungrouped reserved layout exactly
-for its single-section (N==1) case, so ungrouped is not a special branch here —
-it is the one-group call, with a synthetic group when no data has arrived yet
-(so `laidOutPileupMap`/`renderState` still see one section). The
-sticky-coverage-vs-scroll distinction lives downstream in `buildSectionRenders`,
-keyed off section count.
-
-```ts
-type sections = SectionsLayout
-```
-
-#### getter: renderSections
-
-Per-section data + content-space band tops for the overlay/hit-test pipeline
-(labels, highlights, hit-test). Pairs each section's group data map with its
-`pileupTop` (used as the row `topOffset`) and coverage band so a screen-y can be
-mapped to the right section and its group. Reads straight off `sections` (every
-field already lives on the `Section`); ungrouped is the single section, so the
-pipeline reduces to pre-grouping.
-
-```ts
-type renderSections = { groupKey: string; label: string; laidOutPileupMap: Map<…>; topOffset: number; coverageTop: number; coverageHeight: number; sashimiBandTop: number; pileupHeight: number; }[]
-```
-
-#### getter: sourceSections
-
-Per-section upload input, in stacking order: each section's laid-out region
-map + arc feed, keyed by group so the renderers can namespace HAL region keys
-per section.
-
-Both renderers pair the uploaded section `s` with the drawn section `s` by INDEX
-(`sectionRegionKey(s, regionIdx)`), so this list and `renderState.sections` must
-have the same length and order. Both now derive from `sections`, making that
-structural — deriving this one from `groupOrder` instead let the two disagree
-whenever `sections` synthesized its no-data section (0 uploaded vs 1 drawn),
-which happens on an empty grouped fetch. That mismatch was benign only because
-the per-section region lookup missed and the draw skipped.
-
-```ts
-type sourceSections = {
-  groupKey: string
-  laidOutPileupMap: Map<number, PileupDataResult>
-  arcsRpcDataMap: Map<number, ArcsUploadData>
-}[]
-```
-
-#### getter: bezierPairSections
-
-Scroll/pan-invariant half of the bezier connection overlay: the linked pairs of
-each section, resolved once per relayout. The read grouping + connection
-resolution (`enumerateBezierPairs`) is the allocation-heavy step; memoizing it
-here (this getter never reads `scrollTop`) keeps a scroll frame down to the
-cheap per-pair screen projection in `computePileupBezierArcsFromModel`. Empty
-when the overlay is off.
-
-```ts
-type bezierPairSections = {
-  topOffset: number
-  pileupHeight: number
-  pairs: LinkedPair[]
-}[]
-```
-
-#### getter: bezierConnectionColorTypes
-
-Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line arcs in
-view, the input that lets the legend list only the connection colors present.
-Mirrors the overlay's skip rule (normal within-region pairs are drawn by the GPU
-pipeline, not as arcs) so the key matches the curves. Empty while the legend is
-hidden so the scan is skipped.
-
-```ts
-type bezierConnectionColorTypes = Set<number>
-```
-
-#### getter: sashimiArcSections
-
-Per-section sashimi arcs, in stacking order: each group's junction geometry
-(sashimi counts live per-group) already split into the two sub-bands, paired
-with their content-space tops — `coverageOverlayTop` for `up` arcs drawn over
-the coverage histogram, `sashimiBandTop` for `down` arcs in the reserved strip
-below it. In 'auto' both are populated; 'up'/'down' leave the other empty. The
-overlay and SVG export both map over this, so it is the single source for
-sashimi geometry and neither path can drift; ungrouped is the single-section
-case (sticky band below sticky coverage). Empty when sashimi is off.
-
-A computed on purpose (tier 3 — mirrors `bezierPairSections`): the arc math
-depends on the view's pan/zoom but NOT on scrollTop, so MobX replays the cache
-while the user scrolls a grouped track. Computing it in the overlay's render
-instead re-ran the O(n^2) 'auto' side assignment for every section on every
-scroll frame.
-
-```ts
-type sashimiArcSections = {
-  groupKey: string
-  up: SashimiArc[]
-  down: SashimiArc[]
-  coverageOverlayTop: number
-  sashimiBandTop: number
-}[]
-```
-
-#### getter: featureNoun
-
-What one row of this pileup is called, for UI text built from the model alone
-(the group-label chips). The menu builders take the same word as a call-site
-`noun` option. Subclasses that aren't showing reads override it —
-LGVSyntenyDisplay draws PAF blocks, so its chips must not offer to "show all
-reads".
-
-```ts
-type featureNoun = string
-```
-
-#### getter: isGrouped
-
-True when reads are stacked into >1 group section. Drives the scroll model:
-ungrouped keeps coverage sticky (only the pileup scrolls); grouped scrolls the
-whole coverage+pileup stack as one.
-
-```ts
-type isGrouped = boolean
-```
-
-#### getter: showsGroupLabels
-
-Whether the stacked section labels + dividers are drawn. Deliberately NOT
-`isGrouped`: grouping that happens to yield one section (a region with reads on
-one strand, a tag with a single value) still reserves the label offset
-(`prefersOffset`) and still wants its section named and collapsible — otherwise
-it reads as an ungrouped track with mysterious blank space above it. `isGrouped`
-stays about the scroll model (>1 section scrolls coverage with its section),
-which one section doesn't change. Reads the fetched sections rather than
-`groupBy` — see `hasNamedGroups` for why the setting is the wrong signal.
-
-```ts
-type showsGroupLabels = boolean
-```
-
-#### getter: scrollModel
-
-The scroll-projection inputs (`sectionScreen.ts`) every overlay needs to map a
-content-space Y into screen space. Built once here so the label / resize-handle
-/ coverage-axis overlays don't each re-assemble
-`{ isGrouped, scrollTop, canvasHeight }` inline.
-
-```ts
-type scrollModel = ScrollModel
-```
-
-#### getter: pileupViewportHeight
-
-Height of the scrollable viewport. Ungrouped excludes the sticky coverage band;
-grouped scrolls the entire display.
-
-```ts
-type pileupViewportHeight = number
-```
-
-#### getter: pileupContentHeight
-
-Total scrollable content height. Grouped is the full stacked-sections height;
-ungrouped is the pileup band alone (coverage is sticky), which is the stacked
-height minus that sticky coverage band. Both read the laid-out `sections` so the
-scroll extent tracks the geometry actually drawn — when `showPileup` is off or
-the group is collapsed the section reserves no pileup rows, so this collapses to
-0 and no phantom scroll region opens up below the coverage band.
-
-```ts
-type pileupContentHeight = number
-```
-
-#### getter: grownHeight
-
-Target track height for `grow` mode: the full laid-out content height
-(coverage + pileup + arcs), capped at the `growMaxHeight` slot so a deep pileup
-doesn't grow the track to thousands of px (a taller pileup fits to the cap and
-scrolls the remainder). Independent of `self.height` (in grow mode reads use the
-configured `featureHeight`, not the fitted pitch), so the grow autorun that
-writes it back can't feed back on itself. `setHeight` floors it to
-MIN_DISPLAY_HEIGHT.
-
-```ts
-type grownHeight = number
-```
-
-#### getter: highlightChainIds
-
-Chain member ids to highlight, empty unless in `normal` linked-read mode. Single
-source for the "is this a chain highlight" decision that both `highlightBoxes`
-(which ids to box) and `HighlightOverlay` (how strongly to shade them) read, so
-the two can't drift.
-
-```ts
-type highlightChainIds = string[]
-```
-
-#### getter: highlightBoxes
-
-Screen boxes for the hovered read / chain, painted by the `HighlightOverlay`
-div. Deliberately NOT part of `renderState`: the hovered id changes on nearly
-every mousemove, and routing it through the canvas would repaint the whole
-pileup each move.
-
-```ts
-type highlightBoxes = HighlightBox[]
-```
-
-#### getter: fittedFeatureHeight
-
-The read height that makes every uncollapsed group's reads fill the display
-without scrolling. Row count is fixed by read overlaps, so we lay the groups out
-uncapped (a fixed maxHeight-row cap, independent of the current featureHeight —
-so the fit autorun that writes featureHeight can't feed back into this) and
-divide the pileup space by it.
-
-Fractional (not floored): the pileup then fills the display exactly rather than
-leaving up to a row of slack at the bottom. Clamped up to a 1px floor — below
-1px the reads can't all fit, so the stack scrolls instead. 0 when there's
-nothing to fit (no data / no room), signalling "leave the configured height
-as-is".
-
-Also clamped down to the NORMAL read pitch — not the currently configured height
-— because fit OVERRIDES the compactness preset: a handful of reads in a tall
-display would otherwise stretch to fill it, e.g. one read blown up to 100px.
-Capping at the configured height would instead let a Compact/Super-compact
-selection clamp the fit expansion (compact overriding fit), so a fit under
-Compact could never grow past 3px. Fit should only ever squeeze reads smaller
-than normal, never grow them past it; once there's more room than reads need,
-the extra space is left blank (`laidOutByGroup` already scrolls/pads for the
-shortfall).
-
-Reads the `fitTargetHeight` slot, NOT the reactive `height` getter — the same
-anti-cycle rule `laidOutByGroup` follows. Fit mode only, where the two are
-equal, but the slot can never chain back through
-height->grownHeight->layout->featureHeight if this ever moves.
-
-```ts
-type fittedFeatureHeight = number
-```
-
-#### getter: byteGateEnabled
-
-Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the region set
-with `CoreGetRegionByteEstimate` before downloading reads.
-
-```ts
-type byteGateEnabled = boolean
-```
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Getters (other undocumented members)</summary>
-
-| Member                                                                                               | Type                                                                            |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| <span id="getter-linkedreads">linkedReads</span>                                                     | `"normal" \| "off"`                                                             |
-| <span id="getter-pairsdisplaytypedefault">pairsDisplayTypeDefault</span>                             | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-showbezierconnections">showBezierConnections</span>                                 | `boolean`                                                                       |
-| <span id="getter-showcoverage">showCoverage</span>                                                   | `boolean`                                                                       |
-| <span id="getter-showpileup">showPileup</span>                                                       | `boolean`                                                                       |
-| <span id="getter-coverageheight">coverageHeight</span>                                               | `number`                                                                        |
-| <span id="getter-showmismatches">showMismatches</span>                                               | `boolean`                                                                       |
-| <span id="getter-showinterbaseindicators">showInterbaseIndicators</span>                             | `boolean`                                                                       |
-| <span id="getter-drawsingletons">drawSingletons</span>                                               | `boolean`                                                                       |
-| <span id="getter-drawproperpairs">drawProperPairs</span>                                             | `boolean`                                                                       |
-| <span id="getter-showonlysplitalignments">showOnlySplitAlignments</span>                             | `boolean`                                                                       |
-| <span id="getter-flipstrandlongreadchains">flipStrandLongReadChains</span>                           | `boolean`                                                                       |
-| <span id="getter-colorsupplementarychains">colorSupplementaryChains</span>                           | `boolean`                                                                       |
-| <span id="getter-drawinter">drawInter</span>                                                         | `boolean`                                                                       |
-| <span id="getter-drawlongrange">drawLongRange</span>                                                 | `boolean`                                                                       |
-| <span id="getter-arccolorbytype">arcColorByType</span>                                               | `ArcColorByType`                                                                |
-| <span id="getter-readconnections">readConnections</span>                                             | `"off" \| "arc" \| "cloud"`                                                     |
-| <span id="getter-arcsdisplaytypedefault">arcsDisplayTypeDefault</span>                               | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-readclouddisplaytypedefault">readCloudDisplayTypeDefault</span>                     | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-readconnectionsdown">readConnectionsDown</span>                                     | `boolean`                                                                       |
-| <span id="getter-readconnectionsdowndisplaytypedefault">readConnectionsDownDisplayTypeDefault</span> | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-showsashimiarcs">showSashimiArcs</span>                                             | `boolean`                                                                       |
-| <span id="getter-sashimiarcsmode">sashimiArcsMode</span>                                             | `"auto" \| "up" \| "down"`                                                      |
-| <span id="getter-minsashimiscore">minSashimiScore</span>                                             | `number`                                                                        |
-| <span id="getter-sashimiarcsheight">sashimiArcsHeight</span>                                         | `number`                                                                        |
-| <span id="getter-readconnectionsheight">readConnectionsHeight</span>                                 | `number`                                                                        |
-| <span id="getter-showsoftclipping">showSoftClipping</span>                                           | `boolean`                                                                       |
-| <span id="getter-softclippingdisplaytypedefault">softClippingDisplayTypeDefault</span>               | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-ischainmode">isChainMode</span>                                                     | `boolean`                                                                       |
-| <span id="getter-scaletype">scaleType</span>                                                         | `"linear" \| "log"`                                                             |
-| <span id="getter-autoscaletype">autoscaleType</span>                                                 | `"local" \| "localsd"`                                                          |
-| <span id="getter-minscore">minScore</span>                                                           | `number`                                                                        |
-| <span id="getter-maxscore">maxScore</span>                                                           | `number`                                                                        |
-| <span id="getter-minscorebound">minScoreBound</span>                                                 | `number \| undefined`                                                           |
-| <span id="getter-maxscorebound">maxScoreBound</span>                                                 | `number \| undefined`                                                           |
-| <span id="getter-numstddev">numStdDev</span>                                                         | `number`                                                                        |
-| <span id="getter-featurewidgettype">featureWidgetType</span>                                         | `{ type: string; id: string; }`                                                 |
-| <span id="getter-selectedfeatureid">selectedFeatureId</span>                                         | `string \| undefined`                                                           |
-| <span id="getter-tooltipcomponent">TooltipComponent</span>                                           | `LazyExoticComponent<…>`                                                        |
-| <span id="getter-detectedmodificationtypes">detectedModificationTypes</span>                         | `string[]`                                                                      |
-| <span id="getter-colorby">colorBy</span>                                                             | `ColorBy`                                                                       |
-| <span id="getter-filterby">filterBy</span>                                                           | `FilterBy`                                                                      |
-| <span id="getter-featureheight">featureHeight</span>                                                 | `number`                                                                        |
-| <span id="getter-featurespacing">featureSpacing</span>                                               | `number`                                                                        |
-| <span id="getter-rowheight">rowHeight</span>                                                         | `number`                                                                        |
-| <span id="getter-configuredfeatureheight">configuredFeatureHeight</span>                             | `number`                                                                        |
-| <span id="getter-maxheight">maxHeight</span>                                                         | `number`                                                                        |
-| <span id="getter-chainidmap">chainIdMap</span>                                                       | `Map<string, string[]>`                                                         |
-| <span id="getter-showlowfreqmismatches">showLowFreqMismatches</span>                                 | `boolean`                                                                       |
-| <span id="getter-filtermismatchesbyfrequency">filterMismatchesByFrequency</span>                     | `boolean`                                                                       |
-| <span id="getter-mismatchalpha">mismatchAlpha</span>                                                 | `boolean`                                                                       |
-| <span id="getter-mismatchalphadisplaytypedefault">mismatchAlphaDisplayTypeDefault</span>             | `DisplayTypeDefaultControl`                                                     |
-| <span id="getter-showlegend">showLegend</span>                                                       | `boolean`                                                                       |
-| <span id="getter-sortedby">sortedBy</span>                                                           | `SortedBy \| undefined`                                                         |
-| <span id="getter-coverageislog">coverageIsLog</span>                                                 | `boolean`                                                                       |
-| <span id="getter-coveragestats">coverageStats</span>                                                 | `ScoreStats \| undefined`                                                       |
-| <span id="getter-coveragedomain">coverageDomain</span>                                               | `[number, number] \| undefined`                                                 |
-| <span id="getter-coverageticks">coverageTicks</span>                                                 | `YScaleTicks \| undefined`                                                      |
-| <span id="getter-colorpalette">colorPalette</span>                                                   | `ColorPalette`                                                                  |
-| <span id="getter-modificationthreshold">modificationThreshold</span>                                 | `number`                                                                        |
-| <span id="getter-colorschemeindex">colorSchemeIndex</span>                                           | `number`                                                                        |
-| <span id="getter-showmodifications">showModifications</span>                                         | `boolean`                                                                       |
-| <span id="getter-showperbasequality">showPerBaseQuality</span>                                       | `boolean`                                                                       |
-| <span id="getter-showperbaseletter">showPerBaseLetter</span>                                         | `boolean`                                                                       |
-| <span id="getter-readidindexmap">readIdIndexMap</span>                                               | `Map<string, { displayedRegionIndex: number; groupKey: string; idx: number; }>` |
-| <span id="getter-readconnectionslinewidth">readConnectionsLineWidth</span>                           | `number`                                                                        |
-| <span id="getter-coveragedisplayheight">coverageDisplayHeight</span>                                 | `number`                                                                        |
-| <span id="getter-height">height</span>                                                               | `number`                                                                        |
-| <span id="getter-scalebaroverlapleft">scalebarOverlapLeft</span>                                     | `number`                                                                        |
-| <span id="getter-showoutline">showOutline</span>                                                     | `any`                                                                           |
-| <span id="getter-visiblelabels">visibleLabels</span>                                                 | `VisibleLabel[]`                                                                |
-| <span id="getter-scrollableheight">scrollableHeight</span>                                           | `number`                                                                        |
-| <span id="getter-sorttag">sortTag</span>                                                             | `string \| undefined`                                                           |
-| <span id="getter-renderstate">renderState</span>                                                     | `{…}`                                                                           |
-| <span id="getter-arcsydomainbp">arcsYDomainBp</span>                                                 | `number \| undefined`                                                           |
-| <span id="getter-insertsizeticks">insertSizeTicks</span>                                             | `YScaleTicks \| undefined`                                                      |
-| <span id="getter-featureundermouse">featureUnderMouse</span>                                         | `SimpleFeature \| undefined`                                                    |
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Methods</summary>
-
-#### method: sashimiArcsModeDisplayTypeDefault
-
-"make this arc placement the default for all tracks" control (pin), one per
-option of the radio group. A method rather than a getter per value: the options
-share one slot and differ only in the on-value, so naming each combination was
-what made the base value 'up' look unpinnable.
-
-```ts
-type sashimiArcsModeDisplayTypeDefault = (
-  mode: 'auto' | 'up' | 'down',
-) => DisplayTypeDefaultControl
-```
-
-#### method: isGroupCollapsed
-
-Whether a stacked group's pileup is collapsed to just its coverage.
-
-```ts
-type isGroupCollapsed = (key: string) => boolean
-```
-
-#### method: hasGroupHeightOverride
-
-Whether a stacked group carries a custom pileup-height override — set by
-expanding it (show all reads) or dragging its resize handle (taller or shorter).
-Drives the group label's restore-to-fit affordance.
-
-```ts
-type hasGroupHeightOverride = (key: string) => boolean
-```
-
-#### method: arcLegendItems
-
-Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn,
-or when it shares the reads' scheme and merged into their key — either way its
-legend section drops out of the box. A _partial_ overlap is not resolved here:
-this stays the complete arc key, and `getAlignmentsLegendSections` folds it into
-one deduped list.
-
-```ts
-type arcLegendItems = () => LegendItem[]
-```
-
-#### method: groupLaidOutMap
-
-Laid-out region map for one group key, or an empty map for a key with no data.
-Centralizes the empty-map fallback shared by the section getters so they never
-have to branch on a missing group.
-
-```ts
-type groupLaidOutMap = (key: string) => Map<number, PileupDataResult>
-```
-
-#### method: isGroupTruncated
-
-True when the row cap clipped reads from a group's pileup and the user hasn't
-explicitly sized that group (a height drag/expand makes any truncation
-intentional, so it isn't flagged). Drives the per-group "show all" affordance on
-the section label.
-
-```ts
-type isGroupTruncated = (key: string) => boolean
-```
-
-#### method: bezierLegendItems
-
-Legend swatches for the linked-read connection curves, empty unless the bezier
-overlay is on and at least one connection is in view.
-
-```ts
-type bezierLegendItems = () => LegendItem[]
-```
-
-#### method: groupPileupOffset
-
-Content-space Y of a group's pileup relative to the FIRST section's pileup top,
-i.e. how far a read's row shifts because its group is stacked below the others.
-0 for the ungrouped/first section.
-
-```ts
-type groupPileupOffset = (groupKey: string) => number
-```
-
-#### method: searchFeatureByID
-
-Layout rect of a read, for cross-view overlays (BreakpointSplitView's connection
-curves). Y is relative to the pileup's own top — the caller adds the display's
-`coverageDisplayHeight` itself (see `computeOverlayY`) — so a grouped read only
-needs its section's extra stacking offset on top of its row. Without that offset
-every read outside the first section anchored as if it were in the first one.
-
-```ts
-type searchFeatureByID = (
-  featureId: string,
-) => [number, number, number, number] | undefined
-```
-
-#### method: chainIdsForRead
-
-Chain IDs sharing a QNAME with the read at `index` in `rpcData`. Empty when the
-read isn't part of a chain. Shared by hover-highlight and click-select so the
-two paths can't drift.
-
-```ts
-type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
-```
-
-#### method: trackMenuItems
-
-Track menu items
-
-```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<…> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
-```
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Methods (other undocumented members)</summary>
-
-| Member                                                             | Type                                                                                                                                                                                |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="method-legenditems">legendItems</span>                   | `() => LegendItem[]`                                                                                                                                                                |
-| <span id="method-findfeatureinrpcdata">findFeatureInRpcData</span> | `(featureId: string) => { displayedRegionIndex: number; groupKey: string; idx: number; rpcData: PileupDataResult; start: number; end: number; } \| undefined`                       |
-| <span id="method-getfeatureinfobyid">getFeatureInfoById</span>     | `(featureId: string) => { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; assemblyName: string; } \| undefined` |
-| <span id="method-rpcprops">rpcProps</span>                         | `() => {…}`                                                                                                                                                                         |
-| <span id="method-contextmenuitems">contextMenuItems</span>         | `() => MenuItem[]`                                                                                                                                                                  |
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Actions</summary>
-
-#### action: onRegionTooLarge
-
-Clear the hover/tooltip when the region goes too large (the banner replaces the
-pileup). Called by MultiRegionDisplayMixin's `ClearHoverOnRegionTooLarge`
-autorun, so it fires on the derived gate's `regionTooLarge` transition without
-an imperative setter.
-
-```ts
-type onRegionTooLarge = () => void
-```
-
-#### action: setSortSlot
-
-Commit a sort, the single place the `sortedBy` slot is written. Also drops
-`largeFeaturesFirst`: the two are peer radios in one group ("Longest reads
-first" is the layout-order flag, a sort is the slot), so exactly one must hold
-state. Doing it here rather than at the menu means a sort that _doesn't_ land —
-no valid center line, a cancelled tag dialog — leaves the previous ordering
-intact instead of silently clearing it and unchecking every radio.
-`computeMultiRegionLayout` would tolerate both being set (an explicit sort wins
-there anyway); this keeps the menu's checkmarks honest.
-
-```ts
-type setSortSlot = (sortedBy: {
-  type: string
-  pos: number
-  refName: string
-  assemblyName: string
-  tag?: string | undefined
-}) => void
-```
-
-#### action: setGroupBy
-
-Set (or remove, when undefined) the in-track stacked grouping dimension. A
-tier-1 refetch setting (in `rpcProps`) — the worker re-partitions the fetch into
-N sections. Resets the Y scroll since the stacked content height changes.
-Ungrouping stores an explicit `null` override (not a cleared override) so it
-beats a configured `groupBy` default rather than falling back to it.
-
-```ts
-type setGroupBy = (groupBy?: GroupBy | undefined) => void
-```
-
-#### action: setCollapseGroupRows
-
-Draw each group as one row (overlap depth shows as tint shading) rather than as
-its own stack. Clears the per-group height overrides: an override means "this
-lane opted out of the collapse", which is meaningless once every lane is a stack
-again.
-
-```ts
-type setCollapseGroupRows = (flag: boolean) => void
-```
-
-#### action: toggleGroupCollapsed
-
-Collapse/expand a stacked group's pileup (coverage stays visible).
-
-```ts
-type toggleGroupCollapsed = (key: string) => void
-```
-
-#### action: toggleGroupExpanded
-
-Expand a fit-to-viewport group back to the full `maxHeight` cap (show all its
-reads), or, if it already carries a height override (from expand or a drag),
-drop the override to return it to the fit budget. Expanding makes the stack
-overflow the viewport, which engages the pileup scroll. Pairs with
-`hasGroupHeightOverride`.
-
-```ts
-type toggleGroupExpanded = (key: string) => void
-```
-
-#### action: resizeGroupHeight
-
-Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many
-rows that group lays out. The continuous-accumulation policy (seed once, floor
-at a row, pin/skip a fully-shown group) lives in the pure
-`nextGroupHeightOverride`; this action just gathers the group's live state and
-commits the result (undefined = leave on the fit budget). Pairs with
-`hasGroupHeightOverride` / `toggleGroupExpanded`.
-
-```ts
-type resizeGroupHeight = (key: string, dy: number) => void
-```
-
-#### action: setFeatureHeight
-
-Set the per-read pixel size. The track-sizing mode is a mostly independent axis
-(changed via setHeightMode): grow keeps growing at the new size. Fit is the
-exception — it derives the size, so a chosen size would be dormant; picking one
-drops back to fixed so the pick takes effect.
-
-```ts
-type setFeatureHeight = (height?: number | undefined) => void
-```
-
-#### action: setHeightMode
-
-Set the track-height strategy by writing the unified `heightMode` slot; the
-modes are mutually exclusive by construction. Entering a non-`fixed` mode (fit
-or grow) resets the transient state a uniform fit/grow contradicts — per-group
-height overrides (a drag opts a group out) and the scroll offset (neither fit
-nor grow scrolls) — tied to the explicit user action so a track that merely
-inherits the mode from a session-wide default keeps its overrides. The driving
-autoruns then keep `featureHeight` (fit) or `height` (grow) sized as the
-display/data change.
-
-```ts
-type setHeightMode = (mode: 'fixed' | 'grow' | 'fit') => void
-```
-
-#### action: setFittedHeightPx
-
-Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can
-split it into a body + derived gap. Written only by the driving autorun.
-
-```ts
-type setFittedHeightPx = (px: number) => void
-```
-
-#### action: setShowBezierConnections
-
-Toggle the paired-read connection overlay. A main-thread tier-2/4 setting (read
-in `laidOutPileupMap` + `renderState`), not in `rpcProps` — toggling it never
-refetches.
-
-```ts
-type setShowBezierConnections = (flag: boolean) => void
-```
-
-#### action: withFeatureById
-
-Fetch the feature behind `featureId` and hand it to `onFeat`. For a menu item
-that needs the whole feature but is offered before one is in hand.
-
-```ts
-type withFeatureById = (
-  featureId: string,
-  onFeat: (feat: Feature) => void,
-) => Promise<void>
-```
-
-#### action: openContextMenu
-
-Open the right-click menu over a hit. Coord, block, and the two hit kinds always
-travel as a unit — set atomically so a consumer can never read a block without
-its hit (the split-state class of bug that silently no-op'd position sorts). The
-read feature is reset now and, when the hit carries one, populated by an async
-RPC fetch — so "open the menu for this hit and its read" stays a single call and
-a repositioned menu can't inherit the prior read's items.
-
-```ts
-type openContextMenu = (args: {…}) => void
-```
-
-#### action: resizeHeight
-
-A manual drag-resize means the user wants a fixed height; leave grow mode first,
-otherwise the grow autorun snaps the height back on the next relayout and the
-drag appears to do nothing (mirrors canvas). Read the displayed (grown) height
-before flipping and write `grown + distance` directly — the grow-exit bake skips
-when the slot is written during the exit, so this delta isn't clobbered.
-
-```ts
-type resizeHeight = (distance: number) => number
-```
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Actions (other undocumented members)</summary>
-
-| Member                                                                             | Type                                                                                                                                                                                   |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-clearmouseoverstate">clearMouseoverState</span>                   | `() => void`                                                                                                                                                                           |
-| <span id="action-seterror">setError</span>                                         | `(error?: unknown) => void`                                                                                                                                                            |
-| <span id="action-setrpcdata">setRpcData</span>                                     | `(displayedRegionIndex: number, data: GroupedAlignmentsResult \| null) => void`                                                                                                        |
-| <span id="action-cleardisplayspecificdata">clearDisplaySpecificData</span>         | `() => void`                                                                                                                                                                           |
-| <span id="action-setovercigaritem">setOverCigarItem</span>                         | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setscrolltop">setScrollTop</span>                                 | `(scrollTop: number) => void`                                                                                                                                                          |
-| <span id="action-sethighlightedchainids">setHighlightedChainIds</span>             | `(ids: string[]) => void`                                                                                                                                                              |
-| <span id="action-clearhighlights">clearHighlights</span>                           | `() => void`                                                                                                                                                                           |
-| <span id="action-clearselection">clearSelection</span>                             | `() => void`                                                                                                                                                                           |
-| <span id="action-setselectedchainids">setSelectedChainIds</span>                   | `(ids: string[]) => void`                                                                                                                                                              |
-| <span id="action-setcolorscheme">setColorScheme</span>                             | `(colorBy: ColorBy) => void`                                                                                                                                                           |
-| <span id="action-updatecolortagmap">updateColorTagMap</span>                       | `(uniqueTag: string[]) => void`                                                                                                                                                        |
-| <span id="action-setfilterby">setFilterBy</span>                                   | `(filterBy: FilterBy) => void`                                                                                                                                                         |
-| <span id="action-setshowsoftclipping">setShowSoftClipping</span>                   | `(value: boolean) => void`                                                                                                                                                             |
-| <span id="action-setmismatchalpha">setMismatchAlpha</span>                         | `(value: boolean) => void`                                                                                                                                                             |
-| <span id="action-setsortedby">setSortedBy</span>                                   | `(type: string, tag?: string \| undefined) => void`                                                                                                                                    |
-| <span id="action-setsortedbyatposition">setSortedByAtPosition</span>               | `(arg: { type: string; pos: number; refName: string; tag?: string \| undefined; }) => void`                                                                                            |
-| <span id="action-clearsortedby">clearSortedBy</span>                               | `() => void`                                                                                                                                                                           |
-| <span id="action-setlargefeaturesfirst">setLargeFeaturesFirst</span>               | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setscaletype">setScaleType</span>                                 | `(val: string) => void`                                                                                                                                                                |
-| <span id="action-setautoscale">setAutoscale</span>                                 | `(val?: string \| undefined) => void`                                                                                                                                                  |
-| <span id="action-setminscore">setMinScore</span>                                   | `(val?: number \| undefined) => void`                                                                                                                                                  |
-| <span id="action-setmaxscore">setMaxScore</span>                                   | `(val?: number \| undefined) => void`                                                                                                                                                  |
-| <span id="action-setmaxheight">setMaxHeight</span>                                 | `(height?: number \| undefined) => void`                                                                                                                                               |
-| <span id="action-setshowsashimiarcs">setShowSashimiArcs</span>                     | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setreadconnections">setReadConnections</span>                     | `(mode: "off" \| "arc" \| "cloud") => void`                                                                                                                                            |
-| <span id="action-setreadconnectionsdown">setReadConnectionsDown</span>             | `(down: boolean) => void`                                                                                                                                                              |
-| <span id="action-setshowcoverage">setShowCoverage</span>                           | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setshowpileup">setShowPileup</span>                               | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setcoverageheight">setCoverageHeight</span>                       | `(height: number) => void`                                                                                                                                                             |
-| <span id="action-setreadconnectionsheight">setReadConnectionsHeight</span>         | `(height: number) => void`                                                                                                                                                             |
-| <span id="action-setsashimiarcsheight">setSashimiArcsHeight</span>                 | `(height: number) => void`                                                                                                                                                             |
-| <span id="action-setminsashimiscore">setMinSashimiScore</span>                     | `(score: number) => void`                                                                                                                                                              |
-| <span id="action-setsashimiarcsmode">setSashimiArcsMode</span>                     | `(mode: "auto" \| "up" \| "down") => void`                                                                                                                                             |
-| <span id="action-setshowsashimilabels">setShowSashimiLabels</span>                 | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setreadconnectionslinewidth">setReadConnectionsLineWidth</span>   | `(width: number) => void`                                                                                                                                                              |
-| <span id="action-setdrawinter">setDrawInter</span>                                 | `(draw: boolean) => void`                                                                                                                                                              |
-| <span id="action-setdrawlongrange">setDrawLongRange</span>                         | `(draw: boolean) => void`                                                                                                                                                              |
-| <span id="action-setarccolorbytype">setArcColorByType</span>                       | `(type: ArcColorByType) => void`                                                                                                                                                       |
-| <span id="action-setshowmismatches">setShowMismatches</span>                       | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setshowlegend">setShowLegend</span>                               | `(show: boolean \| undefined) => void`                                                                                                                                                 |
-| <span id="action-setdrawsingletons">setDrawSingletons</span>                       | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setdrawproperpairs">setDrawProperPairs</span>                     | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setshowonlysplitalignments">setShowOnlySplitAlignments</span>     | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setshowinterbaseindicators">setShowInterbaseIndicators</span>     | `(show: boolean) => void`                                                                                                                                                              |
-| <span id="action-setflipstrandlongreadchains">setFlipStrandLongReadChains</span>   | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setcolorsupplementarychains">setColorSupplementaryChains</span>   | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setlinkedreads">setLinkedReads</span>                             | `(mode: "normal" \| "off") => void`                                                                                                                                                    |
-| <span id="action-updatevisiblemodifications">updateVisibleModifications</span>     | `(uniqueModifications: string[]) => void`                                                                                                                                              |
-| <span id="action-setmodificationsready">setModificationsReady</span>               | `(flag: boolean) => void`                                                                                                                                                              |
-| <span id="action-setfeatureidundermouse">setFeatureIdUnderMouse</span>             | `(feature?: string \| undefined) => void`                                                                                                                                              |
-| <span id="action-setmouseoverextrainformation">setMouseoverExtraInformation</span> | `(extra?: TooltipPayload \| undefined) => void`                                                                                                                                        |
-| <span id="action-sethoverstate">setHoverState</span>                               | `(state: { overCigarItem: boolean; featureIdUnderMouse: string \| undefined; mouseoverExtraInformation: TooltipPayload \| undefined; hoverCoverageBand?: {…} \| undefined; }) => void` |
-| <span id="action-setcontextmenufeature">setContextMenuFeature</span>               | `(feature?: Feature \| undefined) => void`                                                                                                                                             |
-| <span id="action-closecontextmenu">closeContextMenu</span>                         | `() => void`                                                                                                                                                                           |
-| <span id="action-selectfeature">selectFeature</span>                               | `(feature: Feature) => void`                                                                                                                                                           |
-| <span id="action-startrenderingbackend">startRenderingBackend</span>               | `(backend: AlignmentsRenderingBackend) => void`                                                                                                                                        |
-| <span id="action-selectfeaturebyid">selectFeatureById</span>                       | `(featureId: string) => Promise<void>`                                                                                                                                                 |
-| <span id="action-fetchneeded">fetchNeeded</span>                                   | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                                                       |
-| <span id="action-rendersvg">renderSvg</span>                                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                           |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseDisplay</summary>
-
-[BaseDisplay →](../basedisplay)
-
-**Properties**
-
-#### property: ignorePromotedDefaults
-
-true for a display that arrived inside a session received from someone else (a
-share link, an encoded/json session, a `spec-` URL). Such a display resolves its
-`promotable` config slots from its own config only, never from this browser's
-promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the
-received session is a record of what the sender saw, and a local preference
-silently repainting it would make it a lie. A track opened _afterwards_ in that
-same session is a fresh track of this user's, so it never gets the flag and
-picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user
-deliberately makes the display follow a default.
-
-```ts
-// type signature
-type ignorePromotedDefaults = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-ignorePromotedDefaults: types.stripDefault(types.boolean, false)
-```
-
-| Member                                                 | Type                                               |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| <span id="property-id">id</span>                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-rpcdrivername">rpcDriverName</span> | `IMaybe<ISimpleType<string>>`                      |
-
-**Volatiles**
-
-#### volatile: statusProgress
-
-determinate progress fraction [0,1] for the current status, or undefined when
-the in-flight phase is indeterminate. Set alongside `statusMessage` by
-`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
-
-```ts
-// type signature
-type statusProgress = number | undefined
-// code
-statusProgress: undefined as number | undefined
-```
-
-| Member                                                 | Type                  |
-| ------------------------------------------------------ | --------------------- |
-| <span id="volatile-error">error</span>                 | `unknown`             |
-| <span id="volatile-statusmessage">statusMessage</span> | `string \| undefined` |
-
-**Getters**
-
-#### getter: parentDisplay
-
-Returns the parent display if this display is nested within another display
-(e.g., PileupDisplay inside LinearAlignmentsDisplay)
-
-```ts
-type parentDisplay =
-  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
-  | undefined
-```
-
-#### getter: isMinimized
-
-Returns true if the parent track is minimized. Used to skip expensive operations
-like autoruns when track is not visible.
-
-```ts
-type isMinimized = boolean
-```
-
-#### getter: effectiveRpcDriverName
-
-Returns the effective RPC driver name with hierarchical fallback:
-
-1. This display's explicit rpcDriverName
-2. Parent display's effectiveRpcDriverName (for nested displays)
-3. Track config's rpcDriverName
-
-```ts
-type effectiveRpcDriverName = any
-```
-
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead, make this return a react
-component
-
-```ts
-type DisplayMessageComponent = FC<any> | undefined
-```
-
-| Member                                                         | Type                                                                                            |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <span id="getter-parenttrack">parentTrack</span>               | `AbstractTrackModel`                                                                            |
-| <span id="getter-renderingcomponent">RenderingComponent</span> | `FC<…>`                                                                                         |
-| <span id="getter-displayblurb">DisplayBlurb</span>             | `FC<{ model: ModelInstanceTypeProps<…> & { ...; } & { ...; } & IStateTreeNode<...>; }> \| null` |
-| <span id="getter-adapterconfig">adapterConfig</span>           | `any`                                                                                           |
-
-**Methods**
-
-#### method: renderingProps
-
-props passed to the renderer's React "Rendering" component. these are
-client-side only and never sent to the worker. includes displayModel and
-callbacks
-
-```ts
-type renderingProps = () => { displayModel: ModelInstanceTypeProps<…> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
-```
-
-**Actions**
-
-#### action: setIgnorePromotedDefaults
-
-see the `ignorePromotedDefaults` property
-
-```ts
-type setIgnorePromotedDefaults = (flag: boolean) => void
-```
-
-#### action: reload
-
-base display reload does nothing, see specialized displays for details
-
-```ts
-type reload = () => void
-```
-
-| Member                                                     | Type                                        |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| <span id="action-setstatusmessage">setStatusMessage</span> | `(status?: RpcStatus \| undefined) => void` |
-| <span id="action-setrpcdrivername">setRpcDriverName</span> | `(rpcDriverName: string) => void`           |
-
-</details>
-
-<details>
-<summary>Derived from TrackHeightMixin</summary>
-
-[TrackHeightMixin →](../trackheightmixin)
-
-**Actions**
-
-| Member                                       | Type                                |
-| -------------------------------------------- | ----------------------------------- |
-| <span id="action-setheight">setHeight</span> | `(displayHeight: number) => number` |
-
-</details>
-
-<details>
-<summary>Derived from HeightModeMixin</summary>
-
-[HeightModeMixin →](../heightmodemixin)
-
-**Getters**
-
-#### getter: heightMode
-
-The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel
-slot: resolveConf walks the customized-track -> session-default -> `fixed`
-cascade and never returns the `inherit` sentinel.
-
-```ts
-type heightMode = 'fixed' | 'grow' | 'fit'
-```
-
-#### getter: fitTargetHeight
-
-The drag-resizable track height as stored in the config slot — the fit target
-the fit/grow layout scales or packs content into. Read there instead of the
-reactive `height` getter to break the grow-mode cycle
-(`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
-
-```ts
-type fitTargetHeight = number
-```
-
-#### getter: growMaxHeight
-
-Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives
-here rather than as a constant so a track whose whole point is a deep pileup can
-raise it; both displays that own a `grownHeight` read this, so the two can't
-diverge.
-
-```ts
-type growMaxHeight = number
-```
-
-#### getter: autoHeight
-
-`grow` mode as a boolean, derived from the unified `heightMode` slot.
-
-```ts
-type autoHeight = boolean
-```
-
-#### getter: fitHeightToDisplay
-
-`fit` mode as a boolean, derived from the unified `heightMode` slot.
-
-```ts
-type fitHeightToDisplay = boolean
-```
-
-</details>
-
-<details>
-<summary>Derived from MultiRegionDisplayMixin</summary>
-
-[MultiRegionDisplayMixin →](../multiregiondisplaymixin)
-
-**Volatiles**
-
-#### volatile: loadedRegions
-
-regions whose data has been fetched and committed, keyed by
-displayedRegionIndex; populated only after the fetch work callback returns
-
-```ts
-// type signature
-type loadedRegions = ObservableMap<number, Region>
-// code
-loadedRegions: observable.map<number, Region>()
-```
-
-**Getters**
-
-#### getter: canRender
-
-The render-lifecycle precondition for every LGV display (overrides
-`RenderLifecycleMixin`'s default-true hook): don't run the upload/render
-callbacks until the view is measured. Before that, `renderBlocks` →
-`visibleRegions` → `view.width` throws by design, and the render autorun's catch
-would show that as a GPU render-error banner. Gating here — once, for all of
-them — is what lets a display's `renderState` be a plain resolved getter and its
-render callback gate only on its own data. The render-lifecycle twin of
-`autorunOnReadyView`.
-
-```ts
-type canRender = boolean
-```
-
-#### getter: isReady
-
-true once the canvas has painted and no fetch is in flight
-
-```ts
-type isReady = boolean
-```
-
-#### getter: viewportWithinLoadedData
-
-true when every visible block lies within an already-fetched region — i.e. the
-viewport shows data we actually loaded, not the stale fringe left after a
-zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
-Spatial only; see CLAUDE.md for why this is exact and for the
-resolution-staleness gap.
-
-```ts
-type viewportWithinLoadedData = boolean
-```
-
-#### getter: dataCurrent
-
-This family's answer to the shared freshness question every display foundation
-must answer (`dataCurrent`): the held data corresponds to what is on screen
-right now. Here that is spatial — every visible block lies within a fetched
-region — plus `loadedRegions.size`, which rules out the vacuously-true empty
-viewport. Regions stream in one at a time, so this (not "the first datum
-arrived") is what keeps a multi-region/whole-genome export complete.
-
-Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate
-the fetch autorun and the loading overlay use.
-
-```ts
-type dataCurrent = boolean
-```
-
-#### getter: svgReady
-
-true once an off-screen (SVG) export can safely read this display's data. Policy
-single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent`
-predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
-inlining the condition.
-
-```ts
-type svgReady = boolean
-```
-
-#### getter: svgReadyExtraTerminal
-
-Overridable hook (default false): a subclass returns true to mark an extra
-terminal state where off-screen export can proceed with no loaded data. Sequence
-sets it when zoomed past base resolution — it renders a static "zoom in" message
-and fetches nothing, so `svgReady` would otherwise never resolve.
-
-```ts
-type svgReadyExtraTerminal = boolean
-```
-
-#### getter: renderBlocks
-
-Shared cached view for every LGV-based GPU display. A single displayedRegion may
-produce multiple render blocks (shared GPU buffer, different scissor clips on
-screen). Plugins that want to suppress rendering in certain states (e.g. no
-domain yet) can override this getter to return [] — the autorun lifecycle will
-then issue an empty-blocks render that clears the canvas.
-
-```ts
-type renderBlocks = RenderBlock[]
-```
-
-#### getter: displayPhase
-
-The display's mutually-exclusive visual state, precedence single-sourced in
-`computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
-(viewport past loaded) is still on screen through the pre-refetch debounce.
-
-```ts
-type displayPhase = DisplayPhase
-```
-
-#### getter: rpcPropsCacheKey
-
-The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()`
-payload serialized to a string. `serializeRpcProps` owns the why;
-`installGlobalFetchAutorun` keys its global-family counterpart on the same
-function, so the two families invalidate on the same axis.
-
-```ts
-type rpcPropsCacheKey = string
-```
-
-**Methods**
-
-#### method: isCacheValid
-
-Overridable hook: return `false` to force re-fetch at the current zoom (wiggle
-uses this for zoom-level changes).
-
-```ts
-type isCacheValid = (_displayedRegionIndex: number) => boolean
-```
-
-**Actions**
-
-#### action: setLoadedRegion
-
-Action wrapper so callers after async boundaries stay in MST strict mode.
-
-```ts
-type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
-```
-
-#### action: clearAllRpcData
-
-full reset: cancels fetch, clears error, loadedRegions, display-specific data,
-and the canvas-drawn flag. The too-large gate is derived (a pure function of the
-cached estimate × viewport), so it needs no explicit clear here — it
-self-releases when the viewport changes.
-
-```ts
-type clearAllRpcData = () => void
-```
-
-#### action: invalidateLoadedRegions
-
-lighter reset: cancels fetch and clears loadedRegions, leaving error and
-regionTooLarge intact
-
-```ts
-type invalidateLoadedRegions = () => void
-```
-
-#### action: fetchRegions
-
-Run a per-region fetch with byte-estimate gating. Marks regions as loaded only
-AFTER the work callback has populated display-specific data (rpcDataMap,
-cellData, etc) so the GPU upload autorun sees committed data when it observes
-loadedRegions.
-
-```ts
-type fetchRegions = (
-  needed: { region: Region; displayedRegionIndex: number }[],
-  work: (ctx: FetchContext) => Promise<void>,
-) => Promise<void>
-```
-
-#### action: afterAttach
-
-installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
-FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
-ClearHoverOnRegionTooLarge)
-
-```ts
-type afterAttach = () => void
-```
-
-</details>
-
-<details>
-<summary>Derived from RegionTooLargeMixin</summary>
-
-[RegionTooLargeMixin →](../regiontoolargemixin)
-
-**Volatiles**
-
-#### volatile: forceLoadTrack
-
-The force-load button's answer: render this track regardless of region size or
-feature density. One boolean for the whole track, not a raised ceiling per
-region — the banner already tells the user how much data is involved, so one
-informed click approves the track and they never have to re-approve it per
-locus.
-
-Volatile, not persisted, so it can't leak a disabled gate into a saved or shared
-session (a recipient would download the same data with no warning and no way to
-see why). A page load re-arms the gate. The durable, declarative equivalent is
-the `forceLoad` config slot, for session specs, embeds and
-`jbrowse-img --force`.
-
-```ts
-// type signature
-type forceLoadTrack = false
-// code
-forceLoadTrack: false
-```
-
-#### volatile: byteEstimate
-
-The last byte measurement for this display: the estimated bytes **and the span
-they cover**, which is what lets the derived gate rescale them to the span on
-screen now. One volatile rather than two, because the pair is a single
-measurement — written together by `setByteEstimate`, dropped together by
-`clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an
-ordinary viewport change doesn't flicker the banner; only chromosome navigation
-drops it. Ignored unless `derivedRegionTooLargeEnabled`.
-
-```ts
-// type signature
-type byteEstimate = ByteEstimate | undefined
-// code
-byteEstimate: undefined as ByteEstimate | undefined
-```
-
-**Getters**
-
-#### getter: gateFoldedIntoFetch
-
-Additive opt-in for displays that measure the estimate inside their own feature
-RPC instead of a pre-flight (canvas). Kept separate from
-`derivedRegionTooLargeEnabled` so a gate mixin contributes by setting _this_
-rather than overriding the verdict switch — the two would otherwise race on
-composition order, and the later `.compose()` argument silently winning is
-invisible to both the type system and the tests.
-
-```ts
-type gateFoldedIntoFetch = boolean
-```
-
-#### getter: configuredFetchSizeLimit
-
-The composing display's configured `fetchSizeLimit`, read straight from its
-config. Only evaluated when the derived gate is enabled (guarded by
-`derivedRegionTooLargeEnabled`), and every derived display extends
-`baseLinearDisplayConfigSchema`, which owns the slot — so the read is always
-valid where it fires. A display with a bespoke source can still override it.
-
-```ts
-type configuredFetchSizeLimit = number
-```
-
-#### getter: densityTooLarge
-
-Second (non-byte) too-large axis folded into the derived verdict — canvas
-overrides it with its feature-density gate. Byte-only derived displays leave it
-false.
-
-```ts
-type densityTooLarge = boolean
-```
-
-#### getter: adapterFetchSizeLimit
-
-The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
-declares none); `resolveByteLimit` prefers it over the display config. Read on
-the main thread, and only here — the estimate that crosses the worker boundary
-carries bytes and nothing else, so the banner and the worker budget have no
-second spelling of "the adapter's limit" to disagree about.
-
-A slot **path off the live config**, not a read off `self.adapterConfig`: that
-getter is a snapshot, which by design omits slots sitting at their default, so a
-BAM's declared 5 Mb read back as `undefined` in every config that doesn't
-restate it. Resolved values come from a config node — see CONFIG_PATTERN.md
-§"Reading a slot: node, not snapshot".
-
-```ts
-type adapterFetchSizeLimit = number | undefined
-```
-
-#### getter: configForceLoad
-
-Declarative force-load: when true the display always renders regardless of
-region size / feature density (the config-driven equivalent of the force-load
-button). Read straight from the `forceLoad` config slot on
-`baseLinearDisplayConfigSchema` (same guard/ownership as
-`configuredFetchSizeLimit`), so every opt-in display honors it without
-per-display wiring.
-
-```ts
-type configForceLoad = boolean
-```
-
-#### getter: gateVisibleBp
-
-The span on screen, or undefined before the view is measured. The gate's only
-read of its container: `visibleBp` reads `view.width`, which throws before
-measurement and a bare getter must never throw, so the pre-init guard lives here
-once rather than at each reader.
-
-```ts
-type gateVisibleBp = number | undefined
-```
-
-#### getter: derivedRegionTooLargeEnabled
-
-Whether the derived, self-releasing gate is live at all — the union of the two
-ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte
-check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never
-an override, so a gate mixin's opt-in doesn't hinge on which side of
-`.compose()` it lands on. False for the non-byte displays (wiggle, manhattan,
-sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus`
-getters.
-
-```ts
-type derivedRegionTooLargeEnabled = boolean
-```
-
-#### getter: aboveForceLoadFloor
-
-Whether the span on screen is wide enough for the gate to have an opinion at all
-— the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before
-the view is measured.
-
-Deliberately independent of the opt-in and of force-load, so a display whose
-_own_ opt-in depends on the floor can read it without a cycle: MAF's
-`showSummary` swaps to the cheap summary adapter exactly where the detail fetch
-would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds
-the opt-in and exemption terms on top.
-
-```ts
-type aboveForceLoadFloor = boolean
-```
-
-#### getter: byteGateExempt
-
-True when nothing may gate, on either axis and in both the worker and the
-banner: the declarative `forceLoad` slot, or the force-load button. One boolean
-is the whole force-load mechanism — there is no per-region ceiling to carry,
-expire, or reconcile between the two axes. A self-summarizing adapter (BigWig,
-HiC, sequence) needs no term here: it reports no byte estimate at all, which
-already keeps the byte axis out of the verdict.
-
-```ts
-type byteGateExempt = boolean
-```
-
-#### getter: estimatedBytesForVisibleSpan
-
-How many bytes we estimate a fetch of the span on screen right now would pull,
-obtained by rescaling the stored measurement from the span it covers. Rescaling
-is what makes the derived verdict a pure function of the current view and lets
-it self-release on zoom-in — without it a large zoomed-out estimate stays above
-the limit forever and gates refetch. Only meaningful when
-`derivedRegionTooLargeEnabled`.
-
-```ts
-type estimatedBytesForVisibleSpan = number | undefined
-```
-
-#### getter: gateByteLimit
-
-The byte budget the gate enforces: the adapter's limit, else the display config.
-Also what `resolvedByteLimit()` hands the worker, so the two can't gate against
-different numbers. Force-load doesn't raise this — it exempts the track outright
-via `byteGateExempt`.
-
-```ts
-type gateByteLimit = number
-```
-
-#### getter: gateActive
-
-Whether anything may gate at this moment: the display opted in, nothing exempts
-it, and the view is measured and above the force-load floor.
-
-The single home of that question. Everything downstream reads it instead of
-restating it: the verdict, the pre-flight (no estimate RPC when nothing could
-act on it), and the worker budgets, which go undefined together here rather than
-each re-deriving the floor. The floor used to be spelled out in three places at
-three layers, which is a standing invitation for them to disagree.
-
-```ts
-type gateActive = boolean
-```
-
-#### getter: tooLargeStatus
-
-The verdict the whole mixin exists to produce, with the banner text: true when
-the estimated download for the span on screen exceeds the resolved byte budget,
-or when the display's own density axis trips (bytes take precedence for the
-text). Derived from the rescaled estimate, so it releases itself on zoom-in;
-false whenever `gateActive` is false.
-
-The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome`
-renders the banner from `regionTooLargeReason`.
-
-```ts
-type tooLargeStatus = RegionTooLargeStatus
-```
-
-#### getter: regionTooLargeReason
-
-Which axis tripped, as banner text: the estimated download size, or "Too many
-features". Empty string when the region isn't too large.
-
-```ts
-type regionTooLargeReason = string
-```
-
-| Member                                                 | Type      |
-| ------------------------------------------------------ | --------- |
-| <span id="getter-regiontoolarge">regionTooLarge</span> | `boolean` |
-
-**Methods**
-
-#### method: resolvedByteLimit
-
-The byte budget a fetch RPC enforces worker-side, short-circuiting an
-over-budget region before it downloads any features. Undefined (unlimited) when
-nothing gates; otherwise the very number the banner compares against, so the
-worker can't reject a region the banner then calls fine. Lives here, not on the
-canvas gate that consumes it, because both its terms are this mixin's — canvas
-owns only the density axis.
-
-```ts
-type resolvedByteLimit = () => number | undefined
-```
-
-**Actions**
-
-#### action: setByteEstimate
-
-Commits a byte measurement: the estimate together with the span it covers, so
-the derived gate can rescale it to the span on screen. `measuredSpanBp` must be
-the `visibleBp` captured when the measurement was _requested_, not read at
-commit time: a view that zoomed during the in-flight fetch would otherwise
-anchor the estimate to a span it never covered, and since `FetchVisibleRegions`
-skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner
-with no refetch to correct it. Harmless for non-gated displays (they ignore it).
-
-```ts
-type setByteEstimate = (estimate: ByteEstimate) => void
-```
-
-#### action: clearByteEstimate
-
-Drops the cached estimate. Chromosome navigation only: the estimate
-intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't
-flicker the banner.
-
-`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring
-it on navigation is exactly the per-locus re-approval the button exists to
-avoid.
-
-```ts
-type clearByteEstimate = () => void
-```
-
-#### action: setForceLoadTrack
-
-Exempt this track from the gate (or put it back under it). Separate from
-`forceLoad` so turning the gate off and refetching stay separable — a caller
-that just wants the flag (a revoke, a test) doesn't trigger a fetch, and
-`forceLoad` doesn't have to inline a volatile write.
-
-```ts
-type setForceLoadTrack = (flag: boolean) => void
-```
-
-#### action: forceLoad
-
-Force-load: exempt this track from the gate and refetch. One click covers every
-region and both axes, informed by the size the banner just quoted. The display
-chrome calls this from TooLargeMessage's button; concrete display models
-override `reload()` to do the actual refetch.
-
-```ts
-type forceLoad = () => void
-```
-
-#### action: byteGateBlocksFetch
-
-The entire pre-flight gate for one fetch: measure the region set, commit the
-estimate with the span it covers, and answer whether the caller must abandon the
-fetch — either superseded mid-measure, or over budget.
-
-Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family,
-LD and arc from their own global fetches) calls this and returns on true.
-Sequencing the steps at a call site is what used to go wrong: the span is read
-here, _before_ the await, so the estimate is anchored to the span it actually
-covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on
-screen, and since the fetch autoruns skip while `regionTooLarge` holds, an
-over-anchored estimate wedges the banner with no refetch to correct it.
-
-```ts
-type byteGateBlocksFetch = (
-  regions: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }[],
-  ctx: { isStale: () => boolean },
-) => Promise<boolean>
-```
-
-</details>
-
-<details>
-<summary>Derived from RenderLifecycleMixin</summary>
-
-[RenderLifecycleMixin →](../renderlifecyclemixin)
-
-**Volatiles**
-
-#### volatile: canvasDrawn
-
-flips true on first paint; read by test selectors to detect render
-
-```ts
-// type signature
-type canvasDrawn = false
-// code
-canvasDrawn: false
-```
-
-#### volatile: currentRenderingBackend
-
-current backend reference, updated on context-loss recovery. Typed `unknown`
-(not generic `B`) on purpose: this mixin is composed by every display via a
-non-generic factory, so the per-display backend type `B` isn't known here — it's
-supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
-autoruns. Don't "fix" the cast.
-
-```ts
-// type signature
-type currentRenderingBackend = undefined
-// code
-currentRenderingBackend: undefined
-```
-
-#### volatile: renderTick
-
-counter the render autorun observes; bumped to force a re-render
-
-```ts
-// type signature
-type renderTick = number
-// code
-renderTick: 0
-```
-
-#### volatile: autorunsInstalled
-
-guards attachRenderingBackend so the autorun pair spawns once per instance
-
-```ts
-// type signature
-type autorunsInstalled = false
-// code
-autorunsInstalled: false
-```
-
-#### volatile: renderError
-
-the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
-Single source of truth for the render-error terminal state:
-`useRenderingBackend` writes it from the canvas-init mechanism so the model —
-not React-local hook state — owns every terminal state. Read by `displayPhase`
-(whose `renderError` term outranks `loading`, suppressing the scrim) and by
-`DisplayChrome` (shows the retry overlay).
-
-```ts
-// type signature
-type renderError = undefined
-// code
-renderError: undefined
-```
-
-**Actions**
-
-#### action: setRenderError
-
-set/clear the render-backend error. Called by `useRenderingBackend`: with the
-error when the canvas factory rejects (or context-loss re-init fails), and with
-`undefined` on successful (re)init and on retry.
-
-```ts
-type setRenderError = (error: unknown) => void
-```
-
-#### action: attachRenderingBackend
-
-attach a GPU/Canvas2D backend and install the upload + render autorun pair
-(idempotent — re-calling only swaps the backend)
-
-```ts
-type attachRenderingBackend = <B>(
-  backend: B,
-  cbs: RenderingBackendCallbacks<B>,
-) => void
-```
-
-| Member                                                             | Type         |
-| ------------------------------------------------------------------ | ------------ |
-| <span id="action-markcanvasdrawn">markCanvasDrawn</span>           | `() => void` |
-| <span id="action-resetcanvasdrawn">resetCanvasDrawn</span>         | `() => void` |
-| <span id="action-stoprenderingbackend">stopRenderingBackend</span> | `() => void` |
-| <span id="action-rendernow">renderNow</span>                       | `() => void` |
-
-</details>
-
-<details>
-<summary>Derived from FetchMixin</summary>
-
-[FetchMixin →](../fetchmixin)
-
-**Volatiles**
-
-#### volatile: activeStopToken
-
-stop token of the in-flight fetch, or undefined when idle
-
-```ts
-// type signature
-type activeStopToken = StopToken | undefined
-// code
-activeStopToken: undefined as StopToken | undefined
-```
-
-#### volatile: fetchGeneration
-
-bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
-staleness epoch inside runFetch
-
-```ts
-// type signature
-type fetchGeneration = number
-// code
-fetchGeneration: 0
-```
-
-#### volatile: fetchCanceled
-
-true after the user explicitly cancels a load (the loading overlay's cancel
-button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
-it does not retrigger the fetch autoruns — so the load stays stopped until the
-user retries (`reload`) or the viewport changes. Any new fetch clears it
-(`runFetch` resets it at the start).
-
-```ts
-// type signature
-type fetchCanceled = false
-// code
-fetchCanceled: false
-```
-
-#### volatile: regionStatuses
-
-latest status of each concurrent in-flight operation, keyed by an arbitrary id
-(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
-reactively; setRegionStatus derives the observable statusMessage/statusProgress
-from it on every update so N parallel region fetches aggregate into one bar
-instead of clobbering.
-
-```ts
-// type signature
-type regionStatuses = Map<number, RpcStatus>
-// code
-regionStatuses: new Map<number, RpcStatus>()
-```
-
-**Getters**
-
-#### getter: isLoading
-
-true while a fetch is active
-
-```ts
-type isLoading = boolean
-```
-
-**Methods**
-
-#### method: makeStatusCallback
-
-An RPC `statusCallback` bound to this display: forwards progress to the shared
-`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
-torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
-Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
-at every call site.
-
-```ts
-type makeStatusCallback = () => (status: RpcStatus) => void
-```
-
-#### method: makeRegionStatusCallback
-
-Per-region variant of `makeStatusCallback`: routes progress through
-`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
-status bar instead of clobbering each other. Same `isAlive` guard;
-`setRegionStatus` owns the throttling (it has to thin only the bar write, not
-the per-region bookkeeping).
-
-```ts
-type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
-```
-
-**Actions**
-
-#### action: throttleStatus
-
-Run `apply` only if the throttle window has elapsed.
-
-```ts
-type throttleStatus = (apply: () => void) => void
-```
-
-#### action: resetStatus
-
-Drop the active stop token and clear all status bookkeeping. Shared by both
-cancel paths and runFetch's cleanup.
-
-```ts
-type resetStatus = () => void
-```
-
-#### action: stopActiveFetch
-
-Abort the in-flight fetch (if any) and clear its status. The shared preamble of
-both cancel paths; the difference between them is only what they do to
-`fetchCanceled` / `fetchGeneration` afterward.
-
-```ts
-type stopActiveFetch = () => void
-```
-
-#### action: setRegionStatus
-
-Record one concurrent operation's latest status (keyed) and recompute the shared
-statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
-undefined to drop a key. Used by displays that fan a single fetch out into
-parallel per-region RPCs.
-
-```ts
-type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
-```
-
-#### action: cancelFetch
-
-cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
-can retrigger fetch autoruns even when nothing was in flight). This is the
-_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
-user-cancel flag so the retrigger actually re-fetches.
-
-```ts
-type cancelFetch = () => void
-```
-
-#### action: cancelFetchByUser
-
-User-initiated cancel from the loading overlay. Stops the in-flight fetch and
-lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
-fetchGeneration — so the fetch autoruns don't immediately restart the load. The
-user retries via `reload` (the overlay's retry button), or it clears on the next
-viewport change.
-
-```ts
-type cancelFetchByUser = () => void
-```
-
-#### action: beforeDestroy
-
-Release an in-flight fetch's stop token on teardown. Without this, a display
-destroyed mid-fetch (track/view closed while loading) never revokes its token —
-a blob-URL leak on the non-SAB fallback path — and never signals the worker to
-abort the now-useless work. MST auto-chains lifecycle hooks, so a composing
-display can still define its own beforeDestroy.
-
-```ts
-type beforeDestroy = () => void
-```
-
-#### action: runFetch
-
-Run a cancel-safe fetch (cancels any prior). The work callback gets a
-FetchContext with a stopToken to forward to the RPC and an isStale() check to
-short-circuit commits once the user has moved on. Abort errors are swallowed;
-others are stored in `error` if not stale.
-
-```ts
-type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
-```
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-type">**type**</span><br><code>type: types.literal('LinearAlignmentsDisplay')</code> |  | LinearAlignmentsDisplay |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | LinearAlignmentsDisplay |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
+| <span id="property-rpcdrivername">**rpcDriverName**</span><br><code>rpcDriverName: types.maybe(types.string)</code> |  | [BaseDisplay](../basedisplay#property-rpcdrivername) |
+| <span id="property-ignorepromoteddefaults">**ignorePromotedDefaults**</span><br><code>ignorePromotedDefaults: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL). Such a display resolves its `promotable` config slots from its own config only, never from this browser's promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the received session is a record of what the sender saw, and a local preference silently repainting it would make it a lie. A track opened *afterwards* in that same session is a fresh track of this user's, so it never gets the flag and picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user deliberately makes the display follow a default.</span> | [BaseDisplay](../basedisplay#property-ignorepromoteddefaults) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-featureidundermouse">**featureIdUnderMouse**</span><br><code>featureIdUnderMouse: undefined as undefined &#124; string</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-mouseoverextrainformation">**mouseoverExtraInformation**</span><br><details><summary><code>mouseoverExtraInformation: undefined as TooltipPayload &#124; undefi…</code></summary><pre><code>mouseoverExtraInformation: undefined as TooltipPayload &#124; undefined</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenufeature">**contextMenuFeature**</span><br><code>contextMenuFeature: undefined as Feature &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenufeatureid">**contextMenuFeatureId**</span><br><code>contextMenuFeatureId: undefined as string &#124; undefined</code> | The read/feature id under a right-click, known synchronously (the hit test carries it) unlike `contextMenuFeature`, which only lands after an RPC. A menu item that can act from the id alone — or fetch the feature in its own onClick — reads this, so it doesn't blink into existence a fetch later. | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenucoord">**contextMenuCoord**</span><br><code>contextMenuCoord: undefined as [number, number] &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenucigarhit">**contextMenuCigarHit**</span><br><code>contextMenuCigarHit: undefined as CigarHitResult &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenuindicatorhit">**contextMenuIndicatorHit**</span><br><details><summary><code>contextMenuIndicatorHit: undefined as IndicatorHitResult &#124; unde…</code></summary><pre><code>contextMenuIndicatorHit: undefined as IndicatorHitResult &#124; undefined</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenumodhit">**contextMenuModHit**</span><br><details><summary><code>contextMenuModHit: undefined as ModificationHitResult &#124; undefin…</code></summary><pre><code>contextMenuModHit: undefined as ModificationHitResult &#124; undefined</code></pre></details> | Per-read base modification under a right-click, so "Open modification details" is reachable from the menu (not just left-click). Set with the block/hits as a unit. | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenugenomicpos">**contextMenuGenomicPos**</span><br><code>contextMenuGenomicPos: undefined as number &#124; undefined</code> | Genomic column under a right-click, anchoring the read menu's "sort at the clicked position" items. Set with the block/hits as a unit. | LinearAlignmentsDisplay |
+| <span id="volatile-contextmenublock">**contextMenuBlock**</span><br><code>contextMenuBlock: undefined as ResolvedBlock &#124; undefined</code> | The block under a right-click (refName + block-level worker result + bp range). The position sort reads its refName and the indicator/coverage detail items read its rpcData to open the aggregate widget (mirrors the left-click path in useAlignmentsBase). | LinearAlignmentsDisplay |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><details><summary><code>rpcDataMap: observable.map&lt;number, GroupedAlignmentsResult&gt;( un…</code></summary><pre><code>rpcDataMap: observable.map&lt;number, GroupedAlignmentsResult&gt;(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;deep: false,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="volatile-scrolltop">**scrollTop**</span><br><code>scrollTop: 0</code> | pileup vertical scroll offset in px. Also read by the BreakpointSplitView overlay to position its SVG curves. | LinearAlignmentsDisplay |
+| <span id="volatile-collapsedgroups">**collapsedGroups**</span><br><code>collapsedGroups: observable.set&lt;string&gt;()</code> | Group keys whose pileup is collapsed to just its coverage band (in-track grouping). Keyed by group key so it survives re-fetches; volatile so it resets on reload. Stale keys from a prior grouping dimension are harmless — they never match the new keys. | LinearAlignmentsDisplay |
+| <span id="volatile-groupmaxheightoverrides">**groupMaxHeightOverrides**</span><br><code>groupMaxHeightOverrides: observable.map&lt;string, number&gt;()</code> | Per-group pileup height override in px (in-track grouping). Keyed by group key, volatile like `collapsedGroups`; absent keys fall back to the display-wide `maxHeight`. Lets a dense section be shrunk independently. Cleared by `setGroupBy`. | LinearAlignmentsDisplay |
+| <span id="volatile-fittedheightpx">**fittedHeightPx**</span><br><code>fittedHeightPx: 0</code> | Cache of the current fitted read height in px, kept in sync by the afterAttach autorun while `fitHeightToDisplay` is on. A volatile (not a getter) because the fit height derives from late layout getters that the early `featureHeight` getter can't reference — the autorun bridges that ordering. 0 until first computed / when nothing fits. | LinearAlignmentsDisplay |
+| <span id="volatile-highlightedchainids">**highlightedChainIds**</span><br><code>highlightedChainIds: [] as string[]</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-selectedchainids">**selectedChainIds**</span><br><code>selectedChainIds: [] as string[]</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-colortagmap">**colorTagMap**</span><br><code>colorTagMap</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-detectedmodifications">**detectedModifications**</span><br><code>detectedModifications: observable.map&lt;string, string&gt;({})</code> | Modification type code -> painted color, for every type seen in the fetched reads. This is what the data CONTAINS; what is actually drawn is filtered separately by isModificationTypeVisible, so don't rename this back to "visible". | LinearAlignmentsDisplay |
+| <span id="volatile-modificationsready">**modificationsReady**</span><br><code>modificationsReady: false</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-overcigaritem">**overCigarItem**</span><br><code>overCigarItem: false</code> |  | LinearAlignmentsDisplay |
+| <span id="volatile-hovercoverageband">**hoverCoverageBand**</span><br><details><summary><code>hoverCoverageBand: undefined as &#124; { topOffset: number; coverage…</code></summary><pre><code>hoverCoverageBand: undefined as&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; { topOffset: number; coverageHeight: number }&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined</code></pre></details> | Screen-px coverage band of the section currently under a coverage/indicator hover. Drives the tooltip's vertical hover bar so it lands on the hovered group's coverage band, not always the top one. `undefined` when not hovering coverage. | LinearAlignmentsDisplay |
+| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
+| <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
+| <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
+| <span id="volatile-loadedregions">**loadedRegions**</span><br><code>loadedRegions: observable.map&lt;number, Region&gt;()</code> | <span data-pagefind-ignore>regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#volatile-loadedregions) |
+| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>forceLoadTrack: false</code> | <span data-pagefind-ignore>The force-load button's answer: render this track regardless of region size or feature density. One boolean for the whole track, not a raised ceiling per region — the banner already tells the user how much data is involved, so one informed click approves the track and they never have to re-approve it per locus.<br><br>Volatile, not persisted, so it can't leak a disabled gate into a saved or shared session (a recipient would download the same data with no warning and no way to see why). A page load re-arms the gate. The durable, declarative equivalent is the `forceLoad` config slot, for session specs, embeds and `jbrowse-img --force`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#volatile-forceloadtrack) |
+| <span id="volatile-byteestimate">**byteEstimate**</span><br><code>byteEstimate: undefined as ByteEstimate &#124; undefined</code> | <span data-pagefind-ignore>The last byte measurement for this display: the estimated bytes **and the span they cover**, which is what lets the derived gate rescale them to the span on screen now. One volatile rather than two, because the pair is a single measurement — written together by `setByteEstimate`, dropped together by `clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so an ordinary viewport change doesn't flicker the banner; only chromosome navigation drops it. Ignored unless `derivedRegionTooLargeEnabled`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#volatile-byteestimate) |
+| <span id="volatile-canvasdrawn">**canvasDrawn**</span><br><code>canvasDrawn: false</code> | <span data-pagefind-ignore>flips true on first paint; read by test selectors to detect render</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-canvasdrawn) |
+| <span id="volatile-currentrenderingbackend">**currentRenderingBackend**</span><br><code>currentRenderingBackend: undefined</code> | <span data-pagefind-ignore>current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-currentrenderingbackend) |
+| <span id="volatile-rendertick">**renderTick**</span><br><code>renderTick: 0</code> | <span data-pagefind-ignore>counter the render autorun observes; bumped to force a re-render</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-rendertick) |
+| <span id="volatile-autorunsinstalled">**autorunsInstalled**</span><br><code>autorunsInstalled: false</code> | <span data-pagefind-ignore>guards attachRenderingBackend so the autorun pair spawns once per instance</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-autorunsinstalled) |
+| <span id="volatile-rendererror">**renderError**</span><br><code>renderError: undefined</code> | <span data-pagefind-ignore>the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).</span> | [RenderLifecycleMixin](../renderlifecyclemixin#volatile-rendererror) |
+| <span id="volatile-activestoptoken">**activeStopToken**</span><br><code>activeStopToken: undefined as StopToken &#124; undefined</code> | <span data-pagefind-ignore>stop token of the in-flight fetch, or undefined when idle</span> | [FetchMixin](../fetchmixin#volatile-activestoptoken) |
+| <span id="volatile-fetchgeneration">**fetchGeneration**</span><br><code>fetchGeneration: 0</code> | <span data-pagefind-ignore>bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch</span> | [FetchMixin](../fetchmixin#volatile-fetchgeneration) |
+| <span id="volatile-fetchcanceled">**fetchCanceled**</span><br><code>fetchCanceled: false</code> | <span data-pagefind-ignore>true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`, it does not retrigger the fetch autoruns — so the load stays stopped until the user retries (`reload`) or the viewport changes. Any new fetch clears it (`runFetch` resets it at the start).</span> | [FetchMixin](../fetchmixin#volatile-fetchcanceled) |
+| <span id="volatile-regionstatuses">**regionStatuses**</span><br><code>regionStatuses: new Map&lt;number, RpcStatus&gt;()</code> | <span data-pagefind-ignore>latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex). Plain bookkeeping — not read reactively; setRegionStatus derives the observable statusMessage/statusProgress from it on every update so N parallel region fetches aggregate into one bar instead of clobbering.</span> | [FetchMixin](../fetchmixin#volatile-regionstatuses) |
+
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="getter-linkedreads">**linkedReads**</span><br><code>"normal" &#124; "off"</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-pairsdisplaytypedefault">**pairsDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showbezierconnections">**showBezierConnections**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showpileup">**showPileup**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-drawsingletons">**drawSingletons**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-drawproperpairs">**drawProperPairs**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showonlysplitalignments">**showOnlySplitAlignments**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-flipstrandlongreadchains">**flipStrandLongReadChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-colorsupplementarychains">**colorSupplementaryChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-drawinter">**drawInter**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-drawlongrange">**drawLongRange**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-arccolorbytype">**arcColorByType**</span><br><code>ArcColorByType</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-readconnections">**readConnections**</span><br><code>"off" &#124; "arc" &#124; "cloud"</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-arcsdisplaytypedefault">**arcsDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-readclouddisplaytypedefault">**readCloudDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-readconnectionsdown">**readConnectionsDown**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-readconnectionsdowndisplaytypedefault">**readConnectionsDownDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showsashimiarcs">**showSashimiArcs**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-sashimiarcsmode">**sashimiArcsMode**</span><br><code>"auto" &#124; "up" &#124; "down"</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-minsashimiscore">**minSashimiScore**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-sashimiarcsheight">**sashimiArcsHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-readconnectionsheight">**readConnectionsHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showsoftclipping">**showSoftClipping**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-softclippingdisplaytypedefault">**softClippingDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-ischainmode">**isChainMode**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showlinkedreadlines">**showLinkedReadLines**</span><br><code>boolean</code> | Whether to draw the straight-line pass connecting normal read-pairs in pileup layout. Only meaningful when bezier connections are on AND we are in pileup mode — chain layout has its own connecting-line pass that already covers normal pairs. | LinearAlignmentsDisplay |
+| <span id="getter-scaletype">**scaleType**</span><br><code>"linear" &#124; "log"</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-autoscaletype">**autoscaleType**</span><br><code>"local" &#124; "localsd"</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-minscore">**minScore**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-maxscore">**maxScore**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-hiddengroupkeys">**hiddenGroupKeys**</span><br><code>ReadonlySet&lt;string&gt;</code> | Group keys that `groupOrder` drops, so a display can hide a lane its own grouping produces without every consumer of the order learning about it. Empty here; LGVSyntenyDisplay overrides it to hide the self-alignment lane of an all-vs-all track. | LinearAlignmentsDisplay |
+| <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-tooltipcomponent">**TooltipComponent**</span><br><code>LazyExoticComponent&lt;…&gt;</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-detectedmodificationtypes">**detectedModificationTypes**</span><br><code>string[]</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-colorby">**colorBy**</span><br><code>ColorBy</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-filterby">**filterBy**</span><br><code>FilterBy</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-isfitting">**isFitting**</span><br><code>boolean</code> | True when fit-to-display mode is on AND a pitch has been computed (`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The single gate both size getters read, so it's obvious they either both split the fitted pitch or both fall back to config — never a mix. | LinearAlignmentsDisplay |
+| <span id="getter-featureheight">**featureHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-featurespacing">**featureSpacing**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-configuredfeatureheight">**configuredFeatureHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-maxheight">**maxHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showsashimilabels">**showSashimiLabels**</span><br><code>boolean</code> | Whether to draw the supporting-read count on each sashimi arc. Resolved through the promotable-slot tiers (resolveConf): an explicit track value pins labels on or off; otherwise it follows the session-wide default, falling back to off. A `maybeBoolean` slot, so (like mismatchAlpha) a session default of "on" can be customized back off on a single track. | LinearAlignmentsDisplay |
+| <span id="getter-showsashimilabelsdisplaytypedefault">**showSashimiLabelsDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> | "make the current sashimi-label state the default for all tracks" control (pin): symmetric, so it promotes whichever value the track currently shows. | LinearAlignmentsDisplay |
+| <span id="getter-chainidmap">**chainIdMap**</span><br><code>Map&lt;string, string[]&gt;</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showlowfreqmismatches">**showLowFreqMismatches**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-filtermismatchesbyfrequency">**filterMismatchesByFrequency**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-mismatchalpha">**mismatchAlpha**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-mismatchalphadisplaytypedefault">**mismatchAlphaDisplayTypeDefault**</span><br><code>DisplayTypeDefaultControl</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-sortedby">**sortedBy**</span><br><code>SortedBy &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-largefeaturesfirst">**largeFeaturesFirst**</span><br><code>boolean</code> | Lay out the widest features in the lowest pileup rows (main-thread tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it on. Ignored while an explicit `sortedBy` position sort is active. | LinearAlignmentsDisplay |
+| <span id="getter-groupby">**groupBy**</span><br><code>GroupBy &#124; undefined</code> | In-track stacked grouping dimension (undefined = ungrouped). Falls back to the `groupBy` config slot, so a track can be pre-grouped declaratively. Sent to the worker via rpcProps; the worker partitions one fetch into N sections. The slot is `frozen` (unvalidated JSON), so `normalizeGroupBy` is the chokepoint that keeps an unrecognized type or a tag grouping with no tag name from reaching the worker. | LinearAlignmentsDisplay |
+| <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | Offset the track label above the visualization when grouping, so the stacked group sections aren't hidden behind an overlapping label.<br><br>Asks whether the grouping will be HONORED, not merely whether it is set: chain mode drops a per-read dimension (`groupByForMode`), and reserving label room for sections that then never get drawn leaves dead space above the plot. Unlike `showsGroupLabels` this can't read the fetched sections — the track label is positioned before any data arrives, and flipping once it lands would jump the layout — but the degradation is decidable from the two settings alone, so no data is needed. | LinearAlignmentsDisplay |
+| <span id="getter-collapsegrouprows">**collapseGroupRows**</span><br><code>boolean</code> | Whether each group draws as a single row, its overlap depth carried by the tint layer rather than by stacking. Gated on the grouping actually being honored (`prefersOffset`), so the slot can be a track-config default without an ungrouped view silently flattening its whole pileup onto one row. | LinearAlignmentsDisplay |
+| <span id="getter-coverageislog">**coverageIsLog**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-coveragestats">**coverageStats**</span><br><code>ScoreStats &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-coveragedomain">**coverageDomain**</span><br><code>[number, number] &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-coverageticks">**coverageTicks**</span><br><code>YScaleTicks &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-colorlegendcategories">**colorLegendCategories**</span><br><code>Set&lt;ReadColorCategory&gt;</code> | Read-color buckets actually present across the rendered reads, the single input that lets the legend list only relevant swatches (see legendUtils). Shares readColorCategory with the renderer so the two can't disagree. Empty while the legend is hidden so the O(reads) scan is skipped; MobX memoizes it against rpcDataMap + scheme + mode. | LinearAlignmentsDisplay |
+| <span id="getter-colorpalette">**colorPalette**</span><br><code>ColorPalette</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-arclegendcategories">**arcLegendCategories**</span><br><code>Set&lt;ReadColorCategory&gt;</code> | The arc color slots actually plotted, mapped to legend buckets — curved paired-end arcs and the read cloud's flat lines and endpoint squares alike, since both paint from `arcColorByType`. Its own vocabulary when the fills use a different scheme (a track colored by strand still draws insert-size-colored arcs), so it keys its own legend section then and folds into the read key otherwise — see `arcColorsMatchReads`. Empty unless an overlay is on with the legend shown. | LinearAlignmentsDisplay |
+| <span id="getter-arccolorsmatchreads">**arcColorsMatchReads**</span><br><code>boolean</code> | Whether the overlay speaks the reads' own color vocabulary — arc mode against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME). The swatches are then identical categories in identical palette colors, so keying both sections lists the same colors twice under two headings; the arc buckets fold into the read key instead. | LinearAlignmentsDisplay |
+| <span id="getter-arclegendtitle">**arcLegendTitle**</span><br><code>"Read cloud colors" &#124; "Arc colors"</code> | Heading for the overlay's own color key, named after the overlay the reader is looking at: flat read-cloud lines are not arcs. | LinearAlignmentsDisplay |
+| <span id="getter-arcbandinput">**arcBandInput**</span><br><details><summary><code>{ showCoverage: boolean; coverageHeight: number; coverageYOffse…</code></summary><pre><code>{ showCoverage: boolean; coverageHeight: number; coverageYOffset: number; readConnections: "off" &#124; "arc" &#124; "cloud"; readConnectionsDown: boolean; readConnectionsHeight: number; }</code></pre></details> | The fields `computeArcBand` reads. One source so the drawn arc band (`sections`/`buildSectionRenders`) and the insert-size ruler that must land on its apexes (`insertSizeTicks`) can't be assembled differently. | LinearAlignmentsDisplay |
+| <span id="getter-belowcoveragebandsinput">**belowCoverageBandsInput**</span><br><code>{…}</code> | Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus whether any sashimi junction is present. Defined here (an earlier .views block than `belowCoverageBands`) so the fit-budget `laidOutByGroup` and the `belowCoverageBands` getter share one source. | LinearAlignmentsDisplay |
+| <span id="getter-laidoutbygroup">**laidOutByGroup**</span><br><code>LaidOutByGroup</code> | Per-group laid-out data: group key → (region index → laid-out data). Each group lays out independently (own `maxRows` cap) so a dense group can't starve the rest. When grouped, the default cap fits all sections into the viewport (`fitGroupMaxRows`) so the stack doesn't tower and need scrolling; a per-group height drag / expand still overrides it. Tag colors are baked here (not in the worker) so colorTagMap stays a main-thread tier-2 setting — see readTagColors. | LinearAlignmentsDisplay |
+| <span id="getter-grouplayoutcontext">**groupLayoutContext**</span><br><details><summary><code>{ order: GroupId[]; rawByGroup: Map&lt;string, Map&lt;number, PileupD…</code></summary><pre><code>{ order: GroupId[]; rawByGroup: Map&lt;string, Map&lt;number, PileupDataResult&gt;&gt;; isChainMode: boolean; sortedBy: SortedBy &#124; undefined; ... 6 more ...; collapseGroupRows: boolean; }</code></pre></details> | The layout mechanics (grouping, sort, soft-clip, colors) shared by the viewport fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays every group out uncapped to count rows. Kept apart from the fit policy (row caps), which varies per call. | LinearAlignmentsDisplay |
+| <span id="getter-grouporder">**groupOrder**</span><br><code>GroupId[]</code> | Group keys + labels in stacking order; a single entry (key '') when ungrouped. Derived straight from the fetched `rpcDataMap` (not from the layout pass), so group identity/order stays stable across relayouts. | LinearAlignmentsDisplay |
+| <span id="getter-laidoutpileupmap">**laidOutPileupMap**</span><br><code>Map&lt;number, PileupDataResult&gt;</code> | Renderer-facing per-region layout. Stage 2 draws a single section, so this exposes the first (for ungrouped, the only) group; Stage 3 switches the renderers to loop `sections` directly. | LinearAlignmentsDisplay |
+| <span id="getter-maxy">**maxY**</span><br><code>number</code> | Row count of the primary group across its regions. This reads only the first group (`laidOutPileupMap`), so it is meaningful only on the single-section/ungrouped path. Grouped layout sizes each section from its own `groupMaxY`; don't use this as a cross-group aggregate. | LinearAlignmentsDisplay |
+| <span id="getter-pileuptruncated">**pileupTruncated**</span><br><code>boolean</code> | True when the ungrouped pileup hit `maxHeight` and overflow reads were collapsed — drives the "max height reached" / "show all" banner. Only the ungrouped (single-group) case: grouped sections surface their own truncation per-label (`isGroupTruncated`), where raising `maxHeight` wouldn't lift the fit-to-viewport cap anyway — expanding the group does. Suppressed in fit-to-display mode for the same reason: reads there are already clamped to a 1px floor, so "Show all" can't deliver a fit — it only deepens the 1px scroll. The overflow indicator still flags the scroll in that case. | LinearAlignmentsDisplay |
+| <span id="getter-rawdatabygroup">**rawDataByGroup**</span><br><code>Map&lt;string, Map&lt;number, PileupDataResult&gt;&gt;</code> | Raw (un-laid-out) data regrouped as group key → (region idx → data), insertion-ordered so the first key is the primary group. The arc compute and the per-section sashimi overlay both read one group's raw map from here; ungrouped is the single key `''`. | LinearAlignmentsDisplay |
+| <span id="getter-arcsbygroup">**arcsByGroup**</span><br><code>Map&lt;string, Map&lt;number, ArcsUploadData&gt;&gt;</code> | Per-group arc upload feed: group key → (region idx → `ArcsUploadData`). The heavy `computeArcsFromPileupData` pass runs once per group (arcs are pre-grouped by refName so each region lookup is O(1)); ungrouped is the single-group case. Empty map when read-connections are off, so the off-path skips the per-read region scan entirely. Source of truth for the per-section arc feed (`sourceSections`) and the shared cross-group `arcsYDomainBp`. | LinearAlignmentsDisplay |
+| <span id="getter-modificationthreshold">**modificationThreshold**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-colorschemeindex">**colorSchemeIndex**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showmodifications">**showModifications**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showperbasequality">**showPerBaseQuality**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showperbaseletter">**showPerBaseLetter**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-readidindexmap">**readIdIndexMap**</span><br><details><summary><code>Map&lt;string, { displayedRegionIndex: number; groupKey: string; i…</code></summary><pre><code>Map&lt;string, { displayedRegionIndex: number; groupKey: string; idx: number; }&gt;</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | Whether `searchFeatureByID` has a pileup to search. Same name and meaning as the canvas display's; see MultiRegionDisplayMixin. | LinearAlignmentsDisplay |
+| <span id="getter-readconnectionslinewidth">**readConnectionsLineWidth**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-belowcoveragebands">**belowCoverageBands**</span><br><details><summary><code>{ hasArcsBand: boolean; hasSashimiBand: boolean; arcsBandTop: n…</code></summary><pre><code>{ hasArcsBand: boolean; hasSashimiBand: boolean; arcsBandTop: number; sashimiBandTop: number; bottom: number; }</code></pre></details> | Geometry of the bands stacked below coverage in arcs-down mode, top to bottom: coverage → paired-end arcs → sashimi. Single source of truth so the layout height, the renderers, and the three resize handles can't drift apart. `arcsBandTop`/`sashimiBandTop` are each band's top edge; `bottom` is where the pileup begins (== coverageDisplayHeight). | LinearAlignmentsDisplay |
+| <span id="getter-coveragedisplayheight">**coverageDisplayHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-sections">**sections**</span><br><code>SectionsLayout</code> | Single source of all vertical band geometry, one entry per stacked group. `computeStackedSections` reproduces the prior ungrouped reserved layout exactly for its single-section (N==1) case, so ungrouped is not a special branch here — it is the one-group call, with a synthetic group when no data has arrived yet (so `laidOutPileupMap`/`renderState` still see one section). The sticky-coverage-vs-scroll distinction lives downstream in `buildSectionRenders`, keyed off section count. | LinearAlignmentsDisplay |
+| <span id="getter-rendersections">**renderSections**</span><br><details><summary><code>{ groupKey: string; label: string; laidOutPileupMap: Map&lt;…&gt;; to…</code></summary><pre><code>{ groupKey: string; label: string; laidOutPileupMap: Map&lt;…&gt;; topOffset: number; coverageTop: number; coverageHeight: number; sashimiBandTop: number; pileupHeight: number; }[]</code></pre></details> | Per-section data + content-space band tops for the overlay/hit-test pipeline (labels, highlights, hit-test). Pairs each section's group data map with its `pileupTop` (used as the row `topOffset`) and coverage band so a screen-y can be mapped to the right section and its group. Reads straight off `sections` (every field already lives on the `Section`); ungrouped is the single section, so the pipeline reduces to pre-grouping. | LinearAlignmentsDisplay |
+| <span id="getter-sourcesections">**sourceSections**</span><br><details><summary><code>{ groupKey: string; laidOutPileupMap: Map&lt;number, PileupDataRes…</code></summary><pre><code>{ groupKey: string; laidOutPileupMap: Map&lt;number, PileupDataResult&gt;; arcsRpcDataMap: Map&lt;number, ArcsUploadData&gt;; }[]</code></pre></details> | Per-section upload input, in stacking order: each section's laid-out region map + arc feed, keyed by group so the renderers can namespace HAL region keys per section.<br><br>Both renderers pair the uploaded section `s` with the drawn section `s` by INDEX (`sectionRegionKey(s, regionIdx)`), so this list and `renderState.sections` must have the same length and order. Both now derive from `sections`, making that structural — deriving this one from `groupOrder` instead let the two disagree whenever `sections` synthesized its no-data section (0 uploaded vs 1 drawn), which happens on an empty grouped fetch. That mismatch was benign only because the per-section region lookup missed and the draw skipped. | LinearAlignmentsDisplay |
+| <span id="getter-bezierpairsections">**bezierPairSections**</span><br><details><summary><code>{ topOffset: number; pileupHeight: number; pairs: LinkedPair[];…</code></summary><pre><code>{ topOffset: number; pileupHeight: number; pairs: LinkedPair[]; }[]</code></pre></details> | Scroll/pan-invariant half of the bezier connection overlay: the linked pairs of each section, resolved once per relayout. The read grouping + connection resolution (`enumerateBezierPairs`) is the allocation-heavy step; memoizing it here (this getter never reads `scrollTop`) keeps a scroll frame down to the cheap per-pair screen projection in `computePileupBezierArcsFromModel`. Empty when the overlay is off. | LinearAlignmentsDisplay |
+| <span id="getter-bezierconnectioncolortypes">**bezierConnectionColorTypes**</span><br><code>Set&lt;number&gt;</code> | Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line arcs in view, the input that lets the legend list only the connection colors present. Mirrors the overlay's skip rule (normal within-region pairs are drawn by the GPU pipeline, not as arcs) so the key matches the curves. Empty while the legend is hidden so the scan is skipped. | LinearAlignmentsDisplay |
+| <span id="getter-sashimiarcsections">**sashimiArcSections**</span><br><details><summary><code>{ groupKey: string; up: SashimiArc[]; down: SashimiArc[]; cover…</code></summary><pre><code>{ groupKey: string; up: SashimiArc[]; down: SashimiArc[]; coverageOverlayTop: number; sashimiBandTop: number; }[]</code></pre></details> | Per-section sashimi arcs, in stacking order: each group's junction geometry (sashimi counts live per-group) already split into the two sub-bands, paired with their content-space tops — `coverageOverlayTop` for `up` arcs drawn over the coverage histogram, `sashimiBandTop` for `down` arcs in the reserved strip below it. In 'auto' both are populated; 'up'/'down' leave the other empty. The overlay and SVG export both map over this, so it is the single source for sashimi geometry and neither path can drift; ungrouped is the single-section case (sticky band below sticky coverage). Empty when sashimi is off.<br><br>A computed on purpose (tier 3 — mirrors `bezierPairSections`): the arc math depends on the view's pan/zoom but NOT on scrollTop, so MobX replays the cache while the user scrolls a grouped track. Computing it in the overlay's render instead re-ran the O(n^2) 'auto' side assignment for every section on every scroll frame. | LinearAlignmentsDisplay |
+| <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> | What one row of this pileup is called, for UI text built from the model alone (the group-label chips). The menu builders take the same word as a call-site `noun` option. Subclasses that aren't showing reads override it — LGVSyntenyDisplay draws PAF blocks, so its chips must not offer to "show all reads". | LinearAlignmentsDisplay |
+| <span id="getter-isgrouped">**isGrouped**</span><br><code>boolean</code> | True when reads are stacked into >1 group section. Drives the scroll model: ungrouped keeps coverage sticky (only the pileup scrolls); grouped scrolls the whole coverage+pileup stack as one. | LinearAlignmentsDisplay |
+| <span id="getter-showsgrouplabels">**showsGroupLabels**</span><br><code>boolean</code> | Whether the stacked section labels + dividers are drawn. Deliberately NOT `isGrouped`: grouping that happens to yield one section (a region with reads on one strand, a tag with a single value) still reserves the label offset (`prefersOffset`) and still wants its section named and collapsible — otherwise it reads as an ungrouped track with mysterious blank space above it. `isGrouped` stays about the scroll model (>1 section scrolls coverage with its section), which one section doesn't change. Reads the fetched sections rather than `groupBy` — see `hasNamedGroups` for why the setting is the wrong signal. | LinearAlignmentsDisplay |
+| <span id="getter-scrollmodel">**scrollModel**</span><br><code>ScrollModel</code> | The scroll-projection inputs (`sectionScreen.ts`) every overlay needs to map a content-space Y into screen space. Built once here so the label / resize-handle / coverage-axis overlays don't each re-assemble `{ isGrouped, scrollTop, canvasHeight }` inline. | LinearAlignmentsDisplay |
+| <span id="getter-pileupviewportheight">**pileupViewportHeight**</span><br><code>number</code> | Height of the scrollable viewport. Ungrouped excludes the sticky coverage band; grouped scrolls the entire display. | LinearAlignmentsDisplay |
+| <span id="getter-pileupcontentheight">**pileupContentHeight**</span><br><code>number</code> | Total scrollable content height. Grouped is the full stacked-sections height; ungrouped is the pileup band alone (coverage is sticky), which is the stacked height minus that sticky coverage band. Both read the laid-out `sections` so the scroll extent tracks the geometry actually drawn — when `showPileup` is off or the group is collapsed the section reserves no pileup rows, so this collapses to 0 and no phantom scroll region opens up below the coverage band. | LinearAlignmentsDisplay |
+| <span id="getter-grownheight">**grownHeight**</span><br><code>number</code> | Target track height for `grow` mode: the full laid-out content height (coverage + pileup + arcs), capped at the `growMaxHeight` slot so a deep pileup doesn't grow the track to thousands of px (a taller pileup fits to the cap and scrolls the remainder). Independent of `self.height` (in grow mode reads use the configured `featureHeight`, not the fitted pitch), so the grow autorun that writes it back can't feed back on itself. `setHeight` floors it to MIN_DISPLAY_HEIGHT. | LinearAlignmentsDisplay |
+| <span id="getter-height">**height**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-scalebaroverlapleft">**scalebarOverlapLeft**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showoutline">**showOutline**</span><br><code>any</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-visiblelabels">**visibleLabels**</span><br><code>VisibleLabel[]</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-highlightchainids">**highlightChainIds**</span><br><code>string[]</code> | Chain member ids to highlight, empty unless in `normal` linked-read mode. Single source for the "is this a chain highlight" decision that both `highlightBoxes` (which ids to box) and `HighlightOverlay` (how strongly to shade them) read, so the two can't drift. | LinearAlignmentsDisplay |
+| <span id="getter-highlightboxes">**highlightBoxes**</span><br><code>HighlightBox[]</code> | Screen boxes for the hovered read / chain, painted by the `HighlightOverlay` div. Deliberately NOT part of `renderState`: the hovered id changes on nearly every mousemove, and routing it through the canvas would repaint the whole pileup each move. | LinearAlignmentsDisplay |
+| <span id="getter-fittedfeatureheight">**fittedFeatureHeight**</span><br><code>number</code> | The read height that makes every uncollapsed group's reads fill the display without scrolling. Row count is fixed by read overlaps, so we lay the groups out uncapped (a fixed maxHeight-row cap, independent of the current featureHeight — so the fit autorun that writes featureHeight can't feed back into this) and divide the pileup space by it.<br><br>Fractional (not floored): the pileup then fills the display exactly rather than leaving up to a row of slack at the bottom. Clamped up to a 1px floor — below 1px the reads can't all fit, so the stack scrolls instead. 0 when there's nothing to fit (no data / no room), signalling "leave the configured height as-is".<br><br>Also clamped down to the NORMAL read pitch — not the currently configured height — because fit OVERRIDES the compactness preset: a handful of reads in a tall display would otherwise stretch to fill it, e.g. one read blown up to 100px. Capping at the configured height would instead let a Compact/Super-compact selection clamp the fit expansion (compact overriding fit), so a fit under Compact could never grow past 3px. Fit should only ever squeeze reads smaller than normal, never grow them past it; once there's more room than reads need, the extra space is left blank (`laidOutByGroup` already scrolls/pads for the shortfall).<br><br>Reads the `fitTargetHeight` slot, NOT the reactive `height` getter — the same anti-cycle rule `laidOutByGroup` follows. Fit mode only, where the two are equal, but the slot can never chain back through height->grownHeight->layout->featureHeight if this ever moves. | LinearAlignmentsDisplay |
+| <span id="getter-scrollableheight">**scrollableHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-sorttag">**sortTag**</span><br><code>string &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-renderstate">**renderState**</span><br><code>{…}</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-arcsydomainbp">**arcsYDomainBp**</span><br><code>number &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-insertsizeticks">**insertSizeTicks**</span><br><code>YScaleTicks &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-featureundermouse">**featureUnderMouse**</span><br><code>SimpleFeature &#124; undefined</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-bytegateenabled">**byteGateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the region set with `CoreGetRegionByteEstimate` before downloading reads. | LinearAlignmentsDisplay |
+| <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
+| <span id="getter-parentdisplay">**parentDisplay**</span><br><details><summary><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124;…</code></summary><pre><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124; undefined; } &#124; undefined</code></pre></details> | <span data-pagefind-ignore>Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)</span> | [BaseDisplay](../basedisplay#getter-parentdisplay) |
+| <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |
+| <span id="getter-displayblurb">**DisplayBlurb**</span><br><details><summary><code>FC&lt;{ model: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; I…</code></summary><pre><code>FC&lt;{ model: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }&gt; &#124; null</code></pre></details> |  | [BaseDisplay](../basedisplay#getter-displayblurb) |
+| <span id="getter-adapterconfig">**adapterConfig**</span><br><code>any</code> |  | [BaseDisplay](../basedisplay#getter-adapterconfig) |
+| <span id="getter-isminimized">**isMinimized**</span><br><code>boolean</code> | <span data-pagefind-ignore>Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.</span> | [BaseDisplay](../basedisplay#getter-isminimized) |
+| <span id="getter-effectiverpcdrivername">**effectiveRpcDriverName**</span><br><code>any</code> | <span data-pagefind-ignore>Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName</span> | [BaseDisplay](../basedisplay#getter-effectiverpcdrivername) |
+| <span id="getter-displaymessagecomponent">**DisplayMessageComponent**</span><br><code>FC&lt;any&gt; &#124; undefined</code> | <span data-pagefind-ignore>if a display-level message should be displayed instead, make this return a react component</span> | [BaseDisplay](../basedisplay#getter-displaymessagecomponent) |
+| <span id="getter-heightmode">**heightMode**</span><br><code>"fixed" &#124; "grow" &#124; "fit"</code> | <span data-pagefind-ignore>The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: resolveConf walks the customized-track -> session-default -> `fixed` cascade and never returns the `inherit` sentinel.</span> | [HeightModeMixin](../heightmodemixin#getter-heightmode) |
+| <span id="getter-fittargetheight">**fitTargetHeight**</span><br><code>number</code> | <span data-pagefind-ignore>The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. Read there instead of the reactive `height` getter to break the grow-mode cycle (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.</span> | [HeightModeMixin](../heightmodemixin#getter-fittargetheight) |
+| <span id="getter-growmaxheight">**growMaxHeight**</span><br><code>number</code> | <span data-pagefind-ignore>Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives here rather than as a constant so a track whose whole point is a deep pileup can raise it; both displays that own a `grownHeight` read this, so the two can't diverge.</span> | [HeightModeMixin](../heightmodemixin#getter-growmaxheight) |
+| <span id="getter-autoheight">**autoHeight**</span><br><code>boolean</code> | <span data-pagefind-ignore>`grow` mode as a boolean, derived from the unified `heightMode` slot.</span> | [HeightModeMixin](../heightmodemixin#getter-autoheight) |
+| <span id="getter-fitheighttodisplay">**fitHeightToDisplay**</span><br><code>boolean</code> | <span data-pagefind-ignore>`fit` mode as a boolean, derived from the unified `heightMode` slot.</span> | [HeightModeMixin](../heightmodemixin#getter-fitheighttodisplay) |
+| <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | <span data-pagefind-ignore>The render-lifecycle precondition for every LGV display (overrides `RenderLifecycleMixin`'s default-true hook): don't run the upload/render callbacks until the view is measured. Before that, `renderBlocks` → `visibleRegions` → `view.width` throws by design, and the render autorun's catch would show that as a GPU render-error banner. Gating here — once, for all of them — is what lets a display's `renderState` be a plain resolved getter and its render callback gate only on its own data. The render-lifecycle twin of `autorunOnReadyView`.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-canrender) |
+| <span id="getter-isready">**isReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>true once the canvas has painted and no fetch is in flight</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-isready) |
+| <span id="getter-viewportwithinloadeddata">**viewportWithinLoadedData**</span><br><code>boolean</code> | <span data-pagefind-ignore>true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan. Drives the loading overlay through the pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact and for the resolution-staleness gap.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-viewportwithinloadeddata) |
+| <span id="getter-datacurrent">**dataCurrent**</span><br><code>boolean</code> | <span data-pagefind-ignore>This family's answer to the shared freshness question every display foundation must answer (`dataCurrent`): the held data corresponds to what is on screen right now. Here that is spatial — every visible block lies within a fetched region — plus `loadedRegions.size`, which rules out the vacuously-true empty viewport. Regions stream in one at a time, so this (not "the first datum arrived") is what keeps a multi-region/whole-genome export complete.<br><br>Distinct from `viewportWithinLoadedData`, which is the raw coverage predicate the fetch autorun and the loading overlay use.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-datacurrent) |
+| <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>true once an off-screen (SVG) export can safely read this display's data. Policy single-sourced in `computeSvgReady`; this family supplies only its `dataCurrent` predicate. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of inlining the condition.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-svgready) |
+| <span id="getter-svgreadyextraterminal">**svgReadyExtraTerminal**</span><br><code>boolean</code> | <span data-pagefind-ignore>Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data. Sequence sets it when zoomed past base resolution — it renders a static "zoom in" message and fetches nothing, so `svgReady` would otherwise never resolve.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-svgreadyextraterminal) |
+| <span id="getter-renderblocks">**renderBlocks**</span><br><code>RenderBlock[]</code> | <span data-pagefind-ignore>Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-renderblocks) |
+| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | <span data-pagefind-ignore>The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-displayphase) |
+| <span id="getter-rpcpropscachekey">**rpcPropsCacheKey**</span><br><code>string</code> | <span data-pagefind-ignore>The RPC cache key watched by `SettingsInvalidate` — the subclass's `rpcProps()` payload serialized to a string. `serializeRpcProps` owns the why; `installGlobalFetchAutorun` keys its global-family counterpart on the same function, so the two families invalidate on the same axis.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#getter-rpcpropscachekey) |
+| <span id="getter-gatefoldedintofetch">**gateFoldedIntoFetch**</span><br><code>boolean</code> | <span data-pagefind-ignore>Additive opt-in for displays that measure the estimate inside their own feature RPC instead of a pre-flight (canvas). Kept separate from `derivedRegionTooLargeEnabled` so a gate mixin contributes by setting *this* rather than overriding the verdict switch — the two would otherwise race on composition order, and the later `.compose()` argument silently winning is invisible to both the type system and the tests.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatefoldedintofetch) |
+| <span id="getter-configuredfetchsizelimit">**configuredFetchSizeLimit**</span><br><code>number</code> | <span data-pagefind-ignore>The composing display's configured `fetchSizeLimit`, read straight from its config. Only evaluated when the derived gate is enabled (guarded by `derivedRegionTooLargeEnabled`), and every derived display extends `baseLinearDisplayConfigSchema`, which owns the slot — so the read is always valid where it fires. A display with a bespoke source can still override it.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-configuredfetchsizelimit) |
+| <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> | <span data-pagefind-ignore>Second (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-densitytoolarge) |
+| <span id="getter-adapterfetchsizelimit">**adapterFetchSizeLimit**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The adapter's own `fetchSizeLimit` slot (undefined when the adapter type declares none); `resolveByteLimit` prefers it over the display config. Read on the main thread, and only here — the estimate that crosses the worker boundary carries bytes and nothing else, so the banner and the worker budget have no second spelling of "the adapter's limit" to disagree about.<br><br>A slot **path off the live config**, not a read off `self.adapterConfig`: that getter is a snapshot, which by design omits slots sitting at their default, so a BAM's declared 5 Mb read back as `undefined` in every config that doesn't restate it. Resolved values come from a config node — see CONFIG_PATTERN.md §"Reading a slot: node, not snapshot".</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-adapterfetchsizelimit) |
+| <span id="getter-configforceload">**configForceLoad**</span><br><code>boolean</code> | <span data-pagefind-ignore>Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button). Read straight from the `forceLoad` config slot on `baseLinearDisplayConfigSchema` (same guard/ownership as `configuredFetchSizeLimit`), so every opt-in display honors it without per-display wiring.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-configforceload) |
+| <span id="getter-gatevisiblebp">**gateVisibleBp**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The span on screen, or undefined before the view is measured. The gate's only read of its container: `visibleBp` reads `view.width`, which throws before measurement and a bare getter must never throw, so the pre-init guard lives here once rather than at each reader.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatevisiblebp) |
+| <span id="getter-derivedregiontoolargeenabled">**derivedRegionTooLargeEnabled**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the derived, self-releasing gate is live at all — the union of the two ways a display can measure: a pre-flight estimate (`byteGateEnabled`) or a byte check folded into its own feature RPC (`gateFoldedIntoFetch`). Additive, never an override, so a gate mixin's opt-in doesn't hinge on which side of `.compose()` it lands on. False for the non-byte displays (wiggle, manhattan, sequence, synteny), which therefore never evaluate the LGV-only `tooLargeStatus` getters.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-derivedregiontoolargeenabled) |
+| <span id="getter-aboveforceloadfloor">**aboveForceLoadFloor**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the span on screen is wide enough for the gate to have an opinion at all — the `AUTO_FORCE_LOAD_BP` floor, compared here and nowhere else. False before the view is measured.<br><br>Deliberately independent of the opt-in and of force-load, so a display whose *own* opt-in depends on the floor can read it without a cycle: MAF's `showSummary` swaps to the cheap summary adapter exactly where the detail fetch would be gated, and `byteGateEnabled` is off while it does. `gateActive` adds the opt-in and exemption terms on top.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-aboveforceloadfloor) |
+| <span id="getter-bytegateexempt">**byteGateExempt**</span><br><code>boolean</code> | <span data-pagefind-ignore>True when nothing may gate, on either axis and in both the worker and the banner: the declarative `forceLoad` slot, or the force-load button. One boolean is the whole force-load mechanism — there is no per-region ceiling to carry, expire, or reconcile between the two axes. A self-summarizing adapter (BigWig, HiC, sequence) needs no term here: it reports no byte estimate at all, which already keeps the byte axis out of the verdict.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-bytegateexempt) |
+| <span id="getter-estimatedbytesforvisiblespan">**estimatedBytesForVisibleSpan**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>How many bytes we estimate a fetch of the span on screen right now would pull, obtained by rescaling the stored measurement from the span it covers. Rescaling is what makes the derived verdict a pure function of the current view and lets it self-release on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-estimatedbytesforvisiblespan) |
+| <span id="getter-gatebytelimit">**gateByteLimit**</span><br><code>number</code> | <span data-pagefind-ignore>The byte budget the gate enforces: the adapter's limit, else the display config. Also what `resolvedByteLimit()` hands the worker, so the two can't gate against different numbers. Force-load doesn't raise this — it exempts the track outright via `byteGateExempt`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gatebytelimit) |
+| <span id="getter-gateactive">**gateActive**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether anything may gate at this moment: the display opted in, nothing exempts it, and the view is measured and above the force-load floor.<br><br>The single home of that question. Everything downstream reads it instead of restating it: the verdict, the pre-flight (no estimate RPC when nothing could act on it), and the worker budgets, which go undefined together here rather than each re-deriving the floor. The floor used to be spelled out in three places at three layers, which is a standing invitation for them to disagree.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-gateactive) |
+| <span id="getter-toolargestatus">**tooLargeStatus**</span><br><code>RegionTooLargeStatus</code> | <span data-pagefind-ignore>The verdict the whole mixin exists to produce, with the banner text: true when the estimated download for the span on screen exceeds the resolved byte budget, or when the display's own density axis trips (bytes take precedence for the text). Derived from the rescaled estimate, so it releases itself on zoom-in; false whenever `gateActive` is false.<br><br>The fetch autoruns hold off while `regionTooLarge` is true, and `DisplayChrome` renders the banner from `regionTooLargeReason`.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-toolargestatus) |
+| <span id="getter-regiontoolarge">**regionTooLarge**</span><br><code>boolean</code> |  | [RegionTooLargeMixin](../regiontoolargemixin#getter-regiontoolarge) |
+| <span id="getter-regiontoolargereason">**regionTooLargeReason**</span><br><code>string</code> | <span data-pagefind-ignore>Which axis tripped, as banner text: the estimated download size, or "Too many features". Empty string when the region isn't too large.</span> | [RegionTooLargeMixin](../regiontoolargemixin#getter-regiontoolargereason) |
+| <span id="getter-isloading">**isLoading**</span><br><code>boolean</code> | <span data-pagefind-ignore>true while a fetch is active</span> | [FetchMixin](../fetchmixin#getter-isloading) |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="method-sashimiarcsmodedisplaytypedefault">**sashimiArcsModeDisplayTypeDefault**</span><br><code>(mode: "auto" &#124; "up" &#124; "down") =&gt; DisplayTypeDefaultControl</code> | "make this arc placement the default for all tracks" control (pin), one per option of the radio group. A method rather than a getter per value: the options share one slot and differ only in the on-value, so naming each combination was what made the base value 'up' look unpinnable. | LinearAlignmentsDisplay |
+| <span id="method-isgroupcollapsed">**isGroupCollapsed**</span><br><code>(key: string) =&gt; boolean</code> | Whether a stacked group's pileup is collapsed to just its coverage. | LinearAlignmentsDisplay |
+| <span id="method-hasgroupheightoverride">**hasGroupHeightOverride**</span><br><code>(key: string) =&gt; boolean</code> | Whether a stacked group carries a custom pileup-height override — set by expanding it (show all reads) or dragging its resize handle (taller or shorter). Drives the group label's restore-to-fit affordance. | LinearAlignmentsDisplay |
+| <span id="method-legenditems">**legendItems**</span><br><code>() =&gt; LegendItem[]</code> |  | LinearAlignmentsDisplay |
+| <span id="method-arclegenditems">**arcLegendItems**</span><br><code>() =&gt; LegendItem[]</code> | Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn, or when it shares the reads' scheme and merged into their key — either way its legend section drops out of the box. A *partial* overlap is not resolved here: this stays the complete arc key, and `getAlignmentsLegendSections` folds it into one deduped list. | LinearAlignmentsDisplay |
+| <span id="method-grouplaidoutmap">**groupLaidOutMap**</span><br><code>(key: string) =&gt; Map&lt;number, PileupDataResult&gt;</code> | Laid-out region map for one group key, or an empty map for a key with no data. Centralizes the empty-map fallback shared by the section getters so they never have to branch on a missing group. | LinearAlignmentsDisplay |
+| <span id="method-isgrouptruncated">**isGroupTruncated**</span><br><code>(key: string) =&gt; boolean</code> | True when the row cap clipped reads from a group's pileup and the user hasn't explicitly sized that group (a height drag/expand makes any truncation intentional, so it isn't flagged). Drives the per-group "show all" affordance on the section label. | LinearAlignmentsDisplay |
+| <span id="method-findfeatureinrpcdata">**findFeatureInRpcData**</span><br><details><summary><code>(featureId: string) =&gt; { displayedRegionIndex: number; groupKey…</code></summary><pre><code>(featureId: string) =&gt; { displayedRegionIndex: number; groupKey: string; idx: number; rpcData: PileupDataResult; start: number; end: number; } &#124; undefined</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="method-bezierlegenditems">**bezierLegendItems**</span><br><code>() =&gt; LegendItem[]</code> | Legend swatches for the linked-read connection curves, empty unless the bezier overlay is on and at least one connection is in view. | LinearAlignmentsDisplay |
+| <span id="method-grouppileupoffset">**groupPileupOffset**</span><br><code>(groupKey: string) =&gt; number</code> | Content-space Y of a group's pileup relative to the FIRST section's pileup top, i.e. how far a read's row shifts because its group is stacked below the others. 0 for the ungrouped/first section. | LinearAlignmentsDisplay |
+| <span id="method-searchfeaturebyid">**searchFeatureByID**</span><br><details><summary><code>(featureId: string) =&gt; [number, number, number, number] &#124; undef…</code></summary><pre><code>(featureId: string) =&gt; [number, number, number, number] &#124; undefined</code></pre></details> | Layout rect of a read, for cross-view overlays (BreakpointSplitView's connection curves). Y is relative to the pileup's own top — the caller adds the display's `coverageDisplayHeight` itself (see `computeOverlayY`) — so a grouped read only needs its section's extra stacking offset on top of its row. Without that offset every read outside the first section anchored as if it were in the first one. | LinearAlignmentsDisplay |
+| <span id="method-chainidsforread">**chainIdsForRead**</span><br><code>(rpcData: PileupDataResult, index: number) =&gt; string[]</code> | Chain IDs sharing a QNAME with the read at `index` in `rpcData`. Empty when the read isn't part of a chain. Shared by hover-highlight and click-select so the two paths can't drift. | LinearAlignmentsDisplay |
+| <span id="method-getfeatureinfobyid">**getFeatureInfoById**</span><br><details><summary><code>(featureId: string) =&gt; { id: string; name: string; start: numbe…</code></summary><pre><code>(featureId: string) =&gt; { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; assemblyName: string; } &#124; undefined</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; {…}</code> |  | LinearAlignmentsDisplay |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><details><summary><code>() =&gt; (MenuItem &#124; { label: string; type: "subMenu"; icon: Overr…</code></summary><pre><code>() =&gt; (MenuItem &#124; { label: string; type: "subMenu"; icon: OverridableComponent&lt;…&gt; &amp; { muiName: string; }; subMenu: MenuItem[]; } &#124; { ...; } &#124; { ...; } &#124; { ...; } &#124; { ...; })[]</code></pre></details> | Track menu items | LinearAlignmentsDisplay |
+| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearAlignmentsDisplay |
+| <span id="method-renderingprops">**renderingProps**</span><br><details><summary><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; {…</code></summary><pre><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;…&gt; &amp; { ...; } &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }</code></pre></details> | <span data-pagefind-ignore>props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks</span> | [BaseDisplay](../basedisplay#method-renderingprops) |
+| <span id="method-iscachevalid">**isCacheValid**</span><br><code>(_displayedRegionIndex: number) =&gt; boolean</code> | <span data-pagefind-ignore>Overridable hook: return `false` to force re-fetch at the current zoom (wiggle uses this for zoom-level changes).</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#method-iscachevalid) |
+| <span id="method-resolvedbytelimit">**resolvedByteLimit**</span><br><code>() =&gt; number &#124; undefined</code> | <span data-pagefind-ignore>The byte budget a fetch RPC enforces worker-side, short-circuiting an over-budget region before it downloads any features. Undefined (unlimited) when nothing gates; otherwise the very number the banner compares against, so the worker can't reject a region the banner then calls fine. Lives here, not on the canvas gate that consumes it, because both its terms are this mixin's — canvas owns only the density axis.</span> | [RegionTooLargeMixin](../regiontoolargemixin#method-resolvedbytelimit) |
+| <span id="method-makestatuscallback">**makeStatusCallback**</span><br><code>() =&gt; (status: RpcStatus) =&gt; void</code> | <span data-pagefind-ignore>An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard at every call site.</span> | [FetchMixin](../fetchmixin#method-makestatuscallback) |
+| <span id="method-makeregionstatuscallback">**makeRegionStatusCallback**</span><br><code>(key: number) =&gt; (status: RpcStatus) =&gt; void</code> | <span data-pagefind-ignore>Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other. Same `isAlive` guard; `setRegionStatus` owns the throttling (it has to thin only the bar write, not the per-region bookkeeping).</span> | [FetchMixin](../fetchmixin#method-makeregionstatuscallback) |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-clearmouseoverstate">**clearMouseoverState**</span><br><code>() =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-onregiontoolarge">**onRegionTooLarge**</span><br><code>() =&gt; void</code> | Clear the hover/tooltip when the region goes too large (the banner replaces the pileup). Called by MultiRegionDisplayMixin's `ClearHoverOnRegionTooLarge` autorun, so it fires on the derived gate's `regionTooLarge` transition without an imperative setter. | LinearAlignmentsDisplay |
+| <span id="action-setrpcdata">**setRpcData**</span><br><details><summary><code>(displayedRegionIndex: number, data: GroupedAlignmentsResult &#124;…</code></summary><pre><code>(displayedRegionIndex: number, data: GroupedAlignmentsResult &#124; null) =&gt; void</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setovercigaritem">**setOverCigarItem**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setscrolltop">**setScrollTop**</span><br><code>(scrollTop: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-sethighlightedchainids">**setHighlightedChainIds**</span><br><code>(ids: string[]) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-clearhighlights">**clearHighlights**</span><br><code>() =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setselectedchainids">**setSelectedChainIds**</span><br><code>(ids: string[]) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setcolorscheme">**setColorScheme**</span><br><code>(colorBy: ColorBy) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-updatecolortagmap">**updateColorTagMap**</span><br><code>(uniqueTag: string[]) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setfilterby">**setFilterBy**</span><br><code>(filterBy: FilterBy) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowsoftclipping">**setShowSoftClipping**</span><br><code>(value: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setmismatchalpha">**setMismatchAlpha**</span><br><code>(value: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setsortedby">**setSortedBy**</span><br><code>(type: string, tag?: string &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setsortslot">**setSortSlot**</span><br><details><summary><code>(sortedBy: { type: string; pos: number; refName: string; assemb…</code></summary><pre><code>(sortedBy: { type: string; pos: number; refName: string; assemblyName: string; tag?: string &#124; undefined; }) =&gt; void</code></pre></details> | Commit a sort, the single place the `sortedBy` slot is written. Also drops `largeFeaturesFirst`: the two are peer radios in one group ("Longest reads first" is the layout-order flag, a sort is the slot), so exactly one must hold state. Doing it here rather than at the menu means a sort that *doesn't* land — no valid center line, a cancelled tag dialog — leaves the previous ordering intact instead of silently clearing it and unchecking every radio. `computeMultiRegionLayout` would tolerate both being set (an explicit sort wins there anyway); this keeps the menu's checkmarks honest. | LinearAlignmentsDisplay |
+| <span id="action-setsortedbyatposition">**setSortedByAtPosition**</span><br><details><summary><code>(arg: { type: string; pos: number; refName: string; tag?: strin…</code></summary><pre><code>(arg: { type: string; pos: number; refName: string; tag?: string &#124; undefined; }) =&gt; void</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="action-clearsortedby">**clearSortedBy**</span><br><code>() =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setlargefeaturesfirst">**setLargeFeaturesFirst**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setgroupby">**setGroupBy**</span><br><code>(groupBy?: GroupBy &#124; undefined) =&gt; void</code> | Set (or remove, when undefined) the in-track stacked grouping dimension. A tier-1 refetch setting (in `rpcProps`) — the worker re-partitions the fetch into N sections. Resets the Y scroll since the stacked content height changes. Ungrouping stores an explicit `null` override (not a cleared override) so it beats a configured `groupBy` default rather than falling back to it. | LinearAlignmentsDisplay |
+| <span id="action-setcollapsegrouprows">**setCollapseGroupRows**</span><br><code>(flag: boolean) =&gt; void</code> | Draw each group as one row (overlap depth shows as tint shading) rather than as its own stack. Clears the per-group height overrides: an override means "this lane opted out of the collapse", which is meaningless once every lane is a stack again. | LinearAlignmentsDisplay |
+| <span id="action-togglegroupcollapsed">**toggleGroupCollapsed**</span><br><code>(key: string) =&gt; void</code> | Collapse/expand a stacked group's pileup (coverage stays visible). | LinearAlignmentsDisplay |
+| <span id="action-togglegroupexpanded">**toggleGroupExpanded**</span><br><code>(key: string) =&gt; void</code> | Expand a fit-to-viewport group back to the full `maxHeight` cap (show all its reads), or, if it already carries a height override (from expand or a drag), drop the override to return it to the fit budget. Expanding makes the stack overflow the viewport, which engages the pileup scroll. Pairs with `hasGroupHeightOverride`. | LinearAlignmentsDisplay |
+| <span id="action-resizegroupheight">**resizeGroupHeight**</span><br><code>(key: string, dy: number) =&gt; void</code> | Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many rows that group lays out. The continuous-accumulation policy (seed once, floor at a row, pin/skip a fully-shown group) lives in the pure `nextGroupHeightOverride`; this action just gathers the group's live state and commits the result (undefined = leave on the fit budget). Pairs with `hasGroupHeightOverride` / `toggleGroupExpanded`. | LinearAlignmentsDisplay |
+| <span id="action-setscaletype">**setScaleType**</span><br><code>(val: string) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setautoscale">**setAutoscale**</span><br><code>(val?: string &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setfeatureheight">**setFeatureHeight**</span><br><code>(height?: number &#124; undefined) =&gt; void</code> | Set the per-read pixel size. The track-sizing mode is a mostly independent axis (changed via setHeightMode): grow keeps growing at the new size. Fit is the exception — it derives the size, so a chosen size would be dormant; picking one drops back to fixed so the pick takes effect. | LinearAlignmentsDisplay |
+| <span id="action-setmaxheight">**setMaxHeight**</span><br><code>(height?: number &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setheightmode">**setHeightMode**</span><br><code>(mode: "fixed" &#124; "grow" &#124; "fit") =&gt; void</code> | Set the track-height strategy by writing the unified `heightMode` slot; the modes are mutually exclusive by construction. Entering a non-`fixed` mode (fit or grow) resets the transient state a uniform fit/grow contradicts — per-group height overrides (a drag opts a group out) and the scroll offset (neither fit nor grow scrolls) — tied to the explicit user action so a track that merely inherits the mode from a session-wide default keeps its overrides. The driving autoruns then keep `featureHeight` (fit) or `height` (grow) sized as the display/data change. | LinearAlignmentsDisplay |
+| <span id="action-setfittedheightpx">**setFittedHeightPx**</span><br><code>(px: number) =&gt; void</code> | Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can split it into a body + derived gap. Written only by the driving autorun. | LinearAlignmentsDisplay |
+| <span id="action-setshowsashimiarcs">**setShowSashimiArcs**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setreadconnections">**setReadConnections**</span><br><code>(mode: "off" &#124; "arc" &#124; "cloud") =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setreadconnectionsdown">**setReadConnectionsDown**</span><br><code>(down: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setcoverageheight">**setCoverageHeight**</span><br><code>(height: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setreadconnectionsheight">**setReadConnectionsHeight**</span><br><code>(height: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setsashimiarcsheight">**setSashimiArcsHeight**</span><br><code>(height: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setminsashimiscore">**setMinSashimiScore**</span><br><code>(score: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setsashimiarcsmode">**setSashimiArcsMode**</span><br><code>(mode: "auto" &#124; "up" &#124; "down") =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowsashimilabels">**setShowSashimiLabels**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setreadconnectionslinewidth">**setReadConnectionsLineWidth**</span><br><code>(width: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setdrawinter">**setDrawInter**</span><br><code>(draw: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setdrawlongrange">**setDrawLongRange**</span><br><code>(draw: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setarccolorbytype">**setArcColorByType**</span><br><code>(type: ArcColorByType) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowmismatches">**setShowMismatches**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setdrawsingletons">**setDrawSingletons**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setdrawproperpairs">**setDrawProperPairs**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowonlysplitalignments">**setShowOnlySplitAlignments**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setflipstrandlongreadchains">**setFlipStrandLongReadChains**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setcolorsupplementarychains">**setColorSupplementaryChains**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setlinkedreads">**setLinkedReads**</span><br><code>(mode: "normal" &#124; "off") =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setshowbezierconnections">**setShowBezierConnections**</span><br><code>(flag: boolean) =&gt; void</code> | Toggle the paired-read connection overlay. A main-thread tier-2/4 setting (read in `laidOutPileupMap` + `renderState`), not in `rpcProps` — toggling it never refetches. | LinearAlignmentsDisplay |
+| <span id="action-updatevisiblemodifications">**updateVisibleModifications**</span><br><code>(uniqueModifications: string[]) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setmodificationsready">**setModificationsReady**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setfeatureidundermouse">**setFeatureIdUnderMouse**</span><br><code>(feature?: string &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setmouseoverextrainformation">**setMouseoverExtraInformation**</span><br><code>(extra?: TooltipPayload &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-sethoverstate">**setHoverState**</span><br><details><summary><code>(state: { overCigarItem: boolean; featureIdUnderMouse: string &#124;…</code></summary><pre><code>(state: { overCigarItem: boolean; featureIdUnderMouse: string &#124; undefined; mouseoverExtraInformation: TooltipPayload &#124; undefined; hoverCoverageBand?: {…} &#124; undefined; }) =&gt; void</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="action-setcontextmenufeature">**setContextMenuFeature**</span><br><code>(feature?: Feature &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-closecontextmenu">**closeContextMenu**</span><br><code>() =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: AlignmentsRenderingBackend) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-withfeaturebyid">**withFeatureById**</span><br><details><summary><code>(featureId: string, onFeat: (feat: Feature) =&gt; void) =&gt; Promise…</code></summary><pre><code>(featureId: string, onFeat: (feat: Feature) =&gt; void) =&gt; Promise&lt;void&gt;</code></pre></details> | Fetch the feature behind `featureId` and hand it to `onFeat`. For a menu item that needs the whole feature but is offered before one is in hand. | LinearAlignmentsDisplay |
+| <span id="action-selectfeaturebyid">**selectFeatureById**</span><br><code>(featureId: string) =&gt; Promise&lt;void&gt;</code> |  | LinearAlignmentsDisplay |
+| <span id="action-opencontextmenu">**openContextMenu**</span><br><code>(args: {…}) =&gt; void</code> | Open the right-click menu over a hit. Coord, block, and the two hit kinds always travel as a unit — set atomically so a consumer can never read a block without its hit (the split-state class of bug that silently no-op'd position sorts). The read feature is reset now and, when the hit carries one, populated by an async RPC fetch — so "open the menu for this hit and its read" stays a single call and a repositioned menu can't inherit the prior read's items. | LinearAlignmentsDisplay |
+| <span id="action-fetchneeded">**fetchNeeded**</span><br><details><summary><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =…</code></summary><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =&gt; Promise&lt;void&gt;</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="action-rendersvg">**renderSvg**</span><br><details><summary><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></summary><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;...&gt; &#124; AwaitedReactNode&gt;</code></pre></details> |  | LinearAlignmentsDisplay |
+| <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> | A manual drag-resize means the user wants a fixed height; leave grow mode first, otherwise the grow autorun snaps the height back on the next relayout and the drag appears to do nothing (mirrors canvas). Read the displayed (grown) height before flipping and write `grown + distance` directly — the grow-exit bake skips when the slot is written during the exit, so this delta isn't clobbered. | LinearAlignmentsDisplay |
+| <span id="action-setignorepromoteddefaults">**setIgnorePromotedDefaults**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>see the `ignorePromotedDefaults` property</span> | [BaseDisplay](../basedisplay#action-setignorepromoteddefaults) |
+| <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |
+| <span id="action-setrpcdrivername">**setRpcDriverName**</span><br><code>(rpcDriverName: string) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setrpcdrivername) |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>base display reload does nothing, see specialized displays for details</span> | [BaseDisplay](../basedisplay#action-reload) |
+| <span id="action-setheight">**setHeight**</span><br><code>(displayHeight: number) =&gt; number</code> |  | [TrackHeightMixin](../trackheightmixin#action-setheight) |
+| <span id="action-setloadedregion">**setLoadedRegion**</span><br><code>(displayedRegionIndex: number, region: Region) =&gt; void</code> | <span data-pagefind-ignore>Action wrapper so callers after async boundaries stay in MST strict mode.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-setloadedregion) |
+| <span id="action-clearallrpcdata">**clearAllRpcData**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag. The too-large gate is derived (a pure function of the cached estimate × viewport), so it needs no explicit clear here — it self-releases when the viewport changes.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-clearallrpcdata) |
+| <span id="action-invalidateloadedregions">**invalidateLoadedRegions**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-invalidateloadedregions) |
+| <span id="action-fetchregions">**fetchRegions**</span><br><details><summary><code>(needed: { region: Region; displayedRegionIndex: number; }[], w…</code></summary><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[], work: (ctx: FetchContext) =&gt; Promise&lt;void&gt;) =&gt; Promise&lt;void&gt;</code></pre></details> | <span data-pagefind-ignore>Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-fetchregions) |
+| <span id="action-afterattach">**afterAttach**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)</span> | [MultiRegionDisplayMixin](../multiregiondisplaymixin#action-afterattach) |
+| <span id="action-setbyteestimate">**setByteEstimate**</span><br><code>(estimate: ByteEstimate) =&gt; void</code> | <span data-pagefind-ignore>Commits a byte measurement: the estimate together with the span it covers, so the derived gate can rescale it to the span on screen. `measuredSpanBp` must be the `visibleBp` captured when the measurement was *requested*, not read at commit time: a view that zoomed during the in-flight fetch would otherwise anchor the estimate to a span it never covered, and since `FetchVisibleRegions` skips while `regionTooLarge` holds, an over-anchored estimate wedges the banner with no refetch to correct it. Harmless for non-gated displays (they ignore it).</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-setbyteestimate) |
+| <span id="action-clearbyteestimate">**clearByteEstimate**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drops the cached estimate. Chromosome navigation only: the estimate intentionally survives `clearAllRpcData` so an ordinary viewport change doesn't flicker the banner.<br><br>`forceLoadTrack` deliberately survives: it is a track-wide approval, so expiring it on navigation is exactly the per-locus re-approval the button exists to avoid.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-clearbyteestimate) |
+| <span id="action-setforceloadtrack">**setForceLoadTrack**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>Exempt this track from the gate (or put it back under it). Separate from `forceLoad` so turning the gate off and refetching stay separable — a caller that just wants the flag (a revoke, a test) doesn't trigger a fetch, and `forceLoad` doesn't have to inline a volatile write.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-setforceloadtrack) |
+| <span id="action-forceload">**forceLoad**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Force-load: exempt this track from the gate and refetch. One click covers every region and both axes, informed by the size the banner just quoted. The display chrome calls this from TooLargeMessage's button; concrete display models override `reload()` to do the actual refetch.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-forceload) |
+| <span id="action-bytegateblocksfetch">**byteGateBlocksFetch**</span><br><details><summary><code>(regions: { refName: string; start: number; end: number; assemb…</code></summary><pre><code>(regions: { refName: string; start: number; end: number; assemblyName: string; }[], ctx: { isStale: () =&gt; boolean; }) =&gt; Promise&lt;boolean&gt;</code></pre></details> | <span data-pagefind-ignore>The entire pre-flight gate for one fetch: measure the region set, commit the estimate with the span it covers, and answer whether the caller must abandon the fetch — either superseded mid-measure, or over budget.<br><br>Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin family, LD and arc from their own global fetches) calls this and returns on true. Sequencing the steps at a call site is what used to go wrong: the span is read here, *before* the await, so the estimate is anchored to the span it actually covers — a re-read afterwards would pin it to whatever a mid-fetch zoom left on screen, and since the fetch autoruns skip while `regionTooLarge` holds, an over-anchored estimate wedges the banner with no refetch to correct it.</span> | [RegionTooLargeMixin](../regiontoolargemixin#action-bytegateblocksfetch) |
+| <span id="action-markcanvasdrawn">**markCanvasDrawn**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-markcanvasdrawn) |
+| <span id="action-resetcanvasdrawn">**resetCanvasDrawn**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-resetcanvasdrawn) |
+| <span id="action-stoprenderingbackend">**stopRenderingBackend**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-stoprenderingbackend) |
+| <span id="action-rendernow">**renderNow**</span><br><code>() =&gt; void</code> |  | [RenderLifecycleMixin](../renderlifecyclemixin#action-rendernow) |
+| <span id="action-setrendererror">**setRenderError**</span><br><code>(error: unknown) =&gt; void</code> | <span data-pagefind-ignore>set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.</span> | [RenderLifecycleMixin](../renderlifecyclemixin#action-setrendererror) |
+| <span id="action-attachrenderingbackend">**attachRenderingBackend**</span><br><code>&lt;B&gt;(backend: B, cbs: RenderingBackendCallbacks&lt;B&gt;) =&gt; void</code> | <span data-pagefind-ignore>attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)</span> | [RenderLifecycleMixin](../renderlifecyclemixin#action-attachrenderingbackend) |
+| <span id="action-throttlestatus">**throttleStatus**</span><br><code>(apply: () =&gt; void) =&gt; void</code> | <span data-pagefind-ignore>Run `apply` only if the throttle window has elapsed.</span> | [FetchMixin](../fetchmixin#action-throttlestatus) |
+| <span id="action-resetstatus">**resetStatus**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drop the active stop token and clear all status bookkeeping. Shared by both cancel paths and runFetch's cleanup.</span> | [FetchMixin](../fetchmixin#action-resetstatus) |
+| <span id="action-stopactivefetch">**stopActiveFetch**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Abort the in-flight fetch (if any) and clear its status. The shared preamble of both cancel paths; the difference between them is only what they do to `fetchCanceled` / `fetchGeneration` afterward.</span> | [FetchMixin](../fetchmixin#action-stopactivefetch) |
+| <span id="action-setregionstatus">**setRegionStatus**</span><br><code>(key: number, status?: RpcStatus &#124; undefined) =&gt; void</code> | <span data-pagefind-ignore>Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys. Pass undefined to drop a key. Used by displays that fan a single fetch out into parallel per-region RPCs.</span> | [FetchMixin](../fetchmixin#action-setregionstatus) |
+| <span id="action-cancelfetch">**cancelFetch**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the *internal* reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.</span> | [FetchMixin](../fetchmixin#action-cancelfetch) |
+| <span id="action-cancelfetchbyuser">**cancelFetchByUser**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.</span> | [FetchMixin](../fetchmixin#action-cancelfetchbyuser) |
+| <span id="action-beforedestroy">**beforeDestroy**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Release an in-flight fetch's stop token on teardown. Without this, a display destroyed mid-fetch (track/view closed while loading) never revokes its token — a blob-URL leak on the non-SAB fallback path — and never signals the worker to abort the now-useless work. MST auto-chains lifecycle hooks, so a composing display can still define its own beforeDestroy.</span> | [FetchMixin](../fetchmixin#action-beforedestroy) |
+| <span id="action-runfetch">**runFetch**</span><br><code>(work: (ctx: FetchContext) =&gt; Promise&lt;void&gt;) =&gt; Promise&lt;void&gt;</code> | <span data-pagefind-ignore>Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.</span> | [FetchMixin](../fetchmixin#action-runfetch) |

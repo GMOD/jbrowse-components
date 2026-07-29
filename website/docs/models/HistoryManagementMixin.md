@@ -9,26 +9,9 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/HistoryManagement/index.ts).
 
-## Overview
+## Properties
 
-## Members
-
-| Member                       | Kind       | Defined by             | Description        |
-| ---------------------------- | ---------- | ---------------------- | ------------------ |
-| [history](#property-history) | Properties | HistoryManagementMixin | used for undo/redo |
-
-<details>
-<summary>HistoryManagementMixin - Properties</summary>
-
-#### property: history
-
-used for undo/redo
-
-```ts
-// type signature
-type history = IOptionalIType<IModelType<…>, [...]>
-// code
-history: types.optional(TimeTraveller, { targetPath: '../session' })
-```
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-history">**history**</span><br><details><summary><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></summary><pre><code>history: types.optional(TimeTraveller, { targetPath: '../session' })</code></pre></details> | used for undo/redo |

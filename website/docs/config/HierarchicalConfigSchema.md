@@ -13,48 +13,16 @@ generally exists on the config.json or root config as configuration.hierarchical
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                                                                                                | Type          | Description                                             |
-| ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------- |
-| [configuration.hierarchical.sort.trackNames](#slot-configurationhierarchicalsorttracknames)                                         | `boolean`     |                                                         |
-| [configuration.hierarchical.sort.categories](#slot-configurationhierarchicalsortcategories)                                         | `boolean`     |                                                         |
-| [configuration.hierarchical.defaultFolderCategories](#slot-configurationhierarchicaldefaultfoldercategories)                        | `stringArray` | list of category names to display as folders by default |
-| [configuration.hierarchical.defaultCollapsed.categoryNames](#slot-configurationhierarchicaldefaultcollapsedcategorynames)           | `stringArray` |                                                         |
-| [configuration.hierarchical.defaultCollapsed.topLevelCategories](#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories) | `boolean`     |                                                         |
-| [configuration.hierarchical.defaultCollapsed.subCategories](#slot-configurationhierarchicaldefaultcollapsedsubcategories)           | `boolean`     |                                                         |
-
-<details>
-<summary>HierarchicalConfigSchema - Slots</summary>
-
-#### slot: configuration.hierarchical.sort.trackNames
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: configuration.hierarchical.sort.categories
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: configuration.hierarchical.defaultFolderCategories
-
-list of category names to display as folders by default
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: configuration.hierarchical.defaultCollapsed.categoryNames
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: configuration.hierarchical.defaultCollapsed.subCategories
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-configurationhierarchicalsorttracknames">**configuration.hierarchical.sort.trackNames**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |
+| <span id="slot-configurationhierarchicalsortcategories">**configuration.hierarchical.sort.categories**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |
+| <span id="slot-configurationhierarchicaldefaultfoldercategories">**configuration.hierarchical.defaultFolderCategories**</span><br>`stringArray` = <code>[]</code> | list of category names to display as folders by default |
+| <span id="slot-configurationhierarchicaldefaultcollapsedcategorynames">**configuration.hierarchical.defaultCollapsed.categoryNames**</span><br>`stringArray` = <code>[]</code> |  |
+| <span id="slot-configurationhierarchicaldefaultcollapsedtoplevelcategories">**configuration.hierarchical.defaultCollapsed.topLevelCategories**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |
+| <span id="slot-configurationhierarchicaldefaultcollapsedsubcategories">**configuration.hierarchical.defaultCollapsed.subCategories**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |

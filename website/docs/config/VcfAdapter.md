@@ -42,36 +42,15 @@ memory, so prefer the VcfTabixAdapter for large files.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "VcfAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type           | Description |
-| ---------------------------------------------- | -------------- | ----------- |
-| [vcfLocation](#slot-vcflocation)               | `fileLocation` |             |
-| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation` |             |
-
-<details>
-<summary>VcfAdapter - Slots</summary>
-
-#### slot: vcfLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.vcf', locationType: 'UriLocation' }`
-
-#### slot: samplesTsvLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/samples.tsv',
-    description:
-      'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
-    locationType: 'UriLocation',
-  },
-}
-```
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-vcflocation">**vcfLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.vcf', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/samples.tsv', description: 'tsv with header li…</code></summary><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: '/path/to/samples.tsv',&#10;&#160;&#160;&#160;&#160;description:&#10;&#160;&#160;&#160;&#160;&#160;&#160;'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></details> |  |

@@ -25,30 +25,24 @@ session small even against a very large hub.
 Every BaseConnection has a unique `connectionId`, a required top-level field
 that identifies it (not one of the config slots below).
 
+## Related links
+
+- **Extended by:** [JB2TrackHubConnection](../jb2trackhubconnection)
+- **Extended by:** [UCSCTrackHubConnection](../ucsctrackhubconnection)
+- **Extended by:** [JBrowse1Connection](../jbrowse1connection)
+
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+`BaseConnection` is a shared base schema, not a type you name in a config. Set
+these slots on one of the configs under **Extended by** above, each of which
+lists them as inherited and shows the shape in its own example. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                 | Type          | Description                                             |
-| ------------------------------------ | ------------- | ------------------------------------------------------- |
-| [name](#slot-name)                   | `string`      | a unique name for this connection                       |
-| [assemblyNames](#slot-assemblynames) | `stringArray` | optional list of names of assemblies in this connection |
-
-<details>
-<summary>BaseConnection - Slots</summary>
-
-#### slot: name
-
-a unique name for this connection
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'nameOfConnection'`
-
-#### slot: assemblyNames
-
-optional list of names of assemblies in this connection
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'nameOfConnection'</code> | a unique name for this connection |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | optional list of names of assemblies in this connection |

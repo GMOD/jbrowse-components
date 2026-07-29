@@ -35,45 +35,18 @@ an explicit `textSearchAdapterId` is still honored when given
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "TrixTextSearchAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                 | Type           | Description                                       |
-| ------------------------------------ | -------------- | ------------------------------------------------- |
-| [ixFilePath](#slot-ixfilepath)       | `fileLocation` |                                                   |
-| [ixxFilePath](#slot-ixxfilepath)     | `fileLocation` |                                                   |
-| [metaFilePath](#slot-metafilepath)   | `fileLocation` |                                                   |
-| [tracks](#slot-tracks)               | `stringArray`  | List of tracks covered by text search adapter     |
-| [assemblyNames](#slot-assemblynames) | `stringArray`  | List of assemblies covered by text search adapter |
-
-<details>
-<summary>TrixTextSearchAdapter - Slots</summary>
-
-#### slot: ixFilePath
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: 'out.ix', locationType: 'UriLocation' }`
-
-#### slot: ixxFilePath
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: 'out.ixx', locationType: 'UriLocation' }`
-
-#### slot: metaFilePath
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: 'meta.json', locationType: 'UriLocation' }`
-
-#### slot: tracks
-
-List of tracks covered by text search adapter
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: assemblyNames
-
-List of assemblies covered by text search adapter
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-ixfilepath">**ixFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ix', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-ixxfilepath">**ixxFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ixx', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-metafilepath">**metaFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'meta.json', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-tracks">**tracks**</span><br>`stringArray` = <code>[]</code> | List of tracks covered by text search adapter |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | List of assemblies covered by text search adapter |

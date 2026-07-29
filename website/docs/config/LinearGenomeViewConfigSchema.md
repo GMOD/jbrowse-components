@@ -12,18 +12,11 @@ Auto-generated config schema for the current JBrowse release — see the
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                                                                     | Type                                   | Description |
-| -------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------- |
-| [configuration.LinearGenomeViewPlugin.trackLabels](#slot-configurationlineargenomeviewplugintracklabels) | `string` (offset, overlapping, hidden) |             |
-
-<details>
-<summary>LinearGenomeViewConfigSchema - Slots</summary>
-
-#### slot: configuration.LinearGenomeViewPlugin.trackLabels
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) (one of `offset`,
-`overlapping`, `hidden`) · **Default:** `'offset'`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-configurationlineargenomeviewplugintracklabels">**configuration.LinearGenomeViewPlugin.trackLabels**</span><br>[`string`](/docs/config_guides/slot_types#string) (offset, overlapping, hidden) = <code>'offset'</code> |  |

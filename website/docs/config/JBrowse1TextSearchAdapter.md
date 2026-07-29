@@ -20,35 +20,16 @@ top-level field that identifies it (not one of the config slots below).
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "JBrowse1TextSearchAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type           | Description                                             |
-| ---------------------------------------------- | -------------- | ------------------------------------------------------- |
-| [namesIndexLocation](#slot-namesindexlocation) | `fileLocation` | the location of the JBrowse1 names index data directory |
-| [tracks](#slot-tracks)                         | `stringArray`  | List of tracks covered by text search adapter           |
-| [assemblyNames](#slot-assemblynames)           | `stringArray`  | List of assemblies covered by text search adapter       |
-
-<details>
-<summary>JBrowse1TextSearchAdapter - Slots</summary>
-
-#### slot: namesIndexLocation
-
-the location of the JBrowse1 names index data directory
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/volvox/names', locationType: 'UriLocation' }`
-
-#### slot: tracks
-
-List of tracks covered by text search adapter
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: assemblyNames
-
-List of assemblies covered by text search adapter
-
-**Type:** `stringArray` · **Default:** `[]`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-namesindexlocation">**namesIndexLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/volvox/names', locationType: 'UriLocation' }</code> | the location of the JBrowse1 names index data directory |
+| <span id="slot-tracks">**tracks**</span><br>`stringArray` = <code>[]</code> | List of tracks covered by text search adapter |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | List of assemblies covered by text search adapter |

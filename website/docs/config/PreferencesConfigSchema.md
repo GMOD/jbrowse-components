@@ -16,42 +16,13 @@ override map layered over config defaults, at app scope.
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                                                   | Type                                     | Description                                                                                                                                                     |
-| -------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [configuration.preferences.animationMode](#slot-configurationpreferencesanimationmode) | `stringEnum` (system, enabled, disabled) | controls feature-layout animations: 'enabled' always animates (the default), 'system' respects the OS prefers-reduced-motion setting, 'disabled' never animates |
-| [configuration.preferences.scrollZoom](#slot-configurationpreferencesscrollzoom)       | `boolean`                                | when true, scrolling the mouse wheel over a track zooms in and out without holding Ctrl.                                                                        |
-| [configuration.preferences.useWorkspaces](#slot-configurationpreferencesuseworkspaces) | `boolean`                                | when true, views open in the dockview-based tabbed/tiled workspace layout rather than stacked vertically.                                                       |
-
-<details>
-<summary>PreferencesConfigSchema - Slots</summary>
-
-#### slot: configuration.preferences.animationMode
-
-controls feature-layout animations: 'enabled' always animates (the default),
-'system' respects the OS prefers-reduced-motion setting, 'disabled' never
-animates
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`system`, `enabled`, `disabled`) · **Default:** `'enabled'`
-
-#### slot: configuration.preferences.scrollZoom
-
-when true, scrolling the mouse wheel over a track zooms in and out without
-holding Ctrl. Applies globally to all wheel-zoom views.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: configuration.preferences.useWorkspaces
-
-when true, views open in the dockview-based tabbed/tiled workspace layout rather
-than stacked vertically. Only the default: a session that names `useWorkspaces`
-itself (a shared snapshot, or a session spec carrying a `layout`) still wins,
-and a user's own toggle overrides it.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-configurationpreferencesanimationmode">**configuration.preferences.animationMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (system, enabled, disabled) = <code>'enabled'</code> | controls feature-layout animations: 'enabled' always animates (the default), 'system' respects the OS prefers-reduced-motion setting, 'disabled' never animates |
+| <span id="slot-configurationpreferencesscrollzoom">**configuration.preferences.scrollZoom**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | when true, scrolling the mouse wheel over a track zooms in and out without holding Ctrl. Applies globally to all wheel-zoom views. |
+| <span id="slot-configurationpreferencesuseworkspaces">**configuration.preferences.useWorkspaces**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | when true, views open in the dockview-based tabbed/tiled workspace layout rather than stacked vertically. Only the default: a session that names `useWorkspaces` itself (a shared snapshot, or a session spec carrying a `layout`) still wins, and a user's own toggle overrides it. |

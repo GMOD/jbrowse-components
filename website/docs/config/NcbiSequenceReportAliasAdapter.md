@@ -26,28 +26,15 @@ preprocessor to allow minimal config:
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "NcbiSequenceReportAliasAdapter", ... }`. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                     | Type           | Description                                                           |
-| ---------------------------------------- | -------------- | --------------------------------------------------------------------- |
-| [location](#slot-location)               | `fileLocation` |                                                                       |
-| [useNameOverride](#slot-usenameoverride) | `boolean`      | forces usage of the UCSC names over the NCBI style names from a FASTA |
-
-<details>
-<summary>NcbiSequenceReportAliasAdapter - Slots</summary>
-
-#### slot: location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:**
-`{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLocation' }`
-
-#### slot: useNameOverride
-
-forces usage of the UCSC names over the NCBI style names from a FASTA
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-location">**location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLoc…</code></summary><pre><code>{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLocation' }</code></pre></details> |  |
+| <span id="slot-usenameoverride">**useNameOverride**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | forces usage of the UCSC names over the NCBI style names from a FASTA |

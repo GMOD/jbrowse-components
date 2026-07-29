@@ -9,573 +9,114 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts).
 
-## Overview
-
-## Members
-
-| Member                                                           | Kind       | Defined by                                              | Description                                                                                                                                                                                              |
-| ---------------------------------------------------------------- | ---------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [views](#property-views)                                         | Properties | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [stickyViewHeaders](#property-stickyviewheaders)                 | Properties | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [useWorkspaces](#property-useworkspaces)                         | Properties | MultipleViewsSessionMixin                               | enables the dockview-based tabbed/tiled workspace layout for this session.                                                                                                                               |
-| [effectiveUseWorkspaces](#getter-effectiveuseworkspaces)         | Getters    | MultipleViewsSessionMixin                               | resolved workspaces flag (never undefined): this session's value, else the user preference over the `configuration.preferences.useWorkspaces` admin default.                                             |
-| [moveViewDown](#action-moveviewdown)                             | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [moveViewUp](#action-moveviewup)                                 | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [moveViewToTop](#action-moveviewtotop)                           | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [moveViewToBottom](#action-moveviewtobottom)                     | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [addView](#action-addview)                                       | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [removeView](#action-removeview)                                 | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [setStickyViewHeaders](#action-setstickyviewheaders)             | Actions    | MultipleViewsSessionMixin                               |                                                                                                                                                                                                          |
-| [setUseWorkspaces](#action-setuseworkspaces)                     | Actions    | MultipleViewsSessionMixin                               | set the workspaces layout for this session only, leaving the user's personal default untouched.                                                                                                          |
-| [setUseWorkspacesPreference](#action-setuseworkspacespreference) | Actions    | MultipleViewsSessionMixin                               | the user-facing workspaces toggle: applies to this session and becomes their default for sessions that don't specify one.                                                                                |
-| [resetUseWorkspaces](#action-resetuseworkspaces)                 | Actions    | MultipleViewsSessionMixin                               | drop both this session's explicit value and the user's override so workspaces falls back to the admin default                                                                                            |
-| [id](#property-id)                                               | Properties | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [name](#property-name)                                           | Properties | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [margin](#property-margin)                                       | Properties | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [focusedViewId](#property-focusedviewid)                         | Properties | [BaseSessionModel](../basesessionmodel)                 | used to keep track of which view is in focus                                                                                                                                                             |
-| [highlightsVisible](#property-highlightsvisible)                 | Properties | [BaseSessionModel](../basesessionmodel)                 | one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)                                                                                                       |
-| [selection](#volatile-selection)                                 | Volatiles  | [BaseSessionModel](../basesessionmodel)                 | this is the globally "selected" object.                                                                                                                                                                  |
-| [hovered](#volatile-hovered)                                     | Volatiles  | [BaseSessionModel](../basesessionmodel)                 | this is the globally "hovered" object.                                                                                                                                                                   |
-| [queueOfDialogs](#volatile-queueofdialogs)                       | Volatiles  | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [preferencesOverrides](#volatile-preferencesoverrides)           | Volatiles  | [BaseSessionModel](../basesessionmodel)                 | runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults.                                                            |
-| [root](#getter-root)                                             | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [jbrowse](#getter-jbrowse)                                       | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [rpcManager](#getter-rpcmanager)                                 | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [configuration](#getter-configuration)                           | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [adminMode](#getter-adminmode)                                   | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [textSearchManager](#getter-textsearchmanager)                   | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [assemblies](#getter-assemblies)                                 | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [DialogComponent](#getter-dialogcomponent)                       | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [DialogProps](#getter-dialogprops)                               | Getters    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [animationMode](#getter-animationmode)                           | Getters    | [BaseSessionModel](../basesessionmodel)                 | resolved feature-layout animation mode (never undefined)                                                                                                                                                 |
-| [scrollZoom](#getter-scrollzoom)                                 | Getters    | [BaseSessionModel](../basesessionmodel)                 | resolved scroll-to-zoom preference.                                                                                                                                                                      |
-| [getPreference](#method-getpreference)                           | Methods    | [BaseSessionModel](../basesessionmodel)                 | resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default.                                                           |
-| [getDisplayTypeDefault](#method-getdisplaytypedefault)           | Methods    | [BaseSessionModel](../basesessionmodel)                 | resolved value of a per-display-type slot default the user promoted (see `setDisplayTypeDefault`); undefined when nothing was promoted.                                                                  |
-| [getPreferenceChanges](#method-getpreferencechanges)             | Methods    | [BaseSessionModel](../basesessionmodel)                 | every runtime preference-override that currently differs from its config/admin default, as `{ path, from, to }` rows — the exact set `clearPreferenceOverrides` reverts.                                 |
-| [setSelection](#action-setselection)                             | Actions    | [BaseSessionModel](../basesessionmodel)                 | set the global selection, i.e. the globally-selected object.                                                                                                                                             |
-| [clearSelection](#action-clearselection)                         | Actions    | [BaseSessionModel](../basesessionmodel)                 | clears the global selection                                                                                                                                                                              |
-| [setHovered](#action-sethovered)                                 | Actions    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [setHighlightsVisible](#action-sethighlightsvisible)             | Actions    | [BaseSessionModel](../basesessionmodel)                 | toggle all region highlight bands across every view                                                                                                                                                      |
-| [revealHighlights](#action-revealhighlights)                     | Actions    | [BaseSessionModel](../basesessionmodel)                 | turn highlight bands back on, so a newly made highlight or bookmark is never silently swallowed by an earlier "highlights off"                                                                           |
-| [setPreferenceOverride](#action-setpreferenceoverride)           | Actions    | [BaseSessionModel](../basesessionmodel)                 | set a runtime user-preference override (see `getPreference`).                                                                                                                                            |
-| [clearPreferenceOverrides](#action-clearpreferenceoverrides)     | Actions    | [BaseSessionModel](../basesessionmodel)                 | clear every runtime preference override at once — scrollZoom, animationMode, and every promoted per-display-type default (see `setDisplayTypeDefault`) — so each falls back to its config/admin default. |
-| [clearPreferenceOverride](#action-clearpreferenceoverride)       | Actions    | [BaseSessionModel](../basesessionmodel)                 | clear a single runtime preference override (see `getPreference`) so it falls back to its config/admin default.                                                                                           |
-| [setScrollZoom](#action-setscrollzoom)                           | Actions    | [BaseSessionModel](../basesessionmodel)                 | set the global scroll-to-zoom preference (see the `scrollZoom` getter)                                                                                                                                   |
-| [setDisplayTypeDefault](#action-setdisplaytypedefault)           | Actions    | [BaseSessionModel](../basesessionmodel)                 | promote (or, with `value` undefined, clear) a per-display-type slot default.                                                                                                                             |
-| [setName](#action-setname)                                       | Actions    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [setFocusedViewId](#action-setfocusedviewid)                     | Actions    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [removeActiveDialog](#action-removeactivedialog)                 | Actions    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [queueDialog](#action-queuedialog)                               | Actions    | [BaseSessionModel](../basesessionmodel)                 |                                                                                                                                                                                                          |
-| [snackbarMessages](#volatile-snackbarmessages)                   | Volatiles  | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [errorDialog](#volatile-errordialog)                             | Volatiles  | [SnackbarModel](../snackbarmodel)                       | the error currently shown in the stack-trace dialog.                                                                                                                                                     |
-| [snackbarMessageSet](#getter-snackbarmessageset)                 | Getters    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [notify](#action-notify)                                         | Actions    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [notifyError](#action-notifyerror)                               | Actions    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [setErrorDialog](#action-seterrordialog)                         | Actions    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [pushSnackbarMessage](#action-pushsnackbarmessage)               | Actions    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [popSnackbarMessage](#action-popsnackbarmessage)                 | Actions    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [removeSnackbarMessage](#action-removesnackbarmessage)           | Actions    | [SnackbarModel](../snackbarmodel)                       |                                                                                                                                                                                                          |
-| [drawerPosition](#property-drawerposition)                       | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [drawerWidth](#property-drawerwidth)                             | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [widgets](#property-widgets)                                     | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [activeWidgets](#property-activewidgets)                         | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [minimized](#property-minimized)                                 | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [poppedOut](#volatile-poppedout)                                 | Volatiles  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) | true while the visible widget is shown in a modal dialog instead of the drawer.                                                                                                                          |
-| [visibleWidget](#getter-visiblewidget)                           | Getters    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [setDrawerPosition](#action-setdrawerposition)                   | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [updateDrawerWidth](#action-updatedrawerwidth)                   | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [resizeDrawer](#action-resizedrawer)                             | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [addWidget](#action-addwidget)                                   | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [showWidget](#action-showwidget)                                 | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [hideWidget](#action-hidewidget)                                 | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [minimizeWidgetDrawer](#action-minimizewidgetdrawer)             | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [showWidgetDrawer](#action-showwidgetdrawer)                     | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [popoutWidget](#action-popoutwidget)                             | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) | show the visible widget in a modal dialog, freeing the drawer column                                                                                                                                     |
-| [returnWidgetToDrawer](#action-returnwidgettodrawer)             | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [hideAllWidgets](#action-hideallwidgets)                         | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) |                                                                                                                                                                                                          |
-| [editConfiguration](#action-editconfiguration)                   | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin) | opens a configuration editor to configure the given thing, and sets the current task to be configuring it                                                                                                |
-
-<details>
-<summary>MultipleViewsSessionMixin - Properties</summary>
-
-#### property: useWorkspaces
-
-enables the dockview-based tabbed/tiled workspace layout for this session.
-Undefined means unspecified — read `effectiveUseWorkspaces`.
-
-```ts
-// type signature
-type useWorkspaces = IOptionalIType<IMaybe<ISimpleType<boolean>>, [undefined]>
-// code
-useWorkspaces: types.stripDefault(types.maybe(types.boolean), undefined)
-```
-
-</details>
-
-<details>
-<summary>MultipleViewsSessionMixin - Properties (other undocumented members)</summary>
-
-| Member                                                         | Type                                                |
-| -------------------------------------------------------------- | --------------------------------------------------- |
-| <span id="property-views">views</span>                         | `IArrayType<IAnyType>`                              |
-| <span id="property-stickyviewheaders">stickyViewHeaders</span> | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
-</details>
-
-<details>
-<summary>MultipleViewsSessionMixin - Getters</summary>
-
-#### getter: effectiveUseWorkspaces
-
-resolved workspaces flag (never undefined): this session's value, else the user
-preference over the `configuration.preferences.useWorkspaces` admin default.
-Every consumer reads this, not the raw property — only sessions built from a
-snapshot or a spec `layout` set that, so the admin default is what reaches the
-arrivals that bypass defaultSession.
-
-```ts
-type effectiveUseWorkspaces = boolean
-```
-
-</details>
-
-<details>
-<summary>MultipleViewsSessionMixin - Actions</summary>
-
-#### action: setUseWorkspaces
-
-set the workspaces layout for this session only, leaving the user's personal
-default untouched. For session-scoped intent — a spec carrying a `layout`, or an
-ad-hoc "move view to a tab/split" — where rewriting the visitor's global
-preference would be a surprise. The user-facing default toggle is
-`setUseWorkspacesPreference`.
-
-```ts
-type setUseWorkspaces = (useWorkspaces: boolean) => void
-```
-
-#### action: setUseWorkspacesPreference
-
-the user-facing workspaces toggle: applies to this session and becomes their
-default for sessions that don't specify one. Persisted only here, on an explicit
-toggle — an autorun mirroring the resolved value would bake the admin default
-into every visitor's localStorage on first load, so a later admin change could
-never reach them.
-
-```ts
-type setUseWorkspacesPreference = (useWorkspaces: boolean) => void
-```
-
-#### action: resetUseWorkspaces
-
-drop both this session's explicit value and the user's override so workspaces
-falls back to the admin default
-
-```ts
-type resetUseWorkspaces = () => void
-```
-
-</details>
-
-<details>
-<summary>MultipleViewsSessionMixin - Actions (other undocumented members)</summary>
-
-| Member                                                             | Type                                            |
-| ------------------------------------------------------------------ | ----------------------------------------------- |
-| <span id="action-moveviewdown">moveViewDown</span>                 | `(id: string) => void`                          |
-| <span id="action-moveviewup">moveViewUp</span>                     | `(id: string) => void`                          |
-| <span id="action-moveviewtotop">moveViewToTop</span>               | `(id: string) => void`                          |
-| <span id="action-moveviewtobottom">moveViewToBottom</span>         | `(id: string) => void`                          |
-| <span id="action-addview">addView</span>                           | `(typeName: string, initialState?: any) => any` |
-| <span id="action-removeview">removeView</span>                     | `(view: IBaseViewModel) => void`                |
-| <span id="action-setstickyviewheaders">setStickyViewHeaders</span> | `(sticky: boolean) => void`                     |
-
-</details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
-
-<details>
-<summary>Derived from BaseSessionModel</summary>
-
-[BaseSessionModel →](../basesessionmodel)
-
-**Properties**
-
-#### property: focusedViewId
-
-used to keep track of which view is in focus
-
-```ts
-// type signature
-type focusedViewId = IMaybe<ISimpleType<string>>
-// code
-focusedViewId: types.maybe(types.string)
-```
-
-#### property: highlightsVisible
-
-one session-wide toggle for all region highlight bands (URL/view highlights and
-bookmark overlays)
-
-```ts
-// type signature
-type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-highlightsVisible: types.stripDefault(types.boolean, true)
-```
-
-| Member                                   | Type                                               |
-| ---------------------------------------- | -------------------------------------------------- |
-| <span id="property-id">id</span>         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| <span id="property-name">name</span>     | `ISimpleType<string>`                              |
-| <span id="property-margin">margin</span> | `IOptionalIType<ISimpleType<number>, [undefined]>` |
-
-**Volatiles**
-
-#### volatile: selection
-
-this is the globally "selected" object. can be anything. code that wants to deal
-with this should examine it to see what kind of thing it is.
-
-```ts
-// type signature
-type selection = unknown
-// code
-selection: undefined as unknown
-```
-
-#### volatile: hovered
-
-this is the globally "hovered" object. can be anything. code that wants to deal
-with this should examine it to see what kind of thing it is.
-
-```ts
-// type signature
-type hovered = unknown
-// code
-hovered: undefined as unknown
-```
-
-#### volatile: preferencesOverrides
-
-runtime user-preference overrides keyed by preference id, resolved by
-`getPreference` against the `configuration.preferences` admin defaults. Empty
-here (config-only); products that let users edit preferences load and persist
-these via localStorage. A runtime override map layered over config defaults,
-kept off the snapshot since prefs are local UI.
-
-An `observable.map` (not a plain object reassigned wholesale) so each preference
-is its own tracked key: writing one (`setScrollZoom`) can't invalidate a reader
-of another (`getDisplayTypeDefault` in a track's `rpcProps`). A single
-spread-replaced object made every setter wake every reader, so toggling
-scroll-to-zoom re-fetched every track. For the same reason each promoted
-per-display-type default is a flat composite key (see `displayTypeDefaultKey`),
-not a single nested `displayTypeDefaults` object — promoting one default can't
-wake readers of a different one.
-
-`deep: false` is load-bearing, not a micro-optimization. The default enhancer
-wraps an object/array value in a MobX Proxy on `set`, and a promoted default is
-handed straight back out by `getConf` — so an object-valued promotable slot
-(alignments `colorBy`) put a Proxy into `rpcProps()`, and V8's structured-clone
-serializer rejects a Proxy: `worker.postMessage` threw `DataCloneError` on the
-next fetch of any track following that default (electron IPC and
-`structuredClone` in the share bake likewise). Nothing mutates a preference in
-place, and the map still notifies per key on `set`, so shallow values lose no
-reactivity.
-
-```ts
-// type signature
-type preferencesOverrides = ObservableMap<string, unknown>
-// code
-preferencesOverrides: observable.map<string, unknown>(undefined, {
-  deep: false,
-})
-```
-
-| Member                                                   | Type                                               |
-| -------------------------------------------------------- | -------------------------------------------------- |
-| <span id="volatile-queueofdialogs">queueOfDialogs</span> | `[DialogComponentType, Record<string, unknown>][]` |
-
-**Getters**
-
-#### getter: animationMode
-
-resolved feature-layout animation mode (never undefined)
-
-```ts
-type animationMode = AnimationMode
-```
-
-#### getter: scrollZoom
-
-resolved scroll-to-zoom preference. Global and personal (never shared in a
-session snapshot); every wheel-zoom view reads this single value.
-
-```ts
-type scrollZoom = boolean
-```
-
-| Member                                                       | Type                                                                                                                                                                             |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span id="getter-root">root</span>                           | `TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>`                                                                                                                            |
-| <span id="getter-jbrowse">jbrowse</span>                     | `any`                                                                                                                                                                            |
-| <span id="getter-rpcmanager">rpcManager</span>               | `RpcManager`                                                                                                                                                                     |
-| <span id="getter-configuration">configuration</span>         | `Instance<JB_CONFIG_SCHEMA>`                                                                                                                                                     |
-| <span id="getter-adminmode">adminMode</span>                 | `boolean`                                                                                                                                                                        |
-| <span id="getter-textsearchmanager">textSearchManager</span> | `TextSearchManager`                                                                                                                                                              |
-| <span id="getter-assemblies">assemblies</span>               | `(ModelInstanceTypeProps<…> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
-| <span id="getter-dialogcomponent">DialogComponent</span>     | `DialogComponentType`                                                                                                                                                            |
-| <span id="getter-dialogprops">DialogProps</span>             | `Record<string, unknown>`                                                                                                                                                        |
-
-**Methods**
-
-#### method: getPreference
-
-resolved value of a user preference: a runtime override if the user set one,
-otherwise the admin/embedder `configuration.preferences` default. The override
-map is empty unless the product loads it (web/desktop).
-
-```ts
-type getPreference = (key: string) => unknown
-```
-
-#### method: getDisplayTypeDefault
-
-resolved value of a per-display-type slot default the user promoted (see
-`setDisplayTypeDefault`); undefined when nothing was promoted.
-
-```ts
-type getDisplayTypeDefault = (displayType: string, slot: string) => unknown
-```
-
-#### method: getPreferenceChanges
-
-every runtime preference-override that currently differs from its config/admin
-default, as `{ path, from, to }` rows — the exact set `clearPreferenceOverrides`
-reverts. Backs the confirmation diff shown before "Reset to defaults" (mirrors
-the per-track changes dialog). A scalar pref (animationMode, scrollZoom) whose
-override equals the default is omitted (reverting it is a no-op); each promoted
-per-display-type default is always a difference from the un-promoted state, so
-`from` reads "(default)".
-
-```ts
-type getPreferenceChanges = () => TrackConfigChange[]
-```
-
-**Actions**
-
-#### action: setSelection
-
-set the global selection, i.e. the globally-selected object. can be a feature, a
-view, just about anything
-
-```ts
-type setSelection = (thing: unknown) => void
-```
-
-#### action: clearSelection
-
-clears the global selection
-
-```ts
-type clearSelection = () => void
-```
-
-#### action: setHighlightsVisible
-
-toggle all region highlight bands across every view
-
-```ts
-type setHighlightsVisible = (arg: boolean) => void
-```
-
-#### action: revealHighlights
-
-turn highlight bands back on, so a newly made highlight or bookmark is never
-silently swallowed by an earlier "highlights off"
-
-```ts
-type revealHighlights = () => void
-```
-
-#### action: setPreferenceOverride
-
-set a runtime user-preference override (see `getPreference`). Mutates volatile
-state; products persist these to localStorage. An `undefined` value deletes the
-key (rather than leaving a phantom entry that `getPreference` reads as absent)
-so the store never holds dead keys.
-
-```ts
-type setPreferenceOverride = (key: string, value: unknown) => void
-```
-
-#### action: clearPreferenceOverrides
-
-clear every runtime preference override at once — scrollZoom, animationMode, and
-every promoted per-display-type default (see `setDisplayTypeDefault`) — so each
-falls back to its config/admin default. Backs the Preferences dialog "Reset to
-defaults" button.
-
-```ts
-type clearPreferenceOverrides = () => void
-```
-
-#### action: clearPreferenceOverride
-
-clear a single runtime preference override (see `getPreference`) so it falls
-back to its config/admin default. Backs the per-entry reset in the Preferences
-dialog "Reset to defaults" confirmation.
-
-```ts
-type clearPreferenceOverride = (key: string) => void
-```
-
-#### action: setScrollZoom
-
-set the global scroll-to-zoom preference (see the `scrollZoom` getter)
-
-```ts
-type setScrollZoom = (flag: boolean) => void
-```
-
-#### action: setDisplayTypeDefault
-
-promote (or, with `value` undefined, clear) a per-display-type slot default.
-Just a preference override under one flat composite key (see
-`displayTypeDefaultKey`), so it persists and independently tracks like any other
-pref, and clearing deletes only that key.
-
-```ts
-type setDisplayTypeDefault = (
-  displayType: string,
-  slot: string,
-  value: unknown,
-) => void
-```
-
-| Member                                                         | Type                                   |
-| -------------------------------------------------------------- | -------------------------------------- |
-| <span id="action-sethovered">setHovered</span>                 | `(thing: unknown) => void`             |
-| <span id="action-setname">setName</span>                       | `(str: string) => void`                |
-| <span id="action-setfocusedviewid">setFocusedViewId</span>     | `(viewId: string) => void`             |
-| <span id="action-removeactivedialog">removeActiveDialog</span> | `() => void`                           |
-| <span id="action-queuedialog">queueDialog</span>               | `(doneCallback: DoneCallback) => void` |
-
-</details>
-
-<details>
-<summary>Derived from SnackbarModel</summary>
-
-[SnackbarModel →](../snackbarmodel)
-
-**Volatiles**
-
-#### volatile: errorDialog
-
-the error currently shown in the stack-trace dialog. Kept off the dialog queue
-so it can stack on top of an already-open dialog (e.g. the one whose action
-raised the error) instead of waiting behind it
-
-```ts
-// type signature
-type errorDialog = ErrorDialogState | undefined
-// code
-errorDialog: undefined as ErrorDialogState | undefined
-```
-
-| Member                                                       | Type                                |
-| ------------------------------------------------------------ | ----------------------------------- |
-| <span id="volatile-snackbarmessages">snackbarMessages</span> | `IObservableArray<SnackbarMessage>` |
-
-**Getters**
-
-| Member                                                         | Type                           |
-| -------------------------------------------------------------- | ------------------------------ |
-| <span id="getter-snackbarmessageset">snackbarMessageSet</span> | `Map<string, SnackbarMessage>` |
-
-**Actions**
-
-| Member                                                               | Type                                                                                                                    |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| <span id="action-notify">notify</span>                               | `(message: string, level?: NotificationLevel \| undefined, action?: SnackAction \| SnackAction[] \| undefined) => void` |
-| <span id="action-notifyerror">notifyError</span>                     | `(errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction \| undefined) => void`                   |
-| <span id="action-seterrordialog">setErrorDialog</span>               | `(state: ErrorDialogState \| undefined) => void`                                                                        |
-| <span id="action-pushsnackbarmessage">pushSnackbarMessage</span>     | `(message: string, level?: NotificationLevel \| undefined, actions?: SnackAction[] \| undefined) => void`               |
-| <span id="action-popsnackbarmessage">popSnackbarMessage</span>       | `() => SnackbarMessage \| undefined`                                                                                    |
-| <span id="action-removesnackbarmessage">removeSnackbarMessage</span> | `(message: string) => void`                                                                                             |
-
-</details>
-
-<details>
-<summary>Derived from DrawerWidgetSessionMixin</summary>
-
-[DrawerWidgetSessionMixin →](../drawerwidgetsessionmixin)
-
-**Properties**
-
-| Member                                                   | Type                                                                      |
-| -------------------------------------------------------- | ------------------------------------------------------------------------- |
-| <span id="property-drawerposition">drawerPosition</span> | `IOptionalIType<ISimpleType<string>, [undefined]>`                        |
-| <span id="property-drawerwidth">drawerWidth</span>       | `IOptionalIType<ISimpleType<number>, [undefined]>`                        |
-| <span id="property-widgets">widgets</span>               | `IOptionalIType<IMapType<IAnyType>, [undefined]>`                         |
-| <span id="property-activewidgets">activeWidgets</span>   | `IOptionalIType<IMapType<IMaybe<IReferenceType<IAnyType>>>, [undefined]>` |
-| <span id="property-minimized">minimized</span>           | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                       |
-
-**Volatiles**
-
-#### volatile: poppedOut
-
-true while the visible widget is shown in a modal dialog instead of the drawer.
-Volatile because a restored session that opened straight into a modal, with no
-drawer behind it, is disorienting
-
-```ts
-// type signature
-type poppedOut = false
-// code
-poppedOut: false
-```
-
-**Getters**
-
-| Member                                               | Type  |
-| ---------------------------------------------------- | ----- |
-| <span id="getter-visiblewidget">visibleWidget</span> | `any` |
-
-**Actions**
-
-#### action: popoutWidget
-
-show the visible widget in a modal dialog, freeing the drawer column
-
-```ts
-type popoutWidget = () => void
-```
-
-#### action: editConfiguration
-
-opens a configuration editor to configure the given thing, and sets the current
-task to be configuring it
-
-```ts
-type editConfiguration = (configuration: (ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) | { ...; }, opts?: { ...; } | undefined) => void
-```
-
-| Member                                                             | Type                                                                        |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| <span id="action-setdrawerposition">setDrawerPosition</span>       | `(arg: string) => void`                                                     |
-| <span id="action-updatedrawerwidth">updateDrawerWidth</span>       | `(drawerWidth: number) => number`                                           |
-| <span id="action-resizedrawer">resizeDrawer</span>                 | `(distance: number) => number`                                              |
-| <span id="action-addwidget">addWidget</span>                       | `(typeName: string, id: string, initialState?: any, conf?: unknown) => any` |
-| <span id="action-showwidget">showWidget</span>                     | `(widget: any) => void`                                                     |
-| <span id="action-hidewidget">hideWidget</span>                     | `(widget: any) => void`                                                     |
-| <span id="action-minimizewidgetdrawer">minimizeWidgetDrawer</span> | `() => void`                                                                |
-| <span id="action-showwidgetdrawer">showWidgetDrawer</span>         | `() => void`                                                                |
-| <span id="action-returnwidgettodrawer">returnWidgetToDrawer</span> | `() => void`                                                                |
-| <span id="action-hideallwidgets">hideAllWidgets</span>             | `() => void`                                                                |
-
-</details>
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
+
+## Properties
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="property-views">**views**</span><br><details><summary><code>views: types.array( pluginManager.pluggableMstType('view', 'sta…</code></summary><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | MultipleViewsSessionMixin |
+| <span id="property-stickyviewheaders">**stickyViewHeaders**</span><br><details><summary><code>stickyViewHeaders: types.optional(types.boolean, () =&gt; localSto…</code></summary><pre><code>stickyViewHeaders: types.optional(types.boolean, () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;localStorageGetBoolean('stickyViewHeaders', true),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | MultipleViewsSessionMixin |
+| <span id="property-useworkspaces">**useWorkspaces**</span><br><details><summary><code>useWorkspaces: types.stripDefault( types.maybe(types.boolean),…</code></summary><pre><code>useWorkspaces: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.boolean),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> | enables the dockview-based tabbed/tiled workspace layout for this session. Undefined means unspecified — read `effectiveUseWorkspaces`. | MultipleViewsSessionMixin |
+| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseSessionModel](../basesessionmodel#property-id) |
+| <span id="property-name">**name**</span><br><code>name: types.string</code> |  | [BaseSessionModel](../basesessionmodel#property-name) |
+| <span id="property-margin">**margin**</span><br><code>margin: types.stripDefault(types.number, 0)</code> |  | [BaseSessionModel](../basesessionmodel#property-margin) |
+| <span id="property-focusedviewid">**focusedViewId**</span><br><code>focusedViewId: types.maybe(types.string)</code> | <span data-pagefind-ignore>used to keep track of which view is in focus</span> | [BaseSessionModel](../basesessionmodel#property-focusedviewid) |
+| <span id="property-highlightsvisible">**highlightsVisible**</span><br><code>highlightsVisible: types.stripDefault(types.boolean, true)</code> | <span data-pagefind-ignore>one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)</span> | [BaseSessionModel](../basesessionmodel#property-highlightsvisible) |
+| <span id="property-drawerposition">**drawerPosition**</span><br><details><summary><code>drawerPosition: types.optional( types.string, () =&gt; localStorag…</code></summary><pre><code>drawerPosition: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.string,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;() =&gt; localStorageGetItem('drawerPosition') ?? 'right',&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#property-drawerposition) |
+| <span id="property-drawerwidth">**drawerWidth**</span><br><details><summary><code>drawerWidth: types.stripDefault( types.refinement(types.integer…</code></summary><pre><code>drawerWidth: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.refinement(types.integer, width =&gt; width &gt;= minDrawerWidth),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;384,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#property-drawerwidth) |
+| <span id="property-widgets">**widgets**</span><br><code>widgets: types.stripDefault(types.map(widgetStateModelType), {})</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#property-widgets) |
+| <span id="property-activewidgets">**activeWidgets**</span><br><details><summary><code>activeWidgets: types.stripDefault( types.map(types.safeReferenc…</code></summary><pre><code>activeWidgets: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.map(types.safeReference(widgetStateModelType)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#property-activewidgets) |
+| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#property-minimized) |
+
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-selection">**selection**</span><br><code>selection: undefined as unknown</code> | <span data-pagefind-ignore>this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.</span> | [BaseSessionModel](../basesessionmodel#volatile-selection) |
+| <span id="volatile-hovered">**hovered**</span><br><code>hovered: undefined as unknown</code> | <span data-pagefind-ignore>this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.</span> | [BaseSessionModel](../basesessionmodel#volatile-hovered) |
+| <span id="volatile-queueofdialogs">**queueOfDialogs**</span><br><details><summary><code>queueOfDialogs: [] as [DialogComponentType, Record&lt;string, unkn…</code></summary><pre><code>queueOfDialogs: [] as [DialogComponentType, Record&lt;string, unknown&gt;][]</code></pre></details> |  | [BaseSessionModel](../basesessionmodel#volatile-queueofdialogs) |
+| <span id="volatile-preferencesoverrides">**preferencesOverrides**</span><br><details><summary><code>preferencesOverrides: observable.map&lt;string, unknown&gt;(undefined…</code></summary><pre><code>preferencesOverrides: observable.map&lt;string, unknown&gt;(undefined, {&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;deep: false,&#10;&#160;&#160;&#160;&#160;&#160;&#160;})</code></pre></details> | <span data-pagefind-ignore>runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults. Empty here (config-only); products that let users edit preferences load and persist these via localStorage. A runtime override map layered over config defaults, kept off the snapshot since prefs are local UI.<br><br>An `observable.map` (not a plain object reassigned wholesale) so each preference is its own tracked key: writing one (`setScrollZoom`) can't invalidate a reader of another (`getDisplayTypeDefault` in a track's `rpcProps`). A single spread-replaced object made every setter wake every reader, so toggling scroll-to-zoom re-fetched every track. For the same reason each promoted per-display-type default is a flat composite key (see `displayTypeDefaultKey`), not a single nested `displayTypeDefaults` object — promoting one default can't wake readers of a different one.<br><br>`deep: false` is load-bearing, not a micro-optimization. The default enhancer wraps an object/array value in a MobX Proxy on `set`, and a promoted default is handed straight back out by `getConf` — so an object-valued promotable slot (alignments `colorBy`) put a Proxy into `rpcProps()`, and V8's structured-clone serializer rejects a Proxy: `worker.postMessage` threw `DataCloneError` on the next fetch of any track following that default (electron IPC and `structuredClone` in the share bake likewise). Nothing mutates a preference in place, and the map still notifies per key on `set`, so shallow values lose no reactivity.</span> | [BaseSessionModel](../basesessionmodel#volatile-preferencesoverrides) |
+| <span id="volatile-snackbarmessages">**snackbarMessages**</span><br><code>snackbarMessages: observable.array&lt;SnackbarMessage&gt;()</code> |  | [SnackbarModel](../snackbarmodel#volatile-snackbarmessages) |
+| <span id="volatile-errordialog">**errorDialog**</span><br><code>errorDialog: undefined as ErrorDialogState &#124; undefined</code> | <span data-pagefind-ignore>the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it</span> | [SnackbarModel](../snackbarmodel#volatile-errordialog) |
+| <span id="volatile-poppedout">**poppedOut**</span><br><code>poppedOut: false</code> | <span data-pagefind-ignore>true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting</span> | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#volatile-poppedout) |
+
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="getter-effectiveuseworkspaces">**effectiveUseWorkspaces**</span><br><code>boolean</code> | resolved workspaces flag (never undefined): this session's value, else the user preference over the `configuration.preferences.useWorkspaces` admin default. Every consumer reads this, not the raw property — only sessions built from a snapshot or a spec `layout` set that, so the admin default is what reaches the arrivals that bypass defaultSession. | MultipleViewsSessionMixin |
+| <span id="getter-root">**root**</span><br><code>TypeOrStateTreeNodeToStateTreeNode&lt;ROOT_MODEL_TYPE&gt;</code> |  | [BaseSessionModel](../basesessionmodel#getter-root) |
+| <span id="getter-jbrowse">**jbrowse**</span><br><code>any</code> |  | [BaseSessionModel](../basesessionmodel#getter-jbrowse) |
+| <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  | [BaseSessionModel](../basesessionmodel#getter-rpcmanager) |
+| <span id="getter-configuration">**configuration**</span><br><code>Instance&lt;JB_CONFIG_SCHEMA&gt;</code> |  | [BaseSessionModel](../basesessionmodel#getter-configuration) |
+| <span id="getter-adminmode">**adminMode**</span><br><code>boolean</code> |  | [BaseSessionModel](../basesessionmodel#getter-adminmode) |
+| <span id="getter-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  | [BaseSessionModel](../basesessionmodel#getter-textsearchmanager) |
+| <span id="getter-assemblies">**assemblies**</span><br><details><summary><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, d…</code></summary><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;)[]</code></pre></details> |  | [BaseSessionModel](../basesessionmodel#getter-assemblies) |
+| <span id="getter-dialogcomponent">**DialogComponent**</span><br><code>DialogComponentType</code> |  | [BaseSessionModel](../basesessionmodel#getter-dialogcomponent) |
+| <span id="getter-dialogprops">**DialogProps**</span><br><code>Record&lt;string, unknown&gt;</code> |  | [BaseSessionModel](../basesessionmodel#getter-dialogprops) |
+| <span id="getter-animationmode">**animationMode**</span><br><code>AnimationMode</code> | <span data-pagefind-ignore>resolved feature-layout animation mode (never undefined)</span> | [BaseSessionModel](../basesessionmodel#getter-animationmode) |
+| <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | <span data-pagefind-ignore>resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value.</span> | [BaseSessionModel](../basesessionmodel#getter-scrollzoom) |
+| <span id="getter-snackbarmessageset">**snackbarMessageSet**</span><br><code>Map&lt;string, SnackbarMessage&gt;</code> |  | [SnackbarModel](../snackbarmodel#getter-snackbarmessageset) |
+| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>any</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#getter-visiblewidget) |
+
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="method-getpreference">**getPreference**</span><br><code>(key: string) =&gt; unknown</code> | <span data-pagefind-ignore>resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default. The override map is empty unless the product loads it (web/desktop).</span> | [BaseSessionModel](../basesessionmodel#method-getpreference) |
+| <span id="method-getdisplaytypedefault">**getDisplayTypeDefault**</span><br><code>(displayType: string, slot: string) =&gt; unknown</code> | <span data-pagefind-ignore>resolved value of a per-display-type slot default the user promoted (see `setDisplayTypeDefault`); undefined when nothing was promoted.</span> | [BaseSessionModel](../basesessionmodel#method-getdisplaytypedefault) |
+| <span id="method-getpreferencechanges">**getPreferenceChanges**</span><br><code>() =&gt; TrackConfigChange[]</code> | <span data-pagefind-ignore>every runtime preference-override that currently differs from its config/admin default, as `{ path, from, to }` rows — the exact set `clearPreferenceOverrides` reverts. Backs the confirmation diff shown before "Reset to defaults" (mirrors the per-track changes dialog). A scalar pref (animationMode, scrollZoom) whose override equals the default is omitted (reverting it is a no-op); each promoted per-display-type default is always a difference from the un-promoted state, so `from` reads "(default)".</span> | [BaseSessionModel](../basesessionmodel#method-getpreferencechanges) |
+
+## Actions
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="action-moveviewdown">**moveViewDown**</span><br><code>(id: string) =&gt; void</code> |  | MultipleViewsSessionMixin |
+| <span id="action-moveviewup">**moveViewUp**</span><br><code>(id: string) =&gt; void</code> |  | MultipleViewsSessionMixin |
+| <span id="action-moveviewtotop">**moveViewToTop**</span><br><code>(id: string) =&gt; void</code> |  | MultipleViewsSessionMixin |
+| <span id="action-moveviewtobottom">**moveViewToBottom**</span><br><code>(id: string) =&gt; void</code> |  | MultipleViewsSessionMixin |
+| <span id="action-addview">**addView**</span><br><code>(typeName: string, initialState?: any) =&gt; any</code> |  | MultipleViewsSessionMixin |
+| <span id="action-removeview">**removeView**</span><br><code>(view: IBaseViewModel) =&gt; void</code> |  | MultipleViewsSessionMixin |
+| <span id="action-setstickyviewheaders">**setStickyViewHeaders**</span><br><code>(sticky: boolean) =&gt; void</code> |  | MultipleViewsSessionMixin |
+| <span id="action-setuseworkspaces">**setUseWorkspaces**</span><br><code>(useWorkspaces: boolean) =&gt; void</code> | set the workspaces layout for this session only, leaving the user's personal default untouched. For session-scoped intent — a spec carrying a `layout`, or an ad-hoc "move view to a tab/split" — where rewriting the visitor's global preference would be a surprise. The user-facing default toggle is `setUseWorkspacesPreference`. | MultipleViewsSessionMixin |
+| <span id="action-setuseworkspacespreference">**setUseWorkspacesPreference**</span><br><code>(useWorkspaces: boolean) =&gt; void</code> | the user-facing workspaces toggle: applies to this session and becomes their default for sessions that don't specify one. Persisted only here, on an explicit toggle — an autorun mirroring the resolved value would bake the admin default into every visitor's localStorage on first load, so a later admin change could never reach them. | MultipleViewsSessionMixin |
+| <span id="action-resetuseworkspaces">**resetUseWorkspaces**</span><br><code>() =&gt; void</code> | drop both this session's explicit value and the user's override so workspaces falls back to the admin default | MultipleViewsSessionMixin |
+| <span id="action-setselection">**setSelection**</span><br><code>(thing: unknown) =&gt; void</code> | <span data-pagefind-ignore>set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything</span> | [BaseSessionModel](../basesessionmodel#action-setselection) |
+| <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>clears the global selection</span> | [BaseSessionModel](../basesessionmodel#action-clearselection) |
+| <span id="action-sethovered">**setHovered**</span><br><code>(thing: unknown) =&gt; void</code> |  | [BaseSessionModel](../basesessionmodel#action-sethovered) |
+| <span id="action-sethighlightsvisible">**setHighlightsVisible**</span><br><code>(arg: boolean) =&gt; void</code> | <span data-pagefind-ignore>toggle all region highlight bands across every view</span> | [BaseSessionModel](../basesessionmodel#action-sethighlightsvisible) |
+| <span id="action-revealhighlights">**revealHighlights**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>turn highlight bands back on, so a newly made highlight or bookmark is never silently swallowed by an earlier "highlights off"</span> | [BaseSessionModel](../basesessionmodel#action-revealhighlights) |
+| <span id="action-setpreferenceoverride">**setPreferenceOverride**</span><br><code>(key: string, value: unknown) =&gt; void</code> | <span data-pagefind-ignore>set a runtime user-preference override (see `getPreference`). Mutates volatile state; products persist these to localStorage. An `undefined` value deletes the key (rather than leaving a phantom entry that `getPreference` reads as absent) so the store never holds dead keys.</span> | [BaseSessionModel](../basesessionmodel#action-setpreferenceoverride) |
+| <span id="action-clearpreferenceoverrides">**clearPreferenceOverrides**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>clear every runtime preference override at once — scrollZoom, animationMode, and every promoted per-display-type default (see `setDisplayTypeDefault`) — so each falls back to its config/admin default. Backs the Preferences dialog "Reset to defaults" button.</span> | [BaseSessionModel](../basesessionmodel#action-clearpreferenceoverrides) |
+| <span id="action-clearpreferenceoverride">**clearPreferenceOverride**</span><br><code>(key: string) =&gt; void</code> | <span data-pagefind-ignore>clear a single runtime preference override (see `getPreference`) so it falls back to its config/admin default. Backs the per-entry reset in the Preferences dialog "Reset to defaults" confirmation.</span> | [BaseSessionModel](../basesessionmodel#action-clearpreferenceoverride) |
+| <span id="action-setscrollzoom">**setScrollZoom**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>set the global scroll-to-zoom preference (see the `scrollZoom` getter)</span> | [BaseSessionModel](../basesessionmodel#action-setscrollzoom) |
+| <span id="action-setdisplaytypedefault">**setDisplayTypeDefault**</span><br><code>(displayType: string, slot: string, value: unknown) =&gt; void</code> | <span data-pagefind-ignore>promote (or, with `value` undefined, clear) a per-display-type slot default. Just a preference override under one flat composite key (see `displayTypeDefaultKey`), so it persists and independently tracks like any other pref, and clearing deletes only that key.</span> | [BaseSessionModel](../basesessionmodel#action-setdisplaytypedefault) |
+| <span id="action-setname">**setName**</span><br><code>(str: string) =&gt; void</code> |  | [BaseSessionModel](../basesessionmodel#action-setname) |
+| <span id="action-setfocusedviewid">**setFocusedViewId**</span><br><code>(viewId: string) =&gt; void</code> |  | [BaseSessionModel](../basesessionmodel#action-setfocusedviewid) |
+| <span id="action-removeactivedialog">**removeActiveDialog**</span><br><code>() =&gt; void</code> |  | [BaseSessionModel](../basesessionmodel#action-removeactivedialog) |
+| <span id="action-queuedialog">**queueDialog**</span><br><code>(doneCallback: DoneCallback) =&gt; void</code> |  | [BaseSessionModel](../basesessionmodel#action-queuedialog) |
+| <span id="action-notify">**notify**</span><br><details><summary><code>(message: string, level?: NotificationLevel &#124; undefined, action…</code></summary><pre><code>(message: string, level?: NotificationLevel &#124; undefined, action?: SnackAction &#124; SnackAction[] &#124; undefined) =&gt; void</code></pre></details> |  | [SnackbarModel](../snackbarmodel#action-notify) |
+| <span id="action-notifyerror">**notifyError**</span><br><details><summary><code>(errorMessage: string, error?: unknown, extra?: unknown, action…</code></summary><pre><code>(errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction &#124; undefined) =&gt; void</code></pre></details> |  | [SnackbarModel](../snackbarmodel#action-notifyerror) |
+| <span id="action-seterrordialog">**setErrorDialog**</span><br><code>(state: ErrorDialogState &#124; undefined) =&gt; void</code> |  | [SnackbarModel](../snackbarmodel#action-seterrordialog) |
+| <span id="action-pushsnackbarmessage">**pushSnackbarMessage**</span><br><details><summary><code>(message: string, level?: NotificationLevel &#124; undefined, action…</code></summary><pre><code>(message: string, level?: NotificationLevel &#124; undefined, actions?: SnackAction[] &#124; undefined) =&gt; void</code></pre></details> |  | [SnackbarModel](../snackbarmodel#action-pushsnackbarmessage) |
+| <span id="action-popsnackbarmessage">**popSnackbarMessage**</span><br><code>() =&gt; SnackbarMessage &#124; undefined</code> |  | [SnackbarModel](../snackbarmodel#action-popsnackbarmessage) |
+| <span id="action-removesnackbarmessage">**removeSnackbarMessage**</span><br><code>(message: string) =&gt; void</code> |  | [SnackbarModel](../snackbarmodel#action-removesnackbarmessage) |
+| <span id="action-setdrawerposition">**setDrawerPosition**</span><br><code>(arg: string) =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-setdrawerposition) |
+| <span id="action-updatedrawerwidth">**updateDrawerWidth**</span><br><code>(drawerWidth: number) =&gt; number</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-updatedrawerwidth) |
+| <span id="action-resizedrawer">**resizeDrawer**</span><br><code>(distance: number) =&gt; number</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-resizedrawer) |
+| <span id="action-addwidget">**addWidget**</span><br><details><summary><code>(typeName: string, id: string, initialState?: any, conf?: unkno…</code></summary><pre><code>(typeName: string, id: string, initialState?: any, conf?: unknown) =&gt; any</code></pre></details> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-addwidget) |
+| <span id="action-showwidget">**showWidget**</span><br><code>(widget: any) =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-showwidget) |
+| <span id="action-hidewidget">**hideWidget**</span><br><code>(widget: any) =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-hidewidget) |
+| <span id="action-minimizewidgetdrawer">**minimizeWidgetDrawer**</span><br><code>() =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-minimizewidgetdrawer) |
+| <span id="action-showwidgetdrawer">**showWidgetDrawer**</span><br><code>() =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-showwidgetdrawer) |
+| <span id="action-popoutwidget">**popoutWidget**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>show the visible widget in a modal dialog, freeing the drawer column</span> | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-popoutwidget) |
+| <span id="action-returnwidgettodrawer">**returnWidgetToDrawer**</span><br><code>() =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-returnwidgettodrawer) |
+| <span id="action-hideallwidgets">**hideAllWidgets**</span><br><code>() =&gt; void</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-hideallwidgets) |
+| <span id="action-editconfiguration">**editConfiguration**</span><br><details><summary><code>(configuration: (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNo…</code></summary><pre><code>(configuration: (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) &#124; { ...; }, opts?: { ...; } &#124; undefined) =&gt; void</code></pre></details> | <span data-pagefind-ignore>opens a configuration editor to configure the given thing, and sets the current task to be configuring it</span> | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#action-editconfiguration) |

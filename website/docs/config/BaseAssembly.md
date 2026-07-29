@@ -130,110 +130,18 @@ the "displayName" config slot instead
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                                  | Type           | Description                                                                                                                                                                                                                                       |
-| ----------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [aliases](#slot-aliases)                              | `stringArray`  | aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"                                                                                                                                                                      |
-| [sequence](#slot-sequence)                            |                | sequence refers to a reference sequence track that has an adapter containing, importantly, a sequence adapter such as IndexedFastaAdapter                                                                                                         |
-| [refNameColors](#slot-refnamecolors)                  | `stringArray`  | Define custom colors for each reference sequence.                                                                                                                                                                                                 |
-| [geneticCodes](#slot-geneticcodes)                    | `frozen`       | Maps a reference sequence name to an NCBI genetic-code (translation table) id for sequences that don't use the standard code, e.g. `{ "chrM": 2 }` for the vertebrate mitochondrial code or `{ "chrPltd": 11 }` for a plastid.                    |
-| [geneticCodesLocation](#slot-geneticcodeslocation)    | `fileLocation` | Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments allowed) to load the same refName-to-genetic-code mapping from, instead of inlining it — useful when a config generator emits a sidecar rather than inlining per assembly. |
-| [refNameAliases.adapter](#slot-refnamealiasesadapter) |                | refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for refNameAliases are fetched from an adapter, that is commonly a tsv like chromAliases.txt from UCSC or similar                                                         |
-| [cytobands.adapter](#slot-cytobandsadapter)           |                | cytoband data is fetched from an adapter, and can be displayed by a view type as ideograms                                                                                                                                                        |
-| [displayName](#slot-displayname)                      | `string`       | A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"                                                                                                                              |
-
-<details>
-<summary>BaseAssembly - Slots</summary>
-
-#### slot: aliases
-
-aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: sequence
-
-sequence refers to a reference sequence track that has an adapter containing,
-importantly, a sequence adapter such as IndexedFastaAdapter
-
-```js
-pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
-```
-
-#### slot: refNameColors
-
-Define custom colors for each reference sequence. Will cycle through this list
-if there are not enough colors for every sequence.
-
-**Type:** `stringArray` · **Default:** `[]`
-
-#### slot: geneticCodes
-
-Maps a reference sequence name to an NCBI genetic-code (translation table) id
-for sequences that don't use the standard code, e.g. `{ "chrM": 2 }` for the
-vertebrate mitochondrial code or `{ "chrPltd": 11 }` for a plastid. Drives the
-reference sequence track's translation rows; unlisted refNames use the standard
-code (1). CDS-level translation reads the GFF `transl_table` attribute directly
-and ignores this.
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
-
-**Example:**
-
-Mitochondrial contig translated with the vertebrate mitochondrial code (NCBI
-table 2), a plastid contig with table 11; keys are matched through refName
-aliasing:
-
-```js
-{ chrM: 2, chrPltd: 11 }
-```
-
-#### slot: geneticCodesLocation
-
-Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments allowed)
-to load the same refName-to-genetic-code mapping from, instead of inlining it —
-useful when a config generator emits a sidecar rather than inlining per
-assembly. Entries in the inline `geneticCodes` slot take precedence over the
-file.
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '', locationType: 'UriLocation' }`
-
-**Example:**
-
-The TSV is `refName<TAB>geneticCodeId` with optional `#` comment lines:
-
-```js
-{
-  uri: 'https://example.com/hg38.genetic_codes.tsv'
-}
-```
-
-#### slot: refNameAliases.adapter
-
-refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for
-refNameAliases are fetched from an adapter, that is commonly a tsv like
-chromAliases.txt from UCSC or similar
-
-```js
-pluginManager.pluggableConfigSchemaType('adapter')
-```
-
-#### slot: cytobands.adapter
-
-cytoband data is fetched from an adapter, and can be displayed by a view type as
-ideograms
-
-```js
-pluginManager.pluggableConfigSchemaType('adapter')
-```
-
-#### slot: displayName
-
-A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while
-the assembly name may just be "hg38"
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-aliases">**aliases**</span><br>`stringArray` = <code>[]</code> | aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38" |
+| <span id="slot-sequence">**sequence**</span><br><details><summary><code>pluginManager.getTrackType('ReferenceSequenceTrack') .configSch…</code></summary><pre><code>pluginManager.getTrackType('ReferenceSequenceTrack')&#10;.configSchema</code></pre></details> | sequence refers to a reference sequence track that has an adapter containing, importantly, a sequence adapter such as IndexedFastaAdapter |
+| <span id="slot-refnamecolors">**refNameColors**</span><br>`stringArray` = <code>[]</code> | Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence. |
+| <span id="slot-geneticcodes">**geneticCodes**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | Maps a reference sequence name to an NCBI genetic-code (translation table) id for sequences that don't use the standard code, e.g. `{ "chrM": 2 }` for the vertebrate mitochondrial code or `{ "chrPltd": 11 }` for a plastid. Drives the reference sequence track's translation rows; unlisted refNames use the standard code (1). CDS-level translation reads the GFF `transl_table` attribute directly and ignores this.<br><details><summary>example</summary><p>Mitochondrial contig translated with the vertebrate mitochondrial code (NCBI table 2), a plastid contig with table 11; keys are matched through refName aliasing:</p><pre><code>{ chrM: 2, chrPltd: 11 }</code></pre></details> |
+| <span id="slot-geneticcodeslocation">**geneticCodesLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '', locationType: 'UriLocation' }</code> | Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments allowed) to load the same refName-to-genetic-code mapping from, instead of inlining it — useful when a config generator emits a sidecar rather than inlining per assembly. Entries in the inline `geneticCodes` slot take precedence over the file.<br><details><summary>example</summary><p>The TSV is `refName<TAB>geneticCodeId` with optional `#` comment lines:</p><pre><code>{ uri: 'https://example.com/hg38.genetic_codes.tsv' }</code></pre></details> |
+| <span id="slot-refnamealiasesadapter">**refNameAliases.adapter**</span><br><code>pluginManager.pluggableConfigSchemaType('adapter')</code> | refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for refNameAliases are fetched from an adapter, that is commonly a tsv like chromAliases.txt from UCSC or similar |
+| <span id="slot-cytobandsadapter">**cytobands.adapter**</span><br><code>pluginManager.pluggableConfigSchemaType('adapter')</code> | cytoband data is fetched from an adapter, and can be displayed by a view type as ideograms |
+| <span id="slot-displayname">**displayName**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38" |

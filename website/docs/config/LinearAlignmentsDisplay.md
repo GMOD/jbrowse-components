@@ -71,485 +71,70 @@ _See the **Config slots** section below for all available configuration fields._
 - **Adapter:** [CramAdapter](../cramadapter)
 - **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)
 - **Adapter:** [SamAdapter](../samadapter)
+- **Extended by:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **State model:** [runtime API](../../models/linearalignmentsdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
-
-| Slot                                                       | Type                                                             | Description                                                                                                                                                                |
-| ---------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [featureHeight](#slot-featureheight)                       | `maybeNumber`                                                    | Height of each feature (read) in pixels.                                                                                                                                   |
-| [heightMode](#slot-heightmode)                             | `maybeStringEnum` (fixed, grow, fit)                             | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
-| [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
-| [showSashimiLabels](#slot-showsashimilabels)               | `maybeBoolean`                                                   | Draw the supporting-read count on each sashimi arc                                                                                                                         |
-| [height](#slot-height)                                     | `number`                                                         | Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does                                                |
-| [collapseGroupRows](#slot-collapsegrouprows)               | `boolean`                                                        | Only consulted while `groupBy` is in effect.                                                                                                                               |
-| [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                                    |
-| [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                        |
-| [mismatchAlpha](#slot-mismatchalpha)                       | `maybeBoolean`                                                   | Fade mismatch bases by their per-base Phred quality.                                                                                                                       |
-| [showLegend](#slot-showlegend)                             | `boolean`                                                        | Show the color-scheme legend overlay                                                                                                                                       |
-| [largeFeaturesFirst](#slot-largefeaturesfirst)             | `boolean`                                                        | Lay out the widest features in the lowest pileup rows instead of by genomic start, so large alignments cluster at the top rather than interleaving with small ones.        |
-| [linkedReads](#slot-linkedreads)                           | `maybeStringEnum` (off, normal)                                  | Linked-read (barcode-chain) layout mode                                                                                                                                    |
-| [showBezierConnections](#slot-showbezierconnections)       | `boolean`                                                        | Draw paired-read connection curves over the pileup                                                                                                                         |
-| [showCoverage](#slot-showcoverage)                         | `boolean`                                                        | Draw the coverage histogram band                                                                                                                                           |
-| [showPileup](#slot-showpileup)                             | `boolean`                                                        | Draw the stacked-read pileup band                                                                                                                                          |
-| [coverageHeight](#slot-coverageheight)                     | `number`                                                         | Height of the coverage band in pixels                                                                                                                                      |
-| [showMismatches](#slot-showmismatches)                     | `boolean`                                                        | Draw per-base mismatches on reads                                                                                                                                          |
-| [showInterbaseIndicators](#slot-showinterbaseindicators)   | `boolean`                                                        | Draw interbase insertion/clip count bars and indicator triangles                                                                                                           |
-| [drawSingletons](#slot-drawsingletons)                     | `boolean`                                                        | Draw reads whose mate is unmapped                                                                                                                                          |
-| [drawProperPairs](#slot-drawproperpairs)                   | `boolean`                                                        | Draw properly-paired reads                                                                                                                                                 |
-| [showOnlySplitAlignments](#slot-showonlysplitalignments)   | `boolean`                                                        | Only draw reads that are part of a split/chimeric alignment (have a supplementary segment, SAM flag 0x800)                                                                 |
-| [flipStrandLongReadChains](#slot-flipstrandlongreadchains) | `boolean`                                                        | Flip strand coloring for reverse long-read chains                                                                                                                          |
-| [colorSupplementaryChains](#slot-colorsupplementarychains) | `boolean`                                                        | Paint paired supplementary chains a flat supplementary color                                                                                                               |
-| [drawInter](#slot-drawinter)                               | `boolean`                                                        | Draw inter-chromosomal read-connection arcs                                                                                                                                |
-| [drawLongRange](#slot-drawlongrange)                       | `boolean`                                                        | Draw long-range read-connection arcs                                                                                                                                       |
-| [arcColorByType](#slot-arccolorbytype)                     | `stringEnum` (insertSizeAndOrientation, insertSize, orientation) | How to color read-connection arcs                                                                                                                                          |
-| [readConnections](#slot-readconnections)                   | `maybeStringEnum` (off, arc, cloud)                              | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
-| [readConnectionsDown](#slot-readconnectionsdown)           | `maybeBoolean`                                                   | Draw read connections below the coverage band.                                                                                                                             |
-| [showSashimiArcs](#slot-showsashimiarcs)                   | `boolean`                                                        | Draw sashimi (splice-junction) arcs                                                                                                                                        |
-| [sashimiArcsMode](#slot-sashimiarcsmode)                   | `maybeStringEnum` (up, down, auto)                               | Sashimi junction-arc placement                                                                                                                                             |
-| [minSashimiScore](#slot-minsashimiscore)                   | `number`                                                         | Hide sashimi arcs with fewer than this many supporting reads                                                                                                               |
-| [sashimiArcsHeight](#slot-sashimiarcsheight)               | `number`                                                         | Height of the sashimi-arc band in pixels                                                                                                                                   |
-| [readConnectionsHeight](#slot-readconnectionsheight)       | `number`                                                         | Height of the read-connection band in pixels                                                                                                                               |
-| [showSoftClipping](#slot-showsoftclipping)                 | `maybeBoolean`                                                   | Draw soft-clipped read portions.                                                                                                                                           |
-
-<details>
-<summary>Advanced slots (11)</summary>
-
-| Slot                                                 | Type          | Description                                                                                                                                                 |
-| ---------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)                         | `number`      | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)                                           |
-| [growMaxHeight](#slot-growmaxheight)                 | `number`      | Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest.                         |
-| [colorBy](#slot-colorby)                             | `maybeFrozen` | Color scheme for reads                                                                                                                                      |
-| [filterBy](#slot-filterby)                           | `frozen`      | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)         |
-| [groupBy](#slot-groupby)                             | `frozen`      | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)                                                        |
-| [minScore](#slot-minscore)                           | `number`      | Minimum coverage depth bound                                                                                                                                |
-| [maxScore](#slot-maxscore)                           | `number`      | Maximum coverage depth bound                                                                                                                                |
-| [numStdDev](#slot-numstddev)                         | `number`      | Number of standard deviations for localsd autoscale                                                                                                         |
-| [showLowFreqMismatches](#slot-showlowfreqmismatches) | `boolean`     | Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. |
-| [sortedBy](#slot-sortedby)                           | `frozen`      | Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)                                                                          |
-| [showOutline](#slot-showoutline)                     | `frozen`      | null = auto: outline is drawn only in chain/linked-read modes.                                                                                              |
-
-</details>
-
-<details>
-<summary>LinearAlignmentsDisplay - Slots</summary>
-
-#### slot: featureHeight
-
-Height of each feature (read) in pixels. Unset (the default) follows the
-session-wide default for this display type, falling back to 7; an explicit
-number customizes the track (including customizing 7 back over a compact session
-default)
-
-**Type:** `maybeNumber` · **Default:** `undefined` · **Resolves to:** `7` ·
-_promotable_
-
-#### slot: heightMode
-
-Track-sizing strategy — how the track responds when there are more reads than
-fit (shared vocabulary with the canvas feature display, exposed in the "Track
-sizing" menu). Unset (the default) follows the session-wide default for this
-display type, falling back to `fixed`; `fixed` keeps `featureHeight` and
-scrolls; `grow` expands the track to show every read at the configured height;
-`fit` squeezes reads so every uncollapsed group fills the display without
-scrolling. Orthogonal to the per-read size set by `featureHeight`
-
-**Type:** `maybeStringEnum` (one of `fixed`, `grow`, `fit`) · **Default:**
-`undefined` · **Resolves to:** `'fixed'` · _promotable_
-
-#### slot: readConnectionsLineWidth
-
-Line width for read-connection arcs/lines in pixels
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1`
-
-#### slot: showSashimiLabels
-
-Draw the supporting-read count on each sashimi arc
-
-**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · **Resolves to:** `false` · _promotable_
-
-#### slot: maxHeight
-
-Maximum pixel height of the pileup layout; reads beyond this are not stacked
-(coverage still reflects true depth)
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`6000` · _advanced_
-
-#### slot: growMaxHeight
-
-Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper
-than this grows to the ceiling and scrolls the rest. Does not apply to the fixed
-or fit modes, and does not limit how much is laid out (see maxHeight)
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `800`
-· _advanced_
-
-#### slot: height
-
-Starting height in pixels for the coverage band and pileup together; heightMode
-decides what a pileup deeper than this does
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
-
-#### slot: colorBy
-
-Color scheme for reads
-
-**Type:** `maybeFrozen` · **Default:** `undefined` · **Resolves to:**
-`{ type: 'normal' }` · _advanced, promotable_
-
-```js
-{
-  type: 'maybeFrozen',
-  defaultValue: undefined,
-  promotedBase: { type: 'normal' },
-  promotable: true,
-  validate: isRegisteredColorScheme,
-  advanced: true,
-}
-```
-
-#### slot: filterBy
-
-default filter flags is exclude 1540 read unmapped (0x4) read fails
-platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`defaultFilterFlags` · _advanced_
-
-#### slot: groupBy
-
-In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by
-strand (null = ungrouped)
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null` · _advanced_
-
-#### slot: collapseGroupRows
-
-Only consulted while `groupBy` is in effect. Collapsing trades the per-group
-stack for one lane per group, with overlap depth carried by the tint shading
-instead of by row count — the compact reading for a track with many groups (an
-all-vs-all synteny track's mate genomes). A group expanded from its label chip
-opts back out and draws a true stack.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: autoscale
-
-Coverage autoscale type
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`local`, `localsd`) · **Default:** `'local'`
-
-#### slot: minScore
-
-Minimum coverage depth bound
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`Number.MIN_VALUE` · _advanced_
-
-#### slot: maxScore
-
-Maximum coverage depth bound
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`Number.MAX_VALUE` · _advanced_
-
-#### slot: scaleType
-
-Coverage scale type (linear or log)
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`linear`, `log`) · **Default:** `'linear'`
-
-#### slot: numStdDev
-
-Number of standard deviations for localsd autoscale
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `3` ·
-_advanced_
-
-#### slot: mismatchAlpha
-
-Fade mismatch bases by their per-base Phred quality. Unset (the default) follows
-the session-wide default for this display type, falling back to off; an explicit
-true/false customizes the track (either direction, including customizing off
-over an on session default)
-
-**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · **Resolves to:** `false` · _promotable_
-
-#### slot: showLowFreqMismatches
-
-Draw sub-pixel mismatches, insertions and clip bars in the pileup at full
-opacity instead of fading the ones below the depth-dependent frequency
-threshold. Read through the `filterMismatchesByFrequency` getter, which is this
-in the polarity the renderers and hit-test take. Does not affect the coverage
-band (see runCoveragePipeline)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: showLegend
-
-Show the color-scheme legend overlay
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: sortedBy
-
-Sort reads at a genomic position, e.g. by base, strand, or a tag (null =
-unsorted)
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null` · _advanced_
-
-#### slot: largeFeaturesFirst
-
-Lay out the widest features in the lowest pileup rows instead of by genomic
-start, so large alignments cluster at the top rather than interleaving with
-small ones. Off by default; LGVSyntenyDisplay turns it on. Ignored while an
-explicit `sortedBy` position sort is active.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: showOutline
-
-null = auto: outline is drawn only in chain/linked-read modes. Set true/false to
-force it on or off regardless of mode.
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null` · _advanced_
-
-#### slot: linkedReads
-
-Linked-read (barcode-chain) layout mode
-
-**Type:** `maybeStringEnum` (one of `off`, `normal`) · **Default:** `undefined`
-· **Resolves to:** `'off'` · _promotable_
-
-#### slot: showBezierConnections
-
-Draw paired-read connection curves over the pileup
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: showCoverage
-
-Draw the coverage histogram band
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showPileup
-
-Draw the stacked-read pileup band
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: coverageHeight
-
-Height of the coverage band in pixels
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `45`
-
-#### slot: showMismatches
-
-Draw per-base mismatches on reads
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showInterbaseIndicators
-
-Draw interbase insertion/clip count bars and indicator triangles
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: drawSingletons
-
-Draw reads whose mate is unmapped
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: drawProperPairs
-
-Draw properly-paired reads
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: showOnlySplitAlignments
-
-Only draw reads that are part of a split/chimeric alignment (have a
-supplementary segment, SAM flag 0x800)
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: flipStrandLongReadChains
-
-Flip strand coloring for reverse long-read chains
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: colorSupplementaryChains
-
-Paint paired supplementary chains a flat supplementary color
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: drawInter
-
-Draw inter-chromosomal read-connection arcs
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: drawLongRange
-
-Draw long-range read-connection arcs
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: arcColorByType
-
-How to color read-connection arcs
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`insertSizeAndOrientation`, `insertSize`, `orientation`) · **Default:**
-`'insertSizeAndOrientation'`
-
-#### slot: readConnections
-
-Read-connection rendering mode (mate pairs + split reads)
-
-**Type:** `maybeStringEnum` (one of `off`, `arc`, `cloud`) · **Default:**
-`undefined` · **Resolves to:** `'off'` · _promotable_
-
-#### slot: readConnectionsDown
-
-Draw read connections below the coverage band. Unset (the default) follows the
-session-wide default for this display type, falling back to on; an explicit
-true/false customizes the track (either direction, including drawing above the
-coverage band over an on session default)
-
-**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · **Resolves to:** `true` · _promotable_
-
-#### slot: showSashimiArcs
-
-Draw sashimi (splice-junction) arcs
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
-
-#### slot: sashimiArcsMode
-
-Sashimi junction-arc placement
-
-**Type:** `maybeStringEnum` (one of `up`, `down`, `auto`) · **Default:**
-`undefined` · **Resolves to:** `'up'` · _promotable_
-
-#### slot: minSashimiScore
-
-Hide sashimi arcs with fewer than this many supporting reads
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
-
-#### slot: sashimiArcsHeight
-
-Height of the sashimi-arc band in pixels
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `40`
-
-#### slot: readConnectionsHeight
-
-Height of the read-connection band in pixels
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `40`
-
-#### slot: showSoftClipping
-
-Draw soft-clipped read portions. Unset (the default) follows the session-wide
-default for this display type, falling back to off; an explicit true/false
-customizes the track (either direction, including customizing off over an on
-session default)
-
-**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
-**Default:** `undefined` · **Resolves to:** `false` · _promotable_
-
-</details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained. A slot redeclared by a more specific config is
-shown once, at its most specific definition.
-
-<details>
-<summary>Inherited from BaseLinearDisplay</summary>
-
-[BaseLinearDisplay config →](../baselineardisplay)
-
-#### slot: maxFeatureScreenDensity
-
-maximum features per pixel before showing a "too many features" message, used if
-byte size estimates are not available
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_advanced_
-
-#### slot: fetchSizeLimit
-
-maximum data to attempt to download for a given track, used if adapter doesn't
-specify one
-
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1_000_000` · _advanced_
-
-#### slot: forceLoad
-
-Declarative equivalent of the "Force load" button on the "too much data" banner:
-when true the display always renders, however large the region or dense the
-features. Off by default (the gate guards against huge downloads). Set it on a
-view no one can interact with — an embedded / notebook view, or a screenshot —
-where the region is known and you want it drawn without a click.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _advanced_
-
-#### slot: mouseover
-
-text to display when the cursor hovers over a feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-· **Callback args:** `feature`
-
-#### slot: jexlFilters
-
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
-
-**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
-
-</details>
+These slots go on a display entry:
+`"displays": [{ "type": "LinearAlignmentsDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
+
+<!-- prettier-ignore -->
+| Slot | Description | From |
+| --- | --- | --- |
+| <span id="slot-featureheight">**featureHeight**</span><br>`maybeNumber` = <code>7</code> _promotable_ | Height of each feature (read) in pixels. Unset (the default) follows the session-wide default for this display type, falling back to 7; an explicit number customizes the track (including customizing 7 back over a compact session default) |  |
+| <span id="slot-heightmode">**heightMode**</span><br>`maybeStringEnum` (fixed, grow, fit) = <code>'fixed'</code> _promotable_ | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight` |  |
+| <span id="slot-readconnectionslinewidth">**readConnectionsLineWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Line width for read-connection arcs/lines in pixels |  |
+| <span id="slot-showsashimilabels">**showSashimiLabels**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) = <code>false</code> _promotable_ | Draw the supporting-read count on each sashimi arc |  |
+| <span id="slot-maxheight">**maxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6000</code> | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)<br>_advanced_ |  |
+| <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)<br>_advanced_ |  |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>250</code> | Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does |  |
+| <span id="slot-colorby">**colorBy**</span><br>`maybeFrozen` = <code>{ type: 'normal' }</code> _promotable_ | Color scheme for reads<br>_advanced_ |  |
+| <span id="slot-filterby">**filterBy**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>defaultFilterFlags</code> | default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)<br>_advanced_ |  |
+| <span id="slot-groupby">**groupBy**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)<br>_advanced_ |  |
+| <span id="slot-collapsegrouprows">**collapseGroupRows**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Only consulted while `groupBy` is in effect. Collapsing trades the per-group stack for one lane per group, with overlap depth carried by the tint shading instead of by row count — the compact reading for a track with many groups (an all-vs-all synteny track's mate genomes). A group expanded from its label chip opts back out and draws a true stack. |  |
+| <span id="slot-autoscale">**autoscale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (local, localsd) = <code>'local'</code> | Coverage autoscale type |  |
+| <span id="slot-minscore">**minScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MIN_VALUE</code> | Minimum coverage depth bound<br>_advanced_ |  |
+| <span id="slot-maxscore">**maxScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_VALUE</code> | Maximum coverage depth bound<br>_advanced_ |  |
+| <span id="slot-scaletype">**scaleType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | Coverage scale type (linear or log) |  |
+| <span id="slot-numstddev">**numStdDev**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3</code> | Number of standard deviations for localsd autoscale<br>_advanced_ |  |
+| <span id="slot-mismatchalpha">**mismatchAlpha**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) = <code>false</code> _promotable_ | Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default) |  |
+| <span id="slot-showlowfreqmismatches">**showLowFreqMismatches**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the `filterMismatchesByFrequency` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline)<br>_advanced_ |  |
+| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Show the color-scheme legend overlay |  |
+| <span id="slot-sortedby">**sortedBy**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)<br>_advanced_ |  |
+| <span id="slot-largefeaturesfirst">**largeFeaturesFirst**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Lay out the widest features in the lowest pileup rows instead of by genomic start, so large alignments cluster at the top rather than interleaving with small ones. Off by default; LGVSyntenyDisplay turns it on. Ignored while an explicit `sortedBy` position sort is active. |  |
+| <span id="slot-showoutline">**showOutline**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | null = auto: outline is drawn only in chain/linked-read modes. Set true/false to force it on or off regardless of mode.<br>_advanced_ |  |
+| <span id="slot-linkedreads">**linkedReads**</span><br>`maybeStringEnum` (off, normal) = <code>'off'</code> _promotable_ | Linked-read (barcode-chain) layout mode |  |
+| <span id="slot-showbezierconnections">**showBezierConnections**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw paired-read connection curves over the pileup |  |
+| <span id="slot-showcoverage">**showCoverage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw the coverage histogram band |  |
+| <span id="slot-showpileup">**showPileup**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw the stacked-read pileup band |  |
+| <span id="slot-coverageheight">**coverageHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>45</code> | Height of the coverage band in pixels |  |
+| <span id="slot-showmismatches">**showMismatches**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw per-base mismatches on reads |  |
+| <span id="slot-showinterbaseindicators">**showInterbaseIndicators**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw interbase insertion/clip count bars and indicator triangles |  |
+| <span id="slot-drawsingletons">**drawSingletons**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw reads whose mate is unmapped |  |
+| <span id="slot-drawproperpairs">**drawProperPairs**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw properly-paired reads |  |
+| <span id="slot-showonlysplitalignments">**showOnlySplitAlignments**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Only draw reads that are part of a split/chimeric alignment (have a supplementary segment, SAM flag 0x800) |  |
+| <span id="slot-flipstrandlongreadchains">**flipStrandLongReadChains**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Flip strand coloring for reverse long-read chains |  |
+| <span id="slot-colorsupplementarychains">**colorSupplementaryChains**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Paint paired supplementary chains a flat supplementary color |  |
+| <span id="slot-drawinter">**drawInter**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw inter-chromosomal read-connection arcs |  |
+| <span id="slot-drawlongrange">**drawLongRange**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw long-range read-connection arcs |  |
+| <span id="slot-arccolorbytype">**arcColorByType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (insertSizeAndOrientation, insertSize, orientation) = <code>'insertSizeAndOrientation'</code> | How to color read-connection arcs |  |
+| <span id="slot-readconnections">**readConnections**</span><br>`maybeStringEnum` (off, arc, cloud) = <code>'off'</code> _promotable_ | Read-connection rendering mode (mate pairs + split reads) |  |
+| <span id="slot-readconnectionsdown">**readConnectionsDown**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) = <code>true</code> _promotable_ | Draw read connections below the coverage band. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (either direction, including drawing above the coverage band over an on session default) |  |
+| <span id="slot-showsashimiarcs">**showSashimiArcs**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw sashimi (splice-junction) arcs |  |
+| <span id="slot-sashimiarcsmode">**sashimiArcsMode**</span><br>`maybeStringEnum` (up, down, auto) = <code>'up'</code> _promotable_ | Sashimi junction-arc placement |  |
+| <span id="slot-minsashimiscore">**minSashimiScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>2</code> | Hide sashimi arcs with fewer than this many supporting reads |  |
+| <span id="slot-sashimiarcsheight">**sashimiArcsHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>40</code> | Height of the sashimi-arc band in pixels |  |
+| <span id="slot-readconnectionsheight">**readConnectionsHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>40</code> | Height of the read-connection band in pixels |  |
+| <span id="slot-showsoftclipping">**showSoftClipping**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) = <code>false</code> _promotable_ | Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default) |  |
+| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <details><summary><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></summary><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></details> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` | [BaseLinearDisplay](../baselineardisplay) |
+| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[`get(feature,'gbkey')!='Src'`]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config | [BaseLinearDisplay](../baselineardisplay) |

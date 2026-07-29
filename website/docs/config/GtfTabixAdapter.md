@@ -39,55 +39,18 @@ used to load bgzip-compressed, tabix-indexed GTF files
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "GtfTabixAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                    | Type                    | Description                                                                                                                                     |
-| --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| [gtfGzLocation](#slot-gtfgzlocation)    | `fileLocation`          |                                                                                                                                                 |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                                                                                                                 |
-| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                                                                                                                 |
-| [dontRedispatch](#slot-dontredispatch)  | `stringArray`           | the GtfTabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. |
-| [aggregateField](#slot-aggregatefield)  | `string`                | field used to aggregate multiple transcripts into a single parent gene feature                                                                  |
-
-<details>
-<summary>GtfTabixAdapter - Slots</summary>
-
-#### slot: gtfGzLocation
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.gtf.gz', locationType: 'UriLocation' }`
-
-#### slot: index.indexType
-
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`TBI`, `CSI`) · **Default:** `'TBI'`
-
-#### slot: index.location
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
-**Default:** `{ uri: '/path/to/my.gtf.gz.tbi', locationType: 'UriLocation' }`
-
-#### slot: dontRedispatch
-
-the GtfTabixAdapter has to "redispatch" if it fetches a region and features it
-finds inside that region extend outside the region we requested. you can disable
-this for certain feature types to avoid fetching e.g. the entire chromosome
-
-the defaults are the whole-sequence records the common annotation sources emit:
-`region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal
-sequences), plus `chromosome` and `contig`. They span an entire reference and
-have no children, so letting one expand the fetch would pull a whole chromosome
-to gain nothing
-
-**Type:** `stringArray` · **Default:**
-`[ 'chromosome', 'region', 'contig', 'supercontig', 'scaffold' ]`
-
-#### slot: aggregateField
-
-field used to aggregate multiple transcripts into a single parent gene feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'gene_name'`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-gtfgzlocation">**gtfGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gtf.gz', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gtf.gz.tbi', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-dontredispatch">**dontRedispatch**</span><br>`stringArray` = <code>[ 'chromosome', 'region', 'contig', 'supercontig', 'scaffold' ]</code> | the GtfTabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. you can disable this for certain feature types to avoid fetching e.g. the entire chromosome<br><br>the defaults are the whole-sequence records the common annotation sources emit: `region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal sequences), plus `chromosome` and `contig`. They span an entire reference and have no children, so letting one expand the fetch would pull a whole chromosome to gain nothing |
+| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'gene_name'</code> | field used to aggregate multiple transcripts into a single parent gene feature |

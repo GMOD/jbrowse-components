@@ -48,45 +48,18 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go on a display entry:
+`"displays": [{ "type": "ChordVariantDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                             | Type      | Description                                                        |
-| ------------------------------------------------ | --------- | ------------------------------------------------------------------ |
-| [onChordClick](#slot-onchordclick)               | `boolean` | callback that should be run when a chord in the track is clicked   |
-| [strokeColor](#slot-strokecolor)                 | `color`   | the line color of each arc                                         |
-| [strokeColorSelected](#slot-strokecolorselected) | `color`   | the line color of an arc that has been selected                    |
-| [strokeColorHover](#slot-strokecolorhover)       | `color`   | the line color of an arc that is being hovered over with the mouse |
-
-<details>
-<summary>ChordVariantDisplay - Slots</summary>
-
-#### slot: onChordClick
-
-callback that should be run when a chord in the track is clicked
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · **Callback args:** `feature`, `track`, `pluginManager`
-
-#### slot: strokeColor
-
-the line color of each arc
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'rgba(255,133,0,0.32)'` · **Callback args:** `feature`
-
-#### slot: strokeColorSelected
-
-the line color of an arc that has been selected
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'black'` · **Callback args:** `feature`
-
-#### slot: strokeColorHover
-
-the line color of an arc that is being hovered over with the mouse
-
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#555'` · **Callback args:** `feature`
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-onchordclick">**onChordClick**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | callback that should be run when a chord in the track is clicked<br>_callback args:_ `feature`, `track`, `pluginManager` |
+| <span id="slot-strokecolor">**strokeColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(255,133,0,0.32)'</code> | the line color of each arc<br>_callback args:_ `feature` |
+| <span id="slot-strokecolorselected">**strokeColorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'black'</code> | the line color of an arc that has been selected<br>_callback args:_ `feature` |
+| <span id="slot-strokecolorhover">**strokeColorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#555'</code> | the line color of an arc that is being hovered over with the mouse<br>_callback args:_ `feature` |

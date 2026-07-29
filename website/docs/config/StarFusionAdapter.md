@@ -40,30 +40,14 @@ used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types).
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "StarFusionAdapter", ... }`. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
-| Slot                                           | Type           | Description                                         |
-| ---------------------------------------------- | -------------- | --------------------------------------------------- |
-| [starFusionLocation](#slot-starfusionlocation) | `fileLocation` | STAR-Fusion TSV output file (plain text or gzipped) |
-
-<details>
-<summary>StarFusionAdapter - Slots</summary>
-
-#### slot: starFusionLocation
-
-STAR-Fusion TSV output file (plain text or gzipped)
-
-**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/star-fusion.fusion_predictions.tsv',
-    locationType: 'UriLocation',
-  },
-}
-```
-
-</details>
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-starfusionlocation">**starFusionLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/star-fusion.fusion_predictions.tsv', locationT…</code></summary><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: '/path/to/star-fusion.fusion_predictions.tsv',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></details> | STAR-Fusion TSV output file (plain text or gzipped) |

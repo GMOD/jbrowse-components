@@ -9,68 +9,41 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
 
-## Overview
-
 Undo/redo history for a target state-tree node: records snapshots as it changes
 and exposes canUndo/canRedo with undo/redo actions.
 
-## Members
+## Properties
 
-| Member                                           | Kind       | Defined by    | Description |
-| ------------------------------------------------ | ---------- | ------------- | ----------- |
-| [undoIdx](#property-undoidx)                     | Properties | TimeTraveller |             |
-| [targetPath](#property-targetpath)               | Properties | TimeTraveller |             |
-| [history](#volatile-history)                     | Volatiles  | TimeTraveller |             |
-| [notTrackingUndo](#volatile-nottrackingundo)     | Volatiles  | TimeTraveller |             |
-| [canUndo](#getter-canundo)                       | Getters    | TimeTraveller |             |
-| [canRedo](#getter-canredo)                       | Getters    | TimeTraveller |             |
-| [stopTrackingUndo](#action-stoptrackingundo)     | Actions    | TimeTraveller |             |
-| [resumeTrackingUndo](#action-resumetrackingundo) | Actions    | TimeTraveller |             |
-| [addUndoState](#action-addundostate)             | Actions    | TimeTraveller |             |
-| [initialize](#action-initialize)                 | Actions    | TimeTraveller |             |
-| [undo](#action-undo)                             | Actions    | TimeTraveller |             |
-| [redo](#action-redo)                             | Actions    | TimeTraveller |             |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="property-undoidx">**undoIdx**</span><br><code>undoIdx: -1</code> |  |
+| <span id="property-targetpath">**targetPath**</span><br><code>targetPath: ''</code> |  |
 
-<details>
-<summary>TimeTraveller - Properties</summary>
+## Volatiles
 
-| Member                                           | Type     |
-| ------------------------------------------------ | -------- |
-| <span id="property-undoidx">undoIdx</span>       | `number` |
-| <span id="property-targetpath">targetPath</span> | `string` |
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-history">**history**</span><br><code>history: [] as unknown[]</code> |  |
+| <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>notTrackingUndo: false</code> |  |
 
-</details>
+## Getters
 
-<details>
-<summary>TimeTraveller - Volatiles</summary>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-canundo">**canUndo**</span><br><code>boolean</code> |  |
+| <span id="getter-canredo">**canRedo**</span><br><code>boolean</code> |  |
 
-| Member                                                     | Type        |
-| ---------------------------------------------------------- | ----------- |
-| <span id="volatile-history">history</span>                 | `unknown[]` |
-| <span id="volatile-nottrackingundo">notTrackingUndo</span> | `false`     |
+## Actions
 
-</details>
-
-<details>
-<summary>TimeTraveller - Getters</summary>
-
-| Member                                   | Type      |
-| ---------------------------------------- | --------- |
-| <span id="getter-canundo">canUndo</span> | `boolean` |
-| <span id="getter-canredo">canRedo</span> | `boolean` |
-
-</details>
-
-<details>
-<summary>TimeTraveller - Actions</summary>
-
-| Member                                                         | Type                          |
-| -------------------------------------------------------------- | ----------------------------- |
-| <span id="action-stoptrackingundo">stopTrackingUndo</span>     | `() => void`                  |
-| <span id="action-resumetrackingundo">resumeTrackingUndo</span> | `() => void`                  |
-| <span id="action-addundostate">addUndoState</span>             | `(snapshot: unknown) => void` |
-| <span id="action-initialize">initialize</span>                 | `() => void`                  |
-| <span id="action-undo">undo</span>                             | `() => void`                  |
-| <span id="action-redo">redo</span>                             | `() => void`                  |
-
-</details>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="action-stoptrackingundo">**stopTrackingUndo**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-resumetrackingundo">**resumeTrackingUndo**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-addundostate">**addUndoState**</span><br><code>(snapshot: unknown) =&gt; void</code> |  |
+| <span id="action-initialize">**initialize**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-undo">**undo**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-redo">**redo**</span><br><code>() =&gt; void</code> |  |
