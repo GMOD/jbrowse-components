@@ -1660,26 +1660,20 @@ export default function stateModelFactory(
          * The codon under the cursor on display `rowIndex` at absolute genomic
          * `bp`, when the codon view is the active rendering: the species' codon +
          * amino acid, the reference codon + amino acid, and the syn/nonsyn/stop
-         * classification. Reuses the same anchor frames + reference comparison the
-         * colored cells are drawn from (`findCodonAt`), so the tooltip and the cell
-         * agree. Undefined off codon view or where no codon covers the row there.
+         * classification. Reads the memoized `locatedCodons` the colored cells are
+         * drawn from, so the tooltip and the cell can't disagree and a mousemove
+         * costs a scan rather than a fresh codon resolution pass. Undefined off
+         * codon view or where no codon covers the row there.
          */
         codonHoverInfo(
           displayedRegionIndex: number,
           bp: number,
           rowIndex: number,
         ) {
-          const { defaultCodonSpecies } = self
-          if (self.activeRowRendering !== 'codon' || !defaultCodonSpecies) {
-            return undefined
-          }
-          const region = self.rpcDataMap.get(displayedRegionIndex)
-          const frames = self.framesDataMap.get(displayedRegionIndex)
-          return region && frames
+          return self.activeRowRendering === 'codon'
             ? findCodonAt({
-                blocks: region.blocks,
-                frames,
-                defaultSrc: defaultCodonSpecies,
+                codons: self.locatedCodons,
+                displayedRegionIndex,
                 bp: Math.floor(bp),
                 rowIndex,
               })

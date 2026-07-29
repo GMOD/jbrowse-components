@@ -3,6 +3,7 @@ import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { describeMafStatus } from '../../util/mafStatus.ts'
 import { useTooltipStyles } from './tooltipStyles.ts'
 
+import type { MafStatus } from '../../types.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
 import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
 import type { ReactNode } from 'react'
@@ -27,20 +28,30 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
+// Every tooltip body is this table; `caption` is omitted only by the bare
+// "no hover resolved" readout, which has nothing to title.
 function TableShell({
   caption,
   children,
 }: {
-  caption: string
+  caption?: string
   children: ReactNode
 }) {
   const { classes } = useTooltipStyles()
   return (
     <table className={classes.table}>
-      <caption>{caption}</caption>
+      {caption ? <caption>{caption}</caption> : null}
       <tbody>{children}</tbody>
     </table>
   )
+}
+
+// An i-line context side: the status phrasing plus its bp count when the file
+// gave one. Paren-free descriptions (see `describeMafStatus`) so the count
+// appends without nesting parentheses.
+function contextStr(status: MafStatus, count?: number) {
+  const bp = count === undefined ? '' : ` (${toLocale(count)} bp)`
+  return `${describeMafStatus(status)}${bp}`
 }
 
 function refLabel(p: GenomicPosition) {
@@ -88,13 +99,13 @@ function HoverContents({
         {ctx?.leftStatus ? (
           <Row
             label="Before block"
-            value={`${describeMafStatus(ctx.leftStatus)}${ctx.leftCount !== undefined ? ` (${toLocale(ctx.leftCount)} bp)` : ''}`}
+            value={contextStr(ctx.leftStatus, ctx.leftCount)}
           />
         ) : null}
         {ctx?.rightStatus ? (
           <Row
             label="After block"
-            value={`${describeMafStatus(ctx.rightStatus)}${ctx.rightCount !== undefined ? ` (${toLocale(ctx.rightCount)} bp)` : ''}`}
+            value={contextStr(ctx.rightStatus, ctx.rightCount)}
           />
         ) : null}
       </TableShell>
@@ -208,8 +219,6 @@ export default function MafAlignmentTooltipContents({
   frame?: FrameHover
   codon?: CodonHit
 }) {
-  const { classes } = useTooltipStyles()
-
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />
   }
@@ -230,11 +239,9 @@ export default function MafAlignmentTooltipContents({
       {hover ? (
         <HoverContents hover={hover} refName={p2.refName} coord={p2.coord} />
       ) : (
-        <table className={classes.table}>
-          <tbody>
-            <Row label="Ref" value={refLabel(p2)} />
-          </tbody>
-        </table>
+        <TableShell>
+          <Row label="Ref" value={refLabel(p2)} />
+        </TableShell>
       )}
       {frame ? <FrameContents frame={frame} /> : null}
     </>

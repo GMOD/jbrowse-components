@@ -3,7 +3,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { rowBandGeometry } from './visibleRegionGeometry.ts'
+import { bpSpanPx, rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -162,10 +162,10 @@ export function drawSourceChrom(
     (region, block) => {
       const bpToX = makeBpMapper(block)
       for (const mafBlock of region.blocks) {
-        const xa = bpToX(mafBlock.startBp)
-        const xb = bpToX(mafBlock.endBp)
-        const xLeft = Math.min(xa, xb)
-        const w = Math.max(1, Math.abs(xb - xa))
+        const span = bpSpanPx(bpToX, mafBlock.startBp, mafBlock.endBp)
+        const xLeft = span.xLeft
+        // >=1px so a block narrower than a pixel still reads as present
+        const w = Math.max(1, span.width)
         for (const row of mafBlock.rows) {
           if (row.rowIndex < nRows && row.chr) {
             const rank = ranks.get(row.rowIndex)?.get(row.chr) ?? 0

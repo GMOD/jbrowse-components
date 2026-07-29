@@ -2,7 +2,11 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { measureText } from '@jbrowse/core/util'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  eachVisibleRegion,
+  rowBandGeometry,
+} from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
@@ -48,36 +52,27 @@ export function computeVisibleDeletions(
   const { view, rpcDataMap, rowHeight, rowProportion } = params
   const markers: DeletionMarker[] = []
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
-  if (h < MIN_HEIGHT_FOR_TEXT) {
-    return markers
-  }
 
-  for (const { data: regionData, bpToPx } of eachVisibleRegion(
-    view,
-    rpcDataMap,
-  )) {
-    for (const block of regionData.blocks) {
-      for (const row of block.rows) {
-        const rowTop = offset + rowHeight * row.rowIndex
-        forEachDeletion(
-          block.refSeqBytes,
-          row.alignmentBytes,
-          block.startBp,
-          (start, length) => {
-            const x0 = bpToPx(start)
-            const x1 = bpToPx(start + length)
-            const width = Math.abs(x1 - x0)
-            if (width >= MIN_LABEL_WIDTH) {
-              markers.push({
-                xLeft: Math.min(x0, x1),
-                width,
-                rowTop,
-                h,
-                length,
-              })
-            }
-          },
-        )
+  if (h >= MIN_HEIGHT_FOR_TEXT) {
+    for (const { data: regionData, bpToPx } of eachVisibleRegion(
+      view,
+      rpcDataMap,
+    )) {
+      for (const block of regionData.blocks) {
+        for (const row of block.rows) {
+          const rowTop = offset + rowHeight * row.rowIndex
+          forEachDeletion(
+            block.refSeqBytes,
+            row.alignmentBytes,
+            block.startBp,
+            (start, length) => {
+              const { xLeft, width } = bpSpanPx(bpToPx, start, start + length)
+              if (width >= MIN_LABEL_WIDTH) {
+                markers.push({ xLeft, width, rowTop, h, length })
+              }
+            },
+          )
+        }
       }
     }
   }

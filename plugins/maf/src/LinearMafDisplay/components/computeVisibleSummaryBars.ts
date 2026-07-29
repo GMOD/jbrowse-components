@@ -1,7 +1,14 @@
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  eachVisibleRegion,
+  rowBandGeometry,
+} from './visibleRegionGeometry.ts'
 
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type {
+  RegionDataMap,
+  VisibleRegionsView,
+} from './visibleRegionGeometry.ts'
 
 export interface SummaryBar {
   x: number
@@ -15,7 +22,7 @@ export interface SummaryBar {
 
 interface ComputeVisibleSummaryBarsParams {
   view: VisibleRegionsView
-  summaryDataMap: { get(idx: number): MafSummaryRecord[] | undefined }
+  summaryDataMap: RegionDataMap<MafSummaryRecord[]>
   /**
    * Resolves a summary row's `src` (species name) to its display row index.
    * Rows whose `src` isn't in the current source set are dropped — the summary
@@ -49,21 +56,19 @@ export function computeVisibleSummaryBars(
   )) {
     for (const r of records) {
       const rowIndex = rowIndexBySrc.get(r.src)
-      if (rowIndex === undefined) {
-        continue
+      if (rowIndex !== undefined) {
+        const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
+        bars.push({
+          x: xLeft,
+          // >=1px so a block narrower than a pixel still reads as present
+          width: Math.max(1, width),
+          rowTop: offset + rowHeight * rowIndex,
+          h,
+          score: r.score,
+          leftStatus: r.leftStatus,
+          rightStatus: r.rightStatus,
+        })
       }
-      const x0 = bpToPx(r.start)
-      const x1 = bpToPx(r.end)
-      const x = Math.min(x0, x1)
-      bars.push({
-        x,
-        width: Math.max(1, Math.abs(x1 - x0)),
-        rowTop: offset + rowHeight * rowIndex,
-        h,
-        score: r.score,
-        leftStatus: r.leftStatus,
-        rightStatus: r.rightStatus,
-      })
     }
   }
   return bars

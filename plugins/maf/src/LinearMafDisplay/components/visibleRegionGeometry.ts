@@ -82,3 +82,37 @@ export function* eachVisibleRegion<T>(
     yield { data, bpToPx, displayedRegionIndex: vr.displayedRegionIndex }
   }
 }
+
+/** A genomic interval's screen-px extent. */
+export interface PxSpan {
+  xLeft: number
+  width: number
+}
+
+/**
+ * Screen-px extent of the genomic interval `[startBp, endBp)`. The single place
+ * the reversed-region case is handled: `bpToPx` counts down from the region end
+ * there, so the interval's start maps to its *right* edge and a caller
+ * subtracting the two the obvious way gets a negative width. Every overlay that
+ * spans an interval — blocks, deletion runs, summary bars, CDS strips, codon
+ * cells — goes through this rather than each repeating the min/abs pair.
+ */
+export function bpSpanPx(
+  bpToPx: BpToPx,
+  startBp: number,
+  endBp: number,
+): PxSpan {
+  const xa = bpToPx(startBp)
+  const xb = bpToPx(endBp)
+  return { xLeft: Math.min(xa, xb), width: Math.abs(xb - xa) }
+}
+
+// NOTE: an `eachVisibleRow(params)` generator yielding one `{block, row, rowTop,
+// h, bpToPx}` per aligned row reads much better than the region -> block -> row
+// loop the four per-row overlays each spell out, and was tried. It is 4.7x
+// slower on the walk alone (48k blocks x 26 rows, the UCSC ce11 26-way shape:
+// 26ms inlined vs 120ms), because that is ~1.2M generator steps and ~1.2M
+// short-lived objects per overlay per frame. `eachVisibleRegion` above is fine
+// at the same job because it yields once per *region*, a handful per frame.
+// Keep the loops inline; share the arithmetic (`rowBandGeometry`, `bpSpanPx`)
+// instead, which costs one call per emitted marker rather than per row.

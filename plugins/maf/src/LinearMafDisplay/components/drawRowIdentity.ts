@@ -3,15 +3,13 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
+import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../../util/asciiBytes.ts'
 import { rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowIdentityMode } from '../rowIdentityModes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-const N_UPPER = 78 // 'N'
 
 interface DrawRowIdentityState {
   rowHeight: number
@@ -46,6 +44,14 @@ export function identityRgb(t: number) {
   const [r, g, b] = identityColor(t)
   return `rgb(${r},${g},${b})`
 }
+
+// The 101 ramp colors (0..100%) the heatmap fills with, quantized so the fill
+// loop never allocates a string. The ramp is a pure function of the fraction,
+// so this is module-level rather than per-draw: it was being rebuilt on every
+// pan and zoom, for a value that can't change.
+const IDENTITY_RAMP = Array.from({ length: 101 }, (_, i) =>
+  identityRgb(i / 100),
+)
 
 /**
  * One block's reference-side decisions, computed once and replayed for every
@@ -244,8 +250,7 @@ export function drawRowIdentity(
     rowProportion,
   )
   if (mode === 'xyplot') {
-    const [r, g, b] = identityColor(1)
-    ctx.fillStyle = `rgb(${r},${g},${b})`
+    ctx.fillStyle = IDENTITY_RAMP[100]!
     for (let row = 0; row < nRows; row++) {
       const rowBottom = bandOffset + rowHeight * row + bandH
       const base = row * width
@@ -258,19 +263,14 @@ export function drawRowIdentity(
       }
     }
   } else {
-    // Precompute the 101 ramp colors (0..100%) as rgb strings once per draw —
-    // bounds string allocation regardless of pixel × row count.
-    const lut = Array.from({ length: 101 }, (_, i) => {
-      const [r, g, b] = identityColor(i / 100)
-      return `rgb(${r},${g},${b})`
-    })
     for (let row = 0; row < nRows; row++) {
       const rowTop = bandOffset + rowHeight * row
       const base = row * width
       for (let x = 0; x < width; x++) {
         const c = classCount[base + x]!
         if (c > 0) {
-          ctx.fillStyle = lut[Math.round((matchSum[base + x]! / c) * 100)]!
+          ctx.fillStyle =
+            IDENTITY_RAMP[Math.round((matchSum[base + x]! / c) * 100)]!
           ctx.fillRect(x, rowTop, 1, bandH)
         }
       }

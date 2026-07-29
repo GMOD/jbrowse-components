@@ -1,7 +1,14 @@
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  eachVisibleRegion,
+  rowBandGeometry,
+} from './visibleRegionGeometry.ts'
 
 import type { MafFrameRecord } from '../../types.ts'
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type {
+  RegionDataMap,
+  VisibleRegionsView,
+} from './visibleRegionGeometry.ts'
 
 export interface FrameMarker {
   /** screen px of the left edge of the CDS segment */
@@ -20,7 +27,7 @@ export interface FrameMarker {
 
 interface ComputeVisibleAnnotationsParams {
   view: VisibleRegionsView
-  framesDataMap: { get(idx: number): MafFrameRecord[] | undefined }
+  framesDataMap: RegionDataMap<MafFrameRecord[]>
   /**
    * Resolves a frame row's `src` (species) to its display row index. Rows whose
    * `src` isn't in the current source set are dropped — the frames file can
@@ -74,19 +81,18 @@ export function computeVisibleAnnotations(
   )) {
     for (const r of records) {
       const rowIndex = rowIndexBySrc.get(r.src)
-      if (rowIndex === undefined) {
-        continue
+      if (rowIndex !== undefined) {
+        const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
+        const base = (r.frame % 3) + 1
+        markers.push({
+          xLeft,
+          // >=1px so a single-base CDS segment still reads
+          width: Math.max(1, width),
+          rowTop: stripOffset + rowHeight * rowIndex,
+          h: stripH,
+          frameIndex: r.strand === -1 ? -base : base,
+        })
       }
-      const x0 = bpToPx(r.start)
-      const x1 = bpToPx(r.end)
-      const base = (r.frame % 3) + 1
-      markers.push({
-        xLeft: Math.min(x0, x1),
-        width: Math.max(1, Math.abs(x1 - x0)),
-        rowTop: stripOffset + rowHeight * rowIndex,
-        h: stripH,
-        frameIndex: r.strand === -1 ? -base : base,
-      })
     }
   }
   return markers

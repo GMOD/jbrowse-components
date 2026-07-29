@@ -17,11 +17,21 @@ export interface ContextCoord extends DragRect {
   coord: [number, number]
 }
 
+/** The cursor in both coordinate systems the display needs it in. */
+export interface MousePos {
+  /** display-relative px, for hit-testing and the crosshairs */
+  x: number
+  y: number
+  /** viewport-relative px, for floating-ui's controlled client point */
+  clientX: number
+  clientY: number
+}
+
 interface DragState {
   drag?: DragRect
   isDragging: boolean
   showSelectionBox: boolean
-  mouse?: { x: number; y: number; clientX: number; clientY: number }
+  mouse?: MousePos
 }
 
 function relativeXY(
@@ -151,19 +161,22 @@ export function useDragSelection(
   }, [ref, state.showSelectionBox])
 
   const { drag, mouse, isDragging, showSelectionBox } = state
-  const draggedEnough = drag !== undefined && movedFarEnough(drag)
+  // A press that hasn't travelled is a click, not a selection.
+  const dragging = isDragging && drag !== undefined && movedFarEnough(drag)
 
   return {
-    isDragging: isDragging && draggedEnough,
-    dragStartX: drag?.startX,
-    dragEndX: drag?.endX,
-    dragStartY: drag?.startY,
-    dragEndY: drag?.endY,
+    isDragging: dragging,
+    /**
+     * The rubberband rect to draw, or undefined when there is nothing to show.
+     * Resolved here rather than by the consumer re-testing `isDragging`,
+     * `showSelectionBox` and each of the rect's four corners for undefined —
+     * this hook owns when a selection is live, and the corners are only ever
+     * present or absent together.
+     */
+    selectionRect: dragging || showSelectionBox ? drag : undefined,
     showSelectionBox,
-    mouseX: mouse?.x,
-    mouseY: mouse?.y,
-    mouseClientX: mouse?.clientX,
-    mouseClientY: mouse?.clientY,
+    /** undefined when the cursor is outside the display */
+    mouse,
     contextCoord,
     setContextCoord,
     handleMouseDown,

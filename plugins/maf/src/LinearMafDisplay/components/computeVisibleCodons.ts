@@ -1,7 +1,11 @@
 import { codonTable } from '@jbrowse/core/util'
 
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  eachVisibleRegion,
+  rowBandGeometry,
+} from './visibleRegionGeometry.ts'
 
 import type {
   MafBlock,
@@ -304,6 +308,13 @@ export interface LocateVisibleCodonsParams {
 
 /** One reference codon resolved against the fetched blocks of its region. */
 export interface LocatedCodon {
+  /**
+   * The region this codon was resolved in. Carried because absolute genomic bp
+   * is only unique *within* a displayed region — two regions on different
+   * chromosomes can both cover the same coordinate — so the hover lookup has to
+   * scope its search by region rather than by bp alone.
+   */
+  displayedRegionIndex: number
   /** the codon's three reference positions (ascending) + reading strand */
   codon: Codon
   /** its three reference bytes, in the same ascending order */
@@ -356,6 +367,7 @@ function* eachLocatedCodon(
         continue
       }
       yield {
+        displayedRegionIndex,
         codon,
         refBytes: refCodonBytes(locs, blocks),
         bpToPx,
@@ -386,6 +398,34 @@ export function locateVisibleCodons(
   params: LocateVisibleCodonsParams,
 ): LocatedCodon[] {
   return [...eachLocatedCodon(params)]
+}
+
+/**
+ * The reference triplet of a located codon, read 5'→3' in the gene direction.
+ * Undefined when the reference is gapped there (no codon to compare against).
+ */
+function refTriplet(located: LocatedCodon): string | undefined {
+  return orientedTriplet(...located.refBytes, located.codon.strand)
+}
+
+/**
+ * One display row's triplet at a located codon, in the same orientation as
+ * `refTriplet` so the two are directly comparable. Undefined when that row has
+ * no complete codon here — absent from a block the codon spans, or gapped at
+ * one of its three bases.
+ */
+function rowTriplet(
+  located: LocatedCodon,
+  rowIndex: number,
+): string | undefined {
+  let triplet: string | undefined
+  for (const row of located.rows()) {
+    if (row.rowIndex === rowIndex) {
+      triplet = orientedTriplet(...row.bytes, located.codon.strand)
+      break
+    }
+  }
+  return triplet
 }
 
 /**
@@ -453,15 +493,10 @@ function codonCells(
   positions: readonly number[],
   bpToPx: (bp: number) => number,
 ): CodonCell[] {
-  return consecutiveRuns(positions).map(([startBp, endBp]) => {
-    const xa = bpToPx(startBp)
-    const xb = bpToPx(endBp)
-    return {
-      xLeft: Math.min(xa, xb),
-      width: Math.abs(xb - xa),
-      x: bpToPx((startBp + endBp) / 2),
-    }
-  })
+  return consecutiveRuns(positions).map(([startBp, endBp]) => ({
+    ...bpSpanPx(bpToPx, startBp, endBp),
+    x: bpToPx((startBp + endBp) / 2),
+  }))
 }
 
 // Index of the widest cell — where the single amino-acid glyph is drawn.
@@ -495,8 +530,9 @@ export function computeVisibleCodons(
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const hp2 = h / 2
 
-  for (const { codon, refBytes, bpToPx, rows } of codons) {
-    const refCodon = orientedTriplet(...refBytes, codon.strand)
+  for (const located of codons) {
+    const { codon, bpToPx, rows } = located
+    const refCodon = refTriplet(located)
     // A reference codon with a gap/`N` has no amino acid to compare against,
     // so no species codon can be classified here (mirrors the conservation
     // band, which skips the same codon) — draw nothing rather than guess.
@@ -622,10 +658,10 @@ export interface CodonHit {
 }
 
 interface FindCodonAtParams {
-  blocks: MafBlock[]
-  frames: MafFrameRecord[]
-  /** Anchor species whose frames define the reading frame (the reference). */
-  defaultSrc: string
+  /** the resolved spine, memoized by the display as `locatedCodons` */
+  codons: readonly LocatedCodon[]
+  /** the region the cursor is over — see `LocatedCodon.displayedRegionIndex` */
+  displayedRegionIndex: number
   /** absolute genomic reference position under the cursor (uint32) */
   bp: number
   /** display row of the species being hovered */
@@ -638,51 +674,38 @@ interface FindCodonAtParams {
  * amino acid, and the syn/nonsyn/stop classification — the same data the colored
  * cell encodes, read for a single (bp, row). Returns undefined when no codon
  * covers `bp` (outside the CDS, or the boundary codon dropped at an exon join),
- * the codon's three reference bases don't all lie in one fetched block, the row
- * is absent, or the species' codon is gapped/non-standard there.
+ * the codon's three reference bases aren't all in the fetched blocks, the row is
+ * absent, or the species' codon is gapped/non-standard there.
+ *
+ * Reads the same already-resolved codons the colored cells are drawn from, so
+ * the tooltip and the cell agree structurally rather than by two code paths
+ * being kept in step. It also makes hovering cheap: the enumerate + per-block
+ * reference-column index + row-byte map this used to redo on every mousemove is
+ * the expensive half, and the display already memoizes it (`locatedCodons`).
  */
 export function findCodonAt(params: FindCodonAtParams): CodonHit | undefined {
-  const { blocks, frames, defaultSrc, bp, rowIndex } = params
-  const codon = enumerateCodons(frames, defaultSrc).find(c =>
-    c.positions.includes(bp),
+  const { codons, displayedRegionIndex, bp, rowIndex } = params
+  const located = codons.find(
+    c =>
+      c.displayedRegionIndex === displayedRegionIndex &&
+      c.codon.positions.includes(bp),
   )
-  if (!codon) {
-    return undefined
-  }
-  const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
-  const rowMapsPerBlock = blocks.map(rowByteMap)
-  const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
-  if (!locs) {
-    return undefined
-  }
-  const refBytes = refCodonBytes(locs, blocks)
-  const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, rowIndex)
-  if (!rowBytes) {
-    return undefined
-  }
-  const refCodon = orientedTriplet(
-    refBytes[0],
-    refBytes[1],
-    refBytes[2],
-    codon.strand,
-  )
-  const rowCodon = orientedTriplet(
-    rowBytes[0],
-    rowBytes[1],
-    rowBytes[2],
-    codon.strand,
-  )
-  if (refCodon === undefined || rowCodon === undefined) {
-    return undefined
-  }
-  const cls = classifyChange(rowCodon, refCodon)
-  return cls
-    ? {
-        codon: rowCodon,
-        aa: cls.aa,
-        refCodon,
-        refAa: codonTable[refCodon],
-        change: cls.change,
+  let hit: CodonHit | undefined
+  if (located) {
+    const refCodon = refTriplet(located)
+    const rowCodon = rowTriplet(located, rowIndex)
+    if (refCodon !== undefined && rowCodon !== undefined) {
+      const cls = classifyChange(rowCodon, refCodon)
+      if (cls) {
+        hit = {
+          codon: rowCodon,
+          aa: cls.aa,
+          refCodon,
+          refAa: codonTable[refCodon],
+          change: cls.change,
+        }
       }
-    : undefined
+    }
+  }
+  return hit
 }

@@ -1,4 +1,8 @@
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  eachVisibleRegion,
+  rowBandGeometry,
+} from './visibleRegionGeometry.ts'
 
 import type { MafStatus } from '../../types.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -24,26 +28,24 @@ export function computeVisibleEmptyLines(
   const segments: EmptyLineSegment[] = []
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
 
+  // Not `eachVisibleRow`: e-lines are `block.empties`, a species with no
+  // aligning sequence here, so there is no aligned row to hang them off.
   for (const { data: regionData, bpToPx } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
     for (const block of regionData.blocks) {
-      if (block.empties.length === 0) {
-        continue
-      }
-      const x0 = bpToPx(block.startBp)
-      const x1 = bpToPx(block.endBp)
-      const x = Math.min(x0, x1)
-      const width = Math.abs(x1 - x0)
-      for (const e of block.empties) {
-        segments.push({
-          x,
-          width,
-          rowTop: offset + rowHeight * e.rowIndex,
-          h,
-          status: e.status,
-        })
+      if (block.empties.length > 0) {
+        const { xLeft, width } = bpSpanPx(bpToPx, block.startBp, block.endBp)
+        for (const e of block.empties) {
+          segments.push({
+            x: xLeft,
+            width,
+            rowTop: offset + rowHeight * e.rowIndex,
+            h,
+            status: e.status,
+          })
+        }
       }
     }
   }

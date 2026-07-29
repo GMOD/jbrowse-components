@@ -1,4 +1,8 @@
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  eachVisibleRegion,
+  rowBandGeometry,
+} from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -84,11 +88,10 @@ export function computeVisibleInversions(
           row.chr !== undefined &&
           row.strand !== consensus.get(rowChrKey(row.rowIndex, row.chr))
         if (inverted) {
-          const xa = bpToPx(block.startBp)
-          const xb = bpToPx(block.endBp)
+          const { xLeft, width } = bpSpanPx(bpToPx, block.startBp, block.endBp)
           markers.push({
-            xLeft: Math.min(xa, xb),
-            width: Math.abs(xb - xa),
+            xLeft,
+            width,
             rowTop: offset + rowHeight * row.rowIndex,
             h,
           })

@@ -101,44 +101,37 @@ const MafBody = observer(function MafBody({
   const view = model.lgv
   const { width } = view
 
-  const {
-    isDragging,
-    dragStartX,
-    dragEndX,
-    dragStartY,
-    dragEndY,
-    showSelectionBox,
-    mouseX,
-    mouseY,
-    mouseClientX,
-    mouseClientY,
-    contextCoord,
-    setContextCoord,
-  } = drag
+  const { isDragging, selectionRect, mouse, contextCoord, setContextCoord } =
+    drag
 
   const sidebarOffset = showTree && hierarchy ? treeAreaWidth : 0
   // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
   const dataLeft = treeSidebarRightEdge(model)
-  const pointerOverData =
-    mouseX !== undefined && mouseY !== undefined && mouseX > dataLeft
 
-  // One projection + hit-test per mousemove, shared by the cursor style below and
-  // by the tooltip, which used to resolve the same hover from the same
+  // One projection + hit-test per mousemove, shared by the cursor style below
+  // and by the tooltip, which used to resolve the same hover from the same
   // coordinates a second time. Row resolution is off mid-drag so the tooltip
-  // keeps showing the selection's range readout.
-  const hit = pointerOverData
-    ? resolveMafPointerHit({
-        model,
-        mouseX,
-        mouseY,
-        resolveRowHover: !isDragging,
-      })
-    : undefined
+  // keeps showing the selection's range readout. The cursor and its hit are one
+  // object so the crosshairs and the tooltip can't be handed one without the
+  // other.
+  const pointer =
+    mouse && mouse.x > dataLeft
+      ? {
+          mouse,
+          hit: resolveMafPointerHit({
+            model,
+            mouseX: mouse.x,
+            mouseY: mouse.y,
+            resolveRowHover: !isDragging,
+          }),
+        }
+      : undefined
 
   // Pointer cursor when an insertion marker is clickable under the cursor.
   // Matches the click gate in openInsertionWidgetOnClick: bases mode only.
   const overInsertion =
-    model.activeRowRendering === 'bases' && hit?.hover?.kind === 'insertion'
+    model.activeRowRendering === 'bases' &&
+    pointer?.hit.hover?.kind === 'insertion'
 
   return (
     <>
@@ -244,31 +237,24 @@ const MafBody = observer(function MafBody({
         <TreeSidebar model={model} />
       </div>
       <MsaHighlightOverlay model={model} view={view} height={height} />
-      {pointerOverData && hit && samples && !contextCoord && !resizeActive ? (
+      {pointer && samples && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>
-          <DisplayCrosshairs model={model} mouseX={mouseX} mouseY={mouseY} />
+          <DisplayCrosshairs
+            model={model}
+            mouseX={pointer.mouse.x}
+            mouseY={pointer.mouse.y}
+          />
           <MAFTooltip
             model={model}
-            hit={hit}
-            mouseY={mouseY}
-            clientX={mouseClientX}
-            clientY={mouseClientY}
-            origMouseX={isDragging ? dragStartX : undefined}
+            hit={pointer.hit}
+            mouseY={pointer.mouse.y}
+            clientX={pointer.mouse.clientX}
+            clientY={pointer.mouse.clientY}
+            origMouseX={isDragging ? selectionRect?.startX : undefined}
           />
         </div>
       ) : null}
-      {(isDragging || showSelectionBox) &&
-      dragStartX !== undefined &&
-      dragEndX !== undefined &&
-      dragStartY !== undefined &&
-      dragEndY !== undefined ? (
-        <DragSelectionRect
-          dragStartX={dragStartX}
-          dragEndX={dragEndX}
-          dragStartY={dragStartY}
-          dragEndY={dragEndY}
-        />
-      ) : null}
+      {selectionRect ? <DragSelectionRect rect={selectionRect} /> : null}
       <SubsequenceContextMenu
         model={model}
         contextCoord={contextCoord}

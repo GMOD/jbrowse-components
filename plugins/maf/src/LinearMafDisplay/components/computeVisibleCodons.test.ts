@@ -324,16 +324,11 @@ test('computeCodonConservation stitches a boundary-straddling codon', () => {
 
 test('findCodonAt resolves a codon straddling a block boundary', () => {
   const region = twoBlockRegion('AT', ['AT'], 'GAAATAA', [[0, 'GAAATAA']])
+  const codons = locate(new Map([[0, region]]), new Map([[0, frames]]))
   // bp 102 (the exon-B piece of the straddling codon 1) resolves the whole ATG
   for (const bp of [100, 101, 102]) {
     expect(
-      findCodonAt({
-        blocks: region.blocks,
-        frames,
-        defaultSrc: 'ref',
-        bp,
-        rowIndex: 0,
-      }),
+      findCodonAt({ codons, displayedRegionIndex: 0, bp, rowIndex: 0 }),
     ).toMatchObject({ codon: 'ATG', aa: 'M', refCodon: 'ATG', change: 'same' })
   }
 })
@@ -389,17 +384,12 @@ describe('computeCodonConservation', () => {
 describe('findCodonAt', () => {
   // ref: ATG AAA TAA → M K * ; row1 identical ; row2 codon-2 K→E (nonsyn)
   const region = regionData('ATGAAATAA', ['ATGAAATAA', 'ATGGAATAA'])
+  const codons = locate(new Map([[0, region]]), new Map([[0, frames]]))
 
   test('returns the species codon + reference codon + change at a bp', () => {
     // bp 103 is in codon 2 (positions 103-105); row2 has GAA (E) vs ref AAA (K)
     expect(
-      findCodonAt({
-        blocks: region.blocks,
-        frames,
-        defaultSrc: 'ref',
-        bp: 103,
-        rowIndex: 1,
-      }),
+      findCodonAt({ codons, displayedRegionIndex: 0, bp: 103, rowIndex: 1 }),
     ).toEqual({
       codon: 'GAA',
       aa: 'E',
@@ -412,36 +402,35 @@ describe('findCodonAt', () => {
   test('any bp within the codon resolves the same codon', () => {
     for (const bp of [103, 104, 105]) {
       expect(
-        findCodonAt({
-          blocks: region.blocks,
-          frames,
-          defaultSrc: 'ref',
-          bp,
-          rowIndex: 0,
-        }),
+        findCodonAt({ codons, displayedRegionIndex: 0, bp, rowIndex: 0 }),
       ).toMatchObject({ codon: 'AAA', aa: 'K', change: 'same' })
     }
   })
 
   test('returns undefined outside any codon or for a gapped row', () => {
     expect(
-      findCodonAt({
-        blocks: region.blocks,
-        frames,
-        defaultSrc: 'ref',
-        bp: 200,
-        rowIndex: 0,
-      }),
+      findCodonAt({ codons, displayedRegionIndex: 0, bp: 200, rowIndex: 0 }),
     ).toBeUndefined()
-    const gapped = regionData('ATGAAATAA', ['A-GAAATAA'])
+    const gapped = locate(
+      new Map([[0, regionData('ATGAAATAA', ['A-GAAATAA'])]]),
+      new Map([[0, frames]]),
+    )
     expect(
       findCodonAt({
-        blocks: gapped.blocks,
-        frames,
-        defaultSrc: 'ref',
+        codons: gapped,
+        displayedRegionIndex: 0,
         bp: 100,
         rowIndex: 0,
       }),
+    ).toBeUndefined()
+  })
+
+  // Absolute bp is only unique within a displayed region, so a codon resolved in
+  // region 0 must not answer a hover in region 1 (two chromosomes on screen can
+  // cover the same coordinate).
+  test('does not resolve a codon from a different displayed region', () => {
+    expect(
+      findCodonAt({ codons, displayedRegionIndex: 1, bp: 103, rowIndex: 1 }),
     ).toBeUndefined()
   })
 })
@@ -474,17 +463,12 @@ function stitchFixture() {
 
 test('findCodonAt resolves a codon stitched across an exon boundary', () => {
   const { region, frames: stitch } = stitchFixture()
+  const codons = locate(new Map([[0, region]]), new Map([[0, stitch]]))
   // hovering either piece (the trailing exon-A bases, or the exon-B base)
   // resolves the same reconstructed codon
   for (const bp of [103, 104, 200]) {
     expect(
-      findCodonAt({
-        blocks: region.blocks,
-        frames: stitch,
-        defaultSrc: 'ref',
-        bp,
-        rowIndex: 0,
-      }),
+      findCodonAt({ codons, displayedRegionIndex: 0, bp, rowIndex: 0 }),
     ).toMatchObject({ codon: 'ATG', aa: 'M', refCodon: 'ATG', change: 'same' })
   }
 })
