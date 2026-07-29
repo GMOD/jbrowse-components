@@ -415,6 +415,31 @@ describe('apply a promoted default to open tracks', () => {
     expect(resolveConf(other, 'customHeight')).toBe(30)
   })
 
+  // The action means one thing: "make these tracks follow the default I just
+  // set". Unpinning before the snackbar is clicked takes that default away, and
+  // clearing the tracks' own values then would discard customizations to strand
+  // them on whatever is left — a value nobody asked for.
+  test('"apply to open tracks" is a no-op once the default it offered is gone', () => {
+    const { session, displayOf } = createViews([
+      [{ customHeight: 20 }],
+      [{ customHeight: 30 }],
+    ])
+    const self = displayOf(0, 0)
+    const other = displayOf(1, 0)
+    const entries = [{ slot: 'customHeight', value: 10 }]
+
+    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    const apply = session.lastNotify!.action!
+
+    // user unpins (a fresh control reads as active, so its toggle clears)
+    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    expect(isPromotableDefault(self, entries)).toBe(false)
+
+    apply.onClick()
+    expect(resolveConf(self, 'customHeight')).toBe(20)
+    expect(resolveConf(other, 'customHeight')).toBe(30)
+  })
+
   test('clearing the default just notifies, leaving open tracks alone', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 10 }],
@@ -1185,6 +1210,50 @@ describe('promotable slot authoring guards', () => {
         },
       }),
     ).toThrow(/needs a maybe\* type/)
+  })
+
+  // the mirror mistake: the slot builds fine, the resolved read type promises a
+  // real value, and every `resolveConf` read throws "not promotable"
+  test('rejects promotedBase on a slot that never says promotable', () => {
+    expect(() =>
+      ConfigurationSchema('OrphanBase', {
+        size: {
+          type: 'maybeNumber',
+          defaultValue: undefined,
+          promotedBase: 7,
+        },
+      }),
+    ).toThrow(/only meaningful on a 'promotable' slot/)
+  })
+
+  // ...but an explicit `promotable: false` is how a subclass turns an inherited
+  // promotable slot off, and the definition merge hands ConfigSlot the base's
+  // `promotedBase` alongside it, so that pairing has to build
+  test('accepts an inherited promotedBase turned off with promotable: false', () => {
+    const base = ConfigurationSchema('TurnOffBase', {
+      size: {
+        type: 'maybeNumber',
+        defaultValue: undefined,
+        promotedBase: 7,
+        promotable: true,
+      },
+    })
+    const schema = ConfigurationSchema(
+      'TurnOffSub',
+      {
+        size: {
+          type: 'maybeNumber',
+          defaultValue: undefined,
+          promotable: false,
+        },
+      },
+      { baseConfiguration: base },
+    )
+    const { display } = createDisplay(schema)
+    expect(getSlotDefinition(display.configuration, 'size').promotedBase).toBe(
+      7,
+    )
+    expect(() => resolveConf(display, 'size')).toThrow(/not promotable/)
   })
 
   test('rejects a concrete defaultValue on a maybe slot', () => {

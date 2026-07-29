@@ -75,10 +75,34 @@ const promotableSchema = ConfigurationSchema('ConfigNarrowingPromotable', {
   // no `promotedBase`: an ordinary optional slot, whose read must still surface
   // `undefined` — the exclusion is keyed on `promotedBase`, not `maybe*`
   plainSize: { type: 'maybeNumber', defaultValue: undefined },
+  // the object-valued sentinel (alignments `colorBy`). `maybeFrozen` is `any`
+  // like plain `frozen`, so both readers agree — asserted so it stays a listed
+  // case rather than drifting back into the `defaultValue` fallback
+  colorBy: {
+    type: 'maybeFrozen',
+    defaultValue: undefined,
+    promotedBase: { type: 'normal' },
+    promotable: true,
+  },
 })
+
+// A subclass turning an inherited promotable slot off states `promotable: false`
+// and leaves `promotedBase` to the runtime definition merge — so it is absent
+// from the literal read here, and the sentinel correctly survives in BOTH read
+// types. Guards the reasoning behind keying `SlotValueResolvedFromDef` on
+// `promotedBase` (see types.ts).
+const turnedOffSchema = ConfigurationSchema(
+  'ConfigNarrowingTurnedOff',
+  { size: { type: 'maybeNumber', defaultValue: undefined, promotable: false } },
+  { baseConfiguration: promotableSchema },
+)
 
 const PromotableContainer = types.model('ConfigNarrowingPromotableContainer', {
   configuration: ConfigurationReference(promotableSchema),
+})
+
+const TurnedOffContainer = types.model('ConfigNarrowingTurnedOffContainer', {
+  configuration: ConfigurationReference(turnedOffSchema),
 })
 
 describe('getConf slot-value type narrowing', () => {
@@ -135,6 +159,29 @@ describe('getConf slot-value type narrowing', () => {
       // a plain `maybe` slot (no `promotedBase`) reads the same either way
       const plainSize = getConf(model, 'plainSize')
       assertType<Equal<typeof plainSize, number | undefined>>()
+
+      // ...as does `maybeFrozen`, which is `any` like plain `frozen` — pinned
+      // here so it stays a listed case rather than drifting back into the
+      // `defaultValue` fallback that only lands on `any` by accident
+      const colorBy = resolveConf(model, 'colorBy')
+      const rawColorBy = getConf(model, 'colorBy')
+      assertType<Equal<typeof colorBy, any>>()
+      assertType<Equal<typeof rawColorBy, any>>()
+    }
+    void check
+    expect(true).toBe(true)
+  })
+
+  // A subclass that turns an inherited promotable slot off states
+  // `promotable: false` and leaves `promotedBase` to the runtime definition
+  // merge, so `resolveConf` throws there — and both read types must keep the
+  // sentinel rather than promising a value that read can't produce.
+  test('a slot turned off with promotable: false keeps the sentinel', () => {
+    const check = (model: Instance<typeof TurnedOffContainer>) => {
+      const size = resolveConf(model, 'size')
+      const rawSize = getConf(model, 'size')
+      assertType<Equal<typeof size, number | undefined>>()
+      assertType<Equal<typeof rawSize, number | undefined>>()
     }
     void check
     expect(true).toBe(true)

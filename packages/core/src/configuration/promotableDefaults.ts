@@ -225,24 +225,6 @@ export function isPromotableDefault(
 }
 
 /**
- * Set (`on`) or clear (`!on`) this value combination as the session default for
- * the display type. Non-destructive: tracks that follow the default inherit it
- * via `resolveConf`; tracks the user has customized keep their own value.
- * Module-private — reached only through `applyDefaultToggle` below (which the
- * control builders drive); plugins promote a value through those builders.
- */
-function setPromotableDefault(
-  self: PromotableDisplay,
-  entries: PromotableEntry[],
-  on: boolean,
-): void {
-  const session = getSession(self)
-  for (const { slot, value } of entries) {
-    session.setDisplayTypeDefault?.(self.type, slot, on ? value : undefined)
-  }
-}
-
-/**
  * Open tracks (across all views) whose resolved value differs from `entries` —
  * the ones "apply to open tracks" would visibly change by resetting them to
  * follow the default. Drives that action's count. Module-internal (exercised by
@@ -286,7 +268,12 @@ function applyDefaultToggle(
 ): void {
   const session = getSession(self)
   const slots = entries.map(e => e.slot)
-  setPromotableDefault(self, entries, on)
+  // the whole write: set (or clear) the session-wide default for each slot.
+  // Non-destructive — no track's own value is touched, so a following track
+  // picks it up on its next `resolveConf` read and a customized one keeps theirs
+  for (const { slot, value } of entries) {
+    session.setDisplayTypeDefault?.(self.type, slot, on ? value : undefined)
+  }
   if (on) {
     // open tracks not already showing this value — those the "apply to open
     // tracks" action would visibly change by making them follow the new default.
@@ -299,9 +286,16 @@ function applyDefaultToggle(
         // that raised it, so a track closed (or newly opened) in between would
         // otherwise be reset as a dead node / silently skipped. `self` is the
         // display the pin was clicked from, and it can be the one that closed —
-        // the whole walk hangs off its session, so guard it too
+        // the whole walk hangs off its session, so guard it too.
+        //
+        // And the default itself can be gone by then (the user unpinned, or
+        // pinned a sibling value on the same slot). This action only ever means
+        // "make these tracks follow the default I just set", so with that default
+        // no longer in place it does nothing — clearing their own values would
+        // strand them on whatever replaced it, discarding customizations to reach
+        // a value nobody asked for.
         onClick: () => {
-          if (isAlive(self)) {
+          if (isAlive(self) && isPromotableDefault(self, entries)) {
             resetSlotsToInherit(tracksDifferingFrom(self, entries), slots)
           }
         },
@@ -405,9 +399,12 @@ export function getDisplayTypeDefaultChanges(
     if (!res.customized && !deepEqual(res.value, res.base)) {
       changes.push({
         path: [slot],
-        from: res.base,
-        to: res.value,
-      } as TrackConfigChange)
+        // a cascade value is `unknown` here but JSON by contract — it has to
+        // survive `postMessage` to a worker. Asserted per field rather than on
+        // the whole entry, so `path` stays type-checked.
+        from: res.base as TrackConfigChange['from'],
+        to: res.value as TrackConfigChange['to'],
+      })
     }
   }
   return changes

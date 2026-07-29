@@ -57,7 +57,7 @@ read one section, read [The cascade](#the-cascade).
 | Control builders + share/worker helpers (`make*Control`, `resolvePromotableConfigSnapshot`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
 | `promotable` / `promotedBase` slot metadata + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
 | Slot-definition inheritance (an override merges over the base slot, so `promotable` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
-| Resolved read type (`SlotValueFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
+| Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
 | Received-session opt-out (`ignorePromotedDefaults`) | `packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx` |
@@ -136,6 +136,19 @@ track can hold `displayMode: 'normal'` under a promoted `compact`, or
 one value would read as "follow the default" — making the setting one-directional
 and, for a promoted non-default, un-turn-off-able on an individual track.
 
+`ConfigSlot` rejects the mirror mistake too: `promotedBase` on a slot that never
+says `promotable`. That builds a slot the resolver refuses on every
+`resolveConf` read ("not promotable") while the resolved read type still drops
+the sentinel — it type-checks and throws. Only an *unstated* `promotable` is the
+mistake; an explicit `promotable: false` is how a subclass turns an inherited
+promotable slot off, and the definition merge hands `ConfigSlot` the base's
+`promotedBase` alongside it. That pair of guards is also what lets
+`SlotValueResolvedFromDef` key on `promotedBase` — the only one of the two that
+survives a real override at the *type* level, since the type reads the
+subclass's literal definition and the merge is runtime-only
+(`LGVSyntenyDisplay`'s `colorBy` states `promotedBase` and inherits
+`promotable`).
+
 **Why `undefined` and not a spare `'inherit'` enum member.** An earlier form
 spelled the enum sentinel in-band, which meant the enumeration carried a member
 that wasn't a mode: `HEIGHT_MODE_VALUES` listed `'inherit'`, every consumer needed
@@ -144,9 +157,10 @@ offered "inherit" as a literal choice, and a raw `readConfObject` handed the
 string to a caller that had no idea what it meant. `maybeStringEnum` puts the
 nullability in the slot type instead, so the vocabulary is only ever real values.
 
-It costs nothing at the read site: `getConf` resolves `undefined` to
-`promotedBase` and the getter never surfaces it (and `SlotValueFromDef` drops
-`undefined` from the read type, so the getter's own annotation stays clean).
+It costs nothing at the read site: `resolveConf` resolves `undefined` to
+`promotedBase` and the getter never surfaces it (and `SlotValueResolvedFromDef`
+drops `undefined` from the read type, so the getter's own annotation stays
+clean).
 
 ## The resolver
 
@@ -172,10 +186,10 @@ function resolveSlot(self, slot, args = {}): SlotResolution {
   // it's a session-wide fact, and the pin's filled/outline state reports on the
   // session, not on one display's view of it. The opt-out belongs to `inherited`
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // raw read: this *is* the resolver, so `readConfObject`, not `getConf` (which
-  // would recurse back into resolveSlot for a promotable slot)
-  // (a `jexl:` slot returns before this — see "Callback values")
-  const own = readConfObject(self.configuration, slot, args)
+  // raw read: this *is* the resolver, so `readConfObject`, not `resolveConf`
+  // (which would recurse straight back in here). No `args`: a `jexl:` slot
+  // returned above (see "Callback values"), so nothing left can consume them
+  const own = readConfObject(self.configuration, slot)
   // a track is customized exactly when it holds a *usable* value — the same
   // `isUsableValue` gate a promoted default passes, so a malformed or stale own
   // value reads as not-customized and degrades to the inherited value rather
@@ -207,7 +221,7 @@ an unregistered type.
 `resolveConf` on a promotable slot **always returns a real value**, never the
 unset sentinel, so the display getter needs no post-guard — and its read type
 excludes `undefined`, so no cast either:
-`get displayMode(): DisplayMode { return getConf(self, 'displayMode') }`.
+`get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`.
 
 ### Callback values (`jexl:`)
 
@@ -255,12 +269,21 @@ group of them so several slots move as one unit.
 `toggle` sets or clears it.
 
 **`toggle` writes the session default and nothing else.** No track's own value is
-ever touched — the pin edits the stylesheet, never the elements. Following tracks
-pick the new value up via `getConf`; customized tracks keep theirs. It raises a
-snackbar `"Set as the default"` carrying an **"Apply to N open tracks"** action
+ever touched — the pin edits the stylesheet, never the elements. Following
+tracks pick the new value up via `resolveConf`; customized tracks keep theirs. It
+raises a snackbar `"Set as the default"` carrying an **"Apply to N open
+tracks"** action
 for any open track (across all views) not already showing this value, and *that*
 action — the one explicit gesture — resets their own value so they follow. On
 **clear**, `"Cleared the default"`.
+
+The snackbar outlives the click that raised it, so its action re-derives
+everything on click rather than closing over it: the track set (a track closed
+in between is a dead MST node), the clicked display itself (`isAlive`), and the
+promoted default. If that default is gone by then — the user unpinned, or pinned
+a sibling value on the same slot — the action does nothing, because clearing
+those tracks' own values would discard customizations to strand them on whatever
+replaced it.
 
 Toggling on used to *also* reset the display the pin was clicked from, so its own
 track updated with one click. That silently discarded the display's value:
@@ -272,11 +295,11 @@ in "Apply to N open tracks" like any other.
 The low-level primitives behind the builders —
 `makeSlotsValueDisplayTypeDefaultControl(self, entries)` (the grouped base
 builder both public ones delegate to), `isPromotableDefault(self, entries)`,
-`setPromotableDefault(self, entries, on)`, `tracksDifferingFrom(self, entries)`,
-and `resetSlotsToInherit(displays, slots)` — are **module-internal** (exercised
-by `promotableDefaults.test.ts`), *not* on the public barrel. Consume the two
-`make*Control` builders, not these. The grouped
-base is internal because no adopter promotes more than one slot behind a single
+`tracksDifferingFrom(self, entries)`, and `resetSlotsToInherit(displays, slots)`
+— are **module-internal** (exercised by `promotableDefaults.test.ts`), *not* on
+the public barrel. Consume the two `make*Control` builders, not these. The
+grouped base is internal because no adopter promotes more than one slot behind a
+single
 pin: feature-height presets once grouped `featureHeight` + `featureSpacing`, but
 `featureSpacing` is now *derived* from `featureHeight` and never stored, and the
 `colorBy` scheme row promotes the one `colorBy` slot. Export it again if a
@@ -556,5 +579,5 @@ A naming pass also **reclaimed "pin"**: the track's own value is now
 `isSlotPinned` / `areSlotsAtSessionDefault` / `setSlotsSessionDefault` /
 `isSlotValueSessionDefault` / `setSlotValueSessionDefault` /
 `getSlotInheritedValue` collapsed into the three `make*Control` builders (public)
-over `isPromotableDefault` / `setPromotableDefault` (internal), and the
-`SessionDefault*` names became `DisplayTypeDefault*`.
+over `isPromotableDefault` (internal), and the `SessionDefault*` names became
+`DisplayTypeDefault*`.

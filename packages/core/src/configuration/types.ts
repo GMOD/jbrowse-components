@@ -102,6 +102,17 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 // promotable slot with the raw reader and you get a type you can't hand to a
 // consumer expecting a real mode, so tsc points at the call that should have
 // been `resolveConf`. A slot without `promotedBase` is unaffected either way.
+//
+// Keyed on `promotedBase` rather than `promotable` because only the former
+// survives a subclass override at the *type* level: `mergeSchemaDefinition`
+// folds an override over the base slot at runtime, but this reads the subclass's
+// literal definition, and a real override states `promotedBase` while leaving
+// `promotable` to be inherited (`LGVSyntenyDisplay`'s `colorBy`). The two keys
+// coincide everywhere else: `ConfigSlot` rejects `promotable` without
+// `promotedBase`, and `promotedBase` without a stated `promotable` — and the
+// remaining shape, an override turning an inherited slot off with
+// `promotable: false`, leaves `promotedBase` to the merge, so it is absent here
+// too and the sentinel correctly survives.
 type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: unknown }
   ? Exclude<SlotValueRawFromDef<DEF>, undefined>
   : SlotValueRawFromDef<DEF>
@@ -133,21 +144,29 @@ type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
                 ? boolean | undefined
                 : DEF extends { type: 'maybeColor' }
                   ? string | undefined
-                  : DEF extends { type: 'number' | 'integer' }
-                    ? number
-                    : DEF extends { type: 'boolean' }
-                      ? boolean
-                      : DEF extends { type: 'string' | 'text' | 'color' }
-                        ? string
-                        : DEF extends { defaultValue: infer V }
-                          ? [V] extends [boolean]
-                            ? boolean
-                            : [V] extends [string]
-                              ? string
-                              : [V] extends [number]
-                                ? number
-                                : any
-                          : any
+                  : // the `maybe*` form of `frozen`, and `any` for the same
+                    // reason: arbitrary dynamic JSON whose shape the caller
+                    // asserts at the read boundary. Listed rather than left to
+                    // the `defaultValue` fallback below, which only lands on
+                    // `any` by accident (a promotable slot's default is always
+                    // the `undefined` sentinel).
+                    DEF extends { type: 'maybeFrozen' }
+                    ? any
+                    : DEF extends { type: 'number' | 'integer' }
+                      ? number
+                      : DEF extends { type: 'boolean' }
+                        ? boolean
+                        : DEF extends { type: 'string' | 'text' | 'color' }
+                          ? string
+                          : DEF extends { defaultValue: infer V }
+                            ? [V] extends [boolean]
+                              ? boolean
+                              : [V] extends [string]
+                                ? string
+                                : [V] extends [number]
+                                  ? number
+                                  : any
+                            : any
 
 /** what a raw read (`getConf` / `readConfObject`) of this slot yields */
 export type ConfigurationSlotValue<SCHEMA, K extends string> =

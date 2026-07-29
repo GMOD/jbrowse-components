@@ -206,6 +206,16 @@ export default function ConfigSlot({
         "a 'promotable' slot requires 'promotedBase' (the value its inherit sentinel resolves to)",
       )
     }
+  } else if (promotedBase !== undefined && promotable === undefined) {
+    // the mirror mistake: `promotedBase` without `promotable` builds a slot the
+    // resolver refuses ("not promotable") on every `resolveConf` read, while the
+    // resolved read type still drops the sentinel — so it type-checks and throws.
+    // An *explicit* `promotable: false` is the documented way a subclass turns an
+    // inherited promotable slot off (the definition merge carries `promotedBase`
+    // along with it), so only an unstated `promotable` is the authoring mistake.
+    throw new Error(
+      "'promotedBase' is only meaningful on a 'promotable' slot — add promotable: true, or promotable: false to turn an inherited one off",
+    )
   }
 
   return types.stripDefault(
