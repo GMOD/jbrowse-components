@@ -35,6 +35,25 @@ test('writeAWSAnalytics resolves when the ping fails', async () => {
   )
 })
 
+test('writeAWSAnalytics encodes stat values in the query string', async () => {
+  fetchMock.mockResponseOnce('{}')
+
+  await writeAWSAnalytics(
+    {
+      ...rootModel,
+      jbrowse: {
+        ...rootModel.jbrowse,
+        plugins: [{ name: 'Foo & Bar' }],
+      },
+    },
+    Date.now(),
+  )
+
+  const requestedUrl = fetchMock.mock.calls.at(-1)?.[0] as string
+  const params = new URL(requestedUrl).searchParams
+  expect(params.get('plugin-names')).toBe('Foo & Bar')
+})
+
 test('writeAWSAnalytics resolves when reading the model throws', async () => {
   const dead = {
     ...rootModel,
@@ -47,13 +66,28 @@ test('writeAWSAnalytics resolves when reading the model throws', async () => {
   expect(warn).toHaveBeenCalled()
 })
 
-test('writeGAAnalytics injects the tracker script', async () => {
+test('writeGAAnalytics injects the tracker script and sends the pageview', async () => {
+  const ga = jest.fn()
+  window.ga = ga
+
   await writeGAAnalytics(rootModel, Date.now() - 1000)
 
   const script = document.head.lastElementChild
   expect(script?.tagName).toBe('SCRIPT')
-  expect(script?.innerHTML).toContain('jbrowseTracker')
+  expect(ga).toHaveBeenCalledWith(
+    'create',
+    'UA-7115575-5',
+    'auto',
+    'jbrowseTracker',
+  )
+  expect(ga).toHaveBeenCalledWith(
+    'jbrowseTracker.send',
+    'pageview',
+    expect.objectContaining({ metric1: expect.any(Number) }),
+  )
   expect(warn).not.toHaveBeenCalled()
+
+  delete window.ga
 })
 
 test('writeGAAnalytics resolves when reading the model throws', async () => {

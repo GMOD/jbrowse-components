@@ -7,6 +7,12 @@ import { isElectron, rIC } from '../util/index.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 
+declare global {
+  interface Window {
+    ga?: (...args: unknown[]) => void
+  }
+}
+
 type StatValue = string | number | boolean | undefined
 type AnalyticsObj = Record<string, StatValue>
 
@@ -44,7 +50,7 @@ export async function writeAWSAnalytics(
     const url = 'https://analytics.jbrowse.org/api/v1'
 
     const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
-      track => (readConfObject(track, 'assemblyNames') || []).length > 1,
+      track => readConfObject(track, 'assemblyNames').length > 1,
     ).length
 
     const savedSessionCount = Object.keys(localStorage).filter(name =>
@@ -87,22 +93,24 @@ export async function writeAWSAnalytics(
       jb2: true,
     }
 
-    // stringifies the track type counts, gets processed in lambda
+    // tallies get processed in the lambda, keyed as e.g. track-types-FeatureTrack
+    const trackTypeCounts: Record<string, number> = {}
     for (const track of tracks) {
       const key = `track-types-${track.type}`
-      stats[key] = ((stats[key] as number | undefined) ?? 0) + 1
+      trackTypeCounts[key] = (trackTypeCounts[key] ?? 0) + 1
     }
 
-    // stringifies the session track type counts, gets processed in lambda
+    const sessionTrackTypeCounts: Record<string, number> = {}
     for (const track of session?.sessionTracks ?? []) {
       const key = `sessionTrack-types-${track.type}`
-      stats[key] = ((stats[key] as number | undefined) ?? 0) + 1
+      sessionTrackTypeCounts[key] = (sessionTrackTypeCounts[key] ?? 0) + 1
     }
 
-    // put stats into a query string for get request
-    const qs = Object.keys(stats)
-      .map(key => `${key}=${stats[key]}`)
-      .join('&')
+    Object.assign(stats, trackTypeCounts, sessionTrackTypeCounts)
+
+    const qs = new URLSearchParams(
+      Object.entries(stats).map(([key, value]) => [key, String(value)]),
+    ).toString()
 
     await fetch(`${url}?${qs}`)
   } catch (e) {
@@ -116,35 +124,37 @@ export async function writeGAAnalytics(
 ) {
   try {
     const jbrowseUser = 'UA-7115575-5'
-    const stats: AnalyticsObj = {
-      'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
-      ver: rootModel.version,
-      electron: isElectron,
-      loadTime: Date.now() - initialTimestamp,
-      pluginNames: rootModel.jbrowse.plugins?.map(p => p.name).join(',') || '',
+    const loadTime = Date.now() - initialTimestamp
+
+    // custom dimension/metric indices are wired up on the GA property side, so
+    // this order (tracks-count, ver, electron, loadTime, pluginNames) must stay
+    // dimension1..5
+    const gaData: AnalyticsObj = {
+      dimension1: rootModel.jbrowse.tracks.length, // this is all possible tracks
+      dimension2: rootModel.version,
+      dimension3: isElectron,
+      dimension4: loadTime,
+      dimension5: rootModel.jbrowse.plugins?.map(p => p.name).join(',') ?? '',
+      metric1: Math.round(loadTime),
     }
 
-    const gaData: AnalyticsObj = {}
-    const googleDimensions = 'tracks-count ver electron loadTime pluginNames'
-
-    for (const [index, key] of googleDimensions.split(/\s+/).entries()) {
-      gaData[`dimension${index + 1}`] = stats[key]
-    }
-
-    gaData.metric1 = Math.round(stats.loadTime as number)
-
-    const analyticsScript =
+    // Plugin names come from the loaded config and are not trusted content (a
+    // config can be loaded from an arbitrary URL). Only this static bootstrap,
+    // with no interpolated data, is ever parsed as script source; gaData is
+    // handed to ga() as a real JS value afterward so untrusted strings can never
+    // break out of the <script> tag the way interpolating them into it would.
+    const analyticsBootstrap =
       "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
       '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),' +
       'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)' +
-      "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');" +
-      `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');` +
-      `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(gaData)});`
+      "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
 
     const analyticsScriptNode = document.createElement('script')
-    analyticsScriptNode.innerHTML = analyticsScript
-
+    analyticsScriptNode.innerHTML = analyticsBootstrap
     document.head.append(analyticsScriptNode)
+
+    window.ga?.('create', jbrowseUser, 'auto', 'jbrowseTracker')
+    window.ga?.('jbrowseTracker.send', 'pageview', gaData)
   } catch (e) {
     console.warn('Failed to write analytics to GA.', e)
   }
