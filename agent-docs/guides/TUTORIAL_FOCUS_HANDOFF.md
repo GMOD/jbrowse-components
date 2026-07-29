@@ -30,7 +30,9 @@ Two supporting habits came out of the pass and are worth keeping:
   Genomes ASW trio the local-ancestry material used to use. Built by
   `scripts/build_dog10k_wolfdog_ancestry.sh`.
 - `tutorials/dog10k_svs.md` (new) — the Collie eye anomaly deletion from Schall
-  & Kidd 2025, built by `scripts/build_dog10k_nhej1_sv.sh`.
+  & Kidd 2025, plus the two _DENR_ SINEC2A1 dimorphisms as the contrasting kind
+  of variant (220 bp at ~90% frequency, the reference carrying the rare allele).
+  Both built by `scripts/build_dog10k_nhej1_sv.sh`.
 - `tutorials/methylation.md` (17b87d98d0) — refocused onto HG002 at the SNRPN
   imprinting center. The COLO829 by-type/2-color figure was already in
   `user_guides/alignments_track.md#modifications-and-methylation`, so the
@@ -76,14 +78,20 @@ breed-labeled `layout`), so each of these is roughly an hour:
 
 - **_HMGA2_, Spitz group** — three intronic SVs in a gene tied to body weight
   and ear type (Schall & Kidd Fig S5).
-- **_DENR_, Mastiff clade** — two intronic deletions, each a SINEC2A1 with an
-  intact poly(A) tail and target-site duplications, present in the German
-  Shepherd reference (Fig S6).
+- **_AP3B1_, Collie & Shetland Sheepdog** — the gene behind gray Collie
+  syndrome, which joins the list once the paper's significance threshold is
+  relaxed.
 - **Wolf-ancestry frequency across all autosomes** — run
   `build_dog10k_wolfdog_ancestry.sh` over chr1..chr38 and summarize wolf
   ancestry per position across the eight wolfdogs as a quantitative track.
   Compelling if a depleted region lands on something known, but with eight
-  animals the noise is real: describe it, do not call it selection.
+  animals the noise is real: describe it, do not call it selection. Measured
+  cost, so nobody starts it blind: about 6 minutes per chromosome (roughly one
+  minute of remote slicing, the rest FLARE), so ~3.5 hours for the sweep. The
+  local-ancestry tutorial's numbers are chr1 only and say so; the sweep is what
+  would let it quote genome-wide fractions.
+
+_DENR_ is done (see above).
 
 ## Gotchas worth not rediscovering
 
