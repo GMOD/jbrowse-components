@@ -170,11 +170,9 @@ function buildUserGuide(): string {
     '---',
     'title: User guide',
     'sidebar_label: Overview',
-    // Plain YAML scalar, so no `: ` anywhere in these descriptions — a
-    // colon-space starts a mapping key and fails the collection parse.
     'description:',
-    '  Index of the guides for driving JBrowse — track types, views, and the',
-    '  rest of the app.',
+    '  Index of the guides for driving JBrowse, covering track types, views,',
+    '  and the rest of the app.',
     '---',
     '',
     'How to drive JBrowse once it is running. New here? Start with the',
@@ -197,8 +195,8 @@ function buildConfigGuide(): string {
     'title: Config guide',
     'sidebar_label: Overview',
     'description:',
-    '  Index of the guides for writing config.json — assemblies, tracks,',
-    '  callbacks, and deployment.',
+    '  Index of the guides for writing config.json, covering assemblies,',
+    '  tracks, callbacks, and deployment.',
     '---',
     '',
     'How to configure the `config.json` that drives a session. For copy-paste',
@@ -344,22 +342,34 @@ if (badCategories.length) {
   process.exit(1)
 }
 
+// These frontmatter blocks are assembled line by line rather than serialized, so
+// a `description` is a plain multi-line YAML scalar. An indented continuation
+// line containing `: ` parses as an implicit mapping key instead of text, which
+// surfaces only as a broken docs build far from here. A blanket punctuation
+// rewrite over this file once shipped exactly that, so fail loudly at
+// generation time rather than trusting a comment to be read.
+function assertScalarContinuations(content: string, label: string) {
+  const block = /^---\n([\s\S]*?)\n---/.exec(content)?.[1]
+  if (block === undefined) {
+    throw new Error(`${label}: generated content has no frontmatter block`)
+  } else {
+    for (const line of block.split('\n')) {
+      if (/^\s+/.test(line) && line.includes(': ')) {
+        throw new Error(
+          `${label}: frontmatter continuation line contains ": ", which YAML reads as a mapping key rather than text. Reword it: ${line.trim()}`,
+        )
+      }
+    }
+  }
+}
+
 const staleHint = 'run: pnpm lint-docs'
-checkOrWrite({
-  path: join(docsDir, 'user_guide.md'),
-  content: buildUserGuide(),
-  label: 'user_guide.md',
-  staleHint,
-})
-checkOrWrite({
-  path: join(docsDir, 'config_guide.md'),
-  content: buildConfigGuide(),
-  label: 'config_guide.md',
-  staleHint,
-})
-checkOrWrite({
-  path: join(docsDir, 'developer_guide.md'),
-  content: buildDeveloperGuide(),
-  label: 'developer_guide.md',
-  staleHint,
-})
+const guides = [
+  { file: 'user_guide.md', content: buildUserGuide() },
+  { file: 'config_guide.md', content: buildConfigGuide() },
+  { file: 'developer_guide.md', content: buildDeveloperGuide() },
+]
+for (const { file, content } of guides) {
+  assertScalarContinuations(content, file)
+  checkOrWrite({ path: join(docsDir, file), content, label: file, staleHint })
+}

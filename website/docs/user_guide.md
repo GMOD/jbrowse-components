@@ -2,8 +2,8 @@
 title: User guide
 sidebar_label: Overview
 description:
-  Index of the guides for driving JBrowse — track types, views, and the
-  rest of the app.
+  Index of the guides for driving JBrowse, covering track types, views,
+  and the rest of the app.
 ---
 
 How to drive JBrowse once it is running. New here? Start with the
@@ -63,6 +63,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/mcscan_synteny)
 
 ### Structural variation
 
@@ -77,6 +78,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/linkage_disequilibrium)
 - [](/docs/tutorials/bxd_qtl)
+- [](/docs/tutorials/local_ancestry)
 
 ### Epigenomics & single cell
 
