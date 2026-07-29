@@ -10,12 +10,17 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
 - **The GPU shader path is an accelerator; the Canvas2D draw function is the
   source of truth, and SVG export runs it.** So a shader-only tweak can't
   silently diverge the export.
-- Every `renderSvg.tsx` is one shape: `await awaitSvgReady(model)`, mount
-  `SvgChrome` with `error` **and** `regionTooLarge`, then a sync body calling
-  `paintLayer(width, height, opts, ctx => drawXxxBlocks(ctx, …))`.
-- **Never** inline `when(() => …)`, hand-roll `if (model.error) return`, or gate
-  a body on data size. Those belong to `awaitSvgReady`, `SvgChrome`, and "render
-  empty naturally".
+- Every LGV `renderSvg.tsx` is one shape, and the shape is a **function**, not a
+  convention to retype: `return renderDisplaySvg(model, opts, XxxSvgBody)`, where
+  `XxxSvgBody` is a component taking `LgvSvgBodyProps<M>` and painting via
+  `paintLayer`.
+- **Paint at `props.canvasWidth`, never at `model.renderState.canvasWidth`.** The
+  on-screen render state carries `view.trackWidthPx` (2px narrower, for the track
+  outline the export doesn't draw) and that value is also the block scissor
+  bound — see [the export canvas width](#the-export-canvas-width-is-viewwidth).
+- **Never** inline `when(() => …)`, hand-roll `if (model.error) return`, mount
+  `SvgChrome` yourself, or gate a body on data size. Those belong to
+  `renderDisplaySvg` and "render empty naturally".
 - `svgReady` deliberately excludes `canvasDrawn` (a headless export's canvas may
   never paint) and always carries a **freshness** axis, so an export fired right
   after a pan captures fresh data.
@@ -76,56 +81,83 @@ Canonical references: builder-wrapper shape →
 (`buildAlignmentsRegionMap` + `drawAlignmentsToCtx` + `drawAlignmentBlocks`);
 direct shape → `plugins/maf/src/LinearMafRenderer/drawMafBlocks.ts`.
 
-## The renderSvg.tsx shape (every display, identical)
+## The renderSvg.tsx shape (every LGV display, identical)
 
-An async wrapper that awaits readiness and mounts the error-gated chrome, plus a
-sync body that paints. One file learned, all twelve known.
+`renderDisplaySvg` (`plugins/linear-genome-view/src/shared/renderDisplaySvg.tsx`)
+**is** the shape: it awaits readiness, resolves the view geometry once, and mounts
+the error-gated chrome around the display's own body. A display writes the body
+and nothing else.
 
 ```tsx
-export async function renderSvg(model, opts?) {
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LGV
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <XxxSvgBody model={model} view={view} height={height} opts={opts} />
-    </SvgChrome>
-  )
+export async function renderSvg(model: RenderSvgModel, opts?: ExportSvgDisplayOptions) {
+  return renderDisplaySvg(model, opts, XxxSvgBody)
 }
 
-function XxxSvgBody({ model, view, height, opts }) {
+function XxxSvgBody({
+  model,
+  view,
+  height,
+  canvasWidth,
+  opts,
+}: LgvSvgBodyProps<RenderSvgModel>) {
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  return paintLayer(width, height, opts, ctx => {
+  return paintLayer(canvasWidth, height, opts, ctx => {
     drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
     // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
   })
 }
 ```
 
-Three invariants hold for **every** GPU display:
+The body is passed as a **component**, not a callback returning JSX, and that is
+load-bearing rather than stylistic: `SvgChrome` renders its terminal box
+*instead of* its children, so a body expressed as a component never runs in a
+terminal state and no `renderSvg` has to re-detect a terminal from empty or
+absent data.
 
-- **Gate the read with `awaitSvgReady(model)`** — the one shared helper,
-  re-exported from `@jbrowse/plugin-linear-genome-view`. Never re-inline
-  `when(() => …)`. The duck-typed model interfaces each `extends SvgExportable`
-  (`{ svgReady; error; regionTooLarge }`), so a missing field is a compile
-  error, not a runtime hang.
-- **`SvgChrome` is the single terminal-state gate.** Pass it `error` **and**
-  `regionTooLarge`; never hand-roll `if (model.error) return …` or infer
-  too-large from empty data. It renders the terminal itself (`SVGErrorBox` on
-  error, an `SVGMessageBox` "region too large" next) and paints children only
-  when there's renderable data, so a body never runs in a terminal state. An
-  over-budget or errored track exports a labeled box, not a silent blank.
-- **Render empty naturally — never gate on data size.** `awaitSvgReady` +
+Four invariants hold for **every** GPU display:
+
+- **Readiness and the chrome are the helper's, not yours.** Never re-inline
+  `when(() => …)` or mount `SvgChrome` by hand. The duck-typed model interfaces
+  each `extends SvgExportable` (`{ svgReady; error; regionTooLarge }`), so a
+  missing field is a compile error, not a runtime hang. `SvgChrome` renders the
+  terminal itself (`SVGErrorBox` on error, an `SVGMessageBox` "region too large"
+  next), so an over-budget or errored track exports a labeled box, not a silent
+  blank.
+- **Paint at `props.canvasWidth`.** See the next section.
+- **Render empty naturally — never gate on data size.** The readiness gate and
   `SvgChrome` already own "still loading" and the terminal states, so a
   `size === 0` / `numContacts === 0` check in the body only ever fired for a
   *loaded-but-empty* region, and returning `null` there wrongly dropped a
   legitimate empty render (e.g. alignments' coverage axis). Every draw function
   is empty-safe (self-guards or map-lookup), so the body just draws.
+- **Non-LGV displays keep their own wrapper.** `renderDisplaySvg` resolves its
+  geometry from a `LinearGenomeViewModel`, so dotplot, synteny and circular
+  still call `awaitSvgReady` + `SvgChrome` directly (see
+  [below](#non-lgv-displays-same-gate-and-svgchrome-wherever-theres-a-box-to-draw)).
+
+### The export canvas width is `view.width`
+
+A display's on-screen `renderState.canvasWidth` is `view.trackWidthPx` —
+`view.width` minus the 2px track outline — and that same number is the block
+scissor bound handed to `forEachClippedBlock`, plus (for variants) the pixel
+snapping origin. The export draws no outline, so reusing it paints the content
+2px narrower than the `SvgChrome` frame around it and clips the rightmost
+column. `LinearMultiRowFeatureDisplay` shipped that bug; sequence and the regular
+multi-sample variant display carried the same shape until the shell took the
+decision over.
+
+So `renderDisplaySvg` resolves `canvasWidth = view.width` once and hands it to
+the body, and a body reusing `model.renderState` overrides the field:
+
+```tsx
+const state = { ...model.renderState, canvasWidth, canvasHeight: height }
+```
+
+Two displays legitimately paint at a different width and say so at the seam: the
+**variant matrix** (`view.totalWidthPxWithoutBorders` — the content width its
+columns, connector lines and hit-test all key off) and **LD** (same, for its
+triangle and recombination plot). Both still take the shell's `canvasWidth` for
+the frame they draw inside.
 
 ### The one permitted body guard: a TypeScript narrow
 

@@ -177,6 +177,11 @@ export {
 } from '@jbrowse/core/svg/SvgExport'
 export { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+export { renderDisplaySvg } from './shared/renderDisplaySvg.tsx'
+export type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from './shared/renderDisplaySvg.tsx'
 export {
   defaultTextHeight,
   labelOffset,

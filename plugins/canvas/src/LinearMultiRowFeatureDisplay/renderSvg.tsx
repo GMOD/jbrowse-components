@@ -1,10 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
@@ -21,7 +19,7 @@ import type { MultiRowSource } from './sourcesLogic.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
@@ -50,52 +48,33 @@ export async function renderSvg(
   self: RenderSvgModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  await awaitSvgReady(self)
-  const view = getContainingView(self) as LinearGenomeViewModel
-  const height = self.height
-  return (
-    <SvgChrome
-      error={self.error}
-      regionTooLarge={self.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <MultiRowSvgBody self={self} view={view} height={height} opts={opts} />
-    </SvgChrome>
-  )
+  return renderDisplaySvg(self, opts, MultiRowSvgBody)
 }
 
 function MultiRowSvgBody({
-  self,
-  view,
+  model: self,
   height,
+  canvasWidth,
   opts,
-}: {
-  self: RenderSvgModel
-  view: LinearGenomeViewModel
-  height: number
-  opts: ExportSvgDisplayOptions
-}) {
+}: LgvSvgBodyProps<RenderSvgModel>) {
   return (
     <>
       <SvgClipRect
         id={`multirow-clip-${self.id}`}
-        width={view.width}
+        width={canvasWidth}
         height={height}
       >
         <PaintLayer
-          width={view.width}
+          width={canvasWidth}
           height={height}
           opts={opts}
           paint={ctx => {
             const state = {
               ...self.renderState,
               // canvasWidth is the block scissor bound, so it has to be the
-              // width this layer is actually painted at. renderState carries
-              // the on-screen view.trackWidthPx (2px narrower for the track
-              // outline the export doesn't draw), which clipped the rightmost
-              // 2px column off the export.
-              canvasWidth: view.width,
+              // width this layer is actually painted at — see
+              // LgvSvgBodyProps.canvasWidth.
+              canvasWidth,
               canvasHeight: height,
             }
             drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, state)
@@ -121,7 +100,7 @@ function MultiRowSvgBody({
       {self.showLegend && self.colorLegend.length ? (
         <MultiRowColorLegend
           entries={self.colorLegend}
-          canvasWidth={view.width}
+          canvasWidth={canvasWidth}
           maxHeight={height}
           hiddenLabels={self.hiddenCategorySet}
         />

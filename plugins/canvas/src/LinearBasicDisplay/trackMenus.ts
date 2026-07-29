@@ -20,7 +20,7 @@ import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Single source for the "Feature height" radio options and their labels, so a
 // fourth mode can't drift between the menu and the label lookup.
-export const displayModeOptions: { value: DisplayMode; label: string }[] = [
+const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'normal', label: 'Normal' },
   { value: 'compact', label: 'Compact' },
   { value: 'superCompact', label: 'Super-compact' },
@@ -56,9 +56,10 @@ interface FeatureHeightSelf extends IAnyStateTreeNode, HeightModeMenuModel {
 
 interface TrackMenuSelf {
   hiddenFeatureIds: { length: number }
-  jexlFiltersSetting: unknown
-  soloFeatureIds: { length: number }
   featureHighlights: { length: number }
+  // the model's own answer (subclasses OR in their filters), not recomputed
+  // here from its parts — see hasFeatureFilters on the canvas base
+  hasFeatureFilters: () => boolean
   showSubmenuMenuItems: () => MenuItem[]
   featureHeightMenuItems: () => MenuItem[]
   colorMenuItems: () => MenuItem[]
@@ -211,11 +212,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
 // calling the builders above directly, so a subclass's override of any of them
 // lands here.
 export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
-  const hiddenCount = self.hiddenFeatureIds.length
-  const hasFeatureFilters =
-    self.jexlFiltersSetting !== undefined ||
-    self.soloFeatureIds.length > 0 ||
-    hiddenCount > 0
+  const hasFeatureFilters = self.hasFeatureFilters()
   return [
     {
       label: 'Show...',

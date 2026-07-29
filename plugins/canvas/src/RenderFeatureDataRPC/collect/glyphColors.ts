@@ -48,7 +48,7 @@ export const CUT_SITE_COLOR = colorToUint32('#111111')
 // Per-subpart fills for intact transposons, keyed by SO type, ported verbatim
 // from the legacy CanvasFeatureRenderer repeatRegion glyph. Stable colors (not
 // a by-row palette) so the two LTRs share a color and the TSDs share another.
-export const REPEAT_COLOR_MAP: Record<string, string> = {
+const REPEAT_COLOR_MAP: Record<string, string> = {
   CACTA_TIR_transposon: '#e6194b',
   centromeric_repeat: '#3cb44b',
   Copia_LTR_retrotransposon: '#118119',

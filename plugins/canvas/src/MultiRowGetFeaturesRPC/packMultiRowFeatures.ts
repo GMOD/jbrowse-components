@@ -15,7 +15,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 // degrading to the default color on a bad expression or non-string result.
 // Called for a set slot, or for an unset slot when the feature carries no BED
 // color (the resolver falls back to it with `colorCfg.color` = the default).
-export function evalColorSlot(
+function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
   jexl: JexlInstance,

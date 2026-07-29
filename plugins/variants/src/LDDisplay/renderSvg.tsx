@@ -1,10 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView, maxFinite } from '@jbrowse/core/util'
+import { maxFinite } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { ConnectorZone } from '../shared/ConnectorLines.tsx'
@@ -19,44 +18,25 @@ import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import type { SharedLDModel } from './shared.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 export async function renderSvg(
   self: SharedLDModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
-  // holds stale rpcData until the new result commits — so exports never capture
-  // a partial or stale viewport.
-  await awaitSvgReady(self)
-  const view = getContainingView(self) as LGV
-  const height = self.height
-  return (
-    <SvgChrome
-      error={self.error}
-      regionTooLarge={self.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <LdSvgBody self={self} view={view} height={height} opts={opts} />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady (GlobalDataDisplayMixin) waits out an
+  // in-place refetch — which holds stale rpcData until the new result commits —
+  // so exports never capture a partial or stale viewport.
+  return renderDisplaySvg(self, opts, LdSvgBody)
 }
 
 function LdSvgBody({
-  self,
+  model: self,
   view,
   height,
   opts,
-}: {
-  self: SharedLDModel
-  view: LGV
-  height: number
-  opts: ExportSvgDisplayOptions
-}) {
+}: LgvSvgBodyProps<SharedLDModel>) {
   const { rpcData } = self
 
   const {
@@ -157,7 +137,7 @@ function LdSvgBody({
           // >0 means the container reserved a legend area to the right (it
           // maxes svgLegendWidth() across tracks). Absent/0 — a container that
           // reserves nothing — floats the legend over the plot instead.
-          positionOutside={(opts.legendWidth ?? 0) > 0}
+          positionOutside={(opts?.legendWidth ?? 0) > 0}
         />
       ) : null}
     </>

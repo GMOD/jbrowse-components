@@ -1,11 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { useTheme } from '@mui/material'
@@ -31,10 +29,8 @@ import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 export interface RenderSvgModel extends SvgExportable {
   id: string
@@ -87,46 +83,22 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // svgReady waits for ALL visible regions, not just the first to stream in, so
-  // whole-genome / multi-region exports aren't partially drawn.
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LGV
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <CanvasFeaturesSvgBody
-        model={model}
-        view={view}
-        height={height}
-        opts={opts}
-      />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady waits for ALL visible regions, not just the
+  // first to stream in, so whole-genome / multi-region exports aren't partially
+  // drawn.
+  return renderDisplaySvg(model, opts, CanvasFeaturesSvgBody)
 }
 
 function CanvasFeaturesSvgBody({
   model,
   view,
   height,
+  canvasWidth,
   opts,
-}: {
-  model: RenderSvgModel
-  view: LGV
-  height: number
-  opts: ExportSvgDisplayOptions | undefined
-}) {
+}: LgvSvgBodyProps<RenderSvgModel>) {
   const theme = useTheme()
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
-  // canvas spans the viewport (visibleRegions coords are viewport-relative and
-  // clipped to view.width below), matching the on-screen canvas rather than the
-  // full-genome totalWidthPx
-  const canvasWidth = view.width
 
   // autoHeight defaults off, so a feature track is a fixed-height viewport with
   // vertical overflow the user scrolls. On-screen `renderState.scrollY` is
@@ -151,7 +123,7 @@ function CanvasFeaturesSvgBody({
   return (
     <SvgClipRect
       id={`canvas-features-clip-${model.id}`}
-      width={view.width}
+      width={canvasWidth}
       height={height}
     >
       <PaintLayer

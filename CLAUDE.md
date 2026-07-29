@@ -44,8 +44,9 @@ upload patterns, HAL, and shaders.
 - To override a config-slot default, write the slot directly (`setSlot`) and
   read it back via `getConf`; the old `<name>Override` shadow-property system
   was removed. For a default that must resolve across tiers at read time (config
-  → display-type/session default → instance pin), use promotable slots /
-  `getConfResolved` (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`).
+  → display-type/session default → instance pin), use promotable slots and read
+  them with `resolveConf` — `getConf` stays raw
+  (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`).
 - A bare getter must return a resolved value, never `undefined`. When a bespoke
   (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` =
   fit-to-height), expose the resolved value under a distinct getter

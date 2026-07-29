@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
@@ -13,10 +12,8 @@ import type { ConnectorLinesModel } from './components/LinesConnectingMatrixToGe
 import type { MatrixRenderState } from './components/variantMatrixRenderingBackendTypes.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 interface MatrixRenderSvgModel extends RenderSvgBaseModel, ConnectorLinesModel {
   referenceDrawingMode: string
@@ -27,44 +24,27 @@ export async function renderSvg(
   model: MatrixRenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // svgReady waits for every visible region to load (not just the first datum)
-  // and goes false during an in-place refetch, so exports never capture a
-  // partial or stale viewport.
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LGV
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <VariantMatrixSvgBody
-        model={model}
-        view={view}
-        height={height}
-        opts={opts}
-      />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady waits for every visible region to load (not
+  // just the first datum) and goes false during an in-place refetch, so exports
+  // never capture a partial or stale viewport.
+  return renderDisplaySvg(model, opts, VariantMatrixSvgBody)
 }
 
 function VariantMatrixSvgBody({
   model,
   view,
   height,
+  canvasWidth,
   opts,
-}: {
-  model: MatrixRenderSvgModel
-  view: LGV
-  height: number
-  opts: ExportSvgDisplayOptions | undefined
-}) {
+}: LgvSvgBodyProps<MatrixRenderSvgModel>) {
   // reuse the model's own render state so the export lays columns out on the
-  // exact geometry the live canvas does
+  // exact geometry the live canvas does. Unlike the other canvas displays, the
+  // matrix's renderState.canvasWidth is view.totalWidthPxWithoutBorders (the
+  // content width its columns, connector lines and hit-test all key off), not
+  // the outline-adjusted track width — so it is the right paint width here and
+  // the shell's viewport `canvasWidth` only frames the overlay.
   const { cellData, referenceDrawingMode, renderState } = model
-  const { canvasWidth, canvasHeight } = renderState
+  const { canvasWidth: matrixWidth, canvasHeight } = renderState
   // same shift the live matrix body takes (VariantMatrixDisplayComponent):
   // when the content doesn't reach the left viewport edge (offsetPx < 0) the
   // matrix moves right with the ruler. The connector lines need no transform —
@@ -79,7 +59,7 @@ function VariantMatrixSvgBody({
     <SvgVariantOverlay
       model={model}
       idPrefix="variant-matrix-clip"
-      width={view.width}
+      width={canvasWidth}
       height={height}
       lineZone={
         <LinesConnectingMatrixToGenomicPosition model={model} exportSVG />
@@ -87,7 +67,7 @@ function VariantMatrixSvgBody({
     >
       <g transform={`translate(${left})`}>
         <PaintLayer
-          width={canvasWidth}
+          width={matrixWidth}
           height={canvasHeight}
           opts={opts}
           paint={ctx => {
@@ -96,7 +76,7 @@ function VariantMatrixSvgBody({
             // so no-call cells read the same grey as ref instead of white.
             if (referenceDrawingMode === 'skip') {
               ctx.fillStyle = REFERENCE_COLOR
-              ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+              ctx.fillRect(0, 0, matrixWidth, canvasHeight)
             }
             drawVariantMatrixBlocks(ctx, cellData, renderState)
           }}

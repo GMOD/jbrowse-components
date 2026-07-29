@@ -9,9 +9,8 @@ import {
 import { colorLongreadInv } from '@jbrowse/core/ui/theme'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
@@ -44,48 +43,28 @@ import { drawSourceChrom } from './components/drawSourceChrom.ts'
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
   model: LinearMafDisplayModel,
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // svgReady waits for every visible region to load (not just sources to
-  // resolve) and goes false during an in-place refetch, so exports never
-  // capture a partial or stale viewport.
-  await awaitSvgReady(model)
-  const view = model.lgv
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <MafSvgBody model={model} view={view} height={height} opts={opts} />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady waits for every visible region to load (not
+  // just sources to resolve) and goes false during an in-place refetch, so
+  // exports never capture a partial or stale viewport.
+  return renderDisplaySvg(model, opts, MafSvgBody)
 }
 
 function MafSvgBody({
   model,
   view,
   height,
+  canvasWidth: width,
   opts,
-}: {
-  model: LinearMafDisplayModel
-  view: LinearGenomeViewModel
-  height: number
-  opts: ExportSvgDisplayOptions
-}) {
+}: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const state = model.renderState
-  const theme = createJBrowseTheme(opts.theme)
-  // canvas spans the viewport (visibleRegions coords are viewport-relative and
-  // clipped to view.width below), matching the on-screen canvas rather than the
-  // full-genome totalWidthPx
-  const width = view.width
+  const theme = createJBrowseTheme(opts?.theme)
   const {
     hierarchy,
     showTree,

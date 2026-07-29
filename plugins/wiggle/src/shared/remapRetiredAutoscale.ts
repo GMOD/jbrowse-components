@@ -7,7 +7,7 @@ const RETIRED_AUTOSCALE: Record<string, string> = {
   globalsd: 'localsd',
 }
 
-export function mapRetiredAutoscale(value: unknown): unknown {
+function mapRetiredAutoscale(value: unknown): unknown {
   return typeof value === 'string' && value in RETIRED_AUTOSCALE
     ? RETIRED_AUTOSCALE[value]
     : value

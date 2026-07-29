@@ -1,11 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import {
@@ -18,12 +16,10 @@ import type { DrawSequenceState } from './components/drawSequence.ts'
 import type { SequenceRegionData } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
   SvgExportable,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-type LGV = LinearGenomeViewModel
 
 interface SequenceDisplayModel extends SvgExportable {
   id: string
@@ -40,32 +36,16 @@ export async function renderSvg(
   model: SequenceDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ) {
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LGV
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <SequenceSvgBody model={model} view={view} height={height} opts={opts} />
-    </SvgChrome>
-  )
+  return renderDisplaySvg(model, opts, SequenceSvgBody)
 }
 
 function SequenceSvgBody({
   model,
   view,
   height,
+  canvasWidth,
   opts,
-}: {
-  model: SequenceDisplayModel
-  view: LGV
-  height: number
-  opts: ExportSvgDisplayOptions | undefined
-}) {
+}: LgvSvgBodyProps<SequenceDisplayModel>) {
   const { sequenceData } = model
   // zoomedOut is the terminal "zoom in to see sequence" state (no fetch); an
   // empty but loaded sequenceData still paints naturally below.
@@ -78,9 +58,11 @@ function SequenceSvgBody({
   const theme = createJBrowseTheme(opts?.theme)
   const palette = buildColorPalette(theme, view.colorByCDS)
   const textColors = buildTextColors(palette, theme)
-  const totalWidth = view.trackWidthPx
   const state: DrawSequenceState = {
     ...model.renderState,
+    // canvasWidth is the block scissor bound, so it has to be the width this
+    // layer is actually painted at — see LgvSvgBodyProps.canvasWidth.
+    canvasWidth,
     palette,
     textColors,
   }
@@ -90,11 +72,11 @@ function SequenceSvgBody({
   return (
     <SvgClipRect
       id={`sequence-clip-${model.id}`}
-      width={view.width}
+      width={canvasWidth}
       height={height}
     >
       <PaintLayer
-        width={totalWidth}
+        width={canvasWidth}
         height={height}
         opts={opts}
         paint={ctx => {

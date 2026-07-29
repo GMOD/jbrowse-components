@@ -1,9 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
@@ -14,40 +13,28 @@ import {
 } from './components/colorRamp.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LgvSvgBodyProps,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
   self: LinearHicDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
-  // holds stale rpcData until the new result commits — so exports never capture
-  // a partial or stale viewport.
-  await awaitSvgReady(self)
-  const height = self.height
-  return (
-    <SvgChrome
-      error={self.error}
-      regionTooLarge={self.regionTooLarge}
-      width={self.view.width}
-      height={height}
-    >
-      <HicSvgBody self={self} height={height} opts={opts} />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady (GlobalDataDisplayMixin) waits out an
+  // in-place refetch — which holds stale rpcData until the new result commits —
+  // so exports never capture a partial or stale viewport.
+  return renderDisplaySvg(self, opts, HicSvgBody)
 }
 
 function HicSvgBody({
-  self,
+  model: self,
   height,
+  canvasWidth: visibleWidth,
   opts,
-}: {
-  self: LinearHicDisplayModel
-  height: number
-  opts: ExportSvgDisplayOptions
-}) {
+}: LgvSvgBodyProps<LinearHicDisplayModel>) {
   const {
-    view,
     rpcData,
     colorScheme,
     showLegend,
@@ -63,7 +50,6 @@ function HicSvgBody({
     return null
   }
 
-  const visibleWidth = view.width
   const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
   // Reuse the model's renderState so the export shares one source of truth for
@@ -95,7 +81,7 @@ function HicSvgBody({
           // maxes svgLegendWidth() across tracks). Absent/0 — e.g. the synteny
           // and breakpoint exports, which don't reserve any — floats the legend
           // over the plot instead.
-          positionOutside={(opts.legendWidth ?? 0) > 0}
+          positionOutside={(opts?.legendWidth ?? 0) > 0}
           idSuffix={self.id}
         />
       ) : null}

@@ -6,7 +6,7 @@ import type { YScaleTicks } from './index.ts'
 // Y-axis tick labels positioned absolutely, indented from the track's left edge
 // so a right-oriented axis reads inside the plot. The SVG export instead anchors
 // a left-oriented axis at the content edge, putting the labels in the export
-// margin — see renderWiggleFamilySvg.
+// margin — see WiggleFamilySvgFrame.
 export default function YScaleBarOverlay({
   ticks,
   height,

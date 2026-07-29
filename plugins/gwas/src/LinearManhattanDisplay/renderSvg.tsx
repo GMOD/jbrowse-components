@@ -1,11 +1,20 @@
-import { renderWiggleFamilySvg } from '@jbrowse/plugin-wiggle'
+/* eslint-disable react-refresh/only-export-components */
+import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
+import {
+  WiggleFamilySvgFrame,
+  svgLegendRightPx,
+  svgScalebarLeftPx,
+} from '@jbrowse/plugin-wiggle'
 import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LgvSvgBodyProps,
+} from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleFamilySvgModel } from '@jbrowse/plugin-wiggle'
 import type React from 'react'
 
@@ -22,38 +31,44 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  return renderWiggleFamilySvg({
-    model,
-    opts,
-    clipIdPrefix: 'manhattan',
-    paint: (ctx, { canvasWidth, drawHeight, renderBlocks }) => {
-      const state = {
-        ...model.renderState,
-        canvasWidth,
-        canvasHeight: drawHeight,
+  return renderDisplaySvg(model, opts, ManhattanSvgBody)
+}
+
+function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
+  const { model, view, height, canvasWidth } = props
+  const legendRight = svgLegendRightPx(view, canvasWidth)
+  return (
+    <WiggleFamilySvgFrame
+      {...props}
+      clipIdPrefix="manhattan"
+      paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
+        drawManhattanBlocks(ctx, model.rpcDataMap, renderBlocks, {
+          ...model.renderState,
+          canvasWidth: w,
+          canvasHeight: drawHeight,
+        })
+      }}
+      // left y-axis (Manhattan is always linear, never density) plus the r² key
+      // when LD coloring is active
+      legend={
+        <>
+          {model.ticks ? (
+            <g transform={`translate(${svgScalebarLeftPx(view)})`}>
+              <YScaleBar ticks={model.ticks} orientation="left" />
+            </g>
+          ) : null}
+          {model.ldColoringActive && model.showLdLegend ? (
+            <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
+              <SvgLdLegend
+                canvasWidth={legendRight}
+                maxHeight={height - YSCALEBAR_LABEL_OFFSET}
+                indexSnpMissing={model.indexSnpMissing}
+                indexSnpOffscreen={model.indexSnpOffscreen}
+              />
+            </g>
+          ) : null}
+        </>
       }
-      drawManhattanBlocks(ctx, model.rpcDataMap, renderBlocks, state)
-    },
-    // left y-axis (Manhattan is always linear, never density) plus the r² key
-    // when LD coloring is active
-    legend: ({ scalebarLeft, legendRight, ticks }) => (
-      <>
-        {ticks ? (
-          <g transform={`translate(${scalebarLeft})`}>
-            <YScaleBar ticks={ticks} orientation="left" />
-          </g>
-        ) : null}
-        {model.ldColoringActive && model.showLdLegend ? (
-          <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-            <SvgLdLegend
-              canvasWidth={legendRight}
-              maxHeight={model.height - YSCALEBAR_LABEL_OFFSET}
-              indexSnpMissing={model.indexSnpMissing}
-              indexSnpOffscreen={model.indexSnpOffscreen}
-            />
-          </g>
-        ) : null}
-      </>
-    ),
-  })
+    />
+  )
 }

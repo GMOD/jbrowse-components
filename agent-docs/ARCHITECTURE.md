@@ -407,12 +407,15 @@ overlay components — is in
 ## SVG export
 
 SVG export and on-screen rendering share the same pure Canvas2D draw functions,
-so a shader-only tweak can't silently diverge the export. Every display's
-`renderSvg.tsx` follows one shape: `await awaitSvgReady(model)`, then mount
-`SvgChrome` (the single terminal-state gate) around a sync body that paints via
-`paintLayer`. The full contract — the `svgReady`/`settled` freshness gates, the
-one permitted TypeScript narrow, `paintLayer`'s raster-vs-vector dispatch, the
-JSX-SVG exception classes, and model-scoped clip ids — is in
+so a shader-only tweak can't silently diverge the export. Every LGV display's
+`renderSvg.tsx` is one call — `renderDisplaySvg(model, opts, XxxSvgBody)` — which
+awaits `svgReady`, resolves the export geometry, and mounts `SvgChrome` (the
+single terminal-state gate) around the display's body component. The body paints
+via `paintLayer` at the `canvasWidth` the shell hands it, **not** the
+outline-adjusted `renderState.canvasWidth` the on-screen canvas uses. The full
+contract — the `svgReady`/`settled` freshness gates, the one permitted TypeScript
+narrow, `paintLayer`'s raster-vs-vector dispatch, the JSX-SVG exception classes,
+and model-scoped clip ids — is in
 [reference/SVG_EXPORT.md](reference/SVG_EXPORT.md).
 
 ## `rpcProps()` / `gpuProps()` pattern

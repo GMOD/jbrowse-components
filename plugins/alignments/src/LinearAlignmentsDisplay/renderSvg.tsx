@@ -4,12 +4,10 @@ import {
   createJBrowseTheme,
   legendEntries,
 } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { YScaleBar } from '@jbrowse/wiggle-core'
@@ -38,7 +36,7 @@ import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 import type React from 'react'
@@ -49,26 +47,10 @@ export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // svgReady waits for ALL visible regions, not just the first to stream in, so
-  // whole-genome / multi-region exports aren't partially drawn.
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <AlignmentsSvgBody
-        model={model}
-        view={view}
-        height={height}
-        opts={opts}
-      />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady waits for ALL visible regions, not just the
+  // first to stream in, so whole-genome / multi-region exports aren't partially
+  // drawn.
+  return renderDisplaySvg(model, opts, AlignmentsSvgBody)
 }
 
 // An empty (zero-read) region draws an empty pileup + coverage axis here, so
@@ -78,19 +60,11 @@ function AlignmentsSvgBody({
   model,
   view,
   height,
+  canvasWidth,
   opts,
-}: {
-  model: LinearAlignmentsDisplayModel
-  view: LinearGenomeViewModel
-  height: number
-  opts?: ExportSvgDisplayOptions
-}) {
+}: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
   const theme = createJBrowseTheme(opts?.theme)
   const baseState = model.renderState
-  // canvas spans the viewport (visibleRegions coords are viewport-relative and
-  // clipped to view.width below), matching the on-screen canvas rather than the
-  // full-genome totalWidthPx
-  const canvasWidth = view.width
   const displayHeight = height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const { coverageTicks, insertSizeTicks, renderSections } = model
@@ -136,7 +110,7 @@ function AlignmentsSvgBody({
     <>
       <SvgClipRect
         id={`alignments-clip-${model.id}`}
-        width={view.width}
+        width={canvasWidth}
         height={displayHeight}
       >
         <PaintLayer

@@ -402,37 +402,34 @@ export default function stateModelFactory(
           // Filtering here instead would leave regions fetched under a stale
           // filter missing sources when the filter is later widened.
           const { adapterConfig, sourcesWithoutLayout } = self
-          if (adapterConfig) {
-            const { bpPerPx } = view
-            const sessionId = getRpcSessionId(self)
-            const { rpcManager } = getSession(self)
-            // Batched, not per-region: every subtrack adapter gets all the
-            // visible regions in one call, so a whole-genome or
-            // collapsed-intron view coalesces each file's on-disk blocks into
-            // one pass instead of one pass per region per subtrack. The
-            // regions land together rather than painting progressively.
-            return fetchAllRegions(self, needed, {
-              call: (regions, ctx) =>
-                rpcManager.call(sessionId, 'RenderMultiWiggleData', {
-                  adapterConfig,
-                  regions,
-                  sources: sourcesWithoutLayout,
-                  ...self.rpcProps(),
-                  stopToken: ctx.stopToken,
-                  bpPerPx,
-                  statusCallback: self.makeRegionStatusCallback(
-                    needed[0]!.displayedRegionIndex,
-                  ),
-                }),
-              onResult: (idx, result) => {
-                self.setRpcData(idx, result)
-              },
-              onComplete: () => {
-                self.setLoadedBpPerPx(bpPerPx)
-              },
-            })
-          }
-          return undefined
+          const { bpPerPx } = view
+          const sessionId = getRpcSessionId(self)
+          const { rpcManager } = getSession(self)
+          // Batched, not per-region: every subtrack adapter gets all the
+          // visible regions in one call, so a whole-genome or
+          // collapsed-intron view coalesces each file's on-disk blocks into
+          // one pass instead of one pass per region per subtrack. The
+          // regions land together rather than painting progressively.
+          return fetchAllRegions(self, needed, {
+            call: (regions, ctx) =>
+              rpcManager.call(sessionId, 'RenderMultiWiggleData', {
+                adapterConfig,
+                regions,
+                sources: sourcesWithoutLayout,
+                ...self.rpcProps(),
+                stopToken: ctx.stopToken,
+                bpPerPx,
+                statusCallback: self.makeRegionStatusCallback(
+                  needed[0]!.displayedRegionIndex,
+                ),
+              }),
+            onResult: (idx, result) => {
+              self.setRpcData(idx, result)
+            },
+            onComplete: () => {
+              self.setLoadedBpPerPx(bpPerPx)
+            },
+          })
         },
 
         // No superAfterAttach() call: the fork auto-chains hooks, so

@@ -1,10 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SvgChrome,
   SvgClipRect,
-  awaitSvgReady,
+  renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreePath } from '@jbrowse/tree-sidebar'
@@ -19,47 +17,24 @@ import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
-
-type LGV = LinearGenomeViewModel
 
 export async function renderSvg(
   model: MultiLinearWiggleDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LGV
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <MultiWiggleSvgBody
-        model={model}
-        view={view}
-        height={height}
-        opts={opts}
-      />
-    </SvgChrome>
-  )
+  return renderDisplaySvg(model, opts, MultiWiggleSvgBody)
 }
 
 function MultiWiggleSvgBody({
   model,
   view,
   height,
+  canvasWidth,
   opts,
-}: {
-  model: MultiLinearWiggleDisplayModel
-  view: LGV
-  height: number
-  opts: ExportSvgDisplayOptions | undefined
-}) {
+}: LgvSvgBodyProps<MultiLinearWiggleDisplayModel>) {
   // anchors scale bars to left edge of content; non-zero only when scrolled
   // before genome start. Left-oriented, so the labels grow into the export
   // margin rather than over the plot (the on-screen axis instead indents by
@@ -78,10 +53,6 @@ function MultiWiggleSvgBody({
   const treeShowing = showTree && !!hierarchy
 
   const props = model.gpuProps()
-  // canvas spans the viewport (visibleRegions coords are viewport-relative and
-  // clipped to view.width below), matching the on-screen canvas rather than the
-  // full-genome totalWidthPx
-  const canvasWidth = view.width
   // right-aligned legends pin to the content's right edge, not the viewport's:
   // at whole-genome zoom the regions can end before it, and a legend parked out
   // in the empty gutter reads as detached from the plot (same rule as on screen)

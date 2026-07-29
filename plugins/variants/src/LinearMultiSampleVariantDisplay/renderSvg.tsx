@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
@@ -17,10 +16,8 @@ import type {
 } from './components/variantRenderingBackendTypes.ts'
 import type {
   ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
+  LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string
@@ -37,39 +34,20 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // svgReady waits for every visible region to load (not just the first datum)
-  // and goes false during an in-place refetch, so exports never capture a
-  // partial or stale viewport.
-  await awaitSvgReady(model)
-  const view = getContainingView(model) as LGV
-  const height = model.height
-  return (
-    <SvgChrome
-      error={model.error}
-      regionTooLarge={model.regionTooLarge}
-      width={view.width}
-      height={height}
-    >
-      <VariantSvgBody model={model} view={view} height={height} opts={opts} />
-    </SvgChrome>
-  )
+  // renderDisplaySvg's awaitSvgReady waits for every visible region to load (not
+  // just the first datum) and goes false during an in-place refetch, so exports
+  // never capture a partial or stale viewport.
+  return renderDisplaySvg(model, opts, VariantSvgBody)
 }
 
 function VariantSvgBody({
   model,
-  view,
   height,
+  canvasWidth,
   opts,
-}: {
-  model: RenderSvgModel
-  view: LGV
-  height: number
-  opts: ExportSvgDisplayOptions | undefined
-}) {
-  // reuse the model's own getters so the export draws the exact block set,
-  // region map, and canvas geometry the live canvas does — no divergent rebuild
-  // here. renderState.canvasWidth is the viewport-relative width the blocks are
-  // already clipped to, not the full-genome totalWidthPx.
+}: LgvSvgBodyProps<RenderSvgModel>) {
+  // reuse the model's own getters so the export draws the exact block set and
+  // region map the live canvas does — no divergent rebuild here.
   const {
     referenceDrawingMode,
     renderBlocks,
@@ -77,12 +55,16 @@ function VariantSvgBody({
     renderState,
     insertionGlyphRegions,
   } = model
-  const { canvasWidth, canvasHeight } = renderState
+  // canvasWidth is the block scissor bound and the cell pixel-snapping origin,
+  // so it has to be the width this layer is actually painted at — see
+  // LgvSvgBodyProps.canvasWidth.
+  const exportState = { ...renderState, canvasWidth }
+  const { canvasHeight } = renderState
   return (
     <SvgVariantOverlay
       model={model}
       idPrefix="variant-clip"
-      width={view.width}
+      width={canvasWidth}
       height={height}
     >
       <PaintLayer
@@ -94,7 +76,7 @@ function VariantSvgBody({
             ctx.fillStyle = REFERENCE_COLOR
             ctx.fillRect(0, 0, canvasWidth, canvasHeight)
           }
-          drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, renderState)
+          drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, exportState)
           // Same layer, after the cells, so the export stacks them the way the
           // on-screen overlay composites over the canvas.
           if (insertionGlyphRegions) {
@@ -102,7 +84,7 @@ function VariantSvgBody({
               ctx,
               insertionGlyphRegions,
               renderBlocks,
-              renderState,
+              exportState,
             )
           }
         }}

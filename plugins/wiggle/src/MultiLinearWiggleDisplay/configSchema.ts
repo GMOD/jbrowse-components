@@ -36,7 +36,7 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
 // Both legacy remaps a MultiLinearWiggleDisplay snapshot needs before the
 // types.union validates it: single-source rendering names and retired autoscale
 // values.
-export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
+function remapMultiWiggleConfig(snap: Record<string, unknown>) {
   return remapRetiredAutoscale(remapMultiWiggleRendering(snap))
 }
 
