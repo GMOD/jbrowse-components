@@ -680,6 +680,25 @@ export default function baseStateModelFactory(
         },
 
         /**
+         * #method
+         * Whether anything is currently narrowing what the display shows, so the
+         * track menu can offer "Clear filters" (and only then). Paired with
+         * `clearAllFeatureFilters`: every filter counted here must be reset
+         * there, or the menu offers a recovery that doesn't fully recover.
+         *
+         * A method rather than a getter so a subclass can super-capture and OR in
+         * its own filters (LinearBasicDisplay's "Show only genes"), the same
+         * extension seam the menu builders use.
+         */
+        hasFeatureFilters(): boolean {
+          return (
+            self.jexlFiltersSetting !== undefined ||
+            self.soloFeatureIds.length > 0 ||
+            self.hiddenFeatureIds.length > 0
+          )
+        },
+
+        /**
          * #getter
          */
         get sequenceAdapter() {
@@ -1810,7 +1829,9 @@ export default function baseStateModelFactory(
          */
         // Reset every feature-level filter: the show-only collection, the hidden
         // set, and the runtime "Filter by..." jexl override. Backs the track
-        // menu's "Clear filters" item.
+        // menu's "Clear filters" item, which is offered only when
+        // `hasFeatureFilters()` says something is narrowing the view — so the two
+        // must stay in step, including through a subclass's overrides of both.
         clearAllFeatureFilters() {
           self.clearSolo()
           self.showAllHidden()

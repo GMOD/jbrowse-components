@@ -215,7 +215,16 @@ export default function stateModelFactory(
       const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
+      const superHasFeatureFilters = self.hasFeatureFilters
       return {
+        // "Show only genes" is a worker-side admission filter (see
+        // featureAdmission.ts), so it counts here — otherwise a track showing
+        // only genes reports nothing is filtering it and the track menu never
+        // offers "Clear filters".
+        hasFeatureFilters() {
+          return superHasFeatureFilters() || self.showOnlyGenes
+        },
+
         // Append gene-specific checkbox toggles after the base display toggles,
         // so the "Show..." submenu reads generic-then-gene-specific.
         showSubmenuCheckboxItems() {
@@ -354,6 +363,18 @@ export default function stateModelFactory(
               },
             },
           ]
+        },
+      }
+    })
+    .actions(self => {
+      const superClearAllFeatureFilters = self.clearAllFeatureFilters
+      return {
+        // The other half of the hasFeatureFilters override above: "Clear
+        // filters" has to actually clear the gene-only view too, or it leaves
+        // the one filter it was offered for still in effect.
+        clearAllFeatureFilters() {
+          superClearAllFeatureFilters()
+          self.setShowOnlyGenes(false)
         },
       }
     })
