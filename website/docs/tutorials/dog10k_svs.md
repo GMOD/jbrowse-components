@@ -108,7 +108,7 @@ deletion rather than a coding one.
 
 ## Reading it
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Eleven of thirteen Collies carry it (dark blue homozygous, light blue heterozygous), along with two Shetland Sheepdogs and one Silken Windhound. Australian Shepherds, German Shepherds, Labrador Retrievers, and the four wolves are homozygous reference. The gene track above shows the deletion falls in an intron." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Eleven of thirteen Collies carry it (dark blue homozygous, light blue heterozygous), along with two Shetland Sheepdogs and one Silken Windhound. Australian Shepherds, German Shepherds, Labrador Retrievers, and the four wolves are homozygous reference. The yellow blocks are a second, nested deletion that could not be genotyped in the dogs homozygous for the first. The gene track above shows both fall in an intron." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 The picture matches the literature: the deletion is common in the Collie clade,
 homozygous in several animals, and absent everywhere else in this set including
@@ -116,12 +116,34 @@ the wolves. Reading the gene model with it shows why a 7.8 kb deletion can
 segregate at this frequency at all, since it removes intronic sequence rather
 than coding exons.
 
-Two things worth noticing while reading a genotype panel like this. The yellow
-no-call blocks are real: a structural variant genotyped from short reads is
-harder to call than a SNV, and the calls are missing rather than reference. And
-this figure is one locus in one set of breeds, chosen because the variant was
-already characterized; the same track scrolled anywhere else in the callset is a
-screen of variants nobody has interpreted yet.
+### The yellow blocks
+
+The no-calls are worth chasing rather than ignoring, because they are not noise.
+They belong to a second deletion, 3.4 kb at chr37:25,578,185, which sits
+**inside** the 7.8 kb one. It is called reference in every dog in the panel
+except four, where it is missing, and those four are exactly the dogs homozygous
+for the larger deletion:
+
+```bash
+# -i POS=… because -r is END-aware and would also return the deletion this one
+# sits inside
+bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
+  -f '[%SAMPLE=%GT ]\n' dog10k_nhej1_svs.vcf.gz \
+  | tr ' ' '\n' | grep -v '=0/0'
+```
+
+A dog with no copy of the surrounding sequence has no reads there to genotype
+the nested call from, so the genotyper returns missing. That is a structure a
+SNV callset does not have, and it is the kind of thing worth understanding
+before treating a no-call as a failed sample.
+
+### What the panel does not say
+
+Lancashire Heelers are among the breeds Collie eye anomaly is reported in, and
+none of the four sampled here carry the deletion. Four dogs is not a frequency
+estimate. More broadly, this figure is one locus in one set of breeds, chosen
+because the variant was already characterized; the same track scrolled anywhere
+else in the callset is a screen of variants nobody has interpreted yet.
 
 ## Where to go next
 
