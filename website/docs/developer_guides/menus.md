@@ -1,7 +1,7 @@
 ---
 title: Top-level menu items
 description: Add items to the top-level application menu bar
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
 ---
 
 **TL;DR:** Add top-level menus from your plugin's `configure()` (guarded by

@@ -1,7 +1,7 @@
 ---
 title: Custom view types
 description: Add entirely new view panels such as DotplotView or CircularView
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
 ---
 
 **TL;DR:** View types are top-level "panels" the session can contain alongside

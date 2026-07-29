@@ -1,7 +1,7 @@
 ---
 title: Custom widgets
 description: Add new drawer/panel UI components
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
 ---
 
 **TL;DR:** Widgets are info panels shown in drawers, modals, or elsewhere in the

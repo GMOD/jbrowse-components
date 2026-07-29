@@ -80,7 +80,7 @@ own via pull request.
 - [](/docs/developer_guides/mst_patterns)
 - [](/docs/developer_guides/rpc_workers)
 
-### Creating pluggable elements
+### Pluggable elements
 
 - [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/creating_addtrack_workflow)

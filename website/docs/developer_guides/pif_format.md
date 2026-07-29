@@ -3,6 +3,7 @@ title: PIF (Pairwise Indexed Format)
 description:
   Tabix-indexed pairwise alignment format for large-scale synteny data
 guide_category: Advanced topics
+sidebar_label: PIF format
 ---
 
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of

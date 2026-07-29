@@ -1,7 +1,7 @@
 ---
 title: SVG export
 description: How to implement renderSvg on a custom display type
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
 ---
 
 **TL;DR:** implement `renderSvg()` on your display, drawing layers with

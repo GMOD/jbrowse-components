@@ -3,7 +3,8 @@ title: Custom track and display types
 description:
   Define track types (high-level identity) and display types (how a track
   renders in a given view)
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
+sidebar_label: Tracks and displays
 ---
 
 **TL;DR:** to add a new way to visualize data in an existing view, write a

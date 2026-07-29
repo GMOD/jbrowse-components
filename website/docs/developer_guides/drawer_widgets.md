@@ -1,7 +1,7 @@
 ---
 title: Drawer widgets
 description: Launching sidebar or popup widgets in the embedded LGV
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
 ---
 
 ## Overview

@@ -29,11 +29,7 @@ export const CONFIG_CATEGORIES = [
 export const DEVELOPER_CATEGORIES = [
   'Getting started',
   'Core concepts',
-  // TODO: shorten to 'Pluggable elements' — at 27 characters this prefix wraps
-  // every page under it. Deferred only because renaming means editing the
-  // `guide_category` frontmatter of all 12 pages, 5 of which currently carry
-  // another agent's uncommitted prose pass in this shared worktree.
-  'Creating pluggable elements',
+  'Pluggable elements',
   'Advanced topics',
 ]
 

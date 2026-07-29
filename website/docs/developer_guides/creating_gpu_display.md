@@ -2,7 +2,7 @@
 title: GPU displays
 description:
   Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
-guide_category: Creating pluggable elements
+guide_category: Pluggable elements
 ---
 
 **TL;DR:** Build a display that renders via WebGPU/WebGL2 with a required
