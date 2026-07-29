@@ -61,7 +61,11 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
-    overflow: 'hidden',
+    // clip, not hidden: transform is patched per zoom frame, and clip keeps this
+    // out of the scroll-container path. ellipsis renders identically under clip
+    // (verified pixel-for-pixel), since text-overflow applies at any non-visible
+    // overflow
+    overflow: 'clip',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     maxWidth: 'calc(100% - 6px)',
