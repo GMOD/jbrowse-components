@@ -159,7 +159,7 @@ these two points are chains of responsibility, where each callback wraps the
 previously registered guesser and delegates to it when it has no match. The
 helper does that wiring, so your callback just returns a config when it
 recognizes the file and `undefined` when it doesn't. Delegating by hand is easy
-to get subtly wrong — dropping the optional `file` argument on the way through
+to get subtly wrong: dropping the optional `file` argument on the way through
 hides it from every guesser registered before yours.
 
 ### Core-guessTrackTypeForLocation
@@ -325,7 +325,7 @@ This point fires whenever any widget opens. To target only the feature details
 widget, filter on `model.trackId` (only feature detail widgets have one). You
 can also filter on `model.type` (e.g. `'AlignmentsFeatureWidget'`), but the type
 string varies by track type. Match a track id robustly with the `matchTrackId`
-helper and a `RegExp` — this also matches "user copies" of a track, which get a
+helper and a `RegExp`; this also matches "user copies" of a track, which get a
 timestamp and `-sessionTrack` suffix appended to their id:
 
 ```tsx
@@ -478,8 +478,8 @@ export default function GWASAddTrackComponentF(pluginManager: PluginManager) {
 
 Your component writes the config fragments it collects to `model.mixinData`,
 which the widget merges into the track config on submit. Write the whole
-fragment on every edit — a later write replaces the previous one rather than
-merging with it — and clear it on unmount, so switching to another adapter
+fragment on every edit (a later write replaces the previous one rather than
+merging with it), and clear it on unmount, so switching to another adapter
 doesn't leave stale fields behind.
 
 ### TrackSelector-multiTrackMenuItems

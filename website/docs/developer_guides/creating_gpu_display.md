@@ -287,7 +287,7 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
       return
     }
     // the generated packInstances interleaves the parallel arrays into the
-    // GL_ATTRIBUTES layout — no manual DataView offsets
+    // GL_ATTRIBUTES layout, no manual DataView offsets
     const buf = shader.packInstances(
       { startBp: data.starts, endBp: data.ends, score: data.scores },
       data.numFeatures,
@@ -429,7 +429,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       }),
     )
     .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex — the render lifecycle
+      // fetched data keyed by displayedRegionIndex; the render lifecycle
       // uploads/draws one region at a time from this map
       rpcDataMap: observable.map<number, ScoreRegionData>(),
     }))
@@ -437,7 +437,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
       },
-      // fetch inputs watched by SettingsInvalidate — any change refetches. Put
+      // fetch inputs watched by SettingsInvalidate; any change refetches. Put
       // settings that change what the worker computes here; never scroll/zoom
       // (those change every frame) or the fetch results themselves.
       rpcProps() {
@@ -534,8 +534,8 @@ with no refetch (a color or scale change) go in a separate `gpuProps()` method
 
 Render the canvas through the shared `DisplayChrome`. It frames your canvas
 (loading scrim, error bar, "region too large" banner) and handles WebGL/WebGPU
-context-loss recovery, and is the **only** place `useRenderingBackend` is called
-— a display must not call the hook itself
+context-loss recovery, and is the **only** place `useRenderingBackend` is
+called; a display must not call the hook itself
 ([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-api)).
 Its render-prop child keeps it agnostic to how many canvases a display draws.
 

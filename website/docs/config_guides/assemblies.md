@@ -38,7 +38,7 @@ config's location.
 
 ### Named adapter: `sequence.adapter`
 
-To name the adapter or set a slot on it, write only `sequence.adapter` —
+To name the adapter or set a slot on it, write only `sequence.adapter`;
 `sequence.type`/`sequence.trackId` stay boilerplate and can be omitted:
 
 ```json
@@ -100,12 +100,12 @@ with a `sequence_report.tsv` instead. See
 ## Configuring alternative genetic codes (translation tables)
 
 JBrowse translates protein-coding sequence with the standard genetic code (NCBI
-table 1). Some sequences need another — vertebrate mitochondria use table 2,
-plastids/bacteria often use table 11 (full list on the
+table 1). Some sequences need another (vertebrate mitochondria use table 2,
+plastids/bacteria often use table 11; full list on the
 [NCBI genetic codes page](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)).
 
 - **CDS features** (gene tracks, the feature-detail protein panel) read the code
-  from the GFF's `transl_table` attribute directly — no assembly config needed.
+  from the GFF's `transl_table` attribute directly; no assembly config needed.
   Start codons and `transl_except` overrides are honored.
 - **The reference track's six-frame translation** has no CDS to read, so it uses
   the assembly's [`geneticCodes`](/docs/config/baseassembly/#slot-geneticcodes)
@@ -127,7 +127,7 @@ inline entry wins if both are present.
 
 ## Adding an assembly with the CLI
 
-`jbrowse add-assembly` generates this config and copies the files into place —
+`jbrowse add-assembly` generates this config and copies the files into place;
 see the [web quick start](/docs/quickstart_web/) or the
 [CLI guide](/docs/cli/#jbrowse-add-assembly).
 
@@ -151,11 +151,11 @@ bgzip -i sequence.fa           # -> sequence.fa.gz + sequence.fa.gz.gzi
 samtools faidx sequence.fa.gz  # -> sequence.fa.gz.fai
 ```
 
-- `UnindexedFastaAdapter` loads the whole sequence into memory — small genomes
+- `UnindexedFastaAdapter` loads the whole sequence into memory; small genomes
   only.
 - `TwoBitAdapter` parses upfront (slower startup); a `chromSizes` file speeds up
   a 2bit with many chromosomes.
-- `ChromSizesAdapter` has names/lengths but no sequence — anchors a karyotype,
+- `ChromSizesAdapter` has names/lengths but no sequence; anchors a karyotype,
   synteny, or whole-genome view without loading a FASTA.
 - `metadataLocation` attaches free-form metadata to an indexed/bgzipped FASTA.
   [FFRGS](https://github.com/FFRGS/FFRGS-Specification) is one documented

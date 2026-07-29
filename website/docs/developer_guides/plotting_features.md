@@ -46,11 +46,11 @@ Three terms recur below (the
 [architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
 is fuller):
 
-- **region** — one entry of `view.displayedRegions`. Your worker fetches and
+- **region**: one entry of `view.displayedRegions`. Your worker fetches and
   stores data one region at a time.
-- **block** — a visible slice of a region with its on-screen pixel span. You
-  draw per block.
-- **`displayedRegionIndex`** — a region's index in `view.displayedRegions`, the
+- **block**: a visible slice of a region with its on-screen pixel span. You draw
+  per block.
+- **`displayedRegionIndex`**: a region's index in `view.displayedRegions`, the
   join key between `rpcDataMap` and the blocks:
   `rpcDataMap.get(block.displayedRegionIndex)`.
 
@@ -187,7 +187,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       }),
     )
     .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex — the render lifecycle
+      // fetched data keyed by displayedRegionIndex; the render lifecycle
       // uploads/draws one region at a time from this map
       rpcDataMap: observable.map<number, ScoreRegionData>(),
     }))
@@ -195,7 +195,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
       },
-      // fetch inputs watched by SettingsInvalidate — any change refetches. Put
+      // fetch inputs watched by SettingsInvalidate; any change refetches. Put
       // settings that change what the worker computes here; never scroll/zoom
       // (those change every frame) or the fetch results themselves.
       rpcProps() {

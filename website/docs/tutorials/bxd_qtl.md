@@ -259,3 +259,4 @@ your `PATH`.
 - [](/docs/user_guides/gwas_track)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [jexl](/docs/config_guides/jexl)
+- [](/docs/user_guides/clustering)

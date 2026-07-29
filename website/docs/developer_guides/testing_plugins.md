@@ -118,7 +118,7 @@ and virtualized trees/grids need a mocked measured height to render any rows
 
 Puppeteer tests in `products/jbrowse-web/browser-tests/` drive the built app and
 compare rendered canvases against committed PNGs. Rendering is async, so never
-assert on a fixed timeout — wait on a signal:
+assert on a fixed timeout; wait on a signal:
 
 - `data-testid="loading-overlay"` count reaching `0` means all tracks in a view
   finished loading.

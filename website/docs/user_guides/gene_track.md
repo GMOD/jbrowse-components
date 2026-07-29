@@ -110,8 +110,9 @@ syntax.
 ## Reading a feature's protein sequence
 
 To extract the full protein (or CDS, cDNA, or genomic sequence) for a single
-transcript, click the feature and use the sequence panel in the feature detail
-sidebar. See [](/docs/user_guides/feature_sequence) for the available options.
+transcript, click the feature and use the Sequence section of the feature
+details panel. See [](/docs/user_guides/feature_sequence) for the available
+options.
 
 ## Using gene tracks with the Protein3d plugin
 

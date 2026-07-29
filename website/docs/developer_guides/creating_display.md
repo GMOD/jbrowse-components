@@ -79,8 +79,8 @@ foundations cover every in-tree display:
 
 <!-- DISPLAY_FOUNDATIONS END -->
 
-Both walkthroughs — [Canvas2D](/docs/developer_guides/plotting_features) and
-[GPU](/docs/developer_guides/creating_gpu_display) — use
+Both walkthroughs, [Canvas2D](/docs/developer_guides/plotting_features) and
+[GPU](/docs/developer_guides/creating_gpu_display), use
 `MultiRegionDisplayMixin`, the common case. New track types should compose one
 of these rather than emitting SVG per feature.
 

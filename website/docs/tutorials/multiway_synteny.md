@@ -18,11 +18,11 @@ reference are direct alignments and row order is a real choice.
 - `samtools`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-A linear synteny view can stack more than two genomes: N genome rows with a
-synteny "ribbon" band between each adjacent pair. This tutorial builds a
-three-way grape / peach / cacao view from a single
-[jcvi](https://github.com/tanghaibao/jcvi) MCScan `.blocks` file, a standard
-cross-species ortholog table.
+Like [All-vs-all synteny](/docs/tutorials/allvsall_synteny), a linear synteny
+view here stacks more than two genomes: N genome rows with a synteny "ribbon"
+band between each adjacent pair. This tutorial builds a three-way grape / peach
+/ cacao view from a single [jcvi](https://github.com/tanghaibao/jcvi) MCScan
+`.blocks` file, a standard cross-species ortholog table.
 
 For closely related genomes (strains or accessions of one species), a
 whole-genome all-vs-all PAF is usually a better source. See

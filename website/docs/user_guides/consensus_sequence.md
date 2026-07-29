@@ -16,8 +16,8 @@ variant track).
 Click and drag across the region of interest in the linear genome view, then
 choose **Launch → Consensus sequence** from the menu that appears, then the
 alignments track to call from. That last step is there even with a single track
-open — which track the reads come from decides the answer, so it is always named
-— and the dialog title repeats the name.
+open (which track the reads come from decides the answer, so it is always
+named), and the dialog title repeats the name.
 
 Regions are limited to 500kb. Reads are much heavier to fetch than reference
 sequence, so a larger selection is refused.

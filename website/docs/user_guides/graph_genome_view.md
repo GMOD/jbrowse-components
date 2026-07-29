@@ -376,7 +376,7 @@ Each row is an allele stated against the reference it replaces, which is an
 alignment, so the BED carries a `CIGAR` column (`2062M63348I`) and an
 [alignments track](/docs/user_guides/alignments_track) reads it directly:
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "ecoli_minigraph_alleles",

@@ -86,22 +86,11 @@ Example tracks:
 
 ## Displays
 
-A _display_ is a method for showing a track in a particular view. This lets one
-track entry work across view types.
-
-The synteny track type has two displays:
-
-- `DotplotDisplay` - used in the dotplot view
-- `LinearSyntenyDisplay` - used in the linear synteny view
-
-So `jbrowse add-track myfile.paf` creates one `SyntenyTrack` entry, and opening
-it in the dotplot view renders via `DotplotDisplay`.
-
-`VariantTrack` similarly has two displays:
-
-- `LinearVariantDisplay` - used in linear genome view
-- `ChordVariantDisplay` - used in the circular view to draw breakends and
-  structural variants
+A _display_ is a method for showing a track in a particular view, letting one
+track entry work across view types; a track may own several, one per view type
+it supports. See
+[Custom track and display types](/docs/developer_guides/creating_display) for
+how tracks and displays relate and when to add a new one.
 
 ## Rendering
 

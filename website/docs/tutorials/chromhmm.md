@@ -195,4 +195,5 @@ grouping you want depends on the locus rather than on a fixed publication order.
   a QTL scan
 - [](/docs/tutorials/analyze_trio), the same display for inheritance painting
 - [](/docs/tutorials/scatac_pseudobulk)
+- [](/docs/user_guides/clustering)
 - [Configuring tracks](/docs/config_guides/tracks)

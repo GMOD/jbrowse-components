@@ -155,16 +155,11 @@ each read is drawn, and how the track absorbs more reads than fit.
 
 The size presets at the top are Normal, Compact, and Super-compact, plus
 **Custom...** for an exact pixel height. Each preset's trailing pin makes that
-height the default for every alignments track, in one click. It writes only the
-default, so tracks you have not given a height of their own follow it
-immediately and tracks you have customized keep theirs. A snackbar then offers
-to apply it to the customized tracks that are open. Every setting with a pin
-works this way, see
-[defaults for all tracks](/docs/user_guides/display_defaults).
+height the default for every alignments track; see
+[defaults for all tracks](/docs/user_guides/display_defaults) for how pinning
+works.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
-
-<Figure caption="Making Compact the default read height. Top: the pin on the Compact preset (circled). Bottom: clicking it compacts the track that was following the default, and the snackbar offers to apply it to the one open track with a height of its own." src="/img/feature_height_default.png" />
 
 Under the **Track sizing** subheading in the same submenu are three modes. Each
 label names both halves of what it does: what happens to the read height, then

@@ -168,22 +168,11 @@ callback. Putting them in `rpcProps` causes a refetch on every pixel of scroll.
 computed arrays in `rpcProps` creates an infinite fetch loop because storing
 results triggers another settings change.
 
-If you need to extend a parent class's `rpcProps`, use the super-capture pattern
-so you don't silently drop the parent's dependencies:
-
-```ts
-.views(self => {
-  const { rpcProps: superRpcProps } = self
-  return {
-    rpcProps() {
-      return {
-        ...superRpcProps(),
-        myExtraField: self.myExtraField,
-      }
-    },
-  }
-})
-```
+If you need to extend a parent class's `rpcProps`, capture the super version
+before redefining it (the same
+[super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
+used for any extended view) so you don't silently drop the parent's
+dependencies.
 
 ## Byte estimation and regionTooLarge
 

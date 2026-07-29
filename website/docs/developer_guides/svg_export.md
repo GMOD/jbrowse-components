@@ -19,7 +19,7 @@ export drawing from one callback:
 ```ts
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 
-// ctx is CanvasRenderingContext2D | SvgCanvas — one callback, both targets.
+// ctx is CanvasRenderingContext2D | SvgCanvas: one callback, both targets.
 const node = paintLayer(width, height, opts, ctx => {
   ctx.fillStyle = '#f00'
   ctx.fillRect(x, y, w, h)
@@ -29,7 +29,7 @@ const node = paintLayer(width, height, opts, ctx => {
 With `opts.rasterizeLayers` true it draws to an offscreen canvas and embeds a
 `<image>` PNG; otherwise it draws to `SvgCanvas`, a `CanvasRenderingContext2D`
 duck-type emitting `<rect>`, `<text>`, `<path>`. Pass `undefined` for `opts` to
-force vector output — always do this for text and labels so they stay crisp.
+force vector output; always do this for text and labels so they stay crisp.
 
 ## Implementing renderSvg
 

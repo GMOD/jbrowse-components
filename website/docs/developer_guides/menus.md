@@ -51,7 +51,9 @@ class MyPlugin extends Plugin {
 
 A custom track populates its track menu via the `trackMenuItems` view on the
 track model. To append to the base display's items, capture the super
-`trackMenuItems` and redefine the getter:
+`trackMenuItems` and redefine the getter (the same
+[super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
+as any extended MST view):
 
 ```js
 types
@@ -59,7 +61,7 @@ types
     // model
   })
   .views(self => {
-    // capture before the new view is defined — accessing self.trackMenuItems
+    // capture before the new view is defined; accessing self.trackMenuItems
     // inside the getter would recurse infinitely
     const { trackMenuItems: superTrackMenuItems } = self
     return {

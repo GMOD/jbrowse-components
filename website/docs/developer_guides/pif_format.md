@@ -118,7 +118,7 @@ By default `make-pif` also writes a no-CIGAR "coarse" tier of the same
 alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view
 serves this tier automatically, drawing clean ribbons without parsing
 megabyte-scale CIGAR strings; zooming in switches back to the fine `t`/`q` tier.
-No configuration is needed — the "Level of detail" menu defaults to `auto`, and
+No configuration is needed: the "Level of detail" menu defaults to `auto`, and
 `fine`/`coarse` pin a tier.
 
 A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
@@ -168,7 +168,7 @@ the rationale for each rustybam step.
 
 `rb break-paf --max-size N` is worth calling out: it splits the input alignments
 themselves at large indels, so **both** tiers inherit the same pieces. That is
-different from `--coarse`, which splits only the coarse tier — the fine tier
+different from `--coarse`, which splits only the coarse tier: the fine tier
 keeps whole alignments and draws each large indel as a colored wedge. Break the
 PAF upstream if you would rather see those indels as genuine breaks between
 separate alignments, and have feature identity stay the same across a tier

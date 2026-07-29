@@ -139,8 +139,8 @@ others with `--attributes`:
 jbrowse text-index --attributes=Name,ID,symbol,gene_name
 ```
 
-Also check that the feature type carrying the name is not in `--exclude`
-(default `CDS,exon`).
+Also check that the feature type carrying the name is not in
+[`--exclude`](/docs/cli#jbrowse-text-index).
 
 ## See also
 

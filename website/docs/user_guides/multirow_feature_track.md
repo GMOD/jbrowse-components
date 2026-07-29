@@ -143,7 +143,7 @@ dendrogram. It sits with the other visibility toggles rather than in the
 Clustering submenu, because the row labels are useful with no clustering run at
 all.
 
-<Figure src="/img/hprc2/local_ancestry_clustered.png" caption="64 HPRC haplotypes painted by local ancestry, rows clustered by similarity with the dendrogram beside them. Haplotypes sharing an ancestry profile group into blocks, so the colors sort into bands rather than the input file's order." />
+<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands instead of the input file's order." />
 
 ## Worked examples
 
@@ -156,8 +156,6 @@ Each of these builds the input file and the track config end to end:
 - [](/docs/tutorials/bxd_qtl) - strain genotype painting beside a QTL Manhattan
   plot, sorted at the peak
 - [](/docs/tutorials/analyze_trio) - IBD blocks and local ancestry per haplotype
-- [](/docs/tutorials/pangenome_hprc) - per-haplotype ancestry painting across a
-  chromosome
 
 ## See also
 

@@ -21,7 +21,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 const MyAdapterConfigSchema = ConfigurationSchema(
   'MyAdapter', // schema name, must match the `type` field in config
   {
-    // Slots — each becomes an observable MST property
+    // Slots, each becomes an observable MST property
     endpoint: {
       type: 'string',
       defaultValue: 'https://api.example.com',
@@ -115,7 +115,7 @@ The base schema's slots are merged in first. When a name collides, what happens
 depends on the kind of entry:
 
 - **A slot the child redeclares merges field-by-field over the base slot**, so
-  the override states only what differs and inherits the rest — `description`,
+  the override states only what differs and inherits the rest: `description`,
   `advanced`, `contextVariable`, `validate`, `model`, and the promotable fields.
   Keep `type` and `defaultValue` in the override either way: those are what mark
   an entry as a slot rather than a nested sub-schema.
@@ -133,8 +133,8 @@ mySlot: { type: 'number', defaultValue: 4, advanced: false },
 
 An override used to _replace_ the whole base slot definition, so every field it
 left out was dropped. If your plugin redeclares a slot from a base display
-schema and was relying on that — to shed an inherited `advanced` or `validate`,
-say — state the field explicitly, as above. Overrides that only moved a
+schema and was relying on that (to shed an inherited `advanced` or `validate`,
+say), state the field explicitly, as above. Overrides that only moved a
 `defaultValue` need no change.
 
 :::

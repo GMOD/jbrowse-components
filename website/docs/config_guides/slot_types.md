@@ -94,9 +94,9 @@ a given `frozen` slot expects is described in that slot's own text.
 
 ## maybeFrozen
 
-An arbitrary JSON value, or unset — the [`maybeBoolean`](#maybeboolean) story
-for object-valued settings. Used where "follow the display-type default" has to
-stay distinguishable from any object you could write, e.g. an alignments track's
+An arbitrary JSON value, or unset: the [`maybeBoolean`](#maybeboolean) story for
+object-valued settings. Used where "follow the display-type default" has to stay
+distinguishable from any object you could write, e.g. an alignments track's
 `colorBy`.
 
 ## text

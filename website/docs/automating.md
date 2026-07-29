@@ -21,7 +21,7 @@ export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
 {
   assembly: string        // required: assembly name
   loc?: string            // initial location, e.g. 'chr1:1,000-2,000' (omit loc to show the whole genome)
-  tracks?: TrackInit[]    // tracks to open (id strings, or objects — see below)
+  tracks?: TrackInit[]    // tracks to open (id strings, or objects; see below)
   tracklist?: boolean     // open the track selector drawer (default: false)
   nav?: boolean           // show the navigation header (default: true)
   highlight?: string[]    // regions to highlight
