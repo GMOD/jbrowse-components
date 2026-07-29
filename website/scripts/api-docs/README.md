@@ -108,12 +108,14 @@ therefore on the page, stated exactly once, and a member is one row rather than
 a heading plus a code fence.
 
 A row is name-over-type in one cell and the full documentation in the next, so
-the prose gets the width. Long types and authored `#example` blocks fold into
-`<details>` inside their cell (`codeCell`/`exampleCell`) rather than holding the
-row open. Each name carries a `<span id="<tag>-<name>">`, which is what the
-"Defined by" links on descendant pages point at. Inherited rows are
-`data-pagefind-ignore`d, so a search lands on the model that defines a member
-instead of on every page that composes it.
+the prose gets the width. Long types and authored `#example` blocks open in a
+modal `<dialog>` from inside their cell (`codeCell`/`exampleCell`/`dialogCell`)
+rather than holding the row open — expanding in place reflows the whole table
+around a `<pre>` that then has a quarter-width column to live in, where the
+dialog gets the width of the window. Each name carries a
+`<span id="<tag>-<name>">`, which is what the "Defined by" links on descendant
+pages point at. Inherited rows are `data-pagefind-ignore`d, so a search lands on
+the model that defines a member instead of on every page that composes it.
 
 Type signatures come from the TypeScript checker, which truncates past ~340
 characters by cutting mid-token. `elideSignature` in `util.ts` shortens
@@ -245,20 +247,29 @@ for how one is detected.
 
 ## Marker-block generators
 
-Three more generators inject tables/catalogs into the **hand-written** guides
+Further generators inject tables/catalogs into the **hand-written** guides
 (rather than writing whole pages like config/model/api). Each reads a JSDoc tag
 at the definition site so the docs can't drift from the code, and rewrites only
 the region between a `<!-- MARKER START -->` / `<!-- MARKER END -->` pair — a
 guide opts in by dropping that pair, and editing between the markers is
-pointless since regen overwrites it. All three run inside `pnpm gendocs`, and
-each is also a standalone script with a `--check` mode CI uses to fail when a
-tag changed but the docs weren't regenerated.
+pointless since regen overwrites it. They all run inside `pnpm gendocs`.
 
-| Tag               | Source scanned                      | Marker                   | Renders                                        |
-| ----------------- | ----------------------------------- | ------------------------ | ---------------------------------------------- |
-| `#color`          | `packages/core/src/ui/theme.ts`     | `COLOR_TABLE <group>`    | A color-swatch table per group                 |
-| `#jexlFunction`   | `packages/core/src/util/jexl.ts`    | `JEXL_CATALOG`           | The jexl function catalog, grouped by category |
-| `#extensionPoint` | all `plugins`/`packages`/`products` | `EXTENSION_POINTS_INDEX` | A completeness index of every extension point  |
+| Tag                                        | Source scanned                      | Marker                   | Renders                                              |
+| ------------------------------------------ | ----------------------------------- | ------------------------ | ---------------------------------------------------- |
+| `#color`                                   | `packages/core/src/ui/theme.ts`     | `COLOR_TABLE <group>`    | A color-swatch table per group                       |
+| `#jexlFunction`                            | `packages/core/src/util/jexl.ts`    | `JEXL_CATALOG`           | The jexl function catalog, grouped by category       |
+| `#extensionPoint`                          | all `plugins`/`packages`/`products` | `EXTENSION_POINTS_INDEX` | A completeness index of every extension point        |
+| `#displayFoundation` / `…Def`              | `packages`/`plugins`                | `DISPLAY_FOUNDATIONS`    | The foundation mixins table, with a "used by" column |
+| `#fileFormat`                              | adapter `#config` blocks            | `FILE_TYPES <group>`     | Format → adapter → track type routing, per group     |
+| `#gotcha`                                  | any `#config` block                 | `GOTCHA <ConfigName>`    | The type's caution callouts, verbatim                |
+| _(none — `new DisplayType` registrations)_ | whole repo                          | `DISPLAY_TYPES`          | Track type → display types                           |
+| _(none — `promotable: true` slots)_        | config schemas                      | `PROMOTABLE_SLOTS`       | Which settings can be pinned as a display default    |
+
+The first five are also standalone scripts with a `--check` mode CI uses to fail
+when a tag changed but the docs weren't regenerated. `DISPLAY_TYPES`, `GOTCHA`
+and `PROMOTABLE_SLOTS` have no standalone entry point — they need the whole-repo
+scan `generate.ts` already does — so they are gated by the `pnpm gendocs` diff
+in `push.yml` instead.
 
 Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
 
@@ -272,3 +283,20 @@ Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
 itself in every legend it appears in. `#extensionPoint` is scanned by regex
 across the whole tree (not the TS program), and a point tagged inconsistently in
 two places fails the run.
+
+## The remaining tags
+
+These sit in a `#config`/`#stateModel` JSDoc alongside the tags above and change
+what the generated page says, so they are listed here rather than left to be
+discovered in `parseTaggedComment`. Every one of them is stripped from the
+rendered prose, and every one is recognized only when it **heads** its comment
+line — a mention inside a sentence is prose, not a tag.
+
+| Tag                     | On                                 | Effect                                                                                                                                                                                                                                                                                      |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#category <word>`      | `#config` / `#stateModel`          | Overrides the name-suffix heuristic that buckets the page in the sidebar (`Adapter`, `Display`, `View`, …). A camelCase word becomes a title-cased label. `*Mixin` model names always bucket under `Mixin` regardless.                                                                      |
+| `#trackType <Type>`     | an adapter's `#config`             | The track type the adapter's `#example` is wrapped in, so the page shows the full config a reader pastes rather than a bare adapter snapshot. Also links the adapter to its track and that track's displays under **Related links**. Defaults to `FeatureTrack` with a warning.             |
+| `#gotcha <text>`        | `#config`                          | A footgun a reader configuring this type has to know but would not infer from the slot list. Renders as a `:::caution` callout directly under the example, and can be pulled into a guide with a `GOTCHA` marker. Runs to the next tag or the next blank line, so it may wrap across lines. |
+| `#fileFormat`           | an adapter's `#config`             | Opts the adapter into a `FILE_TYPES` table (above).                                                                                                                                                                                                                                         |
+| `#displayFoundation`    | a display's `#stateModel`          | Opts the display into the `DISPLAY_FOUNDATIONS` table (above) as a user of the named foundation.                                                                                                                                                                                            |
+| `#displayFoundationDef` | a foundation mixin's `#stateModel` | Declares the foundation and what it brings.                                                                                                                                                                                                                                                 |

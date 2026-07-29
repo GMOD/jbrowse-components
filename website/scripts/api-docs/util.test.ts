@@ -1,12 +1,9 @@
 import {
   categoryLabel,
-  collapsible,
-  collapsibleClosed,
   collectTransitive,
   elideSignature,
   exampleSection,
   filterUnseenByName,
-  firstSentence,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -164,20 +161,6 @@ describe('section / overviewSection', () => {
       'just a one-line description',
     )
   })
-
-  test('collapsible wraps content with blank lines so inner markdown renders', () => {
-    expect(collapsible('Title', '#### a', '#### b')).toBe(
-      '<details open>\n<summary>Title</summary>\n\n#### a\n\n#### b\n\n</details>',
-    )
-    expect(collapsible('Title', '', false, undefined)).toBe('')
-  })
-
-  test('collapsibleClosed omits the open attribute', () => {
-    expect(collapsibleClosed('Title', 'body')).toBe(
-      '<details>\n<summary>Title</summary>\n\nbody\n\n</details>',
-    )
-    expect(collapsibleClosed('Title', '', false)).toBe('')
-  })
 })
 
 describe('exampleSection', () => {
@@ -274,22 +257,6 @@ describe('repoRelative', () => {
     expect(repoRelative(`${process.cwd()}/plugins/foo/src/x.ts`)).toBe(
       'plugins/foo/src/x.ts',
     )
-  })
-})
-
-describe('firstSentence', () => {
-  test('stops at the first sentence end', () => {
-    expect(firstSentence('Height in pixels. Unset follows the default.')).toBe(
-      'Height in pixels.',
-    )
-  })
-  test('does not break on e.g. / i.e.', () => {
-    expect(firstSentence('Slot types, e.g. frozen, are opaque. More.')).toBe(
-      'Slot types, e.g. frozen, are opaque.',
-    )
-  })
-  test('returns the whole text when there is no sentence end', () => {
-    expect(firstSentence('  no punctuation here  ')).toBe('no punctuation here')
   })
 })
 
