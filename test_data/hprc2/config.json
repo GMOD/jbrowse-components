@@ -31,32 +31,6 @@
           "renderingMode": "phased"
         }
       ]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "hprc2_pclai_painting",
-      "name": "HPRC2 local ancestry (PCLAI) \u2014 64 haplotypes, chr1",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "hprc2_pclai_chr1.bed.gz"
-      },
-      "displays": [
-        {
-          "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "hprc2_pclai_painting-LinearMultiRowFeatureDisplay",
-          "partitionField": "sample",
-          "forceLoad": true,
-          "legend": [
-            { "label": "Yoruba (NA19240)", "color": "rgb(0,232,178)" },
-            {
-              "label": "Kinh Vietnamese (HG02135)",
-              "color": "rgb(255,114,53)"
-            },
-            { "label": "Iberian (HG01530)", "color": "rgb(229,161,255)" }
-          ]
-        }
-      ]
     }
   ],
   "defaultSession": {

@@ -2,20 +2,20 @@
 title: Pangenome (HPRC)
 description:
   Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, then
-  its 464-haplotype variant callset and per-haplotype ancestry painting, all
-  from hosted files with no pipeline to run
+  its 464-haplotype variant callset, all from hosted files with no pipeline to
+  run
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
-fivefold expansion over release 1. This tutorial opens three of its products:
-the pangenome graph drawn as a graph, the variant callset (464 haplotypes as a
-genotype matrix), and a per-haplotype local-ancestry painting.
+fivefold expansion over release 1. This tutorial opens two of its products: the
+pangenome graph drawn as a graph, and the variant callset (464 haplotypes as a
+genotype matrix).
 
 Every track below is a URL you can paste. The callset ships tabix-indexed, so
-JBrowse reads the slice you are looking at straight off HPRC's S3; the other two
-we have prebuilt and host, with the build scripts in
+JBrowse reads the slice you are looking at straight off HPRC's S3; the graph
+route we have prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## What release 2 publishes
@@ -294,7 +294,7 @@ The bubbles say where the graph varies. A third hosted file says what the
 variation is: one row per allele the graph holds, anchored on GRCh38, derived
 from the two indexes above with no assemblies, no VCF and no bubble caller.
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "hprc_minigraph_alleles",
@@ -396,70 +396,15 @@ questions about the same bp: the graph names the haplotype an allele came
 
 <Figure caption="One window, both products, restricted to the same 10 donors so the rows line up: the callset (top) is filtered to the same 50 bp tier the graph holds, both haplotypes of each donor labeled by name; the graph (bottom) rows only the haplotypes that donated sequence here, colored by where on the reference their alleles attach. The callset numbers a donor's haplotypes HP0/HP1, the graph .1/.2. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
-## Local ancestry (PCLAI)
-
-[PCLAI](https://github.com/AI-sandbox/hprc-pclai) (Point Cloud Local Ancestry
-Inference) assigns each genomic window a continuous coordinate in PCA space
-rather than a discrete ancestry label, and release 2 publishes those calls as
-**one BED per haplotype**, already on GRCh38, with the PCA coordinate encoded as
-an interpolated color in `itemRgb`.
-
-`LinearMultiRowFeatureDisplay` wants the opposite shape: one file, with a column
-naming each feature's row. Our ready-made 64-haplotype chr1 BED loads directly:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "hprc2_pclai_painting",
-  "name": "HPRC2 local ancestry (PCLAI)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc2_pclai_chr1.bed.gz"
-  },
-  "displays": [
-    {
-      "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "sample",
-      "legend": [
-        { "label": "Yoruba (NA19240)", "color": "rgb(0,232,178)" },
-        { "label": "Kinh Vietnamese (HG02135)", "color": "rgb(255,114,53)" },
-        { "label": "Iberian (HG01530)", "color": "rgb(229,161,255)" }
-      ]
-    }
-  ]
-}
-```
-
-`partitionField` assigns each feature to a row, and `rowHeight` defaults to
-auto-fit, so adding haplotypes shrinks the rows instead of overflowing the
-track. The color is a continuous PCA interpolation, so the BED carries no
-attribute to derive a key from and `legend` declares one instead: its three
-entries name the extremes of that space by the sample sitting at each, and a
-color between them is a position between them, not a fourth category.
-
-[`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
-builds your own for a chromosome and sample count you pick
-(`bash build_hprc2_pclai.sh out chr1 64`).
-
-<Figure caption="HPRC2 haplotypes painted by PCLAI local ancestry over the end of chr1, one row per haplotype, colored by the published per-window PCA coordinate. The key names the three extremes of that space; a color between them is a position between them. Rows are in sample-id order here, so ancestry-similar haplotypes are scattered down the track." src="/img/hprc2/local_ancestry.png" />
-
-**Clustering → Cluster rows by similarity** in the track menu reorders the
-haplotype rows so ancestry-similar ones sit together:
-
-<Figure caption="The same painting with the rows clustered and a dendrogram beside them. The scattered rows above collapse into solid bands, and what is left between the bands are the haplotypes that change color partway across the window." src="/img/hprc2/local_ancestry_clustered.png" />
-
 ## Reproduce it end to end
 
-Three scripts rebuild the hosted files, for a different graph or a different
-chromosome and sample count. Their provenance (source, size, exact commands,
-build date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
-them.
+Two scripts rebuild the hosted files, for a different graph. Their provenance
+(source, size, exact commands, build date) is in
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
 
 ```bash
 bash scripts/build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
 bash scripts/build_rgfa_alleles.sh out
-bash scripts/build_hprc2_pclai.sh out chr1 64
 ```
 
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
@@ -475,11 +420,7 @@ is what makes it the route that survives having no assemblies, the normal
 situation with someone else's graph. The E. coli tutorial's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 answer the carriage question instead, at the cost of re-mapping every haplotype.
-
-[`build_hprc2_pclai.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc2_pclai.sh)
-fetches the per-haplotype PCLAI BEDs, keeps the columns the painting needs, and
-concatenates them into one bgzipped, tabixed file. All three need htslib
-(`bgzip`, `tabix`) on your `PATH`.
+Both need htslib (`bgzip`, `tabix`) on your `PATH`.
 
 ## See also
 

@@ -1828,14 +1828,14 @@
   "hprc2/local_ancestry": {
     "name": "hprc2/local_ancestry",
     "status": "bad",
-    "note": "delete clustered only is fine",
+    "note": "RETIRED: local-ancestry (PCLAI) section dropped from pangenome_hprc.md entirely, not just recaptioned. Spec, PNG and gallery link deleted.",
     "reviewedAt": "2026-07-28T15:09:28.749Z",
     "hash": "dc60dcabcdf3e6e72f7a26c61063432dc5017bf3"
   },
   "hprc2/local_ancestry_clustered": {
     "name": "hprc2/local_ancestry_clustered",
     "status": "bad",
-    "note": "unclear why user should care about this figure",
+    "note": "RETIRED: local-ancestry (PCLAI) section dropped from pangenome_hprc.md entirely, not just recaptioned. Spec, PNG and gallery link deleted.",
     "reviewedAt": "2026-07-28T15:09:52.484Z",
     "hash": "b07d2fddf603de31c5fc5280c84a874ec5be7a57"
   },
