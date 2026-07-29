@@ -7,6 +7,7 @@ import {
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import {
   ARC_FAR_SCREEN_WIDTHS,
+  ARC_FLAT_ALPHA,
   ARC_FLAT_MIN_PX,
 } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
@@ -97,10 +98,9 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   const cssMarkerPalette = markerPalette.map(c => rgb255(c))
   const paletteLen = cssPalette.length
   // Flat (read cloud) connector lines are neutral black; the category color lives
-  // in the endpoint squares. Alpha kept well above samplot.py's 0.25 so an
-  // isolated thin short-insert pair stays legible — mirrors arc.slang's
-  // flat-line color/alpha and the arcMarker pass.
-  const flatLineCss = 'rgba(0,0,0,0.7)'
+  // in the endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA comes
+  // from arc.generated.ts (arc.slang is the source of truth).
+  const flatLineCss = `rgba(0,0,0,${ARC_FLAT_ALPHA})`
   // Anchor = where arcs meet the adjacent band (insert-size 0). pointing-up
   // sits at the bottom of the band; pointing-down sits at the top. Matches
   // the GPU shader and the right-side insert-size scalebar.

@@ -1,12 +1,18 @@
 // Linked-read connecting line: a 1px horizontal black line between each
 // pair of mates in a chain. Snaps Y to nearest pixel for a crisp 1px stroke.
 //! targets: wgsl, glsl
+//! export-consts: CONNECTING_LINE_ALPHA
 
 import alignmentsUniforms;
 import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// Tint strength of the connector. Exported so features/connectingLines/
+// drawCanvas.ts (Canvas2D + SVG export) strokes the same black.
+static const float CONNECTING_LINE_ALPHA = 0.45;
+
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
@@ -30,7 +36,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float syBot = 1.0 - yBot * px2clip;
 
   o.position = flippedQuadPos(sx1, sx2, syBot, syTop, local, u);
-  o.color = float4(0.0, 0.0, 0.0, 0.45);
+  o.color = float4(0.0, 0.0, 0.0, CONNECTING_LINE_ALPHA);
   return o;
 }
 

@@ -3,12 +3,18 @@
 // rows when sortedBy is in effect) and palette-indexed color (8 slots, see
 // `linkedReadColor*` in alignmentsUniforms.slang).
 //! targets: wgsl, glsl
+//! export-consts: LINKED_READ_LINE_ALPHA
 
 import alignmentsUniforms;
 import colorPack;
 
 
 public static const uint VERTS_PER_INSTANCE = 2u;
+
+// Connector opacity: the lines cross the pileup, so they stay translucent enough
+// to read the reads underneath. Exported so features/linkedReads/drawCanvas.ts
+// (Canvas2D + SVG export) strokes the same alpha.
+static const float LINKED_READ_LINE_ALPHA = 0.8;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -43,7 +49,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
   uint idx = uint(inst.colorType + 0.5);
-  o.color = float4(linkedReadColorByIndex(idx, u), 0.8);
+  o.color = float4(linkedReadColorByIndex(idx, u), LINKED_READ_LINE_ALPHA);
   return o;
 }
 

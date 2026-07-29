@@ -11,6 +11,8 @@ export const ARC_FAR_SCREEN_WIDTHS = 1
 
 export const ARC_FLAT_MIN_PX = 2.5
 
+export const ARC_FLAT_ALPHA = 0.7
+
 export const UNIFORMS_SIZE_BYTES = 336
 
 // Word indices into a Float32Array view over the uniform buffer.

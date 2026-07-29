@@ -5,6 +5,8 @@ import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
 export const VERTS_PER_INSTANCE = 6
 
+export const CONNECTING_LINE_ALPHA = 0.45
+
 export const UNIFORMS_SIZE_BYTES = 336
 
 // Word indices into a Float32Array view over the uniform buffer.

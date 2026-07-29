@@ -7,14 +7,15 @@
 //       pair spans more than ARC_FAR_SCREEN_WIDTHS the radius grows so large the
 //       band clips the apex away, leaving near-vertical lines rising from each
 //       real endpoint. Endpoints always sit at the true bp coordinates.
-//   1 = flat horizontal line at Y = destY (read cloud paired, solid, alpha 0.25)
-//   2 = flat horizontal line at Y = destY (read cloud split read, dashed, alpha 0.25)
+//   1 = flat horizontal line at Y = destY (read cloud paired, solid)
+//   2 = flat horizontal line at Y = destY (read cloud split read, dashed)
+// Both flat forms draw black at ARC_FLAT_ALPHA; see the note by that constant.
 //
 // yBp is the target Y position in genomic bp — for the arc this is the apex
 // height; for flat it is the line's Y. Read cloud sets yBp = |tlen|; arc mode sets
 // yBp = |x2-x1|/2 (the genomic radius).
 //! targets: wgsl, glsl
-//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX
+//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA
 
 import alignmentsUniforms;
 
@@ -37,6 +38,11 @@ static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
 // far less than a pixel, so without a floor the line collapses to an invisible
 // zero-length stroke. Mirrored in drawCanvas.ts.
 static const float ARC_FLAT_MIN_PX = 2.5;
+// Opacity of a flat read-cloud connector. Translucent so dense overlapping pairs
+// read as a band (cf. samplot.py's alpha), but kept well above samplot.py's 0.25:
+// an isolated short-insert pair is a single thin line, and at 0.25-0.4 it all but
+// vanishes into the background. Exported so drawCanvas.ts strokes the same value.
+static const float ARC_FLAT_ALPHA = 0.7;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -153,13 +159,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // Read cloud flat shapes (1, 2): the connector line itself is neutral black —
   // the insert-size / orientation color lives in the endpoint squares drawn by
   // the arcMarker pass (mirrors samplot.py's per-read colored markers joined by
-  // a plain line). Translucent so dense overlapping pairs read as a band (cf.
-  // samplot.py's alpha). Kept well above samplot.py's 0.25 because an isolated
-  // short-insert pair is a single thin line — at 0.25-0.4 it all but vanishes
-  // into the background; 0.7 keeps an isolated line clearly legible while
-  // overlaps still stack darker.
+  // a plain line).
   bool flat = inst.shapeType > 0.5;
-  float arcAlpha = flat ? 0.7 : 1.0;
+  float arcAlpha = flat ? ARC_FLAT_ALPHA : 1.0;
   float3 rgb = flat ? float3(0.0, 0.0, 0.0) : arcColor(inst.colorType, u);
   o.color = float4(rgb, arcAlpha);
   // Split-read flat shape (2) renders dashed.

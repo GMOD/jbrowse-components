@@ -25,8 +25,15 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   float2 local = quadLocal(vid);
 
-  float sx1 = bpToClipX(inst.startOff, u);
-  float sx2 = bpToClipX(inst.endOff, u);
+  // Widen to a minimum of 1 CSS px, as drawGaps' `Math.max(1, widthPx)` does:
+  // a few-bp deletion is sub-pixel at ordinary zoom, and without this it
+  // rasterized to partial coverage (or nothing) on the GPU while Canvas2D and
+  // SVG export drew a full 1px mark. The alpha fade below is what's meant to
+  // thin these out, not the geometry.
+  float2 xx = expandMinWidthX(
+    bpToClipX(inst.startOff, u), bpToClipX(inst.endOff, u), u.canvasW);
+  float sx1 = xx.x;
+  float sx2 = xx.y;
 
   float2 yy = pileupY(float(inst.y), u);
   float yTop = yy.x;
@@ -35,11 +42,12 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float alpha = 1.0;
 
   if (inst.gapType == GAP_SKIP) {
-    // Collapse to a 1px centerline for introns / skipped regions.
+    // Collapse to a 1px centerline for introns / skipped regions, centered on
+    // the row's midpoint — the same band drawGaps fills at `midY - 0.5`.
     float mid = (yTop + yBot) * 0.5;
-    float onePx = 2.0 / u.canvasH;
-    yTop = mid;
-    yBot = mid - onePx;
+    float halfPx = 1.0 / u.canvasH;
+    yTop = mid + halfPx;
+    yBot = mid - halfPx;
     // Fade introns toward 0.25 as reads get compact so dense splice pileups
     // stay legible. Mirrors intronAlpha() in renderers/rendererTypes.ts — keep
     // the smoothstep bounds (1..4 px) and floor (0.25) in sync.
