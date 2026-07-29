@@ -4,6 +4,21 @@ import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 const enc = new TextEncoder()
 
+// Mismatches ship as parallel typed arrays, so membership is an index scan
+// rather than a deep-equal against an object.
+function hasMismatch(
+  r: { mismatchPositions: Uint32Array; mismatchBases: Uint8Array },
+  position: number,
+  base: number,
+) {
+  for (let i = 0; i < r.mismatchPositions.length; i++) {
+    if (r.mismatchPositions[i] === position && r.mismatchBases[i] === base) {
+      return true
+    }
+  }
+  return false
+}
+
 function row(rowIndex: number, alignment: string) {
   return { rowIndex, alignmentBytes: enc.encode(alignment) }
 }
@@ -30,7 +45,7 @@ test('counts per-position depth across sample rows', () => {
   expect(Array.from(r.depths)).toEqual([3, 1, 3, 2])
   expect(r.maxDepth).toBe(3)
   expect(r.startPos).toBe(10)
-  expect(r.mismatches).toEqual([])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
 })
 
 test('emits mismatches for sample bases that differ from reference', () => {
@@ -38,10 +53,10 @@ test('emits mismatches for sample bases that differ from reference', () => {
     block(100, 'ACGT', [row(0, 'ATGT'), row(1, 'AAGC')]),
   ]
   const r = computeMafCoverage(blocks, 100, 104)
-  expect(r.mismatches).toContainEqual({ position: 101, base: 84, strand: 1 })
-  expect(r.mismatches).toContainEqual({ position: 101, base: 65, strand: 1 })
-  expect(r.mismatches).toContainEqual({ position: 103, base: 67, strand: 1 })
-  expect(r.mismatches).toHaveLength(3)
+  expect(hasMismatch(r, 101, 84)).toBe(true)
+  expect(hasMismatch(r, 101, 65)).toBe(true)
+  expect(hasMismatch(r, 103, 67)).toBe(true)
+  expect(r.mismatchPositions).toHaveLength(3)
 })
 
 test('skips reference-insertion columns and never increments refPos for them', () => {
@@ -52,7 +67,7 @@ test('skips reference-insertion columns and never increments refPos for them', (
   const r = computeMafCoverage(blocks, 50, 54)
   // Per-ref-bp depths cover positions 50..53 (A C G T)
   expect(Array.from(r.depths)).toEqual([2, 2, 2, 2])
-  expect(r.mismatches).toEqual([])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
 })
 
 test('case-insensitive base comparison: matching bases emit no mismatch', () => {
@@ -60,7 +75,7 @@ test('case-insensitive base comparison: matching bases emit no mismatch', () => 
     block(0, 'aCgT', [row(0, 'ACGT'), row(1, 'acgt')]),
   ]
   const r = computeMafCoverage(blocks, 0, 4)
-  expect(r.mismatches).toEqual([])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
 })
 
 test('sample N is a mismatch (base 78) against a known reference', () => {
@@ -69,10 +84,10 @@ test('sample N is a mismatch (base 78) against a known reference', () => {
   ]
   const r = computeMafCoverage(blocks, 0, 4)
   // row1: N at pos 0 and 2; row2: N at pos 2 and 3. All vs known ref bases.
-  expect(r.mismatches).toContainEqual({ position: 0, base: 78, strand: 1 })
-  expect(r.mismatches).toContainEqual({ position: 2, base: 78, strand: 1 })
-  expect(r.mismatches).toContainEqual({ position: 3, base: 78, strand: 1 })
-  expect(r.mismatches).toHaveLength(4)
+  expect(hasMismatch(r, 0, 78)).toBe(true)
+  expect(hasMismatch(r, 2, 78)).toBe(true)
+  expect(hasMismatch(r, 3, 78)).toBe(true)
+  expect(r.mismatchPositions).toHaveLength(4)
 })
 
 test('reference N column emits no mismatch even when samples differ', () => {
@@ -81,7 +96,7 @@ test('reference N column emits no mismatch even when samples differ', () => {
   ]
   const r = computeMafCoverage(blocks, 0, 4)
   // pos 0 ref is N: A and G samples there are unclassifiable, not mismatches.
-  expect(r.mismatches).toEqual([])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
 })
 
 test('multi-column insertion emits one entry per row with the correct length', () => {
@@ -176,4 +191,23 @@ test('a block of only the reference row yields all-NaN identity', () => {
   const r = computeMafCoverage(blocks, 0, 2, 0)
   expect(r.identity[0]).toBeNaN()
   expect(r.identity[1]).toBeNaN()
+})
+
+// The mismatch arrays start at 1024 entries and double; a wide region across
+// many species runs far past that, so the grow path carries real data.
+test('mismatch arrays grow past their initial capacity intact', () => {
+  const n = 3000
+  const blocks: MafBlock[] = [
+    block(0, 'A'.repeat(n), [row(0, 'C'.repeat(n)), row(1, 'G'.repeat(n))]),
+  ]
+  const r = computeMafCoverage(blocks, 0, n)
+  expect(r.mismatchPositions).toHaveLength(n * 2)
+  expect(r.mismatchBases).toHaveLength(n * 2)
+  // interleaved by row within each column: C then G at every position
+  expect(Array.from(r.mismatchPositions.slice(0, 4))).toEqual([0, 0, 1, 1])
+  expect(Array.from(r.mismatchBases.slice(0, 4))).toEqual([67, 71, 67, 71])
+  expect(r.mismatchPositions[n * 2 - 1]).toBe(n - 1)
+  expect(r.mismatchBases[n * 2 - 1]).toBe(71)
+  // right-sized, not a padded view onto the doubling slack
+  expect(r.mismatchPositions.buffer.byteLength).toBe(n * 2 * 4)
 })

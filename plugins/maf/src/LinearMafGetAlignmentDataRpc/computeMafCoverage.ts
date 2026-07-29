@@ -1,15 +1,55 @@
 import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 
 import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { InsertionEntry, MismatchEntry } from '@jbrowse/alignments-core'
+import type { InsertionEntry } from '@jbrowse/alignments-core'
 
 const N_UPPER = 78 // 'N'
+
+/**
+ * Growable `(position, base)` pairs. Mismatches are the one per-base-per-row
+ * output here — a wide region across many species produces hundreds of
+ * thousands — and the only consumers (`computeSNPCoverage` and the tooltip
+ * arrays shipped to the client) both want parallel typed arrays. Emitting
+ * objects and repacking them, which is what this replaced, allocated one
+ * short-lived object per mismatch purely to copy two numbers out of it.
+ */
+class MismatchWriter {
+  private positions = new Uint32Array(1024)
+  private bases = new Uint8Array(1024)
+  count = 0
+
+  push(position: number, base: number) {
+    if (this.count === this.positions.length) {
+      const nextPositions = new Uint32Array(this.count * 2)
+      nextPositions.set(this.positions)
+      this.positions = nextPositions
+      const nextBases = new Uint8Array(this.count * 2)
+      nextBases.set(this.bases)
+      this.bases = nextBases
+    }
+    this.positions[this.count] = position
+    this.bases[this.count] = base
+    this.count++
+  }
+
+  // Right-sized copies, not subarray views: these are retained per region for
+  // as long as the region is loaded, so a view would pin the doubling slack —
+  // up to twice the live bytes — for the session.
+  finish() {
+    return {
+      mismatchPositions: this.positions.slice(0, this.count),
+      mismatchBases: this.bases.slice(0, this.count),
+    }
+  }
+}
 
 export interface MafCoverageResult {
   depths: Float32Array
   maxDepth: number
   startPos: number
-  mismatches: MismatchEntry[]
+  /** parallel arrays, one entry per mismatching sample base */
+  mismatchPositions: Uint32Array
+  mismatchBases: Uint8Array
   insertions: InsertionEntry[]
   /**
    * Per-ref-bp fraction of aligned non-reference species matching the reference
@@ -50,7 +90,7 @@ export function computeMafCoverage(
   // unchanged. identity[i] = matches[i] / classifiable[i], NaN when denom 0.
   const matches = new Float32Array(length)
   const classifiable = new Float32Array(length)
-  const mismatches: MismatchEntry[] = []
+  const mismatches = new MismatchWriter()
   const insertions: InsertionEntry[] = []
   // Per-row pending insertion length at the current refPos. Flushed into
   // `insertions` when a non-gap ref column closes the insertion run (or at
@@ -103,11 +143,7 @@ export function computeMafCoverage(
               // codes, which render grey downstream) is a mismatch. An N ref is
               // unclassifiable, so nothing is recorded against it.
               if (refKnown && sampleUpper !== refUpper) {
-                mismatches.push({
-                  position: refPos,
-                  base: sampleUpper,
-                  strand: 1,
-                })
+                mismatches.push(refPos, sampleUpper)
               }
               // Identity counts non-reference species at a known ref column.
               if (refKnown && row.rowIndex !== refRowIndex) {
@@ -140,7 +176,7 @@ export function computeMafCoverage(
     depths,
     maxDepth,
     startPos: regionStart,
-    mismatches,
+    ...mismatches.finish(),
     insertions,
     identity,
   }

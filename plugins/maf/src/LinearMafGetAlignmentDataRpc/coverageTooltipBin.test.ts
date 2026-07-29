@@ -25,19 +25,13 @@ function block(
 
 /**
  * Integration test: walk the same pipeline the model's `coverageTooltipBin`
- * view uses — compute the worker output, pack mismatches into the
- * MismatchArrays shape, then call `buildCoverageTooltipBin`. Locks in the
+ * view uses — compute the worker output, which already carries mismatches in
+ * the MismatchArrays shape, then call `buildCoverageTooltipBin`. Locks in the
  * (position → depth + per-base counts) contract end-to-end.
  */
 function makeBin(blocks: MafBlock[], regionStart: number, regionEnd: number) {
   const mafCov = computeMafCoverage(blocks, regionStart, regionEnd)
-  const mismatchPositions = new Uint32Array(mafCov.mismatches.length)
-  const mismatchBases = new Uint8Array(mafCov.mismatches.length)
-  for (let i = 0; i < mafCov.mismatches.length; i++) {
-    const m = mafCov.mismatches[i]!
-    mismatchPositions[i] = m.position
-    mismatchBases[i] = m.base
-  }
+  const { mismatchPositions, mismatchBases } = mafCov
   return (pos: number) =>
     buildCoverageTooltipBin(
       pos,

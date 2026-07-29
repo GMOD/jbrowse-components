@@ -38,17 +38,10 @@ export function buildMafCoverageRegion(
   }
 
   // mismatch + insertion event arrays for the hover tooltips (MismatchArrays /
-  // InterbaseArrays shapes consumed by alignments-core). The mismatch arrays
-  // also feed computeSNPCoverage directly, so the object list isn't iterated
-  // a second time.
-  const mmCount = mafCov.mismatches.length
-  const mismatchPositions = new Uint32Array(mmCount)
-  const mismatchBases = new Uint8Array(mmCount)
-  for (let i = 0; i < mmCount; i++) {
-    const m = mafCov.mismatches[i]!
-    mismatchPositions[i] = m.position
-    mismatchBases[i] = m.base
-  }
+  // InterbaseArrays shapes consumed by alignments-core). `computeMafCoverage`
+  // emits the mismatch arrays in their final packed form, so they feed
+  // computeSNPCoverage and the client payload with no repacking pass.
+  const { mismatchPositions, mismatchBases } = mafCov
 
   const snpCoverage = computeSNPCoverage(
     mismatchPositions,
