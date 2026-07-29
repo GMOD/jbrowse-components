@@ -34,7 +34,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       }),
     )
     .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex — the render lifecycle
+      // fetched data keyed by displayedRegionIndex; the render lifecycle
       // uploads/draws one region at a time from this map
       rpcDataMap: observable.map<number, ScoreRegionData>(),
     }))
@@ -42,7 +42,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
       },
-      // fetch inputs watched by SettingsInvalidate — any change refetches. Put
+      // fetch inputs watched by SettingsInvalidate; any change refetches. Put
       // settings that change what the worker computes here; never scroll/zoom
       // (those change every frame) or the fetch results themselves.
       rpcProps() {

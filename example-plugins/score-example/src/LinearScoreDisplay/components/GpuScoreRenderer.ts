@@ -41,7 +41,7 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
       return
     }
     // the generated packInstances interleaves the parallel arrays into the
-    // GL_ATTRIBUTES layout — no manual DataView offsets
+    // GL_ATTRIBUTES layout, no manual DataView offsets
     const buf = shader.packInstances(
       { startBp: data.starts, endBp: data.ends, score: data.scores },
       data.numFeatures,
