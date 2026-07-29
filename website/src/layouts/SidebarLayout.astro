@@ -88,6 +88,12 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     font-weight: 500;
     border-radius: 3px;
     transition: background 0.15s;
+    /* Labels carry a "<Category>: " prefix (docs-sidebar.ts) and so wrap often;
+       the hanging indent keeps a continuation line from reading as its own
+       entry. The negative indent pulls the first line back to the 12px the
+       shorthand above sets. */
+    padding-left: calc(12px + 1em);
+    text-indent: -1em;
   }
   .sidebar :global(a:hover) {
     background: var(--color-sidebar-hover-bg);
@@ -98,7 +104,7 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     color: var(--color-sidebar-active-text);
     font-weight: 500;
     border-left: 3px solid var(--color-accent);
-    padding-left: calc(12px - 3px);
+    padding-left: calc(12px + 1em - 3px);
   }
 
   .sidebar :global(details > summary) {
