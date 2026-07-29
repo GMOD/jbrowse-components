@@ -291,6 +291,13 @@ export const gallerySections: readonly GallerySection[] = [
           'A 7.8 kb deletion in an NHEJ1 intron genotyped across dog breeds from the Dog10K structural-variant callset: carried by Collies and relatives, absent from other breeds and from wolves.',
       },
       {
+        label: 'Dog CYP1A2 nonsense allele',
+        spec: 'dog10k-cyp1a2-nonsense',
+        guide: 'tutorials/dog10k_lof',
+        description:
+          'A stop-gained variant in a drug-metabolizing P450, genotyped across dog breeds: carried and often homozygous in several breeds, absent from every wolf and coyote in the Dog10K collection.',
+      },
+      {
         label: 'GWAS with LD coloring',
         spec: 'gwas/locuszoom_ld',
         guide: 'user_guides/gwas_track',

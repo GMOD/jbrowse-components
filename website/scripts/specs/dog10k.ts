@@ -115,6 +115,28 @@ const DOG_VCF_LAYOUT = [
 // Row labels for the DENR figure. The Mastiff-clade breeds the paper names
 // (Boxer, Bull Terrier, Miniature Bull Terrier, English Bulldog) take one
 // swatch, the two comparison breeds another, and the wolves the third.
+// Row labels for the CYP1A2 figure. Breeds carrying the nonsense allele first,
+// then two that do not, then the wolves — which is where the control lives: no
+// wolf or coyote in the whole collection carries it.
+const CYP_GROUPS = [
+  { label: 'German Hound', color: '#0072B2', n: 6, prefix: 'GHND' },
+  { label: 'Bohemian Shepherd', color: '#0072B2', n: 6, prefix: 'BHSP' },
+  { label: 'Shetland Sheepdog', color: '#0072B2', n: 4, prefix: 'SSHP' },
+  { label: 'Black Russian Terrier', color: '#0072B2', n: 5, prefix: 'BRTR' },
+  { label: 'Keeshond', color: '#0072B2', n: 5, prefix: 'KEES', from: 2 },
+  { label: 'Labrador Retriever', color: '#999999', n: 5, prefix: 'LABR' },
+  { label: 'Boxer', color: '#999999', n: 4, prefix: 'BOXR' },
+  { label: 'Wolf', color: '#E69F00', n: 4, prefix: 'CLUPGR' },
+]
+
+const CYP_LAYOUT = CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
+  Array.from({ length: n }, (_, i) => ({
+    name: `${prefix}${String(from + i).padStart(6, '0')}`,
+    label: `${label} ${i + 1}`,
+    color,
+  })),
+)
+
 const DENR_GROUPS = [
   {
     label: 'Boxer',
@@ -308,5 +330,43 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track plus all 25 sample rows and the genotype legend
     viewportHeight: 775,
+  },
+
+  // The CYP1A2 nonsense variant (Meadows et al. 2023, Fig 10): chr30:38,261,635
+  // C>T turns codon 373's CGA into TGA, truncating a drug-metabolizing P450.
+  // Position derived by translating the reference CDS rather than looked up, so
+  // it can be re-checked. Carried by many breeds, homozygous in several, and
+  // absent from all 63 wolves and 4 coyotes in the collection — the four wolf
+  // rows here stand in for that. Built by scripts/build_dog10k_cyp1a2.sh.
+  {
+    mode: 'url',
+    name: 'dog10k-cyp1a2-nonsense',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // base-level around the stop codon: a SNV is one base wide however far you
+      // zoom out, so this is the only scale at which a per-sample call reads as
+      // a block rather than a tick
+      loc: 'chr30:38,261,590-38,261,690',
+      // the stop-gained codon, marked in-app rather than painted on
+      highlight: ['chr30:38,261,634-38,261,638'],
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 90,
+        },
+        {
+          trackId: 'dog10k_cyp1a2_snvs',
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 500,
+          layout: CYP_LAYOUT,
+        },
+      ],
+    }),
+    readyText: 'chr30',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // gene track plus all 39 sample rows and the genotype legend
+    viewportHeight: 870,
   },
 ]

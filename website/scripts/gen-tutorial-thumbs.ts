@@ -71,6 +71,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.51, 0.94],
     position: 'left',
   },
+  dog10k_lof: {
+    // the genotype column at the stop codon, breed labels kept
+    src: 'dog10k-cyp1a2-nonsense.png',
+    band: [0.26, 1],
+    xband: [0, 0.62],
+    position: 'left',
+  },
   dog10k_svs: {
     // the Collie rows carrying the deletion: the breed labels on the left and
     // the genotype blocks, dropping the empty right margin past them

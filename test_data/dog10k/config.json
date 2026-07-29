@@ -19,9 +19,7 @@
       "type": "FeatureTrack",
       "trackId": "canFam4_ncbi_refseq",
       "name": "NCBI RefSeq genes (canFam4)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -39,9 +37,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_nhej1_svs",
       "name": "Dog10K structural variants at NHEJ1",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_nhej1_svs.vcf.gz"
@@ -51,9 +47,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_denr_svs",
       "name": "Dog10K structural variants at DENR",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_denr_svs.vcf.gz"
@@ -61,11 +55,19 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "dog10k_cyp1a2_snvs",
+      "name": "Dog10K SNVs at CYP1A2",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_cyp1a2_snvs.vcf.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "dog10k_wolfdog_block_genotypes",
       "name": "Dog10K phased genotypes (wolves, Saarloos, dogs)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_wolfdog_chr1_block.vcf.gz"
@@ -75,9 +77,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_wolfdog_ancestry",
       "name": "Wolfdog local ancestry (FLARE, chr1)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
