@@ -97,7 +97,7 @@ test('SpreadsheetView without init shows import form', () => {
 // location is the reconstruction source. It must be persisted synchronously
 // (not just the volatile fileSource) so a snapshot taken before the async load
 // finishes can still reload the file instead of stranding on the import form.
-test('snapshot persists cached file location synchronously', () => {
+test('snapshot persists cached file location synchronously', async () => {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
@@ -115,4 +115,15 @@ test('snapshot persists cached file location synchronously', () => {
   } = getSnapshot(view)
   expect(snap.init).toBeUndefined()
   expect(snap.importWizard.cachedFileLocation).toBeDefined()
+
+  // The snapshot assertions above intentionally run before the async load
+  // finishes; let it settle before the test ends so its resolution doesn't
+  // throw "require a file after the Jest environment has been torn down"
+  // from the import wizard's dynamic import.
+  await waitFor(
+    () => {
+      expect(view.spreadsheet).toBeDefined()
+    },
+    { timeout: 30000 },
+  )
 }, 40000)

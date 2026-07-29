@@ -81,4 +81,11 @@ test('Loader.tsx reloadPluginManagerCallback restores session correctly', async 
     },
     { timeout: 10000 },
   )
+
+  // Wait for the reloaded session's assembly to finish loading: otherwise the
+  // test ends while it's still in flight, and its resolution after teardown
+  // throws "require a file after the Jest environment has been torn down"
+  // from the adapter's dynamic import.
+  const newRootModel = window.JBrowseRootModel as WebRootModel
+  await newRootModel.session!.assemblyManager.waitForAssembly('volvox')
 }, 30000)

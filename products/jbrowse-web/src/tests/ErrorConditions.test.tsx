@@ -4,7 +4,7 @@ import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json' with
 import brokenTrackConfig from '../../test_data/volvox/config_broken.json' with { type: 'json' }
 import brokenOpenConfig from '../../test_data/volvox/config_broken_open.json' with { type: 'json' }
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json' with { type: 'json' }
-import { createViewNoWait, doBeforeEach, mockConsole } from './util.tsx'
+import { createView, createViewNoWait, doBeforeEach, mockConsole } from './util.tsx'
 
 const delay = { timeout: 30000 }
 
@@ -86,8 +86,12 @@ test('a broken track open at session restore is dropped, not a crash', async () 
   await mockConsole(async () => {
     // The track is open at load but its config can't hydrate. Session load drops
     // it (keeping the invariant that view.tracks only holds usable tracks)
-    // rather than crashing.
-    const { view } = createViewNoWait(brokenOpenConfig)
+    // rather than crashing. Wait for the assembly to finish loading (via
+    // view.initialized): otherwise the test ends while that's still in
+    // flight, and its resolution after teardown throws "require a file after
+    // the Jest environment has been torn down" from assembly.ts's dynamic
+    // adapter-class import.
+    const { view } = await createView(brokenOpenConfig)
     expect(view.tracks).toHaveLength(0)
 
     // toggling still works with no broken track lingering in the view

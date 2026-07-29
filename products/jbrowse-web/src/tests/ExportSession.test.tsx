@@ -36,6 +36,14 @@ test('export session with alignments and gff tracks', async () => {
   )
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
+  // Wait for both tracks' RPC fetches to settle before exporting: otherwise
+  // exporting the session (which doesn't depend on track data) finishes the
+  // test while the fetches are still in flight, and their resolution after
+  // teardown throws "require a file after the Jest environment has been torn
+  // down" from RenderFeatureData's dynamic import.
+  await findByTestId('pileup-display-done', ...opts)
+  await findByTestId(/^display-gff3tabix_genes-.*-done$/, ...opts)
+
   const user = userEvent.setup()
   await user.click(await findByText('File'))
   await user.click(await findByText('Export session'))

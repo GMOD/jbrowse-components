@@ -269,5 +269,11 @@ test('launch a multi-panel synteny view from a region selection', async () => {
         'volvox_del',
       ])
     }, delay)
+
+    // Wait for the new panels' synteny fetches to settle: otherwise the test
+    // ends while they're still in flight, and their resolution after teardown
+    // throws "require a file after the Jest environment has been torn down"
+    // from the synteny RPC's dynamic import.
+    await screen.findAllByTestId('synteny_canvas_done', ...opts)
   })
 }, 60000)

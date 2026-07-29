@@ -21,6 +21,7 @@ import { generateReadBuffer } from './generateReadBuffer.ts'
 import type { WebSessionModel } from '../sessionModel/index.ts'
 import type { AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { SpreadsheetViewModel } from '@jbrowse/plugin-spreadsheet-view'
 import type { RenderResult } from '@testing-library/react'
 
 type LGV = LinearGenomeViewModel
@@ -366,6 +367,17 @@ export async function openSpreadsheetView({
   }, delay)
 
   await user.click(await screen.findByTestId('open_spreadsheet'))
+
+  // Wait for the file load to settle before returning: otherwise callers that
+  // don't wait on anything further leave the test while it's still in
+  // flight, and its resolution after teardown throws "require a file after
+  // the Jest environment has been torn down" from the import wizard's
+  // dynamic unzip import.
+  const view = session.views.at(-1) as SpreadsheetViewModel
+  await waitFor(() => {
+    expect(view.spreadsheet).toBeDefined()
+  }, delay)
+
   return { session }
 }
 
