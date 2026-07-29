@@ -1,3 +1,5 @@
+import Flatbush from '@jbrowse/core/util/flatbush'
+
 import { INTERBASE_INSERTION } from '../../shared/types.ts'
 import {
   SNP_HIT_MAX_BP_PER_PX,
@@ -474,6 +476,56 @@ describe('reversed block resolves the base actually painted under the cursor', (
     expect(result.type).toBe('coverage')
     if (result.type === 'coverage') {
       expect(result.hit.position).toBe(1009)
+    }
+  })
+})
+
+// Chain mode puts a chain's mates on one row, and `chainFlatbush` boxes the
+// chain's whole minStart..maxEnd extent so the connecting line between mates is
+// hoverable. The chain box must NOT win over a read the cursor is actually on:
+// resolving to `chainFirstReadIndices` there described mate 1 while the cursor
+// sat on mate 2, so the tooltip, feature details, and context menu all named the
+// wrong read.
+describe('chain mode resolves the read under the cursor, not the chain first read', () => {
+  const CHAIN_OPTS: HitTestOptions = { ...ZOOMED_OUT_OPTS, isChainMode: true }
+
+  // One chain, two mates on row 0: mate1 [0,2000], mate2 [16000,18000].
+  // 200px over [0,20000] → bpPerPx=100, so x=5 → bp 500, x=170 → bp 17000,
+  // x=100 → bp 10000 (the gap between mates).
+  function chainBlock() {
+    const chainFlatbush = new Flatbush(1)
+    chainFlatbush.add(0, 0, 18000, 0)
+    chainFlatbush.finish()
+    return makeResolved({
+      readIds: ['mate1', 'mate2'],
+      readPositions: new Uint32Array([0, 2000, 16000, 18000]),
+      readYs: new Uint16Array([0, 0]),
+      chainFirstReadIndices: new Uint32Array([0]),
+      chainFlatbush,
+    })
+  }
+
+  it('hovering the second mate resolves the second mate', () => {
+    const result = performHitTest(170, 60, chainBlock(), CHAIN_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'mate2', index: 1 })
+    }
+  })
+
+  it('hovering the first mate resolves the first mate', () => {
+    const result = performHitTest(5, 60, chainBlock(), CHAIN_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'mate1', index: 0 })
+    }
+  })
+
+  it('hovering the connecting line between mates falls back to the chain', () => {
+    const result = performHitTest(100, 60, chainBlock(), CHAIN_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'mate1', index: 0 })
     }
   })
 })

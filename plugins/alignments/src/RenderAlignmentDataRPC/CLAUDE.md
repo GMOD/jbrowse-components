@@ -109,17 +109,29 @@ opposite strand keys differently than the primary — so a chain spanning region
 whose far end is a strand-flipped supplement can land in two sections. Both are
 accepted limitations of per-region partitioning, not bugs to fix.
 
-## `computeMultiRegionLayout`: the placement axis is segmented per refName
+## The placement axis is segmented per refName — in BOTH layouts
 
 Reads are placed by genomic coordinate, and refNames share that coordinate space
 — `ctgA:1-50,000` and `ctgB:1-6,000` both start at 1 — while occupying disjoint
 screen space. Placing every region's reads on one axis therefore collided
 regions that never overlap on screen: each ctgB read was pushed below every ctgA
 read covering the same bp, so ctgB's pileup started well below row 0 with a
-wedge of whitespace above it. `segmentExtentsByRefName` shifts each refName onto
-its own disjoint span of the axis before placement (a read only ever spans
-regions of one refName, so its unioned extent moves as a unit). It is a no-op
-for single-refName views, which includes collapse-introns.
+wedge of whitespace above it. `refNameAxisShift` (`sortLayout.ts`) lays each
+refName's span end to end on its own segment of the axis. It is identity for
+single-refName views, which includes collapse-introns.
+
+Both layouts apply it, and they must stay that way — chain layout had the same
+bug for the same reason after pileup layout was fixed:
+
+- **pileup** (`segmentExtentsByRefName`) shifts each read's unioned extent as a
+  unit; a read only ever spans regions of one refName.
+- **chain** (`mergeChains` in `computeChainLayout.ts`) shifts each region's chain
+  bounds **before** merging by name, because a chain — unlike a read — *can*
+  span refNames (an inter-chromosomal pair), so shifting the merged bounds by one
+  refName's offset would be wrong.
+
+Both need the region bounds, threaded in as `regions` (from
+`model.loadedRegions`) via `GroupLayoutContext`.
 
 ## `computeMultiRegionLayout` sort/softclip: same-refName only
 

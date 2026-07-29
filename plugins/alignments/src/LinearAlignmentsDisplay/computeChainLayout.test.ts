@@ -454,6 +454,60 @@ describe('computeMultiRegionChainLayout — cross-region consistency', () => {
   })
 })
 
+// Mirrors the pileup path's segmentExtentsByRefName rule (sortLayout.ts):
+// refNames share the bp axis but occupy disjoint screen space, so packing them on
+// one axis pushed ctgB's chains below every ctgA chain covering the same bp.
+describe('computeMultiRegionChainLayout — placement axis is per refName', () => {
+  const overlappingBp = [
+    { name: 'chainA', minStart: 100, maxEnd: 900, distance: 800 },
+  ]
+  const regions = new Map([
+    [0, { refName: 'ctgA', start: 0, end: 1000 }],
+    [1, { refName: 'ctgB', start: 0, end: 1000 }],
+  ])
+
+  test('same-bp chains on different refNames share row 0', () => {
+    const ctgA = makeChainData({ regionStart: 0, chains: overlappingBp })
+    const ctgB = makeChainData({
+      regionStart: 0,
+      chains: [{ ...overlappingBp[0]!, name: 'chainB' }],
+    })
+
+    const { rowMap, maxY } = computeMultiRegionChainLayout(
+      [
+        [0, ctgA],
+        [1, ctgB],
+      ],
+      regions,
+    )
+
+    expect(rowMap.get('chainA')).toBe(0)
+    expect(rowMap.get('chainB')).toBe(0)
+    expect(maxY).toBe(1)
+  })
+
+  test('same-refName chains still collide', () => {
+    const region1 = makeChainData({ regionStart: 0, chains: overlappingBp })
+    const region2 = makeChainData({
+      regionStart: 0,
+      chains: [{ ...overlappingBp[0]!, name: 'chainB' }],
+    })
+
+    const { maxY } = computeMultiRegionChainLayout(
+      [
+        [0, region1],
+        [1, region2],
+      ],
+      new Map([
+        [0, { refName: 'ctgA', start: 0, end: 1000 }],
+        [1, { refName: 'ctgA', start: 0, end: 1000 }],
+      ]),
+    )
+
+    expect(maxY).toBe(2)
+  })
+})
+
 describe('buildChainConnectingData', () => {
   test('no connecting line for single-read chain', () => {
     const data = makeChainData({

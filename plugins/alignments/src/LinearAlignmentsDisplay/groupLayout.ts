@@ -75,7 +75,7 @@ function layoutOneGroup(
     )
   }
   const base = ctx.isChainMode
-    ? buildLaidOutChainMap(dataMap, cap)
+    ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, maxRows: cap })
     : buildLaidOutPileupMap({
         dataMap,
         sortedBy: ctx.sortedBy,
@@ -153,7 +153,7 @@ export function layoutGroupRowCounts(
       collapsesRows(ctx, key, NO_OVERRIDES)
         ? collapsedLayoutMaxY(dataMap)
         : ctx.isChainMode
-          ? chainLayoutMaxY(dataMap, maxRows)
+          ? chainLayoutMaxY({ dataMap, regions: ctx.regions, maxRows })
           : pileupLayoutMaxY({
               dataMap,
               sortedBy: ctx.sortedBy,

@@ -2,6 +2,12 @@ import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import {
+  CHAIN_FILL_NO_SUPP,
+  CHAIN_FILL_SPLIT_DELETION,
+  CHAIN_FILL_SPLIT_INVERSION,
+  CHAIN_FILL_SUPP_PRIMARY_FWD,
+} from '../shared/types.ts'
 import { ColorScheme } from './constants.ts'
 import { IS_GRADIENT_SPAN_FRAC } from './shaders/slang/read.iface.generated.ts'
 
@@ -141,13 +147,22 @@ export function readColorCategory(
   const strand = data.readStrands[i]!
   const isChain = opts?.linkedReads !== undefined && opts.linkedReads !== 'off'
 
-  const chainSupp = data.readChainHasSupp?.[i] ?? 0
+  const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_FILL_NO_SUPP
+  const hasSupp = chainSupp !== CHAIN_FILL_NO_SUPP
   const isPaired = (flags & 1) !== 0
+  // Both split markers only apply to paired chains, and only under a scheme that
+  // encodes orientation — otherwise the split hue would displace the scheme the
+  // user picked (insert size, tag, modifications).
+  const splitsUnderOrientationScheme =
+    isChain &&
+    isPaired &&
+    (colorScheme === ColorScheme.pairOrientation ||
+      colorScheme === ColorScheme.insertSizeAndOrientation)
 
   // Opt-in legacy behavior: paint paired supplementary chains a flat
   // supplementary color (hides the discordant-pair signal; off by default).
   // SYNC: mirror of the `u.colorSuppChains == 1` branch in read.slang.
-  if (isChain && chainSupp > 0 && isPaired && opts.colorSupplementaryChains) {
+  if (isChain && hasSupp && isPaired && opts.colorSupplementaryChains) {
     return 'supplementary'
   }
 
@@ -156,8 +171,11 @@ export function readColorCategory(
   // flip. Paired supplementary chains otherwise keep their normal per-scheme
   // color (pair orientation, insert size, …): a flat override would hide the
   // discordant-pair signal, and the split is already shown by arcs/clip marks.
-  if (isChain && chainSupp > 0 && !isPaired) {
-    const primaryStrand = chainSupp > 1 ? -1 : 1
+  if (isChain && hasSupp && !isPaired) {
+    // SYNC: `(inst.chainHasSupp > 1u) ? -1 : 1` in read.slang. Only reachable
+    // with chainSupp 1 or 2 — buildChainMetadata writes the split markers (3/4)
+    // for paired chains only.
+    const primaryStrand = chainSupp > CHAIN_FILL_SUPP_PRIMARY_FWD ? -1 : 1
     // Omitted follows the `flipStrandLongReadChains` config default (true). The
     // GPU side has no default of its own — the uniform is always written from
     // the same resolved config value — so this is the one place the fallback
@@ -167,17 +185,14 @@ export function readColorCategory(
   }
 
   // Paired split read whose supplementary segment maps opposite-strand to its
-  // own primary mate (chainSupp === 3): the split crosses an inversion junction.
-  // Under an orientation scheme, paint the whole chain a dedicated inversion hue,
-  // distinct from the RR-pair blue so the two are tellable apart. Co-linear
-  // paired splits keep their per-scheme pair-orientation color.
+  // own primary mate: the split crosses an inversion junction. Paint the whole
+  // chain a dedicated inversion hue, distinct from the RR-pair blue so the two
+  // are tellable apart. Co-linear paired splits keep their per-scheme
+  // pair-orientation color.
   // SYNC: mirror of the `chainHasSupp == 3u` branch in read.slang.
   if (
-    isChain &&
-    chainSupp === 3 &&
-    isPaired &&
-    (colorScheme === ColorScheme.pairOrientation ||
-      colorScheme === ColorScheme.insertSizeAndOrientation)
+    splitsUnderOrientationScheme &&
+    chainSupp === CHAIN_FILL_SPLIT_INVERSION
   ) {
     return 'splitInversion'
   }
@@ -185,13 +200,7 @@ export function readColorCategory(
   // Same as above but for a same-strand (co-linear) split — a deletion / tandem-
   // dup junction. Its own color (the supplementary yellow), reserving magenta
   // for the more specific inversion case. SYNC: `chainHasSupp == 4u` in read.slang.
-  if (
-    isChain &&
-    chainSupp === 4 &&
-    isPaired &&
-    (colorScheme === ColorScheme.pairOrientation ||
-      colorScheme === ColorScheme.insertSizeAndOrientation)
-  ) {
+  if (splitsUnderOrientationScheme && chainSupp === CHAIN_FILL_SPLIT_DELETION) {
     return 'splitDeletion'
   }
 

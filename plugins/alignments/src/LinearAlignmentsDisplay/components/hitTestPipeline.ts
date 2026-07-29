@@ -91,6 +91,13 @@ export function contextMenuFieldsForHit(
   }
 }
 
+// The chain's representative read, for a hover that lands on a chain's ROW but
+// on none of its reads — i.e. over the connecting line spanning the gap between
+// mates. `chainFlatbush` boxes each chain's whole minStart..maxEnd extent, so it
+// answers "which chain owns this row here" where `hitTestFeature` (exact read
+// extents) finds nothing. Only reached as a fallback: over an actual read the
+// caller must return that read, not the chain's first one, or the tooltip /
+// details / context menu would describe mate 1 while the cursor is on mate 2.
 function hitTestChain(
   coords: CigarCoords,
   rpcData: PileupDataResult,
@@ -342,9 +349,19 @@ export function performHitTest(
       }
     }
 
-    const hit = isChainMode
-      ? hitTestChain(coords, resolved.rpcData, featureHeight)
-      : hitTestFeature(resolved, coords, featureHeight)
+    // The read under the cursor always wins; in chain mode a miss then falls
+    // back to the chain, so the connecting line between mates stays hoverable.
+    // `chainIdsForRead` resolves the whole chain from any of its reads, so the
+    // chain highlight/selection is unaffected by which read answers.
+    // The read under the cursor always wins; in chain mode a miss then falls
+    // back to the chain, so the connecting line between mates stays hoverable.
+    // `chainIdsForRead` resolves the whole chain from any of its reads, so the
+    // chain highlight/selection is unaffected by which read answers.
+    const hit =
+      hitTestFeature(resolved, coords, featureHeight) ??
+      (isChainMode
+        ? hitTestChain(coords, resolved.rpcData, featureHeight)
+        : undefined)
     if (hit) {
       return { type: 'feature', hit, resolved }
     }

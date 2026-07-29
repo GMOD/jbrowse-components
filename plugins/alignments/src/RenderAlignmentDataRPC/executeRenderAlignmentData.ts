@@ -44,6 +44,10 @@ import {
 } from '../shared/groupFeatures.ts'
 import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
+import {
+  CHAIN_FILL_SPLIT_DELETION,
+  CHAIN_FILL_SPLIT_INVERSION,
+} from '../shared/types.ts'
 import { getFlags } from '../shared/util.ts'
 
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
@@ -163,13 +167,6 @@ export function filterChainFeatures(
   }
   return deduped.filter(f => keptIds.has(f.id()))
 }
-
-// readChainHasSupp values written for a split mate's segments, layered on top of
-// the plain has-supp values (1=fwd primary, 2=rev primary) that buildChainMetadata
-// emits. SYNC: read.slang `chainHasSupp == 3u / == 4u`, colorUtils `chainSupp
-// === 3 / === 4`.
-const CHAIN_FILL_SPLIT_INVERSION = 3
-const CHAIN_FILL_SPLIT_DELETION = 4
 
 // Chain metadata + the per-read arrays linking each read back to its chain.
 // `readPairOrientations` (already built by buildBaseReadArrays) is corrected in

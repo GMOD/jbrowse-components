@@ -2,7 +2,9 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
   cloneWithLayout,
+  extendRefNameSpan,
   placeRectCapped,
+  refNameAxisShift,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
@@ -10,6 +12,10 @@ import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { getOrCreate } from '../shared/util.ts'
 import { mergeSpans, overlapIntervals } from './spanOverlaps.ts'
 
+import type {
+  RefNameSpans,
+  RegionBounds,
+} from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 
 // Total order over chains: packing distance first, then span, then chain name.
@@ -56,21 +62,51 @@ function buildChainRowMap(
 // Chains spanning multiple regions are merged by name. min/max give the
 // true span; max-distance is the longest end-to-end view, which keeps the
 // largest chains packing first under placeRect's distance-sort.
-function mergeChains(datasets: PileupDataResult[]) {
+//
+// Bounds are shifted onto their region's refName segment of the placement axis
+// (`refNameAxisShift`) before merging — refNames share the genomic coordinate
+// space while occupying disjoint screen space, so packing ctgA and ctgB chains
+// on one axis pushed every ctgB chain below the ctgA chains covering the same
+// bp. Shifting per region rather than per merged chain is what keeps an
+// inter-chromosomal chain's two ends in their own segments. Identity for
+// single-refName views, so the common case is untouched. `distance` is a span,
+// not a coordinate, so it never shifts.
+function mergeChains(
+  entries: [number, PileupDataResult][],
+  regions: ReadonlyMap<number, RegionBounds> | undefined,
+) {
+  const refNameOf = (idx: number) => regions?.get(idx)?.refName
+  const spans: RefNameSpans = new Map()
+  for (const [idx, data] of entries) {
+    if (isChainData(data)) {
+      const { chainNames, chainAbsMinStarts, chainAbsMaxEnds } = data
+      for (let i = 0; i < chainNames.length; i++) {
+        extendRefNameSpan(
+          spans,
+          refNameOf(idx),
+          chainAbsMinStarts[i]!,
+          chainAbsMaxEnds[i]!,
+        )
+      }
+    }
+  }
+  const shiftFor = refNameAxisShift(spans)
+
   const merged = new Map<
     string,
     { minStart: number; maxEnd: number; distance: number }
   >()
-  for (const data of datasets) {
+  for (const [idx, data] of entries) {
     if (!isChainData(data)) {
       continue
     }
+    const offset = shiftFor(refNameOf(idx))
     const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
       data
     for (let i = 0; i < chainNames.length; i++) {
       const name = chainNames[i]!
-      const minStart = chainAbsMinStarts[i]!
-      const maxEnd = chainAbsMaxEnds[i]!
+      const minStart = chainAbsMinStarts[i]! + offset
+      const maxEnd = chainAbsMaxEnds[i]! + offset
       const distance = chainDistances[i]!
       const existing = merged.get(name)
       if (!existing) {
@@ -116,7 +152,7 @@ export function computeChainLayout(
   data: PileupDataResult,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
-  const chains = mergeChains([data])
+  const chains = mergeChains([[0, data]], undefined)
   const { rowMap, maxY, truncated } = buildChainRowMap(chains, maxRows)
   return { readYs: readYsFromRowMap(data, rowMap), maxY, truncated }
 }
@@ -125,14 +161,15 @@ export function computeChainLayout(
  * Compute chain layout across multiple regions, deduplicating chains that
  * span region boundaries by read name. Returns a rowMap keyed by chain name
  * for distributing rows back to each region. Mirrors computeMultiRegionLayout()
- * from sortLayout.ts.
+ * from sortLayout.ts, including its per-refName segmentation of the placement
+ * axis (`regions`, omitted only by single-region callers/tests).
  */
 export function computeMultiRegionChainLayout(
   entries: [number, PileupDataResult][],
+  regions?: ReadonlyMap<number, RegionBounds>,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
-  const chains = mergeChains(entries.map(([, d]) => d))
-  return buildChainRowMap(chains, maxRows)
+  return buildChainRowMap(mergeChains(entries, regions), maxRows)
 }
 
 /**
@@ -141,21 +178,40 @@ export function computeMultiRegionChainLayout(
  * just runs the shared row-map pass and drops the clones — the count-only twin
  * of `pileupLayoutMaxY` for the fit-height pass.
  */
-export function chainLayoutMaxY(
-  dataMap: ReadonlyMap<number, PileupDataResult>,
+export function chainLayoutMaxY({
+  dataMap,
+  regions,
   maxRows = Number.POSITIVE_INFINITY,
-) {
+}: {
+  dataMap: ReadonlyMap<number, PileupDataResult>
+  regions?: ReadonlyMap<number, RegionBounds>
+  maxRows?: number
+}) {
   const withReads = [...dataMap].filter(([, v]) => v.readIds.length > 0)
   return withReads.length === 0
     ? 0
-    : computeMultiRegionChainLayout(withReads, maxRows).maxY
+    : computeMultiRegionChainLayout(withReads, regions, maxRows).maxY
 }
 
-// Map of chain index → the read indices belonging to that chain in this region.
-function groupReadsByChain(readChainIndices: Uint32Array) {
+// Chain index → the read indices belonging to that chain in this region, for the
+// chains that have more than one. A single-read chain can't self-overlap, so
+// counting first and grouping only the multi-read chains keeps this from
+// allocating a one-element array per read — the common shape at depth, where
+// most chains contribute one on-screen segment.
+function groupMultiReadChains(
+  readChainIndices: Uint32Array,
+  numChains: number,
+) {
+  const counts = new Uint32Array(numChains)
+  for (const chainIdx of readChainIndices) {
+    counts[chainIdx]!++
+  }
   const byChain = new Map<number, number[]>()
   for (let i = 0; i < readChainIndices.length; i++) {
-    getOrCreate(byChain, readChainIndices[i]!, () => []).push(i)
+    const chainIdx = readChainIndices[i]!
+    if (counts[chainIdx]! > 1) {
+      getOrCreate(byChain, chainIdx, () => []).push(i)
+    }
   }
   return byChain
 }
@@ -170,11 +226,15 @@ function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
   if (!isChainData(data)) {
     return emptyOverlapsUploadData()
   }
-  const { readChainIndices, readPositions } = data
+  const { readChainIndices, readPositions, chainNames } = data
 
   const positions: number[] = []
   const ys: number[] = []
-  for (const reads of groupReadsByChain(readChainIndices).values()) {
+  const multiReadChains = groupMultiReadChains(
+    readChainIndices,
+    chainNames.length,
+  )
+  for (const reads of multiReadChains.values()) {
     const spans = reads.map(ri => ({
       start: readPositions[ri * 2]!,
       end: readPositions[ri * 2 + 1]!,
@@ -295,10 +355,15 @@ export function attachLinkedReadLines(
  * assigns a shared rowMap keyed by chain name so mates across region
  * boundaries share a row; that path is correct for one region too.
  */
-export function buildLaidOutChainMap(
-  dataMap: ReadonlyMap<number, PileupDataResult>,
+export function buildLaidOutChainMap({
+  dataMap,
+  regions,
   maxRows = Number.POSITIVE_INFINITY,
-): Map<number, PileupDataResult> {
+}: {
+  dataMap: ReadonlyMap<number, PileupDataResult>
+  regions?: ReadonlyMap<number, RegionBounds>
+  maxRows?: number
+}): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
   for (const [k, v] of dataMap) {
@@ -313,6 +378,7 @@ export function buildLaidOutChainMap(
   }
   const { rowMap, maxY, truncated } = computeMultiRegionChainLayout(
     withReads,
+    regions,
     maxRows,
   )
   for (const [idx, data] of withReads) {
