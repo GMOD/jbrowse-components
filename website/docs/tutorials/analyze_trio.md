@@ -140,7 +140,8 @@ two copies in blues and the mother's in reds via `itemRgb`. Feed it
 `tabix -p bed` so the `BedTabixAdapter` can read it:
 
 ```bash
-python3 scripts/hapibd_to_bed.py trio.ibd.gz HG02024 HG02026 HG02025 trio.hapibd.bed
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/hapibd_to_bed.py
+python3 hapibd_to_bed.py trio.ibd.gz HG02024 HG02026 HG02025 trio.hapibd.bed
 sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
 tabix -p bed trio.hapibd.bed.gz
 ```
@@ -245,15 +246,14 @@ pedigree-aware method such as
 
 [`build_khv_trio_hapibd.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_khv_trio_hapibd.sh)
 runs the whole pipeline in one shot. It downloads the trio VCF, hap-ibd, and the
-genetic map, runs hap-ibd, builds the painted BED, downloads JBrowse, and writes
-a `config.json` with the hg38 assembly plus the VCF and hap-ibd tracks. It calls
-its helper
-[`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
-from its own directory, so if you're downloading files individually rather than
-cloning the repo, save both in the same directory.
+genetic map, runs hap-ibd, paints the BED with
+[`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py),
+downloads JBrowse, and writes a `config.json` with the hg38 assembly plus the
+VCF and hap-ibd tracks.
 
 ```bash
-bash scripts/build_khv_trio_hapibd.sh   # builds ./khv_trio_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_khv_trio_hapibd.sh
+bash build_khv_trio_hapibd.sh   # builds ./khv_trio_build/jbrowse2
 npx --yes serve khv_trio_build/jbrowse2 # then open the printed URL
 ```
 

@@ -213,15 +213,15 @@ all reshape into that shape with the same concatenate-and-tag step.
 One script builds both files for any project id, so nothing above depends on the
 hosted copies:
 [`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh),
-which calls its helper
-[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
-from its own directory, so save both together if downloading files individually.
+which summarizes recurrence with
+[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py).
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/).
 
 ```bash
-bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA 20   # 20 tumors, to test the pipeline
-bash scripts/build_tcga_cohort_cnv.sh TCGA-BRCA      # the full cohort, ~15 minutes
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv.sh
+bash build_tcga_cohort_cnv.sh TCGA-BRCA 20 # 20 tumors, to test the pipeline
+bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~15 minutes
 # -> tcga_brca_cnv.bed.gz (+ .tbi), tcga_brca_cnv_recurrence.bedGraph.gz (+ .tbi)
 ```
 

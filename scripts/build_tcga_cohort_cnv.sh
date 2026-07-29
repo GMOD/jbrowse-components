@@ -28,6 +28,16 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout.
+HELPERS=(cnv_recurrence.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 PROJECT=${1:-TCGA-BRCA}
 LIMIT=${2:-0}
 OUT=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_cnv
@@ -155,7 +165,7 @@ tabix -f -p bed "$OUT.bed.gz"
 # it cannot show how many tumors carry them. This collapses the same file into
 # per-bin gain/loss frequencies, which is that missing axis.
 echo "== summarizing cohort recurrence"
-python3 "$(dirname "$0")/cnv_recurrence.py" "$OUT.bed.gz" "${OUT}_recurrence.bedGraph"
+python3 "$SCRIPT_DIR/cnv_recurrence.py" "$OUT.bed.gz" "${OUT}_recurrence.bedGraph"
 bgzip -f "${OUT}_recurrence.bedGraph"
 tabix -f -p bed "${OUT}_recurrence.bedGraph.gz"
 

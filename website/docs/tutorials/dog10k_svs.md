@@ -186,7 +186,8 @@ Collie and Shetland Sheepdog clade, the gene behind gray Collie syndrome.
 builds the track:
 
 ```bash
-bash scripts/build_dog10k_nhej1_sv.sh   # writes ./dog10k_sv_build/
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_nhej1_sv.sh
+bash build_dog10k_nhej1_sv.sh   # writes ./dog10k_sv_build/
 ```
 
 It downloads the Dog10K sample table, derives the breed lists from it, slices

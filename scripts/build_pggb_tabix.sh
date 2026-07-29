@@ -29,9 +29,17 @@ set -euo pipefail
 GFA="${1:?usage: build_pggb_tabix.sh <graph.gfa[.gz]> [out-prefix] [reference-sample]}"
 PREFIX="${2:-${GFA%.gfa*}}"
 REFERENCE="${3:-}"
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-python3 "$HERE/pggb_gfa_to_bed.py" "$GFA" "$PREFIX" \
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout.
+HELPERS=(pggb_gfa_to_bed.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
+python3 "$SCRIPT_DIR/pggb_gfa_to_bed.py" "$GFA" "$PREFIX" \
   ${REFERENCE:+--reference "$REFERENCE"}
 
 for kind in segs links; do

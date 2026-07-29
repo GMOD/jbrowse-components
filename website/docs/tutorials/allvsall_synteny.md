@@ -431,8 +431,9 @@ Every command above is wrapped in one script,
 [`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh):
 
 ```bash
-bash scripts/build_ecoli_pangenome_synteny.sh   # builds ./ecoli_pangenome_build/jbrowse2
-npx --yes serve ecoli_pangenome_build/jbrowse2  # then open the printed URL
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_synteny.sh
+bash build_ecoli_pangenome_synteny.sh          # builds ./ecoli_pangenome_build/jbrowse2
+npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
 ```
 
 It downloads the five RefSeq genomes, self-aligns them into the all-vs-all PAF,

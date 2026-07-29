@@ -327,7 +327,8 @@ assembly (`HG008N_v6.3.fasta.gz`, same S3 path) loads the same way. See the
 runs the whole data-preparation pipeline above in one shot:
 
 ```bash
-bash scripts/build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_sv_visualization_cgiab.sh
+bash build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
 npx --yes serve cgiab_build/jbrowse2
 ```
 

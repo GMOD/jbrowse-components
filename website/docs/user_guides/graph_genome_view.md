@@ -81,10 +81,12 @@ directory and need `bgzip` and `tabix`, plus `gfatools` for the rGFA route or
 
 ```bash
 # rGFA: the tags are already coordinates, so this is a projection
-bash scripts/build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
+bash build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
 
 # plain GFA: walk the P lines to derive the same thing
-bash scripts/build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
+bash build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
 ```
 
 Both write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their tabix

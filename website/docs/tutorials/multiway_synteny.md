@@ -307,7 +307,8 @@ three assemblies, per-genome gene tracks, the MCScan blocks synteny track, and a
 default session that stacks the three genomes.
 
 ```bash
-bash scripts/build_grape_peach_cacao_synteny.sh
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh
+bash build_grape_peach_cacao_synteny.sh
 npx --yes serve grape_peach_cacao_build/jbrowse2  # then open the printed URL
 ```
 

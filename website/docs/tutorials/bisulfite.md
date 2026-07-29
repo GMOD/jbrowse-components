@@ -246,7 +246,8 @@ The whole pipeline is wrapped in one script,
 [`build_arabidopsis_wgbs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_wgbs.sh):
 
 ```bash
-bash scripts/build_arabidopsis_wgbs.sh          # builds ./arabidopsis_wgbs_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_arabidopsis_wgbs.sh
+bash build_arabidopsis_wgbs.sh          # builds ./arabidopsis_wgbs_build/jbrowse2
 npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
 ```
 

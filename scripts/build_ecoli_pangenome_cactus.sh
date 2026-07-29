@@ -30,6 +30,15 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so maf_to_bed.py resolves after cd
+
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout.
+HELPERS=(maf_to_bed.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 OUTDIR="${1:-ecoli_cactus_build}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

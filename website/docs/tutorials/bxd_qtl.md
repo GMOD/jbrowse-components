@@ -64,12 +64,9 @@ Download it from
 (please cite
 [Wang et al. 2016, _Nat Commun_ 7:10464](https://doi.org/10.1038/ncomms10464)).
 
-The two Python scripts used below live in the JBrowse repo. Download
-`bxd_geno_to_painting_bed.py` and `bxd_qtl_scan.py` and run them from where you
-saved them. You'll need Python 3 (`pandas` for the phenotype step,
-`numpy`/`scipy` for the scan) and htslib for `bgzip`/`tabix`. On JBrowse
-Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add track** with
-no hosting step needed ([desktop quickstart](/docs/quickstart_desktop)).
+On JBrowse Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add
+track** with no hosting step needed
+([desktop quickstart](/docs/quickstart_desktop)).
 
 ## Track 1: chromosome painting
 
@@ -94,7 +91,8 @@ then sort, `bgzip`, and `tabix` the result (the `#`-header line names the
 columns for the adapter):
 
 ```bash
-python3 scripts/bxd_geno_to_painting_bed.py BXD.geno bxd_painting.bed
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_geno_to_painting_bed.py
+python3 bxd_geno_to_painting_bed.py BXD.geno bxd_painting.bed
 (head -1 bxd_painting.bed; tail -n +2 bxd_painting.bed | sort -k1,1 -k2,2n) \
   | bgzip > bxd_painting.bed.gz
 tabix -p bed bxd_painting.bed.gz
@@ -176,7 +174,8 @@ PY
 Then run the scan (the phenotype file's header line is skipped automatically):
 
 ```bash
-python3 scripts/bxd_qtl_scan.py BXD.geno coat_color.pheno.csv bxd_gwas_coatcolor.tsv
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_qtl_scan.py
+python3 bxd_qtl_scan.py BXD.geno coat_color.pheno.csv bxd_gwas_coatcolor.tsv
 (head -1 bxd_gwas_coatcolor.tsv; tail -n +2 bxd_gwas_coatcolor.tsv | sort -k1,1 -k2,2n) \
   | bgzip > bxd_gwas_coatcolor.tsv.gz
 tabix -p bed bxd_gwas_coatcolor.tsv.gz
@@ -232,16 +231,15 @@ or click the **Open in JBrowse** link under any figure above.
 
 Every step above is wrapped in one script,
 [`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh),
-which calls its helpers
+which paints the genotypes with
 [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
-and
-[`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py)
-from its own directory, so save all three together if downloading files
-individually:
+and scans them with
+[`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py):
 
 ```bash
-bash scripts/bxd_build_demo.sh        # builds ./bxd_demo/jbrowse2
-npx --yes serve bxd_demo/jbrowse2     # then open the printed URL
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_build_demo.sh
+bash bxd_build_demo.sh            # builds ./bxd_demo/jbrowse2
+npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
 It downloads JBrowse and the GeneNetwork/rqtl source files, builds the painting

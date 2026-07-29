@@ -212,7 +212,8 @@ One script runs the whole path,
 [`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh):
 
 ```bash
-bash scripts/build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_scatac_pseudobulk.sh
+bash build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
 npx --yes serve scatac_pseudobulk_build/jbrowse2
 ```
 

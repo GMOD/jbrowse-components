@@ -16,13 +16,21 @@
 #
 # Requires: curl, python3 (numpy + scipy for the scan, pandas to pull a trait
 #           column), bgzip/tabix (htslib), and node (JBrowse CLI, fetched via npx
-#           unless `jbrowse` is on PATH). The two Python helpers must sit next to
-#           this script.
+#           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/bxd_build_demo.sh [outdir]
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # so the .py helpers resolve after cd
+
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout.
+HELPERS=(bxd_geno_to_painting_bed.py bxd_qtl_scan.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 OUTDIR="${1:-bxd_demo}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

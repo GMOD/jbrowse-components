@@ -177,7 +177,8 @@ is measured over the windows the collection itself puts above two.
 runs every step:
 
 ```bash
-bash scripts/build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2.sh
+bash build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 ```
 
 It derives the stop codon's position from the reference, builds the sample list
@@ -188,7 +189,8 @@ genotypes at the stop so you can check the figure against the data.
 builds the copy-number tracks:
 
 ```bash
-bash scripts/build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2_cn.sh
+bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 ```
 
 It reads depth over this gene straight out of each published CRAM, paints the 15

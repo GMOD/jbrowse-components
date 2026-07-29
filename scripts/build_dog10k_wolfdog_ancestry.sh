@@ -24,7 +24,16 @@ set -euo pipefail
 
 CHROM="${1:-chr1}"
 OUTDIR="${2:-dog10k_wolfdog_build}"
-HERE=$(cd "$(dirname "$0")" && pwd)
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout.
+HELPERS=(flare_anc_to_bed.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 SHARE=https://kiddlabshare.med.umich.edu/dog10K
 PANEL=$SHARE/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 
@@ -114,7 +123,7 @@ echo "Ancestry fractions on $CHROM:"
 zcat "wolfdog_$CHROM.global.anc.gz"
 
 # ── Painted BED ─────────────────────────────────────────────────────────────
-python3 "$HERE/flare_anc_to_bed.py" "wolfdog_$CHROM.anc.vcf.gz" labels.tsv \
+python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "wolfdog_$CHROM.anc.vcf.gz" labels.tsv \
   "dog10k_wolfdog_ancestry.$CHROM.bed"
 sort -k1,1 -k2,2n "dog10k_wolfdog_ancestry.$CHROM.bed" \
   | bgzip > "dog10k_wolfdog_ancestry.$CHROM.bed.gz"

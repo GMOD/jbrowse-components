@@ -271,17 +271,16 @@ haplotype to paint inheritance blocks from hap-ibd, and the
 runs every step above:
 
 ```bash
-bash scripts/build_dog10k_wolfdog_ancestry.sh          # chr1, into ./dog10k_wolfdog_build
-bash scripts/build_dog10k_wolfdog_ancestry.sh chr38    # any other autosome
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_wolfdog_ancestry.sh
+bash build_dog10k_wolfdog_ancestry.sh       # chr1, into ./dog10k_wolfdog_build
+bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 ```
 
 It downloads the Dog10K sample table, derives the panel and target lists, slices
 that chromosome out of the phased panel, generates the map, runs FLARE, prints
-the per-sample summary, and writes the painted BED plus its index and the
-genotype slice the second figure uses. It calls its helper
-[`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
-from its own directory, so save both together if you are downloading files
-individually rather than cloning the repo.
+the per-sample summary, and writes the painted BED
+([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
+plus its index and the genotype slice the second figure uses.
 
 ## See also
 

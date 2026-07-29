@@ -357,12 +357,12 @@ gene-level version of that zoom.
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
-runs everything above in one shot. It calls its helper
-[`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py)
-from its own directory, so save both together if downloading files individually:
+runs everything above in one shot, encoding the HAL's MAF with
+[`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py):
 
 ```bash
-bash scripts/build_ecoli_pangenome_cactus.sh   # builds ./ecoli_cactus_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_cactus.sh
+bash build_ecoli_pangenome_cactus.sh   # builds ./ecoli_cactus_build/jbrowse2
 npx --yes serve ecoli_cactus_build/jbrowse2
 ```
 

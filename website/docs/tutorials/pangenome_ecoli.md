@@ -417,7 +417,8 @@ once, offline, and write the result as the two tabix-indexed BEDs
 locus:
 
 ```bash
-bash scripts/build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
+bash build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
 ```
 
 That takes about ten seconds on this graph and produces `ecoli_pggb.segs.bed.gz`
@@ -508,7 +509,8 @@ The same walk outside the browser puts those nodes on a linear track, so the
 segment under the cursor is the same segment in both panels:
 
 ```bash
-python3 scripts/gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_nodes_to_bed.py
+python3 gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
   | sort -k1,1 -k2,2n | bgzip > ecoli_pggb_subgraph_nodes.bed.gz
 tabix -p bed ecoli_pggb_subgraph_nodes.bed.gz
 ```
@@ -523,11 +525,12 @@ position, so they are absent.
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
-runs everything above in one shot. It calls out to several helper scripts in the
-same directory, so clone the repo rather than downloading this one file:
+runs everything above in one shot, fetching the helper scripts it needs beside
+itself:
 
 ```bash
-bash scripts/build_ecoli_pangenome_graph.sh   # builds ./ecoli_pangenome_graph_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_graph.sh
+bash build_ecoli_pangenome_graph.sh   # builds ./ecoli_pangenome_graph_build/jbrowse2
 npx --yes serve ecoli_pangenome_graph_build/jbrowse2
 ```
 

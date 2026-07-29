@@ -23,7 +23,7 @@ import sys
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(root)
 
-scripts = sorted(glob.glob("scripts/build_*.sh"))
+scripts = sorted(glob.glob("scripts/build_*.sh") + ["scripts/bxd_build_demo.sh"])
 if not scripts:
     sys.exit("no scripts/build_*.sh found")
 
@@ -53,6 +53,23 @@ for f in scripts:
                 print(f"FAIL dead rerun-guard in {f}:{i + 1}: "
                       f"`{ln.strip()}` set before `cd $OUTDIR`; move it after")
                 failed = True
+
+    # A sibling helper the script runs has to be in its own HELPERS array, which
+    # is what makes a bare `curl -O` of the one file work (the tutorials tell
+    # readers to download only that). A helper added later and not listed there
+    # fails only on a standalone run, which nobody does from a checkout.
+    listed = set()
+    for arr in re.findall(r"^HELPERS=\((.*?)\)", src, re.S | re.M):
+        listed.update(arr.split())
+    for used in sorted(set(re.findall(r'\$(?:SCRIPT_DIR|HERE)/([\w.-]+)', src))):
+        if used not in listed:
+            print(f"FAIL unlisted helper in {f}: `{used}` is run from the "
+                  f"script's own dir but missing from HELPERS")
+            failed = True
+    for name in sorted(listed):
+        if not os.path.exists(f"scripts/{name}"):
+            print(f"FAIL HELPERS in {f} names scripts/{name}, which is absent")
+            failed = True
 
     # tabix without -f aborts under `set -e` on a re-run ("index exists").
     for i, ln in enumerate(lines):
@@ -86,6 +103,20 @@ for f in helpers:
     except SyntaxError as e:
         print(f"FAIL invalid python: {f}: {e}")
         failed = True
+
+# Every script a doc tells the reader to `curl` has to exist here. The URL is on
+# `main`, so it cannot be checked before the push, but the name can: a rename or
+# a typo otherwise reaches the reader as a 404 body written into the file they
+# then run. (`curl -fO` in the docs is what keeps that from executing.)
+cited = 0
+for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
+    for name in re.findall(
+            r"raw\.githubusercontent\.com/GMOD/jbrowse-components/main/"
+            r"scripts/([\w.-]+)", open(doc).read()):
+        cited += 1
+        if not os.path.exists(f"scripts/{name}"):
+            print(f"FAIL {doc} cites scripts/{name}, which does not exist")
+            failed = True
 
 # Behavior, not just syntax, for the two helpers whose output is a hosted demo
 # artifact nobody re-derives by hand. Both had a bug that a syntax check cannot
@@ -227,4 +258,4 @@ check("depth ramp clamps out-of-range t",
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
-      f"{behavior} helper behavior checks pass")
+      f"{behavior} helper behavior checks pass, {cited} doc curl targets exist")

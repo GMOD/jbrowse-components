@@ -41,8 +41,9 @@ One script does the whole path,
 [`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh):
 
 ```bash
-bash scripts/build_chromhmm_multirow.sh   # builds ./chromhmm_build/jbrowse2
-npx --yes serve chromhmm_build/jbrowse2   # then open the printed URL
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_multirow.sh
+bash build_chromhmm_multirow.sh         # builds ./chromhmm_build/jbrowse2
+npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
 ```
 
 It downloads the nine

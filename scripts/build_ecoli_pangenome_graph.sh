@@ -30,6 +30,17 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after cd
+
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout.
+# build_pggb_tabix.sh fetches its own helper the same way.
+HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pggb_tabix.sh
+  build_rgfa_tabix.sh build_rgfa_alleles.sh build_minigraph_paths.sh)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 OUTDIR="${1:-ecoli_pangenome_graph_build}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"

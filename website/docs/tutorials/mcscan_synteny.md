@@ -181,7 +181,8 @@ Ensembl Plants, runs the jcvi ortholog pipeline, downloads JBrowse, and writes a
 default session opening them together.
 
 ```bash
-bash scripts/build_grape_peach_anchors.sh
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_anchors.sh
+bash build_grape_peach_anchors.sh
 npx --yes serve grape_peach_anchors_build/jbrowse2  # then open the printed URL
 ```
 

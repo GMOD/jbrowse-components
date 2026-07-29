@@ -225,7 +225,8 @@ the per-sample inversion genotypes below) is wrapped in one script,
 which also downloads JBrowse and writes a ready-to-serve config:
 
 ```bash
-bash scripts/build_dgrp_popgen.sh          # builds ./dgrp_popgen_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dgrp_popgen.sh
+bash build_dgrp_popgen.sh          # builds ./dgrp_popgen_build/jbrowse2
 npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 

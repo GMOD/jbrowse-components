@@ -260,6 +260,12 @@ CORS enabled. There is no server component.
 derives the full 2504-sample list from the Kidd lab `trackDb` and runs the
 converter over it, so nothing above depends on a hand-written sample list.
 
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh
+bash build_1000g_cnv_zarr.sh                # the tutorial's window
+bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
+```
+
 ## See also
 
 - [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track), the

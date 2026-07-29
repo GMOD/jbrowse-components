@@ -403,8 +403,10 @@ Two scripts rebuild the hosted files, for a different graph. Their provenance
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
 
 ```bash
-bash scripts/build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
-bash scripts/build_rgfa_alleles.sh out
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh
+bash build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
+bash build_rgfa_alleles.sh out
 ```
 
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
