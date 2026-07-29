@@ -174,6 +174,7 @@ function MafSvgBody({
                   rowProportion,
                   nRows: sources.length,
                   canvasWidth: width,
+                  ranks: model.sourceChromRanks.ranks,
                 })
               }
             } else if (activeRowRendering !== 'bases') {

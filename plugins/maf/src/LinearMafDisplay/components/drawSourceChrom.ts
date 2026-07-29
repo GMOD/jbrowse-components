@@ -114,6 +114,13 @@ interface DrawSourceChromState {
   /** display row count */
   nRows: number
   canvasWidth: number
+  /**
+   * `rowIndex -> (chr -> rank)` from the model's `sourceChromRanks` computed.
+   * Passed in rather than derived here: the walk covers every block × row of
+   * every visible region, and this draw re-fires on every pan and zoom, so
+   * computing it here recomputed per frame what the legend had already memoized.
+   */
+  ranks: ReadonlyMap<number, ReadonlyMap<string, number>>
 }
 
 /**
@@ -133,7 +140,7 @@ export function drawSourceChrom(
   regions: ReadonlyMap<number, MafRegionData>,
   state: DrawSourceChromState,
 ) {
-  const { rowHeight, rowProportion, nRows, canvasWidth } = state
+  const { rowHeight, rowProportion, nRows, canvasWidth, ranks } = state
   if (canvasWidth <= 0 || nRows <= 0) {
     return
   }
@@ -141,8 +148,6 @@ export function drawSourceChrom(
     rowHeight,
     rowProportion,
   )
-  // Rank per row over the unique visible regions.
-  const { ranks } = perRowChromRanks(uniqueRegionsFromBlocks(blocks, regions))
 
   // Scissor to each block's own columns: the fetched region is the *buffered*
   // one, so its MAF blocks extend past the render block's screen span, and a

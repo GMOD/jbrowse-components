@@ -1546,6 +1546,29 @@ export default function stateModelFactory(
               })
             : []
         },
+        /**
+         * #getter
+         * Each row's source chromosomes ranked by aligned bp (`perRowChromRanks`).
+         * A memoized computed for the same reason as `locatedCodons` above: the
+         * rank walk covers every block × row of every visible region, and it had
+         * two independent callers — the legend (already a cached computed) and
+         * `drawSourceChrom`, which recomputed it inside a draw that re-fires on
+         * every pan and zoom.
+         *
+         * Also makes the "rank over the same region set" guarantee structural.
+         * The legend walked `dynamicBlocks.contentBlocks` while the painter walked
+         * `renderBlocks`; those agree today (the latter derives from the former,
+         * and only `displayedRegionIndex` is read), but nothing held them to it.
+         * Empty when the mode is off, so a track that never colors by chromosome
+         * pays nothing.
+         */
+        get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
+          return self.activeRowRendering === 'sourceChrom'
+            ? perRowChromRanks(
+                uniqueRegionsFromBlocks(self.renderBlocks, self.rpcDataMap),
+              )
+            : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
+        },
       }))
       .views(self => ({
         /**
@@ -1614,12 +1637,7 @@ export default function stateModelFactory(
             ]
           }
           if (rendering === 'sourceChrom') {
-            const { maxRank } = perRowChromRanks(
-              uniqueRegionsFromBlocks(
-                view.dynamicBlocks.contentBlocks,
-                self.rpcDataMap,
-              ),
-            )
+            const { maxRank } = self.sourceChromRanks
             return Array.from({ length: maxRank + 1 }, (_, rank) => ({
               label: sourceChromRankLabel(rank),
               color: sourceChromRankColor(rank),

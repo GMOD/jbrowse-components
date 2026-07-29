@@ -47,7 +47,10 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
           canvasWidth: model.lgv.width,
         }
         if (mode === 'sourceChrom') {
-          drawSourceChrom(ctx, model.renderBlocks, model.rpcDataMap, state)
+          drawSourceChrom(ctx, model.renderBlocks, model.rpcDataMap, {
+            ...state,
+            ranks: model.sourceChromRanks.ranks,
+          })
         } else if (mode !== undefined) {
           drawRowIdentity(ctx, model.renderBlocks, model.rpcDataMap, {
             ...state,
