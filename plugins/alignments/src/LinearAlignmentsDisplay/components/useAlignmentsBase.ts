@@ -18,7 +18,7 @@ import {
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
 import {
-  canvasXToGenomicPos,
+  canvasXToBasePos,
   contextMenuFieldsForHit,
   performHitTest,
 } from './hitTestPipeline.ts'
@@ -193,7 +193,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // the clicked position" items (independent of whether a cigar feature was
       // hit). Same transform the hit-test pipeline uses.
       const genomicPos = resolved
-        ? Math.floor(canvasXToGenomicPos(e.nativeEvent.offsetX, resolved))
+        ? canvasXToBasePos(e.nativeEvent.offsetX, resolved)
         : undefined
       // One atomic call: coord + block + hits, plus the async read fetch when
       // the hit carries one. A repositioned menu can't inherit the prior read.

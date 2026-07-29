@@ -57,6 +57,7 @@ function makeCoords(overrides: Partial<CigarCoords> = {}): CigarCoords {
   return {
     bpPerPx: 1,
     genomicPos: 1000.5,
+    basePos: 1000,
     row: 0,
     adjustedY: 5,
     yWithinRow: 5,

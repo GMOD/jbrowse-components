@@ -1,3 +1,5 @@
+import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
+
 import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
 import { hitTestGap } from '../../features/gap/hitTest.ts'
 import { hitTestInterbase } from '../../features/indicator/hitTest.ts'
@@ -171,14 +173,33 @@ function hitTestCigarItem(
 }
 
 // Single site for the canvas-X → genomicPos transform; `reversed` is handled
-// here and nowhere else. Used by the hit-test pipeline and by the right-click
-// handler to anchor a "sort at the clicked column" action.
+// here and nowhere else. The result is FRACTIONAL — a position along the block,
+// not a base. That's what the distance-based hit tests want (interbase
+// triangles, modification centers, insertion markers, read containment), since
+// they measure against a bp coordinate rather than indexing a base.
 export function canvasXToGenomicPos(canvasX: number, resolved: ResolvedBlock) {
   const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
   const frac = (canvasX - resolved.blockStartPx) / resolved.blockWidth
   return resolved.reversed
     ? resolved.bpRange[1] - frac * bpSpan
     : resolved.bpRange[0] + frac * bpSpan
+}
+
+// The INTEGER base under canvasX — what anything indexing a base wants (a
+// mismatch column, a coverage bin, the sort-at-this-column anchor).
+//
+// Not `Math.floor(canvasXToGenomicPos(...))`: on a reversed block bp runs
+// leftward, so the fractional position lands in `(b, b+1]` and flooring names
+// `b+1` on base b's leftmost pixel column. bpAtPx owns that pivot — it is the
+// inverse of the makeCellLeftMapper the per-base painters use.
+export function canvasXToBasePos(canvasX: number, resolved: ResolvedBlock) {
+  return bpAtPx(canvasX, {
+    start: resolved.bpRange[0],
+    end: resolved.bpRange[1],
+    screenStartPx: resolved.blockStartPx,
+    screenEndPx: resolved.blockStartPx + resolved.blockWidth,
+    reversed: resolved.reversed,
+  })
 }
 
 export function performHitTest(
@@ -210,6 +231,7 @@ export function performHitTest(
     const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
     const bpPerPx = bpSpan / resolved.blockWidth
     const genomicPos = canvasXToGenomicPos(canvasX, resolved)
+    const basePos = canvasXToBasePos(canvasX, resolved)
 
     // Indicator and coverage tooltips work at all zoom levels.
     // hitTestInterbase fires over the interbase histogram bars + indicator
@@ -231,7 +253,7 @@ export function performHitTest(
     }
 
     const coverageHit = hitTestCoverage(
-      genomicPos,
+      basePos,
       bpPerPx,
       coverageY,
       resolved.rpcData,
@@ -248,15 +270,16 @@ export function performHitTest(
       return { type: 'none' }
     }
 
-    const coords = canvasToGenomicCoords(
+    const coords = canvasToGenomicCoords({
       canvasY,
       genomicPos,
+      basePos,
       bpPerPx,
       featureHeight,
       featureSpacing,
       topOffset,
       scrollTop,
-    )
+    })
 
     if (bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
       // Modification before CIGAR: a modified+mismatched base resolves as a

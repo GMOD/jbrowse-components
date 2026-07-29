@@ -48,7 +48,13 @@ export interface ResolvedBlock {
 
 export interface CigarCoords {
   bpPerPx: number
+  // Fractional position along the block, for the hit tests that measure a
+  // distance to a marker (see canvasXToGenomicPos).
   genomicPos: number
+  // The integer base under the cursor, for the hit tests that index one (see
+  // canvasXToBasePos). Not interchangeable with flooring genomicPos — that is
+  // off by one on reversed blocks.
+  basePos: number
   row: number
   adjustedY: number
   yWithinRow: number

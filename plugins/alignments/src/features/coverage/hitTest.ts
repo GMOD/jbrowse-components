@@ -3,8 +3,11 @@ import { findSignificantInBin } from '@jbrowse/alignments-core'
 import type { CoverageHitResult } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
+// `basePos` is the integer base under the cursor (canvasXToBasePos), not a
+// floored fractional position: bins are 1bp-indexed off coverageStartPos, and
+// on a reversed block flooring names the neighbouring base.
 export function hitTestCoverage(
-  genomicPos: number,
+  basePos: number,
   bpPerPx: number,
   canvasY: number,
   rpcData: PileupDataResult,
@@ -16,7 +19,7 @@ export function hitTestCoverage(
   }
 
   const { coverageDepths, coverageStartPos } = rpcData
-  const binIndex = Math.floor(genomicPos - coverageStartPos)
+  const binIndex = basePos - coverageStartPos
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
   }

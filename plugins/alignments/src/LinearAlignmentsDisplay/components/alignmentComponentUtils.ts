@@ -81,20 +81,33 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
   }
 }
 
-export function canvasToGenomicCoords(
-  canvasY: number,
-  genomicPos: number,
-  bpPerPx: number,
-  featureHeight: number,
-  featureSpacing: number,
-  topOffset: number,
-  scrollTop: number,
-): CigarCoords {
+// Everything a per-feature hit test reads about where the cursor is: the two bp
+// forms (see CigarCoords) plus the pileup row the Y lands in. An object rather
+// than eight positional numbers, none of which the compiler could tell apart.
+export function canvasToGenomicCoords({
+  canvasY,
+  genomicPos,
+  basePos,
+  bpPerPx,
+  featureHeight,
+  featureSpacing,
+  topOffset,
+  scrollTop,
+}: {
+  canvasY: number
+  genomicPos: number
+  basePos: number
+  bpPerPx: number
+  featureHeight: number
+  featureSpacing: number
+  topOffset: number
+  scrollTop: number
+}): CigarCoords {
   const rowHeight = featureHeight + featureSpacing
   const adjustedY = canvasY + scrollTop - topOffset
   const row = Math.floor(adjustedY / rowHeight)
   const yWithinRow = adjustedY - row * rowHeight
-  return { bpPerPx, genomicPos, row, adjustedY, yWithinRow }
+  return { bpPerPx, genomicPos, basePos, row, adjustedY, yWithinRow }
 }
 
 export const CIGAR_TYPE_LABELS: Record<string, string> = {

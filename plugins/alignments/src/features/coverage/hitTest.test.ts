@@ -13,8 +13,8 @@ function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResul
 }
 
 // bpRange=[1000,1010], blockWidth=200 → bpPerPx=0.05 (zoomed in, no bin search)
-// canvasX=0 → frac=0 → genomicPos=1000
-const ZOOMED_IN = { genomicPos: 1000, bpPerPx: 0.05 }
+// canvasX=0 → frac=0 → basePos=1000
+const ZOOMED_IN = { basePos: 1000, bpPerPx: 0.05 }
 
 describe('hitTestCoverage guards', () => {
   it('returns undefined when showCoverage is false', () => {
@@ -23,7 +23,7 @@ describe('hitTestCoverage guards', () => {
       coverageStartPos: 1000,
     })
     expect(
-      hitTestCoverage(ZOOMED_IN.genomicPos, ZOOMED_IN.bpPerPx, 20, rpcData, false, 50),
+      hitTestCoverage(ZOOMED_IN.basePos, ZOOMED_IN.bpPerPx, 20, rpcData, false, 50),
     ).toBeUndefined()
   })
 
@@ -33,13 +33,13 @@ describe('hitTestCoverage guards', () => {
       coverageStartPos: 1000,
     })
     expect(
-      hitTestCoverage(ZOOMED_IN.genomicPos, ZOOMED_IN.bpPerPx, 60, rpcData, true, 50),
+      hitTestCoverage(ZOOMED_IN.basePos, ZOOMED_IN.bpPerPx, 60, rpcData, true, 50),
     ).toBeUndefined()
   })
 
   it('returns undefined when binIndex falls outside coverageDepths', () => {
     // coverageStartPos=1000, depth covers only position 1000;
-    // genomicPos=1005 → binIndex=5, out of bounds for Float32Array(1)
+    // basePos=1005 → binIndex=5, out of bounds for Float32Array(1)
     const rpcData = makeRpcData({
       coverageDepths: new Float32Array([10]),
       coverageStartPos: 1000,
@@ -52,13 +52,13 @@ describe('hitTestCoverage guards', () => {
 
 describe('hitTestCoverage basic hit', () => {
   it('returns bin position when bpPerPx <= 1 (no bin search)', () => {
-    // genomicPos=1000, bpPerPx=0.05 → binIndex=0 → binStart=1000
+    // basePos=1000, bpPerPx=0.05 → binIndex=0 → binStart=1000
     const rpcData = makeRpcData({
       coverageDepths: new Float32Array([10, 20]),
       coverageStartPos: 1000,
     })
     const result = hitTestCoverage(
-      ZOOMED_IN.genomicPos,
+      ZOOMED_IN.basePos,
       ZOOMED_IN.bpPerPx,
       20,
       rpcData,
@@ -70,9 +70,9 @@ describe('hitTestCoverage basic hit', () => {
 })
 
 describe('hitTestCoverage zoomed-out bin search', () => {
-  // bpPerPx=10 (>1), genomicPos=1000 → binStart=1000, binEnd=1010
+  // bpPerPx=10 (>1), basePos=1000 → binStart=1000, binEnd=1010
   const bpPerPx = 10
-  const genomicPos = 1000
+  const basePos = 1000
 
   function makeZoomedRpcData(overrides: Partial<PileupDataResult> = {}) {
     return makeRpcData({
@@ -88,7 +88,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       mismatchPositions: new Uint32Array([1003, 1003]),
     })
     expect(
-      hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1003)
   })
 
@@ -100,7 +100,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
     })
     // Falls back to binStart=1000
     expect(
-      hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1000)
   })
 
@@ -111,7 +111,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       interbasePositions: new Uint32Array([1005, 1005, 1005]),
     })
     expect(
-      hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1000)
   })
 
@@ -121,14 +121,14 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       interbasePositions: new Uint32Array([1005, 1005, 1005]),
     })
     expect(
-      hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1002)
   })
 
   it('falls back to bin start when no significant features in bin', () => {
     const rpcData = makeZoomedRpcData()
     expect(
-      hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1000)
   })
 })

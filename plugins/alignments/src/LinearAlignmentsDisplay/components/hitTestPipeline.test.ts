@@ -423,3 +423,57 @@ describe('contextMenuFieldsForHit', () => {
     expect(fields.featureId).toBeUndefined()
   })
 })
+
+// A flipped region runs bp leftward, so the un-rounded canvas-X inverse lands in
+// (b, b+1] rather than [b, b+1). Flooring it — which every per-base test used to
+// do — named b+1 on base b's leftmost pixel column, and named `end` (outside the
+// block) on the block's first column. canvasXToBasePos owns that pivot.
+describe('reversed block resolves the base actually painted under the cursor', () => {
+  // 10bp across 100px, flipped: base 1009 owns pixels [0,10), 1000 owns [90,100)
+  function reversedBlock(rpcOverrides: Partial<PileupDataResult> = {}) {
+    return {
+      ...makeResolved(rpcOverrides),
+      bpRange: [1000, 1010] as [number, number],
+      blockWidth: 100,
+      reversed: true,
+    }
+  }
+
+  it('hits the mismatch on that base leftmost pixel column', () => {
+    const resolved = reversedBlock({
+      mismatchPositions: new Uint32Array([1008]),
+      mismatchYs: new Uint16Array([0]),
+      mismatchBases: new Uint8Array([65]),
+    })
+    // x=10 is base 1008's first column; flooring resolved it as 1009
+    const result = performHitTest(10, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.position).toBe(1008)
+    }
+  })
+
+  it('does not hit the neighbouring base mismatch', () => {
+    const resolved = reversedBlock({
+      mismatchPositions: new Uint32Array([1009]),
+      mismatchYs: new Uint16Array([0]),
+      mismatchBases: new Uint8Array([65]),
+    })
+    expect(performHitTest(10, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('none')
+  })
+
+  it('resolves a coverage bin on the first pixel column', () => {
+    const resolved = reversedBlock({
+      coverageDepths: new Float32Array(10).fill(10),
+      coverageStartPos: 1000,
+    })
+    // x=0 is the block's leftmost column, showing the region's LAST base.
+    // Flooring gave 1010 — one past the bin array, so the column reported no
+    // coverage at all.
+    const result = performHitTest(0, 30, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('coverage')
+    if (result.type === 'coverage') {
+      expect(result.hit.position).toBe(1009)
+    }
+  })
+})
