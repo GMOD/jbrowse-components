@@ -52,7 +52,7 @@ const THUMBS: Record<string, ImageSpec> = {
   // the card aspect gets center-cropped left/right by the `cover` resize, which
   // threw away half the ribbon fan and read as a zoomed-in smear.
   synteny: {
-    src: 'linear_synteny_gallery.png',
+    src: 'mcscan_anchors.png',
     band: [0.055, 0.925],
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,

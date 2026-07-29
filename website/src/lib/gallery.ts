@@ -119,13 +119,6 @@ export const gallerySections: readonly GallerySection[] = [
           'Grape against peach from a minimap2 PAF. The dotplot pans and zooms like any other view, and drag-selecting a block opens that region as a linear synteny view.',
       },
       {
-        label: 'Gene-level synteny',
-        spec: 'linear_synteny_gallery',
-        guide: 'tutorials/synteny_visualization',
-        description:
-          'Peach against grape from a set of matching gene pairs computed by MCScan. Each pair is drawn as a ribbon between the two panels, and the same data appears as blocks colored red for same strand and blue for inverted.',
-      },
-      {
         label: 'Human vs mouse synteny',
         spec: 'hs1_vs_mm39_synteny',
         guide: 'tutorials/synteny_visualization',

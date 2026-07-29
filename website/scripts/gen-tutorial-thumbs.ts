@@ -144,6 +144,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'sv_synteny/linear_synteny_genes.png',
     band: [0.2, 1],
   },
+  mcscan_synteny: {
+    // Both panels' block rows plus the ribbon fan between them — the two
+    // adapters together, which is what the tutorial is about. Starts below the
+    // app header so the card isn't a third menu bar.
+    src: 'mcscan_anchors.png',
+    band: [0.12, 0.95],
+  },
   multiway_synteny: {
     // Left third only: the per-row "No tracks active / Open track selector"
     // blocks are horizontally centered, so a left frame gets the ribbons and the

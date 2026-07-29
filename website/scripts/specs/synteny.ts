@@ -902,9 +902,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // For the gallery: peach Pp05 vs grape chr2, the per-gene MCScan anchor
-  // ribbons between them and the strand-colored synteny blocks (red collinear /
-  // blue inverted) as an LGVSyntenyDisplay row in each panel.
+  // The pairwise MCScan figure for tutorials/mcscan_synteny.md: peach Pp05 vs
+  // grape chr2, the per-gene .anchors ribbons between them and the
+  // .anchors.simple blocks (red collinear / blue inverted) as an
+  // LGVSyntenyDisplay row in each panel — both adapters in one view, which is
+  // what the tutorial is about.
   //
   // Was the last `share-` link in the repo. Decrypting that session showed why
   // it had to go: a frozen Apr-2021 snapshot, so the capture baked its stale
@@ -924,7 +926,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // this very session's 52px value).
   {
     mode: 'url',
-    name: 'linear_synteny_gallery',
+    name: 'mcscan_anchors',
     url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {
@@ -1408,6 +1410,19 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_synteny/linear_synteny_genes',
     url: hpyloriSyntenyWithGenes(),
+    readyText: 'NC_018939.1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
+  // Same three-strain stack, gene tracks palettized by gene symbol. In bacteria
+  // the symbol is effectively the ortholog id (NCBI reuses it across strains),
+  // and randomColor hashes it deterministically, so an ortholog carries one hue
+  // down all three panels.
+  {
+    mode: 'url',
+    name: 'sv_synteny/linear_synteny_ortholog_colors',
+    url: hpyloriSyntenyWithGenes("jexl:randomColor(get(feature,'gene'))"),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
     settleMs: 12000,
