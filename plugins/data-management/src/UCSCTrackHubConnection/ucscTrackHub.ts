@@ -85,15 +85,34 @@ export function generateTracks({
     }))
 }
 
+// bigGenePred rows are transcripts; BigBedAdapter groups them into genes by
+// their shared value in `aggregateField`. Its default (geneName2) only holds for
+// stock bigGenePred autoSql — GenArk's ncbiRefSeq redefines that column as the
+// transcript accession, which is unique per row, so every gene ends up with a
+// single isoform (no isoform collapse, no gene-glyph control). UCSC's own
+// defaultLabelFields/labelFields name the gene column, e.g. name2 there.
+function geneAggregateField(data: Record<string, string>) {
+  const field = (data.defaultLabelFields ?? data.labelFields)?.split(',')[0]
+  // `none` is UCSC's opt-out of labeling, not a column name
+  return field === 'none' ? undefined : field
+}
+
+// UCSC's BED12-as-gene heuristic misfires on these: they use blocks and thick
+// start/end for shapes that are not transcripts, so splitting them into
+// CDS/UTR subfeatures invents structure that isn't there.
+const nonGeneBed12Suffixes = ['tandemDups', 'gapOverlap']
+
 // UCSC base track type -> JBrowse track type + adapter. bigWig is matched before
 // the generic big* (bigBed) fallback, since it too starts with "big".
 function trackTypeAndAdapter({
   baseType,
+  data,
   bigDataUrl,
   location,
   indexLocation,
 }: {
   baseType: string
+  data: Record<string, string>
   bigDataUrl: string
   location: HubLocation
   indexLocation: (fallback: string) => HubLocation
@@ -136,9 +155,19 @@ function trackTypeAndAdapter({
       adapter: { type: 'HicAdapter', hicLocation: location },
     }
   } else if (baseType.startsWith('big')) {
+    const aggregateField =
+      baseType === 'bigGenePred' ? geneAggregateField(data) : undefined
+    const trackName = data.track ?? ''
     return {
       type: 'FeatureTrack',
-      adapter: { type: 'BigBedAdapter', bigBedLocation: location },
+      adapter: {
+        type: 'BigBedAdapter',
+        bigBedLocation: location,
+        ...(aggregateField ? { aggregateField } : {}),
+        ...(nonGeneBed12Suffixes.some(suffix => trackName.endsWith(suffix))
+          ? { disableGeneHeuristic: true }
+          : {}),
+      },
     }
   } else {
     // unsupported: peptideMapping, gvf, ld2, narrowPeak, wig, wigMaf, halSnake,
@@ -169,6 +198,7 @@ function makeTrackConfig({
 
   const config = trackTypeAndAdapter({
     baseType,
+    data,
     bigDataUrl,
     location: makeLoc(bigDataUrl, trackDbLoc),
     indexLocation: fallback => makeLoc(bigDataIdx, trackDbLoc, fallback),

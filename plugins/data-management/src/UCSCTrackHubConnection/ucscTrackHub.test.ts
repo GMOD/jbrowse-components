@@ -152,6 +152,79 @@ test('generateTracks keeps remote locations remote', () => {
   })
 })
 
+test('generateTracks aggregates bigGenePred transcripts on the UCSC label field', () => {
+  // GenArk ncbiRefSeq autoSql makes geneName2 (BigBedAdapter's default
+  // aggregateField) the transcript accession, so the adapter default gives one
+  // isoform per gene. defaultLabelFields names the real gene column.
+  const geneDb = new TrackDbFile(`track ncbiRefSeq
+type bigGenePred
+shortLabel RefSeq All
+longLabel NCBI RefSeq genes
+bigDataUrl refSeq.bb
+labelFields name2,geneName,geneName2
+defaultLabelFields name2
+`)
+  const tracks = generateTracks({
+    trackDb: geneDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(tracks[0]).toMatchObject({
+    adapter: { type: 'BigBedAdapter', aggregateField: 'name2' },
+  })
+})
+
+test('generateTracks falls back to the first labelFields entry', () => {
+  const geneDb = new TrackDbFile(`track ncbiRefSeq
+type bigGenePred
+shortLabel RefSeq All
+longLabel NCBI RefSeq genes
+bigDataUrl refSeq.bb
+labelFields geneName,name2
+`)
+  const tracks = generateTracks({
+    trackDb: geneDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(tracks[0]).toMatchObject({
+    adapter: { aggregateField: 'geneName' },
+  })
+})
+
+test('generateTracks leaves aggregateField unset for plain bigBed', () => {
+  const bedDb = new TrackDbFile(`track someBed
+type bigBed
+shortLabel Some BED
+longLabel Some BED features
+bigDataUrl some.bb
+labelFields name2
+`)
+  const tracks = generateTracks({
+    trackDb: bedDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(tracks[0]).not.toHaveProperty('adapter.aggregateField')
+})
+
+test('generateTracks disables the gene heuristic on non-gene BED12 tracks', () => {
+  const dupsDb = new TrackDbFile(`track hgwdev_tandemDups
+type bigBed
+shortLabel Tandem Dups
+longLabel Tandem duplications
+bigDataUrl tandemDups.bb
+`)
+  const tracks = generateTracks({
+    trackDb: dupsDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(tracks[0]).toMatchObject({
+    adapter: { disableGeneHeuristic: true },
+  })
+})
+
 test('generateTracks resolves a track html page against the trackDb subdir', () => {
   // `html` is relative to the trackDb file, which in a multi-genome hub sits in
   // a subdirectory, not next to hub.txt
