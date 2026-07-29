@@ -71,6 +71,20 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.51, 0.94],
     position: 'left',
   },
+  dog10k_svs: {
+    // the Collie rows carrying the deletion: the breed labels on the left and
+    // the genotype blocks, dropping the empty right margin past them
+    src: 'dog10k-nhej1-cea-deletion.png',
+    band: [0.28, 1],
+    xband: [0.005, 0.83],
+    position: 'left',
+  },
+  local_ancestry: {
+    // the haplotype rows and their breed labels, past the app header
+    src: 'dog10k-wolfdog-ancestry.png',
+    band: [0.28, 1],
+    position: 'left',
+  },
   rnaseq: {
     // sashimi arcs over the junction reads
     src: 'rnaseq/basic.png',

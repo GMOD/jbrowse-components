@@ -1,0 +1,112 @@
+{
+  "assemblies": [
+    {
+      "name": "UU_Cfam_GSD_1.0",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "UU_Cfam_GSD_1.0-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "UU_Cfam_GSD_1.0.chrom.sizes"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "canFam4_ncbi_refseq",
+      "name": "NCBI RefSeq genes (canFam4)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "dog10k_nhej1_svs",
+      "name": "Dog10K structural variants at NHEJ1",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_nhej1_svs.vcf.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "dog10k_wolfdog_block_genotypes",
+      "name": "Dog10K phased genotypes (wolves, Saarloos, dogs)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_wolfdog_chr1_block.vcf.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_wolfdog_ancestry",
+      "name": "Wolfdog local ancestry (FLARE, chr1)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "ancestry"
+        ],
+        "uri": "dog10k_wolfdog_ancestry.chr1.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_wolfdog_ancestry-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "rowOrder": [
+            "Saarloos 1 hap1",
+            "Saarloos 1 hap2",
+            "Saarloos 2 hap1",
+            "Saarloos 2 hap2",
+            "Saarloos 3 hap1",
+            "Saarloos 3 hap2",
+            "Saarloos 4 hap1",
+            "Saarloos 4 hap2",
+            "Czechoslovakian 1 hap1",
+            "Czechoslovakian 1 hap2",
+            "Czechoslovakian 2 hap1",
+            "Czechoslovakian 2 hap2",
+            "Czechoslovakian 3 hap1",
+            "Czechoslovakian 3 hap2",
+            "Czechoslovakian 4 hap1",
+            "Czechoslovakian 4 hap2",
+            "German Shepherd 1 hap1",
+            "German Shepherd 1 hap2",
+            "Shiloh Shepherd 1 hap1",
+            "Shiloh Shepherd 1 hap2",
+            "Tamaskan 1 hap1",
+            "Tamaskan 1 hap2"
+          ]
+        }
+      ]
+    }
+  ]
+}

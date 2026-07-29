@@ -5,10 +5,10 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** turn a phased trio's hap-ibd IBD blocks (and FLARE local-ancestry
-calls) into a BED9 with `itemRgb` and a category column, then point a
-`LinearMultiRowFeatureDisplay`'s `partitionField` at that column to paint one
-colored row per parental haplotype and read crossovers straight off the track.
+**TL;DR:** turn a phased trio's hap-ibd IBD blocks into a BED9 with `itemRgb`
+and a category column, then point a `LinearMultiRowFeatureDisplay`'s
+`partitionField` at that column to paint one colored row per parental haplotype
+and read crossovers straight off the track.
 
 ## Prerequisites
 
@@ -20,9 +20,8 @@ To build the tracks yourself:
 
 - the `hg38` assembly set up in JBrowse
   ([assemblies guide](/docs/config_guides/assemblies))
-- Java 8+, for hap-ibd and FLARE
+- Java 8+, for hap-ibd
 - `python3`, `node`, and htslib (`bgzip`, `tabix`)
-- `bcftools`, `curl`, and `unzip`, for the local-ancestry section only
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
@@ -199,93 +198,11 @@ of them is filled at any position, and that tells you which of the father's two
 copies the child got there. Every step between the blue rows is a crossover. The
 red rows work the same way for the maternal chromosome.
 
-## Painting the same trio by local ancestry
-
-The same display paints rows by whatever category is in the BED, such as the
-strain painting in the [BXD QTL tutorial](/docs/tutorials/bxd_qtl). For your own
-data, write a BED9 with one column holding that category and point
-`partitionField` at it. Here that category is **inferred local ancestry**, a
-per-segment statistical estimate of which reference panel a stretch of
-chromosome most resembles, not a label on the person. That mosaic only has
-structure to show for a recently admixed individual, so we switch to a 1000
-Genomes African-American (ASW) trio: child NA19828, parents NA19818 and NA19819.
-
-[FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
-ancestry by comparing each target haplotype to labeled reference samples. It
-wants the phased trio genotypes (`gt`), phased reference genotypes (`ref`)
-tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map. This command is
-just illustrative. The script below builds all of it for you:
-
-```bash
-java -jar flare.jar \
-  ref=ref.vcf.gz ref-panel=ref_panel_map.txt gt=trio.vcf.gz \
-  map=plink.chr1.GRCh38.map out=asw_trio seed=42
-```
-
-FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
-`asw_trio.anc.vcf.gz`, which
-[`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
-collapses into per-haplotype runs, one BED9 line each, rows labeled
-`Child/Mother/Father hap1|hap2`, colored by ancestry via `itemRgb`. Picking the
-reference panel, pulling genotypes from the public 1000 Genomes phased panel,
-running FLARE, and writing the BED all live in one script:
-[`build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh).
-
-Load that as a `LinearMultiRowFeatureDisplay` partitioned by `sample`, so each
-haplotype gets a row:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "asw_trio_ancestry",
-  "name": "African-American (ASW) trio local ancestry (FLARE, chr1)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "disableGeneHeuristic": true,
-    "columnNames": [
-      "chrom",
-      "chromStart",
-      "chromEnd",
-      "name",
-      "score",
-      "strand",
-      "thickStart",
-      "thickEnd",
-      "itemRgb",
-      "sample",
-      "ancestry"
-    ],
-    "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz"
-  },
-  "displays": [
-    {
-      "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "sample",
-      "rowOrder": [
-        "Child hap1",
-        "Child hap2",
-        "Mother hap1",
-        "Mother hap2",
-        "Father hap1",
-        "Father hap2"
-      ]
-    }
-  ]
-}
-```
-
-Each of the six rows is one haplotype, its segments colored by the reference
-panel the inference assigned, orange or blue for the two FLARE distinguishes
-here. Nothing changed but `partitionField` (`sample` instead of `parenthap`),
-and the same display gives six rows instead of four. The row structure comes
-entirely from the BED column you point it at.
-
-<Figure caption="FLARE local-ancestry calls for a 1000 Genomes ASW trio on chr1. Each of the six rows is one haplotype; the child's two are mosaics recombined from the parents, and every block boundary is a crossover. Orange and blue mark the two reference panels the inference distinguishes." src="/img/trio-ancestry.png"/>
-
-Read it the same way as the hap-ibd rows: each child block continues a segment
-carried by one parent, so the painting is a direct record of what was inherited,
-and the boundaries between blocks are that chromosome's crossovers.
+The same display paints rows by whatever category is in the BED: point
+`partitionField` at a different column and the rows change with it. The
+[local-ancestry tutorial](/docs/tutorials/local_ancestry) partitions by
+haplotype to paint FLARE ancestry calls, and the
+[BXD QTL tutorial](/docs/tutorials/bxd_qtl) partitions by strain.
 
 ## Relating the painting back to the genotypes
 
@@ -345,25 +262,9 @@ open `khv_trio_build/jbrowse2/config.json` in JBrowse Desktop via **File ->
 Session -> Open config.json or .jbrowse file...** to get the same view without
 serving anything.
 
-The admixed-ancestry track (the ASW trio, from the FLARE section above) is a
-separate script,
-[`build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh):
-
-```bash
-bash scripts/build_asw_trio_ancestry.sh # builds ./asw_trio_build/
-```
-
-It calls its helper
-[`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
-from its own directory, so save both together if downloading files individually.
-It needs `bcftools`, htslib (`bgzip`/`tabix`), Java 8+, `python3`, `curl`, and
-`unzip`. Unlike the hap-ibd script it writes just the painted BED,
-`asw_trio_build/NA19828_ASW_trio.chr1.ancestry.bed.gz` (plus its `.tbi`), which
-you load with the track JSON from the
-[local ancestry section](#painting-the-same-trio-by-local-ancestry) above.
-
 ## See also
 
+- [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry)
 - [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [](/docs/user_guides/multivariant_track)

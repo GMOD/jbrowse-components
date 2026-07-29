@@ -49,8 +49,8 @@ export function itemImg(item: GalleryItem) {
 // The live app (or external) destination for an item: an external `href` wins,
 // then a `session` override (set precisely to point somewhere other than the
 // spec default), then the spec-derived live session; `undefined` when the item
-// has no live view at all. Ignores `guide` — the backing tutorial is surfaced as
-// its own "read more" link on the card rather than as the primary destination.
+// has no live view at all. Ignores `guide` — that is a separate destination the
+// card offers alongside this one (see `itemLinks`).
 export function itemLiveHref(item: GalleryItem) {
   if (item.href) {
     return item.href
@@ -97,13 +97,34 @@ export function itemGuideHref(item: GalleryItem, baseUrl: string) {
   return `${baseUrl}/docs/${path}/${hash ? `#${hash}` : ''}`
 }
 
-// The single destination an item leads with, and the words for it: the live
-// session when there is one, else the backing doc.
-export function itemPrimary(item: GalleryItem, baseUrl: string) {
+export interface GalleryLink {
+  href: string
+  label: string
+}
+
+// Every destination an item offers, in the order it shows them. The written
+// walkthrough leads: someone who picked a card off a contact sheet wants the
+// page that says how the picture was made, and the live session is the click
+// beside it rather than one hidden behind the image. Items with no backing doc
+// (a hub URL, an external Storybook page) show the live link alone.
+export function itemLinks(item: GalleryItem, baseUrl: string): GalleryLink[] {
+  const guide = itemGuideHref(item, baseUrl)
   const live = itemLiveHref(item)
-  return live
-    ? { href: live, label: LIVE_LABEL }
-    : { href: itemGuideHref(item, baseUrl), label: itemGuideLabel(item) }
+  return [
+    ...(guide ? [{ href: guide, label: itemGuideLabel(item) }] : []),
+    ...(live ? [{ href: live, label: LIVE_LABEL }] : []),
+  ]
+}
+
+// The destination an item leads with. An item that names none of `guide`,
+// `href`, `session` or `spec` has nowhere to send a reader, which is an
+// authoring mistake rather than a state to render — throw, like itemLiveHref.
+export function itemPrimary(item: GalleryItem, baseUrl: string): GalleryLink {
+  const first = itemLinks(item, baseUrl)[0]
+  if (!first) {
+    throw new Error(`gallery item "${item.label}" has no destination`)
+  }
+  return first
 }
 
 export const gallerySections: readonly GallerySection[] = [
@@ -209,7 +230,7 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'RNA-seq splice junctions',
-        img: 'rnaseq/basic.png',
+        spec: 'rnaseq/basic',
         guide: 'tutorials/rnaseq',
         description:
           'RNA-seq over ACTB: coverage histogram, strand-colored junction arcs, the spliced read pileup, and the gene model below. The arcs come from the N skips in the BAM, so there is no separate junction file to load.',
@@ -250,10 +271,24 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Phased genotype matrix',
-        img: 'trio-matrix-phased-clean.png',
+        spec: 'trio-matrix-phased-clean',
         guide: 'tutorials/analyze_trio',
         description:
           'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
+      },
+      {
+        label: 'Wolfdog local ancestry',
+        spec: 'dog10k-wolfdog-ancestry',
+        guide: 'tutorials/local_ancestry',
+        description:
+          'Dog10K haplotypes painted by FLARE against gray wolf and breed-dog panels, two rows per animal: wolf blocks tile the wolfdog breeds and are absent from the German Shepherds.',
+      },
+      {
+        label: 'Collie eye anomaly deletion',
+        spec: 'dog10k-nhej1-cea-deletion',
+        guide: 'tutorials/dog10k_svs',
+        description:
+          'A 7.8 kb deletion in an NHEJ1 intron genotyped across dog breeds from the Dog10K structural-variant callset: carried by Collies and relatives, absent from other breeds and from wolves.',
       },
       {
         label: 'GWAS with LD coloring',
@@ -303,11 +338,14 @@ export const gallerySections: readonly GallerySection[] = [
           'COLO829 tumor and normal mosdepth BigWigs as one multi-quantitative track in scatter rendering, sharing an autoscaled y-axis, with every main chromosome open at once.',
       },
       {
-        label: 'Clustered copy-number heatmap',
+        // Kept alongside the TCGA cohort card below rather than merged into it:
+        // one megabase against that card's whole genome, and a different
+        // dataset. Same display, different picture.
+        label: '1000 Genomes copy number',
         spec: 'gallery/copynumber_clustered',
-        guide: 'user_guides/multiquantitative_track',
+        guide: 'tutorials/population_cnv',
         description:
-          'Copy-number profiles for many 1000 Genomes individuals as a multi-row density heatmap, reordered by "Cluster rows by score" in the track menu without leaving the browser.',
+          'Copy number over one megabase, one row per 1000 Genomes individual. "Cluster rows by score" in the track menu reorders the rows on the window in view, so matching rows stack together.',
       },
       {
         label: 'TCGA-BRCA cohort copy number',
@@ -373,7 +411,10 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Selenocysteine translation',
         spec: 'gene_track_selenocysteine',
-        guide: 'user_guides/feature_sequence',
+        // gene_track, not feature_sequence: this is the track's per-codon
+        // lettering (where the figure itself lives), not the sequence panel in
+        // the feature-details popup.
+        guide: 'user_guides/gene_track',
         description:
           "Per-codon amino-acid lettering on GPX1, where the in-frame UGA shows as selenocysteine on orange rather than a stop. Translation follows the annotation's exception instead of a fixed codon table.",
       },

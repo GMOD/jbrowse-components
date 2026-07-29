@@ -153,52 +153,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
   },
 
-  // Six haplotypes of a 1000 Genomes African-American (ASW) trio painted by
-  // continental ancestry (FLARE local ancestry vs a balanced AFR/EUR/EAS/SAS
-  // reference). ASW is EUR/AFR two-way admixed — accurately paintable with
-  // 1000G references (unlike an AMR trio, where 1000G has no unadmixed Native
-  // American reference) — so each haplotype reads as an AFR (orange) / EUR
-  // (blue) mosaic and the child's two haplotypes visibly recombine the ancestry
-  // blocks it inherited from each parent. Built by scripts/build_asw_trio_ancestry.sh.
-  {
-    mode: 'url',
-    name: 'trio-ancestry',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr1:1-248,956,422',
-      tracks: [
-        {
-          trackId: 'NA19828_ASW_trio.chr1.ancestry',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 160,
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    // gate capture on the data-driven color legend (renders only once features
-    // have loaded + been binned), not just canvasDrawn/settle: canvasDrawn can
-    // flip on an empty first paint, so under a slow first-fetch a fixed settle
-    // could capture the track before the painting appears (the "empty ancestry
-    // painting" the reviewer saw was this capture race, not a data/aliasing bug)
-    readySelector: '[data-testid="multirow-color-legend"]',
-    readyTimeout: 60000,
-    settleMs: 3000,
-    // taller than the ~300px of view content so there is blank space below the
-    // LGV for the callout (reviewer: don't overlap the painting — put the text
-    // in empty space beneath, keep it brief)
-    viewportHeight: 460,
-    annotations: [
-      {
-        type: 'text',
-        x: 20,
-        y: 350,
-        maxWidth: 1100,
-        fontSize: 16,
-        text: "The multi-row display painting a trio's six haplotypes by inferred local ancestry. The child's two rows are mosaics recombined from the parents, so each block boundary is a meiotic crossover. Orange and blue mark the two reference panels the inference distinguishes, not labels on the people.",
-      },
-    ],
-  },
-
   // The hap-ibd painting stacked above the same trio VCF in the phased
   // multi-sample variant display, zoomed to a single ~400 kb window around one
   // genotype-corroborated crossover so the painting block-step is crisp and the
