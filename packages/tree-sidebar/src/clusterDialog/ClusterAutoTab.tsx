@@ -1,5 +1,5 @@
-import { ErrorBanner } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent } from '@mui/material'
+import { ErrorBanner, SubmitCancelActions } from '@jbrowse/core/ui'
+import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ClusterProgress from '../ClusterProgress.tsx'
@@ -42,27 +42,17 @@ const ClusterAutoTab = observer(function ClusterAutoTab({
           {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          disabled={loading || !canRun}
-          onClick={() => {
-            void run()
-          }}
-        >
-          Run clustering
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            stop()
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
+      <SubmitCancelActions
+        submitText="Run clustering"
+        submitDisabled={loading || !canRun}
+        onSubmit={() => {
+          void run()
+        }}
+        onCancel={() => {
+          stop()
+          handleClose()
+        }}
+      />
     </>
   )
 })

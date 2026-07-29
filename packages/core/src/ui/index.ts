@@ -86,6 +86,10 @@ export { default as PrerenderedCanvas } from './PrerenderedCanvas.tsx'
 export { default as ResizeHandle } from './ResizeHandle.tsx'
 export { default as VerticalScrollbar } from './VerticalScrollbar.tsx'
 export { default as SubmitDialog } from './SubmitDialog.tsx'
+export {
+  default as SubmitCancelActions,
+  type SubmitCancelActionsProps,
+} from './SubmitCancelActions.tsx'
 export { default as SettingsChangesTable } from './SettingsChangesTable.tsx'
 export { default as ActionLink } from './ActionLink.tsx'
 export { default as ExternalLink } from './ExternalLink.tsx'

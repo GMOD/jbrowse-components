@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
+import { SubmitCancelActions } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  Button,
-  DialogActions,
   DialogContent,
   MenuItem,
   TextField,
@@ -209,27 +208,15 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
           setSearchReverse={setSearchReverse}
         />
       </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleSubmit()
-          }}
-          disabled={!canSubmit}
-          variant="contained"
-          color="primary"
-        >
-          Submit
-        </Button>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-          color="secondary"
-        >
-          Cancel
-        </Button>
-      </DialogActions>
+      <SubmitCancelActions
+        onSubmit={() => {
+          handleSubmit()
+        }}
+        onCancel={() => {
+          handleClose()
+        }}
+        submitDisabled={!canSubmit}
+      />
     </>
   )
 })

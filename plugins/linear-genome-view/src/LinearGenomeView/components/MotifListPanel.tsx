@@ -1,14 +1,9 @@
 import { useState } from 'react'
 
+import { SubmitCancelActions } from '@jbrowse/core/ui'
 import { isPalindromic, parseMotifList } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Button, DialogContent, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import StrandCheckboxes from './StrandCheckboxes.tsx'
@@ -128,17 +123,16 @@ const MotifListPanel = observer(function MotifListPanel({
           </Typography>
         ) : null}
       </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleSubmitCombined()
-          }}
-          disabled={!canSubmit}
-          variant="contained"
-          color="primary"
-        >
-          Launch as one track
-        </Button>
+      <SubmitCancelActions
+        onSubmit={() => {
+          handleSubmitCombined()
+        }}
+        onCancel={() => {
+          handleClose()
+        }}
+        submitDisabled={!canSubmit}
+        submitText="Launch as one track"
+      >
         {motifs.length > 1 ? (
           <Button
             onClick={() => {
@@ -151,16 +145,7 @@ const MotifListPanel = observer(function MotifListPanel({
             Launch one track per motif
           </Button>
         ) : null}
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-          color="secondary"
-        >
-          Cancel
-        </Button>
-      </DialogActions>
+      </SubmitCancelActions>
     </>
   )
 })
