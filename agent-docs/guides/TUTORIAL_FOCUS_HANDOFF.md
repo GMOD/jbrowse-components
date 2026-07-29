@@ -23,8 +23,11 @@ Two supporting habits came out of the pass and are worth keeping:
   strains end to end. The hg38-vs-T2T figure went back to
   `tutorials/genomes_synteny.md`, which owns that dataset. The generic ribbon
   color-mode list moved to `user_guides/linear_synteny_view.md` (it was stale:
-  missing Target, Reference, Mean query identity). New figure/spec
-  `sv_synteny/linear_synteny_ortholog_colors` for the ortholog-coloring section.
+  missing Target, Reference, Mean query identity). The ortholog-coloring section
+  is prose only: its figure was cut in review, because the locus-tag-only genes
+  (no `gene` attribute, so all one fallback color) are most of the lane and
+  randomColor gave them a magenta that swamped the handful of named orthologs
+  the figure was meant to show.
 - `tutorials/analyze_trio.md` — pared to the KHV trio and hap-ibd only.
 - `tutorials/local_ancestry.md` (new) — Dog10K wolfdogs, replacing the 1000
   Genomes ASW trio the local-ancestry material used to use. Built by
@@ -37,6 +40,14 @@ Two supporting habits came out of the pass and are worth keeping:
   from the Dog10K paper's Fig 10, built by `scripts/build_dog10k_cyp1a2.sh`.
   The coordinate is derived by translating the reference CDS rather than copied,
   which is worth repeating elsewhere: it re-checks against the assembly in use.
+  Fig 10a now sits under it too: `scripts/build_dog10k_cyp1a2_cn.sh` writes a
+  read-depth copy-number bigWig per published CRAM and the figure
+  (`dog10k-cyp1a2-copy-number`) stacks nine of them as a
+  `MultiQuantitativeTrack` on a fixed 0-6 axis. The Greenland Dog is flat at two
+  across the window while every other dog steps up over the gene, and every row
+  returns to two in the flanks, which is the control on the normalization. The
+  track config carries all nine rows; the script covers all 15 CRAMs and prints
+  each dog's CN over the element beside its CN in the flanks.
 - `tutorials/methylation.md` (17b87d98d0) — refocused onto HG002 at the SNRPN
   imprinting center. The COLO829 by-type/2-color figure was already in
   `user_guides/alignments_track.md#modifications-and-methylation`, so the
@@ -97,27 +108,72 @@ breed-labeled `layout`), so each of these is roughly an hour:
 
 _DENR_ and _CYP1A2_ are done (see above).
 
-**Copy number is not reproducible from published data.** The paper's Fig 10a is
-QuicK-mer2 copy number across breeds, and those per-sample estimates are not
-released: `kiddlabshare/public-data/QuicK-mer/QuicK-mer2-refs/` is empty, the
-Dog10K share has no CNV directory, and the paper's Zenodo record (8084059) holds
-variants, SVs, and the phased panel but no CN.
+**Verified 2026-07-29, genotypes checked remotely.** Use the
+`SV-genotype-v2.merge.agg_only.08032022.vcf.gz` callset under
+`kiddlabshare/dog10K/Manta-SV_2022-03-28/`: it is **1.08 GB** (not the 5.9 GB
+Zenodo Paragraph set), covers the same 1,879 samples, and unlike the Paragraph
+set it carries DUP and INV records. Each of these is the existing
+`build_dog10k_nhej1_sv.sh` recipe pointed somewhere new:
 
-Recomputing it hits two walls, neither of which is the tool:
+- **Ridgeback 133 kb duplication**, chr18:48,828,545-48,962,003. Every Rhodesian
+  and Thai Ridgeback carries it (8 homozygous, 1 het), plus exactly the three
+  African village dogs the paper names (VILLCG000006, VILLKE000001,
+  VILLLR000017) — and one Schipperke it does not.
+- **AMY2B duplication**, chr6:47,375,677-47,390,529. 1581/1588 breed dogs
+  homozygous carrier; 50/55 wolves homozygous reference. Pairs with the CN
+  profile above: the same event as presence/absence and as copy number.
+- **RNASE1 exonic SINE insertion**, chr15:18,164,072 (Paragraph set). 26 of 55
+  wolves heterozygous, one dog in 1,588 — the mirror image, and both are diet
+  genes.
+- **SLC28A3 duplication**, chr1:75,578,115 (136 kb). GBGV000003 homozygous, four
+  more GBGVs and a PBGV heterozygous: Fig 11 as genotypes when the CN route is
+  out of reach.
 
-- **The published fastCN reference is canFam3.1 only** (`fastCN-refs/` has
-  `canFam3.1.tar` 475 MB and `canFam3.1-Y-files.tgz` 1.8 GB). Everything we ship
-  is canFam4, so CN computed against it would land on the wrong assembly, and
-  these are mappability-defined windows, which liftOver handles badly. A canFam4
-  reference would have to be built.
-- **The reads are mostly not on the share.** `cram-share/` holds 15 CRAMs at
-  ~10.6 GB each, and they are nearly all one breed; the rest of the collection
-  is in ENA under PRJEB62420. "CN across breeds" therefore means tens of TB of
-  downloads or compute at the archive.
+**A selection scan is one download.** Per-clade AF from that same 1.08 GB
+callset (`bcftools +fill-tags -S`), Fst against the rest, written as a bgzipped
+BED: `GWASAdapter` + `LinearManhattanDisplay` already ship and already handle
+ranged SVs. The authors' own Ohana output is published as a 52 KB canFam4
+bigBed (283 sites, `github.com/KiddLab/dog-long-read-sv`, alongside two more SV
+bigBeds), which loads directly as a validation row under the computed scan. The
+bigBeds are bed9 with no names or scores, so they are an overlay, not a
+substitute.
 
-The 15 shared CRAMs *are* range-requestable with their `.crai`, so a
-single-locus read-depth comparison across those samples is cheap. It is not a
-cohort CN matrix, and the breed spread does not support one.
+**Per-sample copy number is computable at a locus, cheaply.** The published
+QuicK-mer2 estimates behind Fig 10a and Fig 11 are *not* released
+(`kiddlabshare/public-data/QuicK-mer/QuicK-mer2-refs/` is empty, no CNV
+directory on the share, and Zenodo 8084059 holds variants/SVs/the phased panel
+but no CN). Recomputing them cohort-wide is still out of reach: the published
+fastCN reference is canFam3.1 only, and the reads for the full collection are
+not on the share. But a *locus* profile needs neither.
+
+Measured recipe, verified 2026-07-29:
+
+- `cram-share/` holds 15 range-requestable CRAMs with `.crai`. CRAM decode needs
+  no reference download — the `@SQ` lines carry M5, so
+  `REF_PATH=https://www.ebi.ac.uk/ena/cram/md5/%s` fetches only the chromosome
+  touched (`REF_CACHE` keeps it).
+- Normalization is free: column 14 of the sample table is
+  `effectiveAutosomalMeanCoverage`, so `CN = 2 * depth / cov`.
+- `samtools depth -r <locus>` over each CRAM, binned, then that formula, takes
+  minutes for a 100 kb window across several samples.
+
+At AMY2B (chr6:47,375,000-47,390,000) this gives CN ~12 for the Greenland Dog
+and the Bourbonnais Pointing Dogs, CN 2 for the English Springer Spaniels, flat
+2 in the flanks, with sharp boundaries. At CYP1A2 (chr30) it gives 1.9 for the
+Greenland Dog, ~4 for pointers and spaniels, ~5 for a Chihuahua and the
+Azerbaijan village dog — Fig 10a in miniature, and it sits directly under the
+`dog10k_lof.md` nonsense-variant panel.
+
+What it is not: this is plain depth, without QuicK-mer2's GC correction or SUNK
+mappability control (a mask could come from the share's `callable-genome-mask/`).
+And the 15 samples are only Chihuahua x2, Bourbonnais Pointing Dog x8, English
+Springer Spaniel x3, Greenland Dog, Azerbaijan village dog — no wolves, and no
+Grand Basset Griffon Vendéen, so Fig 11's SLC28A3 expansion is not reachable
+this way.
+
+For that one, column 5 of the sample table carries SRA runs (GBGV000001-3 =
+SRR12330329/330/331, plus Basset Hounds and PBGVs), so a targeted panel is
+~15-20 GB of fastq per sample plus a one-time canFam4 QuicK-mer2 index build.
 
 **phyloP on canFam4 exists but is awkward.** Zenodo 8084059 carries
 `zoonomia-cf3.1-lifted-to-cf4.liftover.phylop.20210708.bw.gz`, which is Fig 10c.

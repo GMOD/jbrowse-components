@@ -125,10 +125,10 @@ bug for the same reason after pileup layout was fixed:
 
 - **pileup** (`segmentExtentsByRefName`) shifts each read's unioned extent as a
   unit; a read only ever spans regions of one refName.
-- **chain** (`mergeChains` in `computeChainLayout.ts`) shifts each region's chain
-  bounds **before** merging by name, because a chain — unlike a read — *can*
-  span refNames (an inter-chromosomal pair), so shifting the merged bounds by one
-  refName's offset would be wrong.
+- **chain** (`mergeChains` in `computeChainLayout.ts`) shifts each region's
+  chain bounds **before** merging by name, because a chain — unlike a read —
+  _can_ span refNames (an inter-chromosomal pair), so shifting the merged bounds
+  by one refName's offset would be wrong.
 
 Both need the region bounds, threaded in as `regions` (from
 `model.loadedRegions`) via `GroupLayoutContext`.
