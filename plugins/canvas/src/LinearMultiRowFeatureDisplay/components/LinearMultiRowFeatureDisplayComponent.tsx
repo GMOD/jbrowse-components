@@ -2,6 +2,7 @@ import { useRef } from 'react'
 
 import { Menu, useMouseTracking } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
   DisplayChrome,
   FloatingSvgOverlay,
@@ -163,7 +164,9 @@ const LinearMultiRowFeatureDisplayComponent = observer(
           clientX: e.clientX,
           clientY: e.clientY,
           refName: p.refName,
-          pos: Math.floor(p.coord0),
+          // anchors "sort rows by color here" on the clicked column, so it
+          // must be the base drawn there (coord0 is off by one when reversed)
+          pos: basePaintedAt(p, p.offset),
           hit: model.featureAt(px, e.clientY - rect.top),
         })
       }

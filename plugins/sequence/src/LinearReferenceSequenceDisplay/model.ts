@@ -13,6 +13,7 @@ import {
   isSessionWithAddTracks,
   makeTrackId,
 } from '@jbrowse/core/util'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   getRpcSessionId,
@@ -395,8 +396,14 @@ export function modelFactory(
         const view = getContainingView(self) as LGV
         const bp = self.zoomedOut ? undefined : view.pxToBp(offsetX)
         if (bp && !bp.oob) {
+          // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so
+          // it has to name the base drawn under the cursor. Reversed, coord0
+          // names the one to its right — and on the region's first column names
+          // a base past its end, which read as "no hover here" rather than as a
+          // wrong letter. Safe to ask here because oob is already ruled out.
+          const base = basePaintedAt(bp, bp.offset)
           const data = self.sequenceData.get(bp.index)
-          const idx = data ? bp.coord0 - data.start : -1
+          const idx = data ? base - data.start : -1
           if (data && idx >= 0 && idx < data.seq.length && self.numRows > 0) {
             const row = rowLayout({
               showForward: self.showForward,
@@ -406,13 +413,14 @@ export function modelFactory(
             })[Math.floor(offsetY / self.rowHeight)]
             return {
               refName: bp.refName,
-              coord: bp.coord,
+              // 1-based display form of the base actually under the cursor
+              coord: base + 1,
               detail: row
                 ? hoverDetailForRow(
                     row,
                     data.seq,
                     data.start,
-                    bp.coord0,
+                    base,
                     !!bp.reversed,
                     getGeneticCode(data.geneticCodeId).codonTable,
                   )

@@ -10,6 +10,7 @@ import {
   getSession,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -553,7 +554,9 @@ export default function stateModelFactory(
         if (!region) {
           return undefined
         }
-        const bp = p.coord0
+        // the base drawn under the cursor, which the containment test below
+        // compares against; coord0 names the one to its right when reversed
+        const bp = basePaintedAt(p, p.offset)
         const {
           featureStarts,
           featureEnds,

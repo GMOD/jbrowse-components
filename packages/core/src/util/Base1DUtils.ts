@@ -115,11 +115,48 @@ export function computeMoveToLayout(
   return { bpPerPx, offsetPx: computeScrollPos(self, start, bpPerPx, 0) }
 }
 
-// 0-based interbase base under the cursor: floor(within-region bp). This is the
-// BED-style coordinate that bpToPx consumes, so it round-trips cleanly. Use it
-// for arithmetic (feature start/end, codon math); use `coord` only for display.
+// The 0-based (BED/interbase) coordinate at a pixel by the POINT convention:
+// the inverse of `bpToPx`, which maps a base to a point — and reversed, that
+// point is the base's right edge. Use it for arithmetic (feature start/end,
+// codon math); use `coord` only for display.
+//
+// `bp` is the offset from the region's left screen edge, and may be negative or
+// past the region's end: pxToBp reports out-of-bounds pixels too, so this has
+// to name a coordinate where no base is painted at all. That dual duty is
+// exactly why the rounding stays a plain floor here — there is no rounding rule
+// that is unambiguously right for both an in-bounds pixel and an extrapolated
+// one.
+//
+// So on a reversed region this is NOT the base painted at the pixel. When the
+// answer indexes per-base data, ask `basePaintedAt` instead, at a call site
+// that already knows the pixel is in bounds.
 function regionBase0(r: RegionSnap, bp: number) {
   return Math.floor(r.reversed ? r.end - bp : r.start + bp)
+}
+
+/**
+ * The base **painted** at a pixel. Pair it with `pxToBp`'s `offset` field, and
+ * only once you know the pixel is in bounds (`!oob`) — off the end of a region
+ * no base is painted and the question has no answer.
+ *
+ * Use this rather than `coord0` whenever the result indexes per-base data: a
+ * sequence string, a coverage bin, a per-base tooltip. Reversed, bp runs
+ * leftward, so base b covers offsets (b, b+1] — `coord0`'s floor names b+1 on
+ * b's leftmost pixel column, and names `r.end`, outside the region entirely, on
+ * the region's first column.
+ *
+ * This is the same one-base pivot as render-core's `makeCellLeftMapper` /
+ * `bpAtPx`, which is what the per-base painters draw with, so this is the
+ * readout that agrees with what is on screen. The pivot is spelled out again
+ * here rather than shared because core does not depend on render-core.
+ */
+export function basePaintedAt(
+  r: { start: number; end: number; reversed?: boolean },
+  offsetBp: number,
+) {
+  return r.reversed
+    ? Math.ceil(r.end - offsetBp) - 1
+    : Math.floor(r.start + offsetBp)
 }
 
 // 1-based display coord: regionBase0 + 1. Use for showing a genomic position to
@@ -130,9 +167,12 @@ function regionCoord(r: RegionSnap, bp: number) {
   return regionBase0(r, bp) + 1
 }
 
-// `coord` is 1-based for display; `coord0` is the 0-based (BED/interbase) base
-// under the cursor — the value bpToPx consumes, so it round-trips. `offset` is
-// the raw 0-based float bp within the region — pair with offsetBpToPx.
+// `coord` is 1-based for display; `coord0` is its 0-based (BED/interbase)
+// sibling, both by the point convention (see regionBase0 — on a reversed region
+// neither names the base actually painted at the pixel; `basePaintedAt` does).
+// `offset` is the raw 0-based float bp within the region — pair it with
+// offsetBpToPx for an exact pixel round-trip, or with basePaintedAt for the
+// base on screen.
 export interface PxToBpResult extends RegionSnap {
   coord: number
   coord0: number

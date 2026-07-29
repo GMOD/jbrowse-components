@@ -1,4 +1,5 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
@@ -59,7 +60,13 @@ const MAFTooltip = observer(function ({
     }
     const bin = p2.oob
       ? undefined
-      : model.coverageTooltipBin(p2.index, p2.coord0, view.bpPerPx)
+      : // the bin is per-base, so it needs the base drawn under the cursor,
+        // which coord0 is not on a reversed region (see basePaintedAt)
+        model.coverageTooltipBin(
+          p2.index,
+          basePaintedAt(p2, p2.offset),
+          view.bpPerPx,
+        )
     return bin ? (
       <BaseTooltip clientPoint={clientPoint}>
         <MafCoverageTooltipContents bin={bin} refName={p2.refName} />

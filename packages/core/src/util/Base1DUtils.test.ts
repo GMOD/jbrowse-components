@@ -1,4 +1,5 @@
 import {
+  basePaintedAt,
   bpToPx,
   computeMoveToLayout,
   getLayoutHighlightCoords,
@@ -187,6 +188,61 @@ describe('pxToBp', () => {
     const result = pxToBp(self, 1500)
     expect(result.oob).toBe(true)
     expect(result.refName).toBe('chr1')
+  })
+})
+
+// The base on screen under a pixel. Reversed, bp runs leftward, so a plain
+// floor (what `coord0` does, and must keep doing — it also has to name a
+// coordinate for out-of-bounds pixels) names the neighbouring base on each
+// base's leftmost column, and names r.end, outside the region, on the region's
+// first column. Every other reversed test here asserts `offset` or
+// coord0-vs-coord, never which base a pixel names.
+describe('basePaintedAt', () => {
+  // 10bp across 100px at bpPerPx 0.1: each base owns 10 pixel columns
+  const region = (reversed: boolean) => ({
+    refName: 'ctgA',
+    start: 1000,
+    end: 1010,
+    reversed,
+  })
+  const at = (px: number, reversed: boolean) => {
+    const snap = makeSnap([region(reversed)], { bpPerPx: 0.1 })
+    const { offset, oob } = pxToBp(snap, px)
+    expect(oob).toBe(false)
+    return basePaintedAt(region(reversed), offset)
+  }
+
+  it('forward: each base owns its columns, left to right', () => {
+    expect(at(0, false)).toBe(1000)
+    expect(at(9.9, false)).toBe(1000)
+    expect(at(10, false)).toBe(1001)
+    expect(at(99.9, false)).toBe(1009)
+  })
+
+  it('reversed: each base owns its columns, right to left', () => {
+    expect(at(0, true)).toBe(1009)
+    expect(at(9.9, true)).toBe(1009)
+    expect(at(10, true)).toBe(1008)
+    expect(at(99.9, true)).toBe(1000)
+  })
+
+  it('never leaves the region, in either orientation', () => {
+    for (const reversed of [false, true]) {
+      for (let px = 0; px < 100; px += 0.5) {
+        const bp = at(px, reversed)
+        expect(bp).toBeGreaterThanOrEqual(1000)
+        expect(bp).toBeLessThan(1010)
+      }
+    }
+  })
+
+  // The point-convention sibling, kept for contrast: coord0 is the inverse of
+  // bpToPx and stays a floor, so on a reversed region it disagrees here. This
+  // is the trap basePaintedAt exists for, not a bug in coord0.
+  it('differs from coord0 on a reversed region first column', () => {
+    const snap = makeSnap([region(true)], { bpPerPx: 0.1 })
+    expect(pxToBp(snap, 0).coord0).toBe(1010)
+    expect(at(0, true)).toBe(1009)
   })
 })
 
