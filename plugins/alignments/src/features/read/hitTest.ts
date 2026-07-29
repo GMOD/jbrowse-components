@@ -1,3 +1,5 @@
+import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
+
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 export function hitTestFeature(
@@ -5,8 +7,8 @@ export function hitTestFeature(
   coords: CigarCoords,
   featureHeight: number,
 ): { id: string; index: number } | undefined {
-  const { adjustedY, yWithinRow, genomicPos, row } = coords
-  if (adjustedY >= 0 && yWithinRow <= featureHeight) {
+  const { genomicPos, row } = coords
+  if (isWithinReadBand(coords, featureHeight)) {
     const { readPositions, readYs, readIds } = resolved.rpcData
     // Backwards, so that when several features share a row the one returned is
     // the one drawn last — i.e. the one actually under the cursor. Reads are

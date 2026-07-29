@@ -86,8 +86,13 @@ export function getAlignmentsLegendSections(model: {
 }): LegendSection[] {
   const reads = model.legendItems()
   const arcs = model.arcLegendItems()
-  const readColors = new Set(reads.map(i => i.color))
-  const merge = arcs.some(a => readColors.has(a.color))
+  // Color-less rows (headings, notes) never count as a shared color — a `reads`
+  // and an `arcs` entry that both omit `color` would otherwise both land on
+  // `undefined` and read as a match, merging two sections that share no swatch.
+  const readColors = new Set(
+    reads.map(i => i.color).filter(c => c !== undefined),
+  )
+  const merge = arcs.some(a => a.color !== undefined && readColors.has(a.color))
   return [
     merge
       ? {

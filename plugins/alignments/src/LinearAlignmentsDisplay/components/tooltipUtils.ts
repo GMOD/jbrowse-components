@@ -6,8 +6,10 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
+import { formatLocationRange } from '../../shared/locStrings.ts'
 import { interbaseTypeName } from '../../shared/types.ts'
 import { getOrCreate } from '../../shared/util.ts'
+import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
@@ -16,6 +18,7 @@ import type {
   SashimiArcHitResult,
 } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
+import type { LengthAccumulator } from './lengthStats.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 export interface IndicatorTooltipPayload {
@@ -137,20 +140,6 @@ function getPairTypeDescriptions({
   return out
 }
 
-// 1-based inclusive display range for a half-open [start, end) genomic span —
-// a read, a sashimi junction's intron, an arc endpoint. Matches
-// formatCigarTooltip, the context menu's "Copy location", the SAM export, and
-// what BaseFeatureDetail shows for the same feature (it renders start + 1 off
-// the raw 0-based start). Every location a tooltip prints goes through here, so
-// a hover can't disagree by one with the click-through.
-export function formatLocationRange(
-  refName: string,
-  start: number,
-  end: number,
-) {
-  return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
-}
-
 export function formatChainTooltip(
   rpcData: PileupDataResult,
   idx: number,
@@ -214,6 +203,76 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
   }
 }
 
+// The most-seen key of a tally, or undefined for an empty one. Pulled out so
+// "the commonest inserted sequence" reads as that rather than as a max-scan.
+function mostCommon(counts: Map<string, number>) {
+  let top: { seq: string; count: number } | undefined
+  for (const [seq, count] of counts) {
+    if (top === undefined || count > top.count) {
+      top = { seq, count }
+    }
+  }
+  return top
+}
+
+// Per-type (insertion / softclip / hardclip) length stats for the interbase
+// events at exactly `position`, plus the commonest sequence of each type.
+function collectInterbaseStats(position: number, data: PileupDataResult) {
+  const {
+    interbasePositions,
+    interbaseLengths,
+    interbaseTypes,
+    interbaseSequences,
+  } = data
+  const lengths = new Map<string, LengthAccumulator>()
+  const seqCounts = new Map<string, Map<string, number>>()
+  for (let i = 0; i < interbasePositions.length; i++) {
+    if (interbasePositions[i] === position) {
+      const typeName = interbaseTypeName(interbaseTypes[i]!)
+      lengths.set(
+        typeName,
+        accumulateLength(lengths.get(typeName), interbaseLengths[i]!),
+      )
+      const seq = interbaseSequences[i]
+      if (seq) {
+        const typeSeqs = getOrCreate(
+          seqCounts,
+          typeName,
+          () => new Map<string, number>(),
+        )
+        typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
+      }
+    }
+  }
+  const out: CoverageTooltipBin['interbase'] = {}
+  for (const [typeName, acc] of lengths) {
+    const typeSeqs = seqCounts.get(typeName)
+    const top = typeSeqs && mostCommon(typeSeqs)
+    out[typeName] = {
+      ...toLengthStats(acc),
+      topSeq: top?.seq,
+      topSeqCount: top?.count,
+    }
+  }
+  return out
+}
+
+// Length stats for the deletions (gapTypes 0, as opposed to skips) spanning
+// `position`. Same statistic as the interbase tally above, through the same
+// accumulator, so the two can't compute it differently.
+function collectDeletionStats(position: number, data: PileupDataResult) {
+  const { gapPositions, gapTypes } = data
+  let acc: LengthAccumulator | undefined
+  for (let i = 0; i < gapPositions.length / 2; i++) {
+    const start = gapPositions[i * 2]!
+    const end = gapPositions[i * 2 + 1]!
+    if (gapTypes[i] === 0 && position >= start && position < end) {
+      acc = accumulateLength(acc, end - start)
+    }
+  }
+  return acc && toLengthStats(acc)
+}
+
 export function getTooltipBin(
   position: number,
   blockRpcData: PileupDataResult | undefined,
@@ -238,95 +297,10 @@ export function getTooltipBin(
 
   const snps = countSnpsAtPosition(position, blockRpcData)
 
-  const interbase: CoverageTooltipBin['interbase'] = {}
-  if (includeInterbase) {
-    const {
-      interbasePositions,
-      interbaseLengths,
-      interbaseTypes,
-      interbaseSequences,
-    } = blockRpcData
-    const numInterbases = interbasePositions.length
-    // avgLen accumulates the length sum during the scan and is divided by count
-    // in the finalize pass below. seqCountsByType tracks per-type sequence
-    // tallies to surface the most common inserted sequence.
-    const seqCountsByType = new Map<string, Map<string, number>>()
-    for (let i = 0; i < numInterbases; i++) {
-      if (interbasePositions[i] === position) {
-        const typeName = interbaseTypeName(interbaseTypes[i]!)
-        const len = interbaseLengths[i]!
-        const entry = (interbase[typeName] ??= {
-          count: 0,
-          minLen: len,
-          maxLen: len,
-          avgLen: 0,
-        })
-        entry.count++
-        entry.avgLen += len
-        if (len < entry.minLen) {
-          entry.minLen = len
-        }
-        if (len > entry.maxLen) {
-          entry.maxLen = len
-        }
-        const seq = interbaseSequences[i]
-        if (seq) {
-          const typeSeqs = getOrCreate(
-            seqCountsByType,
-            typeName,
-            () => new Map<string, number>(),
-          )
-          typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
-        }
-      }
-    }
-    for (const [typeName, entry] of Object.entries(interbase)) {
-      entry.avgLen /= entry.count
-      const typeSeqs = seqCountsByType.get(typeName)
-      if (typeSeqs) {
-        let topSeq: string | undefined
-        let topCount = 0
-        for (const [seq, count] of typeSeqs) {
-          if (count > topCount) {
-            topCount = count
-            topSeq = seq
-          }
-        }
-        if (topSeq) {
-          entry.topSeq = topSeq
-          entry.topSeqCount = topCount
-        }
-      }
-    }
-  }
-
-  let deletions: CoverageTooltipBin['deletions']
-  let deletionLenSum = 0
-  const { gapPositions, gapTypes } = blockRpcData
-  const numGaps = gapPositions.length / 2
-  for (let i = 0; i < numGaps; i++) {
-    if (gapTypes[i] !== 0) {
-      continue
-    }
-    const start = gapPositions[i * 2]!
-    const end = gapPositions[i * 2 + 1]!
-    if (position >= start && position < end) {
-      const len = end - start
-      deletions ??= { count: 0, minLen: len, maxLen: len, avgLen: 0 }
-      deletions.count++
-      deletionLenSum += len
-      if (len < deletions.minLen) {
-        deletions.minLen = len
-      }
-      if (len > deletions.maxLen) {
-        deletions.maxLen = len
-      }
-    }
-  }
-  if (deletions) {
-    deletions.avgLen = deletionLenSum / deletions.count
-  }
-
+  const interbase = includeInterbase
+    ? collectInterbaseStats(position, blockRpcData)
+    : {}
+  const deletions = collectDeletionStats(position, blockRpcData)
   const modifications = blockRpcData.modTooltipData?.[position]
 
   const hasData =

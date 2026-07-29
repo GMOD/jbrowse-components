@@ -1,5 +1,7 @@
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
+import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
+
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 export interface ModificationHitResult {
@@ -21,8 +23,11 @@ export function hitTestModification(
   if (!resolved || !coords) {
     return undefined
   }
-  const { row, yWithinRow, genomicPos, bpPerPx } = coords
-  if (yWithinRow > featureHeight || !resolved.rpcData.modFlatbush) {
+  const { row, genomicPos, bpPerPx } = coords
+  if (
+    !isWithinReadBand(coords, featureHeight) ||
+    !resolved.rpcData.modFlatbush
+  ) {
     return undefined
   }
   const hitToleranceBp = Math.max(0.5, bpPerPx * 2)

@@ -59,3 +59,17 @@ export interface CigarCoords {
   adjustedY: number
   yWithinRow: number
 }
+
+/**
+ * Whether the cursor is on a drawn read body. Both halves matter:
+ *
+ * - `adjustedY >= 0` — above the pileup top the floor divide makes `row`
+ *   negative. Per-row tests compare `Ys[i] !== row` so a negative row never
+ *   matches, but that is accidental, and it is reachable (coverage shown with no
+ *   depth under the cursor falls through to the pileup tests).
+ * - `yWithinRow <= featureHeight` — `row` comes from the row PITCH (body +
+ *   spacing), so without this the inter-row gap resolves to the row above.
+ */
+export function isWithinReadBand(coords: CigarCoords, featureHeight: number) {
+  return coords.adjustedY >= 0 && coords.yWithinRow <= featureHeight
+}

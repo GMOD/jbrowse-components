@@ -1,13 +1,14 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { toLocale } from '@jbrowse/core/util'
 import { getAssemblyName, hasBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { formatStartLocation } from '../shared/locStrings.ts'
 import {
   buildPairedEndMateFeature,
   computeMateFields,
 } from '../shared/mateFeature.ts'
+import BreakpointPair from './BreakpointPair.tsx'
 import { LaunchBreakpointSplitViewLink } from './links.tsx'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
@@ -41,8 +42,13 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
         assemblyName={assemblyName}
         feature={buildPairedEndMateFeature(mate)}
       >
-        {refName}:{toLocale(start)} -&gt; {mate.nextRef}:
-        {toLocale(mate.nextPos)} (breakpoint split view)
+        {/* the read's own leftmost base, then PNEXT — the mate's leftmost base,
+            the only mate coordinate the record carries */}
+        <BreakpointPair
+          from={formatStartLocation(refName, start)}
+          to={formatStartLocation(mate.nextRef, mate.nextPos)}
+        />{' '}
+        (breakpoint split view)
       </LaunchBreakpointSplitViewLink>
     </BaseCard>
   ) : null

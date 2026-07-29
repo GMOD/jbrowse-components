@@ -101,27 +101,12 @@ function buildSoftclipExpansions(data: PileupDataResult) {
   return expansions.size > 0 ? expansions : undefined
 }
 
-/**
- * Get a read's effective [start,end) including any softclip expansion.
- */
-function readExtent(
-  data: PileupDataResult,
-  i: number,
-  expansions: Map<number, { start: number; end: number }> | undefined,
-) {
-  const start = data.readPositions[i * 2]!
-  const end = data.readPositions[i * 2 + 1]!
-  const exp = expansions?.get(i)
-  return {
-    start: exp ? Math.min(start, exp.start) : start,
-    end: exp ? Math.max(end, exp.end) : end,
-  }
-}
-
 // Per-read effective [start,end) (softclip-expanded when `expansions` present) as
-// two parallel arrays, computed once. The order-building sort comparators compare
-// extents O(n log n) times; reading these arrays avoids the `{start,end}` object
-// `readExtent` would allocate on every one of those comparisons.
+// two parallel arrays, computed once. The single spelling of the soft-clip union
+// rule, so no caller can expand a read differently from the layout that places
+// it. Parallel arrays rather than `{start,end}` objects because the order-building
+// sort comparators compare extents O(n log n) times and every object would be an
+// allocation.
 interface ReadExtents {
   starts: Float64Array
   ends: Float64Array
@@ -723,11 +708,14 @@ export function computeMultiRegionLayout({
   const extents = new Map<string, ReadExtent>()
   const orderedIds: string[] = []
   for (const [idx, data] of entries) {
+    const numReads = data.readIds.length
     const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
+    const ext = buildReadExtents(data, exp, numReads)
     const refName = regions?.get(idx)?.refName
-    for (let i = 0; i < data.readIds.length; i++) {
+    for (let i = 0; i < numReads; i++) {
       const id = data.readIds[i]!
-      const { start, end } = readExtent(data, i, exp)
+      const start = ext.starts[i]!
+      const end = ext.ends[i]!
       const cur = extents.get(id)
       if (cur) {
         if (start < cur.start) {

@@ -11,6 +11,7 @@ import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { hitTestClip } from '../../shared/clipPass.ts'
+import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -98,10 +99,8 @@ function hitTestChain(
   if (!rpcData.chainFlatbush || !rpcData.chainFirstReadIndices) {
     return undefined
   }
-  const { adjustedY, yWithinRow, genomicPos, row } = coords
-  // Same clickable band as hitTestFeature: the featureSpacing gap between rows
-  // must not register a hit (it rounds to the row above).
-  if (adjustedY < 0 || yWithinRow > featureHeight) {
+  const { genomicPos, row } = coords
+  if (!isWithinReadBand(coords, featureHeight)) {
     return undefined
   }
   const hits = rpcData.chainFlatbush.search(genomicPos, row, genomicPos, row)
@@ -153,8 +152,7 @@ function hitTestCigarItem(
   featureHeight: number,
   filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
-  const { adjustedY, yWithinRow } = coords
-  if (adjustedY < 0 || yWithinRow > featureHeight) {
+  if (!isWithinReadBand(coords, featureHeight)) {
     return undefined
   }
   return (
@@ -313,13 +311,13 @@ export function performHitTest(
           resolved,
         }
       }
-    } else if (coords.adjustedY >= 0 && coords.yWithinRow <= featureHeight) {
+    } else if (isWithinReadBand(coords, featureHeight)) {
       // When zoomed out, surface features that are still visually significant.
-      // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
-      // spacing doesn't produce false hits. `featureHit` is attached here just
-      // as in the zoomed-in branch: without it a right-click on a zoomed-out
-      // insertion/deletion loses the read's own menu items and a hover drops the
-      // chain highlight, purely because of zoom.
+      // These two tests are called directly rather than through
+      // `hitTestCigarItem`, so they need its band guard spelled here.
+      // `featureHit` is attached just as in the zoomed-in branch: without it a
+      // right-click on a zoomed-out insertion/deletion loses the read's own menu
+      // items and a hover drops the chain highlight, purely because of zoom.
       const largeInsertionHit = hitTestLargeInsertion(
         resolved,
         coords,

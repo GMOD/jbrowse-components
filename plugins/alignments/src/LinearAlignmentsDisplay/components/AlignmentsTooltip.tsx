@@ -5,9 +5,10 @@ import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
-import { formatLenRange, formatLocationRange, pct } from './tooltipUtils.ts'
+import { formatLenRange, pct } from './tooltipUtils.ts'
 
 import type { TooltipPayload } from './tooltipUtils.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'

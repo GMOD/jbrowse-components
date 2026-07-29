@@ -12,6 +12,26 @@ import { mergeSpans, overlapIntervals } from './spanOverlaps.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 
+// Total order over chains: packing distance first, then span, then chain name.
+// The tiebreaks matter for the same reason `compareReadsCanonically`
+// (sortLayout.ts) needs them — first-fit-lowest-row placement is arrival-order
+// sensitive and JS sort is stable, so a distance-only comparator hands ties to
+// whatever order the worker emitted chains in. Ties are the rule here: distance
+// is `maxEnd - minStart` (or |TLEN|), so every singleton chain of a fixed-length
+// read set shares one value. Across regions `mergeChains` orders by which region
+// first showed a chain, so a pan that re-split the regions reshuffled the rows.
+function compareChainsCanonically(
+  a: { name: string; minStart: number; maxEnd: number; distance: number },
+  b: { name: string; minStart: number; maxEnd: number; distance: number },
+) {
+  return (
+    a.distance - b.distance ||
+    a.minStart - b.minStart ||
+    a.maxEnd - b.maxEnd ||
+    (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)
+  )
+}
+
 function buildChainRowMap(
   chains: {
     name: string
@@ -21,7 +41,7 @@ function buildChainRowMap(
   }[],
   maxRows = Number.POSITIVE_INFINITY,
 ) {
-  chains.sort((a, b) => a.distance - b.distance)
+  chains.sort(compareChainsCanonically)
   const rows: number[][] = []
   const rowMap = new Map<string, number>()
   let truncated = false

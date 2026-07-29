@@ -237,6 +237,27 @@ describe('computeChainLayout', () => {
     const { readYs } = computeChainLayout(data)
     expect(readYs[0]).toBe(readYs[1])
   })
+
+  // Distance is `maxEnd - minStart` (or |TLEN|), so a fixed-length read set ties
+  // on it for every chain. Placement is first-fit-lowest-row and JS sort is
+  // stable, so without a total tiebreak the rows fell out of the worker's emit
+  // order rather than out of the chain set.
+  test('row assignment does not depend on chain emit order', () => {
+    const chains = [
+      { name: 'readA', minStart: 1000, maxEnd: 1150, distance: 150 },
+      { name: 'readB', minStart: 1050, maxEnd: 1200, distance: 150 },
+      { name: 'readC', minStart: 1100, maxEnd: 1250, distance: 150 },
+      { name: 'readD', minStart: 1300, maxEnd: 1450, distance: 150 },
+    ]
+    const forward = computeMultiRegionChainLayout([
+      [0, makeChainData({ regionStart: 1000, chains })],
+    ])
+    const reversed = computeMultiRegionChainLayout([
+      [0, makeChainData({ regionStart: 1000, chains: [...chains].reverse() })],
+    ])
+    expect([...reversed.rowMap]).toStrictEqual([...forward.rowMap])
+    expect(reversed.maxY).toBe(forward.maxY)
+  })
 })
 
 describe('computeMultiRegionChainLayout — cross-region consistency', () => {
