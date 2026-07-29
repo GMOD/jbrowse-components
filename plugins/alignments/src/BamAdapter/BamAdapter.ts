@@ -117,7 +117,9 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
             if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
               continue
             }
-            if (readName && record.name !== readName) {
+            // `!== undefined`, not truthy: matches CramAdapter/SamAdapter, where
+            // an explicitly-set empty readName filters rather than being ignored.
+            if (readName !== undefined && record.name !== readName) {
               continue
             }
             // Multiple tag filters are AND-ed (excluded if any one rejects the

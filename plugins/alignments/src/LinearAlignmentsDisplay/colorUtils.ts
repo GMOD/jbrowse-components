@@ -158,9 +158,12 @@ export function readColorCategory(
   // discordant-pair signal, and the split is already shown by arcs/clip marks.
   if (isChain && chainSupp > 0 && !isPaired) {
     const primaryStrand = chainSupp > 1 ? -1 : 1
-    const effectiveStrand =
-      opts.flipStrandLongReadChains !== false ? strand * primaryStrand : strand
-    return strandCategory(effectiveStrand)
+    // Omitted follows the `flipStrandLongReadChains` config default (true). The
+    // GPU side has no default of its own — the uniform is always written from
+    // the same resolved config value — so this is the one place the fallback
+    // lives.
+    const flip = opts.flipStrandLongReadChains ?? true
+    return strandCategory(flip ? strand * primaryStrand : strand)
   }
 
   // Paired split read whose supplementary segment maps opposite-strand to its

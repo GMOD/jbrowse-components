@@ -1,5 +1,5 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { toLocale } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -59,11 +59,12 @@ function SourceRow({ row }: { row: WiggleTooltipRow }) {
 function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
   const { classes } = useStyles()
   const { refName, start, end, rows } = feature
-  const coord =
-    start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
   return (
     <div>
-      {`${refName}:${coord}`}
+      {/* start/end are 0-based half-open; assembleLocString is the shared
+          1-based conversion, and collapses a single-base interval to one
+          position rather than printing "101..101" */}
+      {assembleLocString({ refName, start, end })}
       <br />
       {rows.slice(0, MAX_ROWS).map((row, i) => (
         // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, source can be undefined for unnamed rows

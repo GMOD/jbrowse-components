@@ -23,6 +23,11 @@ interface VisibleSource {
 // The header coord is the cursor bp itself — picking one source's feature
 // interval would be arbitrary across sources with different bin widths. Rows
 // follow visibleSources order (the on-screen legend order).
+//
+// That single base is reported as the interval `[bp, bp + 1)`, like every other
+// coordinate pair in the codebase, rather than as a zero-width `[bp, bp]`: the
+// tooltip and the feature widget both read these as a half-open interval, so a
+// collapsed one printed a backwards range and opened a zero-length feature.
 export function findOverlayHit(
   data: WiggleDataResult,
   visibleSources: VisibleSource[],
@@ -41,7 +46,9 @@ export function findOverlayHit(
       }
     }
   }
-  return rows.length === 0 ? undefined : { refName, start: bp, end: bp, rows }
+  return rows.length === 0
+    ? undefined
+    : { refName, start: bp, end: bp + 1, rows }
 }
 
 // Row mode: cursor Y picks one row → one source. Returns its feature interval.

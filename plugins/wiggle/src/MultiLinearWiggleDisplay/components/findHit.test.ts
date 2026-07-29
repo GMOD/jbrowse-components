@@ -1,3 +1,5 @@
+import { assembleLocString } from '@jbrowse/core/util'
+
 import { findMultiWiggleHit, findOverlayHit, findRowHit } from './findHit.ts'
 
 import type { WiggleFeatureArrays, WiggleSourceData } from '../../util.ts'
@@ -62,7 +64,7 @@ describe('findOverlayHit', () => {
     expect(result).toEqual({
       refName: 'chr1',
       start: 50,
-      end: 50,
+      end: 51,
       rows: [
         { source: 's1', score: 5 },
         { source: 's2', score: 10 },
@@ -155,6 +157,21 @@ describe('findOverlayHit', () => {
       'whiskers',
     )
     expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
+  })
+
+  // The cursor base is reported as the half-open interval [bp, bp + 1), like
+  // every other coordinate pair, so the tooltip and the feature widget read it
+  // as one base rather than as a zero-width range.
+  test('reports the cursor base as a single-base half-open interval', () => {
+    const data = {
+      sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
+    }
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'avg')
+    expect(result?.start).toBe(50)
+    expect(result?.end).toBe(51)
+    expect(assembleLocString({ refName: 'chr1', start: 50, end: 51 })).toBe(
+      'chr1:51',
+    )
   })
 })
 

@@ -6,35 +6,50 @@ import {
   updateQueryNameColorMap,
 } from './colorTagUtils.ts'
 
-test('assigns palette colors to new tag values', () => {
-  const { map, added } = updateColorTagMap({}, ['a', 'b', 'a'])
+// Values stream in as regions load, so a color derived from discovery order made
+// a track's colors depend on which read arrived first. Every test here pins the
+// property that replaced it: the color is a function of the value alone.
+// Both haplotype conventions (HP 0/1 and HP 1/2) land on leading palette colors.
+test('numeric tag values index the palette directly', () => {
+  const { map, added } = updateColorTagMap({}, ['0', '1', '2'])
   expect(added).toBe(true)
-  expect(map.a).toBe(TAG_COLOR_PALETTE[0])
-  expect(map.b).toBe(TAG_COLOR_PALETTE[1])
+  expect(map['0']).toBe(TAG_COLOR_PALETTE[0])
+  expect(map['1']).toBe(TAG_COLOR_PALETTE[1])
+  expect(map['2']).toBe(TAG_COLOR_PALETTE[2])
 })
 
-test('keeps existing assignments and continues the palette index', () => {
-  const { map, added } = updateColorTagMap({ a: TAG_COLOR_PALETTE[0]! }, [
-    'a',
-    'c',
-  ])
-  expect(added).toBe(true)
-  expect(map.a).toBe(TAG_COLOR_PALETTE[0])
-  expect(map.c).toBe(TAG_COLOR_PALETTE[1])
+test('HP:1 and HP:2 keep their colors whatever order they are discovered in', () => {
+  const forward = updateColorTagMap({}, ['1', '2']).map
+  const reversed = updateColorTagMap({}, ['2', '1']).map
+  expect(reversed).toStrictEqual(forward)
+  // and a later-discovered third haplotype does not shift the first two
+  const withThird = updateColorTagMap(forward, ['0']).map
+  expect(withThird['1']).toBe(forward['1'])
+  expect(withThird['2']).toBe(forward['2'])
+  expect(withThird['0']).toBe(TAG_COLOR_PALETTE[0])
+})
+
+test('non-numeric values are stable too, and order-independent', () => {
+  const forward = updateColorTagMap({}, ['sampleB', 'sampleA']).map
+  const reversed = updateColorTagMap({}, ['sampleA', 'sampleB']).map
+  expect(reversed).toStrictEqual(forward)
+  // a value seen in a later fetch resolves to the color it already had
+  expect(updateColorTagMap({}, ['sampleA']).map.sampleA).toBe(forward.sampleA)
+})
+
+test('keeps existing assignments', () => {
+  const { map } = updateColorTagMap({ a: 'red' }, ['a'])
+  expect(map.a).toBe('red')
 })
 
 test('no-op when every value is already mapped', () => {
-  const { added } = updateColorTagMap({ a: TAG_COLOR_PALETTE[0]! }, ['a'])
+  const { added } = updateColorTagMap({ '1': TAG_COLOR_PALETTE[1]! }, ['1'])
   expect(added).toBe(false)
 })
 
-test('wraps the palette once more values than colors are seen', () => {
-  const values = Array.from(
-    { length: TAG_COLOR_PALETTE.length + 1 },
-    (_, i) => `tag:${i}`,
-  )
-  const { map } = updateColorTagMap({}, values)
-  expect(map[`tag:${TAG_COLOR_PALETTE.length}`]).toBe(TAG_COLOR_PALETTE[0])
+test('numeric values past the palette length wrap', () => {
+  const n = TAG_COLOR_PALETTE.length
+  expect(updateColorTagMap({}, [`${n}`]).map[`${n}`]).toBe(TAG_COLOR_PALETTE[0])
 })
 
 // Tag values colliding with Object.prototype member names must still get a real
@@ -47,15 +62,15 @@ test('assigns colors to prototype-name tag values', () => {
     'hasOwnProperty',
   ])
   expect(added).toBe(true)
-  expect(map.toString).toBe(TAG_COLOR_PALETTE[0])
-  expect(map.constructor).toBe(TAG_COLOR_PALETTE[1])
-  expect(map.hasOwnProperty).toBe(TAG_COLOR_PALETTE[2])
+  for (const key of ['toString', 'constructor', 'hasOwnProperty']) {
+    expect(TAG_COLOR_PALETTE).toContain(map[key])
+  }
 })
 
-// Chromosome painting hashes each name instead of taking the next palette slot,
-// so the legend swatch matches what buildReadTagColors bakes into the reads no
-// matter which region discovered the name first.
-test('query names take their stable hashed color, not a discovery-order slot', () => {
+// Chromosome painting hashes each name through getQueryColor, so the legend
+// swatch matches what buildReadTagColors bakes into the reads no matter which
+// region discovered the name first.
+test('query names take their stable hashed color', () => {
   const { map, added } = updateQueryNameColorMap({}, ['ctgB', 'ctgA'])
   expect(added).toBe(true)
   expect(map.ctgA).toBe(getQueryColor('ctgA'))

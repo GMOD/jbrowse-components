@@ -74,10 +74,11 @@ export type WiggleTooltipRow = {
 )
 
 // Feature(s) hovered under the mouse, shared by single- and multi-wiggle.
-// `start`/`end` is the feature interval for single-wiggle and multi-wiggle row
-// mode; in overlay mode it collapses to the cursor bp, since sources with
-// differing bin widths share no single interval. `rows` holds one entry for
-// single/row mode and one-per-source in overlay mode.
+// `start`/`end` is a 0-based half-open interval: the feature's own for
+// single-wiggle and multi-wiggle row mode, and just the cursor base
+// (`[bp, bp + 1)`) in overlay mode, since sources with differing bin widths share
+// no single feature interval. `rows` holds one entry for single/row mode and
+// one-per-source in overlay mode.
 export interface WiggleFeatureUnderMouse {
   refName: string
   start: number
