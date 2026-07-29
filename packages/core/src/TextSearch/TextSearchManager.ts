@@ -1,5 +1,6 @@
 import { readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
+import { isAbortException } from '../util/aborting.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -12,13 +13,15 @@ import type BaseResult from './BaseResults.ts'
 // A misconfigured or unreachable index (a 404 .ix, a config missing
 // ixFilePath) must not take down search as a whole: the remaining indexes, and
 // the refName results the caller merges in afterwards, are still useful. Log
-// the failures and keep going rather than rejecting.
+// the failures and keep going rather than rejecting. An abort is not a failure
+// — every keystroke supersedes the previous query, so logging those would turn
+// normal typing into console spam.
 async function keepFulfilled<T>(promises: Promise<T>[], message: string) {
   const out: T[] = []
   for (const settled of await Promise.allSettled(promises)) {
     if (settled.status === 'fulfilled') {
       out.push(settled.value)
-    } else {
+    } else if (!isAbortException(settled.reason)) {
       console.error(message, settled.reason)
     }
   }

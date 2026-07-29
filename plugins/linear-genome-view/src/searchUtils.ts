@@ -31,8 +31,11 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 
-// cap on refname suggestions surfaced from a query; the autocomplete only
-// displays a bounded list, so there's no point collecting more
+// Budget for refName suggestions from a query. Deliberately far below the
+// autocomplete's ~100-row display cap: refNames are returned ahead of the text
+// search hits, so a scaffold-heavy assembly would otherwise fill every row with
+// scaffolds and push the gene hits out of the list entirely. Raising this to
+// match the display cap looks like a consistency fix and is not one.
 const MAX_REFNAME_HITS = 10
 
 // shared dispatch used by SearchBox.onSelect and the LGV ImportForm submit:
@@ -156,13 +159,24 @@ export async function handleSelectedRegion({
   ) {
     await navToLocstrings()
   } else {
-    const results = await fetchResults({
-      queryString: input,
-      searchType: 'exact',
-      assemblyName,
-      textSearchManager,
-      assembly,
-    })
+    const search = (searchType: SearchType | undefined) =>
+      fetchResults({
+        queryString: input,
+        searchType,
+        assemblyName,
+        textSearchManager,
+        assembly,
+      })
+
+    // Exact first, so a precise name navigates straight to its feature instead
+    // of opening a picker of everything it prefixes ("EDEN" must not pop a
+    // dialog for EDEN.1/.2/.3). But an exact miss is not a no-result: the
+    // autocomplete dropdown searched unrestricted, so anything it just listed
+    // has to be reachable here too. Without the retry, typing a name the
+    // dropdown had hits for (e.g. "apple" -> Apple2, Apple3) and pressing
+    // enter reported `No results found for "apple"`.
+    const exactResults = await search('exact')
+    const results = exactResults.length ? exactResults : await search(undefined)
 
     // the view may have been closed/detached while the text-search RPC ran
     if (!isAlive(model)) {

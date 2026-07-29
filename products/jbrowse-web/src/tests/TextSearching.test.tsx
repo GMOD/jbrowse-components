@@ -69,6 +69,20 @@ test('dialog with multiple results, searching seg02', async () => {
   await findByText('Search results', ...opts)
 }, 70_000)
 
+test('enter finds what the dropdown listed, searching: apple', async () => {
+  // "apple" has no exactly-matching indexed attribute, only Apple2/Apple3 as
+  // prefix hits. Enter used to run an exact-only search, come back empty, and
+  // report `No results found for "apple"` for a query the dropdown had just
+  // listed two hits for
+  const { input, findByText } = await doSetup()
+
+  typeAndEnter({ input, value: 'apple' })
+
+  await findByText('Search results', ...opts)
+  await findByText('Apple2', ...opts)
+  await findByText('Apple3', ...opts)
+}, 70_000)
+
 test('dialog with multiple results with jb1 config, searching: eden.1', async () => {
   const { input, findByText } = await doSetup(jb1_config)
   typeAndEnter({ input, value: 'eden.1' })
