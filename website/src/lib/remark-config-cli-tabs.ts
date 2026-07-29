@@ -1,69 +1,98 @@
 import { visit } from 'unist-util-visit'
 
-import { deriveAddTrack } from './derive-add-track.ts'
+import { deriveAddTrack, deriveAddTrackJson } from './derive-add-track.ts'
 
 import type { Code, Root, RootContent } from 'mdast'
 import type { Plugin } from 'unified'
 
-// A ```json block tagged `addtrack` in its info string is a track config that
-// should render as a two-tab widget: "Config file" (the JSON, unchanged) and
-// "CLI (add-track)" (the equivalent command, derived from that same JSON so the
-// two can't drift). The CLI command comes from deriveAddTrack; a block whose
-// config isn't CLI-clean (deriveAddTrack returns null) degrades to a plain JSON
-// block with a build-time warning, so the tag is never silently wrong.
-//
-// The markup reuses the JS-free radio-tab classes already styled in
-// DocsLayout.astro (.spec-tabs / .spec-tab-input / .spec-panel-N). Raw-HTML
-// wrappers interleave with real mdast code nodes so both panels still get Shiki
-// highlighting downstream.
+// A ```json block tagged `addtrack` renders as a two-tab widget: "Config file"
+// (the JSON, unchanged) and a CLI tab with the equivalent command, derived from
+// that same JSON so the two can't drift. Only invalid JSON degrades to a plain
+// block, with a build-time warning.
 
 function raw(value: string): RootContent {
   return { type: 'html', value }
 }
 
+// Exported so scripts/check-config-cli.ts selects exactly the blocks this
+// renders — it used to re-detect them with its own column-0 fence regex, which
+// would silently skip an indented fence and read as a pass.
+export function isAddtrack(node: Code) {
+  return node.lang === 'json' && /(^|\s)addtrack(\s|$)/.test(node.meta ?? '')
+}
+
+function parseConfig(json: string) {
+  try {
+    return JSON.parse(json) as Record<string, unknown>
+  } catch (e) {
+    return e as Error
+  }
+}
+
+// deriveAddTrack handles the common single-file-adapter case as flags; a config
+// it refuses (multi-file adapter, custom `displays`, ...) falls back to
+// deriveAddTrackJson, which embeds the config verbatim and so never refuses.
+function cliTab(config: Record<string, unknown>, json: string) {
+  const command = deriveAddTrack(config)
+  return {
+    label: command === null ? 'CLI (add-track-json)' : 'CLI (add-track)',
+    node: {
+      type: 'code',
+      lang: 'bash',
+      value: command ?? deriveAddTrackJson(json),
+    } satisfies Code,
+  }
+}
+
+// Reuses the JS-free radio-tab classes styled in DocsLayout.astro. Raw-HTML
+// wrappers interleave with real mdast code nodes so both panels still get Shiki
+// highlighting downstream. `gid` names one radio group and must be unique
+// within the page: two widgets sharing a group leave the first showing no panel
+// at all, because picking a tab in the second unchecks both of its inputs.
+function tabWidget(gid: string, cliLabel: string, cfg: Code, cli: Code) {
+  return [
+    raw(
+      `<div class="spec-tabs config-cli-tabs">\n` +
+        `<input class="spec-tab-input" type="radio" name="${gid}" id="${gid}-cfg" checked/>\n` +
+        `<label class="spec-tab-label" for="${gid}-cfg">Config file</label>\n` +
+        `<input class="spec-tab-input" type="radio" name="${gid}" id="${gid}-cli"/>\n` +
+        `<label class="spec-tab-label" for="${gid}-cli">${cliLabel}</label>\n` +
+        `<div class="spec-panel spec-panel-1">`,
+    ),
+    cfg,
+    raw(`</div>\n<div class="spec-panel spec-panel-2">`),
+    cli,
+    raw(`</div>\n</div>`),
+  ]
+}
+
 const remarkConfigCliTabs: Plugin<[], Root> = () => {
   return (tree, file) => {
+    let widgets = 0
     visit(tree, 'code', (node: Code, index, parent) => {
-      const tagged =
-        node.lang === 'json' && /(^|\s)addtrack(\s|$)/.test(node.meta ?? '')
-      if (tagged && index !== undefined && parent) {
-        let command: string | null = null
-        try {
-          command = deriveAddTrack(JSON.parse(node.value))
-        } catch (e) {
-          file.message(
-            `addtrack block is not valid JSON: ${(e as Error).message}`,
-            node,
-          )
-        }
+      let next: number | undefined
+      if (isAddtrack(node) && index !== undefined && parent) {
+        const config = parseConfig(node.value)
         node.meta = null
-        if (command === null) {
+        if (config instanceof Error) {
           file.message(
-            'addtrack block is not CLI-clean (extra adapter slots, custom ' +
-              'displays, or a multi-file adapter); rendering plain JSON',
+            `addtrack block is not valid JSON: ${config.message}`,
             node,
           )
         } else {
-          const gid = `cfgtab-${JSON.parse(node.value).trackId}`
-          const cli: Code = { type: 'code', lang: 'bash', value: command }
-          parent.children.splice(
-            index,
-            1,
-            raw(
-              `<div class="spec-tabs config-cli-tabs">\n` +
-                `<input class="spec-tab-input" type="radio" name="${gid}" id="${gid}-cfg" checked/>\n` +
-                `<label class="spec-tab-label" for="${gid}-cfg">Config file</label>\n` +
-                `<input class="spec-tab-input" type="radio" name="${gid}" id="${gid}-cli"/>\n` +
-                `<label class="spec-tab-label" for="${gid}-cli">CLI (add-track)</label>\n` +
-                `<div class="spec-panel spec-panel-1">`,
-            ),
+          const cli = cliTab(config, node.value)
+          const nodes = tabWidget(
+            `cfgtab-${(widgets += 1)}`,
+            cli.label,
             node,
-            raw(`</div>\n<div class="spec-panel spec-panel-2">`),
-            cli,
-            raw(`</div>\n</div>`),
+            cli.node,
           )
+          parent.children.splice(index, 1, ...nodes)
+          // resume past the splice, else visit walks back onto the code node
+          next = index + nodes.length
         }
       }
+      return next
     })
   }
 }

@@ -51,10 +51,27 @@ function inferredTrackType(adapterType: string) {
   return ADAPTER_TRACK_TYPE[adapterType] ?? 'FeatureTrack'
 }
 
-function asStringArray(value: unknown) {
-  return Array.isArray(value) && value.every(v => typeof v === 'string')
-    ? value
+export function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+// A non-empty string, or undefined — so callers can test presence by truthiness.
+function nonEmpty(value: unknown) {
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+// A comma list for a repeatable flag, or undefined when there's nothing to pass.
+function commaList(value: unknown) {
+  return Array.isArray(value) && value.length > 0 && value.every(nonEmpty)
+    ? value.join(',')
     : undefined
+}
+
+// `flag value` when `value` is set, nothing when it isn't.
+function flag(name: string, value: string | undefined) {
+  return value === undefined ? [] : [name, value]
 }
 
 // The `add-track` argv (without the `jbrowse` program name) equivalent to a
@@ -62,10 +79,6 @@ function asStringArray(value: unknown) {
 // array rather than a shell string lets the check script run the real CLI
 // without re-parsing quoting.
 export function deriveAddTrackArgs(config: unknown): string[] | null {
-  const track =
-    config && typeof config === 'object'
-      ? (config as Record<string, unknown>)
-      : undefined
   const {
     trackId,
     name,
@@ -76,60 +89,61 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
     displayDefaults,
     type: trackType,
     ...restTop
-  } = track ?? {}
-  const hasDisplayDefaults =
-    displayDefaults !== undefined &&
-    typeof displayDefaults === 'object' &&
-    displayDefaults !== null &&
-    Object.keys(displayDefaults).length > 0
-  const adapterObj =
-    adapter && typeof adapter === 'object'
-      ? (adapter as Record<string, unknown>)
-      : undefined
-  const { type: adapterType, uri, baseUri: _baseUri, ...adapterExtra } =
-    adapterObj ?? {}
-  const asm = asStringArray(assemblyNames)
-  const cats = asStringArray(category)
+  } = asRecord(config)
+  // `baseUri` is deliberately *not* pulled out here: add-track emits a bare
+  // UriLocation, so a config carrying one isn't CLI-clean. It counts as an
+  // extra adapter slot and falls through to the verbatim add-track-json tab.
+  const { type: adapterType, uri, ...adapterExtra } = asRecord(adapter)
+  const defaults = asRecord(displayDefaults)
 
-  const isClean =
-    adapterObj !== undefined &&
-    typeof adapterType === 'string' &&
-    typeof uri === 'string' &&
-    uri.length > 0 &&
-    // add-track can only place the data file for a recognized extension; an
-    // unknown one (e.g. .ld.gz) yields an adapter with no location
-    inferredAdapterType(uri) !== undefined &&
-    Object.keys(adapterExtra).length === 0 &&
+  const id = nonEmpty(trackId)
+  const label = nonEmpty(name)
+  const type = nonEmpty(trackType)
+  const file = nonEmpty(uri)
+  const adapterName = nonEmpty(adapterType)
+  const assemblies = commaList(assemblyNames)
+  // add-track can only place the data file for a recognized extension; an
+  // unknown one (e.g. .ld.gz) yields an adapter with no location
+  const guessedAdapter = file && inferredAdapterType(file)
+  const noExtraSlots =
     displays === undefined &&
-    Object.keys(restTop).length === 0 &&
-    typeof trackId === 'string' &&
-    typeof name === 'string' &&
-    typeof trackType === 'string' &&
-    asm !== undefined &&
-    asm.length > 0
+    Object.keys(adapterExtra).length === 0 &&
+    Object.keys(restTop).length === 0
 
-  return isClean
+  return id &&
+    label &&
+    type &&
+    file &&
+    adapterName &&
+    assemblies &&
+    guessedAdapter &&
+    noExtraSlots
     ? [
         'add-track',
-        uri,
+        file,
         '--trackId',
-        trackId,
+        id,
         '--name',
-        name,
+        label,
         '--assemblyNames',
-        asm.join(','),
-        ...(inferredAdapterType(uri) === adapterType
-          ? []
-          : ['--adapterType', adapterType]),
-        ...(inferredTrackType(adapterType) === trackType
-          ? []
-          : ['--trackType', trackType]),
-        ...(cats?.length ? ['--category', cats.join(',')] : []),
-        ...(hasDisplayDefaults
-          ? ['--displayDefaults', JSON.stringify(displayDefaults)]
-          : []),
+        assemblies,
+        ...flag(
+          '--adapterType',
+          guessedAdapter === adapterName ? undefined : adapterName,
+        ),
+        ...flag(
+          '--trackType',
+          inferredTrackType(adapterName) === type ? undefined : type,
+        ),
+        ...flag('--category', commaList(category)),
+        ...flag(
+          '--displayDefaults',
+          Object.keys(defaults).length > 0
+            ? JSON.stringify(defaults)
+            : undefined,
+        ),
         // local paths need --load; URLs are referenced in place
-        ...(/^\w+:\/\//.test(uri) ? [] : ['--load', 'copy']),
+        ...flag('--load', /^\w+:\/\//.test(file) ? undefined : 'copy'),
       ]
     : null
 }
@@ -145,15 +159,23 @@ function shellArg(value: string) {
 // Render the argv as a readable multi-line shell command: the positional file
 // on the first line, then one `--flag value` pair per continued line.
 function formatCommand(args: string[]) {
-  const [subcommand, uri, ...rest] = args
-  const lines = [`jbrowse ${subcommand} ${shellArg(uri!)}`]
-  for (let i = 0; i < rest.length; i += 2) {
-    lines.push(`${rest[i]} ${shellArg(rest[i + 1]!)}`)
-  }
-  return lines.join(' \\\n  ')
+  const [subcommand = '', uri = '', ...flags] = args
+  const pairs = flags.flatMap((token, i) =>
+    i % 2 === 0 ? [`${token} ${shellArg(flags[i + 1] ?? '')}`] : [],
+  )
+  return [`jbrowse ${subcommand} ${shellArg(uri)}`, ...pairs].join(' \\\n  ')
 }
 
 export function deriveAddTrack(config: unknown): string | null {
   const args = deriveAddTrackArgs(config)
   return args === null ? null : formatCommand(args)
+}
+
+// Fallback for a config `deriveAddTrack` refuses (multi-file adapter, custom
+// `displays`, ...): `add-track-json` takes a track config verbatim, so it
+// never needs to refuse one. Embeds the block's own source text rather than
+// re-serializing the parsed object, so the command can't drift from the JSON
+// shown beside it.
+export function deriveAddTrackJson(rawJson: string): string {
+  return `jbrowse add-track-json '${rawJson.replaceAll("'", String.raw`'\''`)}'`
 }
