@@ -3,9 +3,12 @@
 // Any image the reader can enlarge is wrapped in a `.lightbox-trigger` button
 // (gallery cards author theirs; doc figures get one from remark-figure, other
 // markdown images from rehype-lightbox), and this dialog shows whichever was
-// clicked. Optional `data-href`/`data-open-label` on the trigger carry the
-// figure's live-view link, which becomes a link in the lightbox caption — so
-// clicking an image never navigates away from the page it illustrates.
+// clicked. The trigger carries the figure's destinations, which become links in
+// the lightbox caption — so clicking an image never navigates away from the
+// page it illustrates. A doc figure names its live view with
+// `data-href`/`data-open-label`; a gallery card offers its tutorial and its
+// live view both, as a `data-links` JSON array in the order the card lists
+// them, so enlarging a card doesn't lead somewhere the card didn't.
 //
 // A figure taller than the viewport (a 1000-row sample stack) is shown at full
 // width and scrolled rather than shrunk to fit, so the rows stay legible; the
@@ -29,12 +32,7 @@
     <p class="lightbox-hint">Scroll to see the rest of this figure ↓</p>
     <figcaption>
       <span id="lightbox-caption"></span>
-      <a
-        id="lightbox-link"
-        class="lightbox-open"
-        href=""
-        target="_blank"
-        rel="noopener noreferrer"></a>
+      <span id="lightbox-links" class="lightbox-links"></span>
     </figcaption>
   </figure>
 </dialog>
@@ -47,7 +45,36 @@
   const lbScroll = document.getElementById('lightbox-scroll')!
   const lbImg = document.getElementById('lightbox-img') as HTMLImageElement
   const lbCaption = document.getElementById('lightbox-caption')!
-  const lbLink = document.getElementById('lightbox-link') as HTMLAnchorElement
+  const lbLinks = document.getElementById('lightbox-links')!
+
+  interface FigureLink {
+    href: string
+    label: string
+  }
+
+  // `data-links` (a gallery card, several destinations) else the single
+  // `data-href` a doc figure carries.
+  function linksFor(trigger: HTMLElement): FigureLink[] {
+    const { links, href, openLabel } = trigger.dataset
+    if (links) {
+      return JSON.parse(links) as FigureLink[]
+    }
+    return href ? [{ href, label: openLabel ?? '' }] : []
+  }
+
+  function renderLinks(trigger: HTMLElement) {
+    lbLinks.replaceChildren(
+      ...linksFor(trigger).map(({ href, label }) => {
+        const a = document.createElement('a')
+        a.className = 'lightbox-open'
+        a.href = href
+        a.textContent = label
+        a.target = '_blank'
+        a.rel = 'noopener noreferrer'
+        return a
+      }),
+    )
+  }
 
   // Decide between showing the whole figure at once and showing it at full
   // width and scrolling, then drive the fade and the hint off that — so the
@@ -94,9 +121,7 @@
         lbImg.src = trigger.dataset.full ?? (img.currentSrc || img.src)
         lbImg.alt = img.alt
         lbCaption.textContent = trigger.dataset.label ?? img.alt
-        lbLink.href = trigger.dataset.href ?? ''
-        lbLink.textContent = trigger.dataset.openLabel ?? ''
-        lbLink.hidden = !trigger.dataset.href
+        renderLinks(trigger)
         lb.showModal()
         lbScroll.scrollTop = 0
         // a cached image fires no load event, so measure both ways
@@ -109,7 +134,7 @@
 
   // Backdrop, close-button and image clicks all close: a reader who clicked an
   // image to enlarge it expects a click to put it back. Two things pass
-  // through — the "open" link (it navigates in a new tab) and the scroll
+  // through — the caption's links (they navigate in a new tab) and the scroll
   // container, whose only clickable part is its scrollbar. Requiring the press
   // and the release to land on the same element keeps a drag that ends
   // elsewhere (dragging that scrollbar, selecting the caption) from closing.
@@ -119,7 +144,9 @@
   })
   lb.addEventListener('click', event => {
     const target = event.target
-    if (target === pressed && target !== lbLink && target !== lbScroll) {
+    const onLink =
+      target instanceof Element && target.closest('.lightbox-links') !== null
+    if (target === pressed && !onLink && target !== lbScroll) {
       lb.close()
     }
   })
@@ -261,6 +288,12 @@
     color: #fff;
     font-size: 0.95rem;
     text-align: center;
+  }
+  .lightbox-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    justify-content: center;
   }
   .lightbox-open {
     color: #6ab0ff;
