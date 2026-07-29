@@ -1,6 +1,5 @@
 import { getSession, stringify } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { GuideLabel } from '../../shared/coordLabels.tsx'
@@ -10,16 +9,11 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()({
-  guide: {
-    pointerEvents: 'none',
-    height: '100%',
-    width: 1,
-    position: 'absolute',
-    left: 0,
-  },
-})
-
+// Label only, no guide line: the overview already marks position with the
+// visible-region box, and unlike the LGV/multi-level guides this one never had a
+// background, so the 1px div it used to render painted nothing while still
+// taking a transform patch per mousemove. Add a background here if a visible
+// line is ever wanted.
 const OverviewRubberbandHoverTooltip = observer(
   function OverviewRubberbandHoverTooltip({
     model,
@@ -30,7 +24,6 @@ const OverviewRubberbandHoverTooltip = observer(
     guideX: number
     overview: ViewLayout
   }) {
-    const { classes } = useStyles()
     const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
 
@@ -54,10 +47,6 @@ const OverviewRubberbandHoverTooltip = observer(
             .filter(Boolean)
             .join(' ')}
         </GuideLabel>
-        <div
-          className={classes.guide}
-          style={{ transform: `translateX(${guideX}px)` }}
-        />
       </>
     )
   },
