@@ -36,5 +36,5 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-location">**location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLoc…</code></summary><pre><code>{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLocation' }</code></pre></details> |  |
+| <span id="slot-location">**location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLoc…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLocation' }</code></pre></dialog></span> |  |
 | <span id="slot-usenameoverride">**useNameOverride**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | forces usage of the UCSC names over the NCBI style names from a FASTA |

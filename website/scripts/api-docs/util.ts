@@ -1230,8 +1230,8 @@ function preCell(code: string) {
 }
 
 // Code in a table cell — a slot's default, a member's type signature. Short
-// code renders inline; anything longer folds into a `<details>` showing its
-// head, so one 300-character generic type can't blow up the row it sits in.
+// code renders inline; anything longer shows its head and opens in full in a
+// dialog, so one 300-character generic type can't blow up the row it sits in.
 // Raw `<code>` rather than a markdown code span because these carry backticks
 // (jexl defaults are template literals).
 const MAX_INLINE_CELL_CODE = 64
@@ -1240,15 +1240,30 @@ export function codeCell(code: string | undefined) {
   return flat
     ? flat.length <= MAX_INLINE_CELL_CODE
       ? `<code>${escapeCellHtml(flat)}</code>`
-      : detailsCell(
+      : dialogCell(
           `<code>${escapeCellHtml(`${flat.slice(0, MAX_INLINE_CELL_CODE - 1).trimEnd()}…`)}</code>`,
           `<pre><code>${preCell(code ?? '')}</code></pre>`,
         )
     : ''
 }
 
-export function detailsCell(summary: string, body: string) {
-  return `<details><summary>${summary}</summary>${body}</details>`
+// A value too big for its cell — a 300-character type, a jexl default, an
+// authored #example — behind a trigger that opens it in a modal `<dialog>`.
+// Expanding it in place (what a `<details>` did) reflows the whole table around
+// a multi-line `<pre>` that then has nowhere to go but a quarter-width column;
+// the dialog gets the width of the window instead. Native `<dialog>`, so Escape
+// and the backdrop click (wired in DocsLayout.astro) close it, and the
+// `method="dialog"` form needs no script at all.
+export function dialogCell(trigger: string, body: string) {
+  return [
+    '<span class="cell-more">',
+    `<button type="button" class="cell-more-trigger">${trigger}</button>`,
+    '<dialog class="cell-dialog">',
+    '<form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form>',
+    body,
+    '</dialog>',
+    '</span>',
+  ].join('')
 }
 
 // An authored `#example` inside a table cell. Its prose stays markdown (a cell
@@ -1257,7 +1272,7 @@ export function detailsCell(summary: string, body: string) {
 export function exampleCell(examples: Example[]) {
   return examples
     .map(ex =>
-      detailsCell(
+      dialogCell(
         ex.label ? `example: ${ex.label}` : 'example',
         ex.content
           .split(/```[\w]*\n([\s\S]*?)```/)

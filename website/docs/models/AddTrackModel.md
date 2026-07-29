@@ -16,7 +16,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | --- | --- |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('AddTrackWidget')</code> |  |
-| <span id="property-view">**view**</span><br><details><summary><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></summary><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
+| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 
 ## Getters
 
@@ -33,7 +33,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | <span id="getter-assembly">**assembly**</span><br><code>any</code> |  |
 | <span id="getter-trackadaptertype">**trackAdapterType**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-tracktype">**trackType**</span><br><code>string</code> |  |
-| <span id="getter-warningmessage">**warningMessage**</span><br><details><summary><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protoc…</code></summary><pre><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protocol" &#124; …</code></pre></details> |  |
+| <span id="getter-warningmessage">**warningMessage**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protoc…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protocol" &#124; …</code></pre></dialog></span> |  |
 
 ## Methods
 

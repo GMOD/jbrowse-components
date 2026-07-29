@@ -21,7 +21,7 @@ hand-kept copies. Visibility across all views is the session-wide
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-highlight">**highlight**</span><br><details><summary><code>highlight: types.stripDefault( types.array(types.frozen&lt;Highlig…</code></summary><pre><code>highlight: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(types.frozen&lt;HighlightType&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu |
+| <span id="property-highlight">**highlight**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>highlight: types.stripDefault( types.array(types.frozen&lt;Highlig…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>highlight: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(types.frozen&lt;HighlightType&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu |
 | <span id="property-showhighlightchips">**showHighlightChips**</span><br><code>showHighlightChips: types.stripDefault(types.boolean, false)</code> | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default |
 
 ## Actions

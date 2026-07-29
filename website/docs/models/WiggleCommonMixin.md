@@ -31,7 +31,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: observable.map&lt;number, WiggleDataResult&gt;()</code> |  | WiggleCommonMixin |
-| <span id="volatile-featureundermouse">**featureUnderMouse**</span><br><details><summary><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undef…</code></summary><pre><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undefined</code></pre></details> |  | WiggleCommonMixin |
+| <span id="volatile-featureundermouse">**featureUnderMouse**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undefined</code></pre></dialog></span> |  | WiggleCommonMixin |
 | <span id="volatile-loadedbpperpx">**loadedBpPerPx**</span><br><code>loadedBpPerPx: undefined as number &#124; undefined</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#volatile-loadedbpperpx) |
 
 ## Getters
@@ -40,7 +40,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. | WiggleCommonMixin |
-| <span id="getter-visiblescorestats">**visibleScoreStats**</span><br><details><summary><code>{ entries: { visStart: number; visEnd: number; data: WiggleSour…</code></summary><pre><code>{ entries: { visStart: number; visEnd: number; data: WiggleSourceData; }[]; stats: ScoreStats &#124; undefined; } &#124; undefined</code></pre></details> | The visible feature arrays plus their min/max/mean/stddev, walked once per domain recompute rather than once per autoscale input. | WiggleCommonMixin |
+| <span id="getter-visiblescorestats">**visibleScoreStats**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ entries: { visStart: number; visEnd: number; data: WiggleSour…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ entries: { visStart: number; visEnd: number; data: WiggleSourceData; }[]; stats: ScoreStats &#124; undefined; } &#124; undefined</code></pre></dialog></span> | The visible feature arrays plus their min/max/mean/stddev, walked once per domain recompute rather than once per autoscale input. | WiggleCommonMixin |
 | <span id="getter-visiblescorerange">**visibleScoreRange**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
 | <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-poscolor) |

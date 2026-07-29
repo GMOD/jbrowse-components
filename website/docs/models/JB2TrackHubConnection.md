@@ -22,7 +22,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | JB2TrackHubConnection |
 | <span id="property-type">**type**</span><br><code>type: types.literal('JB2TrackHubConnection')</code> |  | JB2TrackHubConnection |
-| <span id="property-tracks">**tracks**</span><br><details><summary><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('tr…</code></summary><pre><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))</code></pre></details> |  | [BaseConnectionModel](../baseconnectionmodel#property-tracks) |
+| <span id="property-tracks">**tracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('tr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))</code></pre></dialog></span> |  | [BaseConnectionModel](../baseconnectionmodel#property-tracks) |
 | <span id="property-silent">**silent**</span><br><code>silent: types.optional(types.boolean, false)</code> | <span data-pagefind-ignore>set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized.</span> | [BaseConnectionModel](../baseconnectionmodel#property-silent) |
 
 ## Volatiles

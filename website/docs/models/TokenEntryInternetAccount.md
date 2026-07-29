@@ -35,5 +35,5 @@ ExternalTokenInternetAccount.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><details><summary><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; vo…</code></summary><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; void</code></pre></details> | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
+| <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; void</code></pre></dialog></span> | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
 | <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot. |

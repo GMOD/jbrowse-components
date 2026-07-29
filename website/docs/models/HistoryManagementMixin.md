@@ -14,4 +14,4 @@ JBrowse core.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-history">**history**</span><br><details><summary><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></summary><pre><code>history: types.optional(TimeTraveller, { targetPath: '../session' })</code></pre></details> | used for undo/redo |
+| <span id="property-history">**history**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>history: types.optional(TimeTraveller, { targetPath: '../sessio…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>history: types.optional(TimeTraveller, { targetPath: '../session' })</code></pre></dialog></span> | used for undo/redo |

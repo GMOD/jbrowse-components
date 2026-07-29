@@ -19,9 +19,9 @@ used while drawing the tree.
 | Member | Description |
 | --- | --- |
 | <span id="property-layout">**layout**</span><br><code>layout: types.stripDefault(types.frozen&lt;S[]&gt;(), [])</code> |  |
-| <span id="property-clustertree">**clusterTree**</span><br><details><summary><code>clusterTree: types.stripDefault(types.maybe(types.string), unde…</code></summary><pre><code>clusterTree: types.stripDefault(types.maybe(types.string), undefined)</code></pre></details> |  |
+| <span id="property-clustertree">**clusterTree**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>clusterTree: types.stripDefault(types.maybe(types.string), unde…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>clusterTree: types.stripDefault(types.maybe(types.string), undefined)</code></pre></dialog></span> |  |
 | <span id="property-treeareawidth">**treeAreaWidth**</span><br><code>treeAreaWidth: types.stripDefault(types.number, 80)</code> |  |
-| <span id="property-subtreefilter">**subtreeFilter**</span><br><details><summary><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></summary><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
+| <span id="property-subtreefilter">**subtreeFilter**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 
 ## Volatiles
 

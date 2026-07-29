@@ -31,7 +31,7 @@ JBrowse core.
 | Member | Description |
 | --- | --- |
 | <span id="method-allthemes">**allThemes**</span><br><code>() =&gt; ThemeMap</code> |  |
-| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><details><summary><code>(name?: string &#124; undefined) =&gt; ThemeOptions &amp; { name?: string &#124;…</code></summary><pre><code>(name?: string &#124; undefined) =&gt; ThemeOptions &amp; { name?: string &#124; undefined; }</code></pre></details> | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme), this is the plain options object every view's SVG export threads into each display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside React context. |
+| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(name?: string &#124; undefined) =&gt; ThemeOptions &amp; { name?: string &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(name?: string &#124; undefined) =&gt; ThemeOptions &amp; { name?: string &#124; undefined; }</code></pre></dialog></span> | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme), this is the plain options object every view's SVG export threads into each display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside React context. |
 
 ## Actions
 

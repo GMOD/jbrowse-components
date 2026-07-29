@@ -53,7 +53,7 @@ dotplot use this
 | Member | Description |
 | --- | --- |
 | <span id="method-pxtobp">**pxToBp**</span><br><code>(px: number) =&gt; PxToBpResult</code> |  |
-| <span id="method-bptopx">**bpToPx**</span><br><details><summary><code>(args: { refName: string; coord: number; displayedRegionIndex?:…</code></summary><pre><code>(args: { refName: string; coord: number; displayedRegionIndex?: number &#124; undefined; }) =&gt; number &#124; undefined</code></pre></details> |  |
+| <span id="method-bptopx">**bpToPx**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(args: { refName: string; coord: number; displayedRegionIndex?:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(args: { refName: string; coord: number; displayedRegionIndex?: number &#124; undefined; }) =&gt; number &#124; undefined</code></pre></dialog></span> |  |
 
 ## Actions
 
@@ -68,6 +68,6 @@ dotplot use this
 | <span id="action-zoomin">**zoomIn**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-zoomto">**zoomTo**</span><br><code>(bpPerPx: number, offset?: any) =&gt; number</code> |  |
 | <span id="action-scrollto">**scrollTo**</span><br><code>(offsetPx: number) =&gt; number</code> |  |
-| <span id="action-centerat">**centerAt**</span><br><details><summary><code>(coord: number, refName: string &#124; undefined, displayedRegionInd…</code></summary><pre><code>(coord: number, refName: string &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></details> |  |
+| <span id="action-centerat">**centerAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(coord: number, refName: string &#124; undefined, displayedRegionInd…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(coord: number, refName: string &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-scroll">**scroll**</span><br><code>(distance: number) =&gt; number</code> | note: the scroll is clamped to keep the view on the main screen |
-| <span id="action-moveto">**moveTo**</span><br><details><summary><code>(start?: BpOffset &#124; undefined, end?: BpOffset &#124; undefined) =&gt; v…</code></summary><pre><code>(start?: BpOffset &#124; undefined, end?: BpOffset &#124; undefined) =&gt; void</code></pre></details> | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |
+| <span id="action-moveto">**moveTo**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(start?: BpOffset &#124; undefined, end?: BpOffset &#124; undefined) =&gt; v…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(start?: BpOffset &#124; undefined, end?: BpOffset &#124; undefined) =&gt; void</code></pre></dialog></span> | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |

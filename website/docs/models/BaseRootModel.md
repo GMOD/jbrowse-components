@@ -19,14 +19,14 @@ factory function for the Base-level root model shared by all products
 | <span id="property-jbrowse">**jbrowse**</span><br><code>jbrowse: jbrowseModelType</code> | `jbrowse` is a mapping of the config.json into the in-memory state tree |
 | <span id="property-session">**session**</span><br><code>session: types.maybe(sessionModelType)</code> | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc. |
 | <span id="property-sessionpath">**sessionPath**</span><br><code>sessionPath: types.stripDefault(types.string, '')</code> |  |
-| <span id="property-assemblymanager">**assemblyManager**</span><br><details><summary><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></summary><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></details> |  |
+| <span id="property-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 
 ## Volatiles
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-rpcmanager">**rpcManager**</span><br><details><summary><code>rpcManager: new RpcManager(pluginManager, self.jbrowse.configur…</code></summary><pre><code>rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc)</code></pre></details> |  |
+| <span id="volatile-rpcmanager">**rpcManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>rpcManager: new RpcManager(pluginManager, self.jbrowse.configur…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc)</code></pre></dialog></span> |  |
 | <span id="volatile-adminmode">**adminMode**</span><br><code>adminMode: false</code> |  |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  |
 | <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>textSearchManager: new TextSearchManager(pluginManager)</code> |  |

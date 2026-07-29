@@ -50,7 +50,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-mcscansimpleanchorslocation">**mcscanSimpleAnchorsLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <details><summary><code>{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLoca…</code></summary><pre><code>{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLocation' }</code></pre></details> |  |
+| <span id="slot-mcscansimpleanchorslocation">**mcscanSimpleAnchorsLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLoca…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ uri: '/path/to/mcscan.anchors.simple', locationType: 'UriLocation' }</code></pre></dialog></span> |  |
 | <span id="slot-bed1location">**bed1Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> |  |
 | <span id="slot-bed2location">**bed2Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> |  |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> |  |
