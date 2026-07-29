@@ -415,10 +415,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // 1,987 canids, and the same ratio of element depth to that dog's own flank
   // depth reproduces the CRAM answer (r = 0.97 per window, no bias) — so this
   // paints every dog in the collection rather than the fifteen with reads.
-  // Rows take the display's default sorted order, which for Dog10K IDs means
-  // grouped by breed (`BOPD*`, `CHIH*`, `VILL*` village dogs, `CLUP*` wolves) —
-  // so whole breeds fixed for the expansion read as solid bands, which is the
-  // paper's "variable in all major clades" claim. Built by
+  // Clustered rather than left in sample order: 1,987 rows is far past the point
+  // where a reader can follow one, so the question stops being "which dog is
+  // this" and becomes "how many distinct copy-number profiles are there". The
+  // dendrogram answers that, and clustering is also what makes the sub-pixel
+  // rows honest — at 0.35px a row neighbours overpaint each other, so whichever
+  // wins a pixel has to stand for the ones it covers. Built by
   // scripts/build_dog10k_cyp1a2_cn.sh.
   {
     mode: 'url',
@@ -435,17 +437,22 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_cyp1a2_cohort_cn',
           type: 'LinearMultiRowFeatureDisplay',
-          // auto-fit bottoms out at 1px a row, so 1,987 rows set the height
-          // rather than take it; this is what they come to
-          height: 2000,
+          // all 1,987 rows inside a readable track: auto-fit is no longer
+          // floored at a pixel a row, so this is the height it takes rather
+          // than the height it grows past
+          height: 640,
+          // one-shot declarative trigger, cleared once the RPC lands
+          runClustering: true,
+          showTree: true,
         },
       ],
     }),
     readyText: 'chr30',
-    readySelector: '[data-testid="multirow-color-legend"]',
-    readyTimeout: 90000,
-    settleMs: 6000,
-    // gene track plus the full 1,987-row stack and the copy-number key
-    viewportHeight: 2320,
+    // the dendrogram only exists once the clustering RPC has landed
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 300000,
+    settleMs: 8000,
+    // gene track plus the 640px stack and the copy-number key
+    viewportHeight: 970,
   },
 ]
