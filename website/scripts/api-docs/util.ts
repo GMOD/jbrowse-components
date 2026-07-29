@@ -95,23 +95,53 @@ const LIFECYCLE_HOOKS = new Set([
   'afterCreationFinalization',
 ])
 
-export function extractWithComment(
+// The whole-repo TypeScript program plus the subset of its source files that
+// belong to this repo — the program also parses node_modules and lib `.d.ts` to
+// resolve types, which document nothing.
+//
+// Building the program is the dominant cost of a run (~10s), so it is built once
+// here and every pass that needs an AST reads `sources` rather than reparsing.
+// The enum-constant index used to `createSourceFile` all ~4000 files itself,
+// paying a second full parse (~4s) for trees the program already had.
+export interface DocProgram {
+  program: ts.Program
+  sources: ts.SourceFile[]
+}
+
+export function createDocProgram(
   fileNames: string[],
+  options: ts.CompilerOptions = {},
+): DocProgram {
+  const program = ts.createProgram(fileNames, options)
+  // `sf.fileName` is whatever form the file entered the program as: a root file
+  // keeps the relative path it was passed, an import-resolved one is absolute.
+  // Both are resolved before comparing — matching raw strings silently dropped
+  // the 2143 root files TypeScript never had to resolve through an import.
+  const roots = new Set(fileNames.map(f => path.resolve(f)))
+  return {
+    program,
+    sources: program
+      .getSourceFiles()
+      .filter(
+        sf => !sf.isDeclarationFile && roots.has(path.resolve(sf.fileName)),
+      ),
+  }
+}
+
+export function extractWithComment(
+  { program, sources }: DocProgram,
   cb: (obj: ExtractedNode) => void,
   onDisplayLink: (link: DisplayTrackLink) => void,
-  options: ts.CompilerOptions = {},
 ) {
-  const program = ts.createProgram(fileNames, options)
   const checker = program.getTypeChecker()
   const blindSpots: BlindSpot[] = []
   const slotGaps: ConfigSlotGap[] = []
 
-  for (const sourceFile of program.getSourceFiles()) {
+  for (const sourceFile of sources) {
     // Test files are excluded outright: their fixtures (a `#config` fixture
     // comment, a hand-built `new DisplayType(...)`) would otherwise be mistaken
     // for real documented entities or track/display links.
-    const isTestFile = /\.test\.tsx?$/.test(sourceFile.fileName)
-    if (!sourceFile.isDeclarationFile && !isTestFile) {
+    if (!/\.test\.tsx?$/.test(sourceFile.fileName)) {
       // Structural member detection only runs in files that document a
       // #stateModel, and the untagged-slot audit only in files that document a
       // #config, so helper files with their own .actions() chains or internal
@@ -548,15 +578,6 @@ export function elideSignature(sig: string, max = MAX_SIGNATURE) {
   return out
 }
 
-// The first sentence of a description, for table cells: the full multi-sentence
-// text lives in the entry the row links into, and a paragraph in a cell forces
-// horizontal scroll and defeats the scan. `e.g.`/`i.e.` are not sentence ends.
-export function firstSentence(text: string) {
-  const trimmed = text.trim()
-  const match = /^.*?[.!?](?<!\b[ei]\.[a-z]\.)(?=\s|$)/s.exec(trimmed)
-  return match ? match[0] : trimmed
-}
-
 // Follow import aliases to the original symbol so two references to the same
 // declaration (under different local/imported names) resolve identically.
 function followAlias(checker: ts.TypeChecker, symbol: ts.Symbol) {
@@ -933,8 +954,14 @@ export function parseTaggedComment(
       currentGotcha = undefined
     }
   }
+  // Every tag is matched with startsWithTag, not containsTag: a tag only counts
+  // when it heads the line, which is how all of them are actually written. A
+  // bare containsTag lets a mention inside prose ("the #category tag overrides
+  // it") be parsed as the tag, and the greedy value regexes then take the text
+  // after the LAST occurrence on the line — which once wrote a whole sentence
+  // into a page's frontmatter with no error.
   for (const line of lines) {
-    if (containsTag(line, 'example')) {
+    if (startsWithTag(line, 'example')) {
       endGotcha()
       if (current) {
         examples.push({
@@ -942,10 +969,10 @@ export function parseTaggedComment(
           content: current.lines.join('\n').trim(),
         })
       }
-      current = { label: line.replace(/.*#example\s*/, '').trim(), lines: [] }
-    } else if (containsTag(line, type)) {
+      current = { label: line.replace(/^.*?#example\s*/, '').trim(), lines: [] }
+    } else if (startsWithTag(line, type)) {
       endGotcha()
-      const fromTag = line.replace(tag, '').trim()
+      const fromTag = line.replace(new RegExp(`^.*?${tag}\\s*`), '').trim()
       if (fromTag) {
         name = fromTag
       }
@@ -961,16 +988,16 @@ export function parseTaggedComment(
       // page's prose.
       endGotcha()
     } else if (
-      containsTag(line, 'displayFoundation') ||
-      containsTag(line, 'displayFoundationDef')
+      startsWithTag(line, 'displayFoundation') ||
+      startsWithTag(line, 'displayFoundationDef')
     ) {
       // Consumed by generateDisplayFoundationDocs (the foundations table in the
       // creating_display guide). Dropped here for the same reason as
       // #fileFormat above.
       endGotcha()
-    } else if (containsTag(line, 'gotcha')) {
+    } else if (startsWithTag(line, 'gotcha')) {
       endGotcha()
-      currentGotcha = [line.replace(/.*#gotcha\s*/, '')]
+      currentGotcha = [line.replace(/^.*?#gotcha\s*/, '')]
     } else if (currentGotcha) {
       if (line.trim()) {
         currentGotcha.push(line)
@@ -1265,7 +1292,7 @@ export function codeCell(code: string | undefined) {
 // the dialog gets the width of the window instead. Native `<dialog>`, so Escape
 // and the backdrop click (wired in DocsLayout.astro) close it, and the
 // `method="dialog"` form needs no script at all.
-export function dialogCell(trigger: string, body: string) {
+function dialogCell(trigger: string, body: string) {
   return [
     '<span class="cell-more">',
     `<button type="button" class="cell-more-trigger">${trigger}</button>`,
@@ -1316,34 +1343,6 @@ export function markdownTable(headers: string[], rows: string[]) {
         ...rows,
       ].join('\n')
     : ''
-}
-
-// A member's documented type is a bare type expression. Emitting it on its own
-// line in a ```js block lets prettier parse it as a statement, so e.g. an object
-// type followed by `[]` gets ASI-split into a `;[]` line. Wrapping it as a
-// `type` alias in a ```ts block keeps prettier in type position, where it
-// formats correctly.
-export function typeAliasBlock(name: string, signature: string) {
-  return ['```ts', `type ${name} = ${signature}`, '```'].join('\n')
-}
-
-// Properties/volatiles document both a type and the source line that declares
-// them. The source (`name: value`) is a labeled statement that prettier leaves
-// alone, but the type alias still has to carry the type to avoid the same
-// statement-position mangling typeAliasBlock guards against.
-export function typeAndCodeBlock(
-  name: string,
-  signature: string,
-  code: string,
-) {
-  return [
-    '```ts',
-    '// type signature',
-    `type ${name} = ${signature}`,
-    '// code',
-    code,
-    '```',
-  ].join('\n')
 }
 
 // The shared skeleton every generated config/model page wears: frontmatter, a
@@ -1427,7 +1426,7 @@ export function assertSingleHeader({
 // points, e.g. "6/102 configs have no #example: Foo, Bar" or
 // "8/95 models resolved to the General category: Foo, Bar". Silent when
 // `items` is empty, so a fully-covered run prints nothing.
-export function warnCoverageGap<T>({
+function warnCoverageGap<T>({
   items,
   total,
   kind,
@@ -1542,45 +1541,6 @@ export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
   const body = section(...parts)
   const hasSections = /(^|\n)(#{2,6} |<details)/.test(body)
   return body ? (hasSections ? `## Overview\n\n${body}` : body) : ''
-}
-
-// Wrap content in an expanded-by-default `<details>` block (collapsible via the
-// `<summary>` section title) so a reader can fold sections away but sees them all
-// up front. The `<summary>` is styled like a section heading by the docs site CSS
-// (`.docs-content details > summary` in DocsLayout.astro), not inline here. The
-// blank lines around the body are required: by CommonMark (which Astro's remark
-// follows) a blank line ends the raw-HTML block, so the enclosed headings/code
-// render as markdown instead of literal HTML. Returns empty string when all parts
-// are falsy, matching section().
-export function collapsible(
-  summary: string,
-  ...parts: (string | false | 0 | undefined)[]
-) {
-  return detailsBlock(summary, true, ...parts)
-}
-
-// Collapsed (folded-by-default) sibling of collapsible, for content that should
-// be present for completeness but stay out of the way — e.g. the full signatures
-// of undocumented plumbing members, which a compact table links down into.
-// Fragment navigation to a heading inside auto-expands the <details> in modern
-// browsers, so the anchor links still land (same behavior the member index table
-// relies on).
-export function collapsibleClosed(
-  summary: string,
-  ...parts: (string | false | 0 | undefined)[]
-) {
-  return detailsBlock(summary, false, ...parts)
-}
-
-function detailsBlock(
-  summary: string,
-  open: boolean,
-  ...parts: (string | false | 0 | undefined)[]
-) {
-  const body = section(...parts)
-  return body
-    ? `<details${open ? ' open' : ''}>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
-    : ''
 }
 
 // Renders authored #example blocks under a consistent heading. Empty when none

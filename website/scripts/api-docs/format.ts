@@ -1,4 +1,8 @@
+import { execFile } from 'child_process'
 import fs from 'fs'
+import { createRequire } from 'module'
+import path from 'path'
+import { promisify } from 'util'
 
 import { format, resolveConfig } from 'prettier'
 
@@ -19,18 +23,28 @@ export async function writeFormatted(path: string, content: string) {
   fs.writeFileSync(path, formatted)
 }
 
-// Re-format files already on disk, returning whether any of them changed. Lets
-// the generator drive formatting to a fixed point (see formatOutput).
-export async function formatDocs(paths: string[]) {
-  let changed = false
-  for (const path of paths) {
-    const original = fs.readFileSync(path, 'utf8')
-    const config = await resolveConfig(path)
-    const formatted = await format(original, { ...config, filepath: path })
-    if (formatted !== original) {
-      fs.writeFileSync(path, formatted)
-      changed = true
-    }
-  }
-  return changed
+// Run the repo formatter over already-written files: the marker-block
+// generators splice raw tables into the hand-written guides, which nothing else
+// re-wraps.
+//
+// This used to be a prettier pass over every doc, re-run until it stopped
+// changing anything. It cost ~12s a run and, in the steady state, changed
+// nothing at all — `writeFormatted` had already formatted each generated page,
+// and `pnpm gendocs` then ran oxfmt over the very same directories. oxfmt is the
+// repo's formatter (`pnpm format`), so running it here is what actually decides
+// the committed bytes, it does the whole tree in ~3s, and there is no second
+// formatter to drift from.
+//
+// The binary is resolved through node's resolver rather than spawned by name:
+// the old prettier shell-out only found its binary via the PATH an npm script
+// sets, so running `node generate.ts` directly spawned ENOENT and silently
+// formatted nothing.
+export async function formatWithOxfmt(paths: string[]) {
+  const require = createRequire(import.meta.url)
+  const bin = path.join(
+    path.dirname(require.resolve('oxfmt/package.json')),
+    'bin',
+    'oxfmt',
+  )
+  await promisify(execFile)(process.execPath, [bin, ...paths])
 }

@@ -1,7 +1,7 @@
 import fs from 'fs'
 
 import { buildEnumConstantIndex } from './enumConstants.ts'
-import { formatDocs } from './format.ts'
+import { formatWithOxfmt } from './format.ts'
 import {
   accumulateApi,
   writeApiDocs,
@@ -22,7 +22,7 @@ import {
 } from './generateFileTypeDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
-import { extractWithComment, getAllFiles, listDocs } from './util.ts'
+import { createDocProgram, extractWithComment, getAllFiles } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
 import type { Config } from './generateConfigDocs.ts'
@@ -68,11 +68,12 @@ async function main() {
   const api: Record<string, ApiGroup> = {}
   const displayLinks: DisplayTrackLink[] = []
   const files = await getAllFiles()
+  const docProgram = createDocProgram(files)
   // enum tables first: the config generator resolves `[...NAME]` spreads in
   // stringEnum models against this while rendering slots
-  buildEnumConstantIndex(files)
+  buildEnumConstantIndex(docProgram.sources)
   extractWithComment(
-    files,
+    docProgram,
     obj => {
       accumulateConfig(configs, obj)
       accumulateModel(models, obj)
@@ -136,46 +137,23 @@ async function main() {
     ),
   )
 
-  await formatOutput()
+  await formatWithOxfmt(FORMAT_DIRS)
 }
 
-// Directories `pnpm gendocs` is responsible for leaving format-clean: the
+// Directories this script is responsible for leaving format-clean: the
 // generated pages, plus the hand-written guides whose marker blocks were
 // rewritten above (FILE_TYPES, DISPLAY_TYPES, GOTCHA, COLOR_TABLE,
-// EXTENSION_POINTS_INDEX). The tables are prettier-ignored, but the gotcha
-// callouts are prose and must be rewrapped or every regen would fight
-// `pnpm format`.
+// EXTENSION_POINTS_INDEX, DISPLAY_FOUNDATIONS, PROMOTABLE_SLOTS). The tables
+// carry `prettier-ignore` and are left compact, but the gotcha callouts are
+// prose and must be rewrapped or every regen would fight `pnpm format`.
 const FORMAT_DIRS = [
   'website/docs/config',
   'website/docs/models',
   'website/docs/api',
   'website/docs/config_guides',
   'website/docs/developer_guides',
+  'website/docs/user_guides',
 ]
-
-// Formatting a page is not a fixed point in one pass: writeFormatted runs
-// prettier over the assembled markdown, but reflowing an embedded code fence
-// can change what the next pass does to it (an arrow-function parameter list
-// that fit on one line no longer does once the fence is re-indented), so a
-// single pass could still leave output `prettier --check` rejects. Re-run until
-// nothing changes. The cap keeps a genuinely unstable file from spinning
-// forever — it surfaces as a `pnpm format` failure instead.
-//
-// This used to shell out to the `prettier` binary, which resolves only when the
-// PATH an npm script sets is in play: running `node docs/generate.ts` directly
-// spawned ENOENT and silently formatted nothing, since a failed spawn reports
-// no status. Going through the API removes that whole failure mode.
-async function formatOutput() {
-  for (let pass = 0; pass < 3; pass++) {
-    const changed = await formatDocs(FORMAT_DIRS.flatMap(dir => listDocs(dir)))
-    if (!changed) {
-      return
-    }
-  }
-  console.warn(
-    'generated docs did not reach a stable prettier formatting after 3 passes',
-  )
-}
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 main()

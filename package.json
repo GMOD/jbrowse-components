@@ -28,7 +28,7 @@
     "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
-    "gendocs": "rm -rf website/docs/config website/docs/models website/docs/api && node website/scripts/api-docs/generate.ts && oxfmt website/docs/config website/docs/models website/docs/api website/docs/developer_guides website/docs/config_guides",
+    "gendocs": "rm -rf website/docs/config website/docs/models website/docs/api && node website/scripts/api-docs/generate.ts",
     "gen-adr-index": "node website/scripts/generate-adr-index.ts",
     "gen-img-doc": "node website/scripts/generate-img-doc.ts",
     "gen-cli-doc": "node website/scripts/generate-cli-doc.ts",

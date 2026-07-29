@@ -8,15 +8,18 @@ import {
   scalarConstantValue,
   slotFieldConstantPairs,
 } from './enumConstants.ts'
+import { parseSourceFileSyntactic } from './util.ts'
 
 // The index is module-level and additive, so every constant used here carries a
 // suffix unique to this file rather than being reset between tests.
 let dir: string
 
+// The index reads parsed trees (the generator hands it the shared program's),
+// so a test fixture is written to disk and parsed the same way.
 function sourceFile(name: string, text: string) {
   const file = path.join(dir, name)
   writeFileSync(file, text)
-  return file
+  return parseSourceFileSyntactic(file)
 }
 
 beforeAll(() => {

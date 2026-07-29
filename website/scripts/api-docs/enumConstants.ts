@@ -21,8 +21,6 @@
 // with different values is dropped rather than guessed at, so an ambiguous
 // constant degrades to today's behavior (source block) instead of documenting
 // the wrong list.
-import fs from 'fs'
-
 import * as ts from 'typescript'
 
 // name -> members, or null once a conflicting definition is seen
@@ -57,7 +55,14 @@ const slotFieldsIndex = new Map<string, [string, string][] | null>()
 // Slot-shaped object literal: every property is `name: { ... }` with a `type`
 // slot property. Required so an ordinary constant that happens to be spread
 // somewhere isn't mistaken for a slot table.
-function slotFieldPairs(node: ts.Expression): [string, string][] | undefined {
+//
+// `sf` is passed to getText explicitly rather than left to walk up parent
+// pointers: a program's trees only get those once the checker binds the file,
+// and this index runs before that.
+function slotFieldPairs(
+  node: ts.Expression,
+  sf: ts.SourceFile,
+): [string, string][] | undefined {
   if (!ts.isObjectLiteralExpression(node) || !node.properties.length) {
     return undefined
   }
@@ -71,7 +76,7 @@ function slotFieldPairs(node: ts.Expression): [string, string][] | undefined {
         ts.isIdentifier(s.name) &&
         s.name.text === 'type',
     )
-      ? ([p.name.text, p.initializer.getText()] as [string, string])
+      ? ([p.name.text, p.initializer.getText(sf)] as [string, string])
       : undefined,
   )
   return pairs.every(pair => pair !== undefined) ? pairs : undefined
@@ -155,23 +160,37 @@ function recordScalar(name: string, value: string) {
 }
 
 function recordSlotFields(name: string, pairs: [string, string][]) {
-  slotFieldsIndex.set(name, slotFieldsIndex.has(name) ? null : pairs)
+  const prior = slotFieldsIndex.get(name)
+  if (prior === undefined) {
+    slotFieldsIndex.set(name, pairs)
+  } else if (prior === null || !samePairs(prior, pairs)) {
+    slotFieldsIndex.set(name, null)
+  }
+}
+
+// Only a *conflicting* redefinition drops a name, matching record/recordScalar.
+// Dropping on any second sighting also lost a table declared identically twice,
+// which silently deletes every slot it contributes from every schema that
+// spreads it.
+function samePairs(a: [string, string][], b: [string, string][]) {
+  return (
+    a.length === b.length &&
+    a.every(([name, value], i) => b[i]![0] === name && b[i]![1] === value)
+  )
 }
 
 /**
- * Scan `files` for top-level string-array constants. Cheap enough to run over
- * the whole repo: only files whose text mentions a candidate declaration are
- * parsed.
+ * Scan already-parsed source files for top-level string-array constants. Takes
+ * the shared program's trees (see createDocProgram) rather than paths: reparsing
+ * the repo here cost a second full parse of everything the program already had.
  */
-export function buildEnumConstantIndex(files: string[]) {
+export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
   const literals = new Map<string, ts.Expression>()
   const derived = new Map<string, { name: string; grouped: boolean }>()
-  for (const file of files) {
-    const text = fs.readFileSync(file, 'utf8')
-    if (!/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(text)) {
+  for (const sf of sourceFiles) {
+    if (!/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(sf.text)) {
       continue
     }
-    const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true)
     for (const stmt of sf.statements) {
       if (ts.isVariableStatement(stmt)) {
         for (const decl of stmt.declarationList.declarations) {
@@ -181,7 +200,7 @@ export function buildEnumConstantIndex(files: string[]) {
             // `as const` wraps the literal in an assertion expression
             const value = ts.isAsExpression(init) ? init.expression : init
             const direct = stringsOf(value)
-            const slotFields = slotFieldPairs(value)
+            const slotFields = slotFieldPairs(value, sf)
             if (slotFields) {
               recordSlotFields(name, slotFields)
             }
