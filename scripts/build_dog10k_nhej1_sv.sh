@@ -23,6 +23,9 @@ SVI=$ZEN/Dog10k_manta_paragraph.vcf.gz.tbi/content
 # NHEJ1 on UU_Cfam_GSD_1.0 (UCSC canFam4), plus flanks; the deletion itself is
 # chr37:25,574,005-25,581,806.
 REGION=chr37:25500000-25620000
+# DENR on the same assembly, where two SINEC2A1 insertions present in the
+# reference are polymorphic in adjacent introns.
+DENR_REGION=chr26:6920000-6950000
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
@@ -66,3 +69,29 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
 echo
 echo "Wrote $(pwd)/dog10k_nhej1_svs.vcf.gz (plus its .tbi)."
 echo "Load it with the track JSON in the structural-variant tutorial."
+
+# ── The DENR SINE dimorphisms ───────────────────────────────────────────────
+# The same recipe at a second locus, for the Mastiff-clade breeds the paper
+# names plus two comparison breeds and the same wolves. Only the two SINEC2A1
+# deletions are kept: the locus carries seven other SVs, and one of them
+# overlaps the first SINE, which makes a per-sample panel of the region
+# unreadable without saying anything extra.
+python3 - <<'PY' > denr.samples
+rows = [l.rstrip('\n').split('\t') for l in open('samples.txt')][1:]
+rows = [r for r in rows if r[11] == 'YES' and r[16] == 'TRUE']
+groups = [('Boxer', 4), ('Bull Terrier', 4), ('Miniature Bull Terrier', 4),
+          ('English Bulldog', 2), ('Labrador Retriever', 4), ('Collie', 3)]
+out = []
+for breed, n in groups:
+    out += [r[0] for r in rows if r[1] == breed][:n]
+out += [r[0] for r in rows if r[2] == 'Wolf' and r[1] == 'Greece'][:4]
+print('\n'.join(out))
+PY
+
+bcftools view -r "$DENR_REGION" -S denr.samples --force-samples \
+  -i 'POS=6931055 || POS=6933974' \
+  -Oz -o dog10k_denr_svs.vcf.gz "$SV##idx##$SVI"
+tabix -f -p vcf dog10k_denr_svs.vcf.gz
+
+echo
+echo "Wrote $(pwd)/dog10k_denr_svs.vcf.gz (the two DENR SINE deletions)."

@@ -145,15 +145,40 @@ estimate. More broadly, this figure is one locus in one set of breeds, chosen
 because the variant was already characterized; the same track scrolled anywhere
 else in the callset is a screen of variants nobody has interpreted yet.
 
+## A different kind of variant, at DENR
+
+The deletion above is rare, long, and breed-restricted. Most of what an SV
+callset holds is the opposite, and the same slice-and-load recipe shows it two
+chromosomes away.
+
+Schall and Kidd report two deletions in adjacent introns of _DENR_ in the
+Mastiff clade, each removing a SINEC2A1 repeat with an intact poly(A) tail and
+target-site duplications. Both SINEs are present in the `UU_Cfam_GSD_1.0`
+reference, which is a German Shepherd, so "deletion" here means the repeat is
+**absent** in that dog. Dimorphic SINE and LINE-1 variants like these are over
+45% of all deletions in the callset, which is why a dog SV panel looks nothing
+like a SNV panel.
+
+<Figure caption="Two ~220 bp SINEC2A1 deletions in adjacent DENR introns. The Mastiff-clade breeds still carry the repeats (grey homozygous reference, light blue heterozygous); the Labrador Retrievers, Collies, and all four wolves are homozygous for the deletion, meaning the repeats are absent. The reference genome, a German Shepherd, carries them." src="/img/dog10k-denr-sine-deletions.png" />
+
+Reading it against the Collie eye anomaly figure is the point. That deletion was
+7.8 kb, at a few percent frequency, and present only in one clade. These are 220
+bp, at about 90% frequency, and it is the reference that carries the rare
+allele: the wolves have no copy of either repeat, which is what the paper means
+by calling the insertions recent. A callset that mixes both kinds is why "how
+many structural variants does this dog have" depends entirely on which genome
+you called against.
+
+The shipped slice keeps only these two variants. The locus carries seven others,
+one of which overlaps the first SINE, and a per-sample panel of all of them is
+unreadable without saying anything the two do not already say.
+
 ## Where to go next
 
-The same slice-and-load recipe reaches every other variant in the callset. The
-paper's other clade-associated SVs make good next stops: three SVs in introns of
-_HMGA2_ in the Spitz group, a gene associated with body weight and ear type, and
-two intronic deletions in _DENR_ in the Mastiff clade, where each deleted
-sequence is a SINEC2A1 repeat with an intact poly(A) tail and target-site
-duplications, present in the German Shepherd reference and deleted at high
-frequency across dogs.
+The same recipe reaches every other variant in the callset. Three SVs sit in
+introns of _HMGA2_ in the Spitz group, a gene associated with body weight and
+ear type, and relaxing the significance threshold adds an _AP3B1_ variant in the
+Collie and Shetland Sheepdog clade, the gene behind gray Collie syndrome.
 
 ## Reproduce it end to end
 

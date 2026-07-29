@@ -112,6 +112,55 @@ const DOG_VCF_LAYOUT = [
   })),
 )
 
+// Row labels for the DENR figure. The Mastiff-clade breeds the paper names
+// (Boxer, Bull Terrier, Miniature Bull Terrier, English Bulldog) take one
+// swatch, the two comparison breeds another, and the wolves the third.
+const DENR_GROUPS = [
+  {
+    label: 'Boxer',
+    color: '#0072B2',
+    ids: ['BOXR000001', 'BOXR000002', 'BOXR000003', 'BOXR000004'],
+  },
+  {
+    label: 'Bull Terrier',
+    color: '#0072B2',
+    ids: ['BULT000001', 'BULT000002', 'BULT000003', 'BULT000004'],
+  },
+  {
+    label: 'Mini Bull Terrier',
+    color: '#0072B2',
+    ids: ['MBLT000001', 'MBLT000002', 'MBLT000003', 'MBLT000004'],
+  },
+  {
+    label: 'English Bulldog',
+    color: '#0072B2',
+    ids: ['BULD000002', 'BULD000003'],
+  },
+  {
+    label: 'Labrador Retriever',
+    color: '#999999',
+    ids: ['LABR000001', 'LABR000002', 'LABR000003', 'LABR000004'],
+  },
+  {
+    label: 'Collie',
+    color: '#999999',
+    ids: ['COLL000001', 'COLL000002', 'COLL000003'],
+  },
+  {
+    label: 'Wolf',
+    color: '#E69F00',
+    ids: ['CLUPGR000001', 'CLUPGR000002', 'CLUPGR000003', 'CLUPGR000004'],
+  },
+]
+
+const DENR_LAYOUT = DENR_GROUPS.flatMap(({ label, color, ids }) =>
+  ids.map((name, i) => ({
+    name,
+    label: ids.length > 1 ? `${label} ${i + 1}` : label,
+    color,
+  })),
+)
+
 const CEA_LAYOUT = CEA_GROUPS.flatMap(({ label, color, ids }) =>
   ids.map((name, i) => ({
     name,
@@ -226,5 +275,38 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track plus all 36 sample rows and the genotype legend
     viewportHeight: 915,
+  },
+
+  // The two SINEC2A1 deletions in DENR introns (Schall & Kidd 2025, Fig S6):
+  // ~220 bp mobile-element dimorphisms, the opposite kind of variant to the
+  // rare 7.8 kb deletion above. The SINEs are present in the German Shepherd
+  // reference, so "deletion" means the SINE is absent — which is the state of
+  // every wolf here and of the Collies and Labradors, while the Mastiff-clade
+  // breeds still carry them. Built by scripts/build_dog10k_nhej1_sv.sh.
+  {
+    mode: 'url',
+    name: 'dog10k-denr-sine-deletions',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr26:6,929,500-6,936,000',
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 100,
+        },
+        {
+          trackId: 'dog10k_denr_svs',
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 430,
+          layout: DENR_LAYOUT,
+        },
+      ],
+    }),
+    readyText: 'chr26',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // gene track plus all 25 sample rows and the genotype legend
+    viewportHeight: 775,
   },
 ]
