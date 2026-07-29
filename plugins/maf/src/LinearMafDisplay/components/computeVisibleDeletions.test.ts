@@ -44,7 +44,9 @@ function run(
 ) {
   return computeVisibleDeletions({
     view: view(bpPerPx),
-    rpcDataMap: new Map<number, MafRegionData>([[0, regionData(refSeq, alignment)]]),
+    rpcDataMap: new Map<number, MafRegionData>([
+      [0, regionData(refSeq, alignment)],
+    ]),
     rowHeight,
     rowProportion: 0.8,
   })

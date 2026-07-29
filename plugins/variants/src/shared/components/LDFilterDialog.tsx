@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
 import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
-import {
-  Alert,
-  Box,
-  FormControlLabel,
-  Switch,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, FormControlLabel, Switch, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { LD_FILTER_CATEGORIES } from '../ldFilterCategories.ts'
