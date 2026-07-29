@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -107,22 +108,6 @@ function setTagFilter(self: ContextMenuModel, tag: string, value: string) {
     ...self.filterBy,
     tagFilters: [...others, { tag, value }],
   })
-}
-
-// Copy plain text (read name, sequence, feature JSON) with a success/error
-// snackbar. The clipboard util is dynamically imported so it stays out of the
-// initial bundle. Runs only on menu click, off the already-fetched feature — no
-// RPC.
-async function copyText(self: ContextMenuModel, text: string, what: string) {
-  const session = getSession(self)
-  try {
-    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
-    copy(text)
-    session.notify(`Copied ${what} to clipboard`, 'success')
-  } catch (e) {
-    console.error(e)
-    session.notifyError(`${e}`, e)
-  }
 }
 
 // The whole feature as JSON, minus the synthetic uniqueId — the "all fields"

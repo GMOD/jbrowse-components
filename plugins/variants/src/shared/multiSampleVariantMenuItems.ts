@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { clusteringMenuItem } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
@@ -352,20 +353,12 @@ export function variantContextMenuItems(
         {
           label: 'Copy to clipboard',
           icon: ContentCopyIcon,
-          onClick: async () => {
-            try {
-              const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
-              // Only the VCF ID column; a feature with no ID ('.') copies as
-              // bare location rather than feat.id(), an internal adapter string.
-              const name = feat.get('name')
-              const { default: copy } =
-                await import('@jbrowse/core/util/copyToClipboard')
-              copy(name ? `${name} ${loc}` : loc)
-              getSession(self).notify('Copied to clipboard', 'info')
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
+          onClick: () => {
+            const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
+            // Only the VCF ID column; a feature with no ID ('.') copies as
+            // bare location rather than feat.id(), an internal adapter string.
+            const name = feat.get('name')
+            void copyText(self, name ? `${name} ${loc}` : loc, 'variant')
           },
         },
         {

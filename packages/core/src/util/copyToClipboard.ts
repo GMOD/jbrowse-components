@@ -1,5 +1,10 @@
 // Copies text to the clipboard. Replaces the `copy-to-clipboard` dependency.
 //
+// This is the bare write. A menu item should call `copyText` (./copyText.ts)
+// instead, which confirms the copy in a snackbar and reports a failure; it
+// imports this dynamically so the fallback below stays out of the initial
+// bundle.
+//
 // The async Clipboard API is preferred for plain text, but it only works in
 // secure contexts (https:// or localhost). JBrowse is frequently served over
 // plain http:// on intranet/institutional servers, so we fall back to the

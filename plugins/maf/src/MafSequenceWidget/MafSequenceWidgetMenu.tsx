@@ -1,5 +1,6 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import ContentCopy from '@mui/icons-material/ContentCopy'
 import Difference from '@mui/icons-material/Difference'
 import DownloadIcon from '@mui/icons-material/Download'
@@ -12,7 +13,7 @@ import TableRowsIcon from '@mui/icons-material/TableRows'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { copyToClipboard, downloadAsFile } from '../util/clipboard.ts'
+import { downloadAsFile } from '../util/clipboard.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { MafSequenceSettings } from './useMafSequenceSettings.ts'
@@ -105,17 +106,7 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
           icon: ContentCopy,
           disabled: loading || !formattedSequence,
           onClick: () => {
-            // copyToClipboard handles its own errors via onError and never
-            // rejects, so `void` rather than a dead `.catch`.
-            void copyToClipboard(
-              formattedSequence,
-              () => {
-                session.notify('Sequence copied to clipboard', 'info')
-              },
-              e => {
-                session.notifyError(`${e}`, e)
-              },
-            )
+            void copyText(model, formattedSequence, 'sequence')
           },
         },
         {

@@ -4,6 +4,7 @@ import {
   isSessionWithAddTracks,
   toLocale,
 } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
@@ -32,11 +33,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
-}
-
-async function copyToClipboard(text: string) {
-  const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
-  copy(text)
 }
 
 /**
@@ -295,7 +291,9 @@ export function buildRubberBandMenuItems(
     {
       label: 'Copy range',
       icon: ContentCopyIcon,
-      onClick: () => copyToClipboard(rangeString),
+      onClick: () => {
+        void copyText(self, rangeString, 'range')
+      },
     },
     ...(launchItems.length
       ? [
@@ -341,7 +339,9 @@ export function buildRubberbandClickMenuItems(
     {
       label: `Copy coordinate (${locString})`,
       icon: ContentCopyIcon,
-      onClick: () => copyToClipboard(locString),
+      onClick: () => {
+        void copyText(self, locString, 'coordinate')
+      },
     },
   ]
 }

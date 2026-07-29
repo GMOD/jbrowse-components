@@ -121,6 +121,7 @@
     "./util/colorBits": "./src/util/colorBits.ts",
     "./util/colord": "./src/util/colord.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
+    "./util/copyText": "./src/util/copyText.ts",
     "./util/copyToClipboard": "./src/util/copyToClipboard.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/fetchHub": "./src/util/fetchHub.ts",
@@ -617,6 +618,10 @@
         "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
         "import": "./esm/util/convertCodingSequenceToPeptides.js"
       },
+      "./util/copyText": {
+        "types": "./esm/util/copyText.d.ts",
+        "import": "./esm/util/copyText.js"
+      },
       "./util/copyToClipboard": {
         "types": "./esm/util/copyToClipboard.d.ts",
         "import": "./esm/util/copyToClipboard.js"
@@ -1094,6 +1099,9 @@
         ],
         "util/convertCodingSequenceToPeptides": [
           "esm/util/convertCodingSequenceToPeptides.d.ts"
+        ],
+        "util/copyText": [
+          "esm/util/copyText.d.ts"
         ],
         "util/copyToClipboard": [
           "esm/util/copyToClipboard.d.ts"

@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -91,23 +92,6 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
   hideFeature: (featureId: string) => void
   clearSolo: () => void
   showAllHidden: () => void
-}
-
-// Copy plain text with a success/error snackbar, `what` naming what landed.
-// The clipboard util is dynamically imported so it stays out of the initial
-// bundle — this only ever runs on a menu click. (Same shape as the alignments
-// display's copyText; kept local rather than shared, since the two plugins
-// have no other menu code in common.)
-async function copyText(self: IAnyStateTreeNode, text: string, what: string) {
-  const session = getSession(self)
-  try {
-    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
-    copy(text)
-    session.notify(`Copied ${what} to clipboard`, 'success')
-  } catch (e) {
-    console.error(e)
-    session.notifyError(`${e}`, e)
-  }
 }
 
 // The "Show N hidden features" recovery item, shared by the feature context
