@@ -209,9 +209,14 @@ jobs:
         # api-docs/example-gaps.txt is the #example coverage list. It rides this
         # same diff so a type documented without a usable example shows up as a
         # `+ Name` line in the PR rather than as a console.warn nothing reads.
+        #
+        # The `*/README.md` globs cover writeApiReadmes, which mirrors each
+        # package's `#api` exports into its README between API_DOCS markers. CI
+        # regenerated those and then never looked at them, so a stale mirrored
+        # API block shipped green.
         run: |
           pnpm gendocs
-          DOCS="website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides website/scripts/api-docs/example-gaps.txt"
+          DOCS="website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides website/scripts/api-docs/example-gaps.txt packages/*/README.md plugins/*/README.md products/*/README.md"
           if ! git diff --quiet $DOCS; then
             echo "Error: generated docs are out of date!"
             echo "Run 'pnpm autogen' and commit the changes."

@@ -1160,8 +1160,13 @@ export async function writeConfigDocs(
   // them made the warning a 40-name wall that read as noise, which is how ~17
   // genuinely pasteable adapters and displays stayed bare. Their route to a
   // usable shape is the Extended by links, not an example of their own.
+  //
+  // isBaseSchema, not a bare `extendedBy.has()`: a config that others derive
+  // from but that *is* itself writable — it carries a DisplayType registration —
+  // is a real gap, and exempting it would hide the one thing this list exists to
+  // surface.
   return warnHeaderGaps({
-    items: withHeader.filter(c => !extendedBy.has(c.header.name)),
+    items: withHeader.filter(c => !isBaseSchema(c.header, links)),
     kind: 'configs',
     getName: c => c.header.name,
     hasExample: c => c.header.examples.length > 0,
