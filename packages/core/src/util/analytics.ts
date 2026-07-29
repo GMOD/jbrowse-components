@@ -18,7 +18,6 @@ interface AnalyticsRootModel {
     tracks: TrackConfig[]
     assemblies: unknown[]
     plugins?: { name?: string }[]
-    configuration: AnyConfigurationModel
   }
   session?: {
     sessionTracks: TrackConfig[]
@@ -27,6 +26,15 @@ interface AnalyticsRootModel {
   version: string
 }
 
+// only doAnalytics reads the configuration, for the disableAnalytics slot
+type AnalyticsRootModelWithConfig = AnalyticsRootModel & {
+  jbrowse: { configuration: AnyConfigurationModel }
+}
+
+// Both writers are fire-and-forget from several call sites, so they swallow
+// their own failures rather than rejecting: a floating rejected promise trips
+// the webpack-dev-server overlay (it listens for unhandledrejection), and an
+// analytics ping is never worth interrupting a session for.
 export async function writeAWSAnalytics(
   rootModel: AnalyticsRootModel,
   initialTimestamp: number,
@@ -98,7 +106,7 @@ export async function writeAWSAnalytics(
 
     await fetch(`${url}?${qs}`)
   } catch (e) {
-    console.error('Failed to write analytics to AWS.', e)
+    console.warn('Failed to write analytics to AWS.', e)
   }
 }
 
@@ -106,36 +114,40 @@ export async function writeGAAnalytics(
   rootModel: AnalyticsRootModel,
   initialTimestamp: number,
 ) {
-  const jbrowseUser = 'UA-7115575-5'
-  const stats: AnalyticsObj = {
-    'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
-    ver: rootModel.version,
-    electron: isElectron,
-    loadTime: Date.now() - initialTimestamp,
-    pluginNames: rootModel.jbrowse.plugins?.map(p => p.name).join(',') || '',
+  try {
+    const jbrowseUser = 'UA-7115575-5'
+    const stats: AnalyticsObj = {
+      'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
+      ver: rootModel.version,
+      electron: isElectron,
+      loadTime: Date.now() - initialTimestamp,
+      pluginNames: rootModel.jbrowse.plugins?.map(p => p.name).join(',') || '',
+    }
+
+    const gaData: AnalyticsObj = {}
+    const googleDimensions = 'tracks-count ver electron loadTime pluginNames'
+
+    for (const [index, key] of googleDimensions.split(/\s+/).entries()) {
+      gaData[`dimension${index + 1}`] = stats[key]
+    }
+
+    gaData.metric1 = Math.round(stats.loadTime as number)
+
+    const analyticsScript =
+      "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
+      '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),' +
+      'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)' +
+      "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');" +
+      `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');` +
+      `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(gaData)});`
+
+    const analyticsScriptNode = document.createElement('script')
+    analyticsScriptNode.innerHTML = analyticsScript
+
+    document.head.append(analyticsScriptNode)
+  } catch (e) {
+    console.warn('Failed to write analytics to GA.', e)
   }
-
-  const gaData: AnalyticsObj = {}
-  const googleDimensions = 'tracks-count ver electron loadTime pluginNames'
-
-  for (const [index, key] of googleDimensions.split(/\s+/).entries()) {
-    gaData[`dimension${index + 1}`] = stats[key]
-  }
-
-  gaData.metric1 = Math.round(stats.loadTime as number)
-
-  const analyticsScript =
-    "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
-    '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),' +
-    'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)' +
-    "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');" +
-    `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');` +
-    `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(gaData)});`
-
-  const analyticsScriptNode = document.createElement('script')
-  analyticsScriptNode.innerHTML = analyticsScript
-
-  document.getElementsByTagName('head')[0]!.append(analyticsScriptNode)
 }
 
 // One pageview per page load, not per pluginManager. jbrowse-web rebuilds the
@@ -146,7 +158,7 @@ export async function writeGAAnalytics(
 let analyticsSent = false
 
 export function doAnalytics(
-  rootModel: AnalyticsRootModel | undefined,
+  rootModel: AnalyticsRootModelWithConfig | undefined,
   initialTimestamp: number,
   initialSessionQuery: string | null | undefined,
 ) {
@@ -162,11 +174,8 @@ export function doAnalytics(
     // loadTime is still measured from initialTimestamp, so the reported metric
     // is unaffected by running these when the browser is idle.
     rIC(() => {
-      // ok if these are unhandled
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      writeGAAnalytics(rootModel, initialTimestamp)
+      void writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+      void writeGAAnalytics(rootModel, initialTimestamp)
     })
   }
 }

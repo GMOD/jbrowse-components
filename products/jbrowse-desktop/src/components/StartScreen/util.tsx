@@ -4,12 +4,8 @@ import PluginLoader, {
   pluginUrl,
 } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
-import {
-  writeAWSAnalytics,
-  writeGAAnalytics,
-} from '@jbrowse/core/util/analytics'
+import { doAnalytics } from '@jbrowse/core/util/analytics'
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 
@@ -143,18 +139,14 @@ export async function createPluginManager(
   )
 
   const rootModel = JBrowseRootModel.create({ jbrowse }, { pluginManager })
-  const config = rootModel.jbrowse.configuration
 
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
 
-  if (!readConfObject(config, 'disableAnalytics')) {
-    // these are ok if they are uncaught promises
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeAWSAnalytics(rootModel, initialTimestamp)
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeGAAnalytics(rootModel, initialTimestamp)
-  }
+  // once per app launch, not per session opened: doAnalytics owns the
+  // disableAnalytics check, the idle deferral, and the send-once guard that
+  // keeps repeat session opens from appending another GA <script> to <head>
+  doAnalytics(rootModel, initialTimestamp, undefined)
 
   // Set the session preserving its existing name rather than calling
   // setDefaultSession(), which re-appends a fresh timestamp every load and made
