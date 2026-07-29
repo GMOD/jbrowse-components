@@ -3,9 +3,9 @@ import {
   cap,
   coerceToResult,
   getDeduplicatedResult,
-  getFiltered,
   getInputWidth,
   getOptionLabel,
+  getRefNameOptions,
 } from './util.ts'
 
 const opt = (label: string) => ({ result: new BaseResult({ label }) })
@@ -28,18 +28,36 @@ describe('cap', () => {
   })
 })
 
-describe('getFiltered', () => {
-  it('matches case-insensitively on a substring of the label', () => {
-    const options = [opt('chr1'), opt('chr2'), opt('ctgA')]
-    expect(getFiltered(options, 'CHR').map(getOptionLabel)).toEqual([
-      'chr1',
-      'chr2',
-    ])
+describe('getRefNameOptions', () => {
+  const regions = (refNames: string[]) => refNames.map(refName => ({ refName }))
+
+  it('matches case-insensitively on a substring of the refName', () => {
+    expect(
+      getRefNameOptions(regions(['chr1', 'chr2', 'ctgA']), 'CHR').map(
+        getOptionLabel,
+      ),
+    ).toEqual(['chr1', 'chr2'])
   })
 
-  it('still applies the cap to the filtered subset', () => {
-    const options = Array.from({ length: 150 }, (_, i) => opt(`chr${i}`))
-    expect(getFiltered(options, 'chr').at(-1)!.isLimit).toBe(true)
+  it('returns every refName for an empty query', () => {
+    expect(getRefNameOptions(regions(['chr1', 'ctgA']), '')).toHaveLength(2)
+  })
+
+  it('resolves to a location so a picked refName navigates', () => {
+    const [option] = getRefNameOptions(regions(['ctgA']), 'ctg')
+    expect(option!.result.getLocation()).toBe('ctgA')
+  })
+
+  it('stops one past the cap so the list stays bounded', () => {
+    const many = regions(Array.from({ length: 5000 }, (_, i) => `chr${i}`))
+    expect(getRefNameOptions(many, 'chr')).toHaveLength(101)
+  })
+
+  it('finds a match past the cap (regression: list was sliced before filtering)', () => {
+    const many = regions(Array.from({ length: 5000 }, (_, i) => `scaffold${i}`))
+    expect(getRefNameOptions(many, 'scaffold4999').map(getOptionLabel)).toEqual(
+      ['scaffold4999'],
+    )
   })
 })
 

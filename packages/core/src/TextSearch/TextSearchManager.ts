@@ -9,8 +9,20 @@ import type {
 } from '../data_adapters/BaseAdapter/index.ts'
 import type BaseResult from './BaseResults.ts'
 
-export interface SearchScope {
-  assemblyName: string
+// A misconfigured or unreachable index (a 404 .ix, a config missing
+// ixFilePath) must not take down search as a whole: the remaining indexes, and
+// the refName results the caller merges in afterwards, are still useful. Log
+// the failures and keep going rather than rejecting.
+async function keepFulfilled<T>(promises: Promise<T>[], message: string) {
+  const out: T[] = []
+  for (const settled of await Promise.allSettled(promises)) {
+    if (settled.status === 'fulfilled') {
+      out.push(settled.value)
+    } else {
+      console.error(message, settled.reason)
+    }
+  }
+  return out
 }
 
 export default class TextSearchManager {
@@ -24,9 +36,9 @@ export default class TextSearchManager {
     this.adapterCache.clear()
   }
 
-  loadTextSearchAdapters(searchScope: SearchScope) {
-    return Promise.all(
-      this.relevantAdapters(searchScope).map(async conf => {
+  loadTextSearchAdapters(assemblyName: string) {
+    return keepFulfilled(
+      this.relevantAdapters(assemblyName).map(async conf => {
         const adapterId = readConfObject(conf, 'textSearchAdapterId')
         const r = this.adapterCache.get(adapterId)
         if (r) {
@@ -45,24 +57,27 @@ export default class TextSearchManager {
           return adapterInstance
         }
       }),
+      'failed to load text search adapter',
     )
   }
 
-  relevantAdapters({ assemblyName }: SearchScope) {
-    const rootModel = this.pluginManager.rootModel
-    const { aggregateTextSearchAdapters } = rootModel?.jbrowse as {
-      aggregateTextSearchAdapters: AnyConfigurationModel[]
+  relevantAdapters(assemblyName: string) {
+    const { rootModel } = this.pluginManager
+    // jbrowse is typed as a bare state tree node, so its config slots need a
+    // shape assertion; both it and the session are absent until a session is
+    // loaded, which is before anything can search
+    const { aggregateTextSearchAdapters = [] } = (rootModel?.jbrowse ?? {}) as {
+      aggregateTextSearchAdapters?: AnyConfigurationModel[]
     }
-    const { tracks } = rootModel?.session as {
-      tracks: AnyConfigurationModel[]
-    }
-
     return [
       ...this.getAdaptersWithAssembly(
         assemblyName,
         aggregateTextSearchAdapters,
       ),
-      ...this.getTrackAdaptersWithAssembly(assemblyName, tracks),
+      ...this.getTrackAdaptersWithAssembly(
+        assemblyName,
+        rootModel?.session?.tracks ?? [],
+      ),
     ]
   }
 
@@ -92,9 +107,12 @@ export default class TextSearchManager {
       )
   }
 
-  async search(args: BaseTextSearchArgs, searchScope: SearchScope) {
-    const adapters = await this.loadTextSearchAdapters(searchScope)
-    const results = await Promise.all(adapters.map(a => a.searchIndex(args)))
+  async search(args: BaseTextSearchArgs, assemblyName: string) {
+    const adapters = await this.loadTextSearchAdapters(assemblyName)
+    const results = await keepFulfilled(
+      adapters.map(a => a.searchIndex(args)),
+      'text search adapter failed',
+    )
     return await this.sortResults({ args, results: results.flat() })
   }
 

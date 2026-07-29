@@ -1,4 +1,4 @@
-import BaseResult from '../../TextSearch/BaseResults.ts'
+import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
 import { measureText } from '../../util/index.ts'
 
 // matches the rendered font-size of the TextField
@@ -33,13 +33,30 @@ export function cap(options: Option[]) {
     : options
 }
 
-export function getFiltered(options: Option[], inputValue: string) {
+// The browse/pre-fetch fallback list, shown while a typed query is in flight
+// and when it comes back empty (typed queries otherwise resolve through
+// fetchResults). An assembly can hold ~10^6 refNames, so match and materialize
+// in one bounded pass rather than building a million option objects or slicing
+// first — slicing first would hide every refName past the cap from the filter,
+// so a substring of a late scaffold's name matched nothing. Collecting one past
+// the cap lets `cap` still render its "keep typing" hint.
+export function getRefNameOptions(
+  regions: readonly { refName: string }[],
+  inputValue: string,
+) {
   const query = inputValue.toLowerCase()
-  return cap(
-    options.filter(({ result }) =>
-      result.getLabel().toLowerCase().includes(query),
-    ),
-  )
+  const options: Option[] = []
+  for (const { refName } of regions) {
+    if (refName.toLowerCase().includes(query)) {
+      options.push({
+        result: new RefSequenceResult({ refName, label: refName }),
+      })
+      if (options.length > MAX_OPTIONS) {
+        break
+      }
+    }
+  }
+  return options
 }
 
 // group hits sharing a display string into a single multi-result option (the

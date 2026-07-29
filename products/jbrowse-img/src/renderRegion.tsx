@@ -101,7 +101,7 @@ async function navToLocOrGene(
         await fetchResults({
           queryString: input,
           searchType: 'exact',
-          searchScope: view.searchScope(assemblyName),
+          assemblyName,
           textSearchManager: session.textSearchManager,
           assembly,
         })

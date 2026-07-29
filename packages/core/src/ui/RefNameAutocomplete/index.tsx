@@ -3,22 +3,19 @@ import { useState } from 'react'
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
 import { useDebounce } from '../../util/hooks.ts'
 import { useFetch } from '../../util/useFetch.ts'
 import {
-  MAX_OPTIONS,
   cap,
   coerceToResult,
   getDeduplicatedResult,
-  getFiltered,
   getInputWidth,
   getOptionLabel,
+  getRefNameOptions,
 } from './util.ts'
 
 import type BaseResult from '../../TextSearch/BaseResults.ts'
 import type { AbstractSessionModel } from '../../util/index.ts'
-import type { Option } from './util.ts'
 import type { CSSProperties, ReactNode } from 'react'
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
@@ -78,19 +75,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   )
 
   const width = getInputWidth(externalValue, minWidth, maxWidth, adornmentWidth)
-  // assembly.regions can hold ~10^6 refnames. This is only the browse/pre-fetch
-  // fallback list (typed queries resolve through fetchResults), MUI is not
-  // virtualized, and the visible list is capped at MAX_OPTIONS anyway — so only
-  // materialize a bounded slice rather than a million option objects. Slicing
-  // one past the cap lets `cap` still render its "keep typing" hint.
-  const regionOptions: Option[] = (assembly?.regions ?? [])
-    .slice(0, MAX_OPTIONS + 1)
-    .map(region => ({
-      result: new RefSequenceResult({
-        refName: region.refName,
-        label: region.refName,
-      }),
-    }))
+  const regionOptions = getRefNameOptions(assembly?.regions ?? [], searchQuery)
 
   const hasSearchResults = !!searchOptions?.length
 
@@ -131,15 +116,11 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       }}
       options={hasSearchResults ? searchOptions : regionOptions}
       getOptionDisabled={option => !!option.isLimit}
-      // the two option sources are filtered against different query snapshots:
-      // searchOptions are already server-filtered for `debouncedSearch` (so we
-      // only cap), while regionOptions are filtered live against `searchQuery`.
-      // when a fetch resolves empty, hasSearchResults flips and the list swaps
-      // from search mode to region mode — both stay consistent because regions
-      // re-filter by the same query
-      filterOptions={opts =>
-        hasSearchResults ? cap(opts) : getFiltered(opts, searchQuery)
-      }
+      // both sources arrive already matched against a query — searchOptions
+      // server-side for `debouncedSearch`, regionOptions live for `searchQuery`
+      // — so MUI must not re-filter them (its default filter would drop hits
+      // matching on a description rather than the display string). Only cap.
+      filterOptions={opts => cap(opts)}
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
           {...restParams}

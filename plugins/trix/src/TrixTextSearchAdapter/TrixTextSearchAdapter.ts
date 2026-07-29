@@ -71,8 +71,10 @@ export default class TrixTextSearchAdapter
    * searchType (prefix | full | exact), etc.
    */
   async searchIndex(args: BaseTextSearchArgs) {
-    const query = args.queryString.toLowerCase()
-    const words = query.split(' ')
+    const query = args.queryString.toLowerCase().trim()
+    // any run of whitespace separates words; splitting on a single ' ' let a
+    // double space or a tab produce an empty word that matches everything
+    const words = query.split(/\s+/)
     const results = await this.trixJs.search(query)
     const formatted = results
       .map(([term, data]) => {

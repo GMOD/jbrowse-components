@@ -42,7 +42,6 @@ const SearchBox = observer(function SearchBox({
   const { assemblyNames } = model
   const assemblyName = assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
-  const searchScope = model.searchScope(assemblyName)
   const { recentLocations, addRecentLocation, clearRecentLocations } =
     useRecentLocations(assemblyName)
 
@@ -76,7 +75,7 @@ const SearchBox = observer(function SearchBox({
       fetchResults={queryString =>
         fetchResults({
           queryString,
-          searchScope,
+          assemblyName,
           textSearchManager,
           assembly,
         })

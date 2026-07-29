@@ -12,7 +12,6 @@ import { parseLocStrings } from './LinearGenomeView/util.ts'
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -157,11 +156,10 @@ export async function handleSelectedRegion({
   ) {
     await navToLocstrings()
   } else {
-    const searchScope = model.searchScope(assemblyName)
     const results = await fetchResults({
       queryString: input,
       searchType: 'exact',
-      searchScope,
+      assemblyName,
       textSearchManager,
       assembly,
     })
@@ -171,7 +169,7 @@ export async function handleSelectedRegion({
       return
     }
     if (results.length > 1) {
-      model.setSearchResults(results, input.toLowerCase(), assemblyName)
+      model.setSearchResults(results, input, assemblyName)
     } else if (results.length === 1) {
       await navToOption({
         option: results[0]!,
@@ -208,12 +206,12 @@ export function checkRef(str: string, isRef: (name: string) => boolean) {
 export async function fetchResults({
   queryString,
   searchType,
-  searchScope,
+  assemblyName,
   textSearchManager,
   assembly,
 }: {
   queryString: string
-  searchScope: SearchScope
+  assemblyName: string
   searchType?: SearchType
   textSearchManager?: TextSearchManager
   assembly?: Assembly
@@ -223,7 +221,7 @@ export async function fetchResults({
       queryString,
       searchType,
     },
-    searchScope,
+    assemblyName,
   )
 
   // ensure aliases are loaded: allRefNames is a pure getter, so reading it does

@@ -12,17 +12,11 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-export interface TooManyHits {
-  name: string
-  hitLimit: number
-}
-
 interface SearchResults {
   prefix: ({ name: string } | string)[]
+  // generate-names.pl record: [name, trackIndex, ?, refName, start, end]
   exact: [string, number, string, string, number, number][]
 }
-
-export type NamesIndexRecord = string | (string | number)[]
 
 type IndexFile = Record<string, SearchResults>
 
@@ -62,9 +56,8 @@ export default class JBrowse1TextSearchAdapter
     const tracks = this.tracksNames ?? (await this.httpMap.getTrackNames())
     const str = queryString.toLowerCase()
     const entries = await this.loadIndexFile(str)
-    return entries[str]
-      ? this.formatResults(entries[str], tracks, searchType)
-      : []
+    const results = entries[str]
+    return results ? this.formatResults(results, tracks, searchType) : []
   }
   formatResults(results: SearchResults, tracks: string[], searchType?: string) {
     return [
@@ -76,19 +69,16 @@ export default class JBrowse1TextSearchAdapter
                 label: typeof result === 'object' ? result.name : result,
               }),
           )),
-      ...results.exact.map(result => {
-        const name = result[0]
-        const trackIndex = result[1]
-        const refName = result[3]
-        const start = result[4]
-        const end = result[5]
-        const locstring = `${refName || name}:${start}-${end}`
-        return new BaseResult({
-          locString: locstring,
-          label: name,
-          trackId: tracks[trackIndex],
-        })
-      }),
+      ...results.exact.map(
+        ([name, trackIndex, , refName, start, end]) =>
+          new BaseResult({
+            locString: `${refName || name}:${start}-${end}`,
+            label: name,
+            trackId: tracks[trackIndex],
+          }),
+      ),
+      // the index encodes an overflow bucket as a pseudo-hit; it is a message,
+      // not a navigable location
     ].filter(result => result.getLabel() !== 'too many matches')
   }
 }

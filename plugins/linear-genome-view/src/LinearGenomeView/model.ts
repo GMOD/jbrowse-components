@@ -85,7 +85,6 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -919,13 +918,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #method
-       */
-      searchScope(assemblyName: string): SearchScope {
-        return { assemblyName }
-      },
-
-      /**
        * #getter
        */
       get trackMap() {
@@ -1107,7 +1099,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setSearchResults(
         searchResults: BaseResult[],
         searchQuery: string,
-        assemblyName?: string,
+        assemblyName: string,
       ) {
         getSession(self).queueDialog(handleClose => [
           SearchResultsDialog,

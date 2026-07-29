@@ -20,15 +20,15 @@ export default function SearchResultsDialog({
   handleClose,
 }: {
   model: LinearGenomeViewModel
-  assemblyName?: string
+  assemblyName: string
   searchQuery: string
-  searchResults?: BaseResult[]
+  searchResults: BaseResult[]
   handleClose: () => void
 }) {
   return (
     <Dialog open maxWidth="xl" onClose={handleClose} title="Search results">
       <DialogContent>
-        {!searchResults?.length ? (
+        {!searchResults.length ? (
           <Typography>
             No results found for <b>{searchQuery}</b>
           </Typography>

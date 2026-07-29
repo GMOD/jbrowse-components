@@ -23,29 +23,46 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const SearchResultsTable = observer(function SearchResultsTable({
   searchResults,
-  assemblyName: optAssemblyName,
+  assemblyName,
   model,
   handleClose,
 }: {
   searchResults: BaseResult[]
-  assemblyName?: string
+  assemblyName: string
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
-  const assemblyName =
-    optAssemblyName || model.displayedRegions[0]!.assemblyName
-
   const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
 
   function getTrackName(trackId: string | undefined) {
     const conf =
       trackId !== undefined ? session.getTrackById(trackId) : undefined
     return conf ? (readConfObject(conf, 'name') as string) : ''
+  }
+
+  // the raw locString, prettified to the assembly's canonical refName when the
+  // assembly is loaded and the string parses. A result the assembly can't
+  // resolve is still listed as-is rather than blowing up the dialog: the Go
+  // button navigates through navToOption, which reports its own failure
+  function formatLocation(locString: string | undefined) {
+    if (assembly && locString) {
+      try {
+        const loc = parseLocString(locString, refName =>
+          assembly.isValidRefName(refName),
+        )
+        return assembleLocString({
+          ...loc,
+          refName: assembly.getCanonicalRefName2(loc.refName),
+        })
+      } catch (e) {
+        console.warn('failed to parse location string', locString, e)
+        return locString
+      }
+    } else {
+      return locString
+    }
   }
 
   return (
@@ -60,60 +77,40 @@ const SearchResultsTable = observer(function SearchResultsTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {searchResults.map(result => {
-            const locString = result.getLocation()
-            let loc
-            try {
-              loc = locString
-                ? parseLocString(locString, refName =>
-                    assembly.isValidRefName(refName),
-                  )
-                : undefined
-            } catch (e) {
-              console.warn('failed to parse location string', locString, e)
-            }
-            return (
-              <TableRow key={result.getId()}>
-                <TableCell component="th" scope="row">
-                  {result.getLabel()}
-                </TableCell>
-                <TableCell align="right">
-                  {loc
-                    ? assembleLocString({
-                        ...loc,
-                        refName:
-                          assembly.getCanonicalRefName(loc.refName) ||
-                          loc.refName,
+          {searchResults.map(result => (
+            <TableRow key={result.getId()}>
+              <TableCell component="th" scope="row">
+                {result.getLabel()}
+              </TableCell>
+              <TableCell align="right">
+                {formatLocation(result.getLocation())}
+              </TableCell>
+              <TableCell align="right">
+                {getTrackName(result.getTrackId()) || 'N/A'}
+              </TableCell>
+              <TableCell align="right">
+                <Button
+                  onClick={async () => {
+                    try {
+                      await navToOption({
+                        option: result,
+                        model,
+                        assemblyName,
                       })
-                    : locString}
-                </TableCell>
-                <TableCell align="right">
-                  {getTrackName(result.getTrackId()) || 'N/A'}
-                </TableCell>
-                <TableCell align="right">
-                  <Button
-                    onClick={async () => {
-                      try {
-                        await navToOption({
-                          option: result,
-                          model,
-                          assemblyName,
-                        })
-                      } catch (e) {
-                        console.error(e)
-                        session.notifyError(`${e}`, e)
-                      }
-                      handleClose()
-                    }}
-                    color="primary"
-                    variant="contained"
-                  >
-                    Go
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )
-          })}
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    }
+                    handleClose()
+                  }}
+                  color="primary"
+                  variant="contained"
+                >
+                  Go
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </TableContainer>

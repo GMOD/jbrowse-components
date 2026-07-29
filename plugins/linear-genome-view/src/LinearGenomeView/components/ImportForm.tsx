@@ -132,7 +132,7 @@ const LinearGenomeViewImportForm = observer(
                       queryString,
                       assembly,
                       textSearchManager,
-                      searchScope: model.searchScope(selectedAsm),
+                      assemblyName: selectedAsm,
                     })
                   }
                   session={session}
