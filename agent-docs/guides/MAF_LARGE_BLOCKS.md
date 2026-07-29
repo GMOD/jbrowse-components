@@ -23,10 +23,21 @@ bgzip -dc their.bed.gz | awk '{print $3-$2}' | sort -n | tail -5
 
 If the max block is a few kb, **stop** — blocks are not the problem and
 everything below is wasted effort. Look instead at the worker-side allocation
-noted in "Still open" at the bottom. For calibration, UCSC ce11 26-way has a
-median block of 7bp and a max of 1228bp, so long blocks are a property of the
-*producer* (`hal2maf` without chunking, pairwise chains/nets converted to MAF),
-not of MAF generally.
+noted in "Still open" at the bottom.
+
+For calibration, run the same line against the files already in this repo
+(measured 2026-07-29):
+
+| file | blocks | median | max |
+| --- | --- | --- | --- |
+| `test_data/ce11.26way.chrI_subset.bed.gz` | 160 | 7bp | 1228bp |
+| `test_data/volvox/volvox.maf.bed.gz` | 501 | 100bp | 100bp |
+| `test_data/mafperf/synth.maf.bed.gz` | 433 | 1075bp | 1995bp |
+
+The widest single line across all three is 20kb, so **nothing in-tree
+reproduces this** — a reproducing file has to come from the reporter. Long
+blocks are a property of the *producer* (`hal2maf` without chunking, pairwise
+chains/nets converted to MAF), not of MAF generally.
 
 ## Why one long block is expensive at every layer
 
@@ -153,13 +164,34 @@ everyone else.
 
 Independent of block size, and possibly the real cause of "crashes":
 
-- `computeMafCoverage` builds a `MismatchEntry` **object per mismatch per row**
-  (`computeMafCoverage.ts:106`) — ~650k objects on a wide region — only for
-  `buildMafCoverageRegion` to repack them into typed arrays immediately. Only
-  ~10% of that function's time, so it is a GC/OOM fix, not a speed one.
+- ~~`computeMafCoverage` builds a `MismatchEntry` object per mismatch per row~~
+  **Done** (`perf(maf): emit worker mismatches as typed arrays instead of
+  objects`). It now writes the packed arrays directly, so the per-base-per-row
+  object rate in the worker is gone. Still a memory fix, not a speed one.
 - `MafTabixAdapter` has no cheap zoom-out path: `showSummary` requires a
   `summaryAdapter`, which is BigMaf-only. Zoomed out it is gated, and force-load
   removes the ceiling entirely rather than degrading.
+
+## Render cost is no longer the open question
+
+Worth stating so the next person doesn't re-profile it. Three passes have
+landed: the sub-pixel decimation on the base cells, `IdentityColumns` on the
+per-row identity plot (2.4-3.9x, and the bp bound on the conservation band), and
+the source-chromosome ranks moved to a memoized computed. What remains
+un-decimated on the main thread is bounded by block size, not by span —
+`drawMafBlocks` (Canvas2D fallback + SVG export) and `findRowHoverAtBp` both
+walk a whole block, so they are yet another thing a megabase block makes
+quadratic and nothing a normal one troubles.
+
+The default render path — GPU base cells plus the worker-packed coverage band —
+is in good shape. The identity plot, conservation band and color-by-chromosome
+are all opt-in (`rowIdentityMode: 'none'`, `showConservation: false`,
+`colorByChromosome: false`), so none of them is what a default-configured track
+pays.
+
+Note the decimation trick does **not** transfer to the identity plot or the
+conservation band: those paint a mean, and a mean needs its whole sample. See
+the note in `binning.ts`.
 
 ## Measurements from the design pass
 
