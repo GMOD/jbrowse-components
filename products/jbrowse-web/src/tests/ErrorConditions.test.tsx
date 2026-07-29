@@ -4,7 +4,12 @@ import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json' with
 import brokenTrackConfig from '../../test_data/volvox/config_broken.json' with { type: 'json' }
 import brokenOpenConfig from '../../test_data/volvox/config_broken_open.json' with { type: 'json' }
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json' with { type: 'json' }
-import { createView, createViewNoWait, doBeforeEach, mockConsole } from './util.tsx'
+import {
+  createView,
+  createViewNoWait,
+  doBeforeEach,
+  mockConsole,
+} from './util.tsx'
 
 const delay = { timeout: 30000 }
 
