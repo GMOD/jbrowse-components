@@ -1,52 +1,32 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import type { TrackNodeSource } from './types.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-type SortKey = [
-  conf: AnyConfigurationModel,
-  name: string,
-  cat0: string,
-  cat1: string,
-  cat2: string,
-]
-
-export function sortConfs(
-  confs: AnyConfigurationModel[],
+// sortName rather than the display name, so the unnamed reference sequence
+// track sorts to the top (see trackNodeSourceFor)
+export function sortSources(
+  sources: TrackNodeSource[],
   sortNames: boolean,
   sortCategories: boolean,
 ) {
   if (!sortNames && !sortCategories) {
-    return confs
+    return sources
   }
-  // Pre-compute sort keys once to avoid O(n log n) readConfObject calls in comparator.
-  // uses readConfObject instead of getTrackName so that the undefined
-  // reference sequence track sorts to the top
-  const keyed: SortKey[] = confs.map(c => {
-    const category =
-      (readConfObject(c, 'category') as string[] | undefined) ?? []
-    return [
-      c,
-      String(readConfObject(c, 'name') ?? ''),
-      category[0] ?? '',
-      category[1] ?? '',
-      category[2] ?? '',
-    ]
-  })
+  const sorted = [...sources]
   if (sortNames) {
-    keyed.sort((a, b) => a[1].localeCompare(b[1]))
+    sorted.sort((a, b) => a.sortName.localeCompare(b.sortName))
   }
   if (sortCategories) {
-    // sort up to three sub-category levels, harder to code it to go deeper
-    // than this and likely rarely used
-    keyed.sort((a, b) => {
-      if (a[2] !== b[2]) {
-        return a[2].localeCompare(b[2])
+    // sort up to three sub-category levels, harder to code it to go deeper than
+    // this and likely rarely used. Runs after the name sort and relies on
+    // Array#sort being stable, so names stay ordered within a category
+    sorted.sort((a, b) => {
+      for (let i = 0; i < 3; i++) {
+        const d = (a.categories[i] ?? '').localeCompare(b.categories[i] ?? '')
+        if (d !== 0) {
+          return d
+        }
       }
-      if (a[3] !== b[3]) {
-        return a[3].localeCompare(b[3])
-      }
-      return a[4].localeCompare(b[4])
+      return 0
     })
   }
-  return keyed.map(([conf]) => conf)
+  return sorted
 }

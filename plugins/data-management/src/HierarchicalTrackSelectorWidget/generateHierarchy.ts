@@ -1,10 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 
-import type { MinimalModel, TreeNode } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MinimalModel, TrackNodeSource, TreeNode } from './types.ts'
 
 interface NodeWithChildren {
   children: TreeNode[]
@@ -12,13 +9,13 @@ interface NodeWithChildren {
 
 export function generateHierarchy({
   model,
-  trackConfs,
+  trackSources,
   extra,
   noCategories,
 }: {
   model: MinimalModel
   noCategories?: boolean
-  trackConfs: AnyConfigurationModel[]
+  trackSources: TrackNodeSource[]
   extra?: string
 }): TreeNode[] {
   const root: NodeWithChildren = { children: [] }
@@ -36,15 +33,14 @@ export function generateHierarchy({
 
   const categoryMaps = new Map<NodeWithChildren, Map<string, TreeNode>>()
 
-  // trackConfs arrives already sorted (see model.allTracks); filtering preserves
-  // that order, so no sort happens on the filterText path
-  for (const conf of trackConfs.filter(c => filteredTrackSet.has(c))) {
-    const isSessionTrack = sessionTrackIds.has(conf.trackId)
-    const baseCategories =
-      (readConfObject(conf, 'category') as string[] | undefined) ?? []
-    const categories = isSessionTrack
-      ? [' Session tracks', ...baseCategories]
-      : baseCategories
+  // trackSources arrive resolved and sorted (see model.allTracks), so nothing
+  // here reads a config or sorts; filtering preserves the order
+  for (const source of trackSources.filter(s => filteredTrackSet.has(s.conf))) {
+    const { conf, name, description } = source
+    const { trackId } = conf
+    const categories = sessionTrackIds.has(trackId)
+      ? [' Session tracks', ...source.categories]
+      : source.categories
 
     let currLevel: NodeWithChildren = root
     let nestingLevel = 0
@@ -82,11 +78,10 @@ export function generateHierarchy({
     // push order is fine — sortedChildren() in flattenedItems re-groups
     // tracks before categories during virtual-scroll flattening
     currLevel.children.push({
-      id: extra ? `${extra},${conf.trackId}` : conf.trackId,
-      trackId: conf.trackId,
-      name: getTrackName(conf, session),
-      description:
-        (readConfObject(conf, 'description') as string | undefined) ?? '',
+      id: extra ? `${extra},${trackId}` : trackId,
+      trackId,
+      name,
+      description,
       conf,
       children: [],
       nestingLevel: nestingLevel + 1,

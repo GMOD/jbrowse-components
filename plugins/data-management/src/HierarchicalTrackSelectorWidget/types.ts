@@ -31,6 +31,17 @@ export interface TreeCategoryNode {
 
 export type TreeNode = TreeTrackNode | TreeCategoryNode
 
+// a track config plus every slot the tree reads from it, resolved once in
+// model.allTracks so a filterText keystroke does no config reads
+export interface TrackNodeSource {
+  conf: AnyConfigurationModel
+  name: string
+  sortName: string
+  description: string
+  categories: string[]
+  searchText: string
+}
+
 export interface MinimalModel {
   filteredTrackSet: Set<AnyConfigurationModel>
 }

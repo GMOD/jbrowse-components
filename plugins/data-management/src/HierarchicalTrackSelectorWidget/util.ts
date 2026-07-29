@@ -1,7 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import type { TreeCategoryNode, TreeTrackNode } from './types.ts'
+import type {
+  TrackNodeSource,
+  TreeCategoryNode,
+  TreeTrackNode,
+} from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -21,17 +25,28 @@ export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
   return subset.every(x => s.has(x))
 }
 
-// The text a track's filter query matches against: its name and each of its
-// categories, newline-joined so a query can't span two of them (the filter is a
-// single-line text field). Built once per track into model.trackSearchText, so
-// typing costs one String.includes rather than re-reading configs.
-export function trackSearchTextFor(
+// Everything the tree needs from a track's config, read once into
+// model.allTracks instead of on every filterText keystroke. searchText is the
+// text a query matches against: the name and each category, newline-joined so a
+// query can't span two of them (the filter is a single-line field). sortName is
+// the raw name slot rather than getTrackName, so the unnamed reference sequence
+// track still sorts to the top.
+export function trackNodeSourceFor(
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
-) {
+): TrackNodeSource {
+  const name = getTrackName(conf, session)
   const categories =
     (readConfObject(conf, 'category') as string[] | undefined) ?? []
-  return [getTrackName(conf, session), ...categories].join('\n').toLowerCase()
+  return {
+    conf,
+    name,
+    sortName: String(readConfObject(conf, 'name') ?? ''),
+    description:
+      (readConfObject(conf, 'description') as string | undefined) ?? '',
+    categories,
+    searchText: [name, ...categories].join('\n').toLowerCase(),
+  }
 }
 
 interface Node {

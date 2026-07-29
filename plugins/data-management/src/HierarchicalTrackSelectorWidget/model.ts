@@ -13,12 +13,12 @@ import { autorun, observable } from 'mobx'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
-import { sortConfs } from './sortUtils.ts'
+import { sortSources } from './sortUtils.ts'
 import {
   findSubCategories,
   findTopLevelCategories,
   getAllTrackNodes,
-  trackSearchTextFor,
+  trackNodeSourceFor,
 } from './util.ts'
 
 import type { TreeNode, TreeTrackNode } from './types.ts'
@@ -538,52 +538,23 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * lowercased "name\ncategory..." per track, so filtering costs one
-       * String.includes per track instead of re-reading every name/category
-       * config on each keystroke
-       */
-      get trackSearchText() {
-        const session = getSession(self)
-        return new Map(
-          this.allTrackConfigurations.map(
-            t => [t, trackSearchTextFor(t, session)] as const,
-          ),
-        )
-      },
-
-      /**
-       * #getter
-       * tracks matching filterText. An empty query matches everything, since
-       * ''.includes is always true, so there is no unfiltered special case
-       */
-      get filteredTrackSet() {
-        const query = self.filterText.trim().toLowerCase()
-        const result = new Set<AnyConfigurationModel>()
-        for (const [conf, text] of this.trackSearchText) {
-          if (text.includes(query)) {
-            result.add(conf)
-          }
-        }
-        return result
-      },
-
-      /**
-       * #getter
        * one group per connection *config* (not just live instances), so a
        * connection shows in the tree before it's loaded; expanding it hydrates
        * the connection (see toggleCategory). Tracks are empty until then.
        *
-       * Sorting happens here, not in generateHierarchy, so that a filterText
-       * keystroke doesn't re-sort every track: filtering preserves order
+       * Each track is resolved to a TrackNodeSource and sorted here rather than
+       * in generateHierarchy, so a filterText keystroke reads no configs and
+       * re-sorts nothing (filtering preserves order)
        */
       get allTracks() {
-        const { connectionInstances = [], connections } = getSession(self)
+        const session = getSession(self)
+        const { connectionInstances = [], connections } = session
         const liveByConnectionId = new Map(
           connectionInstances.map(c => [c.connectionId, c]),
         )
-        const sort = (tracks: AnyConfigurationModel[]) =>
-          sortConfs(
-            tracks,
+        const resolve = (tracks: AnyConfigurationModel[]) =>
+          sortSources(
+            tracks.map(t => trackNodeSourceFor(t, session)),
             this.activeSortTrackNames,
             this.activeSortCategories,
           )
@@ -591,7 +562,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           {
             group: 'Tracks',
             id: 'Tracks',
-            tracks: sort(this.configAndSessionTrackConfigurations),
+            tracks: resolve(this.configAndSessionTrackConfigurations),
             noCategories: false,
             defaultCollapsed: false,
             loading: false,
@@ -601,7 +572,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             return {
               group: readConfObject(conf, 'name') as string,
               id: connectionCategoryId(conf.connectionId),
-              tracks: live ? sort(filterTracks(live.tracks, self)) : [],
+              tracks: live ? resolve(filterTracks(live.tracks, self)) : [],
               noCategories: false,
               // dormant connections collapse by default so expanding loads them;
               // a loaded one shows its tracks
@@ -616,6 +587,24 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * tracks matching filterText. An empty query matches everything, since
+       * ''.includes is always true, so there is no unfiltered special case
+       */
+      get filteredTrackSet() {
+        const query = self.filterText.trim().toLowerCase()
+        const result = new Set<AnyConfigurationModel>()
+        for (const group of this.allTracks) {
+          for (const source of group.tracks) {
+            if (source.searchText.includes(query)) {
+              result.add(source.conf)
+            }
+          }
+        }
+        return result
+      },
+
+      /**
+       * #getter
        * map restricted to tracks the current view can display; derived from
        * allTracks so connection tracks go through exactly one filterTracks()
        * pass, shared with the tree, and favorites / recently-used can't surface
@@ -623,7 +612,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get displayableTrackConfigurationMap() {
         return new Map(
-          this.allTracks.flatMap(g => g.tracks).map(t => [t.trackId, t]),
+          this.allTracks
+            .flatMap(g => g.tracks)
+            .map(s => [s.conf.trackId, s.conf]),
         )
       },
     }))
@@ -666,7 +657,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             loading: s.loading,
             children: generateHierarchy({
               model: self,
-              trackConfs: s.tracks,
+              trackSources: s.tracks,
               extra: s.id,
               noCategories: s.noCategories,
             }),
@@ -767,7 +758,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get hasAnySubcategories() {
         return self.allTracks.some(group =>
-          group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
+          group.tracks.some(t => t.categories.length > 1),
         )
       },
     }))
