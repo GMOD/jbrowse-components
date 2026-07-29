@@ -1,4 +1,5 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
+import { resolveMenus } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -122,7 +123,7 @@ test('throws if session snapshot is invalid', () => {
 
 test('adds menus', () => {
   const root = getRootModel().create(mainThreadConfig)
-  expect(root.menus()).toMatchSnapshot()
+  expect(resolveMenus(root.menus())).toMatchSnapshot()
   root.appendMenu('Third Menu')
   root.insertMenu('Second Menu', -1)
   root.appendToMenu('Second Menu', {
@@ -149,5 +150,5 @@ test('adds menus', () => {
     },
     -1,
   )
-  expect(root.menus()).toMatchSnapshot()
+  expect(resolveMenus(root.menus())).toMatchSnapshot()
 })

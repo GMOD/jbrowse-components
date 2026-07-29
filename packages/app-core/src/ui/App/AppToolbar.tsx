@@ -74,13 +74,7 @@ const AppToolbar = observer(function AppToolbar({
         <DropDownMenu
           key={menu.label}
           menuTitle={menu.label}
-          menuItems={() => {
-            const items =
-              typeof menu.menuItems === 'function'
-                ? menu.menuItems()
-                : menu.menuItems
-            return wrapMenuItems(items, session)
-          }}
+          menuItems={() => wrapMenuItems(menu.menuItems(), session)}
         />
       ))}
       <div className={classes.grow} />

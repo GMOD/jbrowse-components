@@ -37,7 +37,7 @@ import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
 import { buildSessionListSubmenu } from './sessionMenus.ts'
 
 import type { Session, SessionDB, SessionMetadata } from '../types.ts'
-import type { Menu } from '@jbrowse/app-core'
+import type { MenuDefinition } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -297,7 +297,7 @@ export default function RootModel({
           'preConfiguredSessions',
         ) as { name: string; [key: string]: unknown }[] | undefined
 
-        const ret: Menu[] = [
+        const ret: MenuDefinition[] = [
           {
             label: 'File',
             menuItems: () => {

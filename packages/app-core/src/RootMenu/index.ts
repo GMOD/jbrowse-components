@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { Menu, MenuAction } from '../menus.ts'
+import type { MenuAction, MenuDefinition } from '../menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 /**
@@ -21,7 +21,7 @@ export function RootAppMenuMixin() {
         /**
          * #action
          */
-        setMenus(newMenus: Menu[]) {
+        setMenus(newMenus: MenuDefinition[]) {
           pushAction({ type: 'setMenus', newMenus })
         },
         /**

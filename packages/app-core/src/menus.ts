@@ -1,4 +1,4 @@
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem, MenuItemsGetter } from '@jbrowse/core/ui'
 
 interface InsertInSubMenuAction {
   type: 'insertInSubMenu'
@@ -33,27 +33,54 @@ interface InsertMenuAction {
 }
 interface SetMenusAction {
   type: 'setMenus'
-  newMenus: Menu[]
+  newMenus: MenuDefinition[]
 }
 
-export type MenuAction =
-  | InsertMenuAction
-  | AppendMenuAction
-  | AppendToSubMenuAction
+// contributions that change which menus exist, so they have to resolve eagerly
+// — the app bar renders one button per menu before anything is opened
+type StructureAction = AppendMenuAction | InsertMenuAction | SetMenusAction
+
+// contributions that only change a menu's contents, so they resolve when that
+// menu opens, against whatever its items are at that moment
+type ItemAction =
   | AppendToMenuAction
+  | AppendToSubMenuAction
   | InsertInMenuAction
   | InsertInSubMenuAction
-  | SetMenusAction
 
-export interface Menu {
+export type MenuAction = StructureAction | ItemAction
+
+/**
+ * A menu as a root model authors it. Items may be a plain array, or a thunk for
+ * a menu whose contents depend on state that would otherwise be read — and so
+ * tracked — every time the app bar renders.
+ */
+export interface MenuDefinition {
   label: string
-  // array form, or a thunk for menus whose items are computed fresh each time
-  // they open (e.g. a "recent sessions" list)
-  menuItems: MenuItem[] | (() => MenuItem[])
+  menuItems: MenuItemsGetter
 }
 
-// recursively copy the array spine so later splice/push helpers never mutate
-// the caller's array; leaf items (with their onClick/icon) are shared by ref
+/**
+ * A menu as the app bar consumes it. Always a thunk: a menu's items are
+ * produced when it opens and never before, so no consumer has to care which
+ * form the root model authored, and a plugin's contributions are merged in at
+ * that point rather than spliced into the definition.
+ */
+export interface Menu {
+  label: string
+  menuItems: () => MenuItem[]
+}
+
+// a menu whose contributions have been collected but not yet applied
+interface PendingMenu {
+  label: string
+  base: MenuItemsGetter
+  itemActions: ItemAction[]
+}
+
+// recursively copy the array spine so the item helpers never mutate a root
+// model's own literal or a thunk's internals; leaf items (with their
+// onClick/icon) are shared by ref
 function cloneMenuItems(items: MenuItem[]): MenuItem[] {
   return items.map(item =>
     'subMenu' in item
@@ -62,257 +89,156 @@ function cloneMenuItems(items: MenuItem[]): MenuItem[] {
   )
 }
 
-// An array-form menu is mutated in place. A thunk-form menu recomputes its
-// items every time it opens, so there is nothing to splice into now: compose
-// the mutation into a new thunk that applies it to each fresh result.
-function mutateMenuItems(menu: Menu, mutate: (items: MenuItem[]) => void) {
-  const { menuItems } = menu
-  if (typeof menuItems === 'function') {
-    menu.menuItems = () => {
-      const items = cloneMenuItems(menuItems())
-      mutate(items)
-      return items
-    }
-  } else {
-    mutate(menuItems)
-  }
+function materialize(menuItems: MenuItemsGetter) {
+  return typeof menuItems === 'function' ? menuItems() : menuItems
+}
+
+function insertAt(items: MenuItem[], menuItem: MenuItem, position: number) {
+  items.splice(position < 0 ? items.length + position : position, 0, menuItem)
 }
 
 /**
- * #action
- * Add a top-level menu
- *
- * @param menuName - Name of the menu to insert.
- *
- * @returns The new length of the top-level menus array
+ * Walk `menuPath` past its first segment (the top-level menu, already
+ * resolved), creating empty sub-menus as needed, and return the deepest
+ * sub-menu's item array. Throws if a path segment exists but is not a sub-menu.
  */
-export function appendMenu({
-  menus,
-  menuName,
-}: {
-  menus: Menu[]
-  menuName: string
-}) {
-  return menus.push({ label: menuName, menuItems: [] })
-}
-/**
- * #action
- * Insert a top-level menu
- *
- * @param menuName - Name of the menu to insert.
- *
- * @param position - Position to insert menu. If negative, counts from th
- * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
- * second-to-last one.
- *
- * @returns The new length of the top-level menus array
- */
-export function insertMenu({
-  menus,
-  menuName,
-  position,
-}: {
-  menus: Menu[]
-  menuName: string
-  position: number
-}) {
-  const insertPosition = position < 0 ? menus.length + position : position
-  menus.splice(insertPosition, 0, { label: menuName, menuItems: [] })
-  return menus.length
-}
-/**
- * #action
- * Add a menu item to a top-level menu
- *
- * @param menuName - Name of the top-level menu to append to.
- *
- * @param menuItem - Menu item to append.
- */
-export function appendToMenu({
-  menus,
-  menuName,
-  menuItem,
-}: {
-  menus: Menu[]
-  menuName: string
-  menuItem: MenuItem
-}) {
-  const menu = menus.find(m => m.label === menuName)
-  if (menu) {
-    mutateMenuItems(menu, items => {
-      items.push(menuItem)
-    })
-  } else {
-    menus.push({ label: menuName, menuItems: [menuItem] })
-  }
-}
-/**
- * #action
- * Insert a menu item into a top-level menu
- *
- * @param menuName - Name of the top-level menu to insert into
- *
- * @param menuItem - Menu item to insert
- *
- * @param position - Position to insert menu item. If negative, counts
- * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
- * the second-to-last one. Note: a menu item with a `priority` set is
- * re-sorted at render time, which overrides this position.
- */
-export function insertInMenu({
-  menus,
-  menuName,
-  menuItem,
-  position,
-}: {
-  menus: Menu[]
-  menuName: string
-  menuItem: MenuItem
-  position: number
-}) {
-  const menu = menus.find(m => m.label === menuName)
-  if (menu) {
-    mutateMenuItems(menu, items => {
-      items.splice(
-        position < 0 ? items.length + position : position,
-        0,
-        menuItem,
+function resolveSubMenu(items: MenuItem[], menuPath: string[]) {
+  let subMenu = items
+  const pathSoFar = [menuPath[0]]
+  for (const menuName of menuPath.slice(1)) {
+    pathSoFar.push(menuName)
+    let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
+    if (!sm) {
+      const idx = subMenu.push({ label: menuName, subMenu: [] })
+      sm = subMenu[idx - 1]!
+    }
+    if (!('subMenu' in sm)) {
+      throw new Error(
+        `"${menuName}" in path "${pathSoFar.join(' > ')}" is not a subMenu`,
       )
-    })
-  } else {
-    menus.push({ label: menuName, menuItems: [menuItem] })
-  }
-}
-/**
- * Find-or-create the top-level menu named by `menuPath[0]`, then walk the
- * remaining path segments (creating empty sub-menus as needed) and apply
- * `mutate` to the deepest sub-menu's item array. Throws if a path segment
- * exists but is not a sub-menu.
- */
-function mutateSubMenuItems(
-  menus: Menu[],
-  menuPath: string[],
-  mutate: (items: MenuItem[]) => void,
-) {
-  let topMenu = menus.find(m => m.label === menuPath[0])
-  if (!topMenu) {
-    const idx = appendMenu({ menus, menuName: menuPath[0]! })
-    topMenu = menus[idx - 1]!
-  }
-  mutateMenuItems(topMenu, items => {
-    let subMenu = items
-    const pathSoFar = [menuPath[0]]
-    for (const menuName of menuPath.slice(1)) {
-      pathSoFar.push(menuName)
-      let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-      if (!sm) {
-        const idx = subMenu.push({ label: menuName, subMenu: [] })
-        sm = subMenu[idx - 1]!
-      }
-      if (!('subMenu' in sm)) {
-        throw new Error(
-          `"${menuName}" in path "${pathSoFar.join(' > ')}" is not a subMenu`,
-        )
-      }
-      subMenu = sm.subMenu
     }
-    mutate(subMenu)
-  })
-}
-/**
- * #action
- * Add a menu item to a sub-menu
- *
- * @param menuPath - Path to the sub-menu to add to, starting with the
- * top-level menu (e.g. `['File', 'Insert']`).
- *
- * @param menuItem - Menu item to append.
- */
-export function appendToSubMenu({
-  menus,
-  menuPath,
-  menuItem,
-}: {
-  menus: Menu[]
-  menuPath: string[]
-  menuItem: MenuItem
-}) {
-  mutateSubMenuItems(menus, menuPath, items => {
-    items.push(menuItem)
-  })
-}
-/**
- * #action
- * Insert a menu item into a sub-menu
- *
- * @param menuPath - Path to the sub-menu to add to, starting with the
- * top-level menu (e.g. `['File', 'Insert']`).
- *
- * @param menuItem - Menu item to insert.
- *
- * @param position - Position to insert menu item. If negative, counts
- * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
- * the second-to-last one.
- */
-export function insertInSubMenu({
-  menus,
-  menuPath,
-  menuItem,
-  position,
-}: {
-  menus: Menu[]
-  menuPath: string[]
-  menuItem: MenuItem
-  position: number
-}) {
-  mutateSubMenuItems(menus, menuPath, items => {
-    items.splice(position < 0 ? items.length + position : position, 0, menuItem)
-  })
+    subMenu = sm.subMenu
+  }
+  return subMenu
 }
 
-export function processMutableMenuActions(ret: Menu[], actions: MenuAction[]) {
+function applyItemActions(items: MenuItem[], actions: ItemAction[]) {
   for (const action of actions) {
     switch (action.type) {
-      case 'setMenus': {
-        // clone, otherwise subsequent mutating actions splice into the stored
-        // action's array and accumulate across every menus() re-render
-        ret = action.newMenus.map(m => ({
-          ...m,
-          menuItems:
-            typeof m.menuItems === 'function'
-              ? m.menuItems
-              : cloneMenuItems(m.menuItems),
-        }))
-        break
-      }
-      case 'appendMenu': {
-        appendMenu({ menus: ret, ...action })
-        break
-      }
-      case 'insertMenu': {
-        insertMenu({ menus: ret, ...action })
-        break
-      }
-      case 'insertInSubMenu': {
-        insertInSubMenu({ menus: ret, ...action })
-        break
-      }
-      case 'appendToSubMenu': {
-        appendToSubMenu({ menus: ret, ...action })
-        break
-      }
       case 'appendToMenu': {
-        appendToMenu({ menus: ret, ...action })
+        items.push(action.menuItem)
         break
       }
       case 'insertInMenu': {
-        insertInMenu({ menus: ret, ...action })
+        insertAt(items, action.menuItem, action.position)
+        break
+      }
+      case 'appendToSubMenu': {
+        resolveSubMenu(items, action.menuPath).push(action.menuItem)
+        break
+      }
+      case 'insertInSubMenu': {
+        insertAt(
+          resolveSubMenu(items, action.menuPath),
+          action.menuItem,
+          action.position,
+        )
         break
       }
       default: {
-        return action satisfies never
+        action satisfies never
       }
     }
   }
-  return ret
+  return items
+}
+
+// first menu with this label, or a new empty one — an item action naming a menu
+// that doesn't exist creates it, so a plugin can populate its own menu without
+// declaring it first
+function findOrCreateMenu(pending: PendingMenu[], label: string) {
+  const found = pending.find(m => m.label === label)
+  if (found) {
+    return found
+  }
+  const menu: PendingMenu = { label, base: [], itemActions: [] }
+  pending.push(menu)
+  return menu
+}
+
+function toMenu({ label, base, itemActions }: PendingMenu): Menu {
+  return {
+    label,
+    menuItems: itemActions.length
+      ? () => applyItemActions(cloneMenuItems(materialize(base)), itemActions)
+      : () => materialize(base),
+  }
+}
+
+/**
+ * Resolve a root model's menu definitions against the contributions plugins
+ * have pushed (via `RootAppMenuMixin`). Structural contributions apply now;
+ * item contributions are recorded against their target menu and applied when
+ * that menu opens, so a menu that computes its items lazily stays lazy and
+ * nothing is ever spliced into a definition.
+ *
+ * Runs on every `menus()` evaluation, so it must not mutate `base` or anything
+ * an action carries.
+ */
+export function processMutableMenuActions(
+  base: MenuDefinition[],
+  actions: MenuAction[],
+): Menu[] {
+  const toPending = (m: MenuDefinition): PendingMenu => ({
+    label: m.label,
+    base: m.menuItems,
+    itemActions: [],
+  })
+  let pending = base.map(toPending)
+  for (const action of actions) {
+    switch (action.type) {
+      case 'setMenus': {
+        // replaces the menu bar wholesale, so item contributions made before it
+        // are dropped along with the menus they targeted
+        pending = action.newMenus.map(toPending)
+        break
+      }
+      case 'appendMenu': {
+        pending.push({ label: action.menuName, base: [], itemActions: [] })
+        break
+      }
+      case 'insertMenu': {
+        const { position } = action
+        pending.splice(position < 0 ? pending.length + position : position, 0, {
+          label: action.menuName,
+          base: [],
+          itemActions: [],
+        })
+        break
+      }
+      case 'appendToMenu':
+      case 'insertInMenu': {
+        findOrCreateMenu(pending, action.menuName).itemActions.push(action)
+        break
+      }
+      case 'appendToSubMenu':
+      case 'insertInSubMenu': {
+        findOrCreateMenu(pending, action.menuPath[0]!).itemActions.push(action)
+        break
+      }
+      default: {
+        action satisfies never
+      }
+    }
+  }
+  return pending.map(m => toMenu(m))
+}
+
+/**
+ * Flatten resolved menus to plain data by opening every one of them. For tests
+ * and other callers that want to assert on menu contents rather than render
+ * them.
+ */
+export function resolveMenus(menus: Menu[]) {
+  return menus.map(m => ({ label: m.label, menuItems: m.menuItems() }))
 }

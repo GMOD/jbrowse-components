@@ -23,13 +23,5 @@ export type {
   TrackInit,
   ViewSpec,
 } from './SessionSpec/index.ts'
-export {
-  appendMenu,
-  appendToMenu,
-  appendToSubMenu,
-  insertInMenu,
-  insertInSubMenu,
-  insertMenu,
-  processMutableMenuActions,
-} from './menus.ts'
-export type { Menu, MenuAction } from './menus.ts'
+export { processMutableMenuActions, resolveMenus } from './menus.ts'
+export type { Menu, MenuAction, MenuDefinition } from './menus.ts'
