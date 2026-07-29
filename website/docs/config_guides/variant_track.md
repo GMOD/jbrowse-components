@@ -250,7 +250,7 @@ skips the coloring.
 JBrowse renders a triangular heatmap of pairwise r² (or D') between variants,
 from either of two sources.
 
-<Figure src="/img/ld/lct_lactase.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes. Red means a pair of SNPs is almost always inherited together; the solid block over the highlighted gene is one long haplotype, with LD decaying into the lighter flanks."/>
+<Figure src="/img/ld/lct_lactase.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes. Red means a pair of SNPs is almost always inherited together; the solid block over the highlighted gene is one long haplotype, with LD decaying into the lighter flanks. Point an LD track at a single population panel: r² is a correlation across the samples in the file, so a pooled multi-population callset averages the block away."/>
 
 **Computed from a VCF.** Add an `LDDisplay` to a normal `VariantTrack`. No extra
 files are needed, and because the raw genotypes are present, the filtering

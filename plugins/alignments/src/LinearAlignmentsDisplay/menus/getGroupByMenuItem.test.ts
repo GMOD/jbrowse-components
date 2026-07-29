@@ -36,7 +36,7 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
     'Strand',
     'First-of-pair strand',
     'Pair orientation',
-    'Supplementary',
+    'Split read (SA tag)',
     'Mapping quality',
     'Tag...',
   ])
@@ -45,7 +45,13 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
 test('chain mode offers only the chain-consistent dimensions', () => {
   expect(
     radios(makeModel({ isChainMode: true }).model).map(i => i.label),
-  ).toEqual(['None', 'First-of-pair strand', 'Pair orientation', 'Tag...'])
+  ).toEqual([
+    'None',
+    'First-of-pair strand',
+    'Pair orientation',
+    'Split read (SA tag)',
+    'Tag...',
+  ])
 })
 
 test('ungrouped checks None', () => {
@@ -67,9 +73,9 @@ test('the active dimension is the only one checked', () => {
 test('picking a per-read dimension sets it; picking None ungroups', () => {
   const { model, setGroupBy } = makeModel({ type: 'strand' })
   radios(model)
-    .find(i => i.label === 'Supplementary')!
+    .find(i => i.label === 'Split read (SA tag)')!
     .onClick()
-  expect(setGroupBy).toHaveBeenCalledWith({ type: 'supplementary' })
+  expect(setGroupBy).toHaveBeenCalledWith({ type: 'splitRead' })
 
   radios(model)
     .find(i => i.label === 'None')!

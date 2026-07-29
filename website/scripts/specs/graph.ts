@@ -1182,35 +1182,24 @@ export const graphSpecs: ScreenshotSpec[] = [
   },
   // The correspondence, which is the reason to open the two views together:
   // hovering a node in the graph highlights the reference interval it occupies
-  // in every linear view connected to it, and hovering the linear view
-  // highlights the node.
+  // in every linear view connected to it.
   //
-  // One figure, both directions, because separately they were two nearly
-  // identical pictures of the same window making the same point, and the point
-  // is the reciprocity: the pair says the two views agree whichever end you
-  // touch, which neither frame says alone. They also drew the same review note
-  // twice ("hard to figure out correspondence between linear and graph").
+  // ONE FRAME, ONE DIRECTION. This was a two-stage stack carrying both
+  // directions, and it drew "it is hard to tell what is going on in this
+  // screenshot, please make it a single panel" — four panels of the same window
+  // is too much to hold at once, and the reverse direction was the weaker half
+  // anyway: hovering a gene brightens a backbone segment that already spans the
+  // frame, so the picture barely changes and the reader is left comparing two
+  // near-identical graphs. Graph to linear ends in a band drawn from real
+  // coordinates (`getHighlightCoords`), which is a visible thing appearing in a
+  // place it wasn't. The reverse direction stays in the guide's prose, where it
+  // costs a sentence.
   //
-  // The directions run through different code, which is why both are worth
-  // capturing. Graph to linear ends in a band drawn from real coordinates
-  // (`getHighlightCoords`); linear to graph goes the other way — an LGV
-  // publishes `{hoverPosition, hoverFeature}` to session.hovered and the graph's
-  // own autorun matches it (hoverSync/lgvHover). Both frames assert the same
-  // `graph-node-highlight` testid, which is what makes this a round trip rather
-  // than a screenshot of a tooltip.
-  //
-  // Frame two hovers a GENE rather than the graph's own segments track on
-  // purpose. A segment feature matches by name, the easy path; a gene supplies
-  // only a coordinate, so it exercises the fallback that finds the backbone
-  // segment covering it — the case that makes the correspondence useful from any
-  // track rather than only from the graph's own.
-  //
-  // A hover figure has no cursor in it, so each frame rings its own target:
-  // without that the reader sees a band appear with nothing saying what caused
-  // it. Frame one's ring is drawn at the same coordinate the hover uses (the
-  // graph is canvas, so there is no element to anchor to — the one case where a
-  // raw x/y is the input being echoed rather than a hand-measurement); frame
-  // two's is anchored to the gene label the hover targets.
+  // A hover figure has no cursor in it, so the frame rings its target: without
+  // that the reader sees a band appear with nothing saying what caused it. The
+  // ring is drawn at the same coordinate the hover uses (the graph is canvas, so
+  // there is no element to anchor to — the one case where a raw x/y is the input
+  // being echoed rather than a hand-measurement).
   {
     mode: 'url',
     name: 'pangenome/rgfa_hover_sync',
@@ -1225,47 +1214,31 @@ export const graphSpecs: ScreenshotSpec[] = [
     // the graph pane sizes itself to its drawing, so this is the two views and
     // nothing under them
     viewportHeight: 745,
-    stages: [
+    // The graph's own hover tooltip stays: it names the node and gives the
+    // coordinates on the assembly that contributed it, which is the other half
+    // of the correspondence the band shows. It is pinned bottom-left of the
+    // graph pane (inline style, no selector to hide it by) and so overlaps the
+    // last row's label — a plugin fix, noted in screenshot-review-plan.md.
+    // spec.hideTooltip does not reach it; that only hides core's BaseTooltip.
+    // The hover target is a bare viewport coordinate because the graph is
+    // canvas. It is stable here in a way it would not be on the FMMM layout —
+    // sample rows is deterministic, computed from SN/SO/SR, so the allele sits
+    // at the same place every run.
+    actions: [
+      { type: 'delay', ms: 3000 },
+      { type: 'hover', from: HOVERED_ALLELE },
       {
-        // The hover target is a bare viewport coordinate because the graph is
-        // canvas. It is stable here in a way it would not be on the FMMM layout
-        // — sample rows is deterministic, computed from SN/SO/SR, so the allele
-        // sits at the same place every run.
-        actions: [
-          { type: 'delay', ms: 3000 },
-          { type: 'hover', from: HOVERED_ALLELE },
-          {
-            type: 'waitForSelector',
-            selector: '[data-testid="graph-node-highlight"]',
-          },
-          { type: 'delay', ms: 1000 },
-        ],
-        annotations: [
-          {
-            type: 'circle',
-            x: HOVERED_ALLELE.x,
-            y: HOVERED_ALLELE.y,
-            radius: 18,
-          },
-        ],
+        type: 'waitForSelector',
+        selector: '[data-testid="graph-node-highlight"]',
       },
+      { type: 'delay', ms: 1000 },
+    ],
+    annotations: [
       {
-        actions: [
-          // by the gene's own rendered label, so nothing here is a viewport
-          // coordinate measured off a previous capture
-          { type: 'hover', selector: '[data-testid="feature-name-csgG"]' },
-          {
-            type: 'waitForSelector',
-            selector: '[data-testid="graph-node-highlight"]',
-          },
-          { type: 'delay', ms: 1000 },
-        ],
-        annotations: [
-          {
-            type: 'circle',
-            anchor: { selector: '[data-testid="feature-name-csgG"]' },
-          },
-        ],
+        type: 'circle',
+        x: HOVERED_ALLELE.x,
+        y: HOVERED_ALLELE.y,
+        radius: 18,
       },
     ],
   },

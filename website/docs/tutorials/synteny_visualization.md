@@ -109,9 +109,7 @@ attribute** from the track menu and enter `gene`: every distinct value of that
 attribute gets its own deterministic color, so an ortholog carries one color
 down all three panels and a gene's synteny becomes legible by color alone.
 Features with no such attribute fall back to a single color, which is what the
-locus-tag-only genes below share.
-
-<Figure caption="The same three-strain stack with every gene track colored by the gene attribute. Named orthologs (prfB, fliR, cbf2, efp, pseI, lysS) hold one color across all three strains; genes with only a locus tag have no gene symbol and take the fallback color." src="/img/sv_synteny/linear_synteny_ortholog_colors.png" />
+locus-tag-only genes share.
 
 ## Using PIF for large genomes
 
@@ -138,7 +136,8 @@ One script builds everything above,
 [`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh):
 
 ```bash
-bash scripts/build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hpylori_synteny.sh
+bash build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
 

@@ -46,38 +46,6 @@ const paintingSortPanel = () =>
   })
 
 export const qtlSpecs: ScreenshotSpec[] = [
-  // Whole-chr4 overview: the coat-color QTL Manhattan peaks over Tyrp1 (~80Mb)
-  // above the 198-strain BXD chromosome painting, showing how a phenotype scan
-  // and the underlying recombinant-inbred haplotype mosaic line up.
-  {
-    mode: 'url',
-    name: 'qtl/bxd_overview',
-    url: lgvSession('test_data/config_bxd.json', {
-      assembly: 'mm10',
-      loc: 'chr4',
-      tracks: [
-        {
-          trackId: 'bxd_gwas_coatcolor_mm10',
-          type: 'LinearManhattanDisplay',
-          height: 220,
-        },
-        {
-          trackId: 'bxd_chromosome_painting_mm10',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 500,
-          sortRowsBy: TYRP1_PEAK,
-          forceLoad: true,
-        },
-      ],
-    }),
-    readySelector: '[data-testid="manhattan-display-done"]',
-    readyTimeout: 90000,
-    // tall enough that the full 500px painting track clears the bottom crop
-    // (198 strain rows) instead of running off the frame
-    viewportHeight: 980,
-    settleMs: 16000,
-  },
-
   // Whole chr4 with the Tyrp1 gene position marked. The association is a broad
   // plateau (RI-panel LD extends for many Mb), so the gene sits under the
   // *region*, not a razor apex — the figure's real payload is the gene position

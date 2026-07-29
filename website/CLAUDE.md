@@ -70,6 +70,18 @@ Pass `--force` to rewrite every PNG regardless. A code change still needs a
 `pnpm build` in `products/jbrowse-web` first (the generator renders the built
 bundle, not source).
 
+**The difference is eroded a pixel before it is measured, so a Chrome update
+doesn't read as a changed figure.** Chrome self-updates under the generator
+(`findChromeExecutable` prefers the system browser), and a browser update shifts
+glyph metrics fractionally, repainting the antialiased outline of every
+character in the capture. That measured 0.505-0.545% on six figures over the
+25.3 → 25.4 puppeteer bump — straddling the 0.5% gate, so which ones got
+rewritten was a coin flip and every rewrite was invisible. Glyph fringes are one
+pixel wide and disappear under an erode; a moved element, a recolor or a
+different menu item is a solid region that survives one. The same six drop to
+0.11-0.18% eroded, against 3.8% for a figure whose menu contents really changed.
+This is why no spec needs to "lower the per-pixel sensitivity" for itself.
+
 **A spec's own raised `diffThreshold` will keep a change you meant to make.** A
 spec that sets `diffThreshold: 0.1` to absorb FMMM/remote-data jitter raises the
 bar for real edits too: recoloring one track moves single-digit percentages of

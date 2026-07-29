@@ -67,10 +67,24 @@ function pairOrientationKey(feature: Feature): GroupKey {
     : { key: '', label: 'No orientation' }
 }
 
-function supplementaryKey(feature: Feature): GroupKey {
-  return getFlags(feature) & SAM_FLAG_SUPPLEMENTARY
-    ? { key: 'supplementary', label: 'Supplementary' }
-    : { key: 'primary', label: 'Primary' }
+const SPLIT_GROUP: GroupKey = { key: 'split', label: 'Split (SA)' }
+const UNSPLIT_GROUP: GroupKey = { key: 'unsplit', label: 'Not split' }
+
+function hasSplitAlignment(feature: Feature) {
+  return extractFeatureTagValue(feature, 'SA') !== ''
+}
+
+// Whether the read is part of a split alignment, which is what SA records: the
+// aligner writes it on every segment of the split, the primary included. So the
+// two sections are "reads that cross a breakpoint" and "reads that don't", which
+// at an SV locus is the evidence and the background.
+//
+// This replaced a grouping on the SUPPLEMENTARY flag, which looks similar and
+// isn't: the flag marks the pieces after the first, so a split read's own first
+// piece filed with the reads that never split at all, and the sections cut
+// through the evidence instead of around it.
+function splitReadKey(feature: Feature): GroupKey {
+  return hasSplitAlignment(feature) ? SPLIT_GROUP : UNSPLIT_GROUP
 }
 
 // Synteny features (PAF/all-vs-all) carry a `mate` referencing the other side's
@@ -255,10 +269,11 @@ function chainRepresentative(chain: Feature[]): Feature {
 
 export interface GroupByDimension {
   type: GroupByType
-  // True iff every read of a chain yields the same key for this dimension, so
-  // chain-aware partitioning keeps a chain whole — including across separate
-  // per-region worker calls. Per-read dimensions split chains and are excluded
-  // from chain (linked-reads) mode.
+  // True iff chain mode can honor this dimension, which means one chain resolves
+  // to one key — either because every read of the chain yields the same one, or
+  // because the dimension supplies `chainKey` below. Dimensions that would split
+  // a chain across sections (breaking its connecting lines) are false, and are
+  // both dropped from the menu and degraded to ungrouped by the worker.
   chainConsistent: boolean
   // True for dimensions that don't apply to ordinary alignment reads and so are
   // not offered in the general "Group by..." radios; a display that supports them
@@ -269,6 +284,11 @@ export interface GroupByDimension {
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it
   // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
   key: (feature: Feature, groupBy: GroupBy) => GroupKey
+  // Key for a whole chain, for a dimension whose per-read key is a property of
+  // the chain rather than of the read. Without it `partitionChains` keys off the
+  // chain's representative read, which answers "is the primary read1 like this",
+  // not "is any read of this fragment".
+  chainKey?: (chain: Feature[], groupBy: GroupBy) => GroupKey
 }
 
 // The single registry of group-by dimensions. Typed as a Record keyed by
@@ -300,10 +320,17 @@ export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
     chainConsistent: true,
     key: pairOrientationKey,
   },
-  supplementary: {
-    type: 'supplementary',
-    chainConsistent: false,
-    key: supplementaryKey,
+  // Chain mode is where this dimension earns its keep — long-read SV viewing is
+  // linked reads plus split-read evidence — so it defines the chain's key rather
+  // than being dropped there. A chain is keyed by read name and so holds both
+  // mates, and one mate can be split where the other is not; the fragment has
+  // split evidence if either does, which the representative read cannot answer.
+  splitRead: {
+    type: 'splitRead',
+    chainConsistent: true,
+    key: splitReadKey,
+    chainKey: chain =>
+      chain.some(hasSplitAlignment) ? SPLIT_GROUP : UNSPLIT_GROUP,
   },
   mapq: {
     type: 'mapq',
@@ -361,10 +388,12 @@ export function partitionChains(
   for (const feature of features) {
     getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
   }
-  const { key } = GROUP_BY_DIMENSIONS[groupBy.type]
+  const { key, chainKey } = GROUP_BY_DIMENSIONS[groupBy.type]
   const groups = new Map<string, FeatureGroup>()
   for (const chain of chains.values()) {
-    const groupKey = key(chainRepresentative(chain), groupBy)
+    const groupKey = chainKey
+      ? chainKey(chain, groupBy)
+      : key(chainRepresentative(chain), groupBy)
     for (const feature of chain) {
       appendFeature(groups, feature, groupKey)
     }

@@ -540,20 +540,13 @@ export const HG38_470WAY_30 = [
 // each adjacent pair and a gene annotation track on each genome, used by the
 // synteny_visualization.md tutorial.
 //
-// `geneColor` (optional) is a color slot applied to every gene track's canvas
-// display — pass a `jexl:randomColor(...)` expression to palettize genes by an
-// attribute. Because randomColor hashes deterministically, the same attribute
-// value gets the same hue in all three panels, so a shared key like the gene
-// symbol (Name, effectively the ortholog id in bacteria) makes orthologous
-// genes light up the same color across strains with no cross-track state.
-export function hpyloriSyntenyWithGenes(geneColor?: string) {
+export function hpyloriSyntenyWithGenes() {
   // showOnlyGenes collapses each locus to its gene glyph (no CDS/mRNA
-  // sub-features), so the colored variant traces one hue per gene cleanly and
-  // the uncolored variant reads as a tidy row of genes rather than nested boxes
+  // sub-features), so the lane reads as a tidy row of genes rather than nested
+  // boxes
   const geneTrack = (trackId: string) => ({
     trackId,
     showOnlyGenes: true,
-    ...(geneColor ? { color: geneColor } : {}),
   })
   return hpyloriUrl({
     views: [

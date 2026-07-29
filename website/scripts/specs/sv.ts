@@ -574,6 +574,12 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 800,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
+              // The reads that cross the breakpoints, above the reads that
+              // don't: the section divider says which is which, so the figure
+              // no longer needs a paragraph painted over the pileup saying it.
+              // Grouping survives linked-reads mode because splitRead defines a
+              // chain key (a fragment is split if any of its reads is).
+              groupBy: { type: 'splitRead' },
             },
           ],
         },
@@ -581,30 +587,11 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
-    // tall enough to clear the whole 800px track (the pileup used to run off the
-    // bottom edge — reviewer: increase browser height)
-    viewportHeight: 1010,
+    // tall enough to clear the whole 800px track plus the second section's own
+    // coverage lane and divider, which grouping adds (the pileup used to run off
+    // the bottom edge — reviewer: increase browser height)
+    viewportHeight: 1140,
     settleMs: 40000,
-    // ordered top-to-bottom to match the layout: arcs sit above the pileup, the
-    // colored split reads below, so each callout reads next to what it describes
-    annotations: [
-      {
-        // arcs band (above the pileup)
-        type: 'text',
-        x: 60,
-        y: 380,
-        text: 'Magenta arcs link split-read breakpoints.',
-        maxWidth: 470,
-      },
-      {
-        // the split-aligned reads themselves, lower in the pileup
-        type: 'text',
-        x: 60,
-        y: 520,
-        text: 'Split-aligned reads: red forward-strand segments on either side of a blue reverse-strand core. Reads that cross without a flip stay one solid strand color.',
-        maxWidth: 470,
-      },
-    ],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)

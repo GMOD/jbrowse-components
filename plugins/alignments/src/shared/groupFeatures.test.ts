@@ -150,10 +150,22 @@ test('mapq grouping reads the synteny mappingQual field too', () => {
   ])
 })
 
-test('supplementary grouping puts primary reads first', () => {
-  const features = [feat('a', { flags: 0x800 }), feat('b', { flags: 0 })]
-  const groups = partitionFeatures(features, { type: 'supplementary' })
-  expect(groups.map(g => g.label)).toEqual(['Primary', 'Supplementary'])
+// SA is written on every segment of a split read, the primary included, so both
+// pieces of read 'a' land in one section — the distinction the retired
+// SUPPLEMENTARY-flag grouping could not draw, since it filed 'a' (flags 0) with
+// the unsplit read 'c'.
+test('split-read grouping keeps both pieces of a split read together', () => {
+  const features = [
+    feat('a', { flags: 0, tags: { SA: 'ctgA,200,+,50M50S,60,0;' } }),
+    feat('a-supp', { flags: 0x800, tags: { SA: 'ctgA,1,+,50S50M,60,0;' } }),
+    feat('c', { flags: 0, tags: {} }),
+  ]
+  const groups = partitionFeatures(features, { type: 'splitRead' })
+  // 'split' sorts before 'unsplit', which is also the order that helps: at an SV
+  // locus the reads crossing the breakpoint sit at the top of the pileup.
+  expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'a-supp'])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['c'])
 })
 
 test('mate-assembly grouping splits synteny features by mate assembly', () => {
@@ -187,9 +199,22 @@ test('isChainGroupableType allows only chain-consistent dimensions', () => {
   expect(isChainGroupableType('pairOrientation')).toBe(true)
   expect(isChainGroupableType('mateAssembly')).toBe(true)
   expect(isChainGroupableType('strand')).toBe(false)
-  expect(isChainGroupableType('supplementary')).toBe(false)
+  expect(isChainGroupableType('splitRead')).toBe(true)
   expect(isChainGroupableType('mapq')).toBe(false)
   expect(isChainGroupableType(undefined)).toBe(false)
+})
+
+// A fragment has split evidence if either mate does, which the chain's
+// representative read (the primary read1) cannot answer on its own — hence the
+// dimension's own chainKey.
+test('split-read grouping keys a chain off any read carrying SA', () => {
+  const features = [
+    feat('r1', { flags: 0x40, tags: {} }),
+    feat('r2', { flags: 0x80, tags: { SA: 'ctgA,200,+,50M50S,60,0;' } }),
+  ]
+  const groups = partitionChains(features, { type: 'splitRead' })
+  expect(groups.map(g => g.label)).toEqual(['Split (SA)'])
+  expect(groups[0]!.features).toHaveLength(2)
 })
 
 test('partitionChains ungrouped is a single section holding every read', () => {

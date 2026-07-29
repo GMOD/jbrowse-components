@@ -260,6 +260,15 @@ channel), not a spec edit.
 
 ## Open plugin work
 
+- **The graph's hover tooltip sits on top of the last row's label.**
+  `tooltipStyle` in `GraphCanvas.tsx` pins it `bottom: 8, left: 8` of the graph
+  pane, and the row labels are drawn down the left edge, so on a graph with
+  enough rows to reach the bottom the two overlap — `pangenome/rgfa_hover_sync`
+  captures it reading "Sakai" and the node name as one word. Bottom-right would
+  clear it (the layout runs left-to-right from the labels, so the right edge is
+  empty at the bottom on every figure in this set). A spec cannot work around
+  it: the tooltip is an inline-styled div with no testid, and `hideTooltip` only
+  reaches core's `BaseTooltip`. Needs the publish loop above.
 - **A launch's tracks are the assembly's annotation, and only for the single
   view.** `launchTracks` scans the session for FeatureTracks on the assembly
   being opened, which is what makes `pangenome/rgfa_strain_launch` possible (the

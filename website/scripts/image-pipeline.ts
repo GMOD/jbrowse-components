@@ -30,6 +30,17 @@ const DIFF_FUZZ = '5%'
 // hundreds of times too large and every spec read as changed, quietly defeating
 // the whole content-stable gate. Thresholding the difference image and taking its
 // mean is a plain fraction-of-pixels in every ImageMagick build.
+//
+// The thresholded difference is then eroded by a pixel, because the raw fraction
+// cannot tell a changed figure from a changed Chrome. A browser update shifts
+// glyph metrics fractionally, which repaints the antialiased outline of every
+// character in the capture — measured at 0.505-0.545% across six figures on the
+// 25.3 -> 25.4 puppeteer bump, i.e. straddling the 0.5% gate, so which figures
+// got rewritten was a coin flip and the rewrites were invisible. Those fringes
+// are one pixel wide and vanish under an erode; a real change (a moved element,
+// a recolor, a different menu item) is a solid region that survives it. On the
+// same six, erosion drops the noise to 0.11-0.18% while a genuinely changed
+// figure only falls from 5.0% to 3.8%.
 export function pngDiffFraction(a: string, b: string): number | null {
   const [sizeA, sizeB] = [a, b].map(f =>
     (
@@ -55,6 +66,9 @@ export function pngDiffFraction(a: string, b: string): number | null {
       'Gray',
       '-threshold',
       DIFF_FUZZ,
+      '-morphology',
+      'Erode',
+      'Diamond:1',
       '-format',
       '%[fx:mean]',
       'info:',

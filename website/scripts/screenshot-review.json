@@ -67,9 +67,9 @@
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
     "status": "good",
-    "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value — log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
-    "reviewedAt": "2026-07-29T20:51:28.511Z",
-    "hash": "748b101da5da41074c281ccaa29802b6ee86e1a0"
+    "note": "",
+    "reviewedAt": "2026-07-29T21:54:15.394Z",
+    "hash": "5b92e8b7d4b5c0ebecaf40945bbfbb6c56d0ff3b"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -497,8 +497,8 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T17:14:06.567Z",
+    "note": "FIXED in the pipeline, not the spec: the before/after was identical because the only difference was text antialiasing. Chrome self-updates under the generator, and the 25.3 -> 25.4 puppeteer bump shifted glyph metrics fractionally, repainting every character's outline — 0.545% of pixels here, just over the 0.5% gate, so the PNG was rewritten with no visible change (five other figures landed at 0.505-0.513%, i.e. a coin flip). pngDiffFraction now erodes the thresholded difference by a pixel before measuring it: one-pixel glyph fringes vanish (this figure drops to 0.131%), a real change survives (a figure with changed menu contents only falls 5.0% -> 3.8%). The noise rewrite was reverted, so no spec needs its own lowered sensitivity.",
+    "reviewedAt": "2026-07-29T21:21:26.988Z",
     "hash": "4779ca26ab2825d5a69eca2f54f47ed2d3504e5a"
   },
   "recent_tracks": {
@@ -916,8 +916,8 @@
     "name": "maf_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T05:01:15.850Z",
-    "hash": "33441b870b40aa67ee36246fbc3a75a9399d4d2d"
+    "reviewedAt": "2026-07-29T21:00:41.156Z",
+    "hash": "fb92903a01e3921392aa9f4e264b1a89ed6710f9"
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
@@ -1191,8 +1191,8 @@
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-20T21:01:57.431Z",
+    "note": "Same root cause and same fix as read_vs_ref_insertion: pure text-antialiasing churn from a Chrome update, 0.512% raw (over the 0.5% gate) but 0.178% once the thresholded difference is eroded by a pixel. Gate fixed in pngDiffFraction, noise rewrite reverted.",
+    "reviewedAt": "2026-07-29T21:21:27.018Z",
     "hash": "28fc6230069b9d850e080356cc1fa4bf3d39f838"
   },
   "sv_cgiab/driver_smad4_loh": {
@@ -1321,9 +1321,9 @@
   "inversion_long_read": {
     "name": "inversion_long_read",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T19:39:03.939Z",
-    "hash": "c2e7798e51efebf54211f7cb02036d2efc1da06d"
+    "note": "DONE, and the group-by attribute now exists. Added a 'Split read (SA tag)' dimension to the alignments Group by... menu: SA is written on every segment of a split alignment, primary included, so the two sections are the reads crossing a breakpoint and the reads spanning it intact. The figure groups by it, and the split section holds the magenta breakpoint arc and the red-blue-red split reads while the background reads sit below, so the contrast is structural instead of something the reader hunts for. The two painted-on paragraphs are gone - the section dividers say what they said. Two related changes: the old 'Supplementary' grouping was removed (reviewer: splitting supplementary from non-supplementary does not make sense - it is the SAM flag, so a split read's own first segment filed with the reads that never split); and splitRead works in linked-reads mode, unlike every other per-read dimension, because it supplies a chain key (a fragment is split if any of its reads is), which matters because long-read SV viewing is chain mode. Tests in groupFeatures.test.ts + getGroupByMenuItem.test.ts.",
+    "reviewedAt": "2026-07-29T22:11:54.769Z",
+    "hash": "9baeb26c215dfebd77fe2ac520df2d101f8e1522"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1389,10 +1389,10 @@
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
-    "status": "bad",
-    "note": "delete",
-    "reviewedAt": "2026-07-28T15:06:12.780Z",
-    "hash": "8abb704b84b134bda4a7d591f080fe249d0197cd"
+    "status": "good",
+    "note": "DELETED as asked. Spec removed from scripts/specs/qtl.ts and the PNG deleted; it was an orphan (no doc <Figure> referenced it — the tutorial embeds qtl/bxd_tyrp1_locus and qtl/bxd_painting_sorted, which are the same Manhattan-over-painting view with the gene marked and with the sort menu open). Its one consumer was the bxd_qtl tutorial card, which now crops qtl/bxd_tyrp1_locus at the same band (below that figure's Tyrp1 callout). galleryLinks + figure manifest regenerated.",
+    "reviewedAt": "2026-07-29T21:22:59.057Z",
+    "hash": ""
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
@@ -1594,10 +1594,10 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "bad",
-    "note": "the 'annotation text' saying swept and draffed this whole block with it is 'dramatic' wording that a user who doesnt understand linkage very well would not understand. also, the recombination track is unfortunately hard to understand here. it is not 'super suppressed'. if it helps, zoom out more",
-    "reviewedAt": "2026-07-29T20:41:31.545Z",
-    "hash": "5a1caec9aa7b5ed841034e7bfe0e12670dc9c04c"
+    "status": "good",
+    "note": "FIXED, and the root cause was the data, not the wording. The block was pale and the recombination curve was noise everywhere because r2 was computed over the pooled 2504-sample callset: pooling panels that carry different haplotypes at different frequencies averages the correlation away. Measured over chr2:136.4-136.7 Mb, mean pairwise r2 is 0.48 pooled and 0.83 within the 1000G European panel (0.18 in the African panel, i.e. the block is a property of the panel, not of the locus). The figure now runs on a 503-sample panel slice (bcftools view -S, uploaded to jbrowse.org/demos/popgen/lct_1kg_chr2_eur.vcf.gz): the block is solid, its right edge is visible where the recombination curve goes from flat to spiking, and the tutorial's claim about that curve is now something the reader can see. Annotation reworded to 'One block, inherited together' (no swept/dragged). Block extent measured rather than guessed: r2 vs rs4988235 stays above 0.5 from 136.49 to 136.82 Mb, which the 800kb window frames with flanks on both sides. A EUR-vs-AFR two-panel version was rendered and then dropped: side-by-side continental panels read as a comparison between groups rather than one about how r2 is computed, so the point is made in prose ('Compute LD within one panel') instead. NOTE: the AFR slice is still uploaded at lct_1kg_chr2_afr.vcf.gz, unreferenced, pending that framing call.",
+    "reviewedAt": "2026-07-29T21:51:35.636Z",
+    "hash": "df88246a97991c3d3797aae004bdfcd2c3e85857"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
@@ -1610,8 +1610,8 @@
     "name": "pangenome/maf",
     "status": "bad",
     "note": "still dont understand this marker 5593, it should be pruple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
-    "reviewedAt": "2026-07-27T18:42:32.753Z",
-    "hash": "89fc74a40378a1c6a48387230004e8e238a81815"
+    "reviewedAt": "2026-07-29T21:00:35.775Z",
+    "hash": "41371019c9542af610025b52e8f469e4773caad3"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1655,9 +1655,9 @@
   "multisv_svtype": {
     "name": "multisv_svtype",
     "status": "good",
-    "note": "resolved: viewportHeight 720 -> 800 so the RefSeq gene lane is included (was sliced mid-labels at ~2 rows, now ~6). The gene track still scrolls internally at its fixed 140px height, which is expected for a 5Mb window; the app frame is complete.",
-    "reviewedAt": "2026-07-25T17:13:27.720Z",
-    "hash": "3548904863256f2b1e65e5ae0a3504161396a43f"
+    "note": "DONE: heightMode 'fit' on the RefSeq lane, so the whole gene stack sits inside the 140px lane instead of four labeled rows with the fifth sliced against the lane border and the rest behind an internal scrollbar. At 5Mb the fit ladder lands on its 'bodies' rung, so the names go: tried a 220px lane to get them back and it still dropped them, just with 90px of whitespace added, because the labeled stack does not fit any lane height this figure can afford. The lane now reads as where in the window the genes are, which is what a 5Mb SV-type figure can use it for.",
+    "reviewedAt": "2026-07-29T21:31:08.274Z",
+    "hash": "0ef98c43d87a04752049a6223f130e71c76d57fb"
   },
   "scatac/alb_hepatocyte": {
     "name": "scatac/alb_hepatocyte",
@@ -1989,8 +1989,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "FIXED: we do have them. all_vs_all.paf is built with `minimap2 -c` and the launched view's cigarMode already defaults to 'full', so the wedges inside those ribbons ARE the insertions and deletions -- they were just unlabeled. The result frame now turns on the view's own color legend (palette button -> Show color legend), which lists only the ops actually painted, so they are named as insertion/deletion; the tutorial text points at CIGAR display mode too. NOTE: the launch dialog frame predates commit 4c96431 (anchor as a movable row, select all/none, shared window-size field) and needs a jbrowse-web rebuild + regen to match.",
-    "reviewedAt": "2026-07-27T01:28:12.550Z",
-    "hash": "bf14ca5c792f80e9f12cac3f6573793a47c1f068"
+    "reviewedAt": "2026-07-29T21:11:36.828Z",
+    "hash": "86e2796f551017f2b184889a8db70fbcd1126946"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2051,8 +2051,8 @@
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "bad",
-    "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps. FIXED: root cause wasn't color, the segments lane already carried the reference-position ramp. It was scale: the callset held all 464 haplotypes while the graph's sample-rows layout draws only the ~12 that actually walk a non-reference path here, so 452 callset rows had nothing to compare against and the 12 that mattered were lost in the stack. Replaced runClustering with a fixed layout of the same 10 donors the graph shows (both haplotypes each, derived from the segments/links tabix over the same window), dropping the callset to 20 labeled rows that line up by name with the graph's rows below. Regenerated. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Also two caption corrections: the graph rows only the haplotypes that donated sequence here (12 of the 20 callset rows), which is what a reader notices first about the pair, and the callset numbers a donor HP0/HP1 while the graph uses PanSN .1/.2.",
-    "reviewedAt": "2026-07-28T15:07:34.637Z",
+    "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps. also the different rank rows are quite tall, we need comppressed visualizations with efficient use of y-axis real estate. reducing everything abotu this screenshot in the y-axis is valuable, but particularly the backbone graph. FIXED: root cause wasn't color, the segments lane already carried the reference-position ramp. It was scale: the callset held all 464 haplotypes while the graph's sample-rows layout draws only the ~12 that actually walk a non-reference path here, so 452 callset rows had nothing to compare against and the 12 that mattered were lost in the stack. Replaced runClustering with a fixed layout of the same 10 donors the graph shows (both haplotypes each, derived from the segments/links tabix over the same window), dropping the callset to 20 labeled rows that line up by name with the graph's rows below. Regenerated. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Also two caption corrections: the graph rows only the haplotypes that donated sequence here (12 of the 20 callset rows), which is what a reader notices first about the pair, and the callset numbers a donor HP0/HP1 while the graph uses PanSN .1/.2.",
+    "reviewedAt": "2026-07-29T21:01:57.649Z",
     "hash": "ccad5ff49be9ecc9bd9380c6fc8920b5d4025da6"
   },
   "pangenome/hprc_mhc_anchored": {
@@ -2148,10 +2148,10 @@
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
-    "status": "good",
+    "status": "bad",
     "note": "this may not be the primary point of the screenshot but i dont necessarily understand the lines that are drawn to the backbone. some only have 1 line and some have 3. how should users interpret these? it should be clear to users ideally. can also try to make back-to-back comparison of backbone linear and bandage force directed modes FIXED in prose, no new figure: a line is one graph link, drawn when both endpoints are inside the cut. Counted out of ecoli_minigraph.links.bed.gz over chr:4,053,156-4,067,028, every allele in the window has exactly two links total (one leaving the backbone, one rejoining): s1814 and s1815 have both endpoints in the cut and draw two lines; s1813, s1816 and the rank-2 s2272 have their other neighbour (s1271, s1280, s1285) outside it and draw one. The mark with three lines is two alleles drawn on top of each other, s1813 (4 bp) and s1814 (53 bp), both under the minimum node width at 3.1% zoom: 4 marks for 5 alleles, and 7 drawn lines for the 7 off-backbone links, which is how the counts were confirmed. The caption said 'three short rank-1 alleles' and there are four. The back-to-back anchored/force-directed comparison was declined: the HPRC tutorial already pictures both layouts, and the standing instruction on this set is to pare figures down rather than add.",
-    "reviewedAt": "2026-07-27T18:41:59.832Z",
-    "hash": "e1b4916662dd5b2af010c9a0f5f7b707bf7c1d8d"
+    "reviewedAt": "2026-07-29T21:00:29.740Z",
+    "hash": "92048cc129fbc207cd8ad488521b6db69e18a479"
   },
   "pangenome/rgfa_strain_launch": {
     "name": "pangenome/rgfa_strain_launch",
@@ -2162,8 +2162,9 @@
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
     "status": "good",
-    "note": "NEW, replacing pangenome/rgfa_hover_correspondence and pangenome/rgfa_hover_from_linear, which were two nearly identical pictures of the same window drawing the same review note twice ('hard to figure out correspondence between linear and graph'). One figure, both directions, so the reciprocity is the subject: frame one hovers the CFT073 allele in the graph and gets a band in the linear view, frame two hovers the gene csgG and gets the backbone segment lit in the graph. Each frame rings its own target, since a hover figure has no cursor in it.",
-    "hash": "ae9d7a687fc53eb061e191e48224245ecd1f3d71"
+    "note": "DONE: one panel. It was a two-stage stack (graph->linear on top, linear->graph below), i.e. four panels of the same window, which is what made it unreadable. Kept the graph->linear direction: the effect is a band appearing in the linear view where there wasn't one, drawn from real coordinates. The reverse direction was the weaker half anyway - hovering a gene brightens a backbone segment that already spans the frame, so the two graphs looked identical - and it now lives in the guide's prose instead. Caption trimmed to the single frame. One blemish left, which is a plugin fix not a spec one: the graph pins its hover tooltip bottom-left of its own pane, where the last row's label is, so 'Sakai' and the node name overlap. Logged under Open plugin work in screenshot-review-plan.md; hideTooltip does not reach it (that only hides core's BaseTooltip).",
+    "reviewedAt": "2026-07-29T21:57:26.096Z",
+    "hash": "a835d84f1419537728b6a7dc012a6293da507d6f"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2237,10 +2238,10 @@
   },
   "sv_synteny/linear_synteny_ortholog_colors": {
     "name": "sv_synteny/linear_synteny_ortholog_colors",
-    "status": "bad",
-    "note": "i do not like these colors the color palette is not good. i think we should delete this figure",
-    "reviewedAt": "2026-07-29T20:41:58.639Z",
-    "hash": "544a652889dd2718ad1bbd9ff02c2ff5949fe3c4"
+    "status": "good",
+    "note": "DELETED as asked. The complaint holds: the locus-tag-only genes have no 'gene' attribute, so they all take one fallback color, and that color (magenta) was most of every lane — the six named orthologs the figure existed to show were the minority of the pixels. Spec, PNG and the <Figure> in synteny_visualization.md are gone; the 'Coloring genes by ortholog' section stays as prose since Color by attribute is still worth teaching. hpyloriSyntenyWithGenes lost its now-unused geneColor param.",
+    "reviewedAt": "2026-07-29T21:24:58.560Z",
+    "hash": ""
   },
   "dog10k-nhej1-cea-deletion": {
     "name": "dog10k-nhej1-cea-deletion",

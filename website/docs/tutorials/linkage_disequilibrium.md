@@ -22,7 +22,7 @@ SNP on it rides along, producing a long stretch of correlated SNPs. The classic
 example is lactase persistence: a regulatory variant near _LCT_ swept recently
 in dairying populations.
 
-<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235, the -13910 C>T variant in an MCM6 intron associated with lactase persistence. Below it is haplotypic r² computed from phased 1000 Genomes genotypes, with the recombination track (1 - r² between adjacent SNPs) above the triangle. The red block sits under that variant and fades into paler flanks on both sides, where the recombination curve rises."/>
+<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235, the -13910 C>T variant in an MCM6 intron associated with lactase persistence. Below it is haplotypic r² computed live from phased 1000 Genomes genotypes, with the recombination track (1 - r² between adjacent SNPs) above the triangle. The solid red block covers the gene, and ends where the recombination curve starts to spike."/>
 
 - **Causal variant:** ClinVar's rs4988235 annotation, independent of the
   genotypes below it.
@@ -34,8 +34,22 @@ A block this long and common only forms when a haplotype rises faster than
 recombination can break it up: the signature of a recent sweep. The blue curve
 above the triangle makes that boundary explicit: the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
-− r² between adjacent SNPs, peaks in the white gaps and dips inside the red
-block.
+− r² between adjacent SNPs, sits near zero across the block and spikes outside
+it.
+
+### Compute LD within one panel
+
+r² is a correlation across whatever samples you hand it, so an LD track should
+point at a single population panel. Pooling panels that carry different
+haplotypes at different frequencies averages the correlation away: run this same
+window over the full 1000 Genomes callset instead of the European panel above
+and the block turns pink and fragmented, with no dip in the recombination curve
+left to see. Subset the VCF before loading it:
+
+```bash
+bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
+tabix -p vcf panel.vcf.gz
+```
 
 ## An inversion suppresses recombination
 

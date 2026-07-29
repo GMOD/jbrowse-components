@@ -236,7 +236,7 @@ The reverse works from any track, not just the graph's own segments. A gene
 gives only a coordinate, and that is enough: rGFA segments do not overlap on a
 stable sequence, so one backbone segment covers it.
 
-<Figure caption="Top: hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins. Bottom: hovering the gene csgG instead brightens the backbone segment covering it in the graph, and the graph reports that segment's span back as the band across the linear view." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
 
 A hover lasts as long as the pointer does. **Right-click a node → Highlight in
 &lt;assembly&gt;** writes the same interval into the linear view's own highlight

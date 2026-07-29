@@ -130,8 +130,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   bxd_qtl: {
-    // the red/blue haplotype painting under the QTL scan
-    src: 'qtl/bxd_overview.png',
+    // the red/blue haplotype painting under the QTL scan, framed below the
+    // figure's Tyrp1 callout
+    src: 'qtl/bxd_tyrp1_locus.png',
     band: [0.38, 1],
     position: 'left',
   },

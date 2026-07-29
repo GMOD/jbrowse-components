@@ -133,14 +133,16 @@ more clearly than coloring alone. The
 ## Grouping reads
 
 The track menu's **Group by...** splits the pileup into one coverage+pileup
-section per value of a chosen dimension: strand, read group (RG), or any tag
-such as `HP`. Each group gets a divider label and the groups share one coverage
-scale, so they read independently. Grouping a phased BAM by `HP` turns it into
-one pileup per haplotype. Reads missing the chosen tag collect in a trailing
-"none" section rather than disappearing. Grouping costs no extra fetching (the
-worker partitions one fetch into sections), and each section's divider has a
-control to collapse it down to just its coverage, so you can fold away the
-groups you aren't reading.
+section per value of a chosen dimension: strand, split read (whether the read
+carries an `SA` tag, which separates the reads crossing a breakpoint from the
+ones spanning it intact), read group (RG), or any tag such as `HP`. Each group
+gets a divider label and the groups share one coverage scale, so they read
+independently. Grouping a phased BAM by `HP` turns it into one pileup per
+haplotype. Reads missing the chosen tag collect in a trailing "none" section
+rather than disappearing. Grouping costs no extra fetching (the worker
+partitions one fetch into sections), and each section's divider has a control to
+collapse it down to just its coverage, so you can fold away the groups you
+aren't reading.
 
 <Figure caption="Group by... opens a dialog where you pick the dimension (here the HP haplotype tag) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 

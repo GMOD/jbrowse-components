@@ -203,7 +203,7 @@ export type GroupByType =
   | 'firstOfPairStrand'
   | 'tag'
   | 'pairOrientation'
-  | 'supplementary'
+  | 'splitRead'
   | 'mapq'
   | 'mateAssembly'
 
@@ -219,6 +219,18 @@ export interface SortedBy {
   assemblyName: string
   tag?: string
 }
+
+// Numeric codes stored in the Uint8Array `readChainHasSupp`, describing how a
+// read's chain is split. Emitted by the worker (executeRenderAlignmentData) and
+// read by every fill path — the GPU shader (read.slang `chainHasSupp`), the
+// Canvas2D/legend classifier (colorUtils `readColorCategory`), and the SVG
+// export. Lives here so the wire encoding has one spelling; read.slang is the
+// one twin that must still be hand-mirrored.
+export const CHAIN_FILL_NO_SUPP = 0
+export const CHAIN_FILL_SUPP_PRIMARY_FWD = 1
+export const CHAIN_FILL_SUPP_PRIMARY_REV = 2
+export const CHAIN_FILL_SPLIT_INVERSION = 3
+export const CHAIN_FILL_SPLIT_DELETION = 4
 
 // Numeric interbase type codes stored in Uint8Array interbaseTypes.
 // Must match the order used in shared/buildInterbaseArrays addItems calls.

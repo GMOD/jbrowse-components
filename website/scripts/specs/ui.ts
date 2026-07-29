@@ -348,6 +348,15 @@ export const uiSpecs: ScreenshotSpec[] = [
               showLabels: 'on',
               showDescriptions: false,
               showOnlyGenes: true,
+              // every gene row inside the lane rather than four labeled rows
+              // with the fifth sliced against the lane border and the rest
+              // behind an internal scrollbar. At 5Mb the fit ladder lands on
+              // its `bodies` rung, i.e. no gene names: a labeled stack does not
+              // fit any lane height worth giving this figure (tried 220px — it
+              // still dropped the names and added 90px of whitespace), and the
+              // lane's job here is which part of the window carries genes, not
+              // which gene
+              heightMode: 'fit',
             },
           ],
         },

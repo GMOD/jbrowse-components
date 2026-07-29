@@ -19,7 +19,7 @@ export const GROUP_BY_LABELS: Record<GroupByType, string> = {
   // dimension (e.g. in the dialog's own copy), not that menu entry.
   tag: 'Tag (HP, RG, ...)',
   pairOrientation: 'Pair orientation',
-  supplementary: 'Supplementary',
+  splitRead: 'Split read (SA tag)',
   mapq: 'Mapping quality',
   mateAssembly: 'Mate assembly',
 }

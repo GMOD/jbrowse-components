@@ -1427,19 +1427,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
-  // Same three-strain stack, gene tracks palettized by gene symbol. In bacteria
-  // the symbol is effectively the ortholog id (NCBI reuses it across strains),
-  // and randomColor hashes it deterministically, so an ortholog carries one hue
-  // down all three panels.
-  {
-    mode: 'url',
-    name: 'sv_synteny/linear_synteny_ortholog_colors',
-    url: hpyloriSyntenyWithGenes("jexl:randomColor(get(feature,'gene'))"),
-    readyText: 'NC_018939.1',
-    readyTimeout: 60000,
-    settleMs: 12000,
-  },
-
   // ────────────────────────────────────────────────────────────────────────
   // Dotplot / synteny interactions
   // ────────────────────────────────────────────────────────────────────────

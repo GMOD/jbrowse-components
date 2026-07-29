@@ -13,27 +13,33 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // prose in the linkage_disequilibrium tutorial, with no figure — don't
 // reintroduce one without real genotypes behind it.
 //
-// Data is a region slice of the phase3 1000 Genomes VCF (all 2504 samples,
-// chr2:135.8–137.4 Mb) re-hosted on jbrowse.org S3 so the figure and its live
-// "Open in JBrowse" link load fast and don't depend on the EBI FTP being up.
-// The VCF names the contig "2"; the hosted UCSC hg19 hub's chromAlias
-// reconciles "chr2" at query time.
+// Data is a region slice of the phase3 1000 Genomes VCF (chr2:135.8–137.4 Mb)
+// re-hosted on jbrowse.org S3 so the figure and its live "Open in JBrowse" link
+// load fast and don't depend on the EBI FTP being up. The VCF names the contig
+// "2"; the hosted UCSC hg19 hub's chromAlias reconciles "chr2" at query time.
+//
+// LD IS PER-POPULATION, SO THE SLICE IS TOO. The figure used to run on the
+// pooled 2504-sample file and the block came out pink and fragmented, because
+// pooling panels that carry different haplotypes at different frequencies
+// averages the correlation away: over chr2:136.4–136.7 Mb the mean pairwise r²
+// is 0.83 within the 503-sample European panel and 0.48 pooled, and the
+// recombination curve's dip over the block only exists in the former. The
+// panel was cut with `bcftools view -S` and uploaded beside the pooled file.
+// Don't put two population panels side by side to make this point — that reads
+// as a comparison between groups rather than one about how r² is computed.
 const HG19_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg19/config.json')}`
 
-const KGP_CHR2 = 'https://jbrowse.org/demos/popgen/lct_1kg_chr2.vcf.gz'
-
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
-// haplotype to high frequency, so a large block of SNPs around LCT is inherited
-// together — a long stretch of high r². A relatable "why do the SNPs travel
-// together" story. Phased 1000G slice (chr2:135.8–137.4 Mb), exact r², hg19.
-const LCT_TRACK = {
+// haplotype to high frequency in dairying populations, so a large block of SNPs
+// around LCT is inherited together — a long stretch of high r².
+const lctTrack = (name: string) => ({
   type: 'VariantTrack',
   trackId: 'kgp_lct_ld',
-  name: 'LCT lactase-persistence LD (r²)',
+  name,
   assemblyNames: ['hg19'],
   adapter: {
     type: 'VcfTabixAdapter',
-    uri: KGP_CHR2,
+    uri: 'https://jbrowse.org/demos/popgen/lct_1kg_chr2_eur.vcf.gz',
     fetchSizeLimit: 500_000_000,
   },
   displays: [
@@ -48,33 +54,41 @@ const LCT_TRACK = {
       height: 510,
     },
   ],
-}
+})
+
+// Wider than the block itself so the swept haplotype reads as a bounded block
+// against lower-LD flanks — contrast is what makes it legible as a block rather
+// than a wall of red. The block's own extent is measured, not guessed: within
+// EUR at this MAF floor, r² against rs4988235 stays above 0.5 from 136.49 to
+// 136.82 Mb and collapses to ~0.15 immediately past it.
+const LCT_LOC = 'chr2:136,200,000-137,000,000'
+
+// Band the LCT/MCM6 locus so the reader sees the high-r² block sits right over
+// the lactase gene (the enhancer variant rs4988235 is in an MCM6 intron,
+// upstream of LCT).
+const LCT_HIGHLIGHT = [
+  {
+    refName: 'chr2',
+    start: 136_545_410,
+    end: 136_634_000,
+    assemblyName: 'hg19',
+  },
+]
 
 export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_lactase',
     url: `${HG19_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [LCT_TRACK],
+      sessionTracks: [
+        lctTrack('LCT lactase-persistence LD, 1000G European panel (r²)'),
+      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          // Wider than the block itself (~800 kb) so the swept haplotype reads
-          // as a bounded red block against lower-LD flanks — contrast is what
-          // makes it legible as a block rather than a wall of red.
-          loc: 'chr2:136,200,000-137,000,000',
-          // band the LCT/MCM6 locus so the reader sees the high-r² block sits
-          // right over the lactase gene (the enhancer variant rs4988235 is in an
-          // MCM6 intron, upstream of LCT)
-          highlight: [
-            {
-              refName: 'chr2',
-              start: 136_545_410,
-              end: 136_634_000,
-              assemblyName: 'hg19',
-            },
-          ],
+          loc: LCT_LOC,
+          highlight: LCT_HIGHLIGHT,
           tracks: [
             {
               trackId: 'hg19-ncbiRefSeqCurated',
@@ -120,7 +134,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         y: 750,
         maxWidth: 300,
         fontSize: 16,
-        text: 'rs4988235 swept — and dragged this whole block with it',
+        text: 'One block, inherited together',
       },
     ],
   },
