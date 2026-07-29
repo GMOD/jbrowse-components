@@ -18,6 +18,15 @@ import { DASH } from '../util/asciiBytes.ts'
  * wins" rule would instead paint most windows as mismatches on a divergent
  * alignment.
  *
+ * That reasoning does NOT carry over to the identity plot or the conservation
+ * band, so don't reach for `binBp` there. Those paint a *mean* over the bases
+ * under a pixel rather than one surviving base, and a mean needs its whole
+ * sample: at 333bp/px `encodeBinBp` picks a 128bp window, which would average
+ * about 2.6 bases per pixel instead of 333 and turn a smooth ramp into noise.
+ * They are made affordable a different way — `IdentityColumns` hoists the
+ * row-independent work out of the per-row walk and drops off-block columns
+ * (`drawRowIdentity.ts`).
+ *
  * Both painters reading this is what keeps them showing the same *data*. It
  * does not make them pixel-identical — they never were, and measurably differ
  * on rect edges and antialiasing at every zoom.
