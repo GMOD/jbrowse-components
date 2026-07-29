@@ -4,7 +4,7 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util'
 
 // Parses what the user typed into the dialog's region field. Throws on an
-// unparseable ref name or an empty range, and the dialog surfaces that rather
+// unparsable ref name or an empty range, and the dialog surfaces that rather
 // than fetching. Whitespace separates regions, so a multi-region rubberband
 // selection round-trips through the field.
 export function locStringsToRegions(

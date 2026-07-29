@@ -370,7 +370,7 @@ It downloads the same five RefSeq genomes as the pggb build, runs
 `cactus-pangenome`, converts the HAL, VCF, `odgi depth`, and `odgi pav` into the
 projections above, downloads JBrowse, and writes a `config.json` with the five
 assemblies, per-strain gene tracks, the projection tracks above, and a default
-session. It needs the same tools listed under [What you need](#what-you-need).
+session. It needs the same tools listed under [What you need](#prerequisites).
 
 ## See also
 

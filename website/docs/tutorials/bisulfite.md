@@ -255,7 +255,7 @@ bisulfite-aligns them with bwameth, downloads JBrowse, and writes a
 `config.json` with the assembly, the gene models, and the per-read pileup
 pre-colored Bisulfite / CpG, opening on the window above. The aggregate
 MethylDackel track is left out, so it needs everything under
-[What you need](#what-you-need) except MethylDackel and `bedGraphToBigWig`.
+[What you need](#prerequisites) except MethylDackel and `bedGraphToBigWig`.
 
 On Debian/Ubuntu, `apt install wget samtools tabix` covers several of those.
 bwameth, Trim Galore, and the NCBI `datasets` CLI install from their own

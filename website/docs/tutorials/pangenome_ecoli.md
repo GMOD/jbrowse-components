@@ -540,7 +540,7 @@ raster, the two graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and
 all of which need the cactus image for minigraph and gfatools. The `config.json`
 declares the graph genome view plugin, so the graph track and the launch menu
 item work with nothing to install. It needs the same tools listed under
-[What you need](#what-you-need).
+[What you need](#prerequisites).
 
 The PAF sort and bigWig conversion spill temp files large enough to overflow a
 tmpfs `/tmp`, so the script routes `TMPDIR` to a `tmp/` directory inside the

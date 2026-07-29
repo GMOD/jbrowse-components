@@ -159,11 +159,7 @@ export function hoverTooltip(result: HitFeatureResult) {
 // tags.
 export function hoverTooltipText(result: HitFeatureResult) {
   return tooltipRows(result)
-    .map(
-      row =>
-        new DOMParser().parseFromString(row, 'text/html').body.textContent ??
-        row,
-    )
+    .map(r => new DOMParser().parseFromString(r, 'text/html').body.textContent)
     .join('\n')
 }
 
