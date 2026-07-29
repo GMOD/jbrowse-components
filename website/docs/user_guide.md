@@ -2,8 +2,8 @@
 title: User guide
 sidebar_label: Overview
 description:
-  Index of the guides for driving JBrowse — track types, views, and the rest of
-  the app.
+  Index of the guides for driving JBrowse — track types, views, and the
+  rest of the app.
 ---
 
 How to drive JBrowse once it is running. New here? Start with the
@@ -37,6 +37,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/user_guides/circular_view)
 - [](/docs/user_guides/dotplot_view)
+- [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/spreadsheet_view)
 - [](/docs/user_guides/sv_inspector_view)
@@ -48,7 +49,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/bookmark_widget)
 - [](/docs/user_guides/clustering)
 - [](/docs/user_guides/consensus_sequence)
-- [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/plugin_store)
 - [](/docs/user_guides/sequence_search)
 
@@ -68,8 +68,8 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/sv_multisamples)
-- [CNVs (TCGA)](/docs/tutorials/tcga_cohort_cnv)
-- [CNVs (1000 Genomes)](/docs/tutorials/population_cnv)
+- [](/docs/tutorials/population_cnv)
+- [](/docs/tutorials/tcga_cohort_cnv)
 
 ### Population genomics
 

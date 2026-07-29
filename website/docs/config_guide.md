@@ -7,7 +7,7 @@ description:
 ---
 
 How to configure the `config.json` that drives a session. For copy-paste
-recipes, see the [](/docs/cookbook).
+recipes, see the [Cookbook](/docs/cookbook).
 
 ## Getting started
 
