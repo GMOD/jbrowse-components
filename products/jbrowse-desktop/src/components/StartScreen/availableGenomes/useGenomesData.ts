@@ -79,7 +79,9 @@ export function useGenomesData({
   error: unknown
   isLoading: boolean
 } {
-  const { data, error, isLoading } = useFetch<RawData>(url, (u: string) =>
+  // no explicit type argument: it would pin `Data` and leave the key type to its
+  // loose default, costing the fetcher its typed `u`
+  const { data, error, isLoading } = useFetch(url, (u: string) =>
     fetchJson<RawData>(u),
   )
 

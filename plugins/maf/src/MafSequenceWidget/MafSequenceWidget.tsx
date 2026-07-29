@@ -38,10 +38,9 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
   const settings = useMafSequenceSettings()
   const { showAllLetters, includeInsertions, singleLineFormat } = settings
 
-  // Fetch from server via SWR: keyed on the RPC inputs, so it refetches when
-  // they change, dedupes/caches across reopens, and a null key skips the call
-  // until the inputs are present. SWR drops stale resolutions for us, so no
-  // manual cancellation flag is needed.
+  // Keyed on the RPC inputs, so it refetches when they change and a null key
+  // skips the call until the inputs are present. useFetch drops stale
+  // resolutions for us, so no manual cancellation flag is needed.
   const { data, error } = useFetch(
     adapterConfig && samples && regions
       ? ([
@@ -53,9 +52,19 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
           includeInsertions,
         ] as const)
       : null,
-    // Destructure from the key tuple (not the outer scope): the null-key
-    // ternary above has already narrowed away `undefined` for these inputs.
-    ([, adapterConfig, samples, regions, showAllLetters, includeInsertions]) =>
+    // Read the key tuple (not the outer scope): the null-key ternary above has
+    // already narrowed away `undefined` for these inputs. useFetch spreads an
+    // array key across the fetcher's parameters, so these are positional — a
+    // single array-destructured parameter would bind only the leading key name
+    // and slice characters out of it.
+    (
+      _name,
+      adapterConfig,
+      samples,
+      regions,
+      showAllLetters,
+      includeInsertions,
+    ) =>
       session.rpcManager.call('MafSequenceWidget', 'MafGetSequences', {
         adapterConfig,
         samples,

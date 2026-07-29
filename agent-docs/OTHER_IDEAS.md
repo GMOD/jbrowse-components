@@ -1398,9 +1398,10 @@ The bottom of the stack is already abort-ready and unused above it:
   structural assignability to gmod `Options { signal? }` interfaces, never
   populated. `VcfTabixAdapter` / `SplitVcfTabixAdapter` forward `opts.signal` to
   readers, but it's always `undefined`.
-- `RemoteFileWithRangeCache.fetchRange(url, start, end, signal)` already accepts
-  a signal and passes it to `fetch`. The missing piece is entirely upstream:
-  producing a signal wired to cancel.
+- `RemoteFileWithRangeCache.fetchRange(url, start, end, init?: RequestInit)`
+  forwards the whole `init` — signal included — to `fetch`, and every caller
+  down to `RemoteFileWithRangeCache.fetch` threads it. So the plumbing is there,
+  and the missing piece is entirely upstream: producing a signal wired to cancel.
 
 ### Why not "derive a signal from the stopToken" (SAB / `Atomics.waitAsync`)
 
