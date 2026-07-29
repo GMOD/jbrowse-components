@@ -238,7 +238,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Fiber-seq base modifications',
         spec: 'gallery/fiberseq_gapdh',
-        guide: 'tutorials/methylation',
+        guide: 'user_guides/alignments_track',
         description:
           'ONT fiber-seq over the GAPDH promoter, each read colored base by base from its MM/ML modification tags (6mA), with single-cell ATAC above. The coloring is per read, so modifications stay at single-molecule resolution instead of collapsing into an aggregate track.',
       },

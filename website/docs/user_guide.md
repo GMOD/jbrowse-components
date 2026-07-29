@@ -79,6 +79,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/linkage_disequilibrium)
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/tutorials/local_ancestry)
+- [](/docs/tutorials/dog10k_svs)
 
 ### Epigenomics & single cell
 
