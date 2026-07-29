@@ -56,22 +56,12 @@ genotypes and leaves the well-genotyped sites.
 
 <Figure src="/img/variants/potato_missingness.png" links="No filter=variants/potato_missingness_before,Max missingness 0.1=variants/potato_missingness_after" caption="Tetraploid potato multi-sample VCF as a genotype matrix. Top: the default missingness ceiling keeps every variant, and no-call (yellow) columns dominate. Bottom: a 0.1 ceiling drops variants with more than 10% no-call genotypes, so the remaining columns are the well-genotyped homozygous-reference, heterozygous, and homozygous-alt sites." />
 
-Set either filter declaratively with the
+Either filter can be preset so the track loads already filtered, with the
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
 and
 [`maxMissingnessFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-maxmissingnessfilter)
-display slots:
-
-```json
-{
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
-      "maxMissingnessFilter": 0.1
-    }
-  ]
-}
-```
+display slots. See
+[configuring default display settings](/docs/config_guides/variant_track#configuring-default-display-settings).
 
 ## Genotype coloring: allele dosage vs phased
 
@@ -126,23 +116,9 @@ HIGH the same way a stop-gained SNV does.
 
 <Figure caption="1000 Genomes phase 3 chr1 genotypes (2,504 samples) colored by consequence impact from SnpEff annotations. Red columns are stop-gained/splice-site variants, orange missense, yellow synonymous/splice-region, and grey (the majority) intronic or intergenic." src="/img/variants/consequence_impact_1000g.png" />
 
-Set it declaratively in the display configuration with the built-in
-`impactColor` Jexl function:
-
-```json
-{
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "featureColor": "jexl:impactColor(feature)"
-    }
-  ]
-}
-```
-
-`featureColor` accepts any per-feature Jexl expression, not just this preset: a
-plain CSS color or a custom expression referencing `feature` attributes, same as
-the single-sample `color` slot.
+To have the track load already colored this way, preset the display's
+`featureColor` slot: see
+[coloring cells by the variant instead of the genotype](/docs/config_guides/variant_track#coloring-cells-by-the-variant-instead-of-the-genotype).
 
 ## Coloring by SV type
 
@@ -169,18 +145,9 @@ falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
 
 <Figure caption="1000 Genomes SV ensemble callset (3202 samples) on chr19 colored by SV type. Each alt-carrying cell takes its variant's structural-variant class color; the large inversion is the orange band. The legend names every class present, including the callset's complex (CPX) events." src="/img/multisv_svtype.png" />
 
-Set it declaratively with the `svType` value on `featureColor`:
-
-```json
-{
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "featureColor": "svType"
-    }
-  ]
-}
-```
+This preset also has a
+[`featureColor` value](/docs/config_guides/variant_track#coloring-cells-by-the-variant-instead-of-the-genotype)
+so a track can load already colored by SV type.
 
 ## Coloring and grouping by sample metadata
 
@@ -192,40 +159,9 @@ display to one of those columns to group and color the per-sample rows by that
 attribute the first time the track loads.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
-across 26 population codes) this way:
-
-```json
-{
-  "type": "VariantTrack",
-  "trackId": "1kGP_high_coverage_Illumina.chr1...phased_panel.vcf",
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": ".../ALL.chr1.phase3...genotypes.vcf.gz" },
-    "index": {
-      "location": { "uri": ".../ALL.chr1.phase3...genotypes.vcf.gz.tbi" }
-    },
-    "samplesTsvLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz"
-    }
-  },
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "colorBy": "population"
-    }
-  ]
-}
-```
-
-The samples file is a tab-separated table whose first column matches the VCF
-sample names; each additional column is a groupable attribute:
-
-```
-name	population
-HG01879	ACB
-HG01880	ACB
-NA20525	TSI
-```
+across 26 population codes) this way. For the TSV layout and the adapter and
+display slots, see
+[auto-coloring samples by metadata](/docs/config_guides/variant_track#auto-coloring-samples-by-metadata).
 
 <Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code (the colored strip down the left edge resolves into contiguous population blocks), while each genotype cell is shaded by allele dosage (which for diploid humans is just heterozygous: light blue, homozygous: dark blue)." src="/img/variants/population_1000genomes.png" />
 

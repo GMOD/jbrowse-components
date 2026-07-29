@@ -205,12 +205,17 @@ jobs:
         # rewrites the marker blocks embedded in the hand-written guides
         # (DISPLAY_TYPES, which needs the whole-repo DisplayType scan generate.ts
         # does, FILE_TYPES, and PROMOTABLE_SLOTS in display_defaults.md).
+        #
+        # api-docs/example-gaps.txt is the #example coverage list. It rides this
+        # same diff so a type documented without a usable example shows up as a
+        # `+ Name` line in the PR rather than as a console.warn nothing reads.
         run: |
           pnpm gendocs
-          if ! git diff --quiet website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides; then
+          DOCS="website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides website/scripts/api-docs/example-gaps.txt"
+          if ! git diff --quiet $DOCS; then
             echo "Error: generated docs are out of date!"
             echo "Run 'pnpm autogen' and commit the changes."
-            git diff --stat website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides
+            git diff --stat $DOCS
             exit 1
           fi
       - name: Check generated shaders are up to date

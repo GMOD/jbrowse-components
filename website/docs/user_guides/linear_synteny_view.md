@@ -12,6 +12,22 @@ either side independently while the ribbons follow.
 Forward-strand alignments are drawn in one color and inverted alignments in
 another, so a ribbon that twists or crosses marks an inversion or rearrangement.
 
+## Query, target, and CIGAR
+
+Every alignment format names the two genomes the same way, as the **query** and
+the **target**. The query is the top row here and the horizontal axis of a
+[dotplot](/docs/user_guides/dotplot_view); the target is the bottom row and the
+vertical axis. Which genome plays which role comes from the track, and **Swap**
+in the import form reverses it.
+
+How the two line up base by base is recorded per alignment as a **CIGAR**, a
+compact code where e.g. `120M3I45M` is 120 matching bases, 3 extra bases in one
+genome, then 45 more matches. It is what the ribbon tooltips report and what the
+CIGAR display modes paint, so an alignment file carrying no CIGARs can only be
+drawn as solid blocks. For which file formats carry one and which adapter reads
+each, see
+[the alignment format glossary](/docs/config_guides/synteny_track#alignment-format-glossary).
+
 ## Opening a linear synteny view
 
 Launch a new Linear synteny view. If your config already has a synteny track,
@@ -76,6 +92,29 @@ Each genome panel is a full linear genome view and is controlled independently:
 - Click a ribbon to highlight it across both panels
 - Right-click a ribbon for a context menu with **Center on feature**, which
   recenters both panels on that alignment
+
+## Coloring the ribbons
+
+The palette button in the view header sets what the ribbon color means, and
+carries a **Show color legend** toggle:
+
+- Default - the ribbon color plus CIGAR operation coloring, so insertions,
+  deletions, and skips inside an alignment are drawn in their own colors
+- Strand - forward and inverted alignments get different colors, so a ribbon
+  that twists reads as an inversion
+- Query / Target - color by the refName on this side or on the other side, for
+  telling contigs apart when one maps across several
+- Reference - color every level of a stacked view by the shared reference's
+  chromosome names, so a region keeps one color as it is traced down the stack
+- Identity - per-alignment sequence identity on a viridis ramp. It needs the
+  `=`/`X` CIGAR that `minimap2 --eqx` writes
+- Mean query identity - length-weighted identity across all alignments of a
+  query/target pair, which smooths a contig split into many hits
+- Mapping quality - per-alignment PAF MAPQ on a cividis ramp
+
+The settings button beside it has **Identity fade**, which modulates ribbon
+opacity by identity independently of the color mode, so low-identity blocks fade
+out without spending the color channel.
 
 ## View options
 

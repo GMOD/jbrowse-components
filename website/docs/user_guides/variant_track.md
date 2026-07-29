@@ -77,29 +77,9 @@ you picking a palette.
 
 For anything else, set the display's `color` slot to a
 [jexl](/docs/config_guides/jexl) expression. The variants plugin registers
-several helper functions you can call in one:
-
-| Function               | Returns                                             |
-| ---------------------- | --------------------------------------------------- |
-| `maf(feature)`         | minor allele frequency, computed from the genotypes |
-| `missingness(feature)` | fraction of no-call genotypes                       |
-| `impact(feature)`      | `HIGH`/`MODERATE`/`LOW`/`MODIFIER` from ANN/CSQ     |
-| `consequence(feature)` | the most severe consequence term as a string        |
-| `impactColor(feature)` | the impact color the preset uses                    |
-| `svTypeColor(feature)` | the SV-type color the preset uses                   |
-
-So a track can be colored by allele frequency without any preprocessing:
-
-```json
-{
-  "displayDefaults": {
-    "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
-  }
-}
-```
-
-`maf` and `missingness` work in filter expressions too, which is how the
-multi-sample displays' allele-frequency and missingness sliders are expressed.
+helper functions for it, so a track can be colored by minor allele frequency,
+missingness, or consequence impact without preprocessing the VCF: see
+[helper functions for jexl color expressions](/docs/config_guides/variant_track#helper-functions-for-jexl-color-expressions).
 
 ## See also
 

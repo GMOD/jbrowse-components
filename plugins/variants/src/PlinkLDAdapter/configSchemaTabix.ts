@@ -34,6 +34,14 @@ import { types } from '@jbrowse/mobx-state-tree'
  * [GWAS Manhattan LD coloring](/docs/config_guides/gwas_track#preparing-the-ld-file)
  * (LocusZoom-style r² to an index SNP). See either guide for generating the .ld
  * file with `plink --r2`.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'PlinkLDTabixAdapter',
+ *   uri: 'https://example.com/study.sorted.ld.gz',
+ * }
+ * ```
  */
 
 const PlinkLDTabixAdapter = ConfigurationSchema(

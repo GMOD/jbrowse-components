@@ -122,6 +122,50 @@ const track = {
 See [](/docs/config_guides/deploying) for the full pattern of generating
 `config.json` from a samplesheet in a CI/CD pipeline.
 
+## Loading bedMethyl as a multi-quantitative track
+
+[modkit](https://github.com/nanoporetech/modkit) pileup produces a
+[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file, a
+tab-separated BED format where each row reports the methylation fraction at a
+single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
+`BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
+subtrack per modification type:
+
+```bash
+modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
+bgzip output.bedmethyl
+tabix -p bed output.bedmethyl.gz
+```
+
+`--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
+fraction). Omit it for separate 5mC and 5hmC rows.
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "sample_modkit",
+  "name": "CpG methylation (modkit)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "bedGzLocation": {
+      "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "https://yourhost/sample_modkit.bedmethyl.gz.tbi"
+      }
+    }
+  }
+}
+```
+
+JBrowse reads the `score` column (column 11 in bedMethyl, the percent
+methylation 0–100) and uses the `name` column (column 4, the modification code
+such as `m` for 5mC or `h` for 5hmC) as the subtrack source label. In the "Add a
+track" form, pasting the URL to a `.bedmethyl.gz` file auto-detects
+`BedTabixAdapter` and `MultiQuantitativeTrack`.
+
 ## See also
 
 - [](/docs/user_guides/multiquantitative_track)

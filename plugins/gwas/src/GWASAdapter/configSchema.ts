@@ -42,6 +42,25 @@ export function scoreAdapterFields({
  * adapter for GWAS results files; a BedTabixAdapter with `scoreColumn`
  * defaulted to `neg_log_pvalue` so files load with a sensible Manhattan
  * plot score out of the box
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'GWASAdapter',
+ *   uri: 'https://example.com/summary_stats.txt.gz',
+ * }
+ * ```
+ *
+ * #example
+ * Reading a raw p-value column instead, transformed to -log10(p) at load:
+ * ```js
+ * {
+ *   type: 'GWASAdapter',
+ *   uri: 'https://example.com/summary_stats.txt.gz',
+ *   scoreColumn: 'pval',
+ *   scoreTransform: 'negLog10',
+ * }
+ * ```
  */
 const GWASAdapterConfigSchema = ConfigurationSchema(
   'GWASAdapter',

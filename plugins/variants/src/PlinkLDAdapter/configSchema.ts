@@ -31,6 +31,14 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * 1      729679   rs4970383   1      752566   rs3131972   0.0925926
  * 1      729679   rs4970383   1      754182   rs3131969   0.157316
  * ```
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'PlinkLDAdapter',
+ *   uri: 'https://example.com/study.ld',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

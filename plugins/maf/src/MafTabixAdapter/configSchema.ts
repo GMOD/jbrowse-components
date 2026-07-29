@@ -7,6 +7,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config MafTabixAdapter
  * #trackType MafTrack
  * #fileFormat maf | MAF (tabix)
+ * Multiple alignment format converted to a bgzipped, tabix-indexed BED. The
+ * `nhLocation` newick tree orders and labels the species rows; `refAssemblyName`
+ * names the MAF's reference species when it differs from the assembly name.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'MafTabixAdapter',
+ *   bedGzLocation: { uri: 'https://example.com/multiz.bed.gz' },
+ *   index: { location: { uri: 'https://example.com/multiz.bed.gz.tbi' } },
+ *   nhLocation: { uri: 'https://example.com/multiz.nh' },
+ * }
+ * ```
  */
 
 const configSchema = ConfigurationSchema(

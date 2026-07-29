@@ -33,15 +33,12 @@ Pick the adapter that matches how your alignment was produced:
 ## Alignment format glossary
 
 These formats all say the same thing in different dialects: this stretch of one
-genome matches that stretch of the other. Each adapter does the translating.
+genome matches that stretch of the other. Each adapter does the translating. The
+**query** and **target** roles, and the **CIGAR** that records how a pair of
+stretches lines up base by base, are the same across all of them and are
+explained in
+[query, target, and CIGAR](/docs/user_guides/linear_synteny_view#query-target-and-cigar).
 
-- **query / target** the two genomes being compared. The query goes on the
-  dotplot's horizontal axis and the synteny view's top row, the target on the
-  vertical axis and bottom row.
-- **CIGAR** a compact code for how two stretches line up base by base, e.g.
-  `120M3I45M` is 120 matching bases, 3 extra bases in one genome, then 45 more
-  matches. An alignment without one can only be drawn as a solid block, so the
-  view's CIGAR display modes have nothing to paint.
 - **PAF** a plain text table where each row is one matching region, produced by
   minimap2, wfmash, and most modern aligners.
 - **PIF** JBrowse's indexed version of PAF. The browser fetches only the region

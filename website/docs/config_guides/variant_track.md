@@ -67,6 +67,33 @@ reading `feature.INFO.CLNSIG[0]` or any other INFO key. See
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) for
 more jexl color examples.
 
+### Helper functions for jexl color expressions
+
+The variants plugin registers several helper functions for use in a jexl `color`
+expression:
+
+| Function               | Returns                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `maf(feature)`         | minor allele frequency, computed from the genotypes     |
+| `missingness(feature)` | fraction of no-call genotypes                           |
+| `impact(feature)`      | `HIGH`/`MODERATE`/`LOW`/`MODIFIER` from ANN/CSQ         |
+| `consequence(feature)` | the most severe consequence term as a string            |
+| `impactColor(feature)` | the impact color the **Consequence impact** preset uses |
+| `svTypeColor(feature)` | the SV-type color the **SV type** preset uses           |
+
+So a track can be colored by allele frequency without any preprocessing:
+
+```json
+{
+  "displayDefaults": {
+    "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
+  }
+}
+```
+
+`maf` and `missingness` also work in filter expressions, which is how the
+multi-sample displays' allele-frequency and missingness sliders are expressed.
+
 If your config must run on older JBrowse releases, use the equivalent
 `get(feature,'INFO').SVTYPE[0]` function form instead of property access. See
 [property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get).
@@ -89,6 +116,10 @@ preset ones:
   (one row per haplotype)
 - `minorAlleleFrequencyFilter` - hide variants below a minor-allele-frequency
   threshold
+- `maxMissingnessFilter` - hide variants whose fraction of no-call genotypes
+  rises above the threshold
+- `featureColor` - color each cell by the variant rather than by genotype
+  (covered below)
 - `showSidebarLabels` - show the per-sample row labels in the sidebar
 - `colorBy` - auto-color samples by a sample-metadata attribute on load (covered
   below)
@@ -131,6 +162,46 @@ displays, set the slot on each:
 
 These are initial defaults. Users can change them at runtime, and their choice
 is stored for that session only.
+
+### Coloring cells by the variant instead of the genotype
+
+`featureColor` overrides the per-genotype shading, painting every alt-carrying
+cell with a color derived from the variant itself. Two built-ins match the track
+menu's **Color by...** presets, described in
+[coloring by consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations)
+and
+[coloring by SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type).
+
+Consequence impact, via the `impactColor` helper:
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "featureColor": "jexl:impactColor(feature)"
+    }
+  ]
+}
+```
+
+SV type, via the literal value `svType`:
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "featureColor": "svType"
+    }
+  ]
+}
+```
+
+`featureColor` accepts any per-feature jexl expression, not just these presets:
+a plain CSS color, or an expression over `feature` attributes and the
+[helper functions](#helper-functions-for-jexl-color-expressions) above, the same
+as the single-sample `color` slot.
 
 ### Auto-coloring samples by metadata
 

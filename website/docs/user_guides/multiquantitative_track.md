@@ -48,53 +48,12 @@ Three ways to create one:
 tab-separated BED format where each row reports the methylation fraction at a
 single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
 `BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
-subtrack per modification type. For the per-read view of the same modified-base
-calls, see
+subtrack per modification type; see
+[Loading bedMethyl as a multi-quantitative track](/docs/config_guides/multiquantitative_track#loading-bedmethyl-as-a-multi-quantitative-track)
+for generating the file and the adapter config. For the per-read view of the
+same modified-base calls, see
 [Color by base modifications](/docs/user_guides/alignments_track#modifications-and-methylation)
 on the alignments track.
-
-### Generating the file
-
-```bash
-modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
-bgzip output.bedmethyl
-tabix -p bed output.bedmethyl.gz
-```
-
-`--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
-fraction). Omit it for separate 5mC and 5hmC rows.
-
-### Add-track UI
-
-In the "Add a track" form, paste the URL to your `.bedmethyl.gz` file. JBrowse
-detects the `.bedmethyl.gz` extension and selects `BedTabixAdapter` and
-`MultiQuantitativeTrack` automatically.
-
-### Config example
-
-```json
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "sample_modkit",
-  "name": "CpG methylation (modkit)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://yourhost/sample_modkit.bedmethyl.gz.tbi"
-      }
-    }
-  }
-}
-```
-
-JBrowse reads the `score` column (column 11 in bedMethyl, the percent
-methylation 0–100) and uses the `name` column (column 4, the modification code
-such as `m` for 5mC or `h` for 5hmC) as the subtrack source label.
 
 The COLO829 tumor modkit bedMethyl file is included in the
 [demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
