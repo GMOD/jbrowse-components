@@ -259,7 +259,7 @@ export interface FeatureLabelData {
 }
 
 // Returns the max rendered width of any label that will actually display for
-// this feature. Mirrors the visibility logic in useOverlayElements: name is
+// this feature. Mirrors the visibility logic in overlayElements: name is
 // gated on showLabels, description is gated on showDescriptions only (not
 // showLabels), and subfeature labels always render when present. Each textWidth
 // is the true measured width of the (already-truncated) label text, so the

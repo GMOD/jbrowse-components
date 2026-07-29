@@ -6,9 +6,10 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
-import { useFloatingLabels } from './useOverlayElements.tsx'
+import { FloatingLabelsLayer } from './overlayElements.tsx'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VR: VisibleRegion = {
   refName: 'ctgA',
@@ -40,10 +41,24 @@ const MODEL = {
   renderedShowDescriptions: false,
   labelFontSize: 11,
   height: 100,
+  contentHeight: 100,
   labelScrollBucket: 0,
-  selectedFeatureId: undefined,
+  featureItemMap: new Map<string, FeatureItemEntry>([
+    ['f1', { kind: 'feature', item: ITEM, vr: VR, data: DATA }],
+  ]),
+  renderDataMap: new Map([[0, DATA]]),
+  openContextMenu: () => {},
   selectFeatureById: () => {},
 }
+
+// Only the geometry the layer reads; the layer takes the real LGV type, and the
+// unit test drives it with this slice rather than instantiating a view.
+const VIEW = {
+  initialized: true,
+  trackWidthPx: 1000,
+  bpPerPx: 1,
+  visibleRegions: [VR],
+} as unknown as LinearGenomeViewModel
 
 function Harness({
   onLabelMouseOver,
@@ -52,20 +67,13 @@ function Harness({
   onLabelMouseOver: () => void
   onLabelMouseLeave: () => void
 }) {
-  const featureItemMap = new Map<string, FeatureItemEntry>([
-    ['f1', { kind: 'feature', item: ITEM, vr: VR, data: DATA }],
-  ])
-  return useFloatingLabels(
-    new Map([[0, DATA]]),
-    featureItemMap,
-    [VR],
-    true,
-    1000,
-    1,
-    MODEL,
-    () => {},
-    onLabelMouseOver,
-    onLabelMouseLeave,
+  return (
+    <FloatingLabelsLayer
+      model={MODEL}
+      view={VIEW}
+      onLabelMouseOver={onLabelMouseOver}
+      onLabelMouseLeave={onLabelMouseLeave}
+    />
   )
 }
 

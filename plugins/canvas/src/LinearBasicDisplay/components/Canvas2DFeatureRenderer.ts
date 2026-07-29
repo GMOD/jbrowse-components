@@ -392,7 +392,7 @@ function drawHighlightBox(
   labelContext: HighlightLabelContext,
 ) {
   // Region-clamped rect, same helper the on-screen overlay uses
-  // (useOverlayElements/addOverlay). Clamping matters even though the block
+  // (overlayElements/addOverlay). Clamping matters even though the block
   // scissor is up: a feature that merely TOUCHES this region's edge (the normal
   // shape at a displayed-region boundary, drawn entirely in the neighbour)
   // clamps to nothing here, and the reserved label width below would otherwise
@@ -401,7 +401,7 @@ function drawHighlightBox(
   if (rect) {
     // Reserve the floating-label width for a top-level feature so the box wraps
     // the glyph AND its label, exactly as the on-screen searchHighlightBox does
-    // (useOverlayElements addFeatureBox/computeExtraWidth). Measured off the
+    // (overlayElements addFeatureBox/computeExtraWidth). Measured off the
     // feature's full width, not the clamped rect, matching computeExtraWidth.
     // Subfeatures pass no labelData and get 0, mirroring on-screen where
     // kind !== 'feature' reserves nothing.
@@ -414,7 +414,7 @@ function drawHighlightBox(
           labelContext.fontSize,
         )
       : 0
-    // Mirror the on-screen overlay box (useOverlayElements/computeOverlayRect):
+    // Mirror the on-screen overlay box (overlayElements/computeOverlayRect):
     // 2px outset, top clamped into the content edge; then apply the scroll
     // offset the on-screen ScrollLockedOverlay applies via its -scrollTop
     // transform.
@@ -434,7 +434,7 @@ function drawHighlightBox(
 // scanning both arrays and filtering by membership can't double-box.
 //
 // Deliberately the ONLY one of the four on-screen overlay kinds
-// (useHighlightOverlays) that exports. Hover, the in-progress solo collection,
+// (HighlightLayer) that exports. Hover, the in-progress solo collection,
 // and the selection box are all live-session UI: a figure should show the data,
 // not what the user last moused over or clicked, and a feature left selected
 // from opening its details widget would otherwise border every export until the

@@ -1,6 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
+import { observer } from 'mobx-react'
 
+import PeptideCanvas from './PeptideCanvas.tsx'
 import {
   computeOverlayRect,
   highlightBoxColors,
@@ -19,10 +21,22 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface OverlayModel {
+type LGV = LinearGenomeViewModel
+
+// The two layers take narrow structural slices of the display rather than the
+// whole `LinearCanvasBaseDisplayModel`, so each can be rendered in a unit test
+// against a plain object (see overlayElements.test.tsx). The guards below prove
+// at compile time that the real model still satisfies both, so a renamed model
+// field is an error here instead of a silent undefined at runtime — the same
+// AssignableTo idiom baseModel.ts uses for the persisted highlight model.
+type AssignableTo<A extends B, B> = A
+
+interface FloatingLabelsModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   labelFontSize: number
@@ -30,8 +44,12 @@ interface OverlayModel {
   // (labelCullBand). The bucket, not raw scrollTop, keeps a scroll tick within
   // one bucket from rebuilding the label DOM.
   height: number
+  // virtual-scroll content height, sizing the peptide canvas
+  contentHeight: number
   labelScrollBucket: number
-  selectedFeatureId: string | undefined
+  featureItemMap: Map<string, FeatureItemEntry>
+  renderDataMap: Map<number, FeatureDataResult>
+  openContextMenu: (info: FeatureContextMenuInfo) => void
   selectFeatureById: (
     featureId: string,
     subfeatureInfo: SubfeatureInfo | undefined,
@@ -39,7 +57,7 @@ interface OverlayModel {
   ) => void
 }
 
-interface HighlightModel {
+interface HighlightBoxesModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   // resolved label size for the display mode; the boxes reserve label width, and
@@ -48,6 +66,7 @@ interface HighlightModel {
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
+  featureItemMap: Map<string, FeatureItemEntry>
   // render-item ids resolved from a declarative search highlight; addFeatureBox
   // no-ops any id not currently laid out (same as soloFeatureIdSet)
   highlightedFeatureIdSet: ReadonlySet<string>
@@ -59,8 +78,19 @@ interface HighlightModel {
   soloApplied: boolean
 }
 
-// Shared gate for both overlay builders: nothing to position until the view is
-// sized and at least one region is on screen.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ModelSatisfiesFloatingLabels = AssignableTo<
+  LinearCanvasBaseDisplayModel,
+  FloatingLabelsModel
+>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ModelSatisfiesHighlightBoxes = AssignableTo<
+  LinearCanvasBaseDisplayModel,
+  HighlightBoxesModel
+>
+
+// Shared gate for both layers: nothing to position until the view is sized and
+// at least one region is on screen.
 function overlaysReady(
   viewInitialized: boolean,
   width: number | undefined,
@@ -73,8 +103,19 @@ function overlaysReady(
 const useStyles = makeStyles()(theme => {
   const highlightBox = highlightBoxColors(theme.palette.highlight.main)
   return {
+    // Absolute layer holding the highlight boxes. Owned here rather than by the
+    // canvas body, so the layer and the boxes it wraps can't disagree about
+    // whether there is anything to wrap.
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      pointerEvents: 'none',
+    },
     // Absolute layer holding every floating label. It owns ONE delegated
-    // click/contextmenu/mousemove handler (see useFloatingLabels) rather than a
+    // click/contextmenu/mousemove handler (see the layer component below) rather than a
     // per-label closure, so repositioning during zoom/pan — which rebuilds all
     // labels each frame — allocates no per-feature handlers. pointerEvents:none
     // lets mouse events fall through to the canvas everywhere except over a
@@ -140,22 +181,29 @@ const useStyles = makeStyles()(theme => {
   }
 })
 
-export function useFloatingLabels(
-  renderDataMap: Map<number, FeatureDataResult>,
-  featureItemMap: Map<string, FeatureItemEntry>,
-  visibleRegions: VisibleRegion[],
-  viewInitialized: boolean,
-  width: number | undefined,
-  bpPerPx: number,
-  model: OverlayModel,
-  openContextMenu: (info: FeatureContextMenuInfo) => void,
+// Floating labels + the peptide canvas. Both derive purely from the laid-out
+// rows and view geometry — never from the cursor or hover state — so this is its
+// own observer: a mouse move (which only mutates the hover observables
+// HighlightLayer reads) never re-runs the per-feature label build.
+//
+// Labels follow the animated rows (`renderDataMap`) so they move with the glyphs
+// during a layout transition, while the canvas body hit-tests the destination
+// layout (`laidOutDataMap`) so hover targets the final positions.
+export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
+  model,
+  view,
+  onLabelMouseOver,
+  onLabelMouseLeave,
+}: {
+  model: FloatingLabelsModel
+  view: LGV
   onLabelMouseOver?: (
     item: FlatbushItem,
     displayedRegionIndex: number,
     e: React.MouseEvent,
-  ) => void,
-  onLabelMouseLeave?: () => void,
-) {
+  ) => void
+  onLabelMouseLeave?: () => void
+}) {
   const { classes, cx } = useStyles()
   const {
     renderedShowLabels,
@@ -163,11 +211,29 @@ export function useFloatingLabels(
     labelFontSize,
     height,
     labelScrollBucket,
+    featureItemMap,
+    renderDataMap,
+    openContextMenu,
     selectFeatureById,
   } = model
+  const viewInitialized = view.initialized
+  const width = viewInitialized ? view.trackWidthPx : undefined
+  const bpPerPx = view.bpPerPx
+  const visibleRegions = view.visibleRegions as VisibleRegion[]
+
+  const peptides = (
+    <PeptideCanvas
+      renderDataMap={renderDataMap}
+      visibleRegions={visibleRegions}
+      viewInitialized={viewInitialized}
+      width={width}
+      height={model.contentHeight}
+      bpPerPx={bpPerPx}
+    />
+  )
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
-    return null
+    return peptides
   }
 
   const elements: React.ReactElement[] = []
@@ -241,7 +307,7 @@ export function useFloatingLabels(
   )
 
   if (elements.length === 0) {
-    return null
+    return peptides
   }
 
   // One delegated handler set for the whole layer, resolving the label under
@@ -308,18 +374,22 @@ export function useFloatingLabels(
       }}
     >
       {elements}
+      {peptides}
     </div>
   )
-}
+})
 
-export function useHighlightOverlays(
-  featureItemMap: Map<string, FeatureItemEntry>,
-  visibleRegions: VisibleRegion[],
-  viewInitialized: boolean,
-  width: number | undefined,
-  bpPerPx: number,
-  model: HighlightModel,
-) {
+// Hover / selection / solo / search highlight boxes. Split from the labels
+// because this reads hoveredFeature/hoveredSubfeature, which change on every
+// mouse move — its own observer means a hover tick re-renders just these few
+// boxes, not the whole floating-label build.
+export const HighlightLayer = observer(function HighlightLayer({
+  model,
+  view,
+}: {
+  model: HighlightBoxesModel
+  view: LGV
+}) {
   const {
     hoveredFeature,
     hoveredSubfeature,
@@ -330,8 +400,13 @@ export function useHighlightOverlays(
     renderedShowLabels,
     renderedShowDescriptions,
     labelFontSize,
+    featureItemMap,
   } = model
   const { classes, cx } = useStyles()
+  const viewInitialized = view.initialized
+  const width = viewInitialized ? view.trackWidthPx : undefined
+  const bpPerPx = view.bpPerPx
+  const visibleRegions = view.visibleRegions as VisibleRegion[]
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
@@ -467,5 +542,9 @@ export function useHighlightOverlays(
     addFeatureBox(selectedFeatureId, classes.selectedBox, 'selected')
   }
 
-  return overlays.length > 0 ? overlays : null
-}
+  // The absolute layer is emitted here rather than by the caller so an empty box
+  // set renders nothing at all, instead of an empty full-size div.
+  return overlays.length > 0 ? (
+    <div className={classes.overlay}>{overlays}</div>
+  ) : null
+})

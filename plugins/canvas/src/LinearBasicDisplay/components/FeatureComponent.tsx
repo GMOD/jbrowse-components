@@ -18,7 +18,6 @@ import BottomRightIndicators from './BottomRightIndicators.tsx'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
-import PeptideCanvas from './PeptideCanvas.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
 import {
   hgvsHitLabel,
@@ -27,14 +26,10 @@ import {
   isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
-import {
-  useFloatingLabels,
-  useHighlightOverlays,
-} from './useOverlayElements.tsx'
+import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
-import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -67,20 +62,7 @@ const useStyles = makeStyles()({
     top: 0,
     left: 0,
   },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none',
-  },
 })
-
-function OverlayLayer({ children }: { children: React.ReactNode }) {
-  const { classes } = useStyles()
-  return children ? <div className={classes.overlay}>{children}</div> : null
-}
 
 const ContextMenu = observer(function ContextMenu({
   model,
@@ -107,90 +89,6 @@ const ContextMenu = observer(function ContextMenu({
       menuItems={items}
     />
   ) : null
-})
-
-// Floating labels + the peptide canvas derive purely from the laid-out rows and
-// view geometry — never from the cursor or hover state. Its own observer so a
-// mouse move (which only mutates the hover/selection observables read by
-// HighlightLayer) never re-runs the per-feature label build. Labels follow the
-// animated rows (renderDataMap) so they move with the glyphs during a layout
-// transition; FeatureBody's hit-testing reads the destination layout
-// (laidOutDataMap) so hover targets the final positions.
-const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
-  model,
-  view,
-  openContextMenu,
-  onLabelMouseOver,
-  onLabelMouseLeave,
-}: {
-  model: LinearCanvasBaseDisplayModel
-  view: LGV
-  openContextMenu: (info: FeatureContextMenuInfo) => void
-  onLabelMouseOver: (
-    item: FlatbushItem,
-    displayedRegionIndex: number,
-    e: React.MouseEvent,
-  ) => void
-  onLabelMouseLeave: () => void
-}) {
-  const renderDataMap = model.renderDataMap
-  const width = view.initialized ? view.trackWidthPx : undefined
-  const bpPerPx = view.bpPerPx
-  const visibleRegions = view.visibleRegions
-
-  const floatingLabelElements = useFloatingLabels(
-    renderDataMap,
-    model.featureItemMap,
-    visibleRegions,
-    view.initialized,
-    width,
-    bpPerPx,
-    model,
-    openContextMenu,
-    onLabelMouseOver,
-    onLabelMouseLeave,
-  )
-
-  return (
-    <>
-      {floatingLabelElements}
-      <PeptideCanvas
-        renderDataMap={renderDataMap}
-        visibleRegions={visibleRegions}
-        viewInitialized={view.initialized}
-        width={width}
-        height={model.contentHeight}
-        bpPerPx={bpPerPx}
-      />
-    </>
-  )
-})
-
-// Hover / selection / solo / search highlight boxes. Split out from the labels
-// because useHighlightOverlays reads hoveredFeature/hoveredSubfeature, which
-// change on every mouse move — keeping it in its own observer means a hover tick
-// re-renders just these few boxes, not the whole floating-label build.
-const HighlightLayer = observer(function HighlightLayer({
-  model,
-  view,
-}: {
-  model: LinearCanvasBaseDisplayModel
-  view: LGV
-}) {
-  const width = view.initialized ? view.trackWidthPx : undefined
-  const bpPerPx = view.bpPerPx
-  const visibleRegions = view.visibleRegions
-
-  const highlightOverlays = useHighlightOverlays(
-    model.featureItemMap,
-    visibleRegions,
-    view.initialized,
-    width,
-    bpPerPx,
-    model,
-  )
-
-  return <OverlayLayer>{highlightOverlays}</OverlayLayer>
 })
 
 // The isoform-collapse chip, driven by the `geneGlyphNotice` hook. Its own
@@ -443,7 +341,7 @@ const FeatureBody = observer(function FeatureBody({
     }
   }
 
-  // Shared by the canvas and the label layer (see useFloatingLabels): whichever
+  // Shared by the canvas and the label layer (see FloatingLabelsLayer): whichever
   // of the two the cursor was last over, exiting it drops the hover. Stable
   // identity so a hover tick — which re-renders FeatureBody for the cursor
   // style — doesn't force the label layer to rebuild every label. clearHover
@@ -493,7 +391,6 @@ const FeatureBody = observer(function FeatureBody({
         <FloatingLabelsLayer
           model={model}
           view={view}
-          openContextMenu={model.openContextMenu}
           onLabelMouseOver={onLabelMouseOver}
           onLabelMouseLeave={handleMouseLeave}
         />

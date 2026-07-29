@@ -660,7 +660,7 @@ test('showLabels adds label height to the feature row', () => {
   )
 
   // showLabels=false but showDescriptions=true: description is collapsed up
-  // into the vacated name row at relativeY=0 (see useOverlayElements), so it
+  // into the vacated name row at relativeY=0 (see overlayElements), so it
   // still occupies one row of height below the feature.
   const descOnly = layout(new Map([[0, mk()]]), keys, 1, false, true)
   expect(descOnly.get(0)!.flatbushItems[0]!.bottomPx).toBe(

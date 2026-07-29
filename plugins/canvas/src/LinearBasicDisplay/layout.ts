@@ -1214,7 +1214,7 @@ function applyLayoutToRegion(
 
   // Drop the whole entry for a feature that overflowed maxHeight: the feature
   // itself doesn't render, and we don't want to pay the React reconciliation cost
-  // of emitting thousands of off-screen <div> labels in useFloatingLabels.
+  // of emitting thousands of off-screen <div> labels in FloatingLabelsLayer.
   //
   // A decimated feature keeps its entry and loses only `nameLabel` — that is the
   // one label the decimation ruled on, and it's the one whose row height went

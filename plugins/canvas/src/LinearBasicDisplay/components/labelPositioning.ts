@@ -103,7 +103,7 @@ function computeLabelLeftPx(textWidth: number, bounds: FeatureBoundsPx) {
 
 // Places a label under its feature. The vertical position stacks name over
 // description over subfeature via each label's relativeY + padding. Same math
-// drives the DOM overlay (useOverlayElements) and the SVG export (renderSvg),
+// drives the DOM overlay (overlayElements) and the SVG export (renderSvg),
 // so any tweak here is reflected on both paths.
 export function computeLabelPosition(
   label: LabelMetrics,
@@ -131,7 +131,7 @@ export interface ResolvedLabel {
 }
 
 // The label render context threaded through both label consumers (the DOM
-// overlay in useOverlayElements and the SVG export in renderSvg): which labels
+// overlay in overlayElements and the SVG export in renderSvg): which labels
 // show, plus the display mode's resolved font size. fontSize is the single knob
 // that keeps the reserved row height, the name→description gap, and the drawn
 // text in agreement as compact modes shrink the text.
@@ -191,7 +191,7 @@ function resolveFeatureLabels(
 }
 
 // Walks a region's floatingLabelsData and emits one position-resolved label
-// list per in-bounds feature. Both the DOM overlay (useFloatingLabels) and the
+// list per in-bounds feature. Both the DOM overlay (FloatingLabelsLayer) and the
 // SVG export (renderSvg.renderLabels) call this so the "collapse description
 // when name is hidden" rule and the bounds math don't drift between paths.
 export function forEachRenderedLabel(
@@ -244,7 +244,7 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 // Walks every visible region and emits each feature's resolved labels exactly
 // once, even when a feature spans back-to-back regions (collapsed introns) and
 // thus appears in several regions' laidOutData. Owning the cross-region dedup
-// here (rather than in each caller) keeps the DOM overlay (useFloatingLabels)
+// here (rather than in each caller) keeps the DOM overlay (FloatingLabelsLayer)
 // and the SVG export (renderSvg) from drifting — the divergence that let the
 // export double-paint a spanning feature's label.
 //
