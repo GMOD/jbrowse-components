@@ -6,17 +6,21 @@ import {
   CopyToClipboardButton,
   Dialog,
   ErrorBanner,
+  ExternalLink,
   LoadingEllipses,
   MonospaceTextField,
 } from '@jbrowse/core/ui'
 import {
   addAndShowTrack,
+  assembleLocString,
   getRpcSessionId,
   getSession,
   isSessionWithAddTracks,
+  saveAs,
   toLocale,
 } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -33,7 +37,9 @@ import {
 import { observer } from 'mobx-react'
 
 import { defaultFilterFlags } from '../shared/util.ts'
-import FractionSlider from './FractionSlider.tsx'
+import ConsensusSettingsPanel from './ConsensusSettingsPanel.tsx'
+import { locStringsToRegions } from './locStringsToRegions.ts'
+import { useConsensusSettings } from './useConsensusSettings.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
@@ -46,6 +52,10 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 const MAX_CONSENSUS_BP = 500_000
 const MAX_DISPLAY_BP = 1_000_000
 
+function download(content: string, filename: string, type: string) {
+  saveAs(new Blob([content], { type }), filename)
+}
+
 interface ConsensusDisplay extends IAnyStateTreeNode {
   adapterConfig: Record<string, unknown>
   filterBy?: FilterBy
@@ -54,27 +64,55 @@ interface ConsensusDisplay extends IAnyStateTreeNode {
 const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   model,
   display,
-  regions,
+  trackName,
+  regions: selectedRegions,
   handleClose,
 }: {
   model: IAnyStateTreeNode
   display: ConsensusDisplay
+  trackName: string
   regions: Region[]
   handleClose: () => void
 }) {
-  const [minDepth, setMinDepth] = useState(1)
-  const [callFract, setCallFract] = useState(0.75)
-  const [ambiguityCodes, setAmbiguityCodes] = useState(false)
-  const [hetFract, setHetFract] = useState(0.5)
-  const [includeInsertions, setIncludeInsertions] = useState(true)
-  const [excludeSecondary, setExcludeSecondary] = useState(true)
+  const session = getSession(model)
+  const assemblyName = selectedRegions[0]!.assemblyName
+  const assembly = session.assemblyManager.get(assemblyName)
+  const [locStrings, setLocStrings] = useState(
+    selectedRegions.map(r => assembleLocString(r)).join(' '),
+  )
+  const debouncedLocStrings = useDebounce(locStrings, 500)
+
+  // the typed region replaces the rubberband selection outright, so the fetch,
+  // the FASTA headers and the size guard all read the same parsed regions.
+  // Ref name aliases and lengths have to be loaded first: parsing before that
+  // throws, which would read as a bad locstring rather than as not-ready-yet.
+  const assemblyReady = !!assembly?.initialized && !!assembly.regions
+  let regions: Region[] = []
+  let locError: unknown
+  if (assemblyReady) {
+    try {
+      regions = locStringsToRegions(debouncedLocStrings, assembly, assemblyName)
+    } catch (e) {
+      locError = e
+    }
+  }
+
+  const settings = useConsensusSettings()
+  const {
+    showOptions,
+    setShowOptions,
+    minDepth,
+    callFract,
+    ambiguityCodes,
+    hetFract,
+    includeInsertions,
+    excludeSecondary,
+  } = settings
 
   // The track's active filterBy flows through, but its default keeps secondary
-  // alignments, unlike samtools. Toggle the SECONDARY bit on the fetch's
-  // flagExclude so the consensus matches samtools by default while letting the
-  // user opt back in — clearing the bit (not just omitting filterBy) so
-  // unchecking actually includes secondary even when the track already excluded
-  // them.
+  // alignments, unlike samtools. The SECONDARY bit is set/cleared rather than
+  // left alone, so unchecking includes secondary even when the track itself
+  // excluded them.
   const base = display.filterBy ?? defaultFilterFlags
   const filterBy = {
     ...base,
@@ -85,28 +123,32 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
 
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_CONSENSUS_BP
+  const canFetch = assemblyReady && !locError && !tooLargeToFetch
 
   // undefined hetFract is what turns ambiguity off in computeConsensus
   const effectiveHetFract = ambiguityCodes ? hetFract : undefined
 
+  // every parameter goes in one nested object rather than as top-level key
+  // elements: useFetch reads an undefined/false element of an array key as
+  // "not ready, don't fetch", which an undefined hetFract (ambiguity codes off,
+  // the default) or an unchecked includeInsertions would trip, leaving the
+  // dialog computing forever. Nested, they are just JSON.stringify'd.
   const { data, error } = useFetch(
-    tooLargeToFetch
-      ? false
-      : [
+    canFetch
+      ? [
           'getConsensus',
-          regions.map(r => `${r.refName}:${r.start}-${r.end}`),
-          display.adapterConfig,
-          filterBy,
-          minDepth,
-          callFract,
-          // effectiveHetFract, not ambiguityCodes + hetFract: it's the only form
-          // of the two the RPC sees, so keying on the raw pair refetched an
-          // identical consensus on every drag of a disabled het slider.
-          effectiveHetFract,
-          includeInsertions,
-        ],
+          {
+            regions: regions.map(r => `${r.refName}:${r.start}-${r.end}`),
+            adapterConfig: display.adapterConfig,
+            filterBy,
+            minDepth,
+            callFract,
+            hetFract: effectiveHetFract,
+            includeInsertions,
+          },
+        ]
+      : false,
     async () => {
-      const session = getSession(model)
       const sessionId = getRpcSessionId(display)
       const results = await Promise.all(
         regions.map(async region => {
@@ -147,29 +189,47 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
     },
   )
 
-  const loading = !tooLargeToFetch && data === undefined && !error
+  const loading = canFetch && data === undefined && !error
   const sequence = data ? formatSeqFasta(data.records) : ''
   const vcf = data ? variantsToVcf(data.vcfEntries) : ''
   const variantCount = data
     ? data.vcfEntries.reduce((a, e) => a + e.variants.length, 0)
     : 0
   const sequenceTooLarge = sequence.length > MAX_DISPLAY_BP
+  const noSequence = !canFetch || loading || !!error
+  const noVariants = noSequence || !variantCount
 
   return (
     <Dialog
       maxWidth="xl"
       open
-      title="Consensus sequence"
+      title={`Consensus sequence — ${trackName}`}
       onClose={() => {
         handleClose()
       }}
     >
       <DialogContent style={{ width: '80em' }}>
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: 12, margin: 4 }}
+        >
+          <Typography variant="body2">Region</Typography>
+          <TextField
+            style={{ width: 320 }}
+            size="small"
+            variant="standard"
+            value={locStrings}
+            error={!!locError}
+            helperText={locError ? `${locError}` : undefined}
+            onChange={event => {
+              setLocStrings(event.target.value)
+            }}
+          />
+        </div>
         {tooLargeToFetch ? (
           <ErrorBanner
             error={
               new Error(
-                `Selected region (${toLocale(totalBp)}bp) is too large for a consensus; select up to ${toLocale(MAX_CONSENSUS_BP)}bp.`,
+                `Region (${toLocale(totalBp)}bp) is too large for a consensus; use up to ${toLocale(MAX_CONSENSUS_BP)}bp.`,
               )
             }
           />
@@ -178,87 +238,6 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         ) : loading ? (
           <LoadingEllipses message="Computing consensus" />
         ) : null}
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          At each position the reads &quot;vote&quot; for a base, matching
-          samtools consensus. With ambiguity codes on, a position where the
-          reads disagree reports an IUPAC code (e.g. R for A-or-G) instead of N,
-          and unlike samtools it is not capped at two alleles, so pooled or
-          higher-ploidy samples can show a real 3- or 4-way split.
-        </Typography>
-        <div
-          style={{
-            display: 'flex',
-            gap: 16,
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-          }}
-        >
-          <TextField
-            label="Min read depth"
-            helperText="positions covered by fewer reads than this are N, regardless of agreement"
-            type="number"
-            size="small"
-            value={minDepth}
-            slotProps={{ htmlInput: { min: 1, step: 1 } }}
-            onChange={event => {
-              const v = Number.parseInt(event.target.value, 10)
-              setMinDepth(Number.isFinite(v) && v >= 1 ? v : 1)
-            }}
-          />
-          <FractionSlider
-            label="Min call fraction"
-            helpText="the called base(s) must together account for at least this fraction of the reads, or it's N"
-            value={callFract}
-            onCommit={v => {
-              setCallFract(v)
-            }}
-          />
-          <FractionSlider
-            label="Min het fraction"
-            helpText="with ambiguity codes on, a base joins the call if its support is at least this fraction of the top base's (lower = more IUPAC codes)"
-            value={hetFract}
-            // Only reaches computeConsensus via effectiveHetFract, so with
-            // ambiguity codes off the control does nothing — say so rather than
-            // leaving it live and inert.
-            disabled={!ambiguityCodes}
-            onCommit={v => {
-              setHetFract(v)
-            }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={ambiguityCodes}
-                onChange={event => {
-                  setAmbiguityCodes(event.target.checked)
-                }}
-              />
-            }
-            label="IUPAC ambiguity codes"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={includeInsertions}
-                onChange={event => {
-                  setIncludeInsertions(event.target.checked)
-                }}
-              />
-            }
-            label="Include insertions"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={excludeSecondary}
-                onChange={event => {
-                  setExcludeSecondary(event.target.checked)
-                }}
-              />
-            }
-            label="Exclude secondary alignments"
-          />
-        </div>
         <MonospaceTextField
           fullWidth
           readOnly
@@ -271,18 +250,33 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               : sequence
           }
         />
-        <Typography variant="caption" color="text.secondary">
-          Variants are simply the positions where this consensus differs from
-          the reference. Base qualities are not used and the output has no
-          genotypes or quality scores, so use a variant caller if you need
-          those. Positions called N or an ambiguity code are left out.
+        <FormControlLabel
+          control={
+            <Checkbox
+              size="small"
+              checked={showOptions}
+              onChange={event => {
+                setShowOptions(event.target.checked)
+              }}
+            />
+          }
+          label={<Typography variant="body2">Show options</Typography>}
+        />
+        {showOptions ? <ConsensusSettingsPanel settings={settings} /> : null}
+        <Typography variant="caption" color="text.secondary" component="div">
+          Reads vote for a base at each position, matching samtools consensus.
+          Variants are the positions differing from the reference, without
+          genotypes or quality scores.{' '}
+          <ExternalLink href="https://jbrowse.org/jb2/docs/user_guides/consensus_sequence/">
+            Details
+          </ExternalLink>
         </Typography>
       </DialogContent>
       <DialogActions>
         <CopyToClipboardButton
           value={sequence}
           copiedLabel="Copied"
-          disabled={loading || !!error || sequenceTooLarge || tooLargeToFetch}
+          disabled={noSequence || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
@@ -290,14 +284,14 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         </CopyToClipboardButton>
         <Button
           variant="contained"
-          onClick={async () => {
-            const { saveAs } = await import('@jbrowse/core/util')
-            saveAs(
-              new Blob([sequence], { type: 'text/x-fasta;charset=utf-8' }),
+          onClick={() => {
+            download(
+              sequence,
               'jbrowse_consensus.fa',
+              'text/x-fasta;charset=utf-8',
             )
           }}
-          disabled={loading || !!error || tooLargeToFetch}
+          disabled={noSequence}
           color="primary"
           startIcon={<GetAppIcon />}
         >
@@ -305,14 +299,10 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         </Button>
         <Button
           variant="contained"
-          onClick={async () => {
-            const { saveAs } = await import('@jbrowse/core/util')
-            saveAs(
-              new Blob([vcf], { type: 'text/plain;charset=utf-8' }),
-              'jbrowse_consensus.vcf',
-            )
+          onClick={() => {
+            download(vcf, 'jbrowse_consensus.vcf', 'text/plain;charset=utf-8')
           }}
-          disabled={loading || !!error || tooLargeToFetch || !variantCount}
+          disabled={noVariants}
           color="primary"
           startIcon={<GetAppIcon />}
         >
@@ -346,7 +336,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             )
             handleClose()
           }}
-          disabled={loading || !!error || tooLargeToFetch || !variantCount}
+          disabled={noVariants}
           color="primary"
           startIcon={<AddIcon />}
         >

@@ -225,10 +225,17 @@ rubberband-select a region.
 
 The main scale bar's menu holds **Zoom to region**, **Get sequence** and **Copy
 range**, plus whatever the session adds: **Highlight region** and **Bookmark
-region**, and, when a synteny dataset in the session covers this assembly,
-**[Linear synteny view of selection](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at)**,
-which opens a panel per assembly that aligns to the selection, whether or not
-the synteny track itself is turned on.
+region**, and a **Launch** submenu collecting what the loaded plugins can start
+from the selection. That is where
+**[Linear synteny view](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at)**
+appears when a synteny dataset in the session covers this assembly — it opens a
+panel per assembly that aligns to the selection, whether or not the synteny
+track itself is turned on — alongside
+**[Consensus sequence](/docs/user_guides/consensus_sequence)** when an
+alignments track is open. Both name the track they run on, since that choice
+decides the result: consensus lists the view's alignments tracks as a submenu,
+while synteny — whose datasets are session-wide and can run to dozens — picks
+them in its dialog.
 
 ## Scalebar chromosome name menu
 

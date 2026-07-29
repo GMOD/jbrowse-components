@@ -10,6 +10,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
+import LaunchIcon from '@mui/icons-material/Launch'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -243,10 +244,14 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
 }
 
 /**
- * Build rubberband selection menu items
+ * Build rubberband selection menu items. `launchItems` are the plugin-supplied
+ * things a selection can start (`rubberBandLaunchMenuItems()`); they collect
+ * under one "Launch" submenu so the menu stays three actions plus a group
+ * however many plugins are loaded, and vanish entirely when none apply.
  */
 export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
+  launchItems: MenuItem[],
 ): MenuItem[] {
   const { leftOffset, rightOffset } = self
   const leftRef = leftOffset?.refName ?? ''
@@ -292,6 +297,16 @@ export function buildRubberBandMenuItems(
       icon: ContentCopyIcon,
       onClick: () => copyToClipboard(rangeString),
     },
+    ...(launchItems.length
+      ? [
+          {
+            label: 'Launch',
+            icon: LaunchIcon,
+            type: 'subMenu' as const,
+            subMenu: launchItems,
+          },
+        ]
+      : []),
   ]
 }
 

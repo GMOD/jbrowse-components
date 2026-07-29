@@ -14,6 +14,8 @@ import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
+import { findSubfeatureById } from './baseModelHelpers.ts'
+
 import type {
   FlatbushItem,
   SubfeatureInfo,
@@ -41,6 +43,7 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
         item: FlatbushItem
         subfeature?: SubfeatureInfo
         hgvsLabel?: string
+        tooltipText?: string
         displayedRegionIndex: number
         clientX: number
         clientY: number
@@ -108,6 +111,7 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
     item: { featureId, startBp, endBp, name, type },
     subfeature,
     hgvsLabel,
+    tooltipText,
     displayedRegionIndex,
   } = info
   const pinned = self.pinnedFeatureIdSet.has(featureId)
@@ -142,6 +146,46 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
             self.addFeatureHighlightForItem(target, region.refName)
           }
         }
+      },
+    }
+  }
+  // Mirrors highlightItem's two scopes: JSON info can be copied for the
+  // subfeature under the cursor or for the whole feature that contains it.
+  // `targetSubfeatureId` undefined means "top-level feature". Always fetches
+  // from `featureId` (the top-level id `item` always carries, subfeature or
+  // not — see FeatureMenuSelf) and descends when a subfeature is targeted, the
+  // same route selectFeatureById uses. `name` drives both the menu label and
+  // the copied-confirmation, so the two scopes stay distinguishable in the
+  // notification, not just the menu.
+  function copyJsonItem(name: string, targetSubfeatureId: string | undefined) {
+    return {
+      label: `Copy ${name}`,
+      icon: ContentCopyIcon,
+      onClick: () => {
+        void (async () => {
+          const session = getSession(self)
+          const parentFeature = await self.fetchFullFeature(
+            featureId,
+            displayedRegionIndex,
+          )
+          if (!parentFeature) {
+            return
+          }
+          const target = targetSubfeatureId
+            ? (findSubfeatureById(parentFeature, targetSubfeatureId) ??
+              parentFeature)
+            : parentFeature
+          try {
+            const { uniqueId: _, ...rest } = target.toJSON()
+            const { default: copy } =
+              await import('@jbrowse/core/util/copyToClipboard')
+            copy(JSON.stringify(rest, null, 4))
+            session.notify(`Copied ${name} to clipboard`, 'success')
+          } catch (e) {
+            console.error(e)
+            session.notifyError(`${e}`, e)
+          }
+        })()
       },
     }
   }
@@ -319,57 +363,84 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
         ...showHiddenFeaturesMenuItems(self),
       ],
     },
-    // The clicked base in transcript coordinates, which is how a clinical report
-    // names it. Absent — rather than disabled — when the click didn't land on a
-    // transcript at base zoom, since there is no honest position to offer then.
-    // The value is in the label so it's clear what lands on the clipboard.
-    ...(hgvsLabel
-      ? [
-          {
-            label: `Copy ${hgvsLabel}`,
-            icon: ContentCopyIcon,
-            onClick: () => {
-              void (async () => {
-                const session = getSession(self)
-                try {
-                  const { default: copy } =
-                    await import('@jbrowse/core/util/copyToClipboard')
-                  copy(hgvsLabel)
-                  session.notify(`Copied ${hgvsLabel}`, 'success')
-                } catch (e) {
-                  console.error(e)
-                  session.notifyError(`${e}`, e)
-                }
-              })()
-            },
-          },
-        ]
-      : []),
+    // Four possible entries (position, tooltip, and one or two JSON scopes)
+    // would clutter the top level as plain "Copy …" items, so they're grouped
+    // here — each still independently conditional within the submenu.
     {
-      label: 'Copy info to clipboard',
+      label: 'Copy to clipboard',
       icon: ContentCopyIcon,
-      onClick: () => {
-        void (async () => {
-          const session = getSession(self)
-          const fullFeature = await self.fetchFullFeature(
-            featureId,
-            displayedRegionIndex,
-          )
-          if (!fullFeature) {
-            return
-          }
-          try {
-            const { uniqueId: _, ...rest } = fullFeature.toJSON()
-            const { default: copy } =
-              await import('@jbrowse/core/util/copyToClipboard')
-            copy(JSON.stringify(rest, null, 4))
-            session.notify('Copied to clipboard', 'success')
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        })()
-      },
+      subMenu: [
+        // The clicked base in transcript coordinates, already qualified with
+        // the transcript accession (e.g. `EDEN.1:c.93+1` — see
+        // hgvsHitLabel), which is how a clinical report names it. Absent —
+        // rather than disabled — when the click didn't land on a transcript
+        // at base zoom, since there is no honest position to offer then.
+        ...(hgvsLabel
+          ? [
+              {
+                label: `Copy HGVS position (${hgvsLabel})`,
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  void (async () => {
+                    const session = getSession(self)
+                    try {
+                      const { default: copy } =
+                        await import('@jbrowse/core/util/copyToClipboard')
+                      copy(hgvsLabel)
+                      session.notify(`Copied ${hgvsLabel}`, 'success')
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    }
+                  })()
+                },
+              },
+            ]
+          : []),
+        // The exact text the hover tooltip showed for this hit (isoform/gene
+        // name, plus exon and HGVS position when the hit resolved to a
+        // transcript) — richer than the bare HGVS position above, and reuses
+        // what's already computed for the hover rather than re-fetching the
+        // feature. Present for nearly every hit (any named feature has at
+        // least a title row).
+        ...(tooltipText
+          ? [
+              {
+                label: 'Copy tooltip',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  void (async () => {
+                    const session = getSession(self)
+                    try {
+                      const { default: copy } =
+                        await import('@jbrowse/core/util/copyToClipboard')
+                      copy(tooltipText)
+                      session.notify(
+                        `Copied "${tooltipText.split('\n')[0]}" to clipboard`,
+                        'success',
+                      )
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    }
+                  })()
+                },
+              },
+            ]
+          : []),
+        // Full attribute dump (JSON), scoped the same way as Highlight above:
+        // with a subfeature under the cursor, offer that isoform by name
+        // ahead of the whole gene; otherwise just the one feature.
+        ...(subfeature
+          ? [
+              copyJsonItem(
+                subfeature.displayLabel ?? `this ${subfeatureNoun}`,
+                subfeature.featureId,
+              ),
+            ]
+          : []),
+        copyJsonItem(name ?? featureNoun, undefined),
+      ],
     },
   ]
 }

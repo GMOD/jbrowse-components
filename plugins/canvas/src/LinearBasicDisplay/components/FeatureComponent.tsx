@@ -23,6 +23,7 @@ import SoloSelectionChip from './SoloSelectionChip.tsx'
 import {
   hgvsHitLabel,
   hoverTooltip,
+  hoverTooltipText,
   isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
@@ -439,6 +440,9 @@ const FeatureBody = observer(function FeatureBody({
         // resolved here rather than in the menu: only the hit knows which base
         // was clicked and at what zoom
         hgvsHitLabel(result),
+        // same reasoning — the plain-text form of the tooltip this exact hit
+        // would show, for the "Copy tooltip" menu item
+        hoverTooltipText(result),
       )
     }
   }

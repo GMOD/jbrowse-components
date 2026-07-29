@@ -45,25 +45,47 @@ const region: Region = {
   end: 200,
 }
 
+function menuItems(session: AbstractSessionModel, openTrackIds: string[] = []) {
+  return syntenyRegionMenuItems({
+    label: 'Launch',
+    region,
+    session,
+    openTrackIds,
+  })
+}
+
+function dialogProps(queued: unknown[][]) {
+  return queued[0]![1] as {
+    region: Region
+    tracks: { trackId: string; name: string }[]
+  }
+}
+
 test('no synteny dataset for the assembly means no menu item', () => {
   const { session } = makeSession([track('t1', ['other', 'other2'])])
-  expect(syntenyRegionMenuItems({ label: 'Launch', region, session })).toEqual(
-    [],
-  )
+  expect(menuItems(session)).toEqual([])
 })
 
 test('no region means no menu item', () => {
   const { session } = makeSession([track('t1', ['volvox', 'volvox_ins'])])
   expect(
-    syntenyRegionMenuItems({ label: 'Launch', region: undefined, session }),
+    syntenyRegionMenuItems({
+      label: 'Launch',
+      region: undefined,
+      session,
+      openTrackIds: [],
+    }),
   ).toEqual([])
 })
 
-test('a single dataset gets a flat item that queues the dialog', () => {
+// One item however many datasets there are: the choice between them is a field
+// in the dialog, because this discovery is session-wide and has no ceiling.
+test('one flat item queues the dialog with every dataset', () => {
   const { session, queued } = makeSession([
     track('t1', ['volvox', 'volvox_ins']),
+    track('t2', ['volvox', 'volvox_del']),
   ])
-  const items = syntenyRegionMenuItems({ label: 'Launch', region, session })
+  const items = menuItems(session)
   expect(items.length).toBe(1)
   const item = items[0]!
   expect('label' in item && item.label).toBe('Launch')
@@ -71,21 +93,25 @@ test('a single dataset gets a flat item that queues the dialog', () => {
     throw new Error('expected a flat item')
   }
   item.onClick()
-  expect(queued.length).toBe(1)
+  expect(dialogProps(queued).tracks.map(t => t.name)).toEqual(['t1', 't2'])
 })
 
-test('several datasets become a submenu naming each', () => {
-  const { session } = makeSession([
-    track('t1', ['volvox', 'volvox_ins']),
-    track('t2', ['volvox', 'volvox_del']),
+// A config can declare far more synteny tracks than a session opens, and the
+// dialog opens on the first of this list — so it should be one the user has in
+// front of them rather than whatever the config happened to declare first.
+test('tracks open in the view sort ahead of the rest', () => {
+  const { session, queued } = makeSession([
+    track('closed', ['volvox', 'volvox_ins']),
+    track('open', ['volvox', 'volvox_del']),
   ])
-  const item = syntenyRegionMenuItems({ label: 'Launch', region, session })[0]!
-  if (!('subMenu' in item)) {
-    throw new Error('expected a submenu')
+  const item = menuItems(session, ['open'])[0]!
+  if (!('onClick' in item)) {
+    throw new Error('expected a flat item')
   }
-  expect(item.subMenu.map(f => ('label' in f ? f.label : ''))).toEqual([
-    't1',
-    't2',
+  item.onClick()
+  expect(dialogProps(queued).tracks.map(t => t.name)).toEqual([
+    'open',
+    'closed',
   ])
 })
 
@@ -160,12 +186,13 @@ test('the queued dialog gets the rounded region', () => {
     label: 'Launch',
     region: { ...region, start: 100.4, end: 200.6 },
     session,
+    openTrackIds: [],
   })[0]!
   if (!('onClick' in item)) {
     throw new Error('expected a flat item')
   }
   item.onClick()
-  const props = queued[0]![1] as { region: Region }
+  const props = dialogProps(queued)
   expect(props.region.start).toBe(100)
   expect(props.region.end).toBe(201)
 })

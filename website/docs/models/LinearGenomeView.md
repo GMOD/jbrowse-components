@@ -158,6 +158,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [getSelectedRegions](#method-getselectedregions)                         | Methods    | LinearGenomeView                      | Helper method for the fetchSequence.                                                                                                                                                                                        |
 | [exportSvg](#method-exportsvg)                                           | Methods    | LinearGenomeView                      | creates an svg export and save using FileSaver                                                                                                                                                                              |
 | [menuItems](#method-menuitems)                                           | Methods    | LinearGenomeView                      | return the view menu items                                                                                                                                                                                                  |
+| [rubberBandLaunchMenuItems](#method-rubberbandlaunchmenuitems)           | Methods    | LinearGenomeView                      | what a plugin can start from the selected region — a synteny view, a consensus call.                                                                                                                                        |
 | [rubberBandMenuItems](#method-rubberbandmenuitems)                       | Methods    | LinearGenomeView                      |                                                                                                                                                                                                                             |
 | [bpToPx](#method-bptopx)                                                 | Methods    | LinearGenomeView                      |                                                                                                                                                                                                                             |
 | [getHighlightCoords](#method-gethighlightcoords)                         | Methods    | LinearGenomeView                      | Map a highlight or bookmark region to its pixel position+width inside the tracks container.                                                                                                                                 |
@@ -889,6 +890,18 @@ return the view menu items
 
 ```ts
 type menuItems = () => MenuItem[]
+```
+
+#### method: rubberBandLaunchMenuItems
+
+what a plugin can start from the selected region — a synteny view, a consensus
+call. Extend this rather than `rubberBandMenuItems` so the entries collect under
+the menu's "Launch" submenu; that grouping is decided once here rather than by
+whichever contributor runs first, and keeps the rubberband menu itself short as
+plugins pile on.
+
+```ts
+type rubberBandLaunchMenuItems = () => MenuItem[]
 ```
 
 #### method: getHighlightCoords

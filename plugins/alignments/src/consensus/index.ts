@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
+import { launchTargetsMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
 
@@ -18,6 +19,10 @@ const ConsensusSequenceDialog = lazy(
   () => import('./ConsensusSequenceDialog.tsx'),
 )
 
+// "Get" is dropped along with the flat placement: under the rubberband menu's
+// "Launch" group the verb is already there.
+const CONSENSUS_LABEL = 'Consensus sequence'
+
 interface DisplayLike {
   type: string
   adapterConfig: Record<string, unknown>
@@ -27,12 +32,15 @@ interface TrackLike {
   displays: DisplayLike[]
 }
 
+// Which track a consensus is called from changes the answer, so it is always
+// named: launchTargetsMenuItem makes these the submenu under the entry, one
+// open alignments track included.
 function alignmentsDisplays(tracks: TrackLike[]) {
-  const out: { track: TrackLike; display: DisplayLike }[] = []
+  const out: { name: string; display: DisplayLike }[] = []
   for (const track of tracks) {
     for (const display of track.displays) {
       if (display.type === 'LinearAlignmentsDisplay') {
-        out.push({ track, display })
+        out.push({ name: `${getConf(track, 'name')}`, display })
       }
     }
   }
@@ -47,54 +55,41 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
         const viewType = pluggableElement as ViewType
         const lgv = viewType.stateModel as LinearGenomeViewStateModel
         viewType.stateModel = lgv.views(self => {
-          const superRubberBandMenuItems = self.rubberBandMenuItems
+          const superLaunchMenuItems = self.rubberBandLaunchMenuItems
           return {
-            rubberBandMenuItems() {
-              const displays = alignmentsDisplays(self.tracks)
-              if (!displays.length) {
-                return superRubberBandMenuItems()
-              }
-              const open = (display: DisplayLike) => {
-                const regions = self.getSelectedRegions(
-                  self.leftOffset,
-                  self.rightOffset,
-                )
-                if (!regions.length) {
-                  return
-                }
-                getSession(self).queueDialog(handleClose => [
-                  ConsensusSequenceDialog,
-                  {
-                    model: self,
-                    display,
-                    regions,
-                    handleClose: () => {
-                      handleClose()
-                      self.setOffsets()
+            rubberBandLaunchMenuItems() {
+              return [
+                ...superLaunchMenuItems(),
+                ...launchTargetsMenuItem({
+                  label: CONSENSUS_LABEL,
+                  icon: NotesIcon,
+                  entries: alignmentsDisplays(self.tracks),
+                  entryLabel: entry => entry.name,
+                  onSelect:
+                    ({ name, display }) =>
+                    () => {
+                      const regions = self.getSelectedRegions(
+                        self.leftOffset,
+                        self.rightOffset,
+                      )
+                      if (regions.length) {
+                        getSession(self).queueDialog(handleClose => [
+                          ConsensusSequenceDialog,
+                          {
+                            model: self,
+                            display,
+                            trackName: name,
+                            regions,
+                            handleClose: () => {
+                              handleClose()
+                              self.setOffsets()
+                            },
+                          },
+                        ])
+                      }
                     },
-                  },
-                ])
-              }
-              const item =
-                displays.length === 1
-                  ? {
-                      label: 'Get consensus sequence',
-                      icon: NotesIcon,
-                      onClick: () => {
-                        open(displays[0]!.display)
-                      },
-                    }
-                  : {
-                      label: 'Get consensus sequence',
-                      icon: NotesIcon,
-                      subMenu: displays.map(({ track, display }) => ({
-                        label: `${getConf(track, 'name')}`,
-                        onClick: () => {
-                          open(display)
-                        },
-                      })),
-                    }
-              return [...superRubberBandMenuItems(), item]
+                }),
+              ]
             },
           }
         })

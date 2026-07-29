@@ -1,15 +1,15 @@
 import PlaceholderIcon from '@mui/icons-material/CompareArrows'
 
-import { oneOrManyMenuItem } from './oneOrManyMenuItem.ts'
+import { launchTargetsMenuItem } from './launchTargetsMenuItem.ts'
 
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from './MenuTypes.ts'
 
 const selected: string[] = []
 
 function build(entries: string[]) {
   selected.length = 0
-  return oneOrManyMenuItem({
-    label: 'Linear synteny view of selection',
+  return launchTargetsMenuItem({
+    label: 'Linear synteny view',
     icon: PlaceholderIcon,
     entries,
     entryLabel: entry => `${entry} name`,
@@ -38,19 +38,20 @@ test('no entries gives no menu item', () => {
   expect(build([])).toEqual([])
 })
 
-// a submenu of one is a needless extra click
-test('one entry gives a flat item that selects it', () => {
+// the shape does not change with the count: one dataset still says which one,
+// where a flat item would have launched off an unnamed dataset
+test('one entry still becomes a submenu naming it', () => {
   const [item] = build(['ava'])
-  expect(labelOf(item)).toBe('Linear synteny view of selection')
-  expect(subMenu(item)).toBeUndefined()
-  click(item)
+  expect(labelOf(item)).toBe('Linear synteny view')
+  expect(subMenu(item)?.map(labelOf)).toEqual(['ava name'])
+  click(subMenu(item)?.[0])
   expect(selected).toEqual(['ava'])
 })
 
 // which dataset the new view is cut from is a real choice once there are several
 test('several entries become a submenu naming each', () => {
   const [item] = build(['ava', 'pggb'])
-  expect(labelOf(item)).toBe('Linear synteny view of selection')
+  expect(labelOf(item)).toBe('Linear synteny view')
   expect(subMenu(item)?.map(labelOf)).toEqual(['ava name', 'pggb name'])
   click(subMenu(item)?.[1])
   expect(selected).toEqual(['pggb'])

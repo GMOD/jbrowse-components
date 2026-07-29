@@ -8,6 +8,7 @@ import {
   buildSubfeatureFlatbushIndex,
   hgvsHitLabel,
   hoverTooltip,
+  hoverTooltipText,
   isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
@@ -605,6 +606,34 @@ test('hoverTooltip drops the HGVS position below base zoom', () => {
   expect(hoverTooltip(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toBe(
     'BRCA1-201<br/>exon 2/3',
   )
+})
+
+test('hoverTooltipText joins rows on a real newline instead of <br/>', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(
+    hoverTooltipText(
+      makeHit({
+        subfeature: { ...sub, displayLabel: 'BRCA1-201' },
+        peptide: makeAa('K', 0, 3, 123),
+      }),
+    ),
+  ).toBe('BRCA1-201\nK124')
+})
+
+// The mouseover config expression can return HTML (SanitizedHTML renders it
+// on-screen) — the clipboard copy should carry the reader's words, not the
+// markup around them.
+test('hoverTooltipText strips markup from the feature mouseover slot', () => {
+  expect(
+    hoverTooltipText(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: '<b>gene</b> mouseover',
+        },
+      }),
+    ),
+  ).toBe('gene mouseover')
 })
 
 test('hoverTooltip says nothing extra for a single-exon transcript', () => {

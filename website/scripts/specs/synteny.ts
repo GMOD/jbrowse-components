@@ -99,30 +99,33 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
     },
   )
   // the drag is on the scalebar strip above the tracks; the menu it raises
-  // offers the launch, and this config carries three all-vs-all datasets so the
-  // offer is a submenu naming each. Both menu rows go by testid rather than by
-  // text: the track's name is also its label in the view above, and a text match
-  // resolves to the first visible match, which is that label rather than the row.
+  // collects the launch under "Launch", which the selection frame shows opened
+  // so the figure names the entry rather than just the group. This config
+  // carries three all-vs-all datasets, and the choice between them is a field
+  // in the dialog rather than a menu of them — the dialog opens on the one this
+  // view has open. The menu rows go by testid rather than by text: the track's
+  // name is also its label in the view above, and a text match resolves to the
+  // first visible match, which is that label rather than the row.
   const select = [
     { type: 'drag' as const, from: { x: 375, y: 150 }, to: { x: 975, y: 150 } },
-    { type: 'waitForText' as const, text: 'Linear synteny view of selection' },
+    {
+      type: 'waitForSelector' as const,
+      selector: '[data-testid="cascading-submenu-launch"]',
+    },
+    {
+      type: 'click' as const,
+      selector: '[data-testid="cascading-submenu-launch"]',
+    },
+    {
+      type: 'waitForSelector' as const,
+      selector: '[data-testid="cascading-menuitem-linear_synteny_view"]',
+    },
     { type: 'delay' as const, ms: 500 },
   ]
   const openDialog = [
     {
       type: 'click' as const,
-      selector:
-        '[data-testid="cascading-submenu-linear_synteny_view_of_selection"]',
-    },
-    {
-      type: 'waitForSelector' as const,
-      selector:
-        '[data-testid="cascading-menuitem-e._coli_pangenome_(all-vs-all_paf)"]',
-    },
-    {
-      type: 'click' as const,
-      selector:
-        '[data-testid="cascading-menuitem-e._coli_pangenome_(all-vs-all_paf)"]',
+      selector: '[data-testid="cascading-menuitem-linear_synteny_view"]',
     },
     { type: 'waitForText' as const, text: 'Panels, top to bottom' },
     { type: 'delay' as const, ms: 4000 },
@@ -1489,7 +1492,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // (a focused subsection, not the whole region — reviewer; ~75% of the
       // previous drag span, centered on the same block)
       { type: 'drag', from: { x: 126, y: 259 }, to: { x: 224, y: 311 } },
-      { type: 'waitForText', text: 'Linear synteny view of selection' },
+      { type: 'waitForText', text: 'Linear synteny view' },
       { type: 'delay', ms: 1000 },
     ],
     stages: [
@@ -1499,7 +1502,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // dotplot view (views[0], so the first close_view button) and let it draw
       {
         actions: [
-          { type: 'click', text: 'Linear synteny view of selection' },
+          { type: 'click', text: 'Linear synteny view' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="synteny_canvas_done"]',

@@ -400,10 +400,11 @@ range query instead:
 
 The lanes say where a strain breaks from the backbone. The stacked view says
 what the break looks like on both sides of it. To go from one to the other,
-drag-select a region and pick **Linear synteny view of selection**: JBrowse
-reads that region back out of the same PAF, finds every assembly aligning to it,
-and opens a row for each with a ribbon band in between. Selecting the paa operon
-window above gives the five-strain stack for that locus alone.
+drag-select a region and pick **Launch → Linear synteny view**: with the
+all-vs-all track as the dialog's dataset, JBrowse reads that region back out of
+the same PAF. It finds every assembly aligning to it, and opens a row for each
+with a ribbon band in between. Selecting the paa operon window above gives the
+five-strain stack for that locus alone.
 
 The dialog lists the assemblies it found plus the one you selected in, top to
 bottom, and lets you reorder them before launching. That order is not cosmetic:
@@ -422,7 +423,7 @@ falls, and the palette button's **Show color legend** names the colors. **CIGAR
 display mode** in the view menu switches between colored indels, transparent
 ones, and none.
 
-<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Linear synteny view of selection. The dialog lists the four strains that align there, all checked, in the order their rows will stack, and the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. At this zoom the CIGAR shows: the wedges inside the ribbons are the insertions and deletions named in the legend." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view. The dialog lists the four strains that align there, all checked, in the order their rows will stack, and the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. At this zoom the CIGAR shows: the wedges inside the ribbons are the insertions and deletions named in the legend." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Reproduce it end to end
 

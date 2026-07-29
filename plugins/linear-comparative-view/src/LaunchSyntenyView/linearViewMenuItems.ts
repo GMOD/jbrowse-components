@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
@@ -12,7 +13,7 @@ import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VISIBLE_LABEL = 'Linear synteny view (visible region)'
-const SELECTION_LABEL = 'Linear synteny view of selection'
+const SELECTION_LABEL = 'Linear synteny view'
 
 function isLinearGenomeView(elt: { name: string }): elt is ViewType {
   return elt.name === 'LinearGenomeView'
@@ -40,7 +41,11 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
           // getSelectedRegions/dynamicBlocks below without an `as`.
           (self: LinearGenomeViewModel) => {
             const superMenuItems = self.menuItems
-            const superRubberBandMenuItems = self.rubberBandMenuItems
+            const superLaunchMenuItems = self.rubberBandLaunchMenuItems
+            // the dialog's dataset list is session-wide, so what is open here is
+            // what sorts it — see launchableTracks
+            const openTrackIds = () =>
+              self.tracks.map(track => getConf(track, 'trackId') as string)
             return {
               views: {
                 menuItems() {
@@ -49,18 +54,18 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                     label: VISIBLE_LABEL,
                     region: widestRegion(self.dynamicBlocks.contentBlocks),
                     session: getSession(self),
+                    openTrackIds: openTrackIds(),
                   })) {
                     pushLaunchViewMenuItem(items, item)
                   }
                   return items
                 },
 
-                // The rubberband menu is short and contextual, so this goes in
-                // flat rather than under a "Launch view" submenu — that grouping
-                // earns its keep in the long view menu, not here.
-                rubberBandMenuItems() {
+                // The view itself nests these under "Launch", so this
+                // contributes the entry and nothing about where it sits.
+                rubberBandLaunchMenuItems() {
                   return [
-                    ...superRubberBandMenuItems(),
+                    ...superLaunchMenuItems(),
                     ...syntenyRegionMenuItems({
                       label: SELECTION_LABEL,
                       region: widestRegion(
@@ -70,6 +75,7 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                         ),
                       ),
                       session: getSession(self),
+                      openTrackIds: openTrackIds(),
                     }),
                   ]
                 },

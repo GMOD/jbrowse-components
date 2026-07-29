@@ -43,7 +43,7 @@ function menuLabels(display: Display) {
   )
 }
 
-function open(display: Display, hgvsLabel?: string) {
+function open(display: Display, hgvsLabel?: string, tooltipText?: string) {
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos: [transcript] }),
@@ -51,7 +51,7 @@ function open(display: Display, hgvsLabel?: string) {
     ctgA,
   )
   display.setLoadedRegion(0, ctgA)
-  display.openContextMenu(gene, 0, 0, 0, transcript, hgvsLabel)
+  display.openContextMenu(gene, 0, 0, 0, transcript, hgvsLabel, tooltipText)
 }
 
 describe('HGVS position context menu', () => {
@@ -62,7 +62,7 @@ describe('HGVS position context menu', () => {
     const { display } = createDisplay()
     open(display, 'EDEN.1:c.93+1')
 
-    expect(menuLabels(display)).toContain('Copy EDEN.1:c.93+1')
+    expect(menuLabels(display)).toContain('Copy HGVS position (EDEN.1:c.93+1)')
   })
 
   // Absent rather than disabled: zoomed out, or off a transcript, there is no
@@ -73,9 +73,43 @@ describe('HGVS position context menu', () => {
     open(display)
 
     expect(
-      menuLabels(display).some(l => String(l).startsWith('Copy EDEN')),
+      menuLabels(display).some(l => String(l).startsWith('Copy HGVS')),
     ).toBe(false)
     // the rest of the menu is unaffected
-    expect(menuLabels(display)).toContain('Copy info to clipboard')
+    expect(menuLabels(display)).toContain('Open feature details')
+  })
+})
+
+describe('Copy tooltip context menu item', () => {
+  it('offers a tooltip copy when the hit resolved tooltip text', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    open(display, undefined, 'EDEN.1\nexon 2/3 c.93+1')
+
+    expect(menuLabels(display)).toContain('Copy tooltip')
+  })
+
+  // Absent rather than disabled: nothing to copy when the hit resolved no
+  // tooltip content (e.g. the label layer, which never sets it).
+  it('offers nothing when the hit resolved no tooltip text', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    open(display)
+
+    expect(menuLabels(display)).not.toContain('Copy tooltip')
+  })
+})
+
+describe('Feature info (JSON) copy', () => {
+  // Unlike the position and tooltip copies, this doesn't depend on the hit
+  // resolving a base or any text — the isoform and the gene it belongs to
+  // are always both available to copy.
+  it('offers both the subfeature and the whole feature, named individually', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    open(display)
+
+    expect(menuLabels(display)).toContain('Copy EDEN.1')
+    expect(menuLabels(display)).toContain('Copy EDEN')
   })
 })

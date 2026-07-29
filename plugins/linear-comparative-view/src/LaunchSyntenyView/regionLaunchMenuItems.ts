@@ -6,7 +6,6 @@ import { allSessionTracks, getSyntenyTracks } from '@jbrowse/synteny-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
 import { makeMateDiscovery } from './discoverMates.ts'
-import { oneOrManyMenuItem } from './oneOrManyMenuItem.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -27,17 +26,28 @@ interface LaunchableTrack {
 // connection counts, and session-wide rather than the view's own tracks because
 // the launch does not need the synteny track to be open — someone browsing
 // genes should still be offered it.
+//
+// That reach is also why the offer is a dialog rather than a menu of datasets:
+// a config can declare dozens of synteny tracks with none of them open, and all
+// of them land here. `openTrackIds` puts the view's own tracks at the front, so
+// the dataset the user is actually looking at is the one the dialog opens on
+// and the rest are a scroll away rather than an equal wall of names.
 function launchableTracks(
   session: AbstractSessionModel,
   assemblyName: string,
+  openTrackIds: string[],
 ): LaunchableTrack[] {
-  return getSyntenyTracks(allSessionTracks(session), [assemblyName]).map(
-    conf => ({
-      trackId: readConfObject(conf, 'trackId') as string,
-      name: getTrackName(conf, session),
-      conf,
-    }),
-  )
+  const tracks = getSyntenyTracks(allSessionTracks(session), [
+    assemblyName,
+  ]).map(conf => ({
+    trackId: readConfObject(conf, 'trackId') as string,
+    name: getTrackName(conf, session),
+    conf,
+  }))
+  return [
+    ...tracks.filter(track => openTrackIds.includes(track.trackId)),
+    ...tracks.filter(track => !openTrackIds.includes(track.trackId)),
+  ]
 }
 
 // The one block a launch runs on, out of however many the view or the selection
@@ -79,46 +89,56 @@ export function toWholeBpRegion(region: Region): Region {
   }
 }
 
-// Menu items that open a synteny view on `region`, one per synteny dataset that
-// could supply it. A single dataset is the common case and gets a flat item —
-// a submenu of one is a needless click; several become a submenu naming each,
-// since which alignment the panels come from is then a real choice.
+// One menu item that opens a synteny view on `region`, or nothing when no
+// dataset in the session covers it. Which dataset the panels are cut from
+// changes what the view shows, so it is a choice — but it is made in the dialog
+// alongside the panels and the window size, not in the menu: discovery is
+// session-wide (see launchableTracks), so the list has no ceiling, and a
+// cascading submenu of every synteny track in a config is worse than no naming
+// at all.
 //
-// Mirrors the graph-genome-view launcher's shape deliberately: same discovery
-// (session-wide, off what the track declares), same one-vs-many menu shape, so
-// the two "open another view on this region" entries read the same way.
+// Mirrors the graph-genome-view launcher's discovery deliberately (session-wide,
+// off what the track declares); the menu shapes diverge because that launch has
+// no dialog to move the choice into.
 export function syntenyRegionMenuItems({
   label,
   region,
   session,
+  openTrackIds,
 }: {
   label: string
   region: Region | undefined
   session: AbstractSessionModel
+  openTrackIds: string[]
 }): MenuItem[] {
   const roi = region ? toWholeBpRegion(region) : undefined
-  return roi
-    ? oneOrManyMenuItem({
-        label,
-        icon: CompareArrowsIcon,
-        entries: launchableTracks(session, roi.assemblyName),
-        entryLabel: track => track.name,
-        onSelect: track => () => {
-          session.queueDialog(handleClose => [
-            LaunchSyntenyViewForRegionDialog,
-            {
-              session,
-              region: roi,
-              track: { trackId: track.trackId, name: track.name },
-              discoverMates: makeMateDiscovery({
+  const tracks = roi
+    ? launchableTracks(session, roi.assemblyName, openTrackIds)
+    : []
+  return roi && tracks.length
+    ? [
+        {
+          label,
+          icon: CompareArrowsIcon,
+          onClick: () => {
+            session.queueDialog(handleClose => [
+              LaunchSyntenyViewForRegionDialog,
+              {
                 session,
-                track: track.conf,
                 region: roi,
-              }),
-              handleClose,
-            },
-          ])
+                tracks: tracks.map(({ trackId, name }) => ({ trackId, name })),
+                discoverMatesFor: (trackId: string) =>
+                  makeMateDiscovery({
+                    session,
+                    track: tracks.find(track => track.trackId === trackId)!
+                      .conf,
+                    region: roi,
+                  }),
+                handleClose,
+              },
+            ])
+          },
         },
-      })
+      ]
     : []
 }

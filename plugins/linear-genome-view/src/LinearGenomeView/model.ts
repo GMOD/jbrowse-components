@@ -1591,6 +1591,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return buildMenuItems(self as LinearGenomeViewModel)
       },
       /**
+       * #method
+       * what a plugin can start from the selected region — a synteny view, a
+       * consensus call. Extend this rather than `rubberBandMenuItems` so the
+       * entries collect under the menu's "Launch" submenu; that grouping is
+       * decided once here rather than by whichever contributor runs first, and
+       * keeps the rubberband menu itself short as plugins pile on.
+       */
+      rubberBandLaunchMenuItems(): MenuItem[] {
+        return []
+      },
+      /**
        * #getter
        * geometry of the overview scalebar — derived from displayedRegions,
        * width, and cytobandOffset so it stays cached by MobX
@@ -2177,7 +2188,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       rubberBandMenuItems(): MenuItem[] {
-        return buildRubberBandMenuItems(self as LinearGenomeViewModel)
+        return buildRubberBandMenuItems(
+          self as LinearGenomeViewModel,
+          self.rubberBandLaunchMenuItems(),
+        )
       },
 
       /**

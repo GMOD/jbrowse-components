@@ -229,22 +229,31 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     })
     view.setOffsets(bp(10000), bp(20000))
 
-    // volvox has many synteny datasets, so the offer is a submenu naming each.
-    // volvox_all_vs_all is the one spanning three assemblies, i.e. the only one
-    // here that can fill more than a single target panel.
-    const item = view
+    // one entry, under the rubberband menu's "Launch" group: volvox has many
+    // synteny datasets and the choice between them is a field in the dialog
+    const launch = view
       .rubberBandMenuItems()
-      .find(f => 'label' in f && f.label === 'Linear synteny view of selection')
-    if (!item || !('subMenu' in item)) {
-      throw new Error('expected a submenu of synteny datasets')
+      .find(f => 'label' in f && f.label === 'Launch')
+    if (!launch || !('subMenu' in launch)) {
+      throw new Error('expected a Launch submenu')
     }
-    const entry = item.subMenu.find(
-      f => 'label' in f && f.label === ALL_VS_ALL_TRACK_NAME,
+    const item = launch.subMenu.find(
+      f => 'label' in f && f.label === 'Linear synteny view',
     )
-    if (!entry || !('onClick' in entry)) {
-      throw new Error('expected the all-vs-all dataset in the submenu')
+    if (!item || !('onClick' in item)) {
+      throw new Error('expected the synteny launch entry')
     }
-    entry.onClick()
+    item.onClick()
+
+    // volvox_all_vs_all spans three assemblies, i.e. the only dataset here that
+    // can fill more than a single target panel, so the dialog is switched onto
+    // it from whichever it opened on
+    fireEvent.mouseDown(
+      await screen.findByRole('combobox', { name: 'Synteny dataset' }, delay),
+    )
+    fireEvent.click(
+      await screen.findByRole('option', { name: ALL_VS_ALL_TRACK_NAME }, delay),
+    )
 
     // every assembly the region aligns to arrives checked, so the payoff is one
     // click away rather than opt-in per panel

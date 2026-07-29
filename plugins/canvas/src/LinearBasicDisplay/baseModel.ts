@@ -394,6 +394,10 @@ export default function baseStateModelFactory(
               // position and the zoom it was read at. Absent for the label
               // layer, which is a click on a name rather than on a base.
               hgvsLabel?: string
+              // Plain-text form of the hover tooltip this hit would show (see
+              // hoverTooltipText), resolved at click time for the same reason
+              // as hgvsLabel. Absent for the label layer.
+              tooltipText?: string
               displayedRegionIndex: number
               clientX: number
               clientY: number
@@ -1960,11 +1964,13 @@ export default function baseStateModelFactory(
             clientY: number,
             subfeature?: SubfeatureInfo,
             hgvsLabel?: string,
+            tooltipText?: string,
           ) {
             self.contextMenuInfo = {
               item: featureInfo,
               subfeature,
               hgvsLabel,
+              tooltipText,
               displayedRegionIndex,
               clientX,
               clientY,

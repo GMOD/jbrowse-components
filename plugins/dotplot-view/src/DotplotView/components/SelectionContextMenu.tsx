@@ -46,11 +46,12 @@ export default function SelectionContextMenu({
           }),
         },
         {
-          // same wording as the linear genome view's rubberband entry: both
-          // launch a synteny view framed on the region just selected, and
-          // reading as one action across the two surfaces matters more than
-          // either menu's local phrasing
-          label: 'Linear synteny view of selection',
+          // same wording as the linear genome view's rubberband entry (which
+          // sits under its "Launch" group): both launch a synteny view framed
+          // on the region just selected, and reading as one action across the
+          // two surfaces matters more than either menu's local phrasing. Flat
+          // here — this menu is three items and has nothing else to group with.
+          label: 'Linear synteny view',
           onClick: act((down, up) => {
             model.onDotplotView(down, up)
           }),

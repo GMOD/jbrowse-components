@@ -21,9 +21,10 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 ## The convention
 
 1. **Hook `Core-extendPluggableElement`**, not a display-specific seam. Override
-   `menuItems()` (visible region) and/or `rubberBandMenuItems()` (selection) on
-   `LinearGenomeView`; override `trackMenuItems()`/`contextMenuItems()` on a
-   `DisplayType` when the entry point belongs to one track.
+   `menuItems()` (visible region) and/or `rubberBandLaunchMenuItems()`
+   (selection) on `LinearGenomeView`; override
+   `trackMenuItems()`/`contextMenuItems()` on a `DisplayType` when the entry
+   point belongs to one track.
 2. **Discover session-wide, not view-wide.** Scan `session.tracks` (via
    `allSessionTracks`, so connection tracks count) for tracks that can serve the
    region. The graph plugin's comment is the rationale: *"The graph track need
@@ -38,13 +39,37 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
    dead when those were removed."* Registration is checked first, because a
    session can hold tracks whose plugin isn't loaded and `getAdapterType`
    throws on an unregistered type.
-4. **Collapse the offer by count.** 0 capable tracks → no menu item at all;
-   1 → a flat item; N → a submenu naming each. In this repo that rule is
-   `LaunchSyntenyView/oneOrManyMenuItem.ts` (tested); in the graph plugin it is
-   inline in `subgraphMenuItems.ts`.
-5. **Group with `pushLaunchViewMenuItem`** (`@jbrowse/core/ui`) in long menus
-   (view menu, track menu) so offers collect under one "Launch view" submenu.
-   Rubberband items go in **flat** — that menu is short and contextual.
+4. **Always name the dataset the launch reads from — where it fits.** 0 capable
+   tracks → no menu item at all, always. Which dataset a launch is cut from
+   decides what the new view shows, so it is never left unsaid; *where* it is
+   said follows how big the list can get, because rule 2's session-wide
+   discovery has no ceiling:
+
+   - **Bounded list** (consensus: alignments tracks open in *this view*, so one
+     or two) → one entry whose submenu names each, a single track included.
+     `launchTargetsMenuItem` (`@jbrowse/core/ui`, tested) is that shape.
+   - **Unbounded list** (synteny: every synteny track in the session, and a
+     config can declare dozens with none of them open) → a flat entry, and the
+     dataset is the first field of the dialog it opens
+     (`LaunchSyntenyViewForRegionDialog`), where changing it refetches the
+     panel list. A cascading submenu of every synteny track in a config is
+     worse than the unnamed flat item it replaced. The list is sorted so the
+     view's own tracks come first, so the dialog opens on the one the user is
+     looking at — that is what `openTrackIds` on `syntenyRegionMenuItems` is
+     for.
+
+   A launcher with **no dialog** (the graph plugin) has nowhere to move the
+   choice to, so it owes the submenu; it still branches on count inline in
+   `subgraphMenuItems.ts`.
+5. **Never push a launch entry into a menu top level.** In the view and track
+   menus, group with `pushLaunchViewMenuItem` (`@jbrowse/core/ui`) so offers
+   collect under one "Launch view" submenu. In the linear view's rubberband
+   menu, extend **`rubberBandLaunchMenuItems()`** on the model rather than
+   `rubberBandMenuItems()`: the view wraps whatever that returns in a "Launch"
+   submenu (and omits the group entirely when it comes back empty), so the
+   grouping is decided once, in `LinearGenomeView/menuItems.ts`, instead of by
+   whichever plugin's `Core-extendPluggableElement` callback runs first. That
+   menu used to take these flat and was up to seven entries.
 6. **Take the widest block, never the first.** Both entry points hand the launch
    one region, but a linear view can be showing several: `dynamicBlocks
    .contentBlocks` and `getSelectedRegions()` both return display order, and a
@@ -102,13 +127,17 @@ injects it as a `sessionTracks` entry. Adding it to the hosted config makes both
 offers appear in one session. That config is hand-uploaded and never
 regenerated — audit by `curl`-ing it, don't assume the repo matches.
 
-**Lift `oneOrManyMenuItem` into `@jbrowse/core/ui`** beside
-`pushLaunchViewMenuItem`, and drop the graph plugin's inline copy. Cross-repo,
-so it lands behind a version bump — see `reference/PLUGIN_ABI_STABILITY.md`.
-Not worth doing for two callers alone; worth it the moment a third launcher
-appears, which is also when the N-plugins-each-overriding-`rubberBandMenuItems`
-shape starts to hurt and an actual `LaunchViewForRegion` extension point
-(plugins contribute offers, the LGV collects once) earns an ADR.
+**Drop the graph plugin's inline count-branching copy** in favor of
+`launchTargetsMenuItem`, now that the helper lives in `@jbrowse/core/ui` beside
+`pushLaunchViewMenuItem`. Cross-repo, so it lands behind a version bump — see
+`reference/PLUGIN_ABI_STABILITY.md`. Until then the graph offer is flat for a
+single dataset where the in-repo ones name it. That plugin has the unbounded
+list too (session-wide discovery) with no dialog to move it into, so the real
+question there is whether the launch should grow one.
+
+The other half of that old note is done: the LGV now collects rubberband offers
+itself through `rubberBandLaunchMenuItems()`, so plugins no longer each
+override `rubberBandMenuItems()` and fight over placement.
 
 **Give synteny a size guard.** A rubberband is bounded by the viewport, but the
 *visible region* entry is not — at whole-chromosome zoom the discovery RPC is a
@@ -178,7 +207,7 @@ graph track's own menu; synteny has no track-menu equivalent.
 
 ## Verifying a launcher
 
-Unit tests cover the pure parts (`oneOrManyMenuItem`, `panelOrder`,
+Unit tests cover the pure parts (`launchTargetsMenuItem`, `panelOrder`,
 `pickMatesForRegion`, `buildSyntenyViewSpec`). They are not enough — the jsdom
 integration test in `products/jbrowse-web/src/tests/LGVSynteny.test.tsx`
 ("launch a multi-panel synteny view from a region selection") drives

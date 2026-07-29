@@ -126,22 +126,15 @@ function tooltipRow(...parts: (string | undefined)[]) {
   return parts.filter(Boolean).join(' ')
 }
 
-// The full tooltip: its rows stack one per line, dropping any row that came
-// out empty (e.g. an unnamed feature with no transcript readout). Rendered as
-// HTML — see FeatureTooltip, which passes this through SanitizedHTML — so a
-// literal `<br/>` is a line break rather than sanitized-away text.
-function tooltipLines(...rows: string[]) {
-  return rows.filter(Boolean).join('<br/>')
-}
-
-// Tooltip text for a hit: the subfeature under the cursor names its containing
-// feature (a transcript/isoform, or a mature-peptide product), else the
-// top-level feature's resolved `mouseover` slot, on its own line. On a
-// transcript the exon and HGVS coordinate under the cursor are named too on a
-// second line — clinical reporting is written in those terms, and neither is
-// practical to work out by eye. A hovered amino-acid letter adds its residue
-// (e.g. `K124`) to that second line, so the isoform stays on its own.
-export function hoverTooltip(result: HitFeatureResult) {
+// The subfeature under the cursor names its containing feature (a
+// transcript/isoform, or a mature-peptide product) on its own row, else the
+// top-level feature's resolved `mouseover` slot. On a transcript the exon and
+// HGVS coordinate under the cursor are named too on a second row — clinical
+// reporting is written in those terms, and neither is practical to work out
+// by eye. A hovered amino-acid letter adds its residue (e.g. `K124`) to that
+// second row, so the isoform stays on its own. Empty rows (e.g. an unnamed
+// feature with no transcript readout) are dropped.
+function tooltipRows(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
@@ -149,7 +142,29 @@ export function hoverTooltip(result: HitFeatureResult) {
   const residue = peptide
     ? `${peptide.aminoAcid}${peptide.proteinIndex + 1}`
     : undefined
-  return tooltipLines(tooltipRow(title), tooltipRow(exon, hgvs, residue))
+  return [tooltipRow(title), tooltipRow(exon, hgvs, residue)].filter(Boolean)
+}
+
+// The full tooltip, as HTML — see FeatureTooltip, which passes this through
+// SanitizedHTML — so a literal `<br/>` is a line break rather than
+// sanitized-away text.
+export function hoverTooltip(result: HitFeatureResult) {
+  return tooltipRows(result).join('<br/>')
+}
+
+// The same content as plain text, for the clipboard: rows join on a real
+// newline instead of `<br/>`, and any markup the `mouseover` config
+// expression put in the title (harmless as HTML — FeatureTooltip only ever
+// renders it, never executes it) is stripped rather than copied as literal
+// tags.
+export function hoverTooltipText(result: HitFeatureResult) {
+  return tooltipRows(result)
+    .map(
+      row =>
+        new DOMParser().parseFromString(row, 'text/html').body.textContent ??
+        row,
+    )
+    .join('\n')
 }
 
 export function buildFeatureFlatbushIndex(

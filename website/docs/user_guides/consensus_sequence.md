@@ -14,9 +14,10 @@ variant track).
 ## Opening the panel
 
 Click and drag across the region of interest in the linear genome view, then
-choose "Get consensus sequence" from the menu that appears. If the view has more
-than one alignments track, the menu opens a submenu so you can pick which track
-to call from.
+choose **Launch → Consensus sequence** from the menu that appears, then the
+alignments track to call from. That last step is there even with a single track
+open — which track the reads come from decides the answer, so it is always named
+— and the dialog title repeats the name.
 
 Regions are limited to 500kb. Reads are much heavier to fetch than reference
 sequence, so a larger selection is refused.
@@ -37,15 +38,20 @@ absence. A winning base below the call fraction is N.
 
 ## Settings
 
+The panel opens showing just the called sequence. Tick **Show options** to
+adjust how it was called; every setting, including whether the options are
+showing, is remembered for the next consensus you run.
+
 - **Min read depth** - positions covered by fewer reads than this are N,
   regardless of how well the reads agree. Defaults to 1.
 - **Min call fraction** - the fraction of the weighted vote the call must
   account for. Defaults to 0.75.
-- **IUPAC ambiguity codes** - see below. Off by default.
-- **Min het fraction** - only applies with ambiguity codes on. Defaults to 0.5.
-- **Include insertions** - whether insertions supported by the reads are
-  inserted into the output. With this off, the output stays in the reference
-  coordinate frame.
+- **Report disagreeing positions as IUPAC ambiguity codes** - see below. Off by
+  default.
+- **Min het fraction** - appears once ambiguity codes are on, since it does
+  nothing otherwise. Defaults to 0.5.
+- **Include insertions supported by the reads** - with this off, the output
+  stays in the reference coordinate frame.
 - **Exclude secondary alignments** - on by default. Unmapped, QC-fail, and
   duplicate reads are always excluded.
 

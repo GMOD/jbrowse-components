@@ -36,14 +36,16 @@ a locus in a linear genome view that has a synteny dataset covering its
 assembly, and let JBrowse frame the panels for you. The dataset does not have to
 be an open track:
 
-- **Drag-select a region** on the scale bar and pick **Linear synteny view of
-  selection**. JBrowse reads that region back out of the alignment, finds every
-  assembly aligning to it, and opens a panel for each. The dialog lists them top
-  to bottom with up/down arrows, the assembly you selected in among them:
-  ribbons are drawn between neighbouring panels only, so that order decides
-  which comparisons the view can show. This is the form to use for an
-  [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus reaches
-  several assemblies at once.
+- **Drag-select a region** on the scale bar and pick **Launch → Linear synteny
+  view**. The dialog's first field is the **synteny dataset** to read the region
+  back out of, listing every one in the session that covers this assembly, the
+  view's own tracks first; changing it refetches the panels below. JBrowse finds
+  every assembly aligning to the region in that dataset and opens a panel for
+  each. The dialog lists them top to bottom with up/down arrows, the assembly
+  you selected in among them: ribbons are drawn between neighbouring panels
+  only, so that order decides which comparisons the view can show. This is the
+  form to use for an [all-vs-all](/docs/tutorials/allvsall_synteny) dataset,
+  where a locus reaches several assemblies at once.
 - **Right-click a single alignment** in a synteny track drawn in a linear genome
   view and pick **Launch synteny view for this position**, which opens the one
   pair that alignment describes. Its **Use CIGAR to map the current visible

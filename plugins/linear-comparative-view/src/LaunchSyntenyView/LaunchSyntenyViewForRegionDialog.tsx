@@ -16,6 +16,8 @@ import {
   CircularProgress,
   FormControlLabel,
   IconButton,
+  MenuItem,
+  TextField,
   Typography,
 } from '@mui/material'
 
@@ -61,17 +63,18 @@ const useStyles = makeStyles()({
 export default function LaunchSyntenyViewForRegionDialog({
   session,
   region,
-  track,
-  discoverMates,
+  tracks,
+  discoverMatesFor,
   handleClose,
 }: {
   session: AbstractSessionModel
   region: Region
-  track: { trackId: string; name: string }
-  discoverMates: MateDiscovery
+  tracks: { trackId: string; name: string }[]
+  discoverMatesFor: (trackId: string) => MateDiscovery
   handleClose: () => void
 }) {
   const { classes } = useStyles()
+  const [trackId, setTrackId] = useState(tracks[0]!.trackId)
   const [rows, setRows] = useState<PanelRow[] | undefined>()
   const [error, setError] = useState<unknown>()
   const [flipReversedMates, setFlipReversedMates] = useState(true)
@@ -79,17 +82,22 @@ export default function LaunchSyntenyViewForRegionDialog({
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
+  const track = tracks.find(t => t.trackId === trackId)!
 
   // Hand-rolled rather than useFetch because the point here is the cleanup: a
   // selection can be a whole chromosome, and useFetch's fetcher takes the cache
   // key, with no way to hand it a stop token, so dismissing the dialog left the
   // RPC running. The token is created and stopped by the same effect, so its
-  // lifetime is the fetch's. `discoverMates` is stable — queueDialog resolves
-  // the dialog's props once, at the point the menu item was clicked.
+  // lifetime is the fetch's. `discoverMatesFor` is stable — queueDialog resolves
+  // the dialog's props once, at the point the menu item was clicked — so this
+  // re-runs on the dataset the user picks and nothing else, and the cleanup
+  // stops the discovery for the dataset they picked away from.
   useEffect(() => {
     const stopToken = createStopToken()
     let alive = true
-    discoverMates(stopToken)
+    setRows(undefined)
+    setError(undefined)
+    discoverMatesFor(trackId)(stopToken)
       .then(candidates => {
         if (alive) {
           // seeded once from the fetch rather than derived every render,
@@ -107,7 +115,7 @@ export default function LaunchSyntenyViewForRegionDialog({
       alive = false
       stopStopToken(stopToken)
     }
-  }, [discoverMates, region.assemblyName])
+  }, [discoverMatesFor, trackId, region.assemblyName])
   const { anchorIndex, mates } = launchOrder(rows ?? [])
 
   return (
@@ -127,7 +135,7 @@ export default function LaunchSyntenyViewForRegionDialog({
             windowSize,
             flipReversedMates,
             collapseEmptyRows,
-            trackId: track.trackId,
+            trackId,
             session,
             region,
           })
@@ -145,8 +153,27 @@ export default function LaunchSyntenyViewForRegionDialog({
           start: region.start,
           end: region.end,
         })}{' '}
-        ({getBpDisplayStr(region.end - region.start)}) on {track.name}
+        ({getBpDisplayStr(region.end - region.start)})
       </Typography>
+      {/* First field, and present even for a single dataset: the panel list
+       below is what this dataset aligns to, so which one it is has to be read
+       before the list means anything. Changing it refetches that list. */}
+      <TextField
+        select
+        fullWidth
+        margin="dense"
+        label="Synteny dataset"
+        value={trackId}
+        onChange={event => {
+          setTrackId(event.target.value)
+        }}
+      >
+        {tracks.map(t => (
+          <MenuItem key={t.trackId} value={t.trackId}>
+            {t.name}
+          </MenuItem>
+        ))}
+      </TextField>
       {/* outside the scroller below: with a dozen panels the list scrolls, and
        the line saying what the order means is what would scroll away first */}
       <Typography variant="subtitle2">
@@ -155,9 +182,11 @@ export default function LaunchSyntenyViewForRegionDialog({
       </Typography>
       {error ? <ErrorMessage error={error} /> : null}
       {!rows && !error ? <CircularProgress size={20} /> : null}
+      {/* names the dataset rather than saying "this dataset": with the selector
+       above, the fix is to try another one */}
       {rows && rows.length === 1 ? (
         <Typography variant="body2">
-          Nothing in this dataset aligns to this region
+          Nothing in {track.name} aligns to this region
         </Typography>
       ) : null}
       <div className={classes.panels}>

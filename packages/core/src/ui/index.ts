@@ -110,6 +110,7 @@ export type {
   SubMenuItem,
 } from './MenuTypes.ts'
 export { pushLaunchViewMenuItem } from './launchViewMenu.ts'
+export { launchTargetsMenuItem } from './launchTargetsMenuItem.ts'
 export { default as Crosshairs } from './Crosshairs.tsx'
 export { hoverBoxStyle } from './hoverBoxStyle.ts'
 export { useMouseTracking } from './useMouseTracking.ts'

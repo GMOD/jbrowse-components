@@ -35,13 +35,25 @@ function mates(...assemblyNames: string[]): MateCandidate[] {
 function renderDialog(
   discoverMates: (stopToken: StopToken) => Promise<MateCandidate[]>,
 ) {
+  return renderDialogFor(
+    [{ trackId: 't1', name: 'all vs all' }],
+    () => discoverMates,
+  )
+}
+
+function renderDialogFor(
+  tracks: { trackId: string; name: string }[],
+  discoverMatesFor: (
+    trackId: string,
+  ) => (stopToken: StopToken) => Promise<MateCandidate[]>,
+) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <LaunchSyntenyViewForRegionDialog
         session={{} as AbstractSessionModel}
         region={region}
-        track={{ trackId: 't1', name: 'all vs all' }}
-        discoverMates={discoverMates}
+        tracks={tracks}
+        discoverMatesFor={discoverMatesFor}
         handleClose={() => {}}
       />
     </ThemeProvider>,
@@ -109,7 +121,59 @@ test('the region size is stated alongside the locstring', async () => {
     await screen.findByText(
       (_text, element) =>
         element?.tagName === 'P' &&
-        element.textContent === 'ctgA:1..50,000 (50Kbp) on all vs all',
+        element.textContent === 'ctgA:1..50,000 (50Kbp)',
     ),
   ).toBeTruthy()
+})
+
+// The dataset list is session-wide and can run to dozens, so it is a field here
+// rather than a menu of them — which only works if picking one refetches the
+// panels, since the panel list is what that dataset aligns to.
+test('picking another dataset refetches its panels and drops the old ones', async () => {
+  renderDialogFor(
+    [
+      { trackId: 't1', name: 'all vs all' },
+      { trackId: 't2', name: 'mcscan' },
+    ],
+    trackId => () =>
+      Promise.resolve(
+        trackId === 't1' ? mates('volvox_ins') : mates('volvox_del'),
+      ),
+  )
+  expect(await screen.findByLabelText('volvox_ins')).toBeTruthy()
+
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Synteny dataset' }))
+  fireEvent.click(screen.getByRole('option', { name: 'mcscan' }))
+
+  expect(await screen.findByLabelText('volvox_del')).toBeTruthy()
+  expect(screen.queryByLabelText('volvox_ins')).toBeNull()
+})
+
+// switching away is the same abandonment as closing: the discovery it started
+// is a whole-chromosome fetch nobody is waiting for any more
+test('switching dataset stops the discovery in flight', async () => {
+  const tokens: Record<string, StopToken> = {}
+  renderDialogFor(
+    [
+      { trackId: 't1', name: 'all vs all' },
+      { trackId: 't2', name: 'mcscan' },
+    ],
+    trackId => stopToken => {
+      tokens[trackId] = stopToken
+      return trackId === 't1'
+        ? new Promise<MateCandidate[]>(() => {})
+        : Promise.resolve(mates('volvox_del'))
+    },
+  )
+
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Synteny dataset' }))
+  fireEvent.click(screen.getByRole('option', { name: 'mcscan' }))
+  expect(await screen.findByLabelText('volvox_del')).toBeTruthy()
+
+  expect(() => {
+    checkStopToken(tokens.t1)
+  }).toThrow(/aborted/i)
+  expect(() => {
+    checkStopToken(tokens.t2)
+  }).not.toThrow()
 })

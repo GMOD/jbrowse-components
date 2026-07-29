@@ -59,10 +59,10 @@ track header.
 
 A locus that no single chain block covers (a gene that several blocks tile, or
 one you have only navigated to) has the other route: drag-select it on the scale
-bar and pick **Linear synteny view of selection**. That one starts from the
-region rather than from a block, and offers every assembly the session's synteny
-datasets align to it, so it is also what to use when more than one liftOver
-track is on. See
+bar and pick **Launch → Linear synteny view**, whose dialog picks the synteny
+dataset to read it from. That one starts from the region rather than from a
+block, and offers every assembly the session's synteny datasets align to it, so
+it is also what to use when more than one liftOver track is on. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
 ## Two settings worth changing

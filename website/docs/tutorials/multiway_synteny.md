@@ -281,9 +281,10 @@ genes.
 
 The stack above is fixed at load time, and rebuilding it by hand to put a
 different genome in the middle is tedious. Instead, drag-select the locus in one
-row's scale bar and pick **Linear synteny view of selection**: because the track
-lists all three genomes, the dialog finds both of the others and opens a row for
-each, with up/down arrows to order them before launching.
+row's scale bar and pick **Launch → Linear synteny view**: with the MCScan track
+as the dialog's dataset, and because it lists all three genomes, the dialog
+finds both of the others and opens a row for each, with up/down arrows to order
+them before launching.
 
 The row you selected in is in that list too, so the whole stack is orderable
 from one place: select in any row, drag grape to the middle, and you get the
