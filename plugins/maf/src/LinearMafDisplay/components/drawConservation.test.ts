@@ -86,3 +86,58 @@ test('bases outside the block scissor span do not bleed into neighbors', () => {
   )
   expect(Array.from(count)).toEqual([0, 0, 1, 1, 0, 0])
 })
+
+// [bpLo, bpHi) is the fast-path skip for the buffered region's off-block tail.
+test('scores outside the bp bound are skipped', () => {
+  const sum = new Float32Array(6)
+  const count = new Uint32Array(6)
+  accumulateConservation(
+    sum,
+    count,
+    new Float32Array(6).fill(1),
+    0,
+    bp => bp,
+    0,
+    6,
+    2,
+    4,
+  )
+  expect(Array.from(count)).toEqual([0, 0, 1, 1, 0, 0])
+})
+
+// The bound only has to be conservative — the per-position clamp is what
+// decides. A bound wider than the block changes nothing.
+test('a bp bound wider than the data is a no-op', () => {
+  const sum = new Float32Array(3)
+  const count = new Uint32Array(3)
+  accumulateConservation(
+    sum,
+    count,
+    new Float32Array(3).fill(1),
+    0,
+    bp => bp,
+    0,
+    3,
+    -100,
+    100,
+  )
+  expect(Array.from(count)).toEqual([1, 1, 1])
+})
+
+// coverageStartPos offsets the array, so the bound is in genomic bp, not index.
+test('the bp bound is genomic, offset by coverageStartPos', () => {
+  const sum = new Float32Array(4)
+  const count = new Uint32Array(4)
+  accumulateConservation(
+    sum,
+    count,
+    new Float32Array(4).fill(1),
+    100,
+    bp => bp - 100,
+    0,
+    4,
+    101,
+    103,
+  )
+  expect(Array.from(count)).toEqual([0, 1, 1, 0])
+})

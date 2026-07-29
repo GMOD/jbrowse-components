@@ -1,4 +1,4 @@
-import { accumulateRowIdentity, identityColor } from './drawRowIdentity.ts'
+import { IdentityColumns, identityColor } from './drawRowIdentity.ts'
 
 // test only
 // eslint-disable-next-line  @typescript-eslint/no-misused-spread
@@ -6,6 +6,25 @@ const bytes = (s: string) => new Uint8Array([...s].map(c => c.charCodeAt(0)))
 
 // one pixel per bp, wide enough that nothing clamps
 const identityMapper = (bp: number) => bp
+
+// Build one block's columns and splat a single row through them — the two-call
+// shape `drawRowIdentity` uses per block, collapsed for the single-row cases
+// below.
+function accumulateRowIdentity(
+  matchSum: Float32Array,
+  classCount: Float32Array,
+  rowBase: number,
+  refBytes: Uint8Array,
+  alignmentBytes: Uint8Array,
+  startBp: number,
+  bpToX: (bp: number) => number,
+  xLo: number,
+  xHi: number,
+) {
+  const columns = new IdentityColumns()
+  columns.build(refBytes, startBp, bpToX, xLo, xHi)
+  columns.accumulate(matchSum, classCount, rowBase, alignmentBytes)
+}
 
 test('matches vs mismatches against the reference', () => {
   const match = new Float32Array(4)
@@ -155,6 +174,41 @@ test('rowBase confines a row to its slice of the shared accumulators', () => {
   )
   expect(Array.from(cls)).toEqual([0, 0, 0, 1, 1, 1])
   expect(Array.from(match)).toEqual([0, 0, 0, 1, 0, 1])
+})
+
+// The column buffers outlive one block (they're reused for the whole draw
+// pass), so a shorter block must not read the previous block's tail.
+test('rebuilding for a shorter block does not leak the previous block', () => {
+  const columns = new IdentityColumns()
+  columns.build(bytes('ACGTAC'), 0, identityMapper, 0, 6)
+  columns.build(bytes('AC'), 0, identityMapper, 0, 6)
+  const match = new Float32Array(6)
+  const cls = new Float32Array(6)
+  columns.accumulate(match, cls, 0, bytes('AC'))
+  expect(Array.from(cls)).toEqual([1, 1, 0, 0, 0, 0])
+  expect(Array.from(match)).toEqual([1, 1, 0, 0, 0, 0])
+})
+
+// A row shorter than the reference has no data past its end, so those columns
+// are absent rather than mismatched — matching where `renderBases` and
+// `buildInstanceBuffer` stop. Read as mismatches, a truncated row drew as a
+// solid 0%-identity (divergent red) band instead of dropping out.
+test('a row shorter than the reference is absent past its end, not mismatched', () => {
+  const match = new Float32Array(4)
+  const cls = new Float32Array(4)
+  accumulateRowIdentity(
+    match,
+    cls,
+    0,
+    bytes('ACGT'),
+    bytes('AC'),
+    0,
+    identityMapper,
+    0,
+    4,
+  )
+  expect(Array.from(cls)).toEqual([1, 1, 0, 0])
+  expect(Array.from(match)).toEqual([1, 1, 0, 0])
 })
 
 test('identityColor ramps from divergent red through grey to conserved blue', () => {

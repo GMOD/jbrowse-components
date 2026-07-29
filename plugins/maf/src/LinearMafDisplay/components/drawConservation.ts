@@ -50,6 +50,13 @@ export function conservationTicks(conservationHeight: number): YScaleTicks {
  * `+scissorW`), NOT the whole canvas: the fetched region is the *buffered*
  * one, so its out-of-block bp map past the block's screen edges and would
  * otherwise paint over the neighboring region — see `drawConservation`.
+ *
+ * `[bpLo, bpHi)` skips the scores that lie outside the block entirely. It is a
+ * pure fast-path bound and only has to be *conservative*: the per-position
+ * `lo`/`hi` clamp above stays the authority on what actually paints, so slack
+ * costs a little work and never changes the result. Worth having because the
+ * buffered region is twice the visible span, so about half of the array was
+ * being mapped and then discarded — once per render block, every frame.
  */
 export function accumulateConservation(
   sum: Float32Array,
@@ -59,8 +66,12 @@ export function accumulateConservation(
   bpToX: (bp: number) => number,
   xLo: number,
   xHi: number,
+  bpLo = -Infinity,
+  bpHi = Infinity,
 ) {
-  for (let i = 0; i < identityScores.length; i++) {
+  const from = Math.max(0, Math.ceil(bpLo - coverageStartPos))
+  const to = Math.min(identityScores.length, Math.ceil(bpHi - coverageStartPos))
+  for (let i = from; i < to; i++) {
     const v = identityScores[i]!
     if (!Number.isNaN(v)) {
       const bp = coverageStartPos + i
@@ -113,6 +124,12 @@ export function drawConservation(
     const coverage = regions.get(block.displayedRegionIndex)?.coverage
     const clip = coverage ? clipBlockForCanvas(block, canvasWidth) : null
     if (coverage && clip) {
+      // A base outside the block's own genomic span can still touch the block's
+      // edge pixel, because `clampBlockScissor` floors/ceils the screen span —
+      // so widen by a pixel's worth of bp. `[block.start, block.end)` is the
+      // same interval whichever way the block is oriented, so this bound needs
+      // no reversed case.
+      const slack = Math.ceil(clip.bpLength / clip.fullBlockWidth) + 1
       accumulateConservation(
         sum,
         count,
@@ -121,6 +138,8 @@ export function drawConservation(
         makeBpMapper(block),
         clip.scissorX,
         clip.scissorX + clip.scissorW,
+        block.start - slack,
+        block.end + slack,
       )
     }
   }
