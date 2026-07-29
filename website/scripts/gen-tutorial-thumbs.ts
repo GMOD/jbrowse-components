@@ -109,7 +109,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   scatac_pseudobulk: {
-    src: 'gallery/scatac_catlas.png',
+    // the PBMC pseudobulk rows the page's own script builds, skipping the gene
+    // lane above them
+    src: 'scatac/pbmc5k_cd8a.png',
     band: [0.25, 1],
     position: 'left',
   },

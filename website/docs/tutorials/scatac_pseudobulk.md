@@ -11,16 +11,14 @@ draws one row per file.
 
 ## Prerequisites
 
-Nothing to install to read along: the figures come from hosted CATlas data.
-
-To build the tracks you need cells already clustered and labeled, which means
-either a fragments file (or a barcoded BAM) plus a barcode-to-label table, or
-the project object your analysis tool already holds: an `AnnData` in SnapATAC2
-(Python), an `ArchRProject` in ArchR, or a Seurat/Signac object in R. The
-pseudobulk step below runs in that same environment, so the BigWigs it writes
-can also be viewed inline through the
+Nothing to install to read along. To build the tracks you need cells already
+clustered and labeled, which means either a fragments file (or a barcoded BAM)
+plus a barcode-to-label table, or the project object your analysis tool already
+holds: an `AnnData` in SnapATAC2 (Python), an `ArchRProject` in ArchR, or a
+Seurat/Signac object in R. The pseudobulk step runs in that same environment, so
+the BigWigs it writes can also be viewed inline through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[](/docs/jbrowser)) without leaving the session. You'll also need a JBrowse
+[](/docs/jbrowser)) without leaving the session. You will also need a JBrowse
 instance to load the finished BigWigs into.
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
@@ -28,11 +26,19 @@ a single cell is almost entirely zero and no locus reads as open or closed.
 Pseudobulking is the standard answer: take the labels your clustering already
 assigned, pool every fragment belonging to a label into one profile, and each
 cell type comes out as a dense track that looks like a bulk ATAC experiment run
-on that cell type alone. Ten cell types give ten BigWigs, JBrowse stacks them as
-ten rows of one track, and accessibility restricted to one lineage reads as a
-peak present in a single row and flat in the rest.
+on that cell type alone. Twelve cell types give twelve BigWigs, JBrowse stacks
+them as twelve rows of one track, and accessibility restricted to one lineage
+reads as a peak present in a few rows and flat in the rest.
 
-<Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the INS/IGF2 region on 11p15.5, where the Beta cell row shows accessibility over INS. Source data: CATlas (Zhang et al. 2021), catlas.org." src="/img/gallery/scatac_catlas.png" />
+This tutorial follows one dataset: the 10x 5k-PBMC scATAC experiment in
+SnapATAC2's annotated release, which
+[`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh)
+takes from that object to a loaded JBrowse instance. PBMCs are a good check on
+the whole path, because the answer is known in advance: at a T-cell marker the
+T-cell rows have to carry the signal and the B-cell and monocyte rows have to
+stay flat.
+
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset over CD8A, loaded as one MultiQuantitativeTrack, each row keeping the color and cluster order the single-cell object gave it. The CD8 Memory, CD8 Naive, and MAIT rows carry the accessibility here while the B cell and monocyte rows stay flat." src="/img/scatac/pbmc5k_cd8a.png" />
 
 Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
 Signac, or SnapATAC2. This tutorial starts from what those produce and does
@@ -45,17 +51,10 @@ three things with it:
 - **read it**: stacked rows, row clustering, and the rendering modes that suit
   many rows
 
-[Reproduce it end to end](#reproduce-it-end-to-end) runs the whole path on a
-public 5k-PBMC dataset, and the sections before it cover each piece against your
-own data.
-
 ## Generating per-group BigWigs
 
-Pick the path that matches where your data already lives. All paths end in one
-`.bw` per cell type.
-
-Two settings decide whether the rows can be compared to each other, and every
-path below has to make both calls:
+Two settings decide whether the rows can be compared to each other, whichever
+tool writes them:
 
 - **Normalization.** Groups differ in cell count and in total fragments, so
   normalize each track (CPM / RPKM, or per-cell-count). Without it a tall peak
@@ -64,11 +63,9 @@ path below has to make both calls:
   file size; larger bins (50-100bp) are smaller and fine zoomed out. 10-25bp is
   typical.
 
-### SnapATAC2 (from an AnnData of fragments)
-
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
-normalized BigWig per group in a single call. (It supersedes the older
-`export_bigwig`.)
+normalized BigWig per group in a single call, which is the whole pseudobulk step
+for this dataset:
 
 ```python
 import snapatac2 as snap
@@ -95,86 +92,25 @@ minute.
 row per cluster, or the annotated column (`"cell_type"`) to get one row per cell
 type. Nothing else in the workflow changes.
 
-### ArchR (from an ArchRProject)
+### If your data lives somewhere else
 
-ArchR's `getGroupBW` groups cells, sums their Tn5 insertions, and exports one
-BigWig per group. `normMethod = "ReadsInTSS"` normalizes at the pseudobulk level
-by signal-in-TSS (accounting for both depth and data quality). `"nCells"` or
-`"nFrags"` are alternatives.
+Every route ends the same way, one `.bw` per cell type, and the rest of this
+page does not care which produced them. The tools are linked under
+[Sources](#sources):
 
-```r
-library(ArchR)
-
-getGroupBW(
-  ArchRProj = proj,
-  groupBy   = "CellType",     # a cellColData column
-  normMethod = "ReadsInTSS",
-  tileSize  = 25,
-  maxCells  = 1000            # subsample very large groups if desired
-)
-# writes GroupBigWigs/<CellType>-TileSize-25-normMethod-ReadsInTSS.bw
-```
-
-### Split a BAM by cell type, then deepTools (Signac / Cell Ranger / generic)
-
-If you have a position-sorted BAM with cell barcodes in a tag (e.g. `CB`), such
-as the Cell Ranger ATAC output or what a Signac workflow starts from, split it
-into one BAM per cell type using a barcode→label table, then run `bamCoverage`
-on each.
-
-```bash
-# barcodes.tsv: two columns, "<barcode><TAB><cell_type>"
-sinto filterbarcodes \
-  -b possorted_bam.bam \
-  -c barcodes.tsv \
-  --barcodetag CB \
-  -p 8
-# -> one BAM per distinct cell_type label, e.g. Beta.bam, Alpha.bam, ...
-
-for bam in *.bam; do
-  name=$(basename "$bam" .bam)
-  bamCoverage \
-    --bam "$bam" \
-    -o "bw/${name}.bw" \
-    --binSize 25 \
-    --normalizeUsing CPM \
-    --extendReads \
-    -p 8
-done
-```
-
-`--normalizeUsing CPM` (or `RPKM`) makes rows comparable across groups. Use
-`RPGC` (1x depth) only if you also pass `--effectiveGenomeSize` (GRCh38:
-`2913022398`). CPM/RPKM do not need it. `--extendReads` extends paired-end
-fragments to their full length.
-
-### Manual fallback (fragments.tsv.gz → bedGraph → bigWig)
-
-Without SnapATAC2/ArchR, split a 10x-style `fragments.tsv.gz` by cluster with a
-barcode→cluster map, then convert each group with standard tools:
-
-```bash
-# clusters.tsv: two columns, "<barcode><TAB><cluster>"
-# fragments.tsv.gz columns: chrom  start  end  barcode  count
-
-# split fragments into one BED per cluster (keep only that cluster's barcodes)
-for cl in $(cut -f2 clusters.tsv | sort -u); do
-  awk -v cl="$cl" 'NR==FNR{if($2==cl)keep[$1];next} ($4 in keep){print $1"\t"$2"\t"$3}' \
-    clusters.tsv <(zcat fragments.tsv.gz) \
-    | sort -k1,1 -k2,2n > "$cl.bed"
-done
-
-# per cluster: genome-coverage bedGraph -> bigWig
-for bed in *.bed; do
-  name=$(basename "$bed" .bed)
-  bedtools genomecov -bg -i "$bed" -g hg38.chrom.sizes \
-    | sort -k1,1 -k2,2n > "$name.bedGraph"
-  bedGraphToBigWig "$name.bedGraph" hg38.chrom.sizes "$name.bw"
-done
-```
-
-This route is unnormalized. Scale each group (e.g. by 1e6 / total fragments for
-CPM) before `bedGraphToBigWig` if you need comparable rows.
+- **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
+  groups cells, sums their Tn5 insertions and writes one BigWig per group.
+  `normMethod = "ReadsInTSS"` normalizes by signal-in-TSS, accounting for depth
+  and data quality together; `"nCells"` and `"nFrags"` are the alternatives.
+- **A barcoded BAM** (Cell Ranger ATAC, or what a Signac workflow starts from):
+  split it by label with `sinto filterbarcodes`, passing the barcode-to-label
+  table and the barcode tag, then run deepTools `bamCoverage` on each with
+  `--binSize 25 --normalizeUsing CPM --extendReads`. `RPGC` also needs
+  `--effectiveGenomeSize`; CPM and RPKM do not.
+- **A `fragments.tsv.gz` and nothing else**: filter it to each cluster's
+  barcodes, then `bedtools genomecov -bg` and `bedGraphToBigWig` per group. This
+  route is unnormalized, so scale each group yourself (1e6 / total fragments for
+  CPM) before the conversion.
 
 ## Loading the BigWigs as a MultiWiggle track
 
@@ -182,8 +118,6 @@ In JBrowse, all the per-cell-type BigWigs go into one track: a
 `MultiQuantitativeTrack` whose `MultiWiggleAdapter` holds one `BigWigAdapter`
 per file. Each subadapter carries a `name` (the row label), an optional `color`,
 and an optional `group` (which seeds the sidebar clustering tree).
-
-<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type. The Hepatocyte row is open across the whole locus while the other 15 cell types stay flat, the cell-type-restricted accessibility that a pseudobulk-by-cell-type track makes visible at a glance." src="/img/scatac/alb_hepatocyte.png" />
 
 ### Via the UI
 
@@ -234,24 +168,24 @@ three-cell-type example against hg38:
     "subadapters": [
       {
         "type": "BigWigAdapter",
-        "name": "Beta (insulin)",
-        "group": "Islet",
-        "color": "#f58231",
-        "uri": "https://example.com/bw/Beta.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "Alpha (glucagon)",
-        "group": "Islet",
-        "color": "#e6194b",
-        "uri": "https://example.com/bw/Alpha.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "CD8 T cell",
-        "group": "Immune",
+        "name": "CD8 Naive",
+        "group": "T cell",
         "color": "#4363d8",
-        "uri": "https://example.com/bw/CD8T.bw"
+        "uri": "https://example.com/bw/CD8_Naive.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CD8 Memory",
+        "group": "T cell",
+        "color": "#3cb44b",
+        "uri": "https://example.com/bw/CD8_Memory.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "Naive B",
+        "group": "B cell",
+        "color": "#f58231",
+        "uri": "https://example.com/bw/Naive_B.bw"
       }
     ]
   }
@@ -265,31 +199,16 @@ array of URLs (the row label is derived from each filename):
 "adapter": {
   "type": "MultiWiggleAdapter",
   "bigWigs": [
-    "https://example.com/bw/Beta.bw",
-    "https://example.com/bw/Alpha.bw",
-    "https://example.com/bw/CD8T.bw"
+    "https://example.com/bw/CD8_Naive.bw",
+    "https://example.com/bw/CD8_Memory.bw",
+    "https://example.com/bw/Naive_B.bw"
   ]
 }
 ```
 
-### The CATlas gallery track
-
-The gallery card is exactly this track type, pointing at CATlas (Zhang et
-al. 2021) per-cell-type pileup BigWigs, which are hosted publicly (hg38) at
-
-```
-https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw
-```
-
-for example `.../bw/Beta_1.bw`, `.../bw/Alpha_1.bw`, `.../bw/Acinar.bw`. Each
-subadapter is a `BigWigAdapter` with a `name`, a `group` (islet / exocrine /
-immune / …), a `color`, and that URI, the same structure as the example above,
-so you can point a `MultiWiggleAdapter` straight at them without regenerating
-anything.
-
 ## Reproduce it end to end
 
-One script runs the whole path on a public dataset,
+One script runs the whole path,
 [`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh):
 
 ```bash
@@ -297,15 +216,13 @@ bash scripts/build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
 npx --yes serve scatac_pseudobulk_build/jbrowse2
 ```
 
-<Figure caption="What the script produces, over CD8A: 12 per-cell-type BigWigs from the 10x 5k PBMC dataset as one MultiQuantitativeTrack, each row keeping the color and the cluster order the single-cell object gave it. The CD8 Memory, CD8 Naive, and MAIT rows carry the accessibility here while the B cell and monocyte rows stay flat." src="/img/scatac/pbmc5k_cd8a.png" />
-
-The input is SnapATAC2's annotated release of the 10x 5k-PBMC scATAC dataset,
-which is that tool's
+Its input is SnapATAC2's annotated release of the 10x 5k-PBMC dataset, which is
+what that tool's
 [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html) and
 [cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
-tutorials already run: fragments imported, cells QC-filtered and clustered, and
-each cluster labeled by transferring cell types from a matched multiome
-reference. Its `AnnData` therefore carries per-barcode fragments alongside an
+tutorials already produce: fragments imported, cells QC-filtered and clustered,
+and each cluster labeled by transferring cell types from a matched multiome
+reference. That `AnnData` carries per-barcode fragments alongside an
 `obs["cell_type"]` call, which is the pair pseudobulking needs, so the script's
 own work is short:
 
@@ -321,6 +238,12 @@ Everything upstream of `export_coverage` is the part a genome browser does not
 do, and this dataset is a convenient place to skip it. Running it on your own
 experiment means substituting your labeled object at that one call.
 
+Navigate the finished instance to a marker gene and read the rows against the
+labels: at CD8A the CD8 and MAIT rows are open and the B-cell and monocyte rows
+are flat, and at a B-cell marker such as MS4A1 the same rows swap. Rows that
+stay open everywhere usually mean the normalization step was skipped, since an
+unnormalized group's height tracks its cell count rather than its accessibility.
+
 ## Rendering options
 
 The display is a `MultiLinearWiggleDisplay`. Its
@@ -329,8 +252,8 @@ slot chooses how the subtracks are drawn. Set it under the track's `displays`
 (or the `displayDefaults` shorthand), or switch it live from the track menu.
 
 - `multirowxy` - one stacked XY-plot row per cell type. This is the "one
-  coverage row per cell type" look of the gallery card, and is best for
-  comparing peak shape across many groups.
+  coverage row per cell type" look above, and is best for comparing peak shape
+  across many groups.
 - `multirowdensity` - one row per cell type, but score mapped to color intensity
   instead of bar height. Compact, and good for a heatmap-style view of many cell
   types at once.
@@ -351,12 +274,9 @@ Other useful controls:
 - `summaryScoreMode` - `avg`, `min`, `max`, or `whiskers` (the
   [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
   slot) for how each bin's summary is drawn when zoomed out.
-- The "Cluster rows by score..." clustering action in the track menu reorders
-  the rows by hierarchical clustering of the score matrix over the region in
-  view, drawing a dendrogram in the sidebar. Cell types with similar
-  accessibility profiles at that locus sort next to each other. See the
-  [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)
-  for the clustering workflow.
+- The "Cluster rows by score..." clustering action in the track menu (see
+  [Clustering rows](/docs/user_guides/clustering)) sorts cell types with similar
+  accessibility profiles next to each other at the locus in view.
 
 Example display config that starts taller and in density mode:
 
@@ -375,6 +295,7 @@ Example display config that starts taller and in density mode:
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
 - [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
 - [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay)
+- [](/docs/user_guides/clustering)
 - [](/docs/tutorials/chromhmm)
 
 ## Sources
@@ -390,8 +311,12 @@ Pseudobulk / coverage tools:
 
 Reference datasets:
 
-- [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
-  · [resource portal](https://www.catlas.org/)
 - [SnapATAC2's 5k PBMC scATAC dataset](https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html),
-  the 10x Genomics experiment the build script pseudobulks, in its clustered and
+  the 10x Genomics experiment this page pseudobulks, in its clustered and
   cell-type-annotated form
+- [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
+  · [resource portal](https://www.catlas.org/), whose per-cell-type pileup
+  BigWigs are public (hg38) at
+  `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw`
+  and load into a `MultiWiggleAdapter` directly, with no pseudobulk step of your
+  own

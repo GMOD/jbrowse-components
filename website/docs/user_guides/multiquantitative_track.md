@@ -24,6 +24,11 @@ An outlier on one subtrack can blow out the shared Y axis. The "Local ± 3σ"
 autoscale type clips to three standard deviations of the visible data for a more
 readable view, or pin the min and max from the track menu.
 
+The shared axis is what makes many rows readable at once: a signal restricted to
+one row reads as such only because every other row is drawn to the same scale.
+
+<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type on a shared scale. The Hepatocyte row is open across the locus while the other 15 rows stay flat." src="/img/scatac/alb_hepatocyte.png" />
+
 ## Adding a multi-quantitative track
 
 Three ways to create one:
