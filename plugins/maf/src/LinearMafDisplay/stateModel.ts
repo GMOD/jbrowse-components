@@ -94,6 +94,14 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
+ * Zoom at which the GPU encoder stops encoding every base and starts
+ * decimating (see `encodeBinBp`). Below it a base is still wide enough that
+ * dropping any would be visible; at or above it the first bin is 2bp wide, so
+ * nothing that survived the sub-pixel race is lost.
+ */
+const MIN_BINNED_BP_PER_PX = 4
+
+/**
  * Per-row metadata stored in `sourcesVolatile`. `name` is the sample id
  * (matches the canonical `Sample.id`); `label`/`color` are display-only.
  */
@@ -970,6 +978,28 @@ export default function stateModelFactory(
         get colorPalette(): MafColorPalette {
           return getMafColorPalette(getSession(self).theme)
         },
+        /**
+         * #getter
+         * Genomic bp the GPU encoder collapses into one cell. Zoomed in this is
+         * `1` (encode every base). Once a base falls below half a CSS pixel the
+         * per-base quads are individually invisible — a 500kb region across 10
+         * species emits 1.7M of them into a 28MB buffer, all but ~15k of which
+         * lose the sub-pixel race for their pixel — so the encoder decimates to
+         * one sample per bin instead.
+         *
+         * Quantized to a power of two off the *debounced* `coarseBpPerPx` (the
+         * same input `zoomedToBaseLevel` uses) for two reasons: the encode
+         * autorun tracks this getter, so an unquantized read would re-encode
+         * every region on every wheel tick, and a bin that stays put across a
+         * zoom nudge keeps the picture stable. `binBp <= bpPerPx / 2` keeps a
+         * bin under half a CSS pixel at every tier.
+         */
+        get encodeBinBp() {
+          const view = self.lgv
+          return view.initialized && view.coarseBpPerPx >= MIN_BINNED_BP_PER_PX
+            ? 2 ** Math.floor(Math.log2(view.coarseBpPerPx / 2))
+            : 1
+        },
       }))
       .views(self => ({
         /**
@@ -997,6 +1027,7 @@ export default function stateModelFactory(
             showAllLetters: self.showAllLetters,
             mismatchRendering: self.mismatchRendering,
             palette: self.colorPalette,
+            binBp: self.encodeBinBp,
           }
         },
         /**
@@ -1012,6 +1043,7 @@ export default function stateModelFactory(
             palette: self.colorPalette,
             showAllLetters: self.showAllLetters,
             mismatchRendering: self.mismatchRendering,
+            binBp: self.encodeBinBp,
           }
         },
         /**
@@ -1699,6 +1731,17 @@ export default function stateModelFactory(
             self.rpcDataMap,
             backend,
             regionData => {
+              // The render callback below draws no blocks unless the rows area
+              // is in `bases` mode — the identity plot, codon view and
+              // color-by-chromosome all paint the rows on sibling canvases.
+              // Encoding anyway built and uploaded a buffer (tens of MB on a
+              // wide region) that never reached a pixel. An empty payload skips
+              // the encode *and* releases the GPU buffer (uploadRegion routes
+              // count 0 to deleteRegion); the autorun stays subscribed, so
+              // flipping back to `bases` re-encodes immediately.
+              if (self.activeRowRendering !== 'bases') {
+                return { instanceBuffer: new Uint32Array(0), instanceCount: 0 }
+              }
               const { buffer, count } = buildInstanceBuffer({
                 blocks: regionData.blocks,
                 ...self.gpuProps(),

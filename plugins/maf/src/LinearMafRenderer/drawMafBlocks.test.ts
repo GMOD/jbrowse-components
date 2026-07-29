@@ -48,24 +48,25 @@ function recordingCtx() {
 
 const A = 65
 
-// One MAF block: a single reference base 'A' at START, with one aligned row
-// whose base matches. Exactly one cell should be painted.
-function regionData(): MafRegionData {
+// One MAF block: `n` reference 'A' bases from START, with one aligned row whose
+// bases all match. Defaults to a single base — exactly one cell painted.
+function regionData(n = 1): MafRegionData {
   return {
     blocks: [
       {
         startBp: START,
-        endBp: START + 1,
-        refSeqBytes: new Uint8Array([A]),
-        rows: [{ rowIndex: 0, alignmentBytes: new Uint8Array([A]) }],
+        endBp: START + n,
+        refSeqBytes: new Uint8Array(n).fill(A),
+        rows: [{ rowIndex: 0, alignmentBytes: new Uint8Array(n).fill(A) }],
         empties: [],
       },
     ],
   } as unknown as MafRegionData
 }
 
-function state(): MafGPURenderState {
+function state(binBp = 1): MafGPURenderState {
   return {
+    binBp,
     canvasWidth: BLOCK_WIDTH,
     canvasHeight: 100,
     rowHeight: 10,
@@ -89,7 +90,7 @@ function state(): MafGPURenderState {
   } as unknown as MafGPURenderState
 }
 
-function cellFor(reversed: boolean) {
+function draw(reversed: boolean, nBases = 1, binBp = 1) {
   const { ctx, rects } = recordingCtx()
   const block: RenderBlock = {
     displayedRegionIndex: 0,
@@ -99,7 +100,12 @@ function cellFor(reversed: boolean) {
     screenEndPx: BLOCK_WIDTH,
     reversed,
   }
-  drawMafBlocks(ctx, new Map([[0, regionData()]]), [block], state())
+  drawMafBlocks(ctx, new Map([[0, regionData(nBases)]]), [block], state(binBp))
+  return rects
+}
+
+function cellFor(reversed: boolean) {
+  const rects = draw(reversed)
   expect(rects).toHaveLength(1)
   return rects[0]!
 }
@@ -121,5 +127,63 @@ describe('drawMafBlocks cell geometry', () => {
     expect(cellFor(true).x - cellFor(false).x).toBeCloseTo(
       BLOCK_WIDTH - PX_PER_BP,
     )
+  })
+})
+
+// The zoomed-out path samples one cell per `binBp` window and fills the whole
+// window. That makes each rect a multi-bp SPAN, so the one-base pivot in
+// `makeCellLeftMapper` is the wrong anchor for it — on a reversed block a
+// span's left edge is its END. Spans are only ever sub-pixel in production
+// (encodeBinBp keeps a bin under half a CSS px), which is exactly why this
+// would never be noticed by eye; PX_PER_BP is 20 here so the error is 60px.
+describe('drawMafBlocks binned cell geometry', () => {
+  const BIN = 4
+  // 8 bases in 2 bins of 4. Bin 0 spans bp [1000,1004), bin 1 [1004,1008).
+  const N = 8
+
+  test('forward block: bins tile left to right, one base-span wide each', () => {
+    const rects = draw(false, N, BIN)
+    expect(rects).toHaveLength(2)
+    expect(rects[0]!.x).toBeCloseTo(0)
+    expect(rects[1]!.x).toBeCloseTo(BIN * PX_PER_BP)
+    expect(rects[0]!.w).toBeCloseTo(BIN * PX_PER_BP + 0.4)
+  })
+
+  test('reversed block: a bin covers its own span, not the one after it', () => {
+    const rects = draw(true, N, BIN)
+    expect(rects).toHaveLength(2)
+    // Reversed, bp 1000 is rightmost. Bin 0 spans bp [1000,1004) => screen
+    // [200-4*20, 200] = [120,200]. Anchoring on the cell-left pivot instead
+    // would put it at 180 — three bases wide of the truth.
+    expect(rects[0]!.x).toBeCloseTo(BLOCK_WIDTH - BIN * PX_PER_BP)
+    expect(rects[1]!.x).toBeCloseTo(BLOCK_WIDTH - 2 * BIN * PX_PER_BP)
+    expect(rects[0]!.w).toBeCloseTo(BIN * PX_PER_BP + 0.4)
+  })
+
+  test('reversing mirrors the bins about the block, base for base', () => {
+    // Not "the same screen span": reversed puts the lowest bp on the RIGHT, so
+    // the 8 drawn bases move from the block's left 160px to its right 160px.
+    // Dropping the seam fudge (which always grows rightward) leaves spans that
+    // are exact mirrors — the strongest statement that no bin drifted.
+    const spans = (reversed: boolean) =>
+      draw(reversed, N, BIN)
+        .map(r => [r.x, r.x + r.w - 0.4] as const)
+        .sort((a, b) => a[0] - b[0])
+
+    const mirrored = spans(false)
+      .map(([lo, hi]) => [BLOCK_WIDTH - hi, BLOCK_WIDTH - lo] as const)
+      .sort((a, b) => a[0] - b[0])
+
+    spans(true).forEach(([lo, hi], i) => {
+      expect(lo).toBeCloseTo(mirrored[i]![0])
+      expect(hi).toBeCloseTo(mirrored[i]![1])
+    })
+  })
+
+  test('a trailing partial bin clamps to the block end', () => {
+    // 6 bases, bin 4 => bin 1 covers only bp [1004,1006), half a bin.
+    const rects = draw(false, 6, BIN)
+    expect(rects).toHaveLength(2)
+    expect(rects[1]!.w).toBeCloseTo(2 * PX_PER_BP + 0.4)
   })
 })

@@ -19,6 +19,12 @@ export interface MafGPURenderState {
    * theme changes flow into rendering without hardcoded fallbacks.
    */
   palette: MafColorPalette
+  /**
+   * Genomic bp per painted cell (see `MafGpuProps.binBp`). Carried here too so
+   * the Canvas2D fallback and the SVG export decimate identically to the GPU
+   * encoder rather than emitting a rect per base at every zoom.
+   */
+  binBp: number
 }
 
 // One MAF "block" is a single ungapped alignment stanza emitted by the
@@ -111,13 +117,21 @@ export interface MafGpuProps {
   palette: MafColorPalette
   showAllLetters: boolean
   mismatchRendering: boolean
+  /**
+   * Genomic bp per emitted cell — `1` for the exact per-base encode, a larger
+   * power of two once cells go sub-pixel (see `encodeBinBp`). Quantized so
+   * zooming re-encodes only when it crosses a tier, not on every wheel tick.
+   */
+  binBp: number
 }
 
 // Payload the per-region autorun ships to the backend each time `gpuProps`
 // or the underlying `regionData` changes. Pre-encoded on the main thread
 // because encoding depends on theme + user toggles (`MafGpuProps`).
 export interface MafUploadPayload {
-  instanceBuffer: ArrayBuffer
+  // A view, not a bare ArrayBuffer: the encoder over-allocates and hands back
+  // a subarray, and both HAL backends upload only the view's byte range.
+  instanceBuffer: Uint32Array
   instanceCount: number
 }
 

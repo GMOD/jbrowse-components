@@ -1,9 +1,10 @@
 import {
   forEachClippedBlock,
-  makeCellLeftMapper,
+  makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { rowBandGeometry } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
+import { buildColumnForGenomicOffset } from './binning.ts'
 import { renderBases } from './rendering/bases.ts'
 
 import type {
@@ -35,6 +36,7 @@ export function drawMafBlocks(
     showAllLetters,
     mismatchRendering,
     palette,
+    binBp,
   } = state
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
@@ -45,25 +47,28 @@ export function drawMafBlocks(
     canvasWidth,
     canvasHeight,
     block => regions.get(block.displayedRegionIndex),
-    (regionData, renderBlock, clip) => {
-      const scale = clip.fullBlockWidth / clip.bpLength
-      const bpToCellLeftPx = makeCellLeftMapper(renderBlock)
+    (regionData, renderBlock) => {
       const renderingContext = {
         ctx,
-        scale,
         h,
         cellColorConfig,
-        bpToCellLeftPx,
+        bpToPx: makeBpMapper(renderBlock),
+        binBp,
       }
 
       for (const mafBlock of regionData.blocks) {
         const { refSeqBytes, startBp: blockStartBp } = mafBlock
+        // Once per block, not per row: the map is a property of the block's
+        // reference, and rebuilding it per row would put the O(columns x rows)
+        // walk back that stepping by `binBp` exists to remove.
+        const columns = buildColumnForGenomicOffset(refSeqBytes)
         for (const row of mafBlock.rows) {
           const rowTop = offset + rowHeight * row.rowIndex
           renderBases(
             renderingContext,
             row.alignmentBytes,
             refSeqBytes,
+            columns,
             blockStartBp,
             rowTop,
           )

@@ -399,6 +399,38 @@ export function makeCellLeftMapper(bounds: BpRegionBounds) {
 }
 
 /**
+ * Fill the rect covering genomic `[startBp, endBp)`, given a bare
+ * `makeBpMapper`. Maps **both** edges and takes the leftmost, which is
+ * orientation-safe by construction: on a reversed block bp runs leftward, so
+ * the span's left edge is its *end*, and there is no pivot to get backwards.
+ *
+ * Prefer this to `makeCellLeftMapper` + a caller-computed width for anything
+ * wider than one base. The pivot in `makeCellLeftMapper` is exactly one base,
+ * which is right for a 1bp cell and silently wrong for an N-bp span — it
+ * anchors the rect one base from the correct edge and then grows it the wrong
+ * way. `fillBpSpan(bp, bp + 1)` is *identical* to the cell-mapper spelling, so
+ * a per-base painter can use this too and never think about orientation again.
+ *
+ * `seam` is the caller's sub-pixel overlap (MAF's `GAP_STROKE_OFFSET`), added
+ * to the width so adjacent cells don't show hairlines at ~1px/bp. Widening a
+ * sub-pixel *feature* to a visible floor is a different job — that's
+ * `spanLeft`, which must anchor the feature's start edge.
+ */
+export function fillBpSpan(
+  ctx: { fillRect: (x: number, y: number, w: number, h: number) => void },
+  toX: (bp: number) => number,
+  startBp: number,
+  endBp: number,
+  top: number,
+  height: number,
+  seam = 0,
+) {
+  const x1 = toX(startBp)
+  const x2 = toX(endBp)
+  ctx.fillRect(Math.min(x1, x2), top, Math.abs(x2 - x1) + seam, height)
+}
+
+/**
  * The **integer base** whose 1bp cell covers screen pixel `px` — the inverse of
  * `makeCellLeftMapper`, for hit-testing (which base did the cursor land on) as
  * opposed to painting.

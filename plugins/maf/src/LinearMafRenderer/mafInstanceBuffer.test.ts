@@ -13,8 +13,7 @@ interface DecodedRun {
   color: number
 }
 
-function decodeRuns(buffer: ArrayBuffer, count: number): DecodedRun[] {
-  const u32 = new Uint32Array(buffer)
+function decodeRuns(u32: Uint32Array, count: number): DecodedRun[] {
   const runs: DecodedRun[] = []
   for (let i = 0; i < count; i++) {
     const base = i * INSTANCE_STRIDE_F32
@@ -47,6 +46,7 @@ function block(
 }
 
 const args = {
+  binBp: 1,
   palette: {
     colorForBase: {
       a: '#ff0000',
@@ -98,4 +98,80 @@ test('mismatch in a later block does not bleed into the earlier block', () => {
   expect(mismatch!.rowIndex).toBe(0)
   // No run should straddle the gap between the two blocks
   expect(runs.every(r => r.endBp <= 105 || r.startBp >= 1100)).toBe(true)
+})
+
+describe('binned encode (zoomed out)', () => {
+  // 16 reference bases, one mismatch at genomic offset 9. With binBp=4 the
+  // samples land at offsets 0, 4, 8, 12 — the mismatch at 9 is not sampled, so
+  // the whole row collapses to one match run. That is the point: at this zoom
+  // a single base is a fraction of a pixel.
+  const ref = 'ACGTACGTACGTACGT'
+
+  test('collapses a block to one run per bin, merging equal neighbours', () => {
+    const blocks = [block(100, ref, [[0, ref]])]
+    const { buffer, count } = buildInstanceBuffer({
+      blocks,
+      ...args,
+      binBp: 4,
+    })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 116, rowIndex: 0 })
+  })
+
+  test('a sampled mismatch breaks the run at its bin boundary', () => {
+    // Mismatch at genomic offset 8, which bin 2 samples.
+    const aln = 'ACGTACGTTCGTACGT'
+    const blocks = [block(100, ref, [[0, aln]])]
+    const { buffer, count } = buildInstanceBuffer({
+      blocks,
+      ...args,
+      binBp: 4,
+    })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(3)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 108 })
+    expect(runs[1]).toMatchObject({ startBp: 108, endBp: 112 })
+    expect(runs[2]).toMatchObject({ startBp: 112, endBp: 116 })
+    expect(runs[0]!.color).toBe(runs[2]!.color)
+    expect(runs[1]!.color).not.toBe(runs[0]!.color)
+  })
+
+  test('reference insertions consume no genomic position', () => {
+    // 4 inserted reference columns in the middle; the block still spans 16bp.
+    const refIns = 'ACGTACGT----ACGTACGT'
+    const blocks = [block(100, refIns, [[0, 'ACGTACGTAAAAACGTACGT']])]
+    const { buffer, count } = buildInstanceBuffer({
+      blocks,
+      ...args,
+      binBp: 4,
+    })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 116 })
+  })
+
+  test('a trailing partial bin clamps to the block end', () => {
+    const blocks = [block(100, 'ACGTAC', [[0, 'ACGTAC']])]
+    const { buffer, count } = buildInstanceBuffer({
+      blocks,
+      ...args,
+      binBp: 4,
+    })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 106 })
+  })
+
+  test('a row shorter than the reference closes its run early', () => {
+    const blocks = [block(100, ref, [[0, 'ACGTACGT']])]
+    const { buffer, count } = buildInstanceBuffer({
+      blocks,
+      ...args,
+      binBp: 4,
+    })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 108 })
+  })
 })

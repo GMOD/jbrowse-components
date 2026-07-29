@@ -16,10 +16,19 @@ export const GAP_STROKE_OFFSET = 0.4
  */
 export interface RenderingContext {
   ctx: Ctx2D
-  scale: number
   h: number
   /** Pre-built once per draw call; consumed by `resolveCellColor` per cell. */
   cellColorConfig: MafCellColorConfig
-  /** bp → screen-px LEFT edge of the cell containing that bp (handles reversed). */
-  bpToCellLeftPx: (bp: number) => number
+  /**
+   * Raw bp → screen-px. Cells are filled via `fillBpSpan`, which maps both
+   * edges — so no painter here needs the one-base pivot of
+   * `makeCellLeftMapper`, and none can get it backwards on a reversed block.
+   */
+  bpToPx: (bp: number) => number
+  /**
+   * Genomic bp per painted cell — `1` per base, larger once cells go sub-pixel.
+   * Must be the same value the GPU encoder used (both read the display's
+   * `encodeBinBp`) or the two backends diverge at zoom-out.
+   */
+  binBp: number
 }

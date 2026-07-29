@@ -2,7 +2,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
@@ -11,6 +11,7 @@ import {
 } from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
+import type { SamplesHolder } from '../util/getSamples.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type {
   BaseFeatureDataAdapter as BaseAdapter,
@@ -25,6 +26,8 @@ type TabixByteAdapter = BaseAdapter & {
 
 export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdapterConfig> {
   public setupP?: Promise<{ adapter: TabixByteAdapter }>
+
+  public samplesP?: SamplesHolder['samplesP']
 
   async setupPre(opts?: BaseOptions): Promise<{ adapter: TabixByteAdapter }> {
     return lazyInit(this, () =>
@@ -87,7 +90,8 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
   }
 
   async getSamples() {
-    return getSamplesFromConfig(
+    return getSamplesMemoized(
+      this,
       this.getConf('nhLocation'),
       this.getConf('samples'),
     )

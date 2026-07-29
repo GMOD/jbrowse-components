@@ -1,7 +1,10 @@
+import { rpcResult } from '@jbrowse/core/util/librpc'
+
 import { DASH } from '../util/asciiBytes.ts'
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
+import { collectMafTransferables } from './collectTransferables.ts'
 
 import type {
   MafBlock,
@@ -55,7 +58,7 @@ export async function executeMafAlignmentData({
 }: {
   pluginManager: PluginManager
   args: LinearMafGetAlignmentDataArgs
-}): Promise<LinearMafGetAlignmentDataResult> {
+}) {
   const { regions, adapterConfig, sessionId, orderedSampleIds } = args
   const region = regions[0]!
   const {
@@ -188,10 +191,16 @@ export async function executeMafAlignmentData({
     refRowIndex,
   )
 
-  return {
+  // rpcResult wraps value + transfer list; the RPC framework unwraps it before
+  // returning to the caller, whose type is the RpcRegistry
+  // `LinearMafGetAlignmentData.return` declaration. Hence no return annotation
+  // on this function and no cast here.
+  const regionData: MafRegionData = { blocks, coverage }
+  const result: LinearMafGetAlignmentDataResult = {
     samples,
     treeNewick,
     samplesCanonical: hasConfiguredSamples,
-    regionData: { blocks, coverage },
+    regionData,
   }
+  return rpcResult(result, collectMafTransferables(regionData))
 }

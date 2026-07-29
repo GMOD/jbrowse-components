@@ -2,7 +2,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { toMafStatus } from '../util/mafStatus.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
@@ -13,6 +13,7 @@ import {
 import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 
 import type { MafAdapterOptions, MafSummaryRecord } from '../types.ts'
+import type { SamplesHolder } from '../util/getSamples.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -20,6 +21,8 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
 
   private summaryAdapterP?: Promise<BaseFeatureDataAdapter | undefined>
+
+  public samplesP?: SamplesHolder['samplesP']
 
   async setupPre(
     opts?: BaseOptions,
@@ -73,7 +76,8 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(
+    return getSamplesMemoized(
+      this,
       this.getConf('nhLocation'),
       this.getConf('samples'),
     )

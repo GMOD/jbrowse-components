@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
 import {
   filterFirstLineInstructions,
@@ -24,6 +24,7 @@ import {
 } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
+import type { SamplesHolder } from '../util/getSamples.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -42,6 +43,8 @@ interface SetupData {
  */
 export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<SetupData>
+
+  public samplesP?: SamplesHolder['samplesP']
 
   // true once the index has downloaded (set by lazyInit); gates the status label
   // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
@@ -270,7 +273,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(
+    return getSamplesMemoized(
+      this,
       this.getConf('nhLocation'),
       this.getConf('samples'),
     )
