@@ -31,30 +31,25 @@ Two supporting habits came out of the pass and are worth keeping:
   `scripts/build_dog10k_wolfdog_ancestry.sh`.
 - `tutorials/dog10k_svs.md` (new) — the Collie eye anomaly deletion from Schall
   & Kidd 2025, built by `scripts/build_dog10k_nhej1_sv.sh`.
+- `tutorials/methylation.md` (17b87d98d0) — refocused onto HG002 at the SNRPN
+  imprinting center. The COLO829 by-type/2-color figure was already in
+  `user_guides/alignments_track.md#modifications-and-methylation`, so the
+  tutorial links there; the 6mA fiber-seq section moved into that same
+  user-guide section, and its gallery card's `guide:` followed. Track configs
+  now carry the real hosted URLs instead of `yourhost` placeholders, plus a
+  provenance section naming the ONT open-data paths both files were sliced
+  from.
+- `tutorials/scatac_pseudobulk.md` (6f6bb56c35) — refocused onto the 5k PBMC
+  dataset its own `build_scatac_pseudobulk.sh` produces, since that is the one a
+  reader can actually run the pseudobulk step on. SnapATAC2 stays inline; ArchR,
+  sinto + deepTools, and the bare-fragments route condense to a bullet each. The
+  CATlas ALB figure moved to `user_guides/multiquantitative_track.md`; CATlas
+  keeps its gallery card and a Sources pointer to its public BigWigs. The
+  tutorial card's crop source in `gen-tutorial-thumbs.ts` had to move with the
+  figure — a card whose `src` is no longer on the page still builds, so nothing
+  fails to warn you.
 
 ## Next, in the order I would take them
-
-### `tutorials/methylation.md` — refocus onto HG002
-
-Three datasets today (COLO829 ONT, HG002 SNRPN phased, HG002 fiber-seq), and the
-page says outright that it is "a tour of the methylation views". Plan:
-
-- Keep the HG002 thread: per-read modification coloring → modkit bedMethyl →
-  allele-specific methylation at the SNRPN imprinting center.
-- The COLO829 by-type/2-color figure (`alignments/modifications2`) is **already**
-  in `user_guides/alignments_track.md#modifications-and-methylation`; drop it
-  from the tutorial and link there.
-- Move the 6mA fiber-seq section (`methylation/chromatin_accessibility_6ma`) to
-  the same user-guide section — it is per-read modification rendering, not a
-  second methylation workflow.
-
-### `tutorials/scatac_pseudobulk.md` — refocus
-
-Three datasets (CATlas, hepatocyte ALB, PBMC5k) plus four alternative
-pipeline recipes (SnapATAC2, ArchR, BAM-split + deepTools, manual fragments).
-Pick one dataset to follow, keep one pipeline inline, and move the rest behind
-`## Reproduce it end to end` per `docs/CLAUDE.md`'s "quarantine the pipeline"
-rule.
 
 ### `tutorials/rnaseq.md` — needs a finding, not a tour
 
