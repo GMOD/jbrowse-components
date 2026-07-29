@@ -13,8 +13,12 @@ import type React from 'react'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()({
+  // clip, not hidden: this holds a staticBlocks-width strip of labels, and a
+  // scroll container here can be scrolled by the browser (focus,
+  // scrollIntoView) with no scrollbar to show it, sliding the coordinates out
+  // of register with the tracks. clip cannot be scrolled at all
   container: {
-    overflow: 'hidden',
+    overflow: 'clip',
     position: 'relative',
   },
   zoomContainer: {

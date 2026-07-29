@@ -35,7 +35,11 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     background: theme.palette.background.paper,
     cursor: 'pointer',
-    overflow: 'hidden',
+    // clip, not hidden: transform/maxWidth are patched on every scroll-zoom
+    // frame, and `hidden` would make each label its own scroll container —
+    // scrollable-overflow bookkeeping and scroll anchoring per label per frame,
+    // for a box that never scrolls. clip is a paint-time rect instead
+    overflow: 'clip',
     whiteSpace: 'nowrap',
     '&:hover': {
       // action.hover is a mode-aware translucent overlay; the old hardcoded

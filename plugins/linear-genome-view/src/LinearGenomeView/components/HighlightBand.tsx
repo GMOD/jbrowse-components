@@ -6,7 +6,9 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     position: 'absolute',
     left: 0,
-    overflow: 'hidden',
+    // clip rather than hidden so this never becomes a scroll container (see
+    // Scalebar)
+    overflow: 'clip',
     // paint above sibling TrackContainers (which would otherwise win in tree
     // order). pointer-events:none lets clicks fall through to the tracks; an
     // interactive chip re-enables pointer-events on itself

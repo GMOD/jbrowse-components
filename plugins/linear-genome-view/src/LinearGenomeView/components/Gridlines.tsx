@@ -8,6 +8,9 @@ import type { LinearGenomeViewModel } from '../index.ts'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
+  // top/left stay unset: as an inline-level box the svg takes its static
+  // position on a line box, and pinning it to 0 shifts the ticks off the
+  // canvas's own grid
   absoluteFill: {
     position: 'absolute',
     width: '100%',

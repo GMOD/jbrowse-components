@@ -17,10 +17,17 @@ import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
+  // No `overflow`: paint containment already clips to the padding box, and an
+  // overflow would only add a scroll container — the spurious second scrollbar
+  // described in TrackRenderingContainer. flow-root keeps the block formatting
+  // context that `overflow: hidden` used to establish as a side effect (neither
+  // `clip` nor no overflow does), so child margins still can't collapse through
+  // and shift the track — which the breakpoint split view would pick up, since
+  // its connector overlay measures trackRefs' getBoundingClientRect().top.
   root: {
     marginTop: 2,
-    overflow: 'hidden',
     position: 'relative',
+    display: 'flow-root',
     contain: 'layout style paint',
   },
   unpinnedTrack: {

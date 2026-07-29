@@ -12,6 +12,12 @@ export const elidedBlockStyles = {
     'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
 } as const
 
+// The absolute-fill overlays (Gridlines, PaddingBlocks, ZoomTransform) are
+// deliberately NOT consolidated onto a shared `position:absolute; inset:0`:
+// they leave top/left unset so the box takes its static position, and pinning
+// those to 0 moves the layer. On the inline-level Gridlines <svg> that shifted
+// every tick off the canvas's grid (caught by the bsv-hg19-pileup snapshot).
+
 export type Cytoband = ReturnType<typeof getCytobands>[number]
 
 export function getCytobands(assembly: Assembly | undefined, refName: string) {

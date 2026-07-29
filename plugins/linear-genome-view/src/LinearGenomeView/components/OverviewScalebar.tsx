@@ -34,7 +34,9 @@ const useStyles = makeStyles()(theme => ({
     top: 0,
     left: 0,
     height: HEADER_OVERVIEW_HEIGHT,
-    overflow: 'hidden',
+    // clip rather than hidden so this never becomes a scroll container (see
+    // Scalebar)
+    overflow: 'clip',
   },
   // cytoband strip keeps a fixed light backdrop in both light/dark mode: the
   // Giemsa greyscale runs to pure black (gpos100/gvar), which would vanish on

@@ -13,7 +13,9 @@ const useStyles = makeStyles()(theme => ({
   container: {
     position: 'relative',
     height: 13,
-    overflow: 'hidden',
+    // clip rather than hidden so this never becomes a scroll container (see
+    // Scalebar)
+    overflow: 'clip',
   },
   tick: {
     position: 'absolute',

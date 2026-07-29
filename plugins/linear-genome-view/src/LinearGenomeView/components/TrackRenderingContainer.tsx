@@ -27,10 +27,13 @@ const useStyles = makeStyles()({
   // VerticalScrollbar overlay and redraw the canvas at `scrollTop`. A native
   // scroll port here only produced a *second*, spurious scrollbar whenever a
   // display's absolutely-positioned overlays extended a pixel past `height`
-  // (the reported double/flickering/full-height scrollbars). `contain: strict`
-  // already clips the paint, so overflow stays hidden with no scrollbar.
+  // (the reported double/flickering/full-height scrollbars). So there is
+  // deliberately no `overflow` here: `contain: strict` includes paint
+  // containment, which clips to the padding box on its own, and adding an
+  // `overflow` would reintroduce the scroll container — one the browser can
+  // still scroll silently (focus, scrollIntoView, scroll anchoring) even with
+  // no scrollbar shown, desyncing track content from the scalebar.
   trackRenderingContainer: {
-    overflow: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
