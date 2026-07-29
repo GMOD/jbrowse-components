@@ -7,12 +7,9 @@ import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import SidebarLayout from '../layouts/SidebarLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import {
-  LIVE_LABEL,
   gallerySections,
-  itemGuideHref,
-  itemGuideLabel,
   itemImg,
-  itemLiveHref,
+  itemLinks,
   itemPrimary,
 } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
@@ -89,10 +86,10 @@ const sections = gallerySections
                 {s.cards.map(({ item, file, thumb, size }) => {
                   const src = `${baseUrl}/img/${thumb}`
                   const full = `${baseUrl}/img/${file}`
-                  const liveHref = itemLiveHref(item)
-                  const guideHref = itemGuideHref(item, baseUrl)
-                  // Enlarging opens the live view when there is one, else the guide.
-                  const primary = itemPrimary(item, baseUrl)
+                  // The enlarged figure offers the same destinations as the
+                  // card under it, in the same order — a reader who clicked the
+                  // image is not choosing a different journey.
+                  const links = itemLinks(item, baseUrl)
                   return (
                     <figure class="card">
                       <button
@@ -100,8 +97,7 @@ const sections = gallerySections
                         class="card-img-btn lightbox-trigger"
                         data-label={item.label}
                         data-full={full}
-                        data-href={primary.href}
-                        data-open-label={primary.label}
+                        data-links={JSON.stringify(links)}
                         aria-label={`Enlarge: ${item.label}`}
                       >
                         <img
@@ -116,27 +112,16 @@ const sections = gallerySections
                         <h3 class="card-title">{item.label}</h3>
                         {item.description && <p>{item.description}</p>}
                         <p class="card-links">
-                          {guideHref ? (
+                          {links.map(link => (
                             <a
-                              href={guideHref}
+                              href={link.href}
                               class="card-open"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              {itemGuideLabel(item)}
+                              {link.label}
                             </a>
-                          ) : (
-                            liveHref && (
-                              <a
-                                href={liveHref}
-                                class="card-open"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {LIVE_LABEL}
-                              </a>
-                            )
-                          )}
+                          ))}
                         </p>
                       </figcaption>
                     </figure>
@@ -203,26 +188,71 @@ const sections = gallerySections
     margin: 0;
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    overflow: hidden;
   }
+  /* Figures differ in height (a panorama against a 260px-capped stack), so a
+     flex card starts its caption wherever its own image ended and the titles
+     beside each other sit at different y. Each card instead spans four rows of
+     the page grid — image, title, description, links — and reads them back as a
+     subgrid, so those bands are sized across the whole row and every card's
+     description and links line up with its neighbour's. */
+  @supports (grid-template-rows: subgrid) {
+    .grid {
+      align-items: stretch;
+    }
+    .card {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 4;
+      row-gap: 0;
+    }
+    figcaption {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 3;
+      row-gap: 0;
+    }
+    .card-title {
+      grid-row: 1;
+    }
+    /* Explicit, so a card with no description doesn't auto-place its links into
+       the description row and fall out of step with its neighbour. */
+    .card-links {
+      grid-row: 3;
+    }
+  }
+  /* A fixed band rather than one sized by whatever figure it holds, so the
+     images line up down the whole page and not just within a row. */
   .card-img-btn {
     margin: 0;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
+    /* Inside the band (border-box), so the figure doesn't sit flush against the
+       card edge and the band height stays the same for every card. */
+    padding: 0.5rem;
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+    background: none;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .card img {
     display: block;
-    width: 100%;
+    /* Figures range from wide panoramas to 1100-row stacks; both constraints
+       hold at once on a replaced element, so each keeps its own ratio and is
+       centered in the band. Nothing is cropped — the lightbox is where a figure
+       gets read at full size. */
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
-    /* Figures range from wide panoramas to 1100-row stacks. A wide one fills the
-       card at its own ratio; a tall one is capped and fits inside instead of
-       setting the height of everything beside it. Nothing is cropped — the
-       lightbox is where a figure gets read at full size. */
-    max-height: 260px;
-    object-fit: contain;
   }
 
   figcaption {
-    padding: 0.5rem 0 0;
+    padding: 0.6rem 0.75rem 0.75rem;
   }
   .card-title {
     margin: 0 0 0.25rem;
