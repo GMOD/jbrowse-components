@@ -1,0 +1,95 @@
+---
+name: track-selector-perf
+description:
+  Where the hierarchical track selector's cost actually is (rendering a row, not
+  rebuilding the model), which three model-side optimizations were measured and
+  rejected, and how to benchmark it without fooling yourself. Read before
+  "optimizing" the track tree.
+---
+
+# The track selector's cost is per-row rendering, not the model
+
+The tree looks like it should be model-bound: it rebuilds on every filter
+keystroke, re-reads track configs, re-sorts, re-flattens. Measured, almost none
+of that matters. A keystroke over 2000 tracks costs **well under a millisecond**
+of model work. Mounting the rows costs **~1.4 ms per row**.
+
+So: changes that make a row lighter pay. Changes that make the rebuild smarter
+do not.
+
+## What paid (2026-07-29)
+
+Dropping `FormControlLabel` from the row, so a track renders a plain `<label>`
+instead of mounting `FormControlLabel` + its `Typography` wrapper. Continues the
+`CheckboxLite`/`IconButtonLite` work in 2f6bcd18d0.
+
+| n=1000 tracks | before | after |
+| --- | --- | --- |
+| mount, min of 9 | 1656 / 1631 ms | 1460 / 1401 ms |
+| toggle re-render, min of 18 | 80.6 / 73.6 ms | 63.3 / 66.1 ms |
+| DOM nodes | 21506 | 20505 |
+
+Two alternating A/B rounds, min and median agreeing. The node count is exact:
+one fewer per row.
+
+## What did not pay — do not retry these without new evidence
+
+**Caching the unfiltered hierarchy and pruning it per keystroke.** Measured null
+twice: 0.454/0.457 ms vs 0.422/0.457 ms at the model level (n=2000, min of 25),
+and 115/126 ms vs 111/111 ms through the rendered tree (n=1000). Tree
+construction is not the cost — a keystroke is dominated by `flattenTree` and the
+offset pass, which run either way. Preserving track-node identity so the
+memoized `TreeItem`s could bail out did not show up either; reconciling ~1000
+elements costs about what re-rendering them does.
+
+**Resolving each track's name/description/categories once instead of per
+keystroke** (`TrackNodeSource`, kept — it is a genuine simplification). About 5%
+off a keystroke at n=8000, nothing distinguishable at n=2000. Reading a slot off
+an **un-hydrated frozen** `jbrowse.tracks` entry is close to a property access,
+so caching those reads buys little.
+
+**Debouncing `filterText`.** Belongs in the view if anywhere, not in a model
+action that programmatic callers expect to take effect. `ClearableSearchField`
+already holds the input in local state and wraps the model update in
+`startTransition`, so the field never lags.
+
+Also checked and already fast: `SanitizedHTML` short-circuits to a plain `<span>`
+for any string without `<` or `://`, which is every ordinary track name.
+
+## Benchmarking it without fooling yourself
+
+Two traps, both of which produced confident wrong answers first time round.
+
+**An unobserved MobX computed is not cached.** Reading `model.flattenedItems` in
+a bare loop recomputes the whole chain every time, so a benchmark written that
+way measures the uncached path and reports no improvement from any caching. Read
+inside an `autorun`, which is what the observer components do:
+
+```js
+const dispose = autorun(() => {
+  model.flattenedItems.length
+})
+// setFilterText is an action, so the autorun re-runs synchronously when it ends
+const t0 = performance.now()
+model.setFilterText(prefix)
+const elapsed = performance.now() - t0
+```
+
+**This repo is usually built by several agents at once.** At load average 13.8
+on 16 cores the same benchmark on the same commit varied 5x between runs, which
+manufactured an apparent 5x speedup that did not exist. Use the **minimum over
+many batches** — the estimator least distorted by contention — and alternate the
+two trees within one session. Absolute numbers are not comparable across
+sessions; only within-session A/B is.
+
+For the A/B itself, `git worktree add --detach <dir> <sha>` plus symlinked
+`node_modules` (root, and each package that has one) runs jest in both trees
+without touching the shared working tree. Never `git stash`.
+
+## Still open
+
+`flattenTree` + `flattenedItemOffsets` are what a keystroke actually spends its
+time on, and `flattenedItemOffsets` allocates an object per item via
+`getNodePresentation`. At ~0.45 ms per keystroke for 2000 tracks there is
+nothing to chase yet, but that is where to look if a much larger config ever
+makes typing feel slow.

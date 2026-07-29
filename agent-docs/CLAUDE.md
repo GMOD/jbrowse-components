@@ -57,6 +57,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md) — promotable slots, session-wide defaults
 - [SYNTENY_LOD.md](reference/SYNTENY_LOD.md) — the two PIF tiers and the cost model
 - [SCREENSHOT_PERF.md](reference/SCREENSHOT_PERF.md) — why heavy screenshot specs take minutes (SwiftShader software rasterization, not app code)
+- [TRACK_SELECTOR_PERF.md](reference/TRACK_SELECTOR_PERF.md) — the track tree costs per-row rendering, not model rebuilds; three rejected optimizations, and how to benchmark MobX computeds on a shared box
 - [PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md) — rGFA vs plain GFA, the two tabix indexes both reduce to, carriage, measured ceilings, prior art
 - [CLUSTERING_WORKFLOW.md](reference/CLUSTERING_WORKFLOW.md) — in-app hierarchical clustering
 - [VIEW_INIT.md](reference/VIEW_INIT.md) — `init` launch spec → afterAttach → state machine
