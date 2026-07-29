@@ -1,5 +1,6 @@
 ---
 title: Graph genome view
+guide_category: Views
 description:
   Draw a pangenome graph as a graph, from an rGFA or a plain GFA, at any locus,
   beside a linear view of the same window
