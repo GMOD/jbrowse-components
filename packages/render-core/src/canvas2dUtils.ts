@@ -397,3 +397,30 @@ export function makeCellLeftMapper(bounds: BpRegionBounds) {
   const shift = bounds.reversed ? -pxPerBp : 0
   return (bp: number) => toX(bp) + shift
 }
+
+/**
+ * The **integer base** whose 1bp cell covers screen pixel `px` — the inverse of
+ * `makeCellLeftMapper`, for hit-testing (which base did the cursor land on) as
+ * opposed to painting.
+ *
+ * Rounding is not `Math.floor` on both orientations, which is the trap. The
+ * un-rounded inverse of `makeBpMapper` lands in `[b, b+1)` on a forward block
+ * but in `(b, b+1]` on a reversed one, because bp runs leftward there — so
+ * flooring reversed names `b+1` on base `b`'s leftmost pixel column, and names
+ * `end` (outside the block) on the block's first column. It is the same
+ * one-base pivot `makeCellLeftMapper` exists to get right, seen from the other
+ * direction, and it fails the same way: invisible zoomed out, a whole base off
+ * at base zoom, and only on flipped regions.
+ *
+ * Callers own the *range* check: a `px` outside `[screenStartPx, screenEndPx)`
+ * extrapolates rather than clamping, since which block owns a pixel is the
+ * caller's decision (adjacent blocks share an edge pixel).
+ */
+export function bpAtPx(px: number, bounds: BpRegionBounds) {
+  const { start, end, screenStartPx, screenEndPx, reversed } = bounds
+  const frac = (px - screenStartPx) / (screenEndPx - screenStartPx)
+  const span = end - start
+  return reversed
+    ? Math.ceil(end - frac * span) - 1
+    : Math.floor(start + frac * span)
+}

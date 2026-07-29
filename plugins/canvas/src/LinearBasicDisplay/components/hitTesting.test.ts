@@ -11,6 +11,7 @@ import {
   hoverTooltipText,
   isHitFeature,
   performMultiRegionHitDetection,
+  regionBpPerPx,
 } from './hitTesting.ts'
 
 import type {
@@ -104,13 +105,11 @@ function buildIndexes(
   for (const vr of regions) {
     const data = laidOutDataMap.get(vr.displayedRegionIndex)
     if (data) {
-      const blockWidth = vr.screenEndPx - vr.screenStartPx
-      const bpPerPx = (vr.end - vr.start) / blockWidth
       out.set(vr.displayedRegionIndex, {
         feature: buildFeatureFlatbushIndex(
           data.flatbushItems,
           data.floatingLabelsData,
-          bpPerPx,
+          regionBpPerPx(vr),
           vr.reversed ?? false,
           labels,
         ),
@@ -412,21 +411,46 @@ test('bpPos is floored to an integer even when the mouse pixel maps to a fractio
   }
 })
 
-test('handles reversed region (encoded via end < start, no flag)', () => {
-  // Matches how LGV emits reversed regions: vr.end < vr.start; the bp mapping
-  // is symmetric in the signed span so no reversed flag is needed here.
-  const data = makeData([makeItem('gene1', 1000, 5000, 0, 20)])
-  const region = makeRegion(0, 10000, 0, 0, 800)
-  const result = hit(new Map([[0, data]]), [region], 500, 10)
-  expect(result.feature!.featureId).toBe('gene1')
-})
-
+// The only encoding LGV emits: calculateDynamicBlocks always orders
+// start < end and carries the flip in `reversed`.
 test('handles reversed region with explicit flag', () => {
   // Reversed flag set + start<end: mouseX=500 maps to vr.end - 0.625*span = 3750
   const data = makeData([makeItem('gene1', 3000, 4000, 0, 20)])
   const region = makeRegion(0, 0, 10000, 0, 800, true)
   const result = hit(new Map([[0, data]]), [region], 500, 10)
   expect(result.feature!.featureId).toBe('gene1')
+})
+
+// Reversed, base b paints across pixels ((end-b-1)/bpPerPx, (end-b)/bpPerPx],
+// so the coordinate a pixel inverts to lands in (b, b+1] — flooring it named
+// b+1 on each base's leftmost column, and named `end` (outside the region
+// entirely) on the block's first column.
+test('reversed base zoom resolves each pixel column to the base painted there', () => {
+  // 10bp across 100px, flipped: base 1009 is leftmost, 1000 rightmost.
+  const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
+  const region = makeRegion(0, 1000, 1010, 0, 100, true)
+  const bpAt = (x: number) => {
+    const result = hit(new Map([[0, data]]), [region], x, 10)
+    return isHitFeature(result) ? result.bpPos : undefined
+  }
+  expect(bpAt(0)).toBe(1009)
+  expect(bpAt(5)).toBe(1009)
+  expect(bpAt(9.9)).toBe(1009)
+  expect(bpAt(10)).toBe(1008)
+  expect(bpAt(99.9)).toBe(1000)
+})
+
+test('forward base zoom resolves each pixel column to the base painted there', () => {
+  const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
+  const region = makeRegion(0, 1000, 1010, 0, 100)
+  const bpAt = (x: number) => {
+    const result = hit(new Map([[0, data]]), [region], x, 10)
+    return isHitFeature(result) ? result.bpPos : undefined
+  }
+  expect(bpAt(0)).toBe(1000)
+  expect(bpAt(9.9)).toBe(1000)
+  expect(bpAt(10)).toBe(1001)
+  expect(bpAt(99.9)).toBe(1009)
 })
 
 function makeDataWithLabel(
@@ -542,10 +566,25 @@ test('hoverTooltip puts the residue on its own line under the isoform', () => {
   ).toBe('BRCA1-201<br/>K124')
 })
 
-test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
+// A hovered letter narrows what the second row says; it doesn't change what
+// names the thing under the cursor. With no isoform to name, the feature's own
+// mouseover still heads the tooltip — dropping it would leave a bare residue
+// with no clue which feature it belongs to.
+test('hoverTooltip keeps the feature mouseover above a residue when there is no isoform', () => {
   expect(hoverTooltip(makeHit({ peptide: makeAa('K', 0, 3, 123) }))).toBe(
-    'K124',
+    'gene mouseover<br/>K124',
   )
+})
+
+test('hoverTooltip leaves only the residue for a feature with no tooltip text', () => {
+  expect(
+    hoverTooltip(
+      makeHit({
+        feature: { ...makeItem('gene1', 0, 100, 0, 20), tooltip: '' },
+        peptide: makeAa('K', 0, 3, 123),
+      }),
+    ),
+  ).toBe('K124')
 })
 
 // Three exons at 0-10, 20-30, 40-50, coding 5-45, on the + strand: c.1 is
@@ -634,6 +673,21 @@ test('hoverTooltipText strips markup from the feature mouseover slot', () => {
       }),
     ),
   ).toBe('gene mouseover')
+})
+
+// Joining fields with <br/> is the standard mouseover idiom; textContent alone
+// would collapse them into one run-on line on the clipboard.
+test('hoverTooltipText turns <br/> inside the mouseover slot into newlines', () => {
+  expect(
+    hoverTooltipText(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: 'Name: BRCA1<br/>Type: gene<br>Score: 12',
+        },
+      }),
+    ),
+  ).toBe('Name: BRCA1\nType: gene\nScore: 12')
 })
 
 test('hoverTooltip says nothing extra for a single-exon transcript', () => {

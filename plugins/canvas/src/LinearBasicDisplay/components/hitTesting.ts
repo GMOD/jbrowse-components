@@ -1,4 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import { hgvsPosition, locateOnTranscript } from '../hgvsPosition.ts'
@@ -37,6 +38,14 @@ export type FeatureItemEntry =
       data: FeatureDataResult
     }
   | { kind: 'subfeature'; item: SubfeatureInfo; vr: VisibleRegion }
+
+// The zoom this region is drawn at, always positive: LGV emits start < end and
+// carries the flip in `reversed` (see calculateDynamicBlocks), so a signed span
+// can't reach here and make `isBaseResolved` read a negative bpPerPx as "zoomed
+// all the way in".
+export function regionBpPerPx(vr: VisibleRegion) {
+  return (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+}
 
 export interface LabelVisibility {
   showLabels: boolean
@@ -138,7 +147,7 @@ function tooltipRows(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
-  const title = peptide ? isoform : (isoform ?? result.feature.tooltip)
+  const title = isoform ?? result.feature.tooltip
   const residue = peptide
     ? `${peptide.aminoAcid}${peptide.proteinIndex + 1}`
     : undefined
@@ -152,15 +161,23 @@ export function hoverTooltip(result: HitFeatureResult) {
   return tooltipRows(result).join('<br/>')
 }
 
-// The same content as plain text, for the clipboard: rows join on a real
-// newline instead of `<br/>`, and any markup the `mouseover` config
-// expression put in the title (harmless as HTML — FeatureTooltip only ever
-// renders it, never executes it) is stripped rather than copied as literal
-// tags.
+// The reader's words out of whatever HTML a `mouseover` config expression
+// returned (harmless as markup — FeatureTooltip only ever renders it, never
+// executes it). `<br/>` becomes a newline before the tags go: joining fields
+// with `<br/>` is the standard mouseover idiom, and textContent alone would run
+// those fields together into one line.
+export function htmlToPlainText(html: string) {
+  const { textContent } = new DOMParser().parseFromString(
+    html.replace(/<br\s*\/?>/gi, '\n'),
+    'text/html',
+  ).body
+  return textContent ?? ''
+}
+
+// The same content as the hover tooltip, as plain text for the clipboard: rows
+// join on a real newline instead of `<br/>`.
 export function hoverTooltipText(result: HitFeatureResult) {
-  return tooltipRows(result)
-    .map(r => new DOMParser().parseFromString(r, 'text/html').body.textContent)
-    .join('\n')
+  return tooltipRows(result).map(htmlToPlainText).join('\n')
 }
 
 export function buildFeatureFlatbushIndex(
@@ -290,6 +307,17 @@ function resolveSubfeature(
   return null
 }
 
+// The region a pixel belongs to, or undefined off the end of the last one. The
+// upper bound is exclusive so adjacent regions (regionA.screenEndPx ===
+// regionB.screenStartPx) can't both match at the shared pixel — the earlier one
+// would always win and steal clicks meant for the later one. Exactly one region
+// can match, so this answers with a region rather than a list.
+function regionAtPixel(visibleRegions: VisibleRegion[], mouseXPx: number) {
+  return visibleRegions.find(
+    vr => mouseXPx >= vr.screenStartPx && mouseXPx < vr.screenEndPx,
+  )
+}
+
 export function performMultiRegionHitDetection(
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>,
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>,
@@ -297,53 +325,35 @@ export function performMultiRegionHitDetection(
   mouseXPx: number,
   yPos: number,
 ): HitResult {
-  for (const vr of visibleRegions) {
-    // Upper bound is exclusive so adjacent regions (regionA.screenEndPx ===
-    // regionB.screenStartPx) don't both match at the shared pixel — the
-    // earlier region would always win and steal clicks meant for the later one.
-    if (mouseXPx >= vr.screenStartPx && mouseXPx < vr.screenEndPx) {
-      const data = laidOutDataMap.get(vr.displayedRegionIndex)
-      const indexes = flatbushIndexes.get(vr.displayedRegionIndex)
-      if (data && indexes) {
-        const blockWidth = vr.screenEndPx - vr.screenStartPx
-        const reversed = vr.reversed ?? false
-        const frac = (mouseXPx - vr.screenStartPx) / blockWidth
-        const bpSpan = vr.end - vr.start
-        const bpPos = Math.floor(
-          reversed ? vr.end - frac * bpSpan : vr.start + frac * bpSpan,
-        )
-
-        if (indexes.feature) {
-          // Features' hit boxes are padded by label width and can overlap a
-          // neighbor's box, so pick the topmost (last-painted = largest index)
-          // rather than whatever Flatbush yields first.
-          const idx = topmostMatch(
-            indexes.feature.search(bpPos, yPos, bpPos, yPos),
-          )
-          if (idx !== undefined) {
-            const feature = data.flatbushItems[idx]!
-            return {
-              feature,
-              // Resolve the topmost subfeature the same way, but only keep it
-              // when it belongs to the chosen feature. The two indexes search
-              // independently and the feature boxes are widened by pad/label
-              // overhang while the subfeature index is not, so in the overlap
-              // of two same-row features an ungated subfeature could pair with
-              // the other feature — showing its isoform tooltip while select
-              // acts on this one.
-              subfeature: resolveSubfeature(
-                data,
-                indexes,
-                bpPos,
-                yPos,
-                feature,
-              ),
-              peptide: findPeptideAt(data, bpPos, yPos, idx),
-              bpPos,
-              bpPerPx: bpSpan / blockWidth,
-              displayedRegionIndex: vr.displayedRegionIndex,
-            }
-          }
+  const vr = regionAtPixel(visibleRegions, mouseXPx)
+  if (vr) {
+    const data = laidOutDataMap.get(vr.displayedRegionIndex)
+    const indexes = flatbushIndexes.get(vr.displayedRegionIndex)
+    if (data && indexes?.feature) {
+      // The base the cursor is over. bpAtPx owns the reversed pivot: flooring
+      // the raw inverse names the neighbouring base on each base's leftmost
+      // pixel column of a flipped region.
+      const bpPos = bpAtPx(mouseXPx, vr)
+      // Features' hit boxes are padded by label width and can overlap a
+      // neighbor's box, so pick the topmost (last-painted = largest index)
+      // rather than whatever Flatbush yields first.
+      const idx = topmostMatch(indexes.feature.search(bpPos, yPos, bpPos, yPos))
+      if (idx !== undefined) {
+        const feature = data.flatbushItems[idx]!
+        return {
+          feature,
+          // Resolve the topmost subfeature the same way, but only keep it when
+          // it belongs to the chosen feature. The two indexes search
+          // independently and the feature boxes are widened by pad/label
+          // overhang while the subfeature index is not, so in the overlap of
+          // two same-row features an ungated subfeature could pair with the
+          // other feature — showing its isoform tooltip while select acts on
+          // this one.
+          subfeature: resolveSubfeature(data, indexes, bpPos, yPos, feature),
+          peptide: findPeptideAt(data, bpPos, yPos, idx),
+          bpPos,
+          bpPerPx: regionBpPerPx(vr),
+          displayedRegionIndex: vr.displayedRegionIndex,
         }
       }
     }

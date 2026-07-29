@@ -1,6 +1,7 @@
 import {
   MAX_CANVAS_DIM_PX,
   MAX_DPR,
+  bpAtPx,
   devicePxSpan,
   forEachClippedBlock,
   getDpr,
@@ -93,9 +94,6 @@ test('clamps an oversized backing store to the safe max instead of throwing', ()
   warn.mockRestore()
 })
 
-// The pivot every Canvas2D per-base cell painter needs. `makeBpMapper(bp)` is
-// the cell's left edge only on a forward block; reversed, bp runs leftward so it
-// lands on the cell's RIGHT edge and a rect filled rightward from it covers the
 // The Canvas2D twin of the pivot inside the shaders' extendToMinWidthX. When a
 // mark is widened to a floor, both must grow it away from the feature's start,
 // or the fallback painter and the shader disagree by up to that floor on
@@ -135,6 +133,9 @@ describe('spanLeft', () => {
   })
 })
 
+// The pivot every Canvas2D per-base cell painter needs. `makeBpMapper(bp)` is
+// the cell's left edge only on a forward block; reversed, bp runs leftward so it
+// lands on the cell's RIGHT edge and a rect filled rightward from it covers the
 // wrong base. One base of error: invisible zoomed out, glaring zoomed in, and
 // only on flipped regions.
 describe('makeCellLeftMapper', () => {
@@ -191,6 +192,53 @@ describe('makeCellLeftMapper', () => {
     expect(makeCellLeftMapper({ ...tiny, reversed: true })(100)).toBeCloseTo(
       24.5,
     )
+  })
+})
+
+// The inverse of makeCellLeftMapper — which base a pixel landed on — so it
+// carries the same one-base pivot, and the same flipped-region trap.
+describe('bpAtPx', () => {
+  // bp 100..110 across [0,100] => 10 px/bp, one whole base per 10 columns
+  const span: BpRegionBounds = {
+    start: 100,
+    end: 110,
+    screenStartPx: 0,
+    screenEndPx: 100,
+  }
+
+  test('every pixel of a base cell resolves back to that base, both orientations', () => {
+    for (const reversed of [false, true]) {
+      const bounds = { ...span, reversed }
+      const cellLeft = makeCellLeftMapper(bounds)
+      for (let bp = 100; bp < 110; bp++) {
+        const left = cellLeft(bp)
+        expect(bpAtPx(left, bounds)).toBe(bp)
+        expect(bpAtPx(left + 5, bounds)).toBe(bp)
+        expect(bpAtPx(left + 9.99, bounds)).toBe(bp)
+      }
+    }
+  })
+
+  test('the first pixel column names the base painted there', () => {
+    // reversed, flooring the raw inverse gave 110 here — outside the block
+    expect(bpAtPx(0, { ...span, reversed: true })).toBe(109)
+    expect(bpAtPx(0, span)).toBe(100)
+  })
+
+  test('never leaves the block over its full width', () => {
+    for (const reversed of [false, true]) {
+      for (let px = 0; px < 100; px += 0.5) {
+        const bp = bpAtPx(px, { ...span, reversed })
+        expect(bp).toBeGreaterThanOrEqual(100)
+        expect(bp).toBeLessThan(110)
+      }
+    }
+  })
+
+  test('honors screenStartPx offset', () => {
+    const offset = { ...span, screenStartPx: 20, screenEndPx: 120 }
+    expect(bpAtPx(20, offset)).toBe(100)
+    expect(bpAtPx(20, { ...offset, reversed: true })).toBe(109)
   })
 })
 
