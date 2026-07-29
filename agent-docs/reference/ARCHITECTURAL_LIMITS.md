@@ -309,6 +309,25 @@ display, a real cost for very wide multi-sample tracks (100 samples x 1 Mbp at
 **Retire when** a plugin's memory ceiling shows up in production. The options are
 then chunked typed-array delivery or a streaming RPC primitive, neither built.
 
+### The byte gate assumes bytes scale with span, so block-quantized formats slip past it
+
+**Status:** Open.
+
+`rescaleByteEstimateToVisibleSpan` scales one cached measurement by
+`visibleBp / measuredSpanBp`, and `AUTO_FORCE_LOAD_BP` skips gating below 20kb.
+Both assume a smaller view means a smaller fetch. Tabix returns whole
+overlapping lines, so for a format that puts an unbounded amount of data on one
+line — MAF-tabix stores an entire alignment block, every species, in column 6 —
+the cost is quantized by feature, not by view. Zooming into a megabase block
+divides the estimate by the zoom factor while the fetch stays the same size, and
+the floor means nothing checks. The gate under-reports precisely the fetch that
+needs stopping, so there is no ceiling on the path that needs one.
+
+**Retire when** the gate can re-measure per view instead of rescaling (an
+opt-in, since canvas/LD/alignments share the mixin) and the byte axis is allowed
+to fire below the floor. Sketch and the MAF-specific fixes in
+[MAF_LARGE_BLOCKS.md](../guides/MAF_LARGE_BLOCKS.md).
+
 ---
 
 ## Coupling

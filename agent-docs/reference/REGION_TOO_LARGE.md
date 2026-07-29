@@ -348,6 +348,17 @@ paths can't drift apart.
   rather than on the LGV model — the view never read it — and
   `aboveForceLoadFloor` is its only comparison. It is not exported from the
   plugin: MAF, the one out-of-plugin reader, reads that getter instead.
+
+  **Both the floor and the rescaling below assume bytes are proportional to
+  span, which is false for any format whose feature size is unbounded.** Tabix
+  returns whole overlapping lines, and MAF-tabix puts an entire alignment block
+  (every species' sequence) on one line — so zooming into a megabase block
+  rescales the estimate toward zero while the real cost is unchanged, and the
+  20kb floor means the gate isn't consulted at all. The gate under-reports
+  exactly the fetch that needs stopping. See
+  [MAF_LARGE_BLOCKS.md](../guides/MAF_LARGE_BLOCKS.md) for the failure mode and
+  the opt-out sketch (re-measure instead of rescale; let the byte axis fire
+  below the floor). Unfixed as of 2026-07-29.
 - `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
   place a byte budget gets resolved: the adapter's limit, else the display config.
   Those two arguments are the only byte-budget *inputs* in the system — force-load
