@@ -151,8 +151,12 @@ describe('item contributions', () => {
     })
   })
 
-  it('throws when a path segment is not a subMenu', () => {
+  // a plugin naming a path that isn't a sub-menu is a plugin bug, and it must
+  // cost that plugin its menu item rather than cost the user their session
+  it('opens without the contributions when one of them throws', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const menus = run(base, [
+      { type: 'appendToMenu', menuName: 'File', menuItem: item('added') },
       {
         type: 'appendToSubMenu',
         menuPath: ['File', 'Open', 'Nested'],
@@ -161,7 +165,13 @@ describe('item contributions', () => {
     ])
     // resolution is deferred to open, so the bar itself still renders
     expect(menus.map(m => m.label)).toEqual(['File'])
-    expect(() => menus[0]!.menuItems()).toThrow(/is not a subMenu/)
+    expect(labelsOf(menus[0]!)).toEqual(['Open', 'Close'])
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringMatching(/is not a subMenu/),
+      }),
+    )
+    spy.mockRestore()
   })
 
   // the definition is reused across every menus() evaluation and every open, so

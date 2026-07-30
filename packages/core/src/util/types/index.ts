@@ -555,18 +555,22 @@ export function isRootModelWithInternetAccounts(
   )
 }
 
-/** a root model that manages global menus */
+/**
+ * a root model that manages global menus. Every method records a contribution
+ * that is applied when the menu opens, so none of them can report where the
+ * item landed
+ */
 export interface AbstractMenuManager {
   appendMenu(menuName: string): void
-  insertMenu(menuName: string, position: number): number
-  insertInMenu(menuName: string, menuItem: MenuItem, position: number): number
-  appendToMenu(menuName: string, menuItem: MenuItem): number
-  appendToSubMenu(menuPath: string[], menuItem: MenuItem): number
+  insertMenu(menuName: string, position: number): void
+  insertInMenu(menuName: string, menuItem: MenuItem, position: number): void
+  appendToMenu(menuName: string, menuItem: MenuItem): void
+  appendToSubMenu(menuPath: string[], menuItem: MenuItem): void
   insertInSubMenu(
     menuPath: string[],
     menuItem: MenuItem,
     position: number,
-  ): number
+  ): void
 }
 export function isAbstractMenuManager(
   thing: unknown,

@@ -82,8 +82,6 @@ export function RootAppMenuMixin() {
          * top-level menu (e.g. `['File', 'Insert']`).
          *
          * @param menuItem - Menu item to append.
-         *
-         * @returns The new length of the sub-menu
          */
         appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
           pushAction({ type: 'appendToSubMenu', menuPath, menuItem })

@@ -170,7 +170,19 @@ function toMenu({ label, base, itemActions }: PendingMenu): Menu {
   return {
     label,
     menuItems: itemActions.length
-      ? () => applyItemActions(cloneMenuItems(materialize(base)), itemActions)
+      ? () => {
+          const items = materialize(base)
+          // this runs from the app bar's click handler, so a contribution that
+          // throws — a menuPath naming something that isn't a sub-menu, say —
+          // would otherwise take the whole session down. A plugin's menu item
+          // is cosmetic; drop the contributions and open the menu without them
+          try {
+            return applyItemActions(cloneMenuItems(items), itemActions)
+          } catch (error) {
+            console.error(error)
+            return items
+          }
+        }
       : () => materialize(base),
   }
 }

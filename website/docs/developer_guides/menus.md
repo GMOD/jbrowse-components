@@ -226,8 +226,10 @@ Here is an example array of MenuItems and the resulting menu:
 The root model exposes actions for customizing top-level menus at runtime,
 called from a plugin's `configure()` and guarded by `isAbstractMenuManager` as
 shown above. Each takes a `menuName`/`menuPath`, and the `insert*` variants take
-a `position` that counts from the end when negative; all return the new length
-of the affected menu. See the
+a `position` that counts from the end when negative. A contribution is recorded
+rather than applied immediately: it is merged into the menu each time that menu
+opens, so none of them return anything, and one that throws costs your item
+rather than the app. See the
 [`RootAppMenuMixin` state model](/docs/models/rootappmenumixin) for
 auto-generated signatures:
 
