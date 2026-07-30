@@ -50,9 +50,19 @@ chunk's block positions, so two queries resolving to the same chunk span get the
 identical objects back. A display fetches all its needed regions at once, so
 assigning let the last fetch to resolve rebind the read for every other region
 still holding it — resolving one region's mismatches against another's
-sequence. It hid for a long time because two *different* query ranges normally
-produce different chunk keys, so the cache misses and each fetch decodes its own
-copy; re-querying one range is what makes the cache actually hit. Covered by
-`regionRefAliasing.test.ts` (BAM and SAM both). `withRegionRef` is an
-`Object.create` view, so BamRecord's `_cached*` memos on the shared record are
-still read through the prototype chain.
+sequence. Covered by `regionRefAliasing.test.ts` (BAM and SAM both).
+
+Two different query ranges usually produce different chunk keys, so the cache
+misses and each fetch decodes its own copy; re-querying one range is what makes
+it actually hit. That is why this stayed latent — and why it stopped being
+latent. bam-js `bde84b1` ("keep every chunk a query parses cached", in **7.5.0**,
+the version we depend on) removed `evictOverlappingChunks`, which had been
+dropping any entry whose block range overlapped an incoming chunk and so kept
+roughly one entry per query. Panning got 25-1594x faster and record sharing
+across queries went from incidental to routine. Any future "just set a field on
+the record" shortcut is now much more likely to collide, not less.
+
+`withRegionRef` returns a `RegionBoundBamFeature`, a plain delegating class.
+**Not** `Object.create(record)` — that gives every view its own hidden class and
+measured ~200x worse on property reads; see the numbers in that class's doc
+comment.
