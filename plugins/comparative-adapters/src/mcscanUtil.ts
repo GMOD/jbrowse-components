@@ -13,15 +13,45 @@ export interface BareFeature {
 }
 
 // A synteny link between two BED features (assemblyNames[0] side and
-// assemblyNames[1] side) tagged with the source row number. `score` overrides
-// the BED score on the emitted feature (the anchors file carries a per-link
-// score; the blocks file does not). Shared by MCScanAnchorsAdapter and
-// MCScanBlocksAdapter, whose getFeatures/getRefNames are otherwise identical.
+// assemblyNames[1] side) tagged with the source row number. `strand` is the
+// orientation of the pair: the product of the two BED strands for a gene-to-gene
+// link, or the file's own orientation column for a `.anchors.simple` block,
+// which is why it is resolved by the caller rather than recomputed here.
+// `score` overrides the BED score on the emitted feature (the anchors files
+// carry a per-link score; the blocks file does not). Shared by the three MCScan
+// adapters, whose getFeatures/getRefNames are otherwise identical.
 export interface BlockRow {
   a: BareFeature
   b: BareFeature
   rowNum: number
+  strand: number
   score?: number
+}
+
+// The two BED sides of a link joined by name, or undefined when either gene is
+// absent from its BED — an anchors/blocks file naming a gene the BED does not
+// have is a row that cannot be drawn, not a reason to fail the whole track.
+export function joinBedPair(
+  bedA: Map<string, BareFeature>,
+  bedB: Map<string, BareFeature>,
+  nameA: string | undefined,
+  nameB: string | undefined,
+) {
+  const a = nameA === undefined ? undefined : bedA.get(nameA)
+  const b = nameB === undefined ? undefined : bedB.get(nameB)
+  return a && b ? { a, b } : undefined
+}
+
+// A file whose every row failed to join is a misconfiguration (swapped or
+// unrelated BEDs), not missing genes: that is worth an error naming the file,
+// where silently drawing nothing looks like an empty region.
+export function checkAnyRowsJoined(rows: BlockRow[], sourceRows: number) {
+  if (sourceRows > 0 && rows.length === 0) {
+    throw new Error(
+      `none of the ${sourceRows} rows in this file name genes present in both BED files; check that bed1Location and bed2Location match it`,
+    )
+  }
+  return rows
 }
 
 // refNames of the given assembly across all links (the side that faces it).
@@ -42,8 +72,7 @@ export function getBlockRefNames(
 }
 
 // The links overlapping `region`, oriented so the feature faces the queried
-// assembly and its partner is the mate. strand is the product of the two BED
-// strands (-1 when the pair is inverted).
+// assembly and its partner is the mate.
 //
 // `idPrefix` distinguishes one pair's ids from another's when a caller emits
 // several pairs into the same fetch (a blocks table queried with no target
@@ -58,9 +87,9 @@ export function makeBlockFeatures(
   const index = assemblyNames.indexOf(region.assemblyName)
   const out: Feature[] = []
   if (index !== -1) {
-    const flip = index === 0
-    for (const { a, b, rowNum, score } of feats) {
-      const [f1, f2] = flip ? [a, b] : [b, a]
+    const mateIndex = index === 0 ? 1 : 0
+    for (const { a, b, rowNum, strand, score } of feats) {
+      const [f1, f2] = index === 0 ? [a, b] : [b, a]
       if (
         f1.refName === region.refName &&
         doesIntersect2(region.start, region.end, f1.start, f1.end)
@@ -70,12 +99,12 @@ export function makeBlockFeatures(
             ...f1,
             uniqueId: `${idPrefix}${index}-${rowNum}`,
             syntenyId: rowNum,
-            strand: f1.strand * f2.strand,
-            assemblyName: assemblyNames[+!flip]!,
+            strand,
+            assemblyName: assemblyNames[index]!,
             ...(score === undefined ? undefined : { score }),
             mate: {
               ...f2,
-              assemblyName: assemblyNames[+flip]!,
+              assemblyName: assemblyNames[mateIndex]!,
             },
           }),
         )

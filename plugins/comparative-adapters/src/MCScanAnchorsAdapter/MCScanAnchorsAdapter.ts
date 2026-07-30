@@ -3,7 +3,12 @@ import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { getBlockRefNames, makeBlockFeatures } from '../mcscanUtil.ts'
+import {
+  checkAnyRowsJoined,
+  getBlockRefNames,
+  joinBedPair,
+  makeBlockFeatures,
+} from '../mcscanUtil.ts'
 import { parseBed, readFiles } from '../util.ts'
 
 import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
@@ -29,18 +34,26 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter<MCScanA
 
     const bed1Map = parseBed(bed1text!)
     const bed2Map = parseBed(bed2text!)
-    const feats = mcscantext!
+    const lines = mcscantext!
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && f !== '###')
-      .map((line, index) => {
-        const [name1, name2, score] = line.split('\t')
-        const r1 = bed1Map.get(name1!)
-        const r2 = bed2Map.get(name2!)
-        if (!r1 || !r2) {
-          throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
-        }
-        return { a: r1, b: r2, rowNum: index, score: +score! }
-      })
+    const feats = checkAnyRowsJoined(
+      lines
+        .map((line, rowNum) => {
+          const [name1, name2, score] = line.split('\t')
+          const pair = joinBedPair(bed1Map, bed2Map, name1, name2)
+          return pair === undefined
+            ? undefined
+            : {
+                ...pair,
+                rowNum,
+                strand: pair.a.strand * pair.b.strand,
+                score: +score!,
+              }
+        })
+        .filter(f => f !== undefined),
+      lines.length,
+    )
 
     return {
       assemblyNames,

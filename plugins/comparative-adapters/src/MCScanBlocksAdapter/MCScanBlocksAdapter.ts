@@ -3,7 +3,7 @@ import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { makeBlockFeatures } from '../mcscanUtil.ts'
+import { joinBedPair, makeBlockFeatures } from '../mcscanUtil.ts'
 import { parseBed, readFiles } from '../util.ts'
 
 import type { BareFeature, BlockRow } from '../mcscanUtil.ts'
@@ -75,11 +75,15 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   ) {
     return blockLines
       .map((cols, rowNum) => {
-        const nameA = cols[colA]
-        const nameB = cols[colB]
-        const rA = nameA ? bedMaps[colA]!.get(nameA) : undefined
-        const rB = nameB ? bedMaps[colB]!.get(nameB) : undefined
-        return rA && rB ? { a: rA, b: rB, rowNum } : undefined
+        const pair = joinBedPair(
+          bedMaps[colA]!,
+          bedMaps[colB]!,
+          cols[colA],
+          cols[colB],
+        )
+        return pair === undefined
+          ? undefined
+          : { ...pair, rowNum, strand: pair.a.strand * pair.b.strand }
       })
       .filter((f): f is BlockRow => f !== undefined)
   }
