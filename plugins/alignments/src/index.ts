@@ -57,7 +57,6 @@ export {
 } from './shared/colorSchemes.ts'
 export { pickGroupByOptions } from './shared/groupFeatures.ts'
 export type { GroupByType } from './shared/types.ts'
-export { CoverageTooltipContents } from './LinearAlignmentsDisplay/components/AlignmentsTooltip.tsx'
 
 // Types that appear in the inferred shape of the exported display model. They
 // have to be reachable from this entry or tsc names them by source path in

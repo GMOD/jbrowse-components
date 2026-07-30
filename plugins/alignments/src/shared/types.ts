@@ -260,14 +260,19 @@ export function isInterbaseType(type: string): type is InterbaseTypeName {
   return names.includes(type)
 }
 
-const typeLabels: Record<string, string> = {
+// The one label vocabulary for CIGAR ops and interbase marks. Every surface that
+// names one of them — hover tooltip, detail widget title, context menu item —
+// reads it from here, so the same mark can't be spelled "Soft clip" in the
+// tooltip and "Soft Clip" in the widget.
+const CIGAR_TYPE_LABELS: Record<string, string> = {
+  mismatch: 'SNP/Mismatch',
   insertion: 'Insertion',
+  deletion: 'Deletion',
+  skip: 'Skip (intron)',
   softclip: 'Soft clip',
   hardclip: 'Hard clip',
-  snp: 'SNP',
-  modification: 'Modification',
 }
 
-export function getInterbaseTypeLabel(type: string) {
-  return typeLabels[type] ?? type
+export function getCigarTypeLabel(type: string) {
+  return CIGAR_TYPE_LABELS[type] ?? type
 }

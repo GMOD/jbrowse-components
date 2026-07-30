@@ -71,20 +71,31 @@ export function hitTestInterbase(
   // Interbase histogram bars: every interbase position, matched against the
   // actual drawn bar rectangle (top strip down to the stacked bar bottom, the
   // same geometry as drawInterbaseSegments).
+  //
+  // `interbaseHeight` is the full-scale bar height and doesn't depend on the
+  // cursor, so it's computed before the scans purely to bound them: yOffsets are
+  // normalized 0-1 (see PileupDataResult), so no bar can reach below
+  // INDICATOR_TRIANGLE_H + interbaseHeight. Without that ceiling, a hover
+  // anywhere in the pileup — hundreds of px below the coverage band — still ran
+  // both O(n) passes over the interbase arrays before being rejected by the
+  // per-position bar bottom at the end.
+  const interbaseHeight =
+    domainMax !== undefined && domainMax > 0 && rpcData.interbaseMaxCount > 0
+      ? (coverageLayout(coverageHeight).effectiveH / 2) *
+        (rpcData.interbaseMaxCount / domainMax)
+      : 0
   if (
     !hit &&
     interbaseVisible &&
-    domainMax !== undefined &&
-    domainMax > 0 &&
-    rpcData.interbaseMaxCount > 0 &&
-    canvasY >= 0
+    interbaseHeight > 0 &&
+    canvasY >= 0 &&
+    canvasY <= INDICATOR_TRIANGLE_H + interbaseHeight + BAR_HIT_PAD_PX
   ) {
     const {
       interbaseCovPositions,
       interbaseCovYOffsets,
       interbaseCovHeights,
       interbaseCovColorTypes,
-      interbaseMaxCount,
     } = rpcData
     const nearestIdx = nearestPositionIndex(
       interbaseCovPositions,
@@ -93,9 +104,6 @@ export function hitTestInterbase(
     )
     if (nearestIdx >= 0) {
       const pos = interbaseCovPositions[nearestIdx]!
-      const interbaseHeight =
-        (coverageLayout(coverageHeight).effectiveH / 2) *
-        (interbaseMaxCount / domainMax)
       // Tallest stacked point at this position and its dominant (tallest
       // segment) type.
       let maxYEnd = 0

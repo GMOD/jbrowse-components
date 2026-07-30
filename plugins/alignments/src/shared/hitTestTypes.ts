@@ -29,14 +29,6 @@ export interface CigarHitResult {
   qual?: number
 }
 
-export interface SashimiArcHitResult {
-  start: number
-  end: number
-  score: number
-  strand: number
-  refName: string
-}
-
 export interface ResolvedBlock {
   rpcData: PileupDataResult
   bpRange: [number, number]

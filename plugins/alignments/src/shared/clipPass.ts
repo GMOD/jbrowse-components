@@ -58,22 +58,27 @@ export function uploadClips(
   }
 }
 
-// Shared hit test for soft + hard clips. Both bars live in the same merged
-// interbase array and only differ by `kind` and the result's literal type.
+// Hit test for soft + hard clips in one pass. Both bars live in the same merged
+// interbase array and differ only by `interbaseTypes[i]`, so the entry already
+// names which kind was hit — no need to scan once per kind.
+//
+// Softclip still wins a tie, structurally rather than by scan order: the worker
+// lays the array out as (insertions, softclips, hardclips), so a softclip at this
+// row and position is always reached first.
 export function hitTestClip(
   resolved: ResolvedBlock,
   coords: CigarCoords,
-  kind: 'softclip' | 'hardclip',
 ): CigarHitResult | undefined {
   const { bpPerPx, genomicPos, row } = coords
   const { interbasePositions, interbaseYs, interbaseLengths, interbaseTypes } =
     resolved.rpcData
   const numInterbases = interbasePositions.length
   const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
-  const wantType = kind === 'softclip' ? INTERBASE_SOFTCLIP : INTERBASE_HARDCLIP
 
   for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== wantType || interbaseYs[i] !== row) {
+    const type = interbaseTypes[i]
+    const isClip = type === INTERBASE_SOFTCLIP || type === INTERBASE_HARDCLIP
+    if (!isClip || interbaseYs[i] !== row) {
       continue
     }
     const pos = interbasePositions[i]
@@ -84,7 +89,7 @@ export function hitTestClip(
       Math.abs(genomicPos - pos) < hitToleranceBp
     ) {
       return {
-        type: kind,
+        type: type === INTERBASE_SOFTCLIP ? 'softclip' : 'hardclip',
         index: i,
         position: pos,
         length: len,

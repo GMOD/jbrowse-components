@@ -7,11 +7,15 @@ import { observer } from 'mobx-react'
 
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
-import { getInterbaseTypeLabel } from '../../shared/types.ts'
+import { getCigarTypeLabel } from '../../shared/types.ts'
 import { formatLenRange, pct } from './tooltipUtils.ts'
 
-import type { TooltipPayload } from './tooltipUtils.ts'
-import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
+import type {
+  CoverageBin,
+  InterbaseBin,
+  TooltipPayload,
+} from './tooltipUtils.ts'
+import type React from 'react'
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -56,7 +60,10 @@ function CoverageHoverBar({
       style={{
         left,
         top: band.topOffset + YSCALEBAR_LABEL_OFFSET,
-        height: band.coverageHeight - YSCALEBAR_LABEL_OFFSET * 2,
+        // A coverage band configured shorter than the two label offsets it
+        // reserves would compute a negative height, which the browser drops —
+        // the bar silently disappeared instead of collapsing to nothing.
+        height: Math.max(0, band.coverageHeight - YSCALEBAR_LABEL_OFFSET * 2),
       }}
     />
   ) : null
@@ -74,22 +81,31 @@ function SimpleTooltipContents({ message }: { message: string }) {
   return message ? <SanitizedHTML html={message} /> : null
 }
 
+// "12/40 (30.0%)" — the count-against-total cell every tooltip table shares.
+function countOfTotal(count: number, total: number) {
+  return `${count}/${total} (${pct(count, total)})`
+}
+
+// "18(+) 22(-)"
+function strandCounts(fwd: number, rev: number) {
+  return `${fwd}(+) ${rev}(-)`
+}
+
+function ColorSwatch({ color }: { color: string }) {
+  return <div style={{ width: 10, height: 10, background: color }} />
+}
+
+// Mean per-read call probability for one modification tally.
+function avgProbability(mod: { probabilityTotal: number; count: number }) {
+  return mod.count > 0 ? mod.probabilityTotal / mod.count : 0
+}
+
 function InterbaseTooltip({
   interbaseData,
   total,
   location,
 }: {
-  interbaseData: Record<
-    string,
-    {
-      count: number
-      minLen: number
-      maxLen: number
-      avgLen: number
-      topSeq?: string
-      topSeqCount?: number
-    }
-  >
+  interbaseData: InterbaseBin['interbase']
   total: number
   location: string
 }) {
@@ -111,161 +127,153 @@ function InterbaseTooltip({
           <td>{total}</td>
           <td />
         </tr>
-        {Object.entries(interbaseData).map(([type, data]) => {
-          const sizeStr = formatLenRange(data.minLen, data.maxLen)
-
-          return (
-            <tr key={type}>
-              <td>
-                {getInterbaseTypeLabel(type)}
-                {data.topSeq && data.minLen <= 10
-                  ? ` (most frequent ${data.topSeq})`
-                  : null}
-              </td>
-              <td className={classes.td}>
-                {data.count}/{total} ({pct(data.count, total)})
-              </td>
-              <td className={classes.td}>
-                {data.minLen > 0 || data.maxLen > 0 ? sizeStr : null}
-              </td>
-            </tr>
-          )
-        })}
+        {Object.entries(interbaseData).map(([type, data]) => (
+          <tr key={type}>
+            <td>
+              {getCigarTypeLabel(type)}
+              {data.topSeq && data.minLen <= 10
+                ? ` (most frequent ${data.topSeq})`
+                : null}
+            </td>
+            <td className={classes.td}>{countOfTotal(data.count, total)}</td>
+            <td className={classes.td}>
+              {data.minLen > 0 || data.maxLen > 0
+                ? formatLenRange(data.minLen, data.maxLen)
+                : null}
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   )
 }
 
-export function CoverageTooltipContents({
+// Which optional columns the coverage table is showing. The swatch and Avg Prob
+// columns exist only with modification data; Strands only when some row reports
+// it. Both the header and every body row derive their cells from this one value,
+// so a row can't fall out of column alignment by forgetting a filler <td>.
+interface CoverageColumns {
+  modifications: boolean
+  strands: boolean
+}
+
+// One body row of the coverage table. Cells are named rather than positional,
+// and the optional ones render as empty when this row has nothing for them.
+function CoverageRow({
+  columns,
+  swatch,
+  label,
+  reads,
+  avgProb,
+  strands,
+}: {
+  columns: CoverageColumns
+  swatch?: string
+  label: React.ReactNode
+  reads?: React.ReactNode
+  avgProb?: React.ReactNode
+  strands?: React.ReactNode
+}) {
+  const { classes } = useStyles()
+  return (
+    <tr>
+      {columns.modifications ? (
+        <td>{swatch ? <ColorSwatch color={swatch} /> : null}</td>
+      ) : null}
+      <td>{label}</td>
+      <td className={classes.td}>{reads}</td>
+      {columns.modifications ? <td>{avgProb}</td> : null}
+      {columns.strands ? <td className={classes.td}>{strands}</td> : null}
+    </tr>
+  )
+}
+
+function CoverageTooltipContents({
   bin,
   refName,
 }: {
-  bin: CoverageTooltipBin
+  bin: CoverageBin
   refName?: string
 }) {
-  const { classes } = useStyles()
   const {
     position,
     depth,
     fwdDepth,
     revDepth,
-    interbaseDepth,
     snps,
     deletions,
-    interbase,
     modifications,
   } = bin
   const location = formatLocation(refName, position)
 
   const snpEntries = Object.entries(snps)
-  const interbaseEntries = Object.entries(interbase)
   // Sort modifications by name for consistent display order
   const modEntries = modifications
     ? [...modifications].sort((a, b) => a.name.localeCompare(b.name))
     : []
-  const hasModifications = modEntries.length > 0
   const hasTotalStrands = fwdDepth !== undefined && revDepth !== undefined
-  const hasStrands =
-    hasModifications ||
-    hasTotalStrands ||
-    snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0)
+  const columns: CoverageColumns = {
+    modifications: modEntries.length > 0,
+    strands:
+      modEntries.length > 0 ||
+      hasTotalStrands ||
+      snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0),
+  }
 
   return (
     <table>
       <caption>Coverage - {location}</caption>
       <thead>
         <tr>
-          {hasModifications && <th />}
+          {columns.modifications ? <th /> : null}
           <th>Base</th>
           <th>Reads</th>
-          {hasModifications && <th>Avg Prob</th>}
-          {hasStrands && <th>Strands</th>}
+          {columns.modifications ? <th>Avg Prob</th> : null}
+          {columns.strands ? <th>Strands</th> : null}
         </tr>
       </thead>
       <tbody>
-        <tr>
-          {hasModifications && <td />}
-          <td>Total</td>
-          <td>{depth}</td>
-          {hasModifications && <td />}
-          {hasStrands && (
-            <td>{hasTotalStrands ? `${fwdDepth}(+) ${revDepth}(-)` : null}</td>
-          )}
-        </tr>
-        {hasModifications
-          ? modEntries.map(data => {
-              const avgProb =
-                data.count > 0 ? data.probabilityTotal / data.count : 0
-              return (
-                <tr key={`${data.name}-${data.color}`}>
-                  <td>
-                    <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        background: data.color,
-                      }}
-                    />
-                  </td>
-                  <td>{data.name}</td>
-                  <td className={classes.td}>
-                    {data.count}/{depth} ({pct(data.count, depth)})
-                  </td>
-                  <td>{(avgProb * 100).toFixed(1)}%</td>
-                  <td>
-                    {data.fwd}(+) {data.rev}(-)
-                  </td>
-                </tr>
-              )
-            })
-          : snpEntries.map(([base, data]) => (
-              <tr key={base}>
-                <td>{base.toUpperCase()}</td>
-                <td className={classes.td}>
-                  {data.count}/{depth} ({pct(data.count, depth)})
-                </td>
-                {hasStrands && (
-                  <td>
-                    {data.fwd}(+) {data.rev}(-)
-                  </td>
-                )}
-              </tr>
-            ))}
-        {deletions && (
-          <tr>
-            {hasModifications && <td />}
-            <td>
-              Deletion ({formatLenRange(deletions.minLen, deletions.maxLen)})
-            </td>
-            <td className={classes.td}>
-              {deletions.count}/{depth + deletions.count} (
-              {pct(deletions.count, depth + deletions.count)})
-            </td>
-            {hasModifications && <td />}
-            {hasStrands && <td />}
-          </tr>
-        )}
-        {interbaseEntries.map(([type, data]) => {
-          const typeLabel = getInterbaseTypeLabel(type)
-          const sizeStr = formatLenRange(data.minLen, data.maxLen)
-          const shouldShowSeq = data.topSeq && data.minLen <= 10
-
-          return (
-            <tr key={type}>
-              {hasModifications && <td />}
-              <td>
-                {typeLabel} ({sizeStr})
-                {shouldShowSeq ? ` (most frequent ${data.topSeq})` : null}
-              </td>
-              <td className={classes.td}>
-                {data.count}/{interbaseDepth} ({pct(data.count, interbaseDepth)}
-                )
-              </td>
-              {hasModifications && <td />}
-              {hasStrands && <td />}
-            </tr>
-          )
-        })}
+        <CoverageRow
+          columns={columns}
+          label="Total"
+          reads={depth}
+          strands={
+            hasTotalStrands ? strandCounts(fwdDepth, revDepth) : undefined
+          }
+        />
+        {modEntries.map(data => (
+          <CoverageRow
+            key={`${data.name}-${data.color}`}
+            columns={columns}
+            swatch={data.color}
+            label={data.name}
+            reads={countOfTotal(data.count, depth)}
+            avgProb={`${(avgProbability(data) * 100).toFixed(1)}%`}
+            strands={strandCounts(data.fwd, data.rev)}
+          />
+        ))}
+        {/* SNP rows sit alongside the modification rows rather than instead of
+            them: at a CpG the A/C/G/T breakdown and the methylation calls are
+            exactly the pair worth disambiguating, which is why the per-read
+            modification tooltip carries its snpBase too. */}
+        {snpEntries.map(([base, data]) => (
+          <CoverageRow
+            key={base}
+            columns={columns}
+            label={base.toUpperCase()}
+            reads={countOfTotal(data.count, depth)}
+            strands={strandCounts(data.fwd, data.rev)}
+          />
+        ))}
+        {deletions ? (
+          // Deletions aren't in `depth` (a deleted base is absent from the
+          // read), so their share is out of depth + deletions, not depth.
+          <CoverageRow
+            columns={columns}
+            label={`Deletion (${formatLenRange(deletions.minLen, deletions.maxLen)})`}
+            reads={countOfTotal(deletions.count, depth + deletions.count)}
+          />
+        ) : null}
       </tbody>
     </table>
   )
@@ -310,10 +318,9 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
 
   switch (tooltipData.type) {
     case 'indicator': {
+      // formatIndicatorTooltip only builds a payload when there are interbase
+      // events, so the table always has rows.
       const { bin, refName } = tooltipData
-      if (Object.keys(bin.interbase).length === 0) {
-        return null
-      }
       return (
         <>
           <BaseTooltip clientPoint={{ x, y }}>

@@ -1,4 +1,4 @@
-import { getTooltipBin } from './tooltipUtils.ts'
+import { getCoverageBin } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -25,16 +25,16 @@ function makeRpcData(
   } as PileupDataResult
 }
 
-describe('getTooltipBin per-strand depth', () => {
+describe('getCoverageBin per-strand depth', () => {
   it('carries fwd/rev depth split for the hovered bin', () => {
-    const bin = getTooltipBin(100, makeRpcData())
+    const bin = getCoverageBin(100, makeRpcData())
     expect(bin?.depth).toBe(5)
     expect(bin?.fwdDepth).toBe(3)
     expect(bin?.revDepth).toBe(2)
   })
 
   it('leaves fwd/rev undefined when no per-strand depths are present', () => {
-    const bin = getTooltipBin(
+    const bin = getCoverageBin(
       100,
       makeRpcData({
         coverageFwdDepths: new Float32Array(),

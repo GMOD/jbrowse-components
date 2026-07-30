@@ -14,8 +14,7 @@ import {
   buildPairedEndMateFeature,
   getMateFields,
 } from '../../shared/mateFeature.ts'
-import { isInterbaseType } from '../../shared/types.ts'
-import { CIGAR_TYPE_LABELS } from '../components/alignmentComponentUtils.ts'
+import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
 import {
   openCigarWidget,
   openIndicatorWidget,
@@ -294,7 +293,7 @@ export function getHitMenuItems(
   const items: MenuItem[] = []
 
   if (cigarHit) {
-    const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
+    const typeLabel = getCigarTypeLabel(cigarHit.type)
     const isInterbase = isInterbaseType(cigarHit.type)
     items.push(
       sortAndDetailsSubMenu({
@@ -338,9 +337,7 @@ export function getHitMenuItems(
   }
 
   if (indicatorHit) {
-    const typeLabel =
-      CIGAR_TYPE_LABELS[indicatorHit.indicatorType] ??
-      indicatorHit.indicatorType
+    const typeLabel = getCigarTypeLabel(indicatorHit.indicatorType)
     items.push(
       sortAndDetailsSubMenu({
         self,

@@ -2435,13 +2435,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setOverCigarItem(flag: boolean) {
-            self.overCigarItem = flag
-          },
-
-          /**
-           * #action
-           */
           setScrollTop(scrollTop: number) {
             // clamp here (like the variant model) so a resize that shrinks
             // scrollableHeight while scrollTop sits at the old bottom can't
@@ -2450,22 +2443,6 @@ export default function stateModelFactory(
             const next = Math.max(0, Math.min(scrollTop, self.scrollableHeight))
             if (self.scrollTop !== next) {
               self.scrollTop = next
-            }
-          },
-
-          /**
-           * #action
-           */
-          setHighlightedChainIds(ids: string[]) {
-            self.highlightedChainIds = ids
-          },
-
-          /**
-           * #action
-           */
-          clearHighlights() {
-            if (self.highlightedChainIds.length > 0) {
-              self.highlightedChainIds = []
             }
           },
 
@@ -3078,17 +3055,31 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * The whole hover state in one action. Every branch of the pileup's
+           * mousemove handler goes through here — including the plain-read
+           * branch, which used to fire three or four separate setters per move
+           * and was the only one that left `hoverCoverageBand` stale.
+           * `highlightedChainIds` is empty outside chain mode.
            */
           setHoverState(state: {
             overCigarItem: boolean
             featureIdUnderMouse: string | undefined
             mouseoverExtraInformation: TooltipPayload | undefined
             hoverCoverageBand?: { topOffset: number; coverageHeight: number }
+            highlightedChainIds: string[]
           }) {
             self.overCigarItem = state.overCigarItem
             self.featureIdUnderMouse = state.featureIdUnderMouse
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
             self.hoverCoverageBand = state.hoverCoverageBand
+            // Assigning an equal empty array on every mousemove would churn the
+            // MST node and re-notify observers of the highlight overlay.
+            if (
+              state.highlightedChainIds.length > 0 ||
+              self.highlightedChainIds.length > 0
+            ) {
+              self.highlightedChainIds = state.highlightedChainIds
+            }
           },
 
           /**

@@ -27,7 +27,6 @@ import {
   contentScreenY,
   sectionKey,
 } from './sectionScreen.ts'
-import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -74,8 +73,8 @@ const PileupBody = observer(function PileupBody({
     handleMouseDown,
     handleMouseLeave,
     handleContextMenu,
-    processMouseMove,
-    processClick,
+    handleCanvasMouseMove,
+    handleClick,
   } = useAlignmentsBase(model)
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
@@ -107,48 +106,6 @@ const PileupBody = observer(function PileupBody({
   // The scrollbar track starts below the sticky coverage (ungrouped) or spans
   // the whole display (grouped, where the entire stack scrolls).
   const topOffset = model.isGrouped ? 0 : bands.bottom
-
-  function handleCanvasMouseMove(e: React.MouseEvent) {
-    processMouseMove(
-      e,
-      (hit, resolved) => {
-        model.setFeatureIdUnderMouse(hit.id)
-        if (model.isChainMode) {
-          model.setHighlightedChainIds(
-            model.chainIdsForRead(resolved.rpcData, hit.index),
-          )
-          model.setMouseoverExtraInformation(
-            formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
-          )
-        } else {
-          model.clearHighlights()
-          model.setMouseoverExtraInformation(
-            formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
-          )
-        }
-      },
-      () => {
-        model.clearMouseoverState()
-      },
-    )
-  }
-
-  function handleClick(e: React.MouseEvent) {
-    processClick(
-      e,
-      (hit, resolved) => {
-        void model.selectFeatureById(hit.id)
-        if (model.isChainMode) {
-          model.setSelectedChainIds(
-            model.chainIdsForRead(resolved.rpcData, hit.index),
-          )
-        }
-      },
-      () => {
-        model.clearSelection()
-      },
-    )
-  }
 
   return (
     <div

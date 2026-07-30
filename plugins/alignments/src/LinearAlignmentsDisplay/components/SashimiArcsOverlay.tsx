@@ -79,15 +79,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
               style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
               onMouseEnter={() => {
                 setHoveredArcKey(arcKey)
-                model.setMouseoverExtraInformation(
-                  formatSashimiTooltip({
-                    start: arc.start,
-                    end: arc.end,
-                    score: arc.score,
-                    strand: arc.strand,
-                    refName: arc.refName,
-                  }),
-                )
+                model.setMouseoverExtraInformation(formatSashimiTooltip(arc))
               }}
               onMouseLeave={() => {
                 setHoveredArcKey(null)

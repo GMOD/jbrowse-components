@@ -152,7 +152,7 @@ export interface HitTestOptions {
 //  2. mismatches (1bp features under the cursor base)
 //  3. small insertions (thin bars that don't overlap SNPs)
 //  4. gaps (deletions/skips spanning the read body)
-//  5. softclips, then hardclips (interbase bars at alignment edges)
+//  5. clips (interbase bars at alignment edges; softclip wins over hardclip)
 function hitTestCigarItem(
   resolved: ResolvedBlock,
   coords: CigarCoords,
@@ -172,8 +172,7 @@ function hitTestCigarItem(
       filterMismatchesByFrequency,
     ) ??
     hitTestGap(resolved, coords) ??
-    hitTestClip(resolved, coords, 'softclip') ??
-    hitTestClip(resolved, coords, 'hardclip')
+    hitTestClip(resolved, coords)
   )
 }
 
@@ -207,10 +206,13 @@ export function canvasXToBasePos(canvasX: number, resolved: ResolvedBlock) {
   })
 }
 
+// Runs the priority chain for a cursor known to be over a fetched block. The
+// caller resolves the block first and answers `{type:'none'}` itself when there
+// isn't one, so nothing here has to re-ask whether `resolved` exists.
 export function performHitTest(
   canvasX: number,
   canvasY: number,
-  resolved: ResolvedBlock | undefined,
+  resolved: ResolvedBlock,
   options: HitTestOptions,
 ): HitTestResult {
   const {
@@ -232,140 +234,126 @@ export function performHitTest(
   // (0 = the ungrouped sticky band at the canvas top).
   const coverageY = canvasY - coverageTopOffset
 
-  if (resolved) {
-    const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
-    const bpPerPx = bpSpan / resolved.blockWidth
-    const genomicPos = canvasXToGenomicPos(canvasX, resolved)
-    const basePos = canvasXToBasePos(canvasX, resolved)
+  const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
+  const bpPerPx = bpSpan / resolved.blockWidth
+  const genomicPos = canvasXToGenomicPos(canvasX, resolved)
+  const basePos = canvasXToBasePos(canvasX, resolved)
 
-    // Indicator and coverage tooltips work at all zoom levels.
-    // hitTestInterbase fires over the interbase histogram bars + indicator
-    // triangles, taking priority over coverage so hovering a bar shows interbase.
-    // hitTestCoverage handles zoomed-out bins: returns the bin position and snaps
-    // to any significant SNP within the bin when bpPerPx > 1.
-    const indicatorHit = hitTestInterbase(
-      genomicPos,
-      bpPerPx,
-      coverageY,
-      resolved.rpcData,
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      coverageMaxDepth,
-    )
-    if (indicatorHit) {
-      return { type: 'indicator', hit: indicatorHit, resolved }
-    }
+  // Indicator and coverage tooltips work at all zoom levels.
+  // hitTestInterbase fires over the interbase histogram bars + indicator
+  // triangles, taking priority over coverage so hovering a bar shows interbase.
+  // hitTestCoverage handles zoomed-out bins: returns the bin position and snaps
+  // to any significant SNP within the bin when bpPerPx > 1.
+  const indicatorHit = hitTestInterbase(
+    genomicPos,
+    bpPerPx,
+    coverageY,
+    resolved.rpcData,
+    showCoverage,
+    showInterbaseIndicators,
+    coverageHeight,
+    coverageMaxDepth,
+  )
+  if (indicatorHit) {
+    return { type: 'indicator', hit: indicatorHit, resolved }
+  }
 
-    const coverageHit = hitTestCoverage(
-      basePos,
-      bpPerPx,
-      coverageY,
-      resolved.rpcData,
-      showCoverage,
-      coverageHeight,
-    )
-    if (coverageHit) {
-      return { type: 'coverage', hit: coverageHit, resolved }
-    }
+  const coverageHit = hitTestCoverage(
+    basePos,
+    bpPerPx,
+    coverageY,
+    resolved.rpcData,
+    showCoverage,
+    coverageHeight,
+  )
+  if (coverageHit) {
+    return { type: 'coverage', hit: coverageHit, resolved }
+  }
 
-    // A collapsed pileup band (showPileup off / collapsed group) lays reads out
-    // but never paints them, so don't resolve hovers over the empty band.
-    if (!pileupVisible) {
-      return { type: 'none' }
-    }
+  // A collapsed pileup band (showPileup off / collapsed group) lays reads out
+  // but never paints them, so don't resolve hovers over the empty band.
+  if (!pileupVisible) {
+    return { type: 'none' }
+  }
 
-    const coords = canvasToGenomicCoords({
-      canvasY,
-      genomicPos,
-      basePos,
-      bpPerPx,
+  const coords = canvasToGenomicCoords({
+    canvasY,
+    genomicPos,
+    basePos,
+    bpPerPx,
+    featureHeight,
+    featureSpacing,
+    topOffset,
+    scrollTop,
+  })
+
+  if (bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
+    // Modification before CIGAR: a modified+mismatched base resolves as a
+    // modification hit, not a mismatch hit. modFlatbush is undefined when
+    // not in modification mode so this is a no-op.
+    const modificationHit = hitTestModification(resolved, coords, featureHeight)
+    const cigarHit = hitTestCigarItem(
+      resolved,
+      coords,
       featureHeight,
-      featureSpacing,
-      topOffset,
-      scrollTop,
-    })
-
-    if (bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
-      // Modification before CIGAR: a modified+mismatched base resolves as a
-      // modification hit, not a mismatch hit. modFlatbush is undefined when
-      // not in modification mode so this is a no-op.
-      const modificationHit = hitTestModification(
+      filterMismatchesByFrequency,
+    )
+    if (modificationHit) {
+      return {
+        type: 'modification',
+        hit: modificationHit,
+        featureHit: hitTestFeature(resolved, coords, featureHeight),
+        cigarHit,
         resolved,
-        coords,
-        featureHeight,
-      )
-      const cigarHit = hitTestCigarItem(
-        resolved,
-        coords,
-        featureHeight,
-        filterMismatchesByFrequency,
-      )
-      if (modificationHit) {
-        return {
-          type: 'modification',
-          hit: modificationHit,
-          featureHit: hitTestFeature(resolved, coords, featureHeight),
-          cigarHit,
-          resolved,
-        }
-      }
-      if (cigarHit) {
-        return {
-          type: 'cigar',
-          hit: cigarHit,
-          featureHit: hitTestFeature(resolved, coords, featureHeight),
-          resolved,
-        }
-      }
-    } else if (isWithinReadBand(coords, featureHeight)) {
-      // When zoomed out, surface features that are still visually significant.
-      // These two tests are called directly rather than through
-      // `hitTestCigarItem`, so they need its band guard spelled here.
-      // `featureHit` is attached just as in the zoomed-in branch: without it a
-      // right-click on a zoomed-out insertion/deletion loses the read's own menu
-      // items and a hover drops the chain highlight, purely because of zoom.
-      const largeInsertionHit = hitTestLargeInsertion(
-        resolved,
-        coords,
-        featureHeight,
-      )
-      if (largeInsertionHit) {
-        return {
-          type: 'cigar',
-          hit: largeInsertionHit,
-          featureHit: hitTestFeature(resolved, coords, featureHeight),
-          resolved,
-        }
-      }
-      const gapHit = hitTestGap(resolved, coords)
-      if (gapHit && gapHit.length >= bpPerPx) {
-        return {
-          type: 'cigar',
-          hit: gapHit,
-          featureHit: hitTestFeature(resolved, coords, featureHeight),
-          resolved,
-        }
       }
     }
-
-    // The read under the cursor always wins; in chain mode a miss then falls
-    // back to the chain, so the connecting line between mates stays hoverable.
-    // `chainIdsForRead` resolves the whole chain from any of its reads, so the
-    // chain highlight/selection is unaffected by which read answers.
-    // The read under the cursor always wins; in chain mode a miss then falls
-    // back to the chain, so the connecting line between mates stays hoverable.
-    // `chainIdsForRead` resolves the whole chain from any of its reads, so the
-    // chain highlight/selection is unaffected by which read answers.
-    const hit =
-      hitTestFeature(resolved, coords, featureHeight) ??
-      (isChainMode
-        ? hitTestChain(coords, resolved.rpcData, featureHeight)
-        : undefined)
-    if (hit) {
-      return { type: 'feature', hit, resolved }
+    if (cigarHit) {
+      return {
+        type: 'cigar',
+        hit: cigarHit,
+        featureHit: hitTestFeature(resolved, coords, featureHeight),
+        resolved,
+      }
+    }
+  } else if (isWithinReadBand(coords, featureHeight)) {
+    // When zoomed out, surface features that are still visually significant.
+    // These two tests are called directly rather than through
+    // `hitTestCigarItem`, so they need its band guard spelled here.
+    // `featureHit` is attached just as in the zoomed-in branch: without it a
+    // right-click on a zoomed-out insertion/deletion loses the read's own menu
+    // items and a hover drops the chain highlight, purely because of zoom.
+    const largeInsertionHit = hitTestLargeInsertion(
+      resolved,
+      coords,
+      featureHeight,
+    )
+    if (largeInsertionHit) {
+      return {
+        type: 'cigar',
+        hit: largeInsertionHit,
+        featureHit: hitTestFeature(resolved, coords, featureHeight),
+        resolved,
+      }
+    }
+    const gapHit = hitTestGap(resolved, coords)
+    if (gapHit && gapHit.length >= bpPerPx) {
+      return {
+        type: 'cigar',
+        hit: gapHit,
+        featureHit: hitTestFeature(resolved, coords, featureHeight),
+        resolved,
+      }
     }
   }
 
-  return { type: 'none' }
+  // The read under the cursor always wins; in chain mode a miss then falls
+  // back to the chain, so the connecting line between mates stays hoverable.
+  // `chainIdsForRead` resolves the whole chain from any of its reads, so the
+  // chain highlight/selection is unaffected by which read answers.
+  const hit =
+    hitTestFeature(resolved, coords, featureHeight) ??
+    (isChainMode
+      ? hitTestChain(coords, resolved.rpcData, featureHeight)
+      : undefined)
+  return hit ? { type: 'feature', hit, resolved } : { type: 'none' }
 }

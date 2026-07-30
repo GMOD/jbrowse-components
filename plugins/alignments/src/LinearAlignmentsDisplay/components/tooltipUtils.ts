@@ -7,29 +7,46 @@ import { toLocale } from '@jbrowse/core/util'
 
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
-import { interbaseTypeName } from '../../shared/types.ts'
+import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
 import { getOrCreate } from '../../shared/util.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
-import type {
-  CigarHitResult,
-  SashimiArcHitResult,
-} from '../../shared/hitTestTypes.ts'
+import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { LengthAccumulator } from './lengthStats.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
+// The interbase slice of a coverage position — what the interbase histogram bars
+// and indicator triangles report. `depth` is carried for the detail widget's
+// context row; the SNP/deletion tallies the shared CoverageTooltipBin also holds
+// are neither rendered nor consulted here, so this path never computes them.
+export interface InterbaseBin {
+  position: number
+  depth: number
+  interbase: CoverageTooltipBin['interbase']
+  interbaseDepth: number
+}
+
+// The converse slice: depth, SNP bases, deletions, modifications. Interbase
+// events are deliberately absent — they're reached by hovering the histogram
+// bars directly (InterbaseBin above), so mixing them into the depth table would
+// double-report them.
+export type CoverageBin = Omit<
+  CoverageTooltipBin,
+  'interbase' | 'interbaseDepth'
+>
+
 export interface IndicatorTooltipPayload {
   type: 'indicator'
-  bin: CoverageTooltipBin
+  bin: InterbaseBin
   refName?: string
 }
 
 export interface CoverageTooltipPayload {
   type: 'coverage'
-  bin: CoverageTooltipBin
+  bin: CoverageBin
   refName?: string
 }
 
@@ -58,7 +75,7 @@ export type TooltipPayload =
   | ModificationTooltipPayload
   | SashimiTooltipPayload
 
-export function pct(n: number, total = 1) {
+export function pct(n: number, total: number) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
 }
 
@@ -192,14 +209,11 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
     }
     case 'insertion':
       return `${formatInsertionLabel(cigarHit.length, cigarHit.sequence)} at ${pos}`
-    case 'deletion':
-      return `Deletion (${cigarHit.length}bp) at ${pos}`
-    case 'skip':
-      return `Skip/Intron (${cigarHit.length}bp) at ${pos}`
-    case 'softclip':
-      return `Soft clip (${cigarHit.length}bp) at ${pos}`
-    case 'hardclip':
-      return `Hard clip (${cigarHit.length}bp) at ${pos}`
+    // deletion / skip / softclip / hardclip all read "<label> (Nbp) at pos", and
+    // the label comes from the shared vocabulary so the hover, the widget title,
+    // and the context menu can't spell the same op three ways.
+    default:
+      return `${getCigarTypeLabel(cigarHit.type)} (${cigarHit.length}bp) at ${pos}`
   }
 }
 
@@ -273,15 +287,38 @@ function collectDeletionStats(position: number, data: PileupDataResult) {
   return acc && toLengthStats(acc)
 }
 
-export function getTooltipBin(
+// Interbase events at `position`, or undefined when there are none. An empty
+// tally is the "nothing to report" answer for both the hover and the click: with
+// no entry the tooltip table and the detail widget would be a bare title, so
+// neither should appear.
+export function getInterbaseBin(
   position: number,
   blockRpcData: PileupDataResult | undefined,
-  // Interbase (insertion/softclip/hardclip) events at this position. The
-  // coverage-depth tooltip omits them (false) — they're surfaced by hovering the
-  // interbase histogram bars directly; the interbase/indicator tooltip keeps
-  // them (true).
-  includeInterbase = true,
-): CoverageTooltipBin | undefined {
+): InterbaseBin | undefined {
+  if (!blockRpcData) {
+    return undefined
+  }
+  const interbase = collectInterbaseStats(position, blockRpcData)
+  if (Object.keys(interbase).length === 0) {
+    return undefined
+  }
+  const binIdx = Math.floor(position - blockRpcData.coverageStartPos)
+  return {
+    position,
+    depth: blockRpcData.coverageDepths[binIdx] ?? 0,
+    interbase,
+    interbaseDepth: interbaseDepthAt(
+      blockRpcData.coverageDepths,
+      blockRpcData.coverageStartPos,
+      position,
+    ),
+  }
+}
+
+export function getCoverageBin(
+  position: number,
+  blockRpcData: PileupDataResult | undefined,
+): CoverageBin | undefined {
   if (!blockRpcData) {
     return undefined
   }
@@ -296,37 +333,24 @@ export function getTooltipBin(
     : undefined
 
   const snps = countSnpsAtPosition(position, blockRpcData)
-
-  const interbase = includeInterbase
-    ? collectInterbaseStats(position, blockRpcData)
-    : {}
   const deletions = collectDeletionStats(position, blockRpcData)
   const modifications = blockRpcData.modTooltipData?.[position]
 
   const hasData =
     depth > 0 ||
     Object.keys(snps).length > 0 ||
-    Object.keys(interbase).length > 0 ||
     deletions !== undefined ||
     modifications !== undefined
   if (!hasData) {
     return undefined
   }
 
-  const interbaseDepth = interbaseDepthAt(
-    blockRpcData.coverageDepths,
-    blockRpcData.coverageStartPos,
-    position,
-  )
-
   return {
     position,
     depth,
     fwdDepth,
     revDepth,
-    interbaseDepth,
     snps,
-    interbase,
     deletions,
     modifications,
   }
@@ -337,11 +361,8 @@ export function formatIndicatorTooltip(
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
 ): IndicatorTooltipPayload | undefined {
-  const bin = getTooltipBin(position, blockRpcData)
-  if (bin) {
-    return { type: 'indicator', bin, refName }
-  }
-  return undefined
+  const bin = getInterbaseBin(position, blockRpcData)
+  return bin ? { type: 'indicator', bin, refName } : undefined
 }
 
 export function formatCoverageTooltip(
@@ -349,11 +370,8 @@ export function formatCoverageTooltip(
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
 ): CoverageTooltipPayload | undefined {
-  const bin = getTooltipBin(position, blockRpcData, false)
-  if (!bin) {
-    return undefined
-  }
-  return { type: 'coverage', bin, refName }
+  const bin = getCoverageBin(position, blockRpcData)
+  return bin ? { type: 'coverage', bin, refName } : undefined
 }
 
 export function formatModificationTooltip(
@@ -364,18 +382,24 @@ export function formatModificationTooltip(
   return { type: 'modification', ...hit, refName, snpBase }
 }
 
-export function formatSashimiTooltip(
-  sashimiHit: SashimiArcHitResult,
-): SashimiTooltipPayload {
-  const strandLabel =
-    sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : 'unknown'
+// Takes the junction fields of a computed SashimiArc (there is no sashimi hit
+// test — the arcs are SVG paths with their own mouse handlers, so the overlay
+// hands its own arc straight over).
+export function formatSashimiTooltip(arc: {
+  start: number
+  end: number
+  score: number
+  strand: number
+  refName: string
+}): SashimiTooltipPayload {
+  const { start, end, score, strand, refName } = arc
   return {
     type: 'sashimi',
-    start: sashimiHit.start,
-    end: sashimiHit.end,
-    score: sashimiHit.score,
-    strand: strandLabel,
-    refName: sashimiHit.refName,
+    start,
+    end,
+    score,
+    strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
+    refName,
   }
 }
 

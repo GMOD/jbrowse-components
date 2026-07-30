@@ -1,5 +1,5 @@
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
-import { getTooltipBin } from './tooltipUtils.ts'
+import { getInterbaseBin, getCoverageBin } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -29,9 +29,9 @@ function makeRpcData(
 // statistic. Pin the mean in particular: it is the one field that needs a divide
 // after the accumulating pass, and the two tallies used to reach it by different
 // routes.
-describe('getTooltipBin length stats', () => {
+describe('tooltip bin length stats', () => {
   test('interbase lengths tally per type, with the mean divided once', () => {
-    const bin = getTooltipBin(
+    const bin = getInterbaseBin(
       100,
       makeRpcData({
         // three insertions (2, 4, 6 -> mean 4) and one softclip, all at bp 100
@@ -64,7 +64,7 @@ describe('getTooltipBin length stats', () => {
   })
 
   test('only interbases at exactly the hovered position count', () => {
-    const bin = getTooltipBin(
+    const bin = getInterbaseBin(
       100,
       makeRpcData({
         interbasePositions: new Uint32Array([99, 100, 101]),
@@ -88,7 +88,7 @@ describe('getTooltipBin length stats', () => {
   test('deletions spanning the position tally the same way', () => {
     // [90,100) ends before 100 so it does not span it; [95,105) and [98,110) do,
     // lengths 10 and 12 -> mean 11
-    const bin = getTooltipBin(
+    const bin = getCoverageBin(
       100,
       makeRpcData({
         gapPositions: new Uint32Array([90, 100, 95, 105, 98, 110]),
@@ -104,7 +104,7 @@ describe('getTooltipBin length stats', () => {
   })
 
   test('skips (gapType 1) are not deletions', () => {
-    const bin = getTooltipBin(
+    const bin = getCoverageBin(
       100,
       makeRpcData({
         gapPositions: new Uint32Array([95, 105]),
@@ -114,14 +114,22 @@ describe('getTooltipBin length stats', () => {
     expect(bin?.deletions).toBeUndefined()
   })
 
-  test('the depth-only tooltip omits interbase events', () => {
+  // Interbase events belong to the histogram bars, depth/SNPs to the coverage
+  // area, and the two entry points are what keep them from being double-reported.
+  test('interbase events reach only the interbase bin', () => {
     const data = makeRpcData({
+      coverageDepths: new Float32Array([0]),
       interbasePositions: new Uint32Array([100]),
       interbaseLengths: new Uint32Array([5]),
       interbaseTypes: new Uint8Array([INTERBASE_INSERTION]),
       interbaseSequences: [''],
     })
-    expect(getTooltipBin(100, data, true)?.interbase.insertion).toBeDefined()
-    expect(getTooltipBin(100, data, false)?.interbase).toEqual({})
+    expect(getInterbaseBin(100, data)?.interbase.insertion).toBeDefined()
+    // nothing but the interbase event here, so the depth tooltip has no bin
+    expect(getCoverageBin(100, data)).toBeUndefined()
+  })
+
+  test('a position with no interbase events has no interbase bin', () => {
+    expect(getInterbaseBin(100, makeRpcData())).toBeUndefined()
   })
 })

@@ -213,12 +213,8 @@ describe('priority: coverage area beats pileup at any zoom', () => {
   })
 })
 
-describe('returns none when resolved is undefined', () => {
-  it('returns none immediately', () => {
-    const result = performHitTest(100, 30, undefined, ZOOMED_OUT_OPTS)
-    expect(result.type).toBe('none')
-  })
-})
+// "no block under the cursor" is no longer a case here — the caller resolves the
+// block and answers `none` itself, so performHitTest takes a definite one.
 
 describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   // bpRange=[0,200], blockWidth=200 → bpPerPx=1; canvasX=100 → genomicPos=100

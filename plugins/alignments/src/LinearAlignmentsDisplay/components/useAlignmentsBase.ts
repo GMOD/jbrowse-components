@@ -23,8 +23,10 @@ import {
   performHitTest,
 } from './hitTestPipeline.ts'
 import {
+  formatChainTooltip,
   formatCigarTooltip,
   formatCoverageTooltip,
+  formatFeatureTooltip,
   formatIndicatorTooltip,
   formatModificationTooltip,
 } from './tooltipUtils.ts'
@@ -34,6 +36,7 @@ import type {
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
+import type { HitTestResult } from './hitTestPipeline.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
@@ -85,24 +88,27 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const resolved = picked
       ? resolveBlockForCanvasX(canvasX, picked.section.laidOutPileupMap)
       : undefined
-    return {
-      resolved,
-      picked,
-      result: performHitTest(canvasX, canvasY, resolved, {
-        showCoverage,
-        showInterbaseIndicators,
-        coverageHeight,
-        coverageMaxDepth: model.coverageDomain?.[1],
-        topOffset: picked?.section.topOffset ?? model.coverageDisplayHeight,
-        coverageTopOffset: picked?.coverageTopOffset ?? 0,
-        featureHeight,
-        featureSpacing,
-        scrollTop: model.scrollTop,
-        isChainMode,
-        filterMismatchesByFrequency: model.filterMismatchesByFrequency,
-        pileupVisible: (picked?.section.pileupHeight ?? 0) > 0,
-      }),
-    }
+    // No section under the cursor, or no fetched block at that x, is a miss.
+    // Answering it here is what lets performHitTest take a definite block and
+    // read the section's real offsets rather than standing in for a missing one.
+    const result: HitTestResult =
+      picked && resolved
+        ? performHitTest(canvasX, canvasY, resolved, {
+            showCoverage,
+            showInterbaseIndicators,
+            coverageHeight,
+            coverageMaxDepth: model.coverageDomain?.[1],
+            topOffset: picked.section.topOffset,
+            coverageTopOffset: picked.coverageTopOffset,
+            featureHeight,
+            featureSpacing,
+            scrollTop: model.scrollTop,
+            isChainMode,
+            filterMismatchesByFrequency: model.filterMismatchesByFrequency,
+            pileupVisible: picked.section.pileupHeight > 0,
+          })
+        : { type: 'none' }
+    return { resolved, picked, result }
   }
 
   function resolveSectionForCanvasY(canvasY: number) {
@@ -211,35 +217,26 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Hit test processing helpers ---
 
-  function processMouseMove(
-    e: React.MouseEvent,
-    onFeature: (hit: FeatureHit, resolved: ResolvedBlock) => void,
-    onNoFeature: () => void,
+  // The chain a hovered read belongs to, for the chain highlight. Empty outside
+  // chain mode, and empty for a cigar/modification hit that resolved no read.
+  // Keeping it keyed off the read (rather than only the bare-body branch) is what
+  // stops the previous read's highlight going stale while the cursor sits on a
+  // mismatch or modified base.
+  function hoveredChainIds(
+    featureHit: FeatureHit | undefined,
+    resolved: ResolvedBlock,
   ) {
+    return model.isChainMode && featureHit
+      ? model.chainIdsForRead(resolved.rpcData, featureHit.index)
+      : []
+  }
+
+  function handleCanvasMouseMove(e: React.MouseEvent) {
     if (isDragInProgress(dragControllerRef)) {
       return
     }
 
     const { result, picked } = hitTestEvent(e)
-
-    // Keep the chain highlight tracking the read under the cursor even while
-    // hovering a cigar/modification base on it (chain mode only) — else the
-    // previous read's highlight goes stale until the cursor reaches bare read
-    // body. No-op in plain mode (chain ids are always empty there).
-    function syncChainHighlight(
-      featureHit: { index: number } | undefined,
-      resolved: ResolvedBlock,
-    ) {
-      if (model.isChainMode) {
-        model.setHighlightedChainIds(
-          featureHit
-            ? model.chainIdsForRead(resolved.rpcData, featureHit.index)
-            : [],
-        )
-      } else {
-        model.clearHighlights()
-      }
-    }
 
     // Screen-px coverage band of the hovered section, so the tooltip's vertical
     // bar lands on the hovered group's coverage band rather than always the top.
@@ -252,69 +249,83 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     switch (result.type) {
       case 'indicator':
+      case 'coverage': {
+        // Both bands are hit-tested by position alone, so the cursor can land on
+        // a column with nothing to report (a coverage gap on targeted data).
+        // `overCigarItem` drives the pointer cursor and the click opens the same
+        // bin, so gate it on there being a tooltip — otherwise a gap showed a
+        // pointer over a column that neither tooltips nor opens anything.
+        const tooltip =
+          result.type === 'indicator'
+            ? formatIndicatorTooltip(
+                result.hit.position,
+                result.resolved.rpcData,
+                result.resolved.refName,
+              )
+            : formatCoverageTooltip(
+                result.hit.position,
+                result.resolved.rpcData,
+                result.resolved.refName,
+              )
         model.setHoverState({
-          overCigarItem: true,
+          overCigarItem: tooltip !== undefined,
           featureIdUnderMouse: undefined,
-          mouseoverExtraInformation: formatIndicatorTooltip(
-            result.hit.position,
-            result.resolved.rpcData,
-            result.resolved.refName,
-          ),
+          mouseoverExtraInformation: tooltip,
           hoverCoverageBand,
+          highlightedChainIds: [],
         })
-        model.clearHighlights()
         return
-      case 'coverage':
-        model.setHoverState({
-          overCigarItem: true,
-          featureIdUnderMouse: undefined,
-          mouseoverExtraInformation: formatCoverageTooltip(
-            result.hit.position,
-            result.resolved.rpcData,
-            result.resolved.refName,
-          ),
-          hoverCoverageBand,
-        })
-        model.clearHighlights()
-        return
-      case 'modification': {
-        const snpBase = snpBaseFromCigar(result.cigarHit)
+      }
+      case 'modification':
         model.setHoverState({
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatModificationTooltip(
             result.hit,
             result.resolved.refName,
-            snpBase,
+            snpBaseFromCigar(result.cigarHit),
+          ),
+          hoverCoverageBand,
+          highlightedChainIds: hoveredChainIds(
+            result.featureHit,
+            result.resolved,
           ),
         })
-        syncChainHighlight(result.featureHit, result.resolved)
         return
-      }
       case 'cigar':
         model.setHoverState({
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatCigarTooltip(result.hit),
+          hoverCoverageBand,
+          highlightedChainIds: hoveredChainIds(
+            result.featureHit,
+            result.resolved,
+          ),
         })
-        syncChainHighlight(result.featureHit, result.resolved)
         return
-      case 'feature':
-        model.setOverCigarItem(false)
-        onFeature(result.hit, result.resolved)
+      case 'feature': {
+        const { hit, resolved } = result
+        model.setHoverState({
+          overCigarItem: false,
+          featureIdUnderMouse: hit.id,
+          // A chain reports the whole template (both mates, insert size, pair
+          // anomalies); a plain read reports just its own name and span.
+          mouseoverExtraInformation: model.isChainMode
+            ? formatChainTooltip(resolved.rpcData, hit.index, resolved.refName)
+            : formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
+          hoverCoverageBand,
+          highlightedChainIds: hoveredChainIds(hit, resolved),
+        })
         return
+      }
       case 'none':
-        model.setOverCigarItem(false)
-        onNoFeature()
+        model.clearMouseoverState()
         return
     }
   }
 
-  function processClick(
-    e: React.MouseEvent,
-    onFeature: (hit: FeatureHit, resolved: ResolvedBlock) => void,
-    onNoFeature: () => void,
-  ) {
+  function handleClick(e: React.MouseEvent) {
     // click fires after mousedown+mouseup regardless of motion in between.
     if (dragMovedRef.current) {
       dragMovedRef.current = false
@@ -342,21 +353,26 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       case 'cigar':
         openCigarWidget(model, result.hit, result.resolved.refName)
         return
-      case 'modification': {
-        const snpBase = snpBaseFromCigar(result.cigarHit)
+      case 'modification':
         openModificationWidget(
           model,
           result.hit,
           result.resolved.refName,
-          snpBase,
+          snpBaseFromCigar(result.cigarHit),
         )
         return
-      }
-      case 'feature':
-        onFeature(result.hit, result.resolved)
+      case 'feature': {
+        const { hit, resolved } = result
+        void model.selectFeatureById(hit.id)
+        if (model.isChainMode) {
+          model.setSelectedChainIds(
+            model.chainIdsForRead(resolved.rpcData, hit.index),
+          )
+        }
         return
+      }
       case 'none':
-        onNoFeature()
+        model.clearSelection()
         return
     }
   }
@@ -367,7 +383,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     handleMouseDown,
     handleMouseLeave,
     handleContextMenu,
-    processMouseMove,
-    processClick,
+    handleCanvasMouseMove,
+    handleClick,
   }
 }

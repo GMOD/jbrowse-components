@@ -1,8 +1,13 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
 import { getModificationCallName } from '../../shared/modificationData.ts'
-import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
-import { formatLenRange, getTooltipBin, pct } from './tooltipUtils.ts'
+import { getCigarTypeLabel } from '../../shared/types.ts'
+import {
+  formatLenRange,
+  getInterbaseBin,
+  getCoverageBin,
+  pct,
+} from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
@@ -17,28 +22,32 @@ export function openIndicatorWidget(
   refName: string,
   blockRpcData: PileupDataResult | undefined,
 ) {
-  const tooltipBin = getTooltipBin(indicatorHit.position, blockRpcData)
-  if (!tooltipBin) {
+  // Same interbase-only bin the hover tooltip reads, so a hoverable bar is
+  // exactly a clickable one — the depth/SNP tallies play no part here.
+  const bin = getInterbaseBin(indicatorHit.position, blockRpcData)
+  if (!bin) {
     return
   }
 
   const featureData: SimpleFeatureSerialized = {
     uniqueId: `indicator-${indicatorHit.indicatorType}-${refName}-${indicatorHit.position}`,
-    name: `Coverage ${CIGAR_TYPE_LABELS[indicatorHit.indicatorType] ?? indicatorHit.indicatorType}`,
+    name: `Coverage ${getCigarTypeLabel(indicatorHit.indicatorType)}`,
     type: indicatorHit.indicatorType,
     refName,
     start: indicatorHit.position,
     end: indicatorHit.position + 1,
-    depth: tooltipBin.depth,
+    depth: bin.depth,
   }
 
-  const interbaseEntry = tooltipBin.interbase[indicatorHit.indicatorType]
+  const interbaseEntry = bin.interbase[indicatorHit.indicatorType]
   if (interbaseEntry) {
-    featureData.count = `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)})`
+    featureData.count = `${interbaseEntry.count}/${bin.interbaseDepth} (${pct(interbaseEntry.count, bin.interbaseDepth)})`
+    // The avg only says something when the range doesn't collapse to one length.
+    const sizeStr = formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)
     featureData.size =
       interbaseEntry.minLen === interbaseEntry.maxLen
-        ? formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)
-        : `${formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)} (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
+        ? sizeStr
+        : `${sizeStr} (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
     if (interbaseEntry.topSeq) {
       featureData['top sequence'] =
         `${interbaseEntry.topSeq} (${interbaseEntry.topSeqCount}/${interbaseEntry.count} reads)`
@@ -56,8 +65,8 @@ export function openCoverageWidget(
 ) {
   // Coverage widget omits interbase — those are reached by clicking the
   // interbase histogram bars (openIndicatorWidget).
-  const tooltipBin = getTooltipBin(position, blockRpcData, false)
-  if (!tooltipBin) {
+  const bin = getCoverageBin(position, blockRpcData)
+  if (!bin) {
     return
   }
 
@@ -68,18 +77,18 @@ export function openCoverageWidget(
     refName,
     start: position,
     end: position + 1,
-    depth: tooltipBin.depth,
+    depth: bin.depth,
   }
 
-  for (const [base, snpEntry] of Object.entries(tooltipBin.snps)) {
+  for (const [base, snpEntry] of Object.entries(bin.snps)) {
     featureData[`SNP ${base.toUpperCase()}`] =
-      `${snpEntry.count}/${tooltipBin.depth} (${pct(snpEntry.count, tooltipBin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
+      `${snpEntry.count}/${bin.depth} (${pct(snpEntry.count, bin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
   }
-  if (tooltipBin.modifications) {
-    for (const entry of tooltipBin.modifications) {
+  if (bin.modifications) {
+    for (const entry of bin.modifications) {
       const avgProb = entry.count > 0 ? entry.probabilityTotal / entry.count : 0
       featureData[`modification ${entry.name}`] =
-        `${entry.count}/${tooltipBin.depth} (${pct(entry.count, tooltipBin.depth)}) avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`
+        `${entry.count}/${bin.depth} (${pct(entry.count, bin.depth)}) avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`
     }
   }
 
@@ -146,7 +155,7 @@ export function openCigarWidget(
 ) {
   const featureData: SimpleFeatureSerialized = {
     uniqueId: `${cigarHit.type}-${refName}-${cigarHit.position}`,
-    name: CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type,
+    name: getCigarTypeLabel(cigarHit.type),
     type: cigarHit.type,
     refName,
     start: cigarHit.position,

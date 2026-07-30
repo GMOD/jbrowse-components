@@ -110,15 +110,6 @@ export function canvasToGenomicCoords({
   return { bpPerPx, genomicPos, basePos, row, adjustedY, yWithinRow }
 }
 
-export const CIGAR_TYPE_LABELS: Record<string, string> = {
-  mismatch: 'SNP/Mismatch',
-  insertion: 'Insertion',
-  deletion: 'Deletion',
-  skip: 'Skip (Intron)',
-  softclip: 'Soft Clip',
-  hardclip: 'Hard Clip',
-}
-
 // Pan-or-click threshold (|dx|+|dy|, CSS px).
 export const CLICK_SUPPRESS_THRESHOLD_PX = 4
 
