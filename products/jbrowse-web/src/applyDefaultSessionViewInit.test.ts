@@ -52,6 +52,21 @@ test('an assembly-less url falls back to the pending init assembly', () => {
   expect(applied).toEqual([{ assembly: 'volvox', loc: 'ctgB:1-100' }])
 })
 
+// the pending init's tracks and loc belong to the assembly it names, so they
+// can't ride along into a different one — they'd open tracks whose adapters
+// resolve no refNames, which reads as an empty track rather than an error
+test('a url that switches assemblies drops the pending init', () => {
+  const { session, applied } = makeSession({
+    assembly: 'volvox',
+    tracks: ['genes'],
+    loc: 'ctgA:1-100',
+  })
+
+  applyDefaultSessionViewInit(session, buildLgvInit({ assembly: 'volvox2' }))
+
+  expect(applied).toEqual([{ assembly: 'volvox2' }])
+})
+
 test('no resolvable assembly applies nothing', () => {
   const { session, applied } = makeSession()
 

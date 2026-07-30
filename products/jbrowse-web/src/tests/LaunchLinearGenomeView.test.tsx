@@ -131,3 +131,30 @@ test('spec url can carry its own assembly via sessionAssemblies', async () => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,000')
   }, delay)
 }, 60000)
+
+// &extendSession=true layers the jb1-style params onto the config's own
+// defaultSession. config_spec.json's view carries a pending `init`, so it has no
+// displayedRegions yet and therefore no assemblyNames: the URL's loc used to be
+// dropped outright for want of an assembly to resolve it against, and supplying
+// an &assembly= instead replaced the pending init, losing the tracks it opened.
+test('extendSession navigates within a defaultSession init, keeping its tracks', async () => {
+  const { findByTestId, findByPlaceholderText } = render(
+    <App search="?config=test_data/volvox/config_spec.json&extendSession=true&loc=ctgB:1-100" />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgB:1..100')
+  }, delay)
+  // the defaultSession's own init.tracks survived the merge: its track is open in
+  // the view. Asserted on the drag handle rather than the track name, which this
+  // config also renders in the track selector it opens — that copy is there
+  // whether the track is open or not. The track's data cannot load here (the
+  // config has no MainThreadRpcDriver and the worker is mocked out), which is
+  // beside the point; that it opened at all is the claim.
+  await findByTestId(
+    'dragHandle-integration_test-volvox_cram_alignments_ctga',
+    {},
+    delay,
+  )
+}, 60000)

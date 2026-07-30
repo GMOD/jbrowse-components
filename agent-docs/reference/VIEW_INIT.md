@@ -66,6 +66,38 @@ Nesting a spec's keys under `init` is therefore **reported, not accepted**
 The residual cost is that moving a view between a config and a URL means
 reshaping it, which is what the diagnostic names.
 
+### What each launcher's vocabulary actually is (checked, all seven)
+
+- **Pure declarative args, no view props at all** — dotplot (`views: [{assembly,
+  loc, displayedRegionNames}]`), circular (`assembly`, `tracks`), spreadsheet
+  (`assembly`, `uri`, `fileType`), synteny (`views`, `tracks`, + init fields).
+  None of these is a view snapshot, and none could become one.
+- **Declarative args mixed with view-snapshot props** — LGV
+  (`LinearGenomeViewLaunchProps`), breakpoint (every snapshot prop but
+  `type`/`views`/`init`), sv-inspector (`height`).
+
+So the init-vs-prop split is *not* an LGV peculiarity — three launchers arrived at
+it independently. (An earlier note here suggested dropping the LGV's view-prop
+bucket as "the one non-inherent piece"; that was wrong, and it would make the LGV
+the odd one out.)
+
+The two mixed launchers resolve the prop set differently, and the difference is
+deliberate:
+
+- **breakpoint derives it from the model** — `Omit<SnapshotIn<Model>,
+  'type'|'views'|'init'>`, fully type-checked with no cast and nothing to
+  maintain, so every view prop is settable. But the runtime just spreads `rest`
+  into the snapshot, and MST drops unknown keys silently: **no typo detection**.
+- **LGV uses a runtime key table** (`partitionLaunchKeys`), which is hand-listed
+  (guarded by `Record<keyof …, true>` so it can't drift from the interface) and
+  buys the "ignored unknown key(s)" warning.
+
+LGV wants the warning because it is the view type that untyped surfaces target —
+URL params and hand-written spec JSON, where a typo has no compiler to catch it.
+Breakpoint is reached mostly programmatically. If a runtime prop list is ever
+wanted without the hand-list, that needs the *values* enumerable at runtime, which
+a type is not — hence the table.
+
 It lives on the model as `init: types.frozen<InitState | undefined>()`
 (`model.ts`). It is **transient**: applied once on attach, then cleared with
 `setInit(undefined)`, so a saved session never carries it. (The old "#property

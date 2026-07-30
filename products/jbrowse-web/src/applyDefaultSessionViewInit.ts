@@ -32,6 +32,11 @@ export function applyDefaultSessionViewInit(
     // opened tracks via `init.tracks` keeps them when the URL only sets `loc`.
     // buildLgvInit omits the params the URL didn't carry, so no key here is
     // present-but-undefined, which would erase its counterpart.
-    view.setInit({ ...pending, ...init, assembly })
+    //
+    // Unless the URL switches assemblies: the pending init's tracks and loc
+    // belong to the old one, and carrying them over opens tracks whose adapters
+    // resolve no refNames — an empty track, not an error.
+    const base = pending?.assembly === assembly ? pending : undefined
+    view.setInit({ ...base, ...init, assembly })
   }
 }
