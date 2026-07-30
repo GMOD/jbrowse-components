@@ -14,6 +14,7 @@ import GCContent from '@jbrowse/plugin-gccontent'
 import Gff3 from '@jbrowse/plugin-gff3'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 import GtfPlugin from '@jbrowse/plugin-gtf'
+import Gwas from '@jbrowse/plugin-gwas'
 import HicPlugin from '@jbrowse/plugin-hic'
 import JobsManagementPlugin from '@jbrowse/plugin-jobs-management'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
@@ -61,6 +62,7 @@ const corePlugins = [
   GridBookmarkPlugin,
   ComparativeAdapters,
   Arc,
+  Gwas,
   Blat,
 ]
 
