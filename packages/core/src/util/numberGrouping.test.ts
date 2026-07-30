@@ -3,7 +3,11 @@ import {
   assembleLocStringRaw,
   parseLocString,
 } from './locString.ts'
-import { getNumberGrouping, setNumberGrouping, toLocale } from './numericUtils.ts'
+import {
+  getNumberGrouping,
+  setNumberGrouping,
+  toLocale,
+} from './numericUtils.ts'
 
 const region = { refName: 'chr1', start: 1234566, end: 1235000 }
 const validRefName = (refName: string) => refName === 'chr1'

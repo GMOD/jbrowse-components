@@ -29,18 +29,21 @@ function addValues(
 // to arrive first: HP:1 could paint blue in one session and pink in the next,
 // and a figure wasn't reproducible from its session file.
 //
-// A non-negative integer indexes the palette directly. Haplotype tags are
-// written both 0/1 and 1/2 in the wild, and indexing straight through puts both
-// conventions on the palette's leading colors with no wraparound; anchoring at 1
-// instead would send HP:0 to the far end of the palette. Adjacent haplotypes stay
-// adjacent and distinct, and discovering a new value never shifts an existing
-// one. Anything else hashes — stable for the same reason, at the cost of
-// occasional collisions between two values; discovery order had those too, since
-// it wrapped at the palette length.
+// A non-negative integer indexes the palette anchored at 1, so HP:1 takes the
+// leading blue and HP:2 the pink — every tool that writes the tag (whatshap,
+// HiPhase, Clair3, longshot, PEPPER-margin) numbers haplotypes from 1, and
+// indexing straight through instead left the first haplotype pink and the second
+// green. HP:0 means unphased where it appears at all, and lands at the far end of
+// the palette rather than sharing the leading color with a real haplotype.
+// Adjacent haplotypes stay adjacent and distinct, and discovering a new value
+// never shifts an existing one. Anything else hashes — stable for the same
+// reason, at the cost of occasional collisions between two values; discovery
+// order had those too, since it wrapped at the palette length.
 function tagValueColor(value: string) {
+  const n = TAG_COLOR_PALETTE.length
   const num = Number(value)
-  const idx = Number.isInteger(num) && num >= 0 ? num : hashString(value)
-  return TAG_COLOR_PALETTE[idx % TAG_COLOR_PALETTE.length]!
+  const idx = Number.isInteger(num) && num >= 0 ? num + n - 1 : hashString(value)
+  return TAG_COLOR_PALETTE[idx % n]!
 }
 
 // Color by tag: each value's color is a pure function of the value, so the same

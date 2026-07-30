@@ -9,13 +9,15 @@ import {
 // Values stream in as regions load, so a color derived from discovery order made
 // a track's colors depend on which read arrived first. Every test here pins the
 // property that replaced it: the color is a function of the value alone.
-// Both haplotype conventions (HP 0/1 and HP 1/2) land on leading palette colors.
-test('numeric tag values index the palette directly', () => {
+// Haplotypes are numbered from 1, so HP:1 takes the leading color and HP:0
+// (unphased) the last one rather than sharing a color with a real haplotype.
+test('numeric tag values index the palette anchored at 1', () => {
+  const n = TAG_COLOR_PALETTE.length
   const { map, added } = updateColorTagMap({}, ['0', '1', '2'])
   expect(added).toBe(true)
-  expect(map['0']).toBe(TAG_COLOR_PALETTE[0])
-  expect(map['1']).toBe(TAG_COLOR_PALETTE[1])
-  expect(map['2']).toBe(TAG_COLOR_PALETTE[2])
+  expect(map['1']).toBe(TAG_COLOR_PALETTE[0])
+  expect(map['2']).toBe(TAG_COLOR_PALETTE[1])
+  expect(map['0']).toBe(TAG_COLOR_PALETTE[n - 1])
 })
 
 test('HP:1 and HP:2 keep their colors whatever order they are discovered in', () => {
@@ -26,7 +28,7 @@ test('HP:1 and HP:2 keep their colors whatever order they are discovered in', ()
   const withThird = updateColorTagMap(forward, ['0']).map
   expect(withThird['1']).toBe(forward['1'])
   expect(withThird['2']).toBe(forward['2'])
-  expect(withThird['0']).toBe(TAG_COLOR_PALETTE[0])
+  expect(withThird['0']).toBe(TAG_COLOR_PALETTE[TAG_COLOR_PALETTE.length - 1])
 })
 
 test('non-numeric values are stable too, and order-independent', () => {
@@ -49,7 +51,9 @@ test('no-op when every value is already mapped', () => {
 
 test('numeric values past the palette length wrap', () => {
   const n = TAG_COLOR_PALETTE.length
-  expect(updateColorTagMap({}, [`${n}`]).map[`${n}`]).toBe(TAG_COLOR_PALETTE[0])
+  expect(updateColorTagMap({}, [`${n + 1}`]).map[`${n + 1}`]).toBe(
+    TAG_COLOR_PALETTE[0],
+  )
 })
 
 // Tag values colliding with Object.prototype member names must still get a real
