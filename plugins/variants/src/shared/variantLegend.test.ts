@@ -1,3 +1,4 @@
+import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import {
   getGenotypeLegendItems,
@@ -175,6 +176,26 @@ describe('getVariantLegendSections', () => {
       { color: '#e41a1c', label: 'Deletion' },
       { color: '#377eb8', label: 'Duplication' },
       { color: '#1f77b4', label: 'INVDUP' }, // unrecognized token: raw label
+    ])
+  })
+
+  it('keeps a genotype key for a plain CSS feature color, recolored', () => {
+    const sections = getVariantLegendSections({
+      renderingMode: 'phased',
+      hasSecondaryAlt: true,
+      hasUnphased: false,
+      hasNoCall: true,
+      featureColor: '#E69F00',
+      colorBy: '',
+      sources,
+    })
+    expect(sections.map(s => s.id)).toEqual(['genotypes'])
+    // one alt entry in the override color: the secondary-alt color is
+    // overridden too, so listing it would describe a swatch nothing paints
+    expect(sections[0]!.items).toEqual([
+      { color: REFERENCE_COLOR, label: 'Reference' },
+      { color: '#E69F00', label: 'Alt allele' },
+      { color: NO_CALL_COLOR, label: 'No call' },
     ])
   })
 

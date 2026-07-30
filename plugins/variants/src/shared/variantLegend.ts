@@ -29,12 +29,31 @@ export function getGenotypeLegendItems({
   hasSecondaryAlt,
   hasUnphased,
   hasNoCall,
+  altColorOverride,
 }: {
   renderingMode: string
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
+  // A plain CSS color from `featureColor`: every alt-carrying cell is painted
+  // with it, so the alt swatches collapse to one entry in that color. Dosage
+  // shading and the secondary-alt color are gone in that case, and saying
+  // otherwise would describe a scheme that isn't on screen. Ref, unphased and
+  // no-call keep their own colors (see computeVariantMatrixCells).
+  altColorOverride?: string
 }): LegendItem[] {
+  if (altColorOverride) {
+    return [
+      {
+        color: REFERENCE_COLOR,
+        label:
+          renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
+      },
+      { color: altColorOverride, label: 'Alt allele' },
+      ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
+      ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+    ]
+  }
   if (renderingMode === 'phased') {
     return [
       { color: REFERENCE_COLOR, label: 'Reference' },
@@ -170,7 +189,24 @@ export function getVariantLegendSections({
                   : []),
               ],
             }
-          : undefined
+          : // Anything left that isn't a jexl expression is a plain CSS color,
+            // which is the one custom case a key *can* be built for: every alt
+            // cell is that color and nothing else changed. Only a real
+            // expression, whose output can't be enumerated here, drops the
+            // section.
+            cellColorKey.startsWith('jexl:')
+            ? undefined
+            : {
+                id: 'genotypes',
+                title: 'Genotypes',
+                items: getGenotypeLegendItems({
+                  renderingMode,
+                  hasSecondaryAlt,
+                  hasUnphased,
+                  hasNoCall,
+                  altColorOverride: cellColorKey,
+                }),
+              }
     : {
         id: 'genotypes',
         title: 'Genotypes',
