@@ -49,15 +49,24 @@ function recordingCtx() {
 const A = 65
 
 // One MAF block: `n` reference 'A' bases from START, with one aligned row whose
-// bases all match. Defaults to a single base — exactly one cell painted.
-function regionData(n = 1): MafRegionData {
+// bases all match unless `aln` overrides them. Defaults to a single base —
+// exactly one cell painted.
+function regionData(n = 1, aln?: string): MafRegionData {
   return {
     blocks: [
       {
         startBp: START,
         endBp: START + n,
         refSeqBytes: new Uint8Array(n).fill(A),
-        rows: [{ rowIndex: 0, alignmentBytes: new Uint8Array(n).fill(A) }],
+        rows: [
+          {
+            rowIndex: 0,
+            alignmentBytes:
+              aln === undefined
+                ? new Uint8Array(n).fill(A)
+                : new TextEncoder().encode(aln),
+          },
+        ],
         empties: [],
       },
     ],
@@ -76,21 +85,19 @@ function state(binBp = 1): MafGPURenderState {
     showAllLetters: true,
     mismatchRendering: false,
     palette: {
-      baseA: 'green',
-      baseC: 'blue',
-      baseG: 'orange',
-      baseT: 'red',
-      baseN: 'grey',
-      match: 'lightgrey',
-      gap: 'white',
-      mismatch: 'black',
-      unknown: 'grey',
-      insertion: 'purple',
+      colorForBase: { a: 'green', c: 'blue', g: 'orange', t: 'red', n: 'grey' },
+      matchColor: 'lightgrey',
+      gapColor: 'white',
+      mismatchOffColor: 'black',
+      unknownBaseColor: 'grey',
+      insertionColor: 'purple',
+      bridgeLineColor: 'grey',
+      missingDataColor: 'lightyellow',
     },
-  } as unknown as MafGPURenderState
+  }
 }
 
-function draw(reversed: boolean, nBases = 1, binBp = 1) {
+function draw(reversed: boolean, nBases = 1, binBp = 1, aln?: string) {
   const { ctx, rects } = recordingCtx()
   const block: RenderBlock = {
     displayedRegionIndex: 0,
@@ -100,7 +107,12 @@ function draw(reversed: boolean, nBases = 1, binBp = 1) {
     screenEndPx: BLOCK_WIDTH,
     reversed,
   }
-  drawMafBlocks(ctx, new Map([[0, regionData(nBases)]]), [block], state(binBp))
+  drawMafBlocks(
+    ctx,
+    new Map([[0, regionData(nBases, aln)]]),
+    [block],
+    state(binBp),
+  )
   return rects
 }
 
@@ -185,5 +197,32 @@ describe('drawMafBlocks binned cell geometry', () => {
     const rects = draw(false, 6, BIN)
     expect(rects).toHaveLength(2)
     expect(rects[1]!.w).toBeCloseTo(2 * PX_PER_BP + 0.4)
+  })
+})
+
+// A gap run reaching either end of the block measures where the MAF was
+// chunked, not the alignment, so those columns paint nothing at all — the same
+// blank the sample gets in blocks it is absent from. Before this, one
+// non-alignment read as a gap-colored box on the right of one block, a blank
+// through the next, and another box on the left of the third.
+describe('drawMafBlocks boundary gaps', () => {
+  test('a trailing gap run paints no cells', () => {
+    const rects = draw(false, 5, 1, 'AAA--')
+    expect(rects).toHaveLength(3)
+    expect(rects.map(r => r.x)).toEqual([0, PX_PER_BP, 2 * PX_PER_BP])
+  })
+
+  test('a leading gap run paints no cells', () => {
+    const rects = draw(false, 5, 1, '--AAA')
+    expect(rects).toHaveLength(3)
+    expect(rects[0]!.x).toBeCloseTo(2 * PX_PER_BP)
+  })
+
+  test('an all-gap row paints nothing', () => {
+    expect(draw(false, 5, 1, '-----')).toHaveLength(0)
+  })
+
+  test('an interior gap run still paints', () => {
+    expect(draw(false, 5, 1, 'A--AA')).toHaveLength(5)
   })
 })

@@ -175,3 +175,69 @@ describe('binned encode (zoomed out)', () => {
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 108 })
   })
 })
+
+describe('gap runs at a block boundary', () => {
+  test('a trailing gap run paints nothing', () => {
+    const blocks = [block(100, 'ACGTA', [[0, 'ACG--']])]
+    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 103 })
+  })
+
+  test('a leading gap run paints nothing', () => {
+    const blocks = [block(100, 'ACGTA', [[0, '--GTA']])]
+    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ startBp: 102, endBp: 105 })
+  })
+
+  test('an all-gap row emits nothing', () => {
+    const blocks = [block(100, 'ACGTA', [[0, '-----']])]
+    const { count } = buildInstanceBuffer({ blocks, ...args })
+    expect(count).toBe(0)
+  })
+
+  test('an abutting block that resumes makes a trailing run a real deletion', () => {
+    // block 2 starts at 105 with aligned sequence, so block 1's trailing gap is
+    // bounded and paints; without the neighbour it would be blank
+    const blocks = [
+      block(100, 'ACGTA', [[0, 'ACG--']]),
+      block(105, 'ACGTA', [[0, 'ACGTA']]),
+    ]
+    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(3)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 103 })
+    expect(runs[1]).toMatchObject({ startBp: 103, endBp: 105 })
+    expect(runs[2]).toMatchObject({ startBp: 105, endBp: 110 })
+    expect(runs[1]!.color).not.toBe(runs[0]!.color)
+  })
+
+  test('a neighbour that also starts with a gap leaves both fragments blank', () => {
+    const blocks = [
+      block(100, 'ACGTA', [[0, 'ACG--']]),
+      block(105, 'ACGTA', [[0, '--GTA']]),
+    ]
+    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(2)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 103 })
+    expect(runs[1]).toMatchObject({ startBp: 107, endBp: 110 })
+  })
+
+  test('an interior gap run still paints, and does not merge across a boundary run', () => {
+    // gapColor differs from matchColor, so the interior gap is its own run and
+    // the trailing gap must not extend it.
+    const blocks = [block(100, 'ACGTACG', [[0, 'A--TAC-']])]
+    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
+    const runs = decodeRuns(buffer, count)
+    expect(runs).toHaveLength(3)
+    expect(runs[0]).toMatchObject({ startBp: 100, endBp: 101 })
+    expect(runs[1]).toMatchObject({ startBp: 101, endBp: 103 })
+    expect(runs[2]).toMatchObject({ startBp: 103, endBp: 106 })
+    expect(runs[0]!.color).toBe(runs[2]!.color)
+    expect(runs[1]!.color).not.toBe(runs[0]!.color)
+  })
+})

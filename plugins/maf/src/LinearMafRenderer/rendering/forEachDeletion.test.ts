@@ -1,11 +1,17 @@
 import { forEachDeletion } from './forEachDeletion.ts'
 
+import type { RowFlank } from './rowFlank.ts'
+
 const enc = new TextEncoder()
 const b = (s: string) => enc.encode(s)
 
-function runs(ref: string, aln: string, startBp = 100) {
+const UNBOUNDED: RowFlank = { boundedLeft: false, boundedRight: false }
+
+// Default to unbounded: a bare block whose neighbours say nothing, which is the
+// conservative reading of every boundary run.
+function runs(ref: string, aln: string, flank = UNBOUNDED, startBp = 100) {
   const out: { start: number; length: number }[] = []
-  forEachDeletion(b(ref), b(aln), startBp, (start, length) => {
+  forEachDeletion(b(ref), b(aln), startBp, flank, (start, length) => {
     out.push({ start, length })
   })
   return out
@@ -46,6 +52,38 @@ test('a run truncated by the start of the block is not a deletion', () => {
 
 test('a row that is gaps end to end emits nothing', () => {
   expect(runs('AAAA', '----')).toEqual([])
+})
+
+describe('runs the neighbouring block closes', () => {
+  const left: RowFlank = { boundedLeft: true, boundedRight: false }
+  const right: RowFlank = { boundedLeft: false, boundedRight: true }
+  const both: RowFlank = { boundedLeft: true, boundedRight: true }
+
+  test('a trailing run is a real deletion when the next block resumes', () => {
+    expect(runs('AAAA', 'aa--', right)).toEqual([{ start: 102, length: 2 }])
+  })
+
+  test('a leading run is a real deletion when the previous block ends aligned', () => {
+    expect(runs('AAAA', '--aa', left)).toEqual([{ start: 100, length: 2 }])
+  })
+
+  test('bounding the wrong side leaves the run unobservable', () => {
+    expect(runs('AAAA', 'aa--', left)).toEqual([])
+    expect(runs('AAAA', '--aa', right)).toEqual([])
+  })
+
+  test('an all-gap row is one deletion only when both sides close it', () => {
+    expect(runs('AAAA', '----', both)).toEqual([{ start: 100, length: 4 }])
+    expect(runs('AAAA', '----', left)).toEqual([])
+    expect(runs('AAAA', '----', right)).toEqual([])
+  })
+
+  test('bounding does not disturb interior runs', () => {
+    expect(runs('AAAAA', 'a-a-a', both)).toEqual([
+      { start: 101, length: 1 },
+      { start: 103, length: 1 },
+    ])
+  })
 })
 
 test('a deletion flanked by sample sequence survives at either block edge', () => {

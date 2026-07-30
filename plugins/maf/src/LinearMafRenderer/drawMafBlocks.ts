@@ -6,6 +6,7 @@ import {
 import { rowBandGeometry } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
 import { buildColumnForGenomicOffset } from './binning.ts'
 import { renderBases } from './rendering/bases.ts'
+import { makeRowFlank } from './rendering/rowFlank.ts'
 
 import type {
   MafGPURenderState,
@@ -56,7 +57,9 @@ export function drawMafBlocks(
         binBp,
       }
 
-      for (const mafBlock of regionData.blocks) {
+      const rowFlank = makeRowFlank(regionData.blocks)
+      for (let i = 0; i < regionData.blocks.length; i++) {
+        const mafBlock = regionData.blocks[i]!
         const { refSeqBytes, startBp: blockStartBp } = mafBlock
         // Once per block, not per row: the map is a property of the block's
         // reference, and rebuilding it per row would put the O(columns x rows)
@@ -71,6 +74,7 @@ export function drawMafBlocks(
             columns,
             blockStartBp,
             rowTop,
+            rowFlank(i, row.rowIndex),
           )
         }
       }

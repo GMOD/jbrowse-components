@@ -1,9 +1,11 @@
 import { fillBpSpan } from '@jbrowse/render-core/canvas2dUtils'
 
 import { resolveCellColor } from '../resolveCellColor.ts'
+import { resolvedExtent } from './alignedExtent.ts'
 import { GAP_STROKE_OFFSET } from './types.ts'
 
 import type { buildColumnForGenomicOffset } from '../binning.ts'
+import type { RowFlank } from './rowFlank.ts'
 import type { RenderingContext } from './types.ts'
 
 /**
@@ -14,6 +16,10 @@ import type { RenderingContext } from './types.ts'
  * Insertion columns never appear here: `colForGpos` holds only columns that
  * carry a genomic position. The insertion markers are drawn separately, by the
  * overlay / export (`drawMafInsertions`).
+ *
+ * Columns outside the row's `resolvedExtent` paint nothing, so a gap run
+ * running off either end of the block reads as blank — the same as the blocks
+ * the sample is absent from entirely — unless the abutting block closes it.
  */
 export function renderBases(
   context: RenderingContext,
@@ -22,9 +28,11 @@ export function renderBases(
   columns: ReturnType<typeof buildColumnForGenomicOffset>,
   startBp: number,
   rowTop: number,
+  flank: RowFlank,
 ) {
   const { ctx, h, cellColorConfig, bpToPx, binBp } = context
   const { colForGpos, refLen } = columns
+  const { firstCol, lastCol } = resolvedExtent(alignment, alignment.length, flank)
 
   for (let gpos = 0; gpos < refLen; gpos += binBp) {
     const col = colForGpos[gpos]!
@@ -33,18 +41,20 @@ export function renderBases(
     if (col >= alignment.length) {
       break
     }
-    const css = resolveCellColor(seq[col]!, alignment[col]!, cellColorConfig)
-    if (css !== undefined) {
-      ctx.fillStyle = css
-      fillBpSpan(
-        ctx,
-        bpToPx,
-        startBp + gpos,
-        startBp + Math.min(gpos + binBp, refLen),
-        rowTop,
-        h,
-        GAP_STROKE_OFFSET,
-      )
+    if (col >= firstCol && col <= lastCol) {
+      const css = resolveCellColor(seq[col]!, alignment[col]!, cellColorConfig)
+      if (css !== undefined) {
+        ctx.fillStyle = css
+        fillBpSpan(
+          ctx,
+          bpToPx,
+          startBp + gpos,
+          startBp + Math.min(gpos + binBp, refLen),
+          rowTop,
+          h,
+          GAP_STROKE_OFFSET,
+        )
+      }
     }
   }
 }

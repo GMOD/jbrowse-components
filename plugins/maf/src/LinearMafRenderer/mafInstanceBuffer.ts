@@ -1,4 +1,6 @@
 import { buildColumnForGenomicOffset } from './binning.ts'
+import { resolvedExtent } from './rendering/alignedExtent.ts'
+import { makeRowFlank } from './rendering/rowFlank.ts'
 import {
   packMafCellColorConfig,
   resolveCellPacked,
@@ -101,8 +103,9 @@ class InstanceWriter {
  * `binBp === 1` visits every base and anything larger samples the first base of
  * each window (see `binning.ts` for why sampling is the right call, and
  * `encodeBinBp` for how the step is chosen). Insertion columns never appear —
- * `colForGpos` holds only columns carrying a genomic position — so there is no
- * skip sentinel to handle here.
+ * `colForGpos` holds only columns carrying a genomic position — so the only
+ * cells skipped here are the ones outside a row's `resolvedExtent`, which paint
+ * blank in both backends.
  */
 export function buildInstanceBuffer(args: BuildInstancesArgs) {
   const { blocks, palette, showAllLetters, mismatchRendering, binBp } = args
@@ -114,13 +117,19 @@ export function buildInstanceBuffer(args: BuildInstancesArgs) {
     mismatchRendering,
   })
   const out = new InstanceWriter(maxInstances(blocks, binBp))
+  const rowFlank = makeRowFlank(blocks)
 
-  for (const block of blocks) {
-    const { startBp, refSeqBytes, rows } = block
+  for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+    const { startBp, refSeqBytes, rows } = blocks[blockIndex]!
     const { colForGpos, refLen } = buildColumnForGenomicOffset(refSeqBytes)
 
     for (const row of rows) {
       const { rowIndex, alignmentBytes } = row
+      const { firstCol, lastCol } = resolvedExtent(
+        alignmentBytes,
+        alignmentBytes.length,
+        rowFlank(blockIndex, rowIndex),
+      )
       // Genomic offset the open run starts at, or -1 for "no run open".
       let runStart = -1
       let runColor = 0
@@ -137,19 +146,28 @@ export function buildInstanceBuffer(args: BuildInstancesArgs) {
         if (col >= alignmentBytes.length) {
           break
         }
-        runEnd = Math.min(gpos + binBp, refLen)
-        const color = resolveCellPacked(
-          refSeqBytes[col]!,
-          alignmentBytes[col]!,
-          cfg,
-        )
-        if (runStart < 0) {
-          runStart = gpos
-          runColor = color
-        } else if (color !== runColor) {
-          out.push(startBp + runStart, startBp + gpos, rowIndex, runColor)
-          runStart = gpos
-          runColor = color
+        if (col < firstCol || col > lastCol) {
+          // Outside the row's aligned extent nothing paints, so close the open
+          // run here rather than letting it span the blank.
+          if (runStart >= 0) {
+            out.push(startBp + runStart, startBp + runEnd, rowIndex, runColor)
+            runStart = -1
+          }
+        } else {
+          runEnd = Math.min(gpos + binBp, refLen)
+          const color = resolveCellPacked(
+            refSeqBytes[col]!,
+            alignmentBytes[col]!,
+            cfg,
+          )
+          if (runStart < 0) {
+            runStart = gpos
+            runColor = color
+          } else if (color !== runColor) {
+            out.push(startBp + runStart, startBp + gpos, rowIndex, runColor)
+            runStart = gpos
+            runColor = color
+          }
         }
       }
       if (runStart >= 0) {

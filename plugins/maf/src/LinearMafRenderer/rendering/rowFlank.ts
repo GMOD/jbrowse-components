@@ -1,0 +1,63 @@
+import { DASH, SPACE } from '../../util/asciiBytes.ts'
+
+import type { MafBlock } from '../mafRenderingBackendTypes.ts'
+
+export interface RowFlank {
+  /** the sample resumes aligned sequence in the block abutting on the left */
+  boundedLeft: boolean
+  /** ...and on the right */
+  boundedRight: boolean
+}
+
+function isAligned(byte: number | undefined) {
+  return byte !== undefined && byte !== DASH && byte !== SPACE
+}
+
+/**
+ * Resolves, per block and row, whether a gap run running off either end of that
+ * row is closed by the neighbouring block — the input `resolvedExtent` needs to
+ * tell a real block-edge deletion from a chunking artifact.
+ *
+ * A side is bounded when the neighbouring block abuts in reference coordinates
+ * AND carries this row with sequence right at the shared seam. Both halves
+ * matter: blocks separated by a reference gap say nothing about each other, and
+ * a neighbour whose row also starts with gaps means the run continues past it,
+ * so its length is still unknown from here.
+ *
+ * Only the last byte of the left neighbour and the first byte of the right one
+ * are read, so this is a single O(rows) pass per block rather than a walk. The
+ * outermost blocks of a fetched region have no neighbour to consult and so read
+ * as unbounded, which errs toward blank — the same call the middle of a long
+ * non-alignment gets.
+ */
+export function makeRowFlank(blocks: MafBlock[]) {
+  const edges = blocks.map(block => {
+    const startsAligned = new Set<number>()
+    const endsAligned = new Set<number>()
+    for (const { rowIndex, alignmentBytes } of block.rows) {
+      if (isAligned(alignmentBytes[0])) {
+        startsAligned.add(rowIndex)
+      }
+      if (isAligned(alignmentBytes[alignmentBytes.length - 1])) {
+        endsAligned.add(rowIndex)
+      }
+    }
+    return { startsAligned, endsAligned }
+  })
+
+  return function rowFlank(blockIndex: number, rowIndex: number): RowFlank {
+    const block = blocks[blockIndex]!
+    const prev = blocks[blockIndex - 1]
+    const next = blocks[blockIndex + 1]
+    return {
+      boundedLeft:
+        prev !== undefined &&
+        prev.endBp === block.startBp &&
+        edges[blockIndex - 1]!.endsAligned.has(rowIndex),
+      boundedRight:
+        next !== undefined &&
+        next.startBp === block.endBp &&
+        edges[blockIndex + 1]!.startsAligned.has(rowIndex),
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
+import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
@@ -10,6 +11,7 @@ import type {
   MafEmptyRow,
   MafRegionData,
 } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { RowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import type { AlignmentContext, MafStatus } from '../../types.ts'
 
 export interface CellHit {
@@ -158,12 +160,14 @@ function deletionHitInRow(
   block: MafBlock,
   row: MafAlignedRow,
   targetBp: number,
+  flank: RowFlank,
 ): DeletionHit | undefined {
   let hit: DeletionHit | undefined
   forEachDeletion(
     block.refSeqBytes,
     row.alignmentBytes,
     block.startBp,
+    flank,
     (start, length) => {
       if (targetBp >= start && targetBp < start + length) {
         hit = { kind: 'deletion', length }
@@ -204,7 +208,9 @@ export function findRowHoverAtBp(
   bpPerPx: number,
 ): RowHit | undefined {
   const targetBp = Math.floor(gposFrac)
-  for (const block of region.blocks) {
+  const rowFlank = makeRowFlank(region.blocks)
+  for (let i = 0; i < region.blocks.length; i++) {
+    const block = region.blocks[i]!
     if (block.startBp > targetBp) {
       break
     }
@@ -214,7 +220,7 @@ export function findRowHoverAtBp(
         return (
           insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase) ??
           cellHitInRow(block, row, targetBp, showAsUpperCase) ??
-          deletionHitInRow(block, row, targetBp)
+          deletionHitInRow(block, row, targetBp, rowFlank(i, rowIndex))
         )
       }
       const empty = block.empties.find(e => e.rowIndex === rowIndex)

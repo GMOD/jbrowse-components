@@ -2,6 +2,7 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { measureText } from '@jbrowse/core/util'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
+import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
@@ -58,13 +59,16 @@ export function computeVisibleDeletions(
       view,
       rpcDataMap,
     )) {
-      for (const block of regionData.blocks) {
+      const rowFlank = makeRowFlank(regionData.blocks)
+      for (let i = 0; i < regionData.blocks.length; i++) {
+        const block = regionData.blocks[i]!
         for (const row of block.rows) {
           const rowTop = offset + rowHeight * row.rowIndex
           forEachDeletion(
             block.refSeqBytes,
             row.alignmentBytes,
             block.startBp,
+            rowFlank(i, row.rowIndex),
             (start, length) => {
               const { xLeft, width } = bpSpanPx(bpToPx, start, start + length)
               if (width >= MIN_LABEL_WIDTH) {
