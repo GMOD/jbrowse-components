@@ -191,7 +191,15 @@ cd website && node scripts/generate-screenshots.ts --force --filter pangenome/
 `betabuild` uploads to the public `s3://jbrowse.org/demos/graphgenomeviewer/`,
 moves the unversioned entry point the published figures' live links resolve, and
 invalidates CloudFront — **ask before running it.** Last published
-`90b37e3f1143` (2026-07-27).
+`68ed649ed8e6` (2026-07-30).
+
+Regenerating the whole `pangenome/` set with `--force` after a publish sweeps in
+churn the publish did not cause: the E. coli figures that mount no graph view at
+all (`pav`, `depth`, `maf`, `pggb_synteny`) come back 4-10% different by raw
+`compare -metric AE` and pixel-identical to the eye, which is GPU rasterization
+wiggle. Diff each changed PNG against `HEAD` and revert the ones the change
+cannot explain, or regenerate without `--force` and let the content-stable gate
+decide.
 
 A menu label is a published API for the specs: `hprc_node_menu` failed its regen
 on `click target not found: text "Highlight this node"` the moment that item was
