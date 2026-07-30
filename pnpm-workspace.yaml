@@ -31,3 +31,4 @@ minimumReleaseAgeExclude:
   - 'typescript'
   - '@typescript/*'
   - 'astro'
+  - '@astrojs/*'

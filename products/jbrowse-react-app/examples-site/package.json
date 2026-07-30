@@ -12,13 +12,13 @@
     "check-links": "node scripts/check-doc-links.mjs"
   },
   "dependencies": {
-    "@astrojs/react": "^6.0.1",
+    "@astrojs/react": "^6.0.2",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@jbrowse/core": "workspace:*",
     "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/react-app2": "workspace:*",
-    "astro": "^7.1.4",
+    "astro": "^7.1.6",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2",
     "react": "^19.2.8",
