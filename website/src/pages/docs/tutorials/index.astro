@@ -199,20 +199,26 @@ const HAS_THUMB = new Set(
     display: flex;
     flex-direction: column;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--card-radius);
     overflow: hidden;
     background: var(--color-surface);
     text-decoration: none;
     color: inherit;
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease,
-      transform 0.15s ease;
   }
-  .tut-card:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+  .tut-card:hover,
+  .tut-card:focus-visible {
+    border-color: var(--card-hover-border);
+    box-shadow: var(--card-hover-shadow);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .tut-card {
+      transition: 150ms ease;
+      transition-property: border-color, box-shadow, transform;
+    }
+    .tut-card:hover,
+    .tut-card:focus-visible {
+      transform: translateY(-2px);
+    }
   }
   .tut-thumb {
     width: 100%;
