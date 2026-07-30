@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
-import { formatLenRange, pct } from './tooltipUtils.ts'
+import { countOfTotal, formatLenRange } from './tooltipUtils.ts'
 
 import type {
   CoverageBin,
@@ -79,11 +79,6 @@ function formatLocation(refName?: string, position?: number) {
 
 function SimpleTooltipContents({ message }: { message: string }) {
   return message ? <SanitizedHTML html={message} /> : null
-}
-
-// "12/40 (30.0%)" — the count-against-total cell every tooltip table shares.
-function countOfTotal(count: number, total: number) {
-  return `${count}/${total} (${pct(count, total)})`
 }
 
 // "18(+) 22(-)"

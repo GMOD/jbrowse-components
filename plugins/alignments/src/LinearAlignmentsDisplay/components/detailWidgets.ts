@@ -3,10 +3,10 @@ import { openFeatureWidget } from '@jbrowse/core/util'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
 import {
+  countOfTotal,
   formatLenRange,
-  getInterbaseBin,
   getCoverageBin,
-  pct,
+  getInterbaseBin,
 } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -41,7 +41,7 @@ export function openIndicatorWidget(
 
   const interbaseEntry = bin.interbase[indicatorHit.indicatorType]
   if (interbaseEntry) {
-    featureData.count = `${interbaseEntry.count}/${bin.interbaseDepth} (${pct(interbaseEntry.count, bin.interbaseDepth)})`
+    featureData.count = countOfTotal(interbaseEntry.count, bin.interbaseDepth)
     // The avg only says something when the range doesn't collapse to one length.
     const sizeStr = formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)
     featureData.size =
@@ -82,13 +82,13 @@ export function openCoverageWidget(
 
   for (const [base, snpEntry] of Object.entries(bin.snps)) {
     featureData[`SNP ${base.toUpperCase()}`] =
-      `${snpEntry.count}/${bin.depth} (${pct(snpEntry.count, bin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
+      `${countOfTotal(snpEntry.count, bin.depth)} (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
   }
   if (bin.modifications) {
     for (const entry of bin.modifications) {
       const avgProb = entry.count > 0 ? entry.probabilityTotal / entry.count : 0
       featureData[`modification ${entry.name}`] =
-        `${entry.count}/${bin.depth} (${pct(entry.count, bin.depth)}) avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`
+        `${countOfTotal(entry.count, bin.depth)} avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`
     }
   }
 

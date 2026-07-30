@@ -79,6 +79,16 @@ export function pct(n: number, total: number) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
 }
 
+// "12/40 (30.0%)" — the count-against-total reading shared by the coverage and
+// interbase tooltips and their detail widgets.
+//
+// A zero total reports the bare count: `interbaseDepthAt` is 0 for an event at
+// the edge of the coverage array (a clip at the region boundary), and a share of
+// nothing isn't a number — that case used to render "3/0 (300.0%)".
+export function countOfTotal(count: number, total: number) {
+  return total > 0 ? `${count}/${total} (${pct(count, total)})` : `${count}`
+}
+
 // "5bp" when the range collapses, "5-8bp" otherwise. Shared by the interbase,
 // coverage, and deletion tooltip rows so they render length spans identically.
 export function formatLenRange(minLen: number, maxLen: number) {

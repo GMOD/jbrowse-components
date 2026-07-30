@@ -61,6 +61,7 @@ import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
 } from '../shared/types.ts'
+import { sameStrings } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import {
   updateColorTagMap as updateColorTagMapPure,
@@ -3072,11 +3073,13 @@ export default function stateModelFactory(
             self.featureIdUnderMouse = state.featureIdUnderMouse
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
             self.hoverCoverageBand = state.hoverCoverageBand
-            // Assigning an equal empty array on every mousemove would churn the
-            // MST node and re-notify observers of the highlight overlay.
+            // Write only on a real change. Assigning an equal array still
+            // replaces the MST node, which invalidates `highlightBoxes` — an
+            // O(reads) rebuild — so dragging the cursor along one chain would
+            // recompute every box on every mousemove. MobX already skips the
+            // no-op writes above, since those are primitives.
             if (
-              state.highlightedChainIds.length > 0 ||
-              self.highlightedChainIds.length > 0
+              !sameStrings(self.highlightedChainIds, state.highlightedChainIds)
             ) {
               self.highlightedChainIds = state.highlightedChainIds
             }

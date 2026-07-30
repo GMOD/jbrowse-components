@@ -1,4 +1,4 @@
-import { pct } from './tooltipUtils.ts'
+import { countOfTotal, pct } from './tooltipUtils.ts'
 
 describe('tooltip deletion ratio', () => {
   it('computes ratio using total coverage (depth + deletions)', () => {
@@ -39,5 +39,17 @@ describe('tooltip deletion ratio', () => {
 
     expect(oldRatio).toBe('60.0%')
     expect(newRatio).toBe('37.5%')
+  })
+})
+
+describe('countOfTotal', () => {
+  it('reads as count/total (share)', () => {
+    expect(countOfTotal(12, 40)).toBe('12/40 (30.0%)')
+  })
+
+  // interbaseDepthAt is 0 for an event at the edge of the coverage array, and
+  // the ratio then claimed a share of nothing: "3/0 (300.0%)".
+  it('reports the bare count when the total is zero', () => {
+    expect(countOfTotal(3, 0)).toBe('3')
   })
 })
