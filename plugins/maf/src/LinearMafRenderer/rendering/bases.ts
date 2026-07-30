@@ -32,7 +32,11 @@ export function renderBases(
 ) {
   const { ctx, h, cellColorConfig, bpToPx, binBp } = context
   const { colForGpos, refLen } = columns
-  const { firstCol, lastCol } = resolvedExtent(alignment, alignment.length, flank)
+  const { firstCol, lastCol } = resolvedExtent(
+    alignment,
+    alignment.length,
+    flank,
+  )
 
   for (let gpos = 0; gpos < refLen; gpos += binBp) {
     const col = colForGpos[gpos]!

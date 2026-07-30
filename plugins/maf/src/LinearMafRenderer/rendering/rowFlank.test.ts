@@ -6,7 +6,11 @@ const enc = new TextEncoder()
 
 // One block from `startBp`, spanning its reference length, with `rows` given as
 // [rowIndex, alignment] pairs.
-function block(startBp: number, ref: string, rows: [number, string][]): MafBlock {
+function block(
+  startBp: number,
+  ref: string,
+  rows: [number, string][],
+): MafBlock {
   return {
     startBp,
     endBp: startBp + ref.replaceAll('-', '').length,

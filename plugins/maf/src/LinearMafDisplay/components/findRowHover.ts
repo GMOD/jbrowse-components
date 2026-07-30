@@ -1,8 +1,8 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
-import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
+import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type {
