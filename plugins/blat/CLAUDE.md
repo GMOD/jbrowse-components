@@ -26,14 +26,16 @@ hits UCSC directly through the main-process `blatFetch` bridge.
 
 ```bash
 set -a; . ~/.env; set +a
-pnpm jest plugins/blat/src/liveBlat --silent=false
+pnpm jest plugins/blat/src/liveBlat
 ```
 
 It fetches a known hg38 locus from `api.genome.ucsc.edu`, submits four variants
 of it (exact, 6bp deletion, junk-prefixed, three SNVs) as one FASTA, and asserts
-the converted SAM places each back where the sequence came from. It logs each
-placement, which is what you read when a UCSC-side change breaks the response
-shape the offline tests fake.
+the converted SAM places each back where the sequence came from. Set
+`BLAT_DEBUG=1` to also log each placement, which is what you read when a
+UCSC-side change breaks the response shape the offline tests fake — quiet by
+default so a routine run with `UCSC_API_KEY` set doesn't print to the test
+report.
 
 Expect the junk-prefixed query's soft clip to be a base or two shorter than the
 junk — BLAT extends a block through junk bases that happen to match, and that is

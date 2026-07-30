@@ -121,9 +121,11 @@ maybe('live UCSC BLAT round-trip', () => {
           opTotal(line.cigar, 'S'),
       ).toBe(line.seq.length)
       expect(line.seq).not.toBe('*')
-      // what the server actually placed, for a manual run
-      // eslint-disable-next-line no-console
-      console.log(`${name}\t${line.rName}:${line.pos}\t${line.cigar}`)
+      if (process.env.BLAT_DEBUG) {
+        // what the server actually placed, for a manual run
+        // eslint-disable-next-line no-console
+        console.log(`${name}\t${line.rName}:${line.pos}\t${line.cigar}`)
+      }
     }
 
     const exact = primary.get('exact')!
