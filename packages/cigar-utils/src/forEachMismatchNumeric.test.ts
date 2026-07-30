@@ -208,6 +208,48 @@ describe('forEachMismatchNumeric', () => {
     })
   })
 
+  // SEQ='*' (secondary alignments) and CIGAR-string-only features take the
+  // no-sequence fast path, which reports the ops that need no bases. An --eqx
+  // CIGAR's X ops consume the reference there just as M/= do: not advancing
+  // past them put every later op that many bases too far left.
+  describe('no sequence (fast path)', () => {
+    test('X ops advance the reference offset', () => {
+      const results: { type: number; start: number; length: number }[] = []
+      forEachMismatchNumeric(
+        encodeCigar('5=3X5=4D5='),
+        new Uint8Array(0),
+        0,
+        undefined,
+        undefined,
+        undefined,
+        (type, start, length) => {
+          results.push({ type, start, length })
+        },
+      )
+      expect(results).toEqual([{ type: DELETION_TYPE, start: 13, length: 4 }])
+    })
+
+    test('reports indels and clips with no sequence', () => {
+      const results: { type: number; start: number }[] = []
+      forEachMismatchNumeric(
+        encodeCigar('2S5=2I5=3N5='),
+        new Uint8Array(0),
+        0,
+        undefined,
+        undefined,
+        undefined,
+        (type, start) => {
+          results.push({ type, start })
+        },
+      )
+      expect(results).toEqual([
+        { type: SOFTCLIP_TYPE, start: 0 },
+        { type: INSERTION_TYPE, start: 5 },
+        { type: SKIP_TYPE, start: 10 },
+      ])
+    })
+  })
+
   describe('insertions and deletions', () => {
     test('reports 2-base insertion (len=2 branch, odd soffset)', () => {
       const mismatches = collectMismatches({

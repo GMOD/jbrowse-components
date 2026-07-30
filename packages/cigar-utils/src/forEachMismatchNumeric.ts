@@ -58,7 +58,11 @@ export function forEachMismatchNumeric(
       const packed = cigar[i]!
       const len = packed >>> 4
       const op = packed & 0xf
-      if ((1 << op) & CIGAR_M_EQ_MASK) {
+      // X consumes the reference exactly like M/=; without a sequence there are
+      // no bases to report for it, but it still has to advance — leaving it out
+      // shifted every later op left by the total X length, which is every indel
+      // in an --eqx CIGAR walked without a sequence.
+      if ((1 << op) & CIGAR_M_EQ_MASK || op === CIGAR_X) {
         roffset += len
       } else if (op === CIGAR_I) {
         if (roffset >= windowLo && roffset < windowHi) {
