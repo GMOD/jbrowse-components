@@ -2309,6 +2309,96 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     expect(model.highlight.length).toBe(1)
   })
 
+  // displayedRegionNames used to sit behind the same "don't clobber existing
+  // navigation" guard as the whole-genome fallback, so URL params layered onto a
+  // defaultSession that had already navigated (&extendSession=true&regions=)
+  // silently did nothing. An explicit region list is a navigation request.
+  test('init.displayedRegionNames applies to an already-navigated view', async () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+        ],
+        init: { assembly: 'volvox', displayedRegionNames: ['ctgB'] },
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.displayedRegions.map(r => r.refName)).toEqual(['ctgB'])
+    })
+  })
+
+  // a name that matches nothing warns; it must not discard the navigation the
+  // session already had, which the unconditional showAllRegionsInAssembly did
+  test('init.displayedRegionNames matching nothing keeps existing regions', async () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+        ],
+        init: { assembly: 'volvox', displayedRegionNames: ['nonexistent'] },
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    expect(model.displayedRegions.map(r => r.refName)).toEqual(['ctgA'])
+  })
+
+  // a bare string is iterable, so `tracks: 'abc'` opened one track per letter
+  test('init.tracks written as a bare string is one track, not one per letter', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      tracks: 'abc' as unknown as string[],
+    })
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    // the stub session resolves no tracks, so each attempt notifies: exactly one
+    expect((console.error as jest.Mock).mock.calls).toEqual([
+      ['Error: Could not resolve identifier "abc"'],
+    ])
+  })
+
+  // parseLocString throws on an unknown refName, and that throw escaped the
+  // async autorun as an unhandled rejection, dropping every later entry
+  test('a bad init.highlight entry is reported and the rest still apply', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: ['badref:1-100', 'ctgA:100-200'],
+    })
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    expect(model.highlight.length).toBe(1)
+    expect(model.highlight[0]!.refName).toBe('ctgA')
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('Invalid init highlight "badref:1-100"'),
+    )
+  })
+
+  test('a view prop nested inside init says where it belongs', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      colorByCDS: true,
+    } as InitState)
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining('view prop(s): colorByCDS'),
+    )
+    expect(model.colorByCDS).toBe(false)
+  })
+
   test('init.nav false hides the header', async () => {
     const model = makeModel({
       assembly: 'volvox',

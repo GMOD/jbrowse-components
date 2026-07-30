@@ -22,11 +22,19 @@ const knownLaunchPropMap: Record<keyof LinearGenomeViewLaunchProps, true> = {
 const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 const knownLaunchPropKeys = new Set(Object.keys(knownLaunchPropMap))
 
-// a declarative init is easy to typo (e.g. `tracksList`, `highlights`); MST
-// stores it as a frozen blob so a mistyped key would otherwise be silently
-// dropped with no diagnostic
-export function unknownInitKeys(init: object) {
-  return Object.keys(init).filter(k => !knownInitKeys.has(k))
+// A declarative init is easy to typo (e.g. `tracksList`, `highlights`); MST
+// stores it as a frozen blob, so a mistyped key would otherwise be silently
+// dropped with no diagnostic. A plain view prop nested inside init is the other
+// common slip and gets its own message: the key is real, it just belongs on the
+// view snapshot next to init, where MST restores it natively.
+export function initKeyProblems(init: object) {
+  const keys = Object.keys(init)
+  return {
+    viewProps: keys.filter(k => knownLaunchPropKeys.has(k)),
+    unknown: keys.filter(
+      k => !knownInitKeys.has(k) && !knownLaunchPropKeys.has(k),
+    ),
+  }
 }
 
 // Split a launch spec: resolution keys (loc, tracks, highlight, …) go into the

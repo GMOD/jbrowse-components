@@ -17,6 +17,9 @@ One declarative blob (`InitState`) feeds three surfaces (URL params, embedded
 interface InitState {
   assembly: string // required
   loc?: string // locstring; absent => showAllRegionsInAssembly
+  grow?: number // fractional zoom-out around `loc` (0.2 = 20% padding a side)
+  displayedRegionNames?: string[] // whole-genome view restricted to these
+  // refNames, in order, globs allowed; ignored when `loc` is set
   tracks?: TrackInit[] // string id, or { trackId, trackSnapshot?, displaySnapshot? }
   tracklist?: boolean // open the hierarchical track selector
   nav?: boolean // false => setHideHeader(true)
@@ -24,6 +27,12 @@ interface InitState {
   // (URL wire-format) JSON-encoded HighlightType string
 }
 ```
+
+Only keys needing on-attach resolution live here. Plain persisted view props
+(`showCenterLine`, `trackLabels`, `colorByCDS`, `showHighlightChips` —
+`LinearGenomeViewLaunchProps`) sit on the view snapshot **next to** `init`, where
+MST restores them natively; nested inside `init` they are ignored with a warning
+naming them.
 
 It lives on the model as `init: types.frozen<InitState | undefined>()`
 (`model.ts`). It is **transient**: applied once on attach, then cleared with
@@ -39,6 +48,8 @@ URL ?loc=&assembly=&tracks=&tracklist=&nav=&highlight=
   → buildJb1SessionSpec + splitHighlights (sessionLoaderHelpers.ts)
   → loadSessionSpec: evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView')
   → LaunchLinearGenomeViewF: session.addView('LinearGenomeView', { init })
+    (spec keys are flat; keys nested under `init` — the config/defaultSession
+     shape — are merged in, so either form launches)
 
 createViewState({ location, highlight })  (react-linear-genome-view)
   → view.setInit({ assembly, loc, highlight })   (when `location` OR `highlight` is set;
@@ -49,14 +60,25 @@ session/config JSON
 
                          ▼ all converge ▼
 afterAttach.ts setupInitAutorun (autorun "LGVInit"):
-  wait for `initialized`            → warn on unknown keys
+  wait for `initialized`            → warn on unknown / misplaced keys
   → if tracklist: open selector, wait for the one width change (only if drawer was closed)
-  → if loc: navToLocString  else: showAllRegionsInAssembly
+  → if loc: navToLocString
+    elif displayedRegionNames: showNamedRegions   (an explicit list navigates even
+                                                   when regions already exist)
+    elif no regions yet: showAllRegionsInAssembly (a highlight-only init must not
+                                                   clobber existing navigation)
   → showTrack for each init.tracks entry
   → if nav !== undefined: setHideHeader(!nav)
   → backfill assemblyName on existing highlights, then parse init.highlight
+    (per-entry try/catch: parseLocString throws on an unknown refName)
   → setInit(undefined)   // clear; one-shot
 ```
+
+Every step is failure-isolated: `applyInitOnce` catches and notifies, because the
+autorun body is async, so an escaping throw is an unhandled rejection with no
+snackbar that leaves the view half-initialized. A bare string where an array
+belongs (`tracks: 'genes'`) is treated as one entry — a string is iterable, so
+looping it directly walked its characters.
 
 ## The loading state machine (`model.ts` getters)
 
@@ -88,13 +110,18 @@ breakpoint, sv-inspector). Same lifecycle, per-view `InitState` shape. Beware:
   shapes (`tracks` comma-joined, `highlight` space-joined via `splitHighlights`'
   brace-counting, booleans as `types.maybe(types.boolean)`), so they can't share
   `InitState`'s value types — adding a new URL param means touching both. Note the
-  *type* sites do NOT drift: `knownInitKeyMap` is `Record<keyof InitState, true>`
-  and `LaunchLinearGenomeViewArgs` is `Partial<InitState> & {session}`, both
-  compile-checked against `InitState`.
+  *type* sites do NOT drift: `initKeys.ts`'s two maps are
+  `Record<keyof InitState, true>` / `Record<keyof LinearGenomeViewLaunchProps, true>`
+  and `LaunchLinearGenomeViewArgs` is
+  `Partial<InitState> & LinearGenomeViewLaunchProps & {session}`, all
+  compile-checked against those interfaces.
 
 ## Tests
 
 `plugins/linear-genome-view/src/LinearGenomeView/index.test.ts` — init-without-loc,
 showLoading transitions, `TrackInit` object form, `init.highlight` (locstring +
-JSON forms + assembly fallback), `init.nav`, unknown-key warning.
+JSON forms + assembly fallback, and a bad entry not taking out its siblings),
+`init.nav`, `init.displayedRegionNames` over an already-navigated view,
+unknown/misplaced-key warnings. `initKeys.test.ts` covers the key split;
+`LaunchLinearGenomeView/index.test.ts` the extension point itself.
 Integration: `products/jbrowse-web/src/tests/LaunchLinearGenomeView.test.tsx`.

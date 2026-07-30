@@ -9,20 +9,32 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
-import { unknownInitKeys } from './initKeys.ts'
+import { initKeyProblems } from './initKeys.ts'
 import { normalizeTrackInit } from './normalizeTrackInit.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-function warnUnknownInitKeys(init: InitState) {
-  const unknown = unknownInitKeys(init)
+function warnInitKeyProblems(init: InitState) {
+  const { unknown, viewProps } = initKeyProblems(init)
   if (unknown.length) {
     console.warn(
       `LinearGenomeView init ignored unknown key(s): ${unknown.join(', ')}`,
     )
   }
+  if (viewProps.length) {
+    console.warn(
+      `LinearGenomeView init ignored view prop(s): ${viewProps.join(', ')} — set these on the view alongside init, not inside it`,
+    )
+  }
+}
+
+// `init` is a frozen blob that often comes from hand-authored JSON, where a
+// lone entry gets written bare (`tracks: 'genes'`). A string is iterable, so
+// looping over it directly walked its characters — one track opened per letter.
+function asArray<T>(arg: T[] | T | undefined) {
+  return arg === undefined ? [] : Array.isArray(arg) ? arg : [arg]
 }
 
 // Activate tracklist first so the drawer opens before we navigate, so
@@ -36,16 +48,24 @@ async function openTracklist(
   self: LinearGenomeViewModel,
   session: AbstractSessionModel,
 ) {
-  const drawerWasOpen =
-    isSessionModelWithWidgets(session) && !!session.visibleWidget
-  const widthBefore = self.volatileWidth
-  self.activateTrackSelector()
-  if (!drawerWasOpen) {
-    // Bounded so init can't wedge here if the drawer doesn't shrink the view
-    // (e.g. embedded or modal-drawer layouts, where no width change is coming)
-    await when(() => self.volatileWidth !== widthBefore, {
-      timeout: 1000,
-    }).catch(() => {})
+  // activateTrackSelector throws without widget support, which would abort the
+  // rest of init (navigation included) over an optional extra
+  if (isSessionModelWithWidgets(session)) {
+    const drawerWasOpen = !!session.visibleWidget
+    const widthBefore = self.volatileWidth
+    self.activateTrackSelector()
+    if (!drawerWasOpen) {
+      // Bounded so init can't wedge here if the drawer doesn't shrink the view
+      // (e.g. embedded or modal-drawer layouts, where no width change is coming)
+      await when(() => self.volatileWidth !== widthBefore, {
+        timeout: 1000,
+      }).catch(() => {})
+    }
+  } else {
+    session.notify(
+      'init.tracklist was ignored: this application has no track selector drawer',
+      'warning',
+    )
   }
 }
 
@@ -76,7 +96,12 @@ function showNamedRegions(
         `displayedRegionNames matched no regions in ${assemblyName}: ${names.join(', ')}`,
         'warning',
       )
-      self.showAllRegionsInAssembly(assemblyName)
+      // nothing shown yet: fall back to the whole genome rather than an empty
+      // view. Already navigated (URL params layered onto a defaultSession): keep
+      // what's there — a typo shouldn't discard the session's own navigation
+      if (!self.hasDisplayedRegions) {
+        self.showAllRegionsInAssembly(assemblyName)
+      }
     }
   }
 }
@@ -92,19 +117,16 @@ async function navigateInit(
       // runs once `initialized` confirms init.assembly has loaded regions, so
       // no explicit waitForAssembly is needed here
       await self.navToLocString(init.loc, init.assembly, init.grow)
+    } else if (init.displayedRegionNames) {
+      // an explicit region list is a navigation request just like `loc`, so it
+      // applies even when regions already exist (URL params layered onto a
+      // defaultSession that already navigated)
+      showNamedRegions(self, session, init.assembly, init.displayedRegionNames)
     } else if (!self.hasDisplayedRegions) {
-      // a highlight-only init (no loc) must not clobber a defaultSession's
-      // existing navigation, so only auto-navigate when nothing is shown yet
-      if (init.displayedRegionNames) {
-        showNamedRegions(
-          self,
-          session,
-          init.assembly,
-          init.displayedRegionNames,
-        )
-      } else {
-        self.showAllRegionsInAssembly(init.assembly)
-      }
+      // a highlight-only init (nothing to navigate to) must not clobber a
+      // defaultSession's existing navigation, so only auto-navigate when
+      // nothing is shown yet
+      self.showAllRegionsInAssembly(init.assembly)
     }
   } catch (e) {
     console.error(init, e)
@@ -120,7 +142,7 @@ async function navigateInit(
 // showTrack funnels through showTrackGeneric, which surfaces any failure
 // (unresolved id, bad config, etc) as its own snackbar
 function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
-  for (const t of init.tracks ?? []) {
+  for (const t of asArray(init.tracks)) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
     self.showTrack(trackId, trackSnapshot, displaySnapshot)
   }
@@ -146,35 +168,46 @@ function applyInitHighlights(
   session: AbstractSessionModel,
   init: InitState,
 ) {
-  for (const h of init.highlight ?? []) {
-    const highlight = coerceHighlight(h, init.assembly, refName =>
-      session.assemblyManager.isValidRefName(refName, init.assembly),
-    )
-    if (highlight) {
-      self.addToHighlights(highlight)
+  for (const h of asArray(init.highlight)) {
+    // parseLocString throws on an unknown refName or a malformed locstring, and
+    // one bad entry must take out neither its siblings nor the rest of init
+    try {
+      const highlight = coerceHighlight(h, init.assembly, refName =>
+        session.assemblyManager.isValidRefName(refName, init.assembly),
+      )
+      if (highlight) {
+        self.addToHighlights(highlight)
+      }
+    } catch (e) {
+      console.error(e)
+      session.notifyError(
+        `Invalid init highlight ${JSON.stringify(h)}: ${e}`,
+        e,
+      )
     }
   }
 }
 
 async function applyInit(self: LinearGenomeViewModel, init: InitState) {
   const session = getSession(self)
-  warnUnknownInitKeys(init)
+  warnInitKeyProblems(init)
   if (init.tracklist) {
     await openTracklist(self, session)
   }
-  await navigateInit(self, session, init)
-  // the view may have been removed while the assembly/navigation resolved;
-  // the mutations below (and setInit in the caller's finally) would throw on a
-  // detached node
-  if (!isAlive(self)) {
-    return
+  // the view may have been removed while the drawer or the navigation resolved;
+  // reading or mutating it past that point (and setInit in the caller's finally)
+  // would throw on a detached node
+  if (isAlive(self)) {
+    await navigateInit(self, session, init)
+    if (isAlive(self)) {
+      showInitTracks(self, init)
+      if (init.nav !== undefined) {
+        self.setHideHeader(!init.nav)
+      }
+      backfillHighlightAssemblies(self)
+      applyInitHighlights(self, session, init)
+    }
   }
-  showInitTracks(self, init)
-  if (init.nav !== undefined) {
-    self.setHideHeader(!init.nav)
-  }
-  backfillHighlightAssemblies(self)
-  applyInitHighlights(self, session, init)
 }
 
 // Apply one init blob, then clear it — but ONLY when self.init is still the
@@ -186,6 +219,15 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
 async function applyInitOnce(self: LinearGenomeViewModel, init: InitState) {
   try {
     await applyInit(self, init)
+  } catch (e) {
+    // the autorun body is async, so anything escaping here becomes an unhandled
+    // rejection: no snackbar, and the drain stops with the view half-initialized.
+    // Report it instead; the finally still clears init, so the loop below can't
+    // spin on the same failure
+    console.error(e)
+    if (isAlive(self)) {
+      getSession(self).notifyError(`${e}`, e)
+    }
   } finally {
     if (isAlive(self) && self.init === init) {
       self.setInit(undefined)

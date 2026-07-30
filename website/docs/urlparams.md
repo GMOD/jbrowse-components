@@ -281,7 +281,9 @@ from the remaining fields. This is also how plugins add launchable view types
 The `views` array accepts multiple views opened simultaneously. Each can specify
 `loc`, `tracks`, `assembly`, and view type. `loc` is optional, omitting it shows
 the whole genome. Different view types accept different params: dotplot, for
-example, takes two assemblies.
+example, takes two assemblies. A linear genome view also accepts these keys
+nested under an `init` object, so a view can be copied to or from a
+`defaultSession` unchanged.
 
 Two fields work on every view type: `displayName` sets the title shown in the
 view header (and on its workspace tab, see

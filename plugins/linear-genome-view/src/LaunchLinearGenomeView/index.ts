@@ -16,6 +16,11 @@ export type LaunchLinearGenomeViewArgs = Partial<InitState> &
   LinearGenomeViewLaunchProps & {
     session: AbstractSessionModel
     id?: string
+    // the session-spec form is the flattened `init` (the URL params, as
+    // documented in urlparams.md), but config/defaultSession views nest the same
+    // keys under `init`, so a spec author moving a view between the two surfaces
+    // writes this. Merged rather than rejected — a flat sibling wins.
+    init?: Partial<InitState>
   }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -30,7 +35,8 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-LinearGenomeView | async | Programmatically launch a linear genome view */
   pluginManager.addToExtensionPoint('LaunchView-LinearGenomeView', args => {
-    const { session, id, ...spec } = args
+    const { session, id, init: nested, ...flat } = args
+    const spec = { ...nested, ...flat }
     if (!spec.assembly) {
       throw new Error('No assembly provided when launching linear genome view')
     }

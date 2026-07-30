@@ -1,4 +1,4 @@
-import { splitLaunchSpec, unknownInitKeys } from './initKeys.ts'
+import { initKeyProblems, splitLaunchSpec } from './initKeys.ts'
 
 test('resolution keys go to init, plain view props go to the snapshot', () => {
   expect(
@@ -27,8 +27,8 @@ test('a typo lands in neither bucket so the caller can report it', () => {
   expect(unknown).toEqual(['tracksList', 'colorByCds'])
 })
 
-test('a plain view prop inside init is flagged, since MST would drop it', () => {
-  expect(unknownInitKeys({ assembly: 'volvox', colorByCDS: true })).toEqual([
-    'colorByCDS',
-  ])
+test('inside init, a view prop and a typo get told apart', () => {
+  expect(
+    initKeyProblems({ assembly: 'volvox', colorByCDS: true, highlights: [] }),
+  ).toEqual({ viewProps: ['colorByCDS'], unknown: ['highlights'] })
 })
