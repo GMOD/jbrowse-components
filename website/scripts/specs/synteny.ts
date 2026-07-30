@@ -476,6 +476,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // clean ribbons instead of a dense noise band
             minAlignmentLength: 10000,
             levelHeights: [110, 110, 110, 110],
+            // None of the five rows carries a track, so every row collapses to
+            // a bare scalebar instead of a ~90px "No tracks active / Open
+            // track selector" block — five of those cost more of the viewport
+            // than the ribbons they're stacked around.
+            collapseEmptyRows: true,
             // No autoDiagonalize. It reorders and flips a level's lower axis,
             // and neither lever applies: each assembly is a single contig, so
             // there is nothing to reorder, and the flip is per-axis rather than
@@ -489,9 +494,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    // five rows and four 110px bands, sized to them (the four-row version was
-    // 800, and a row costs ~175 including its header)
-    viewportHeight: 1030,
+    // five collapsed scalebar rows and four 110px bands, sized to them
+    // (collapseEmptyRows shrinks each row from ~175px to a bare scalebar)
+    viewportHeight: 715,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,

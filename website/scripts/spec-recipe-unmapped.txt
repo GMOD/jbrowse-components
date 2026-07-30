@@ -11,6 +11,7 @@ autoDiagonalize
 autoscale
 bicolorPivot
 cigarMode
+collapseEmptyRows
 collapseGroupRows
 color
 colorBy

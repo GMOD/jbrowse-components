@@ -297,6 +297,11 @@ The one-time load settings (row order, tracks, `drawCurves`,
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
 walk-through of the `defaultSession` structure.
 
+None of the five rows above carries its own track, so each would otherwise open
+with a "No tracks active" block where its ribbon-only rows are. Add
+`"collapseEmptyRows": true` to `init` to collapse any row with no `tracks` down
+to a bare scalebar instead. The figure below uses it.
+
 The row order here is a free choice. Unlike a reference-anchored `.blocks`
 table, an all-vs-all file is a complete graph, so every adjacent pair you happen
 to stack is a direct alignment rather than a transitive link.

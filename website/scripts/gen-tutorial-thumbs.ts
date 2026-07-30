@@ -184,12 +184,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0, 0.36],
   },
   allvsall_synteny: {
-    // The five-strain stack, left third (see multiway_synteny above). Both
-    // one-vs-all figures carry a baked-in callout box, and the whole-genome one
-    // is this tutorial's gallery card anyway.
+    // The five-strain stack, past the app chrome. collapseEmptyRows on this
+    // figure's own spec dropped every row's "No tracks active" chip to a bare
+    // scalebar, so unlike multiway_synteny above there's no centered label to
+    // dodge — the crop can run wide and read as whole-genome zoomed out.
     src: 'multiway_synteny/ecoli_pangenome.png',
-    band: [0.12, 0.435],
-    xband: [0, 0.36],
+    band: [0.17, 1],
+    position: 'left',
   },
   pangenome_ecoli: {
     // Per-strain presence/absence, the projection that replaced the genotype
@@ -219,9 +220,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.55, 1],
   },
   pangenome_hprc: {
-    src: 'hprc2/mhc_clustered.png',
-    band: [0.24, 1],
-    position: 'left',
+    // The classic Bandage force-directed picture of the C4 subgraph, past the
+    // view chrome and the LGV/bubbles lanes above it.
+    src: 'pangenome/hprc_c4_subgraph.png',
+    band: [0.49, 1],
   },
   // The HAL projected onto K12 as a MAF: the coverage band and one colored row
   // per strain, under the K12 gene lane. It used to be this tutorial's variant
