@@ -55,7 +55,7 @@ their own config values. Backs the badge's "clear default" action.
 
 ```js
 // type signature
-(self: PromotableDisplay) => void
+(self: ResolvableDisplay) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -66,7 +66,7 @@ A promotable "default for all tracks of this type" control, bundled so a menu
 row's trailing pin consumes it as a single prop. `active` = this value is
 currently the session default (a filled pin); `toggle` sets it as the default or
 clears it, touching no track's own value (see `applyDefaultToggle`). On set it
-raises a snackbar with an "Apply to N open tracks" action for every open track
+raises a snackbar with an "Override N customized tracks" action for every open track
 not already showing this value — that action is the only thing in the subsystem
 that rewrites a track.
 
@@ -95,6 +95,26 @@ rather than a silent one.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
+### getConfigSnapshotWithPromotables
+
+The display's full config snapshot with every `promotable` slot overwritten by
+its resolved value in place. For building a worker payload: a promotable slot
+serializes as its raw inherit sentinel (`undefined`, since they're all `maybe*`
+types), which the worker can't interpret — it has no session to resolve against.
+This hands it concrete values instead, with no per-slot bookkeeping, so adding a
+promotable worker-consumed slot needs no rpcProps change and can't silently ship
+a sentinel. Main-thread only (the cascade consults the session). Display-only
+promotable slots the worker never reads (e.g. displayMode) are still excluded by
+the caller — resolving them here is a harmless no-op since they're dropped
+anyway.
+
+```js
+// type signature
+(self: ResolvableDisplay) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### getContainingDisplay
 
@@ -140,7 +160,7 @@ default. Drives the track-selector "affected by a session default" badge.
 
 ```js
 // type signature
-(self: PromotableDisplay) => TrackConfigChange[]
+(self: ResolvableDisplay) => TrackConfigChange[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -185,27 +205,21 @@ on a no-op.
 
 ```js
 // type signature
-(self: PromotableDisplay, slot: string) => boolean
+(self: ResolvableDisplay, slot: string) => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### makeCurrentValueDisplayTypeDefaultControl
 
-Promote-current control: "make this track's current resolved value(s) the
-session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
-multi-mode slot like displayMode) where the pin means "whatever I'm showing",
-not a fixed on-value. Groups multiple slots behind one control.
-
-A `jexl:` slot has no current value to promote — it computes a different one per
-feature, and this builder runs while a track menu is being assembled, with no
-feature to supply — so it disables the pin instead. The resolution union offers
-no `.value` on that branch, so this is a case the type makes you handle rather
-than one you have to remember.
+Promote-current control: "make this track's current resolved value the session
+default". Use for a symmetric setting (a `maybeBoolean` toggle, or a multi-mode
+slot like displayMode) where the pin means "whatever I'm showing", not a fixed
+on-value.
 
 ```js
 // type signature
-(self: PromotableDisplay, slots: string[]) => DisplayTypeDefaultControl
+(self: ResolvableDisplay, slot: string) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -219,7 +233,7 @@ sharing one slot (arcs vs read cloud) stay independent.
 
 ```js
 // type signature
-(self: PromotableDisplay, slot: string, onValue: unknown) => DisplayTypeDefaultControl
+(self: ResolvableDisplay, slot: string, onValue: unknown) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -296,32 +310,15 @@ to being what everyone already believed it was.
 Throws if `slot` isn't promotable — the cascade has nothing to say about a plain
 slot, and `getConf` is what you want there.
 
+Takes no jexl `args`, unlike `getConf`: a promotable slot cannot hold a callback
+(see `SlotResolution`), so there is no per-feature context to supply.
+
 ```js
 // type signature
-<…>(model: { ...; }, slot: SLOT, args?: Record<...>) => ConfigurationSlotValueResolved<...>
+<…>(model: IAnyStateTreeNode & ... 1 more ... & { ...; }, slot: SLOT) => ConfigurationSlotValueResolved<...>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
-
-### getConfigSnapshotWithPromotables
-
-The display's full config snapshot with every `promotable` slot overwritten by
-its resolved value in place. For building a worker payload: a promotable slot
-serializes as its raw inherit sentinel (`undefined`, since they're all `maybe*`
-types), which the worker can't interpret — it has no session to resolve against.
-This hands it concrete values instead, with no per-slot bookkeeping, so adding a
-promotable worker-consumed slot needs no rpcProps change and can't silently ship
-a sentinel. Main-thread only (the cascade consults the session). Display-only
-promotable slots the worker never reads (e.g. displayMode) are still excluded by
-the caller — resolving them here is a harmless no-op since they're dropped
-anyway.
-
-```js
-// type signature
-(self: PromotableDisplay) => Record<string, unknown>
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### setConf
 

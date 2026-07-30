@@ -68,6 +68,38 @@ export type PromotableDisplay = ResolvableDisplay & {
 }
 
 /**
+ * Where the session-wide tier of the cascade is read from. Narrowed to the one
+ * method so the resolver doesn't depend on the whole session type.
+ */
+export interface PromotedDefaultStore {
+  getDisplayTypeDefault: (displayType: string, slot: string) => unknown
+}
+
+/**
+ * The cascade's inputs, stated directly rather than read off a display state
+ * node. `ResolvableDisplay` is the usual way to supply them (see
+ * `cascadeContextFor`), but a display config can also be resolved with **no
+ * state node at all** — a track that isn't open has none, and "Copy config" in
+ * the About dialog still has to show what it would render as. That path passes
+ * the display's config plus the session directly.
+ */
+export interface CascadeContext {
+  config: AnyConfigurationModel
+  displayType: string
+  ignorePromotedDefaults: boolean
+  defaults: PromotedDefaultStore
+}
+
+export function cascadeContextFor(self: ResolvableDisplay): CascadeContext {
+  return {
+    config: self.configuration,
+    displayType: self.type,
+    ignorePromotedDefaults: self.ignorePromotedDefaults,
+    defaults: getSession(self),
+  }
+}
+
+/**
  * What the slot literally holds, unevaluated — a stray `jexl:` string yields the
  * raw string rather than running it. Both callers need the raw form for the same
  * reason: they ask "is the slot set, and to what kind of thing?", a question that
@@ -81,10 +113,10 @@ export type PromotableDisplay = ResolvableDisplay & {
  * those hold a primitive or a `types.frozen` plain object.
  */
 export function storedSlotValue(
-  self: ResolvableDisplay,
+  config: AnyConfigurationModel,
   slot: string,
 ): unknown {
-  return self.configuration[slot]
+  return config[slot]
 }
 
 /**
@@ -197,7 +229,18 @@ export function resolveSlot(
   self: ResolvableDisplay,
   slot: string,
 ): SlotResolution {
-  const def = getSlotDefinition(self.configuration, slot)
+  return resolveSlotIn(cascadeContextFor(self), slot)
+}
+
+// The cascade over explicit inputs. `resolveSlot` is the display-state spelling
+// of this and the one nearly every consumer wants; the direct form exists for
+// the config-only path (a track that isn't open has no display state — see
+// `CascadeContext`).
+export function resolveSlotIn(
+  ctx: CascadeContext,
+  slot: string,
+): SlotResolution {
+  const def = getSlotDefinition(ctx.config, slot)
   // A real slot that just isn't `promotable` would otherwise resolve silently
   // wrong here (no `promotedBase`, so every tier collapses to `undefined`) and,
   // through a control builder, write a promoted default nothing ever reads.
@@ -213,10 +256,10 @@ export function resolveSlot(
   // filled/outline state) reports on the session, not on one display's view of
   // it. The opt-out belongs to `inherited` below, which is the only tier of the
   // cascade it may neutralize.
-  const promoted = getSession(self).getDisplayTypeDefault(self.type, slot)
+  const promoted = ctx.defaults.getDisplayTypeDefault(ctx.displayType, slot)
   // The track's own value, before any cascade — the raw stored read, not
   // `readConfObject`, since this *is* the resolver (see `storedSlotValue`).
-  const own = storedSlotValue(self, slot)
+  const own = storedSlotValue(ctx.config, slot)
   // A track is customized exactly when it holds a *usable* value — being unset
   // is the inherit sentinel, so "set to something the slot could hold" is the
   // whole test. Routing `own` through the same gate as a promoted default means
@@ -231,8 +274,6 @@ export function resolveSlot(
   // where the sender saw the *base* value: nothing gets baked (it equals base),
   // so without the opt-out the recipient's own promoted default would repaint it.
   const inherited =
-    !self.ignorePromotedDefaults && isUsableValue(def, promoted)
-      ? promoted
-      : base
+    !ctx.ignorePromotedDefaults && isUsableValue(def, promoted) ? promoted : base
   return { base, customized, promoted, value: customized ? own : inherited }
 }

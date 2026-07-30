@@ -47,5 +47,9 @@ export {
   makeDisplayTypeDefaultControl,
   openPromotableDisplays,
   getConfigSnapshotWithPromotables,
+  getTrackConfigWithPromotables,
 } from './promotableDefaults.ts'
-export type { DisplayTypeDefaultControl } from './promotableDefaults.ts'
+export type {
+  DisplayTypeDefaultControl,
+  TrackConfigWithPromotables,
+} from './promotableDefaults.ts'

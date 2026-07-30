@@ -1,12 +1,11 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
-import { reaction } from 'mobx'
-
 import {
   getNumberGrouping,
   setNumberGrouping,
   toLocale,
 } from '@jbrowse/core/util'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 
 import { createTestSession } from '../rootModel/index.ts'
 import sessionModelFactory from './index.ts'
@@ -334,7 +333,7 @@ describe('JBrowseWebSessionModel', () => {
       expect(toLocale(1234567)).toBe('1,234,567')
     })
 
-    it("a stored user override wins over the config default on reload", () => {
+    it('a stored user override wins over the config default on reload', () => {
       const session = createTestSession()
       session.setPreferenceOverride('numberGrouping', false)
 

@@ -2,10 +2,13 @@ import { Suspense, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { getConf } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  getTrackConfigWithPromotables,
+} from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import FileInfoPanel from './FileInfoPanel.tsx'
@@ -27,7 +30,14 @@ const AboutDialogContents = observer(function AboutDialogContents({
   config,
   session,
 }: AboutPanelProps) {
-  const conf = isStateTreeNode(config) ? getSnapshot(config) : config
+  // "Copy config" output leaves the cascade for good (a user pastes it into a
+  // config.json), so promotable slots are resolved rather than left stripped —
+  // otherwise the copied config renders differently from the track it came from.
+  // `fromDisplayTypeDefaults` names what that folded in, so materializing a
+  // session-wide preference into a track config isn't silent.
+  const { config: conf, fromDisplayTypeDefaults } = isStateTreeNode(config)
+    ? getTrackConfigWithPromotables(session, config)
+    : { config, fromDisplayTypeDefaults: [] }
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
@@ -60,6 +70,7 @@ const AboutDialogContents = observer(function AboutDialogContents({
         <HeaderButtons
           conf={conf}
           hideUris={hideUris}
+          fromDisplayTypeDefaults={fromDisplayTypeDefaults}
           setShowRefNames={setShowRefNames}
         />
         <Attributes

@@ -1,10 +1,24 @@
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 
 import { deepEqual } from '../util/deepEqual.ts'
-import { getSession, isViewContainer, pluralize } from '../util/index.ts'
+import {
+  getSession,
+  isObject,
+  isViewContainer,
+  pluralize,
+} from '../util/index.ts'
 import { setConf } from './getConf.ts'
-import { resolveSlot, storedSlotValue } from './promotableResolve.ts'
-import { fullConfSnapshot, promotableSlotNames } from './util.ts'
+import {
+  cascadeContextFor,
+  resolveSlot,
+  resolveSlotIn,
+  storedSlotValue,
+} from './promotableResolve.ts'
+import {
+  fullConfSnapshot,
+  isConfigurationModel,
+  promotableSlotNames,
+} from './util.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
@@ -12,6 +26,7 @@ import type {
   PromotableDisplay,
   ResolvableDisplay,
 } from './promotableResolve.ts'
+import type { AnyConfigurationModel } from './types.ts'
 
 /**
  * Session-wide "promoted defaults" for display-type config slots — the UI /
@@ -65,11 +80,84 @@ export function getConfigSnapshotWithPromotables(
 
 /**
  * #api core/configuration
+ * A track config snapshot with every display's `promotable` slots resolved, plus
+ * the list of values that came from a session-wide default rather than from the
+ * config itself.
+ *
+ * For handing a track's config to somewhere that leaves the cascade for good —
+ * the About dialog's "Copy config", whose output a user pastes into a
+ * `config.json`. A raw `getSnapshot` records a slot a track merely *follows* as
+ * absent (`stripDefault` collapsed it), so the copied config renders differently
+ * from the track it was copied from. This is `getComputedStyle` at that
+ * boundary, and `fromDisplayTypeDefaults` is what lets the UI say so rather than
+ * silently materializing a session preference into a track config.
+ *
+ * Resolves through the open display when the track is open (so a received
+ * session's `ignorePromotedDefaults` is honored), and from the display config
+ * alone when it isn't — an unopened track has no display state, but "what would
+ * this render as" still has an answer.
+ */
+export interface TrackConfigWithPromotables {
+  config: Record<string, unknown>
+  /** `<displayType>.<slot>`, one per value inherited from a promoted default */
+  fromDisplayTypeDefaults: string[]
+}
+
+/**
+ * #api core/configuration
+ * See {@link TrackConfigWithPromotables}.
+ */
+export function getTrackConfigWithPromotables(
+  session: AbstractSessionModel,
+  trackConfig: AnyConfigurationModel,
+): TrackConfigWithPromotables {
+  const config: Record<string, unknown> = structuredClone(
+    getSnapshot(trackConfig),
+  )
+  const fromDisplayTypeDefaults: string[] = []
+  const displayConfigs: unknown = trackConfig.displays
+  const displaySnaps = config.displays
+  // a config with no `displays` (an assembly, a plain customized About config)
+  // has no promotable slot to resolve — every one of them is display-level
+  if (Array.isArray(displayConfigs) && Array.isArray(displaySnaps)) {
+    const openDisplays = openPromotableDisplays(session)
+    for (const [i, displayConfig] of displayConfigs.entries()) {
+      const snap: unknown = displaySnaps[i]
+      if (isConfigurationModel(displayConfig) && isObject(snap)) {
+        const displayType = snap.type
+        if (typeof displayType === 'string') {
+          // identity, not displayId: the hydration cache makes a track's config
+          // node stable, so an open display's `configuration` IS this node
+          const open = openDisplays.find(d => d.configuration === displayConfig)
+          const ctx = open
+            ? cascadeContextFor(open)
+            : {
+                config: displayConfig,
+                displayType,
+                ignorePromotedDefaults: false,
+                defaults: session,
+              }
+          for (const slot of promotableSlotNames(displayConfig)) {
+            const res = resolveSlotIn(ctx, slot)
+            snap[slot] = res.value
+            if (!res.customized && !deepEqual(res.value, res.base)) {
+              fromDisplayTypeDefaults.push(`${displayType}.${slot}`)
+            }
+          }
+        }
+      }
+    }
+  }
+  return { config, fromDisplayTypeDefaults }
+}
+
+/**
+ * #api core/configuration
  * A promotable "default for all tracks of this type" control, bundled so a menu
  * row's trailing pin consumes it as a single prop. `active` = this value is
  * currently the session default (a filled pin); `toggle` sets it as the default
  * or clears it, touching no track's own value (see `applyDefaultToggle`). On
- * set it raises a snackbar with an "Apply to N open tracks" action for every
+ * set it raises a snackbar with an "Override N customized tracks" action for every
  * open track not already showing this value — that action is the only thing in
  * the subsystem that rewrites a track.
  */
@@ -177,7 +265,7 @@ export function resetSlotToInherit(
     // caller has no feature context). Not `isSlotCustomized` either,
     // deliberately: a stored value that fails the usability gate reads as
     // not-customized, and clearing it out is exactly what should happen to it.
-    if (storedSlotValue(display, slot) !== undefined) {
+    if (storedSlotValue(display.configuration, slot) !== undefined) {
       setConf(display, slot, undefined)
     }
   }
@@ -219,7 +307,7 @@ export function tracksDifferingFrom(
  * write to the session-wide default — no track's own value is ever touched.**
  * Tracks that follow the default pick the new value up immediately via
  * `resolveConf`; tracks the user has customized keep theirs. If any open track isn't
- * already showing this value, the snackbar offers an "Apply to N open tracks"
+ * already showing this value, the snackbar offers an "Override N customized tracks"
  * action, which is the one explicit gesture that rewrites tracks. Clearing just
  * notifies.
  *
@@ -229,7 +317,7 @@ export function tracksDifferingFrom(
  * a two-click, non-undoable loss from a control that reads as a toggle. Keeping
  * the pin symmetric (it edits the stylesheet, never the elements) costs one
  * extra click on a customized track and removes the whole failure mode; that
- * track is now simply counted in "Apply to N open tracks" like any other.
+ * track is now simply counted in "Override N customized tracks" like any other.
  */
 function applyDefaultToggle(
   self: ResolvableDisplay,
@@ -249,7 +337,12 @@ function applyDefaultToggle(
     const n = tracksDifferingFrom(self, slot, value).length
     if (n) {
       session.notify('Set as the default', 'info', {
-        name: `Apply to ${n} open ${pluralize(n, 'track')}`,
+        // named for what it does, not for what it feels like. The default is
+        // already set, so a track that still differs is one holding its *own*
+        // value — the action clears that value so the track follows. "Apply to
+        // N open tracks" read as additive; it is a bulk, non-undoable discard of
+        // exactly those customizations, and the label has to say so.
+        name: `Override ${n} customized ${pluralize(n, 'track')}`,
         // re-derived on click, not captured: the snackbar outlives the click
         // that raised it, so a track closed (or newly opened) in between would
         // otherwise be reset as a dead node / silently skipped. `self` is the
