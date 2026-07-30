@@ -37,8 +37,22 @@ accessor; don't reintroduce it into the render path.
 
 `BamAdapter.getFeatures` pre-fetches a single contiguous reference span covering
 all reads-without-MD in the region (`Math.min(start)`/`Math.max(end)` across
-reads, via `seqFetchSpan`). Each no-MD record stores `record.ref = regionSeq`
-(the shared string) plus `record.refOffset = start - span.start`;
-`forEachMismatchNumeric` indexes `ref.charCodeAt(refOffset + roffset + j)`. No
-per-read substring is copied. The sequence adapter is also only loaded when
-`seqFetchSpan` returns non-null, so MD-tagged BAMs skip it entirely.
+reads, via `seqFetchSpan`). Each no-MD record is emitted as
+`record.withRegionRef(regionSeq, record.start - span.start)`, carrying the
+shared string plus its own offset into it; `forEachMismatchNumeric` indexes
+`ref.charCodeAt(refOffset + roffset + j)`. No per-read substring is copied. The
+sequence adapter is also only loaded when `seqFetchSpan` returns non-null, so
+MD-tagged BAMs skip it entirely.
+
+**`withRegionRef`, never `record.ref = …`.** These records are not per-fetch:
+`@gmod/bam` memoizes decoded records in a per-file chunk LRU keyed on the
+chunk's block positions, so two queries resolving to the same chunk span get the
+identical objects back. A display fetches all its needed regions at once, so
+assigning let the last fetch to resolve rebind the read for every other region
+still holding it — resolving one region's mismatches against another's
+sequence. It hid for a long time because two *different* query ranges normally
+produce different chunk keys, so the cache misses and each fetch decodes its own
+copy; re-querying one range is what makes the cache actually hit. Covered by
+`regionRefAliasing.test.ts` (BAM and SAM both). `withRegionRef` is an
+`Object.create` view, so BamRecord's `_cached*` memos on the shared record are
+still read through the prototype chain.

@@ -135,13 +135,16 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
 
             record.adapter = this
 
-            if (!record.NUMERIC_MD && regionSeq && span) {
-              // share the one region string; refOffset locates this read in it
-              record.ref = regionSeq
-              record.refOffset = record.start - span.start
-            }
-
-            observer.next(record)
+            // Share the one region string; refOffset locates this read in it.
+            // A VIEW, not a write: these records come out of @gmod/bam's chunk
+            // LRU, so two queries hitting the same chunk span share objects and
+            // an assignment would rebind the read for whichever fetch still
+            // holds it. See BamSlightlyLazyFeature.withRegionRef.
+            observer.next(
+              !record.NUMERIC_MD && regionSeq && span
+                ? record.withRegionRef(regionSeq, record.start - span.start)
+                : record,
+            )
           }
           observer.complete()
         },

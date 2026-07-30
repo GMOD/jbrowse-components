@@ -18,9 +18,38 @@ export default class BamSlightlyLazyFeature
 {
   public adapter!: BamAdapter
   // shared region-wide reference string (covers many reads); refOffset locates
-  // this read's start within it, so no per-read substring is allocated
+  // this read's start within it, so no per-read substring is allocated.
+  // Bind these with `withRegionRef`, never by assignment — see below.
   public ref?: string
   public refOffset = 0
+
+  /**
+   * A per-fetch view of this record bound to one region's reference slice.
+   *
+   * Must be a view rather than a write, because these records are NOT per-fetch:
+   * `@gmod/bam` memoizes decoded records in a per-file chunk LRU keyed on the
+   * chunk's block positions, so any two queries resolving to the same chunk span
+   * — the same range refetched, or two displayed regions covered by one chunk —
+   * get back the identical objects. A display fetches all its needed regions at
+   * once, so assigning here let the last fetch to resolve rebind the read for
+   * every other region still holding it, resolving one region's mismatches
+   * against another's sequence. (It usually got away with it: different query
+   * ranges normally produce different chunk keys, so the cache misses and each
+   * fetch decodes its own copy. That is an accident of the key, not a guarantee.)
+   *
+   * `Object.create` rather than a copy: BamRecord memoizes on `this`
+   * (`_cachedTags`, `_cachedNumericCigar`, …), and a prototype-delegating view
+   * reads whatever the shared record has already computed instead of re-decoding
+   * it. Only `ref`/`refOffset` become own properties, shadowing the base. The
+   * feature id is inherited, so it stays region-independent as the pileup's read
+   * lookups require.
+   */
+  withRegionRef(ref: string, refOffset: number): BamSlightlyLazyFeature {
+    const view: BamSlightlyLazyFeature = Object.create(this)
+    view.ref = ref
+    view.refOffset = refOffset
+    return view
+  }
 
   id() {
     return `${this.adapter.id}-${this.fileOffset}`
