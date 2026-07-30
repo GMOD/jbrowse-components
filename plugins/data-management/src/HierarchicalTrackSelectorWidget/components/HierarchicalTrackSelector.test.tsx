@@ -765,8 +765,8 @@ test('faceted model filter text', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -798,14 +798,18 @@ test('faceted model column filters', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // initially no filters
   expect(faceted.filters.size).toBe(0)
+
+  // the reference sequence track joins allTrackConfigurations only once
+  // assemblyManager.get has resolved the assembly, so warm it before counting
+  void model.allTrackConfigurations.length
 
   // all rows visible initially
   const initialRowCount = faceted.filteredRows.length
@@ -839,8 +843,8 @@ test('faceted model toggle options', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -873,8 +877,8 @@ test('faceted model destroy is safe', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -951,8 +955,8 @@ test('faceted model panel width', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -980,8 +984,8 @@ test('faceted model rows contain expected data', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1011,8 +1015,8 @@ test('faceted model fields includes expected columns', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1041,8 +1045,8 @@ test('faceted model multiple column filters', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1082,8 +1086,8 @@ test('faceted model filter with multiple values', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1112,8 +1116,8 @@ test('faceted model column visibility', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1147,8 +1151,8 @@ test('faceted and hierarchical filter text are independent', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1184,8 +1188,8 @@ test('faceted filter drilling down behavior', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1240,8 +1244,8 @@ test('faceted filter tracks unique values per column', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1343,8 +1347,8 @@ test('faceted model exposes metadata keys from tracks', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1368,8 +1372,8 @@ test('faceted model search matches non-string metadata', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1399,8 +1403,8 @@ test('faceted model filters on metadata columns', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -1430,8 +1434,8 @@ test('faceted model fields include metadata columns with prefix', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
