@@ -1,5 +1,7 @@
 import { delay } from '@jbrowse/browser-test-utils'
 
+import { graphNodePoint } from './graphAnchor.ts'
+
 import type { ScreenshotAction } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
@@ -146,28 +148,48 @@ async function clickElement(
   }
 }
 
+// The viewport point a click/hover acts on when it isn't targeting an element:
+// a model-resolved graph node where the spec gives one, else the literal `from`.
+// An anchor that resolves to nothing throws, so a moved node fails the spec by
+// name instead of clicking the top-left corner of the page.
+async function actionPoint(page: Page, action: ScreenshotAction) {
+  if (action.anchor) {
+    const point = await graphNodePoint(page, action.anchor)
+    if (!point) {
+      throw new Error(
+        `${action.type} anchor did not resolve: ${JSON.stringify(action.anchor)}`,
+      )
+    }
+    return point
+  }
+  return action.from
+}
+
 export async function runAction(page: Page, action: ScreenshotAction) {
   if (action.type === 'delay') {
     await delay(action.ms ?? DEFAULT_ACTION_DELAY_MS)
   } else if (action.type === 'click') {
     // canvas-drawn features (reads, gene glyphs) have no DOM node, so allow a
-    // viewport-coordinate click via action.from
-    if (action.from) {
-      await page.mouse.click(action.from.x, action.from.y)
+    // viewport-coordinate click via action.from / action.anchor
+    const point = await actionPoint(page, action)
+    if (point) {
+      await page.mouse.click(point.x, point.y)
     } else {
       await clickElement(await resolveTarget(page, action))
     }
   } else if (action.type === 'rightclick') {
-    if (action.from) {
-      await page.mouse.click(action.from.x, action.from.y, { button: 'right' })
+    const point = await actionPoint(page, action)
+    if (point) {
+      await page.mouse.click(point.x, point.y, { button: 'right' })
     } else {
       await clickElement(await resolveTarget(page, action), 'right')
     }
   } else if (action.type === 'hover') {
     // a bare coordinate move (e.g. off a read to dismiss its hover tooltip while
     // a just-opened context menu stays put)
-    if (action.from) {
-      await page.mouse.move(action.from.x, action.from.y)
+    const point = await actionPoint(page, action)
+    if (point) {
+      await page.mouse.move(point.x, point.y)
     } else {
       const el = await resolveTarget(page, action)
       await el?.hover()

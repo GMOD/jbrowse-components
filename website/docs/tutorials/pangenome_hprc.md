@@ -281,7 +281,7 @@ each segment's source sequence (`SN`) and offset (`SO`):
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens.
 
-<Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, over the band Highlight in hg38 left in the linear view above. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
+<Figure caption="Right-clicking one haplotype's allele (circled), over the band Highlight in hg38 left in the linear view above. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
 The lanes above combine into one route: rubberband a locus into a graph,
 right-click an allele to put the linear view on its GRCh38 interval, then read

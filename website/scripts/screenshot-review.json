@@ -2071,10 +2071,10 @@
   },
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
-    "status": "bad",
-    "note": "please change to force directed bandage graph",
+    "status": "good",
+    "note": "DONE, force-directed per the note ('please change to force directed bandage graph'). Same anchor mechanism as rgfa_hover_sync: the right-clicked allele is named (s318599, 1.8 kb, rank 1, attaching at chr6:32,520,440) rather than measured, so the two right-clicks and the ring all resolve through the view's nodePositions. The comment this replaced listed three separate occasions the old coordinate had gone stale (segments lane losing its label rows, the gene lane compacting 80->60, the lane growing a third row), which is the case for the mechanism. Added a ring on the clicked node: a context menu opens AT the cursor so it covers what it was opened on, and a force drawing has no row label to fall back on. viewportHeight 816 -> 1100 for the taller pane; caption drops 'in the sample-rows layout'.",
     "reviewedAt": "2026-07-30T14:06:55.445Z",
-    "hash": "1a7b930b1587fbca5a163cc65cd71e2665d0c858"
+    "hash": "74e4e6902374b7cb35efaa6b21c2319ac19b847c"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2162,10 +2162,10 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "bad",
-    "note": "this should be a force directed graph ideally. the linarebackbone is not a good layout",
+    "status": "good",
+    "note": "DONE, force-directed per the note. Sample rows drew this 20-node cut as a reference lane with four stubs hanging off grey threads; as a graph it is the chain of bubbles the drawing is for, and the 65 kb CFT073 allele reads as a loop off the backbone rather than as a dash on a row. The hover target survived the switch because it stopped being a pixel: specs can now write `anchor: { view, graphNode: 's2037' }` on a click/hover/annotation and the generator resolves it through the view's own nodePositions and transform (scripts/graphAnchor.ts), so a layout change, a pane resize or a track added above the graph moves the target with the node instead of leaving it pointing at empty canvas. An anchor that resolves to nothing throws, same as an annotation anchor. viewportHeight 745 -> 1090: a force drawing is about as tall as it is wide where the row stack was flat, and the first attempt at 900 put the node BELOW the viewport, which is how the resolver earns its keep - it failed the spec instead of hovering nothing. New scripts/probe-graph-nodes.ts prints a cut's node ids with lengths and ranks, so the next spec picks a node from the graph rather than from a PNG.",
     "reviewedAt": "2026-07-30T14:05:22.130Z",
-    "hash": "c07bd8eaeebcf730a5e25de3408968a2f8255428"
+    "hash": "805afca0ea5c72923614fccf98842bf5c41a76ed"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",

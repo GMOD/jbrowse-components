@@ -40,6 +40,11 @@ export interface ScreenshotAction {
   // scrollable alignment track that's otherwise off the right edge.
   from?: { x: number; y: number }
   to?: { x: number; y: number }
+  // for 'click'/'rightclick'/'hover': resolve the point to act on from the live
+  // model instead of writing it down. Only the `graphNode` kind is supported —
+  // the case `from` existed for (a canvas with no element per feature) where the
+  // app can still say where the feature was drawn. Takes precedence over `from`.
+  anchor?: AnnotationAnchor
 }
 
 // What an annotation attaches itself to, resolved at capture time so the
@@ -51,6 +56,12 @@ export interface ScreenshotAction {
 //   locus's pixel position, so a callout lands on a genomic coordinate. Nothing
 //   to re-measure when a track height, viewport width, or zoom changes. Use
 //   this for anything pointing at data.
+// - `graphNode`: MODEL anchoring for a GraphGenomeView. A graph is one canvas
+//   with no element per node, so a callout at a node used to be a raw viewport
+//   coordinate that only held while the layout was deterministic — changing
+//   `layoutMode` silently moved every one of them. This reads the view's own
+//   `nodePositions` through its `scale`/`translateX`/`translateY`, so a node is
+//   named by its GFA segment id and the layout can change underneath it.
 // - `selector`: the first matching element.
 // - `text`: the smallest-area element whose visible text matches — for menu
 //   items and buttons with no testid. Scans the whole document, so prefer
@@ -58,6 +69,9 @@ export interface ScreenshotAction {
 export interface AnnotationAnchor {
   selector?: string
   text?: string
+  // GFA segment id in the `view`-th view, which must be a GraphGenomeView. The
+  // resolved rect is the node's drawn polyline bounds in viewport px.
+  graphNode?: string
   // which view to resolve against: an index into `session.views` (default 0).
   // An array descends through nested `.views` — `[0, 1]` is the second LGV of a
   // comparative/breakpoint-split view.

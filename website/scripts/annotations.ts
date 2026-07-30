@@ -1,3 +1,6 @@
+import { graphNodeRect } from './graphAnchor.ts'
+
+import type { ViewportRect } from './graphAnchor.ts'
 import type { Annotation, AnnotationAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
@@ -32,7 +35,12 @@ function parseLocus(locus: string): Region {
   return { refName, start, end: match[2] ? Number(match[2]) : start }
 }
 
-type ResolvedAnchor = AnnotationAnchor & { region?: Region }
+type ResolvedAnchor = AnnotationAnchor & {
+  region?: Region
+  // a graphNode anchor, already resolved to viewport px out here — the graph
+  // draws to one canvas, so page context has no element to measure
+  rect?: ViewportRect
+}
 
 // What actually crosses into page context: the spec's annotation with both of
 // its anchors' loci already parsed.
@@ -41,12 +49,22 @@ type PayloadAnnotation = Omit<Annotation, 'anchor' | 'fromAnchor'> & {
   fromAnchor?: ResolvedAnchor
 }
 
-// Attach the parsed region so page context never parses strings.
-function withRegion(
+// Attach the parsed region so page context never parses strings, plus the
+// viewport rect of a graphNode anchor (resolved out here, against the graph
+// view's own layout, because the graph is a canvas with nothing to measure).
+async function withRegion(
+  page: Page,
   anchor: AnnotationAnchor | undefined,
-): ResolvedAnchor | undefined {
+  wantBounds: boolean,
+): Promise<ResolvedAnchor | undefined> {
   return anchor
-    ? { ...anchor, region: anchor.locus ? parseLocus(anchor.locus) : undefined }
+    ? {
+        ...anchor,
+        region: anchor.locus ? parseLocus(anchor.locus) : undefined,
+        rect: anchor.graphNode
+          ? await graphNodeRect(page, anchor, wantBounds)
+          : undefined,
+      }
     : undefined
 }
 
@@ -69,11 +87,15 @@ export async function clearAnnotations(page: Page) {
 // parking its callout at the origin.
 export async function drawAnnotations(page: Page, annotations: Annotation[]) {
   await clearAnnotations(page)
-  const items: PayloadAnnotation[] = annotations.map(a => ({
-    ...a,
-    anchor: withRegion(a.anchor),
-    fromAnchor: withRegion(a.fromAnchor),
-  }))
+  const items: PayloadAnnotation[] = await Promise.all(
+    annotations.map(async a => ({
+      ...a,
+      // only a box wants the node's drawn bounds; a ring/arrow/label wants a
+      // point on it, and an arrow's tail always does
+      anchor: await withRegion(page, a.anchor, a.type === 'box'),
+      fromAnchor: await withRegion(page, a.fromAnchor, false),
+    })),
+  )
   const unresolved = await page.evaluate(
     (items, overlayId) => {
       const NS = 'http://www.w3.org/2000/svg'
@@ -208,7 +230,13 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
         if (!anchor) {
           return undefined
         }
-        const rect = isModel(anchor) ? modelRect(anchor) : domRect(anchor)
+        // a graphNode anchor arrives already resolved (see withRegion); an
+        // unresolved one carries no rect and falls through to the miss below
+        const rect = anchor.graphNode
+          ? anchor.rect
+          : isModel(anchor)
+            ? modelRect(anchor)
+            : domRect(anchor)
         if (!rect) {
           misses.push(JSON.stringify(anchor))
           return undefined

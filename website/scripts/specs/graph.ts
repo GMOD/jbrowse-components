@@ -213,29 +213,18 @@ const PATHS_WINDOW_WIDE = 'chr:1,000,000-1,200,000'
 // over 5 strains), which is what makes a row read as a lane: mostly grey
 // reference path, punctuated where that strain diverges.
 
-// Viewport coordinate of CFT073's allele at PATHS_WINDOW's bubble, in the sample
-// rows layout. A bare coordinate because the graph is canvas — there is no DOM
-// node to select — and stable because that layout is deterministic: it is
-// computed from SN/SO/SR, not simulated like FMMM. The hover and the ring drawn
-// over it both read this, and the spec asserts the highlight appeared, so a
-// coordinate that goes stale fails the capture instead of drifting quietly.
-// It does go stale on a plugin layout change: the graph pane used to center its
-// drawing in a fixed box and now sizes itself to it, which lifted every row
-// ~172px and left this pointing below the pane.
-const HOVERED_ALLELE = { x: 295, y: 555 }
+// CFT073's allele at PATHS_WINDOW's bubble — 65,410 bp, the longest thing in
+// the cut and the one worth hovering. Named rather than measured: the hover and
+// the ring drawn over it both resolve it through the view's own nodePositions
+// (`anchor: { graphNode }`), so neither goes stale when the layout, the pane
+// size or the tracks above the graph move. `node scripts/probe-graph-nodes.ts
+// pangenome/rgfa_hover_sync` prints the ids a cut contains.
+const HOVERED_ALLELE = 's2037'
 
-// One of HG01433.2's alleles, mid-window so its highlight lands inside the
-// linear view's frame rather than on its edge on the HPRC sample-rows graph, whose context menu
-// pangenome/hprc_node_menu is about. Measured on the spec's own capture rather
-// than on a model probe at a different viewport, which is the trap here: the graph auto-fits as its layout and canvas
-// dimensions settle, so a coordinate taken from a finished PNG can point
-// somewhere the click-time layout had nothing (which is exactly what happened
-// while writing this spec — hence the settle delay before the right-click).
-// It restales on any layout change above the graph: the segments lane losing
-// its label rows lifted every row by about that much, and compacting the gene
-// lane from 80 px to 60 lifted them 20 more, and the segments lane growing to
-// its third row put 6 back.
-const HPRC_ALLELE = { x: 305, y: 608 }
+// The off-reference allele pangenome/hprc_node_menu right-clicks, named rather
+// than measured — see HOVERED_ALLELE. `node scripts/probe-graph-nodes.ts
+// pangenome/hprc_node_menu` prints the cut's ids with their lengths and ranks.
+const HPRC_ALLELE = 's318599'
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -536,11 +525,9 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
 // keep only deletions. Same filter the hprc2 matrix figures use.
 const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 
-// The session the two hover figures share: the genes and the graph's own segments
-// over the bubble window, with the subgraph launched from that same track in
-// sample rows. Written once because both assert against coordinates measured in
-// this exact layout — a stray difference between the copies would move the hover
-// target without failing anything.
+// The hover figure's session: the genes and the graph's own segments over the
+// bubble window, with the subgraph launched from that same track in the view's
+// default force-directed drawing.
 //
 // Reference-position colors on both panels, over the same window (review:
 // "might want to use rainbow coloring of nodes"). The tutorial argues for
@@ -549,7 +536,7 @@ const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
 // are the figures where the argument has to be visible: the block above and the
 // node below are the same color at the same bp. The rank scheme stays on
 // pangenome/rgfa_segment_neighbourhood, whose subject IS rank.
-function ecoliSampleRowsSession() {
+function ecoliHoverSession() {
   return sessionSpec(CONFIG, {
     sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
     views: [
@@ -571,7 +558,6 @@ function ecoliSampleRowsSession() {
         type: 'GraphGenomeView',
         loadedTrackId: ECOLI_SEGMENTS_TRACK,
         loadedRegion: PATHS_REGION,
-        layoutMode: 'samplerows',
         colorScheme: 'reference-position',
       },
     ],
@@ -1472,37 +1458,37 @@ export const graphSpecs: ScreenshotSpec[] = [
   // costs a sentence.
   //
   // A hover figure has no cursor in it, so the frame rings its target: without
-  // that the reader sees a band appear with nothing saying what caused it. The
-  // ring is drawn at the same coordinate the hover uses (the graph is canvas, so
-  // there is no element to anchor to — the one case where a raw x/y is the input
-  // being echoed rather than a hand-measurement).
+  // that the reader sees a band appear with nothing saying what caused it.
+  //
+  // The force-directed drawing, per review ("the linear backbone is not a good
+  // layout"). Sample rows drew this cut as a reference lane with four stubs
+  // hanging off grey threads — it says which strain contributed each allele and
+  // nothing about how they join; the same 20 nodes as a graph are a chain of
+  // bubbles. The hover target survived the switch because it is named rather
+  // than measured: `graphNode: 's2037'` (CFT073's 65 kb allele) resolves through
+  // the view's own nodePositions, so the layout can move it.
   {
     mode: 'url',
     name: 'pangenome/rgfa_hover_sync',
-    url: ecoliSampleRowsSession(),
+    url: ecoliHoverSession(),
     // Readiness is the layout having drawn; the highlight cannot exist yet,
     // because it is the hover below that creates it. Asserting it as an action
     // instead is what makes a missed hover fail the spec rather than quietly
     // committing a figure with nothing highlighted.
-    readySelector: '[data-testid="graph-row-label"]',
+    readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // the graph pane sizes itself to its drawing, so this is the two views and
-    // nothing under them
-    viewportHeight: 745,
+    // the graph pane sizes itself to its drawing, and a force drawing is about
+    // as tall as it is wide where the row stack was flat — 600px of pane under
+    // the linear view rather than 260
+    viewportHeight: 1090,
     // The graph's own hover tooltip stays: it names the node and gives the
     // coordinates on the assembly that contributed it, which is the other half
-    // of the correspondence the band shows. It is pinned bottom-left of the
-    // graph pane (inline style, no selector to hide it by) and so overlaps the
-    // last row's label — a plugin fix, noted in screenshot-review-plan.md.
-    // spec.hideTooltip does not reach it; that only hides core's BaseTooltip.
-    // The hover target is a bare viewport coordinate because the graph is
-    // canvas. It is stable here in a way it would not be on the FMMM layout —
-    // sample rows is deterministic, computed from SN/SO/SR, so the allele sits
-    // at the same place every run.
+    // of the correspondence the band shows. spec.hideTooltip does not reach it;
+    // that only hides core's BaseTooltip.
     actions: [
       { type: 'delay', ms: 3000 },
-      { type: 'hover', from: HOVERED_ALLELE },
+      { type: 'hover', anchor: { view: 1, graphNode: HOVERED_ALLELE } },
       {
         type: 'waitForSelector',
         selector: '[data-testid="graph-node-highlight"]',
@@ -1512,9 +1498,8 @@ export const graphSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'circle',
-        x: HOVERED_ALLELE.x,
-        y: HOVERED_ALLELE.y,
-        radius: 18,
+        anchor: { view: 1, graphNode: HOVERED_ALLELE },
+        radius: 22,
       },
     ],
   },
@@ -1536,10 +1521,13 @@ export const graphSpecs: ScreenshotSpec[] = [
   // band it already left behind. Two stacked frames paid for the whole app
   // chrome twice to say that.
   //
-  // The right-click is a bare viewport coordinate for the same reason
-  // HOVERED_ALLELE is: the graph is canvas, and this layout is deterministic. A
-  // coordinate that goes stale opens no menu, and the waitForText below then
-  // fails the capture rather than committing a figure of an unopened menu.
+  // The force-directed drawing, per review ("please change to force directed
+  // bandage graph"). The right-clicked node is NAMED rather than measured
+  // (`anchor: { graphNode }`, resolved through the view's own nodePositions), so
+  // the layout, the pane size and the tracks above the graph can all move
+  // without silently pointing the click at empty canvas. An anchor that resolves
+  // to nothing throws, and the waitForText below fails the capture rather than
+  // committing a figure of an unopened menu.
   {
     mode: 'url',
     name: 'pangenome/hprc_node_menu',
@@ -1567,34 +1555,38 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_REGION,
-          layoutMode: 'samplerows',
           colorScheme: 'reference-position',
         },
       ],
     }),
-    readySelector:
-      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
+    readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    viewportHeight: 816,
+    viewportHeight: 1100,
     actions: [
-      // the auto-fit has to have finished before a coordinate means anything
+      // the auto-fit has to have finished before the anchor means anything
       { type: 'delay', ms: 2000 },
-      { type: 'rightclick', from: HPRC_ALLELE },
+      { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
       { type: 'waitForText', text: 'Highlight in hg38' },
       { type: 'click', text: 'Highlight in hg38' },
       // the band is written into the view's highlight list, and the menu closes
       { type: 'delay', ms: 1500 },
       // the same node again, so the frame carries the menu and the band it left
-      { type: 'rightclick', from: HPRC_ALLELE },
+      { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
       { type: 'waitForText', text: 'Node details' },
       { type: 'delay', ms: 500 },
     ],
     // The item that produced the band, boxed. Without it the frame holds a menu
     // and a highlight with nothing joining them, and which of three items did it
-    // is a guess — the same complaint the launch figures drew in review.
-    annotations: [{ type: 'box', anchor: { text: 'Highlight in hg38' } }],
+    // is a guess — the same complaint the launch figures drew in review. The ring
+    // says which node: a context menu opens AT the cursor, so it covers the thing
+    // it was opened on, and in a force drawing there is no row label to fall back
+    // on.
+    annotations: [
+      { type: 'circle', anchor: { view: 1, graphNode: HPRC_ALLELE }, radius: 22 },
+      { type: 'box', anchor: { text: 'Highlight in hg38' } },
+    ],
   },
 
   // The way back out of the graph, on the one fixture where it can do more than
