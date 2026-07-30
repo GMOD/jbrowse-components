@@ -397,6 +397,20 @@ range query instead:
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. The white gaps in the lanes are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12 so its band is the K-12/IAI39 comparison: the blue stretches in its lane and the blue crossings in the band under them are the same inversions, once as a strand flip and once as a ribbon." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
+### The same gap, drawn as a graph
+
+A PAF says where a lane stops. It cannot say what the strains that stop there
+carry instead, because sequence absent from the alignment is absent from the
+file. A pangenome graph does say it: the island is a segment, and each strain's
+walk either goes through that segment or takes a detour around it.
+
+The E. coli tutorials also build a minigraph graph of the same five strains, and
+the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of it
+beside the alignment. Drawn together, the ribbons and the graph are two readings
+of the same event:
+
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the banded island; the Sakai band only reaches the frame past its right edge. Below, the same window as a graph: the island is the one long node on the backbone, and the detour the other strains take is the short arm beside it." src="/img/pangenome/rgfa_paa_bubble.png" />
+
 ### From a lane to a stack, for one locus
 
 The lanes say where a strain breaks from the backbone. The stacked view says

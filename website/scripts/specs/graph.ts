@@ -289,6 +289,23 @@ const PAA_WINDOW = 'chr:1,445,000-1,474,500'
 // which for a gfatools cut is the first and last backbone node's midpoints
 // rather than the window. The view takes `colorDomain` for that.
 const PAA_RAMP_DOMAIN = { start: 1445000, end: 1474500 }
+
+// The synteny rows above the graph. K12's window is PAA_WINDOW opened out a
+// little on the left, so the reader sees the Sakai band ARRIVE at the island's
+// right edge rather than starting at the frame's. The two partner windows are
+// the same span carried across each strain's own alignment to K12 in
+// ecoli_pggb_ava (`tabix ecoli_pggb_ava.pif.gz 'tK12#1#chr:1430000-1490000'`):
+//
+//     NCTC86  K12 1,434,958-1,632,337 <-> NCTC86 1,698,328-1,898,776
+//     Sakai   K12 1,474,100-1,632,416 <-> Sakai  1,990,000-2,158,448
+//
+// which is the whole argument in two rows of a file: NCTC86's block starts left
+// of the island and runs straight through it, and Sakai has no block over the
+// island at all — its nearest one starts 6 kb past the island's right edge.
+const PAA_SYNTENY_WINDOW = 'chr:1,432,000-1,482,000'
+const PAA_NCTC86_WINDOW = 'chr:1,695,300-1,746,100'
+const PAA_SAKAI_WINDOW = 'chr:1,945,200-1,998,400'
+const ECOLI_AVA_TRACK = 'ecoli_pggb_ava'
 // The launch-out figure's graph view, pinned so its menu and its callout still
 // resolve to it once the launch has added a second view to the page.
 const LAUNCH_OUT_VIEW = '[data-testid="view-container-launch_out_graph"]'
@@ -798,6 +815,15 @@ export const graphSpecs: ScreenshotSpec[] = [
   // which is the same drawing problem deletions have everywhere in these
   // figures (see hprc_cfhr_deletion).
   //
+  // The panel above the graph is a THREE-ROW SYNTENY VIEW, not a bare linear
+  // view (review: "use a linearsyntenyview instead of just lineargenomeview,
+  // showing how it is a big insertion not in the others"). A single linear view
+  // could show the island's genes and the segment carrying them, but nothing in
+  // it said the other strains lack it — that claim lived only in the caption.
+  // With NCTC86 above K12 and Sakai below, both bands are against K12 and the
+  // two behaviours are side by side in one frame. See PAA_SYNTENY_WINDOW for the
+  // alignment rows the partner windows come from.
+  //
   // Reference-position colors over PAA_RAMP_DOMAIN, so the segments lane above
   // and the nodes below are the same hue for the same bp: the island is one wide
   // green block in the lane and the one long green node in the graph.
@@ -808,36 +834,54 @@ export const graphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/rgfa_paa_bubble',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
+      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
       views: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PAA_WINDOW,
-          highlight: [
+          type: 'LinearSyntenyView',
+          // NCTC86 above K12 and Sakai below it, so both bands are against K12
+          // (ribbons are drawn between neighbouring rows only). That ordering is
+          // the figure's claim, per review: "use a linearsyntenyview instead of
+          // just lineargenomeview, showing how it is a big insertion not in the
+          // others". Top band runs unbroken across the island, bottom band
+          // starts at its right edge.
+          tracks: [[ECOLI_AVA_TRACK], [ECOLI_AVA_TRACK]],
+          drawCurves: true,
+          levelHeights: [150, 150],
+          // the two partner rows carry no tracks, and their empty-state block is
+          // a centered button that reads as content
+          collapseEmptyRows: true,
+          views: [
+            { assembly: 'NCTC86', loc: PAA_NCTC86_WINDOW },
             {
-              refName: 'chr',
-              start: 1446100,
-              end: 1467909,
-              color: 'rgba(214,137,16,0.13)',
+              assembly: 'K12',
+              loc: PAA_SYNTENY_WINDOW,
+              highlight: [
+                {
+                  refName: 'chr',
+                  start: 1446100,
+                  end: 1467909,
+                  color: 'rgba(214,137,16,0.13)',
+                },
+              ],
+              tracks: [
+                {
+                  trackId: 'K12_genes',
+                  type: 'LinearBasicDisplay',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showDescriptions: false,
+                  height: 60,
+                },
+                {
+                  trackId: ECOLI_SEGMENTS_TRACK,
+                  type: 'LinearBasicDisplay',
+                  color: referencePositionColor(PAA_RAMP_DOMAIN),
+                  height: 50,
+                },
+              ],
             },
-          ],
-          tracks: [
-            {
-              trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
-              displayMode: 'compact',
-              showDescriptions: false,
-              height: 60,
-            },
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              color: referencePositionColor(PAA_RAMP_DOMAIN),
-              height: 50,
-            },
+            { assembly: 'Sakai', loc: PAA_SAKAI_WINDOW },
           ],
         },
         {
@@ -861,7 +905,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
     settleMs: 8000,
     viewportWidth: 1000,
-    viewportHeight: 1035,
+    viewportHeight: 1400,
     hideTooltip: true,
   },
   // The graph read as an alignment: five haplotype rows over 200 kb of K12, one

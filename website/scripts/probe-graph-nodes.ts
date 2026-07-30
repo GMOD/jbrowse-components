@@ -77,7 +77,10 @@ await new Promise(r => setTimeout(r, 8000))
 // only way to tell "the anchor is wrong" from "the hover handler didn't fire"
 const hoverId = values.hover
 if (hoverId) {
-  const point = await graphNodePoint(page, { view: viewIndex, graphNode: hoverId })
+  const point = await graphNodePoint(page, {
+    view: viewIndex,
+    graphNode: hoverId,
+  })
   console.error(`hover point for ${hoverId}:`, point)
   if (point) {
     await page.mouse.move(point.x, point.y)
@@ -102,7 +105,12 @@ const dump = await page.evaluate(index => {
   interface Node {
     id: string
     length?: number
-    stable?: { rank?: number; assembly?: string; start?: number; end?: number }
+    stable?: {
+      rank?: number
+      refName?: string
+      start?: number
+      end?: number
+    }
   }
   interface GraphView {
     id: string
@@ -127,7 +135,9 @@ const dump = await page.evaluate(index => {
   const ty = view?.translateY ?? 0
   return {
     viewType: (view as unknown as { type?: string } | undefined)?.type,
-    canvas: r ? { left: r.left, top: r.top, width: r.width, height: r.height } : undefined,
+    canvas: r
+      ? { left: r.left, top: r.top, width: r.width, height: r.height }
+      : undefined,
     nodes: (view?.graph?.nodes ?? []).map(n => {
       const pts = view?.nodePositions?.[n.id] ?? []
       const xs = pts.map(p => p.x * scale + tx + (r?.left ?? 0))
@@ -136,11 +146,15 @@ const dump = await page.evaluate(index => {
         id: n.id,
         length: n.length,
         rank: n.stable?.rank,
-        assembly: n.stable?.assembly,
+        refName: n.stable?.refName,
         start: n.stable?.start,
         end: n.stable?.end,
-        x: xs.length ? Math.round((Math.min(...xs) + Math.max(...xs)) / 2) : undefined,
-        y: ys.length ? Math.round((Math.min(...ys) + Math.max(...ys)) / 2) : undefined,
+        x: xs.length
+          ? Math.round((Math.min(...xs) + Math.max(...xs)) / 2)
+          : undefined,
+        y: ys.length
+          ? Math.round((Math.min(...ys) + Math.max(...ys)) / 2)
+          : undefined,
       }
     }),
   }

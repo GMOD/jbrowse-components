@@ -2323,10 +2323,10 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "bad",
-    "note": "add to docs, and use a linearsyntenyview instead of just lineargenomeview, showing how it is a big insertion not in the others",
+    "status": "good",
+    "note": "DONE, both asks. THREE-ROW SYNTENY VIEW instead of the bare linear view: NCTC86 above K12 and Sakai below it, so both bands are against K12 (ribbons draw between neighbouring rows only, so that ordering IS the claim). The NCTC86 band runs unbroken across the banded island; the Sakai band only arrives past its right edge. Before this, a single linear view could show the island's genes and the segment carrying them but nothing in the picture said the other strains lack it - that lived only in the caption. The partner windows are not eyeballed: they are the K12 window carried across each strain's own block in ecoli_pggb_ava, read with tabix over tK12#1#chr:1430000-1490000, which is also the proof - NCTC86's block starts left of the island and runs through it, Sakai's nearest block starts about 6 kb past its right edge, and IAI39 has no block in the window at all. collapseEmptyRows so the two partner rows do not each carry a centered 'No tracks active' button. ADDED TO DOCS as 'The same gap, drawn as a graph' in allvsall_synteny.md, directly after the one-vs-all lanes figure it answers; the earlier note claiming that section existed was wrong, nothing referenced this PNG. audit-figures and gen:gallery-links regenerated.",
     "reviewedAt": "2026-07-30T14:05:03.494Z",
-    "hash": "60d98a76dc214d304c92a9006a849da1ac74a99c"
+    "hash": "7594410944232e31ff2ead3ff80eb678559470db"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
