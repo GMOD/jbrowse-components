@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { getHeightModeOptions } from '@jbrowse/plugin-linear-genome-view'
+import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
@@ -93,24 +93,11 @@ export function getFeatureHeightMenuItem(
         },
       },
       { type: 'subHeader' as const, label: 'Track sizing' },
-      // The fixed/grow/fit modes as an explicit radio group, mirroring the
-      // sidebar TrackHeightIndicator (labels from the shared getHeightModeOptions
-      // so they can't drift). The `fixed` mode is its own row — not folded into
-      // the size presets — so this group stays a plain, complete "pick one".
-      ...getHeightModeOptions(noun).map(option =>
-        promotableRadioItem({
-          label: option.label,
-          checked: mode === option.value,
-          onClick: () => {
-            model.setHeightMode(option.value)
-          },
-          displayTypeDefault: makeDisplayTypeDefaultControl(
-            model,
-            'heightMode',
-            option.value,
-          ),
-        }),
-      ),
+      // The fixed/grow/fit modes as an explicit radio group, from the same
+      // shared builder the canvas display uses so the two menus are identical by
+      // construction. The `fixed` mode is its own row — not folded into the size
+      // presets — so this group stays a plain, complete "pick one".
+      ...heightModeMenuItems(model, noun),
     ],
   }
 }

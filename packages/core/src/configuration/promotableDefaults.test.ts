@@ -1,7 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
-import SimpleFeature from '../util/simpleFeature.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { getConf, resolveConf } from './getConf.ts'
 import {
@@ -9,8 +8,8 @@ import {
   isPromotableDefault,
   isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
-  makeSlotsValueDisplayTypeDefaultControl,
-  resetSlotsToInherit,
+  makeDisplayTypeDefaultControl,
+  resetSlotToInherit,
   getConfigSnapshotWithPromotables,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
@@ -85,7 +84,7 @@ function createDisplay(
   return { session, display: session.display }
 }
 
-// Session holding several sibling displays of one type, so resetSlotsToInherit
+// Session holding several sibling displays of one type, so resetSlotToInherit
 // (what the snackbar's "apply to open tracks" action runs) can be exercised over
 // a real sibling set.
 function createDisplays(
@@ -154,7 +153,7 @@ describe('apply a promoted default to open tracks', () => {
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
     expect(isSlotCustomized(other, 'customHeight')).toBe(true)
-    resetSlotsToInherit(displays, ['customHeight'])
+    resetSlotToInherit(displays, 'customHeight')
     expect(isSlotCustomized(other, 'customHeight')).toBe(false)
     expect(resolveConf(other, 'customHeight')).toBe(10)
   })
@@ -167,7 +166,7 @@ describe('apply a promoted default to open tracks', () => {
     const other = displays[1]!
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
-    resetSlotsToInherit(displays, ['customHeight'])
+    resetSlotToInherit(displays, 'customHeight')
     expect(isSlotCustomized(other, 'customHeight')).toBe(false)
     expect(resolveConf(other, 'customHeight')).toBe(10)
   })
@@ -260,7 +259,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    makeCurrentValueDisplayTypeDefaultControl(self, ['customHeight']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(self, 'customHeight').toggle()
 
     // setting the default doesn't touch the customized track in the other view
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
@@ -275,9 +274,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    const differing = tracksDifferingFrom(self, [
-      { slot: 'customHeight', value: 10 },
-    ])
+    const differing = tracksDifferingFrom(self, 'customHeight', 10)
     expect(differing).toHaveLength(1)
     expect(differing[0]).toBe(otherView)
   })
@@ -289,12 +286,11 @@ describe('apply a promoted default to open tracks', () => {
     ])
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
-    const entries = [{ slot: 'customHeight', value: 10 }]
 
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
     // default set; the track with its own different value keeps it until applied
-    expect(isPromotableDefault(self, entries)).toBe(true)
+    expect(isPromotableDefault(self, 'customHeight', 10)).toBe(true)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
 
     // the snackbar offered "Apply to N open tracks"; running it makes the one
@@ -317,9 +313,8 @@ describe('apply a promoted default to open tracks', () => {
     ])
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
-    const entries = [{ slot: 'customHeight', value: 10 }]
 
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
     // the clicked track keeps its own value; the snackbar counts it like any
     // other track not yet showing the new default
@@ -332,10 +327,9 @@ describe('apply a promoted default to open tracks', () => {
   test('pin then unpin leaves the clicked track exactly as it was', () => {
     const { displayOf } = createViews([[{ customHeight: 20 }]])
     const self = displayOf(0, 0)
-    const entries = [{ slot: 'customHeight', value: 10 }]
 
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
     expect(resolveConf(self, 'customHeight')).toBe(20)
   })
@@ -349,9 +343,7 @@ describe('apply a promoted default to open tracks', () => {
     const follower = displayOf(1, 0)
     expect(resolveConf(follower, 'customHeight')).toBe(1)
 
-    makeSlotsValueDisplayTypeDefaultControl(self, [
-      { slot: 'customHeight', value: 10 },
-    ]).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
     expect(resolveConf(follower, 'customHeight')).toBe(10)
     expect(session.lastNotify?.action).toBeUndefined()
@@ -361,9 +353,7 @@ describe('apply a promoted default to open tracks', () => {
     const { session, displayOf } = createViews([[{ customHeight: 10 }]])
     const self = displayOf(0, 0)
 
-    makeSlotsValueDisplayTypeDefaultControl(self, [
-      { slot: 'customHeight', value: 10 },
-    ]).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
     expect(session.lastNotify?.message).toBe('Set as the default')
     expect(session.lastNotify?.action).toBeUndefined()
@@ -380,9 +370,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const survivor = displayOf(1, 1)
 
-    makeSlotsValueDisplayTypeDefaultControl(self, [
-      { slot: 'customHeight', value: 10 },
-    ]).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
     // all three open tracks hold their own value, `self` included
     expect(session.lastNotify?.action?.name).toBe('Apply to 3 open tracks')
 
@@ -401,9 +389,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const other = displayOf(1, 0)
 
-    makeSlotsValueDisplayTypeDefaultControl(self, [
-      { slot: 'customHeight', value: 10 },
-    ]).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
     // the pin's own track is closed: the whole walk hangs off its session
     session.views[0]!.closeTrack(0)
@@ -426,14 +412,13 @@ describe('apply a promoted default to open tracks', () => {
     ])
     const self = displayOf(0, 0)
     const other = displayOf(1, 0)
-    const entries = [{ slot: 'customHeight', value: 10 }]
 
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
     const apply = session.lastNotify!.action!
 
     // user unpins (a fresh control reads as active, so its toggle clears)
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
-    expect(isPromotableDefault(self, entries)).toBe(false)
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
 
     apply.onClick()
     expect(resolveConf(self, 'customHeight')).toBe(20)
@@ -447,30 +432,15 @@ describe('apply a promoted default to open tracks', () => {
     ])
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
-    const entries = [{ slot: 'customHeight', value: 10 }]
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
     // control is active (default already 10), so toggle clears it
-    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
 
-    expect(isPromotableDefault(self, entries)).toBe(false)
+    expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
     expect(session.lastNotify?.message).toBe('Cleared the default')
     expect(session.lastNotify?.action).toBeUndefined()
-  })
-
-  // `.every` is vacuously true on an empty group, which would render a filled
-  // pin on a control that promotes nothing — and whose toggle then announces
-  // "Cleared the default"
-  test('a group with no entries is not the default', () => {
-    const { session, displayOf } = createViews([[{ customHeight: 10 }]])
-    const self = displayOf(0, 0)
-
-    expect(isPromotableDefault(self, [])).toBe(false)
-    const control = makeSlotsValueDisplayTypeDefaultControl(self, [])
-    expect(control.active).toBe(false)
-    control.toggle()
-    expect(session.lastNotify?.message).toBe('Set as the default')
   })
 })
 
@@ -566,17 +536,18 @@ describe('promotable maybeBoolean slot', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
-    const control = makeCurrentValueDisplayTypeDefaultControl(display, [
+    const control = makeCurrentValueDisplayTypeDefaultControl(
+      display,
       'chevrons',
-    ])
+    )
     expect(control.active).toBe(false)
     control.toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
     expect(
-      makeCurrentValueDisplayTypeDefaultControl(display, ['chevrons']).active,
+      makeCurrentValueDisplayTypeDefaultControl(display, 'chevrons').active,
     ).toBe(true)
 
-    makeCurrentValueDisplayTypeDefaultControl(display, ['chevrons']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(display, 'chevrons').toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
     ).toBeUndefined()
@@ -692,7 +663,7 @@ describe('promotable frozen slot structural equality', () => {
       tag: 'XT',
     })
     expect(
-      makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).active,
+      makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').active,
     ).toBe(true)
   })
 
@@ -700,16 +671,16 @@ describe('promotable frozen slot structural equality', () => {
     const { session, display } = createDisplay(configSchema, {
       colorBy: { tag: 'XT', type: 'tag' },
     })
-    makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'colorBy')).toEqual({
       tag: 'XT',
       type: 'tag',
     })
     expect(
-      makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).active,
+      makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').active,
     ).toBe(true)
 
-    makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'colorBy'),
     ).toBeUndefined()
@@ -888,14 +859,13 @@ describe('a display from a received session', () => {
   test('still reports the session default for the pin while opted out', () => {
     const { session, display } = createDisplay(sentinelSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    const entries = [{ slot: 'mode', value: 'compact' }]
-    expect(isPromotableDefault(display, entries)).toBe(true)
+    expect(isPromotableDefault(display, 'mode', 'compact')).toBe(true)
 
     display.setIgnorePromotedDefaults(true)
     // the display no longer FOLLOWS the default...
     expect(resolveConf(display, 'mode')).toBe('normal')
     // ...but 'compact' is still what's promoted session-wide
-    expect(isPromotableDefault(display, entries)).toBe(true)
+    expect(isPromotableDefault(display, 'mode', 'compact')).toBe(true)
   })
 
   test('follows the default once the user deliberately opts it back in', () => {
@@ -905,7 +875,7 @@ describe('a display from a received session', () => {
     display.setIgnorePromotedDefaults(true)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'normal')
 
-    resetSlotsToInherit([display], ['mode'])
+    resetSlotToInherit([display], 'mode')
     expect(display.ignorePromotedDefaults).toBe(false)
     expect(resolveConf(display, 'mode')).toBe('normal')
   })
@@ -963,76 +933,53 @@ describe('resolveConf cascades; getConf and readConfObject stay raw', () => {
   })
 })
 
-// A promotable slot can hold a `jexl:` callback like any other slot. A callback
-// computes a different value per call, so it can't be compared against the slot
-// default to decide "follows the default" — it leaves the cascade as a
-// customization, and `getConf`'s `args` reach it.
-describe('promotable slot holding a jexl callback', () => {
+// A promotable slot cannot hold a `jexl:` callback: the config editor's callback
+// toggle needs `contextVariable` and no promotable slot declares one, because a
+// promoted default is one value shared by every track of a type — the opposite of
+// a per-feature expression. A hand-edited config that puts one there degrades
+// like any other unusable value rather than reaching a consumer that trusts it.
+describe('promotable slot holding a stray jexl callback', () => {
   const schema = ConfigurationSchema('CallbackDisplay', {
     height: {
       type: 'maybeNumber',
       defaultValue: undefined,
       promotedBase: 7,
-      contextVariable: ['feature'],
-      description: 'a promotable slot a user may write a callback into',
+      description: 'a promotable slot with a hand-edited callback in it',
       promotable: true,
     },
   })
 
-  test('getConf forwards its args to a callback on a promotable slot', () => {
+  test('reads as not customized, so it follows the cascade', () => {
     const { session, display } = createDisplay(schema, {
       height: 'jexl:get(feature,"h")',
     })
-    session.setDisplayTypeDefault('TestDisplay', 'height', 3)
-    expect(
-      resolveConf(display, 'height', {
-        feature: new SimpleFeature({
-          uniqueId: 't',
-          refName: 'ctgA',
-          start: 0,
-          end: 1,
-          h: 11,
-        }),
-      }),
-    ).toBe(11)
-  })
+    // no feature context anywhere in these consumers — none is needed
+    expect(isSlotCustomized(display, 'height')).toBe(false)
+    expect(resolveConf(display, 'height')).toBe(7)
 
-  test('a callback reads as customized, so the pin and badge report it as such', () => {
-    const { session, display } = createDisplay(schema, {
-      height: 'jexl:get(feature,"h")',
-    })
     session.setDisplayTypeDefault('TestDisplay', 'height', 3)
-    // no feature to evaluate against here — these consumers must not need one
-    expect(isSlotCustomized(display, 'height')).toBe(true)
-    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
-  })
-
-  test('the promote-current pin disables rather than evaluating the callback', () => {
-    const { display } = createDisplay(schema, {
-      height: 'jexl:get(feature,"h")',
-    })
-    // built while a track menu is assembled, with no feature to supply — this
-    // used to evaluate `get(feature,...)` against nothing and throw out of the
-    // whole menu
-    const control = makeCurrentValueDisplayTypeDefaultControl(display, [
-      'height',
+    expect(resolveConf(display, 'height')).toBe(3)
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
+      { path: ['height'], from: 7, to: 3 },
     ])
-    expect(control).toEqual({
-      active: false,
-      disabled: true,
-      toggle: expect.any(Function),
-    })
   })
 
-  test('"apply to open tracks" resets a callback track without evaluating it', () => {
+  test('the promote-current pin promotes the resolved value, not the callback', () => {
+    const { session, display } = createDisplay(schema, {
+      height: 'jexl:get(feature,"h")',
+    })
+    // this used to evaluate `get(feature,...)` against nothing and throw out of
+    // the whole menu, then disabled itself to avoid that
+    makeCurrentValueDisplayTypeDefaultControl(display, 'height').toggle()
+    expect(session.getDisplayTypeDefault('TestDisplay', 'height')).toBe(7)
+  })
+
+  test('"apply to open tracks" clears the callback rather than evaluating it', () => {
     const { session, display } = createDisplay(schema, {
       height: 'jexl:get(feature,"h")',
     })
     session.setDisplayTypeDefault('TestDisplay', 'height', 3)
-    // `tracksDifferingFrom` counts a callback track as differing, so the
-    // snackbar action does reach it — and it must clear the callback rather
-    // than evaluate it against the empty context it has (which throws)
-    resetSlotsToInherit([display], ['height'])
+    resetSlotToInherit([display], 'height')
     expect(getConf(display, 'height')).toBeUndefined()
     expect(resolveConf(display, 'height')).toBe(3)
   })
@@ -1116,16 +1063,17 @@ describe('displays nested inside a composite view', () => {
   // child views' tracks (a value neither display holds, so neither is filtered)
   test('the open-display walk reaches the outer tracks and the child views', () => {
     const { ownDisplay, nestedDisplay } = createNested()
-    expect(
-      tracksDifferingFrom(ownDisplay, [{ slot: 'customHeight', value: 99 }]),
-    ).toEqual([ownDisplay, nestedDisplay])
+    expect(tracksDifferingFrom(ownDisplay, 'customHeight', 99)).toEqual([
+      ownDisplay,
+      nestedDisplay,
+    ])
   })
 
   test('a nested display counts as differing, so it is applied to and baked', () => {
     const { ownDisplay, nestedDisplay } = createNested()
-    expect(
-      tracksDifferingFrom(ownDisplay, [{ slot: 'customHeight', value: 10 }]),
-    ).toEqual([nestedDisplay])
+    expect(tracksDifferingFrom(ownDisplay, 'customHeight', 10)).toEqual([
+      nestedDisplay,
+    ])
   })
 })
 

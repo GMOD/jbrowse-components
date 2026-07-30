@@ -68,9 +68,11 @@ export function getConf<
  * Throws if `slot` isn't promotable — the cascade has nothing to say about a
  * plain slot, and `getConf` is what you want there.
  *
+ * Takes no jexl `args`, unlike `getConf`: a promotable slot cannot hold a
+ * callback (see `SlotResolution`), so there is no per-feature context to supply.
+ *
  * @param model - the display state model (needs the session + display type)
  * @param slot - the promotable slot to resolve
- * @param args - extra arguments, e.g. `{ feature }` for a jexl callback slot
  */
 export function resolveConf<
   CONFMODEL extends AnyConfigurationModel,
@@ -79,20 +81,15 @@ export function resolveConf<
 >(
   model: { configuration: CONFMODEL },
   slot: SLOT,
-  args: Record<string, unknown> = {},
 ): ConfigurationSlotValueResolved<
   ConfigurationSchemaForModel<CONFMODEL>,
   SLOT
 > {
   // `model` is the display state node the resolver needs (type + session +
   // ignorePromotedDefaults); only display state models carry promotable slots.
-  const res = resolveSlot(model as unknown as PromotableDisplay, slot, args)
-  // the one reader that holds the caller's `args`, so the one that may run a
-  // `jexl:` slot's callback. The resolution is `unknown` either way, which the
-  // declared return type can't infer on its own.
-  return (
-    res.callback ? res.evaluate() : res.value
-  ) as ConfigurationSlotValueResolved<
+  // The resolution is `unknown`, which the declared return type can't infer.
+  return resolveSlot(model as unknown as PromotableDisplay, slot)
+    .value as ConfigurationSlotValueResolved<
     ConfigurationSchemaForModel<CONFMODEL>,
     SLOT
   >

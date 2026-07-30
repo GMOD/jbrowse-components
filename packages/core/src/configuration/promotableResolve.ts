@@ -2,7 +2,6 @@ import { getSession } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
-import { readConfObject } from './util.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
@@ -48,19 +47,17 @@ export type PromotableDisplay = IAnyStateTreeNode & {
 }
 
 /**
- * What the slot literally holds, unevaluated — a `jexl:` slot yields the raw
- * `jexl:...` string rather than running it. Both callers need the raw form for
- * the same reason: they ask "is the slot set, and to what kind of thing?", a
- * question that has to be answerable with no feature context (evaluating a
- * callback without one throws). `readConfObject` is the evaluating counterpart,
- * and is what every value read outside this subsystem goes through.
+ * What the slot literally holds, unevaluated — a stray `jexl:` string yields the
+ * raw string rather than running it. Both callers need the raw form for the same
+ * reason: they ask "is the slot set, and to what kind of thing?", a question that
+ * has to be answerable with no feature context.
  *
  * For a promotable slot this is also the *whole* stored read, not a cheaper
  * approximation of one. `readConfObject`'s two extra behaviors are both
- * unreachable here: it evaluates a `jexl:` string (the resolver's callback
- * branch returns before that), and it snapshots a value that is an MST node —
- * which a promotable value never is, since `ConfigSlot` admits only `maybe*`
- * types and those hold a primitive or a `types.frozen` plain object.
+ * unwanted here: it evaluates a `jexl:` string (which `isUsableValue` rejects
+ * outright — see below), and it snapshots a value that is an MST node, which a
+ * promotable value never is, since `ConfigSlot` admits only `maybe*` types and
+ * those hold a primitive or a `types.frozen` plain object.
  */
 export function storedSlotValue(
   self: PromotableDisplay,
@@ -76,10 +73,13 @@ export function storedSlotValue(
  * independent checks, each obviously correct on its own:
  *   1. it's set at all — `undefined` IS the inherit sentinel on every promotable
  *      slot, which is why they're all `maybe*` types,
- *   2. it isn't a raw `jexl:` string. Nothing in the app can promote one (the
- *      promote-current pin refuses a callback slot, and the resolver's own
- *      callback branch returns before this), but the promoted-default store is
- *      untyped and localStorage-backed, so a hand-edited or corrupted entry
+ *   2. it isn't a raw `jexl:` string. This is the *only* place a promotable slot
+ *      handles callbacks, and it handles them by refusing them: a promoted
+ *      default is one value shared by every track of a type, which is the
+ *      opposite of a per-feature expression. Nothing in the app can author one
+ *      (the config editor's callback toggle needs `contextVariable`, which no
+ *      promotable slot declares), but both a saved track config and the
+ *      localStorage-backed default store are untyped, so a hand-edited entry
  *      would otherwise sail through `maybeColor`'s bare `typeof === 'string'`
  *      check and be handed to a renderer as a literal color,
  *   3. its JS shape fits the slot (`matchesSlotShape`),
@@ -145,58 +145,36 @@ function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
       : typeof value === typeof promotedBase
 }
 
-interface SlotResolutionTiers {
+/**
+ * The outcome of walking the cascade for one slot: the two tiers that fed it,
+ * whether the track customized it, and the settled value.
+ *
+ * There is deliberately **no callback case**. A promotable slot cannot hold a
+ * `jexl:` value through any supported path — the config editor only offers the
+ * callback toggle on a slot that declares `contextVariable`, and no promotable
+ * slot does (a promoted default is one value shared by every track of a type,
+ * which is the opposite of a per-feature expression). A hand-edited config that
+ * puts one there fails `isUsableValue` like any other unusable value and
+ * degrades to the inherited value, so every consumer falls back in lockstep and
+ * `value` is always readable.
+ */
+export interface SlotResolution {
   /** value a track following the default shows with nothing promoted (CSS `initial`) */
   base: unknown
   /** the raw session-wide promoted default, if any */
   promoted: unknown
+  /** track holds its own value rather than following the default */
+  customized: boolean
+  /** the final cascaded value (never the `undefined` inherit sentinel) */
+  value: unknown
 }
-
-/**
- * The outcome of walking the cascade for one slot. A **discriminated union on
- * `callback`**, because the two cases genuinely have different things to offer:
- * a fixed value has one settled `value`, while a `jexl:` callback computes a
- * different value per feature and so has none until someone supplies a context.
- *
- * The union is what makes that safe. `value` simply doesn't exist on the
- * callback branch, so a consumer with no `args` to give (the pin, the badge, the
- * worker payload) can't read one by accident — it either branches on `callback`
- * or fails to compile. That used to be a convention: `value` was a lazy getter
- * that evaluated the callback against an empty context, throwing out of whatever
- * menu was being built.
- */
-export type SlotResolution =
-  | (SlotResolutionTiers & {
-      callback: false
-      /** track holds its own value rather than following the default */
-      customized: boolean
-      /** the final cascaded value (never the `undefined` inherit sentinel) */
-      value: unknown
-    })
-  | (SlotResolutionTiers & {
-      callback: true
-      /** writing a callback *is* customizing the track, so always true */
-      customized: true
-      /**
-       * run the callback with the `args` of this read. Only `resolveConf` calls
-       * it — it's the one reader that has the caller's context (a `{ feature }`).
-       */
-      evaluate: () => unknown
-    })
 
 // The whole three-tier cascade for one slot, in one place. `resolveConf` is the
 // public reader over it, and the control builders in `promotableDefaults.ts`
 // read a field off it.
-//
-// `args` are the jexl callback arguments of the originating `resolveConf` read (a
-// `{ feature }`, say), and feed exactly one thing: the `evaluate()` of a slot
-// holding a `jexl:` value, so it sees the same context an ordinary slot read
-// would. Every other path is a plain stored value, which is why the cascade's own
-// consumers (the pin, the badge) can call with no args at all.
 export function resolveSlot(
   self: PromotableDisplay,
   slot: string,
-  args: Record<string, unknown> = {},
 ): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   // A real slot that just isn't `promotable` would otherwise resolve silently
@@ -214,37 +192,17 @@ export function resolveSlot(
   // filled/outline state) reports on the session, not on one display's view of
   // it. The opt-out belongs to `inherited` below, which is the only tier of the
   // cascade it may neutralize.
-  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // The track's own value, before any cascade. One read serves both the callback
-  // test below and the value itself: past that branch the stored value *is* what
-  // `readConfObject` would return (see `storedSlotValue`), and it needs no `args`
-  // because nothing left here can consume them.
+  const promoted = getSession(self).getDisplayTypeDefault(self.type, slot)
+  // The track's own value, before any cascade — the raw stored read, not
+  // `readConfObject`, since this *is* the resolver (see `storedSlotValue`).
   const own = storedSlotValue(self, slot)
-  // A `jexl:` value leaves the cascade immediately: a callback computes a
-  // different value per call (per feature), so it has no single value to weigh
-  // against the cascade — writing one *is* customizing the track. Evaluating it
-  // needs the caller's `args`, which the cascade's own consumers (the pin, the
-  // badge) don't have, so this branch offers `evaluate()` instead of a `value`:
-  // they read `customized`/`promoted` and the type stops them evaluating, while a
-  // real `resolveConf(self, slot, { feature })` read gets exactly what an
-  // ordinary slot read would — including the same error if the context is
-  // missing.
-  if (isCallbackValue(own)) {
-    return {
-      base,
-      customized: true,
-      promoted,
-      callback: true,
-      evaluate: () => readConfObject(self.configuration, slot, args),
-    }
-  }
   // A track is customized exactly when it holds a *usable* value — being unset
   // is the inherit sentinel, so "set to something the slot could hold" is the
   // whole test. Routing `own` through the same gate as a promoted default means
-  // an own value that's malformed or fails `validate` (e.g. a saved `colorBy`
-  // naming a since-removed scheme) reads as not customized and degrades to the
-  // inherited value in lockstep, instead of reaching a consumer that trusts
-  // every value it sees.
+  // an own value that's malformed, a stray `jexl:` string, or one that fails
+  // `validate` (e.g. a saved `colorBy` naming a since-removed scheme) reads as
+  // not customized and degrades to the inherited value in lockstep, instead of
+  // reaching a consumer that trusts every value it sees.
   const customized = isUsableValue(def, own)
   // A display that arrived in a received session skips the session-wide tier
   // entirely, collapsing the cascade to "own value, else base". Needed because
@@ -255,6 +213,5 @@ export function resolveSlot(
     !self.ignorePromotedDefaults && isUsableValue(def, promoted)
       ? promoted
       : base
-  const value = customized ? own : inherited
-  return { base, customized, promoted, callback: false, value }
+  return { base, customized, promoted, value: customized ? own : inherited }
 }

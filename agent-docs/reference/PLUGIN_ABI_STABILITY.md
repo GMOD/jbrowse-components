@@ -244,6 +244,18 @@ author who lands on a behavior change can find the sentence that explains it.
   `developer_guides/configuration_schema.md`; sub-schemas and constants still
   replace wholesale.
 
+- **Five preference-store members are now required on `AbstractSessionModel`**
+  (`util/types/index.ts`): `setPreferenceOverride`, `clearPreferenceOverrides`,
+  `setScrollZoom`, `getDisplayTypeDefault`, `setDisplayTypeDefault`. All five are
+  declared by `BaseSessionModel`, so every in-tree session and every product
+  built on `@jbrowse/product-core` already satisfies them; the optionality only
+  ever made the core readers carry `?.` calls that skipped silently. A plugin
+  that *builds its own session model from scratch* rather than composing
+  `BaseSessionModel` now fails to type-check against `AbstractSessionModel` until
+  it declares them. **Opt-out: none — compose `BaseSessionModel`**, or declare
+  the five members (a `getDisplayTypeDefault` returning `undefined` is a valid
+  "this session promotes nothing").
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably

@@ -956,7 +956,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setScrollZoom(flag: boolean) {
-        getSession(self).setScrollZoom?.(flag)
+        getSession(self).setScrollZoom(flag)
       },
       /**
        * #action

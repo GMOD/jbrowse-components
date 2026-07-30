@@ -1058,10 +1058,10 @@ describe('alignments colorBy session default', () => {
   })
 })
 
-// linkedReads (view-as-pairs) is a sentinel promotable slot: 'inherit' is the
+// linkedReads (view-as-pairs) is a sentinel promotable slot: being unset is the
 // inherit state (resolving to the session-wide default, else promotedBase
 // 'off'), so a track can pin 'off' back over a session-wide 'normal' default —
-// which a plain slot could not. getConf never returns 'inherit'.
+// which a plain slot could not. resolveConf never returns the sentinel.
 describe('alignments linkedReads (view as pairs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()

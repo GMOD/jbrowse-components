@@ -27,14 +27,13 @@ function makeModel() {
 type Model = ReturnType<typeof makeModel>
 
 // A per-value pin control backed by the model's `pinned` set, keyed on the
-// colorBy value — mirrors makeSlotsValueDisplayTypeDefaultControl over the colorBy
+// colorBy value — mirrors makeDisplayTypeDefaultControl over the colorBy
 // slot.
 function displayTypeDefault(model: Model) {
   return (colorBy: ColorBy): DisplayTypeDefaultControl => {
     const key = JSON.stringify(colorBy)
     return {
       active: model.pinned.has(key),
-      disabled: false,
       toggle() {
         if (model.pinned.has(key)) {
           model.pinned.delete(key)

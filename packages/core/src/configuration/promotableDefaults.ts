@@ -55,20 +55,9 @@ export function getConfigSnapshotWithPromotables(
   // config, because the loop below is what resolves every such slot
   const snap = fullConfSnapshot(self.configuration)
   for (const slot of promotableSlotNames(self.configuration)) {
-    // a callback slot keeps its raw `jexl:` string: the worker evaluates it
-    // per-feature, and there's no per-feature context to resolve it here
-    const res = resolveSlot(self, slot)
-    if (!res.callback) {
-      snap[slot] = res.value
-    }
+    snap[slot] = resolveSlot(self, slot).value
   }
   return snap
-}
-
-/** one slot value a promotable-default control promotes */
-export interface PromotableEntry {
-  slot: string
-  value: unknown
 }
 
 /**
@@ -83,14 +72,6 @@ export interface PromotableEntry {
  */
 export interface DisplayTypeDefaultControl {
   active: boolean
-  /**
-   * there is nothing this pin could promote right now, so it renders greyed
-   * with an explanatory tooltip instead of being hidden (same
-   * disabled-not-hidden rule the dependent menu options follow). Only the
-   * promote-current builder can produce it, on a track whose slot holds a
-   * `jexl:` callback — that has no single current value to promote.
-   */
-  disabled: boolean
   toggle: () => void
 }
 
@@ -166,7 +147,7 @@ function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
 }
 
 /**
- * Unset each display's own value on `slots`, so it follows the display type's
+ * Unset each display's own value on `slot`, so it follows the display type's
  * default instead of baking in a value that wouldn't track a later default
  * change. Backs the snackbar's "apply to open tracks" action. Displays already
  * unset are skipped. Takes the display set explicitly so it's unit-testable.
@@ -182,70 +163,56 @@ function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
  * snackbar can outlive a track the user closes in the meantime, and both reads
  * and writes throw on a destroyed MST node.
  */
-export function resetSlotsToInherit(
+export function resetSlotToInherit(
   displays: PromotableDisplay[],
-  slots: string[],
+  slot: string,
 ): void {
   for (const display of displays.filter(display => isAlive(display))) {
     display.setIgnorePromotedDefaults(false)
-    for (const slot of slots) {
-      // the stored value, because this asks only "is the slot set at all?" — a
-      // question a `jexl:` value has to answer without being evaluated (this
-      // caller has no feature context). Not `isSlotCustomized` either,
-      // deliberately: a stored value that fails the usability gate reads as
-      // not-customized, and clearing it out is exactly what should happen to it.
-      if (storedSlotValue(display, slot) !== undefined) {
-        setConf(display, slot, undefined)
-      }
+    // the stored value, because this asks only "is the slot set at all?" — a
+    // question a `jexl:` value has to answer without being evaluated (this
+    // caller has no feature context). Not `isSlotCustomized` either,
+    // deliberately: a stored value that fails the usability gate reads as
+    // not-customized, and clearing it out is exactly what should happen to it.
+    if (storedSlotValue(display, slot) !== undefined) {
+      setConf(display, slot, undefined)
     }
   }
 }
 
 /**
- * Whether every value in `entries` is the current session default for its slot.
- * The live state the pin's filled/outline reflects — a session-wide fact, so it
- * reads the raw promoted default and ignores this display's
- * `ignorePromotedDefaults` opt-out (which only governs what the display
- * *follows*). Module-internal (exercised by promotableDefaults.test.ts); not
- * part of the public barrel.
+ * Whether `value` is the current session default for `slot`. The live state the
+ * pin's filled/outline reflects — a session-wide fact, so it reads the raw
+ * promoted default and ignores this display's `ignorePromotedDefaults` opt-out
+ * (which only governs what the display *follows*). Module-internal (exercised by
+ * promotableDefaults.test.ts); not part of the public barrel.
  */
 export function isPromotableDefault(
   self: PromotableDisplay,
-  entries: PromotableEntry[],
+  slot: string,
+  value: unknown,
 ): boolean {
-  // an empty group is vacuously true for `.every`, which would render a *filled*
-  // pin whose toggle then announces "Cleared the default" — report "not the
-  // default" instead, since nothing is
-  return (
-    entries.length > 0 &&
-    entries.every(({ slot, value }) =>
-      deepEqual(resolveSlot(self, slot).promoted, value),
-    )
-  )
+  return deepEqual(resolveSlot(self, slot).promoted, value)
 }
 
 /**
- * Open tracks (across all views) whose resolved value differs from `entries` —
- * the ones "apply to open tracks" would visibly change by resetting them to
- * follow the default. Drives that action's count. Module-internal (exercised by
- * promotableDefaults.test.ts); not part of the public barrel.
+ * Open tracks (across all views) whose resolved value for `slot` differs from
+ * `value` — the ones "apply to open tracks" would visibly change by resetting
+ * them to follow the default. Drives that action's count. Module-internal
+ * (exercised by promotableDefaults.test.ts); not part of the public barrel.
  */
 export function tracksDifferingFrom(
   self: PromotableDisplay,
-  entries: PromotableEntry[],
+  slot: string,
+  value: unknown,
 ): PromotableDisplay[] {
-  return openDisplaysOfType(self).filter(display =>
-    entries.some(({ slot, value }) => {
-      // a callback track shows a per-feature value, so it never *is* this one
-      // value — count it as differing without evaluating it
-      const res = resolveSlot(display, slot)
-      return res.callback || !deepEqual(res.value, value)
-    }),
+  return openDisplaysOfType(self).filter(
+    display => !deepEqual(resolveSlot(display, slot).value, value),
   )
 }
 
 /**
- * Set (or clear) a value combination as the display type's default. **Purely a
+ * Set (or clear) a value as the display type's default for `slot`. **Purely a
  * write to the session-wide default — no track's own value is ever touched.**
  * Tracks that follow the default pick the new value up immediately via
  * `resolveConf`; tracks the user has customized keep theirs. If any open track isn't
@@ -263,22 +230,20 @@ export function tracksDifferingFrom(
  */
 function applyDefaultToggle(
   self: PromotableDisplay,
-  entries: PromotableEntry[],
+  slot: string,
+  value: unknown,
   on: boolean,
 ): void {
   const session = getSession(self)
-  const slots = entries.map(e => e.slot)
-  // the whole write: set (or clear) the session-wide default for each slot.
+  // the whole write: set (or clear) the session-wide default for the slot.
   // Non-destructive — no track's own value is touched, so a following track
   // picks it up on its next `resolveConf` read and a customized one keeps theirs
-  for (const { slot, value } of entries) {
-    session.setDisplayTypeDefault?.(self.type, slot, on ? value : undefined)
-  }
+  session.setDisplayTypeDefault(self.type, slot, on ? value : undefined)
   if (on) {
     // open tracks not already showing this value — those the "apply to open
     // tracks" action would visibly change by making them follow the new default.
     // Includes the display the pin was clicked from when it holds its own value.
-    const n = tracksDifferingFrom(self, entries).length
+    const n = tracksDifferingFrom(self, slot, value).length
     if (n) {
       session.notify('Set as the default', 'info', {
         name: `Apply to ${n} open ${pluralize(n, 'track')}`,
@@ -295,8 +260,8 @@ function applyDefaultToggle(
         // strand them on whatever replaced it, discarding customizations to reach
         // a value nobody asked for.
         onClick: () => {
-          if (isAlive(self) && isPromotableDefault(self, entries)) {
-            resetSlotsToInherit(tracksDifferingFrom(self, entries), slots)
+          if (isAlive(self) && isPromotableDefault(self, slot, value)) {
+            resetSlotToInherit(tracksDifferingFrom(self, slot, value), slot)
           }
         },
       })
@@ -305,31 +270,6 @@ function applyDefaultToggle(
     }
   } else {
     session.notify('Cleared the default', 'info')
-  }
-}
-
-/**
- * Per-value control over a *group* of slots: "make this exact combination of
- * slot values the session default". `active` reflects whether this exact
- * combination is the current default; `toggle` flips it (set/clear,
- * non-destructive). The base builder the two public wrappers below delegate to;
- * module-internal (exercised by promotableDefaults.test.ts) because no adopter
- * promotes more than one slot behind a single pin — feature-height presets once
- * grouped `featureHeight` + `featureSpacing` here, but `featureSpacing` is now
- * derived from `featureHeight` rather than stored. Export it again if a genuine
- * multi-slot pin appears.
- */
-export function makeSlotsValueDisplayTypeDefaultControl(
-  self: PromotableDisplay,
-  entries: PromotableEntry[],
-): DisplayTypeDefaultControl {
-  const active = isPromotableDefault(self, entries)
-  return {
-    active,
-    disabled: false,
-    toggle: () => {
-      applyDefaultToggle(self, entries, !active)
-    },
   }
 }
 
@@ -345,40 +285,31 @@ export function makeDisplayTypeDefaultControl(
   slot: string,
   onValue: unknown,
 ): DisplayTypeDefaultControl {
-  return makeSlotsValueDisplayTypeDefaultControl(self, [
-    { slot, value: onValue },
-  ])
+  const active = isPromotableDefault(self, slot, onValue)
+  return {
+    active,
+    toggle: () => {
+      applyDefaultToggle(self, slot, onValue, !active)
+    },
+  }
 }
 
 /**
  * #api core/configuration
- * Promote-current control: "make this track's current resolved value(s) the
+ * Promote-current control: "make this track's current resolved value the
  * session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
  * multi-mode slot like displayMode) where the pin means "whatever I'm showing",
- * not a fixed on-value. Groups multiple slots behind one control.
- *
- * A `jexl:` slot has no current value to promote — it computes a different one
- * per feature, and this builder runs while a track menu is being assembled, with
- * no feature to supply — so it disables the pin instead. The resolution union
- * offers no `.value` on that branch, so this is a case the type makes you
- * handle rather than one you have to remember.
+ * not a fixed on-value.
  */
 export function makeCurrentValueDisplayTypeDefaultControl(
   self: PromotableDisplay,
-  slots: string[],
+  slot: string,
 ): DisplayTypeDefaultControl {
-  const entries: PromotableEntry[] = []
-  for (const slot of slots) {
-    const res = resolveSlot(self, slot)
-    if (!res.callback) {
-      entries.push({ slot, value: res.value })
-    }
-  }
-  // a callback slot contributes no entry, so a short list means at least one of
-  // them has no current value to promote
-  return entries.length < slots.length
-    ? { active: false, disabled: true, toggle: () => {} }
-    : makeSlotsValueDisplayTypeDefaultControl(self, entries)
+  return makeDisplayTypeDefaultControl(
+    self,
+    slot,
+    resolveSlot(self, slot).value,
+  )
 }
 
 /**
@@ -392,9 +323,8 @@ export function getDisplayTypeDefaultChanges(
 ): TrackConfigChange[] {
   const changes: TrackConfigChange[] = []
   for (const slot of promotableSlotNames(self.configuration)) {
-    // `customized` first: a customized slot inherits nothing. It also narrows
-    // the callback branch away (which is always customized), which is what makes
-    // `.value` readable here — this caller has no context to evaluate one with
+    // `customized` first: a customized slot inherits nothing, so it is not a
+    // difference this display picked up from the session
     const res = resolveSlot(self, slot)
     if (!res.customized && !deepEqual(res.value, res.base)) {
       changes.push({
@@ -418,6 +348,6 @@ export function getDisplayTypeDefaultChanges(
 export function clearPromotedDefaults(self: PromotableDisplay): void {
   const session = getSession(self)
   for (const slot of promotableSlotNames(self.configuration)) {
-    session.setDisplayTypeDefault?.(self.type, slot, undefined)
+    session.setDisplayTypeDefault(self.type, slot, undefined)
   }
 }

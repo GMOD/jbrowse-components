@@ -283,7 +283,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setScrollZoom(arg: boolean) {
-        getSession(self).setScrollZoom?.(arg)
+        getSession(self).setScrollZoom(arg)
       },
       /**
        * #action

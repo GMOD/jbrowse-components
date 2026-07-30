@@ -44,7 +44,7 @@ function stateModelFactory() {
        * record of what the sender saw, and a local preference silently
        * repainting it would make it a lie. A track opened *afterwards* in that
        * same session is a fresh track of this user's, so it never gets the flag
-       * and picks up their defaults normally. Cleared by `resetSlotsToInherit`
+       * and picks up their defaults normally. Cleared by `resetSlotToInherit`
        * when the user deliberately makes the display follow a default.
        */
       ignorePromotedDefaults: types.stripDefault(types.boolean, false),

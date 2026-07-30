@@ -382,7 +382,7 @@ export default function stateModelFactory(
         /** #getter */
         // Resolved through the promotable-slot tiers: a track pins 'off'/'normal'
         // explicitly, else follows the session-wide default (view-as-pairs),
-        // falling back to 'off'. getConf never returns the unset sentinel.
+        // falling back to 'off'. resolveConf never returns the unset sentinel.
         // See promotableDefaults.ts.
         get linkedReads(): LinkedReadsMode {
           return resolveConf(self, 'linkedReads')
@@ -452,7 +452,7 @@ export default function stateModelFactory(
         /** #getter */
         // Resolved through the promotable-slot tiers: a track pins
         // 'off'/'arc'/'cloud' explicitly, else follows the session-wide
-        // default, falling back to 'off'. getConf never returns the
+        // default, falling back to 'off'. resolveConf never returns the
         // unset sentinel. See promotableDefaults.ts.
         get readConnections(): ReadConnectionsMode {
           return resolveConf(self, 'readConnections')
@@ -471,9 +471,9 @@ export default function stateModelFactory(
           return makeDisplayTypeDefaultControl(self, 'readConnections', 'cloud')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConf): a
+        // Resolved through the promotable-slot tiers (resolveConf): a
         // maybeBoolean sentinel (like showSoftClipping) — an unset track follows
-        // the session-wide default, else the promotedBase (true). getConf
+        // the session-wide default, else the promotedBase (true). resolveConf
         // never surfaces the `undefined` inherit sentinel.
         get readConnectionsDown(): boolean {
           return resolveConf(self, 'readConnectionsDown')
@@ -483,9 +483,10 @@ export default function stateModelFactory(
         // track's current resolved value, so either direction (below or above the
         // coverage band) can be made the session-wide default.
         get readConnectionsDownDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(self, [
+          return makeCurrentValueDisplayTypeDefaultControl(
+            self,
             'readConnectionsDown',
-          ])
+          )
         },
         /** #getter */
         get showSashimiArcs(): boolean {
@@ -522,7 +523,7 @@ export default function stateModelFactory(
           return getConf(self, 'readConnectionsHeight')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConf): an
+        // Resolved through the promotable-slot tiers (resolveConf): an
         // explicit track value customizes soft clipping on or off; otherwise it
         // follows the session-wide default, falling back to off. A `maybeBoolean`
         // slot, so (unlike the old plain boolean) an explicit "off" can be customized
@@ -536,9 +537,10 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get softClippingDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(self, [
+          return makeCurrentValueDisplayTypeDefaultControl(
+            self,
             'showSoftClipping',
-          ])
+          )
         },
       }))
       .volatile(() => {
@@ -925,9 +927,10 @@ export default function stateModelFactory(
          * currently shows.
          */
         get showSashimiLabelsDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(self, [
+          return makeCurrentValueDisplayTypeDefaultControl(
+            self,
             'showSashimiLabels',
-          ])
+          )
         },
 
         /**
@@ -957,7 +960,7 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // Resolved through the promotable-slot tiers (getConf): an
+        // Resolved through the promotable-slot tiers (resolveConf): an
         // explicit track value customizes the fade on or off; otherwise it follows the
         // session-wide default, falling back to off. A `maybeBoolean` slot, so
         // (unlike showSoftClipping) a session default of "on" can be customized back
@@ -973,9 +976,10 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get mismatchAlphaDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(self, [
+          return makeCurrentValueDisplayTypeDefaultControl(
+            self,
             'mismatchAlpha',
-          ])
+          )
         },
 
         /**

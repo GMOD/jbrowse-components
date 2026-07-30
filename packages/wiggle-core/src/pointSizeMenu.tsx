@@ -32,8 +32,9 @@ export function makeScatterPointSizeMenuItem(
     onReset: () => {
       self.setScatterPointSize(undefined)
     },
-    displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(self, [
+    displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
+      self,
       'scatterPointSize',
-    ]),
+    ),
   })
 }

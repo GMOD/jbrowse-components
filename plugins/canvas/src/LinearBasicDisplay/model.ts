@@ -247,7 +247,7 @@ export default function stateModelFactory(
               },
               displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
                 self,
-                ['displayDirectionalChevrons'],
+                'displayDirectionalChevrons',
               ),
             }),
           ]

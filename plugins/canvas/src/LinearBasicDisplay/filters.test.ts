@@ -88,6 +88,11 @@ function createDisplay(jexlFilters?: string[]) {
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
       },
+      // every promotable slot read walks the cascade through this; nothing is
+      // promoted in these tests, so every display resolves to its promotedBase
+      getDisplayTypeDefault() {
+        return undefined
+      },
       get themeOptions() {
         return undefined
       },

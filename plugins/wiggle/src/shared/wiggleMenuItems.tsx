@@ -119,9 +119,10 @@ export function makeLineWidthMenuItems(
           onReset: () => {
             self.setLineWidth(undefined)
           },
-          displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(self, [
+          displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
+            self,
             'lineWidth',
-          ]),
+          ),
         }),
       ],
     },

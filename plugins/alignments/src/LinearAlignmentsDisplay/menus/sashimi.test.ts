@@ -10,7 +10,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function control(): DisplayTypeDefaultControl {
   return {
     active: false,
-    disabled: false,
     toggle() {
       this.active = !this.active
     },

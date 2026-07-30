@@ -260,22 +260,25 @@ doesn't reach a menu-breaking throw at runtime; it fails to compile.
 
 ### Exported API (`@jbrowse/core/configuration`)
 
-An entry is a `{ slot, value }` pair (`PromotableEntry`); most controls take a
-group of them so several slots move as one unit.
+Every control is over **one slot and one value**. There is no grouped form: a
+pin that moved several slots at once existed while feature-height presets
+promoted `featureHeight` + `featureSpacing` together, but `featureSpacing` is now
+*derived* from `featureHeight` and never stored, so every adopter promotes
+exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 
 | Symbol | Returns / does | Drives |
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
 | `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, disabled, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
-| `makeCurrentValueDisplayTypeDefaultControl(self, slots)` | same, over the track's *current* resolved values; `disabled` when any of them is a `jexl:` callback | "promote whatever I'm showing" for symmetric / continuous settings |
+| `makeCurrentValueDisplayTypeDefaultControl(self, slot)` | same, over the track's *current* resolved value; `disabled` when it is a `jexl:` callback | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self)` | clears every promoted default for this display's type | badge "clear default" |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 
 `DisplayTypeDefaultControl` is
 `{ active: boolean; disabled: boolean; toggle: () => void }`.
-`active` = this exact value combination is the current default (filled pin);
+`active` = this value is the current default (filled pin);
 `disabled` greys the pin (only the promote-current builder sets it — see
 [Callback values](#callback-values-jexl));
 `toggle` sets or clears it.
@@ -305,17 +308,11 @@ worth the one extra click on a customized track; that track is now just counted
 in "Apply to N open tracks" like any other.
 
 The low-level primitives behind the builders —
-`makeSlotsValueDisplayTypeDefaultControl(self, entries)` (the grouped base
-builder both public ones delegate to), `isPromotableDefault(self, entries)`,
-`tracksDifferingFrom(self, entries)`, and `resetSlotsToInherit(displays, slots)`
-— are **module-internal** (exercised by `promotableDefaults.test.ts`), *not* on
-the public barrel. Consume the two `make*Control` builders, not these. The
-grouped base is internal because no adopter promotes more than one slot behind a
-single
-pin: feature-height presets once grouped `featureHeight` + `featureSpacing`, but
-`featureSpacing` is now *derived* from `featureHeight` and never stored, and the
-`colorBy` scheme row promotes the one `colorBy` slot. Export it again if a
-genuine multi-slot pin appears.
+`isPromotableDefault(self, slot, value)`,
+`tracksDifferingFrom(self, slot, value)`, and
+`resetSlotToInherit(displays, slot)` — are **module-internal** (exercised by
+`promotableDefaults.test.ts`), *not* on the public barrel. Consume the two
+`make*Control` builders, not these.
 
 **Which builder?**
 
@@ -344,9 +341,14 @@ promoted default its own tracked entry — promoting one can't invalidate a read
 of another, and every promotable display reads one per `rpcProps`. A single
 nested object reassigned wholesale made every setter wake every reader.
 Persists for free via the preferences mixin → localStorage; embedded products
-without that mixin resolve admin-only. Both are **optional** methods on
-`AbstractSessionModel` (`getDisplayTypeDefault?`) so a session that lacks them
-degrades to "no promoted defaults", never throws. `preferencesOverrides` is
+without that mixin resolve admin-only. Both are **required** methods on
+`AbstractSessionModel`, alongside the rest of the preference store
+(`setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`):
+`BaseSessionModel` declares them, so every product session has them, and each
+product's `AssertSessionModel<…>` turns a member drifting out of that set into a
+build error. So the resolver and the control builders call them plainly — the
+`?.` they used to carry only ever protected hand-rolled test session shims,
+which now declare `getDisplayTypeDefault` themselves. `preferencesOverrides` is
 `.volatile()`, so it's **kept off the session snapshot** deliberately — it's a
 local, per-browser UI preference, not shared-session state. (Admin-baked shared
 defaults ship separately via `configuration.preferences`.)
@@ -459,7 +461,7 @@ It exists because baking the values isn't sufficient on its own. Two cases:
 
 So the bake sets the flag on **every** open display, making the shared session a
 faithful frozen picture, immune to the recipient's local preferences. The flag
-is **cleared** by `resetSlotsToInherit` — i.e. the moment the recipient
+is **cleared** by `resetSlotToInherit` — i.e. the moment the recipient
 deliberately clicks "use this default", the display rejoins the cascade. A track
 the recipient opens *fresh* in a received session never gets the flag, so it
 picks up their defaults normally.
