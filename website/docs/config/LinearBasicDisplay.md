@@ -68,7 +68,7 @@ Color by an attribute with a jexl expression:
 ```json
 {
   "type": "LinearBasicDisplay",
-  "color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"
+  "color": "jexl:feature.type=='gene'?'blue':'gray'"
 }
 ```
 

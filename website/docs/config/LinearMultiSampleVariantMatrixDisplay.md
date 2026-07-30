@@ -116,7 +116,7 @@ whole surface.
 <!-- prettier-ignore -->
 | Slot | Description | From |
 | --- | --- | --- |
-| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>250</code> | Starting height in pixels for the genotype matrix, excluding the lineZoneHeight band; drag-resizable, and the rows divide it while row height is on auto-fit |  |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>250</code> | Starting height in pixels for the whole display, including the lineZoneHeight band above the rows; drag-resizable, and the rows divide what is left over while row height is on auto-fit |  |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | Raises the shared slot's 0 default: this display lays columns out by feature index, so it needs the zone for the lines tying each column back to its genomic position. Drag-resizable, like `height`.<br>_advanced_ |  |
 | <span id="slot-showreferencealleles">**showReferenceAlleles**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Starting value for drawing reference alleles. When false, the row background is filled solid grey and only ALT alleles are painted on top (makes overlapping variants easier to see); when true, reference alleles are drawn normally. Seeds referenceDrawingMode the first time a config is loaded. | [SharedVariantDisplay](../sharedvariantdisplay) |
 | <span id="slot-showsidebarlabels">**showSidebarLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the per-sample row labels in the sidebar | [SharedVariantDisplay](../sharedvariantdisplay) |

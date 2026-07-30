@@ -43,7 +43,7 @@ gives per-feature coloring:
     type: 'Gff3TabixAdapter',
     uri: 'https://example.com/genes.sorted.gff.gz',
   },
-  displayDefaults: { color: "jexl:get(feature,'type')=='CDS'?'red':'blue'" },
+  displayDefaults: { color: "jexl:feature.type=='CDS'?'red':'blue'" },
 }
 ```
 

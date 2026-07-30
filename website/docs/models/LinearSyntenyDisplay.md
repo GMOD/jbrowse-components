@@ -80,8 +80,8 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-parenthelper">**parentHelper**</span><br><code>{ height: number; level: number; }</code> |  | LinearSyntenyDisplay |
-| <span id="getter-level">**level**</span><br><code>number</code> |  | LinearSyntenyDisplay |
+| <span id="getter-parenthelper">**parentHelper**</span><br><code>LevelDuck</code> | The level (row gap) this display's track sits on. Found by predicate rather than by hop count — see isSyntenyLevel. | LinearSyntenyDisplay |
+| <span id="getter-level">**level**</span><br><code>number</code> | Index of the level (row gap) this display draws in: between `view.views[level]` and `view.views[level + 1]`. | LinearSyntenyDisplay |
 | <span id="getter-displaykey">**displayKey**</span><br><code>number</code> | Stable backend key under the view-shared backend. | LinearSyntenyDisplay |
 | <span id="getter-height">**height**</span><br><code>number</code> |  | LinearSyntenyDisplay |
 | <span id="getter-adapterconfig">**adapterConfig**</span><br><code>any</code> |  | LinearSyntenyDisplay |
