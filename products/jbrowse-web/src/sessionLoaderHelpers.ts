@@ -6,6 +6,7 @@ import { addRelativeUris } from './util.ts'
 
 import type { Snap } from './types.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Loads the plugin definitions a config or session named, returning the ones
@@ -94,6 +95,10 @@ export function splitHighlights(str: string) {
 // init shape. Shared by the loader's defaultSessionViewInit getter (layered onto
 // the default session) and buildJb1SessionSpec (wrapped into a full spec), so
 // the comma/space splitting can't drift between the two.
+//
+// A param the URL omits is left off the result rather than set to undefined:
+// applyDefaultSessionViewInit merges this over the view's own pending init, and
+// a present-but-undefined key there would erase what the defaultSession set.
 export function buildLgvInit(args: {
   loc?: string
   tracks?: string
@@ -102,18 +107,33 @@ export function buildLgvInit(args: {
   nav?: boolean
   highlight?: string
   regions?: string
-}) {
-  return {
-    loc: args.loc,
-    assembly: args.assembly,
-    tracks: args.tracks?.split(','),
-    tracklist: args.tracklist,
-    nav: args.nav,
-    highlight: args.highlight ? splitHighlights(args.highlight) : undefined,
+}): Partial<InitState> {
+  const { loc, tracks, assembly, tracklist, nav, highlight, regions } = args
+  const init: Partial<InitState> = {}
+  if (loc !== undefined) {
+    init.loc = loc
+  }
+  if (assembly !== undefined) {
+    init.assembly = assembly
+  }
+  if (tracks !== undefined) {
+    init.tracks = tracks.split(',')
+  }
+  if (tracklist !== undefined) {
+    init.tracklist = tracklist
+  }
+  if (nav !== undefined) {
+    init.nav = nav
+  }
+  if (highlight !== undefined) {
+    init.highlight = splitHighlights(highlight)
+  }
+  if (regions !== undefined) {
     // restrict a whole-genome view (no loc) to these named chromosomes, in
     // order; resolved through assembly aliases in afterAttach's showNamedRegions
-    displayedRegionNames: args.regions?.split(','),
+    init.displayedRegionNames = regions.split(',')
   }
+  return init
 }
 
 export function buildJb1SessionSpec(args: {

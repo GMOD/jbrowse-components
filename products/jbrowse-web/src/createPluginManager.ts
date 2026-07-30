@@ -15,6 +15,7 @@ import type {
   PluginLoadFailure,
   PluginRecord,
 } from '@jbrowse/core/PluginLoader'
+import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 
 // Structural read-only view of SessionLoader. Kept narrow so it can be
 // satisfied both by an Instance<SessionLoader> and by `self` inside an MST
@@ -30,14 +31,9 @@ export interface PluginManagerSource {
   readonly sessionName?: string
   readonly initialTimestamp: number
   readonly sessionQuery?: string
-  readonly defaultSessionViewInit?: {
-    loc?: string
-    assembly?: string
-    tracks?: string[]
-    tracklist?: boolean
-    nav?: boolean
-    highlight?: string[]
-  }
+  // the URL-param subset of the LGV launch spec; derived from InitState rather
+  // than restated so a new field can't go missing on the way through
+  readonly defaultSessionViewInit?: Partial<InitState>
 }
 
 function asPluginRecord({ plugin: P, definition }: PluginRecord) {
