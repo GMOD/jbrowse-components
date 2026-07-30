@@ -71,13 +71,19 @@ function setup({
   return {
     model,
     session,
-    // brings the connection up and hands it its tracks, inside act so React sees
-    // the observable change. The conf is hydrated from config, so it is a real
-    // configuration model rather than a plain snapshot.
+    // brings the connection up with its tracks already in its initial
+    // snapshot, inside act so React sees the observable change. The conf is
+    // hydrated from config, so it is a real configuration model rather than a
+    // plain snapshot. Tracks go in up front rather than via addTrackConfs
+    // after attach: BaseConnectionModelFactory's afterAttach only fires the
+    // connection's real connect() when it attaches with an empty tracks
+    // array, and this connection stub has no dataDirLocation for connect()
+    // to fetch from.
     loadConnection: () => {
       act(() => {
-        const conn = session.makeConnection(session.connections[0]!)
-        conn.addTrackConfs(connectionTracks ?? [])
+        session.makeConnection(session.connections[0]!, {
+          tracks: connectionTracks ?? [],
+        })
       })
     },
     ...utils,
