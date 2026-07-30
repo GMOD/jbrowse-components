@@ -205,6 +205,26 @@ function createBlastLineParser(columns: string) {
   }
 }
 
+// One side of a BLAST hit resolved to the perspective the view is anchored on,
+// in JBrowse coordinates: BLAST writes 1-based inclusive coordinates and encodes
+// orientation by writing start > end, so each side is normalized to a forward
+// half-open interval carrying its own strand. The feature's strand is the
+// product, i.e. -1 when the two sides disagree.
+function orientBlastSide(startCol: number, endCol: number) {
+  const flipped = startCol > endCol
+  const start = flipped ? endCol : startCol
+  const end = flipped ? startCol : endCol
+  return { start: start - 1, end, strand: flipped ? -1 : 1 }
+}
+
+// BLAST states percent identity per hit; without it a synteny track colored by
+// identity has nothing to read (`pident` rides along as a string tag, which the
+// identity ramp does not look at).
+function blastIdentity(pident: string | undefined) {
+  const v = Number(pident)
+  return Number.isFinite(v) ? v / 100 : undefined
+}
+
 export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTabularAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -265,70 +285,38 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTab
       ) {
         console.warn(`${queryAssemblyName} not found in this adapter`)
       } else {
+        const flip = queryAssemblyName === queryAssembly
         for (let i = 0; i < blastRecords.length; i++) {
-          const r = blastRecords[i]!
-          let start: number
-          let end: number
-          let refName: string
-          let assemblyName: string | undefined
-          let mateStart: number
-          let mateEnd: number
-          let mateRefName: string
-          let mateAssemblyName: string | undefined
-
-          const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } = r
-          if (queryAssemblyName === queryAssembly) {
-            start = qstart
-            end = qend
-            refName = qseqid
-            assemblyName = queryAssembly
-            mateStart = sstart
-            mateEnd = send
-            mateRefName = sseqid
-            mateAssemblyName = targetAssembly
-          } else {
-            start = sstart
-            end = send
-            refName = sseqid
-            assemblyName = targetAssembly
-            mateStart = qstart
-            mateEnd = qend
-            mateRefName = qseqid
-            mateAssemblyName = queryAssembly
-          }
-          let strand = 1
-          let mateStrand = 1
-          if (start > end) {
-            ;[start, end] = [end, start]
-            strand = -1
-          }
-          if (mateStart > mateEnd) {
-            ;[mateStart, mateEnd] = [mateEnd, mateStart]
-            mateStrand = -1
-          }
-          // Convert from BLAST 1-based to JBrowse 0-based coordinates
-          start -= 1
-          mateStart -= 1
+          const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } =
+            blastRecords[i]!
+          const refName = flip ? qseqid : sseqid
+          const side = flip
+            ? orientBlastSide(qstart, qend)
+            : orientBlastSide(sstart, send)
           if (
             refName === queryRefName &&
-            doesIntersect2(queryStart, queryEnd, start, end)
+            doesIntersect2(queryStart, queryEnd, side.start, side.end)
           ) {
+            const mate = flip
+              ? orientBlastSide(sstart, send)
+              : orientBlastSide(qstart, qend)
             observer.next(
               new SyntenyFeature({
                 uniqueId: i + queryAssemblyName,
-                assemblyName,
-                start,
-                end,
+                assemblyName: queryAssemblyName,
+                start: side.start,
+                end: side.end,
                 type: 'match',
                 refName,
-                strand: strand * mateStrand,
+                strand: side.strand * mate.strand,
                 syntenyId: i,
+                identity: blastIdentity(rest.pident),
                 ...rest,
                 mate: {
-                  start: mateStart,
-                  end: mateEnd,
-                  refName: mateRefName,
-                  assemblyName: mateAssemblyName,
+                  start: mate.start,
+                  end: mate.end,
+                  refName: flip ? sseqid : qseqid,
+                  assemblyName: flip ? targetAssembly : queryAssembly,
                 },
               }),
             )

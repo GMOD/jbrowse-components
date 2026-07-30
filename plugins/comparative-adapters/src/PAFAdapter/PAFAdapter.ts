@@ -105,7 +105,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   start: mateStart,
                   end: mateEnd,
                   refName: mateRefName,
-                  assemblyName: assemblyNames[+flip]!,
+                  assemblyName: assemblyNames[flip ? 1 : 0]!,
                 },
               }),
             )

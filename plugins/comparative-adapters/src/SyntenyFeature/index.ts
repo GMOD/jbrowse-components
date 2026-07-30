@@ -52,7 +52,16 @@ export default class SyntenyFeature extends SimpleFeature {
       const lo = ws ?? Number.NEGATIVE_INFINITY
       const hi = we ?? Number.POSITIVE_INFINITY
       for (const m of getMismatches(this.get('CIGAR') as string | undefined)) {
-        if (m.start >= lo && m.start <= hi) {
+        // Deletions and skips are spans, so one that starts left of the window
+        // but reaches into it still draws — the overlap test the cs path and
+        // BAM's forEachMismatchNumeric both apply. Clipping them on start
+        // alone made a deletion larger than the viewport vanish exactly when
+        // zoomed into it.
+        const visible =
+          m.type === 'deletion' || m.type === 'skip'
+            ? m.start < hi && m.start + m.length > lo
+            : m.start >= lo && m.start <= hi
+        if (visible) {
           if (m.type === 'mismatch') {
             callback(
               MISMATCH_TYPE,

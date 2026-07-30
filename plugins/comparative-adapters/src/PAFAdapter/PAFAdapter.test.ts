@@ -1,3 +1,7 @@
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -121,4 +125,28 @@ test('getRefNames returns empty when no regions provided', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames({})
   expect(refNames).toEqual([])
+})
+
+// odgi untangle writes its identity as an `id:f:` tag. It feeds the feature's
+// identity, but must not land in the feature data as `id` — the synteny tooltip
+// falls back to that for a name, so such a row labelled itself "0.98".
+test('an id:f: tag becomes identity, not the feature name', async () => {
+  const path = join(mkdtempSync(join(tmpdir(), 'paf-id-')), 'in.paf')
+  writeFileSync(
+    path,
+    'q1\t1000\t100\t200\t+\tt1\t2000\t300\t400\t95\t100\t60\tid:f:0.98\n',
+  )
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      pafLocation: { localPath: path, locationType: 'LocalPathLocation' },
+      assemblyNames: ['q', 't'],
+    }),
+  )
+  const [f] = await firstValueFrom(
+    adapter
+      .getFeatures({ refName: 't1', start: 0, end: 1000, assemblyName: 't' })
+      .pipe(toArray()),
+  )
+  expect(f!.get('identity')).toBeCloseTo(0.98)
+  expect(f!.get('id')).toBeUndefined()
 })

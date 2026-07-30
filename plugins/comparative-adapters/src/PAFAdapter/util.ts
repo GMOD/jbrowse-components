@@ -167,7 +167,11 @@ export function makeSyntenyFeature({
   flip: boolean
   mate: { refName: string; start: number; end: number; assemblyName: string }
 }) {
-  const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
+  // `id` (odgi untangle's identity tag) is read by pafIdentity below and then
+  // dropped rather than spread: as feature data it becomes the feature's `id`,
+  // which the synteny tooltip falls back to for a name — so a row tagged
+  // id:f:0.98 labelled itself "0.98".
+  const { numMatches = 0, blockLen = 1, cg, cs, id: _id, ...rest } = extra
   const { CIGAR, cs: orientedCs } = orientAlignment({ cg, cs, flip, strand })
   return new SyntenyFeature({
     uniqueId: syntenyId + assemblyName,

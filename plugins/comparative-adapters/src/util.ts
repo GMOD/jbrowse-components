@@ -113,11 +113,14 @@ export function parseBed(text: string) {
     if (line && !line.startsWith('#')) {
       const [refName, start, end, name, score, strand] = line.split('\t')
       if (refName && start && end && name) {
+        // BED writes an absent score as `.` (and jcvi's BEDs often do), which
+        // `+score` turned into a NaN that rode all the way out to the feature
+        const numScore = Number(score)
         result.set(name, {
           refName,
           start: +start,
           end: +end,
-          score: +(score ?? 0),
+          score: Number.isFinite(numScore) ? numScore : 0,
           name,
           strand: strand === '-' ? -1 : 1,
         })
@@ -127,21 +130,19 @@ export function parseBed(text: string) {
   return result
 }
 
-export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  return fetchAndMaybeUnzipText(file, opts)
-}
-
 /**
- * {@link readFile} for a set of files downloaded at once (MCScan's BED sidecars
- * plus its anchors/blocks file). They share one status field, so each gets its
- * own {@link createStatusFanOut} slot: unslotted, the downloads took turns
+ * Download a set of files at once (MCScan's BED sidecars plus its
+ * anchors/blocks file). They share one status field, so each gets its own
+ * {@link createStatusFanOut} slot: unslotted, the downloads took turns
  * overwriting it and the first to finish blanked the label while the rest were
  * still running. Aggregated they read as one Σbytes bar.
  */
 export function readFiles(files: GenericFilehandle[], opts?: BaseOptions) {
   const slot = createStatusFanOut(opts?.statusCallback)
   return Promise.all(
-    files.map(file => readFile(file, { ...opts, statusCallback: slot() })),
+    files.map(file =>
+      fetchAndMaybeUnzipText(file, { ...opts, statusCallback: slot() }),
+    ),
   )
 }
 
@@ -386,8 +387,18 @@ export function makeIndexedSyntenyFeature({
   mate: { start: number; end: number; refName: string; assemblyName: string }
 }) {
   const { extra, strand, indexedStart, indexedEnd } = line
-  const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
-  const CIGAR = cg ?? (typeof cs === 'string' ? csToCigar(cs) : undefined)
+  // `id` is dropped for the reason makeSyntenyFeature drops it: pafIdentity
+  // reads it below, and as feature data it would become the feature's `id` and
+  // be shown as its name.
+  const { numMatches = 0, blockLen = 1, cg, cs, id: _id, ...rest } = extra
+  // a PIF row's tags are untyped strings/numbers, so both tags are narrowed
+  // rather than assumed to be strings
+  const CIGAR =
+    typeof cg === 'string'
+      ? cg
+      : typeof cs === 'string'
+        ? csToCigar(cs)
+        : undefined
   return new SyntenyFeature({
     uniqueId: fileOffset + assemblyName,
     assemblyName,
