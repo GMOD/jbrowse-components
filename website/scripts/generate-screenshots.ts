@@ -86,7 +86,7 @@ const { values } = parseArgs({
 })
 
 // Parse a numeric CLI option, returning undefined when absent. A present but
-// unparseable value exits rather than falling back to the default: the same
+// unparsable value exits rather than falling back to the default: the same
 // reason parseArgs is strict about unknown flags — `--diff-threshold .5%` or
 // `--concurrency 4x` otherwise runs the whole suite under the default and
 // reports success, which is indistinguishable from the flag having worked.
