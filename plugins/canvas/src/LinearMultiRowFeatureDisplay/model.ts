@@ -47,6 +47,7 @@ import {
 } from './rendering/resolveLocalRowIndices.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
+  applyRowGroups,
   buildEditableSources,
   orderPartitionValues,
   resolveRowColors,
@@ -62,7 +63,7 @@ import type {
   MultiRowRenderState,
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource } from './sourcesLogic.ts'
+import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -256,6 +257,16 @@ export default function stateModelFactory(
       get rowProportion(): number {
         return readConfObject(self.conf, 'rowProportion')
       },
+      /**
+       * #getter
+       * Regex-to-group entries tagging rows with a sidebar swatch color. Applied
+       * in `sources`, downstream of `layout`, so the derived color never lands in
+       * persisted state — a `rowGroups` edit then takes effect on a session that
+       * already has a clustered layout, instead of losing to the stale copy.
+       */
+      get rowGroups(): RowGroup[] {
+        return readConfObject(self.conf, 'rowGroups')
+      },
     }))
     .views(self => ({
       /**
@@ -303,7 +314,10 @@ export default function stateModelFactory(
        * this, so reordering/filtering flows through to the painting.
        */
       get sources(): MultiRowSource[] {
-        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+        return applyRowGroups(
+          filterRowsBySubtree(self.editableSources, self.subtreeFilter),
+          self.rowGroups,
+        )
       },
     }))
     .views(self => ({

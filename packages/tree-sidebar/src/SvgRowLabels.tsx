@@ -34,7 +34,14 @@ function colorRuns(sources: Source[]) {
       }
     }
   }
-  return runs
+  // Longest first, so the shortest runs paint last and a rare mark is never
+  // buried by a common one. Once a run is floored to a pixel it is taller than
+  // the rows it covers, so a later rect overdraws its neighbour -- in row order
+  // that silently costs the minority group (307 village dogs erased 40% of the
+  // 63 wolves interleaved with them, which is exactly the group the stripe
+  // exists to find). Painting order is the only thing this changes; every rect
+  // keeps its true `y`.
+  return runs.sort((a, b) => b.end - b.start - (a.end - a.start))
 }
 
 export function SvgRowLabels({
@@ -111,7 +118,12 @@ export function SvgRowLabels({
     <g transform={`translate(${labelOffset} 0)`}>
       {runs.map(run => {
         const y = run.start * rowHeight - scrollTop
-        const height = (run.end - run.start) * rowHeight
+        // Floored at a pixel: the swatch is a marker pointing at rows, not a
+        // measurement of their extent, and a 0.32px rect antialiases to nothing.
+        // `y` stays exact, so a mark never moves off the row it belongs to — it
+        // can only overdraw its neighbour, which reads as "mixed here" and is
+        // true. The painting itself keeps sub-pixel honesty; this is the index.
+        const height = Math.max((run.end - run.start) * rowHeight, 1)
         return offscreen(y, height) ? null : (
           <rect
             key={run.key}

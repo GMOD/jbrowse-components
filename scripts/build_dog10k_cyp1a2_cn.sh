@@ -452,8 +452,37 @@ PY
 bgzip -f dog10k_cyp1a2_cohort_cn.bed
 tabix -f -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 
+# ── The wild canids on their own ────────────────────────────────────────────
+# The same rows, restricted to Canis lupus (CLUP) and Canis latrans (CLAT).
+#
+# This exists because the comparison cannot be made inside the collection track.
+# Wild canids are a few dozen rows against nearly two thousand, so however they
+# are marked or grouped there they occupy a thirtieth of the height, and "is
+# this group redder than the rest" is a question about the *proportion* of each
+# group that is red -- which a reader cannot judge between two bands whose
+# heights differ by that much. Given its own track at the same pixel height, the
+# small group is drawn at the same scale as the large one and the two are
+# directly comparable. No new measurement: it is a strict subset of the file
+# written above.
+# The split is exact and exhaustive -- every row of the collection lands in one
+# file or the other -- so the two together are the collection and neither
+# contains the other. Painted as two lanes of equal pixel height, "how much of
+# this lane is red" is then the same question asked of both.
+zcat dog10k_cyp1a2_cohort_cn.bed.gz \
+  | awk -F'\t' '$10 ~ /^(CLUP|CLAT)/' > dog10k_cyp1a2_wild_cn.bed
+zcat dog10k_cyp1a2_cohort_cn.bed.gz \
+  | awk -F'\t' '$10 !~ /^(CLUP|CLAT)/' > dog10k_cyp1a2_domestic_cn.bed
+for part in wild domestic; do
+  bgzip -f "dog10k_cyp1a2_${part}_cn.bed"
+  tabix -f -p bed "dog10k_cyp1a2_${part}_cn.bed.gz"
+  printf '%s %s rows across %s animals\n' \
+    "$(zcat "dog10k_cyp1a2_${part}_cn.bed.gz" | wc -l)" "$part" \
+    "$(zcat "dog10k_cyp1a2_${part}_cn.bed.gz" | cut -f10 | sort -u | wc -l)"
+done
+
 echo
-echo "Wrote $(pwd)/dog10k_cyp1a2_cn.bed.gz, one painted row per CRAM dog, and"
-echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset."
+echo "Wrote $(pwd)/dog10k_cyp1a2_cn.bed.gz, one painted row per CRAM dog,"
+echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset,"
+echo "     $(pwd)/dog10k_cyp1a2_wild_cn.bed.gz, the wild canids of that file."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
 echo "check its legend slot against the block printed above."

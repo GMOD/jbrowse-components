@@ -158,18 +158,39 @@ two agree at r = 0.97 with no bias. That painting is in the config as
 dogs have CRAMs is an accident of what the share published, so the picture
 invites a question about those breeds that the data cannot answer.
 
-<Figure caption="Copy number over CYP1A2 for every canid in the Dog10K callset, one row each, each 5 kb window colored by its rounded copy number and clustered by profile with the dendrogram in the sidebar. Grey is copy number two, so the expansion over the gene is the only ink; the flanks are the control and stay grey across the collection." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2, one row per animal, each 5 kb window colored by its rounded copy number and the rows sorted by the copy number each animal carries over the gene. The collection is split into its two halves and drawn at the same height so the lanes are comparable: wild canids above, domestic dogs below. Over the gene the wild lane is mostly red where the dog lane is mostly pale. Grey is copy number two, so the expansion is the only ink and the flanks stay grey in both. The stripe in the top lane separates wolves (black) from the four coyotes (orange), which sit at the bottom of it." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
-The expansion appears throughout the collection rather than in one clade, which
-is the paper's own conclusion and suggests it predates breed formation. The
-dendrogram also resolves a handful of distinct profiles rather than a gradient,
-so a dog's copy number at this locus is closer to a genotype than to a
-continuous measurement.
+Sorting the rows rather than clustering them is what makes the figure readable.
+Clustering answers "how many distinct profiles are there", which needs a
+dendrogram a reader can follow — and at a third of a pixel a row there is no
+such thing. Sorting on the copy number each dog carries over the gene answers
+"how is copy number distributed across the collection" instead, and the answer
+is the picture: five bands with sharp edges rather than a gradient, so a dog's
+copy number here is closer to a genotype than to a continuous measurement. The
+sort is one click — right-click the column you want to sort on and pick **Sort
+rows by color here** — or the `sortRowsBy` field in the config; clustering is
+still on the track menu if the profile question is the one you want.
 
-At 1,987 rows the sidebar cannot label anything (a row is a third of a pixel),
-so the figure answers how many distinct profiles there are rather than which
-breed is which. Naming the clusters would need the breed carried onto the rows,
-which is a display feature rather than a caption.
+Splitting the collection into two lanes is what makes the comparison readable.
+Wild canids are a few dozen rows against nearly two thousand, so inside a single
+track they occupy a thirtieth of the height — findable, but not a pattern anyone
+can see, because "is this group redder than the rest" is a question about the
+proportion of each group that is red and no reader can judge that between bands
+of such different heights. Two lanes at the same pixel height ask both the same
+question. The two files partition the collection exactly, so neither lane
+contains the other and together they are still every canid.
+
+Row labels are impossible in the lower lane — a fraction of a pixel fits no text
+— so the sidebar carries a color stripe instead of names, set by `rowGroups`, a
+regex on the row name. In the upper lane there is room for it to do real work,
+separating the wolves from the coyotes. Mark the small group rather than the big
+one: each mark is floored to a pixel so it stays visible, which makes it taller
+than the row it points at, so a group holding a large share of the rows would
+paint most of the stripe.
+
+Treat the wolf result as suggestive rather than settled. It rests on the
+callset-depth estimate alone, because none of the dogs with published reads is a
+wolf, so it is the one claim here with no independent measurement behind it.
 
 One number does not reproduce here. This estimate puts 80% of the collection at
 three or more copies where the paper reports 49.7%, and the two independent

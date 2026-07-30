@@ -207,6 +207,50 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Group and mark rows: an array of `{ match, group, color }` where
+       * `match` is a regex tested against the row name (the partition value).
+       * The first matching entry wins, its `color` becomes that row's sidebar
+       * swatch, and matched rows are pulled into contiguous blocks in the order
+       * the entries are declared, ahead of everything unmatched.
+       *
+       * It groups as well as marks because marking alone does not survive a
+       * large cohort: rows spread through a couple of thousand sorted neighbours
+       * land as a few specks that read as noise, where the same rows in one
+       * block read as a group whose colors can be compared against the rest.
+       * Within a block the incoming order is kept, so a `sortRowsBy` still
+       * orders each block by the value it sorted on.
+       *
+       * Use this when the row identity encodes a grouping the painting does not
+       * — cohort IDs whose prefix names a population, say — and the cohort is
+       * far too large to enumerate in `layout`. The color tints the swatch only,
+       * never the blocks, so it composes with an `itemRgb` painting instead of
+       * overwriting it.
+       *
+       * **Mark the small group, not the big one.** Rows matching nothing get no
+       * swatch, and that is the point: below a pixel a row the swatch is floored
+       * to a pixel so it stays visible, which makes every mark taller than the
+       * row it points at. The stripe is then a marker, not a proportional
+       * encoding — 307 of 1,987 rows (15%) came out as 48% of the stripe's ink,
+       * which reads as a majority. Marking 63 wolves out of the same 1,987 costs
+       * 10% of the ink and reads correctly, as sparse ticks. Keep the matched
+       * groups to the ones a reader is hunting for.
+       *
+       * #example
+       * ```js
+       * rowGroups: [
+       *   { match: '^CLUP', group: 'Wolf', color: 'rgb(27,120,55)' },
+       *   { match: '^CLAT', group: 'Coyote', color: 'rgb(224,130,20)' },
+       * ]
+       * ```
+       */
+      rowGroups: {
+        type: 'frozen',
+        defaultValue: [],
+        description:
+          'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only',
+      },
+      /**
+       * #slot
        */
       showTree: {
         type: 'boolean',

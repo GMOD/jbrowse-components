@@ -188,8 +188,144 @@
             {
               "label": "CN 6+",
               "color": "rgb(103,0,31)"
+            },
+            {
+              "label": "Wolf",
+              "color": "rgb(0,0,0)"
+            },
+            {
+              "label": "Coyote",
+              "color": "rgb(230,159,0)"
+            }
+          ],
+          "rowGroups": [
+            {
+              "match": "^CLUP",
+              "group": "Wolf",
+              "color": "rgb(0,0,0)"
+            },
+            {
+              "match": "^CLAT",
+              "group": "Coyote",
+              "color": "rgb(230,159,0)"
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_cyp1a2_wild_cn",
+      "name": "CYP1A2 copy number, wild canids (67 wolves and coyotes)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "copyNumber"
+        ],
+        "uri": "dog10k_cyp1a2_wild_cn.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_cyp1a2_wild_cn-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+          "showLegend": true,
+          "rowGroups": [
+            {
+              "match": "^CLUP",
+              "group": "Wolf",
+              "color": "rgb(0,0,0)"
+            },
+            {
+              "match": "^CLAT",
+              "group": "Coyote",
+              "color": "rgb(230,159,0)"
+            }
+          ],
+          "legend": [
+            {
+              "label": "CN 0",
+              "color": "rgb(33,102,172)"
+            },
+            {
+              "label": "CN 1",
+              "color": "rgb(146,197,222)"
+            },
+            {
+              "label": "CN 2",
+              "color": "rgb(224,224,224)"
+            },
+            {
+              "label": "CN 3",
+              "color": "rgb(244,165,130)"
+            },
+            {
+              "label": "CN 4",
+              "color": "rgb(214,96,77)"
+            },
+            {
+              "label": "CN 5",
+              "color": "rgb(178,24,43)"
+            },
+            {
+              "label": "CN 6+",
+              "color": "rgb(103,0,31)"
+            },
+            {
+              "label": "Wolf",
+              "color": "rgb(0,0,0)"
+            },
+            {
+              "label": "Coyote",
+              "color": "rgb(230,159,0)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_cyp1a2_domestic_cn",
+      "name": "CYP1A2 copy number, domestic dogs (1920)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "copyNumber"
+        ],
+        "uri": "dog10k_cyp1a2_domestic_cn.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_cyp1a2_domestic_cn-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+          "showLegend": false
         }
       ]
     },

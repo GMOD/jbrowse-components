@@ -97,6 +97,19 @@ Two properties of that mode are load-bearing:
   putting a DOM node per row into an overlay that re-renders on scroll — and
   since clustering puts like rows adjacent, the runs are the blocks a reader is
   meant to see. An uncolored row breaks a run rather than being bridged.
+- **The rect is floored to a pixel, and the runs paint longest-first.** A 0.32px
+  rect antialiases to nothing, so the floor is what makes the mark exist; `y`
+  stays exact, so a mark never leaves its own row. But a floored rect is taller
+  than the rows it covers, so it overdraws its neighbour — and in row order that
+  silently costs the rarest group, which is the one worth marking (307 village
+  dogs erased 40% of the 63 wolves interleaved with them). Longest-first
+  painting puts the rare mark on top.
+
+The floor has a consequence for callers: **the stripe is a marker, not a
+proportional encoding.** Every mark is inflated relative to its row, so a group
+holding 15% of the rows can paint half the stripe. Mark the group a reader is
+hunting for, not the majority — see `rowGroups` in
+`LinearMultiRowFeatureDisplay`'s config schema.
 
 This is still only `labelColor` — see the swatch-column warning below.
 

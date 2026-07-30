@@ -3,12 +3,75 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { reconcileLayout } from '@jbrowse/tree-sidebar'
 
 // A row in the painting. `name` is the partition value (the row identity, and
-// the tree leaf name); the rest are user arrangement overrides.
+// the tree leaf name); the rest are user arrangement overrides. `labelColor`
+// tints the sidebar swatch only — never the blocks — see `applyRowGroups`.
 export interface MultiRowSource {
   name: string
   label?: string
   color?: string
   group?: string
+  labelColor?: string
+}
+
+// One `rowGroups` config entry: rows whose name matches `match` (a regex) join
+// `group` and take `color` as their sidebar swatch. Ordered — first match wins.
+export interface RowGroup {
+  match: string
+  group: string
+  color: string
+}
+
+/**
+ * Tag each row with the first `rowGroups` entry whose pattern its name matches,
+ * taking that entry's color as the row's `labelColor`.
+ *
+ * The color lands in `labelColor` (the sidebar swatch) rather than `color` (the
+ * blocks) because this display spends `color` on the painting — a per-feature
+ * `itemRgb` copy-number ramp, say — so a group hue there would overwrite the
+ * encoding the track is read by. Same split multiwiggle density mode makes for
+ * the same reason.
+ *
+ * A row that already carries an explicit `labelColor` (set through the
+ * arrangement dialog) keeps it. An entry whose `match` is not a valid regex
+ * matches nothing, so one bad config line costs its own stripe rather than the
+ * display.
+ */
+export function applyRowGroups(
+  sources: MultiRowSource[],
+  rowGroups: RowGroup[],
+): MultiRowSource[] {
+  const compiled = rowGroups.flatMap(g => {
+    try {
+      return [{ ...g, re: new RegExp(g.match) }]
+    } catch {
+      return []
+    }
+  })
+  if (!compiled.length) {
+    return sources
+  }
+  const tagged = sources.map(s => {
+    const rank =
+      s.labelColor === undefined
+        ? compiled.findIndex(g => g.re.test(s.name))
+        : -1
+    const hit = rank === -1 ? undefined : compiled[rank]!
+    return {
+      source: hit ? { ...s, group: hit.group, labelColor: hit.color } : s,
+      // unmatched rows rank after every declared group
+      rank: rank === -1 ? compiled.length : rank,
+    }
+  })
+  // Stable partition into contiguous blocks, in the order the entries are
+  // declared. Marking alone does not survive this scale: 63 wolves spread
+  // through 1,987 sorted rows land as five specks that read as noise, where the
+  // same rows pulled into one block read as a group whose color profile can be
+  // compared against the rest. Within a block the incoming order is preserved,
+  // so a `sortRowsBy` still orders each block by the value it sorted on.
+  return tagged
+    .map((t, idx) => ({ ...t, idx }))
+    .sort((a, b) => (a.rank !== b.rank ? a.rank - b.rank : a.idx - b.idx))
+    .map(t => t.source)
 }
 
 /**

@@ -35,7 +35,21 @@ describe('SvgRowLabels', () => {
     const rect = c.querySelector('rect')
     // narrow enough to be a stripe rather than the text-width box
     expect(Number(rect?.getAttribute('width'))).toBeLessThan(10)
-    expect(Number(rect?.getAttribute('height'))).toBeCloseTo(0.32)
+    // floored at a pixel so the mark survives; y stays exact
+    expect(Number(rect?.getAttribute('height'))).toBe(1)
+    expect(rect?.getAttribute('y')).toBe('0')
+  })
+
+  it('keeps a sub-pixel mark on its own row rather than shifting it', () => {
+    const c = draw({
+      sources: [{ name: 'a' }, { name: 'b' }, { name: 'c', labelColor: wolf }],
+      rowHeight: 0.32,
+      labelOffset: 0,
+    })
+    const rect = c.querySelector('rect')
+    // third row: y = 2 * 0.32, exact, even though the rect is floored to 1px
+    expect(Number(rect?.getAttribute('y'))).toBeCloseTo(0.64)
+    expect(Number(rect?.getAttribute('height'))).toBe(1)
   })
 
   it('draws nothing below the threshold when no row carries a color', () => {
@@ -80,6 +94,28 @@ describe('SvgRowLabels', () => {
     expect(rects).toHaveLength(2)
     expect(rects[0]!.getAttribute('y')).toBe('0')
     expect(rects[1]!.getAttribute('y')).toBe('4')
+  })
+
+  it('paints a rare mark last so a common run cannot bury it', () => {
+    // one wolf row sandwiched in a long village-dog block: floored to a pixel,
+    // whichever paints later wins the overlap, and it must be the single row
+    const sources = [
+      ...Array.from({ length: 20 }, (_, i) => ({
+        name: `village${i}`,
+        labelColor: dog,
+      })),
+      { name: 'wolf', labelColor: wolf },
+      ...Array.from({ length: 20 }, (_, i) => ({
+        name: `village${i + 20}`,
+        labelColor: dog,
+      })),
+    ]
+    const rects = [
+      ...draw({ sources, rowHeight: 0.32, labelOffset: 0 }).querySelectorAll(
+        'rect',
+      ),
+    ]
+    expect(rects.at(-1)?.getAttribute('fill')).toBe(wolf)
   })
 
   it('culls swatch runs outside the available height', () => {

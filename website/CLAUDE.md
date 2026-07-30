@@ -118,6 +118,29 @@ keeps only the last occurrence, so a repeated flag silently rendered one spec
 and skipped the other — which is indistinguishable from the skipped one being up
 to date.
 
+**Never write a hand-computed statistic into docs prose.** A number you derived
+by running `awk` over a data file once — "52% of the 63 wolves reach five or
+more copies", "r = 0.97 across the windows", "mean copy number 4.6 against 3.5"
+— has nothing checking it, is not regenerated when the data is rebuilt, and
+cannot be audited by a reader. It reads as a measured result and carries the
+authority of one, which makes a stale or miscomputed figure a liability rather
+than a typo. The same number stated three ways in three revisions (max-per-dog
+vs mean-at-a-window vs median) is the normal failure mode, not a rare one.
+
+Numbers are allowed only when they are one of:
+
+- **published**, with the citation next to them (the paper's own 49.7%);
+- **structural** and stable — a row count, a file size, a coordinate;
+- **emitted by a script in the repo** that a reader can re-run, quoted as that
+  script's output.
+
+Anything else belongs in the figure, not the sentence. If a comparison matters,
+build the picture that shows it — split the groups into their own lanes, sort on
+the value being compared, and let the reader see the difference. "The wolves
+carry more copies" earns its place when the figure makes it obvious; the same
+claim propped up by four percentages does not. This is also why captions name
+the visual takeaway rather than quantifying it.
+
 **Keep captions and gallery descriptions concise.** Name the tracks and the one
 visual takeaway (e.g. "the loop arc reappears as the matrix corner dot"). Don't
 write extended biological background — the figure should make the biology

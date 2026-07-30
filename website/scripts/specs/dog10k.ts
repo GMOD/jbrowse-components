@@ -640,12 +640,33 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // renders each window's 7-10% spread as wobble that reads like structure;
   // rounding states the call instead.
   //
-  // Clustered rather than left in sample order: 1,987 rows is far past the point
-  // where a reader can follow one, so the question stops being "which dog is
-  // this" and becomes "how many distinct copy-number profiles are there". The
-  // dendrogram answers that, and clustering is also what makes the sub-pixel
-  // rows honest -- at 0.35px a row neighbours overpaint each other, so whichever
-  // wins a pixel has to stand for the ones it covers.
+  // Sorted rather than clustered. Clustering answers "how many distinct profiles
+  // are there", and that answer is a dendrogram -- which needs a reader able to
+  // follow a row, and at a fraction of a pixel a row there is none. Sorting on
+  // the copy number each animal carries over the gene answers "how is copy
+  // number distributed" instead, which survives the scale: the integer calls
+  // resolve into bands with sharp edges, and that the edges are sharp is itself
+  // the finding (a genotype, not a continuous measurement).
+  //
+  // The collection split into its two halves, one lane each, at the same pixel
+  // height. The comparison cannot be made inside a single lane: wild canids are
+  // a few dozen rows against nearly two thousand, so however they are marked or
+  // grouped there they occupy a thirtieth of the height, and "is this group
+  // redder than the rest" is a question about the proportion of each group that
+  // is red -- unjudgeable between bands of such different heights. Equal lanes
+  // ask both the same question, "how much of this lane is red", and the eye can
+  // answer it.
+  //
+  // Split rather than group-against-collection: the earlier version put the wild
+  // canids against the whole collection, which contains them, so the contrast
+  // was against a set that included the thing being contrasted. These two files
+  // partition the collection exactly (the build script asserts the row counts
+  // add up), so neither lane contains the other and together they are still
+  // every canid.
+  //
+  // The counts are in the track names because the lanes deliberately hold wildly
+  // different numbers of animals, and without them the scale difference reads as
+  // an accident.
   {
     mode: 'url',
     name: 'dog10k-cyp1a2-cohort-copy-number',
@@ -659,24 +680,38 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 90,
         },
         {
-          trackId: 'dog10k_cyp1a2_cohort_cn',
+          // The wild canids at the same pixel height as the whole collection
+          // below, which is the only way the two are comparable: they are a few
+          // dozen rows against nearly two thousand, so inside one track they
+          // occupy a thirtieth of the height and "is this group redder" cannot
+          // be judged. Equal heights put the same question to both lanes as
+          // "how much of this lane is red", which is answerable by eye.
+          trackId: 'dog10k_cyp1a2_wild_cn',
           type: 'LinearMultiRowFeatureDisplay',
-          // all 1,987 rows inside a readable track: auto-fit is no longer
-          // floored at a pixel a row, so this is the height it takes rather
-          // than the height it grows past
-          height: 640,
-          // one-shot declarative trigger, cleared once the RPC lands
-          runClustering: true,
-          showTree: true,
+          height: 300,
+          sortRowsBy: { refName: 'chr30', pos: 38_262_000 },
+        },
+        {
+          trackId: 'dog10k_cyp1a2_domestic_cn',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 300,
+          // Sorted by the copy number each dog carries over the element rather
+          // than clustered by its whole profile. Same one-shot declarative
+          // trigger as the QTL painting: the display computes the order from the
+          // loaded features. 38,262,000 is inside the window with the widest
+          // spread and no copy-number-one dog, so the sort resolves into five
+          // clean bands running high to low with no loss colors interleaved.
+          sortRowsBy: { refName: 'chr30', pos: 38_262_000 },
         },
       ],
     }),
     readyText: 'chr30',
-    // the dendrogram only exists once the clustering RPC has landed
-    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 300000,
+    // sources exist only once features are loaded and binned into rows, which is
+    // also what the sort waits on
+    readySelector: '[data-testid="multirow-row-labels"]',
+    readyTimeout: 120000,
     settleMs: 8000,
-    // gene track plus the 640px stack and the copy-number key
-    viewportHeight: 970,
+    // gene track plus the two 300px lanes, their headers, and the copy-number key
+    viewportHeight: 965,
   },
 ]
