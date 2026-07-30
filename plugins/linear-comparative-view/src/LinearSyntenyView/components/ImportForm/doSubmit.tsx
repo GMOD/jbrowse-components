@@ -41,7 +41,10 @@ export function doSubmit({
     for (const [level, action] of actions.entries()) {
       if (action?.kind === 'open') {
         session.addTrackConf(toJS(action.conf))
-        model.toggleTrack(action.conf.trackId, level)
+        // showTrack, not toggleTrack: setViews above rebuilt the levels with no
+        // tracks on them, so a toggle only ever meant "show" here — and would
+        // silently hide the track if that ever stopped being true
+        model.showTrack(action.conf.trackId, level)
       } else if (action?.kind === 'show') {
         model.showTrack(action.trackId, level)
       }

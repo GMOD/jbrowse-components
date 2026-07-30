@@ -124,7 +124,7 @@ test('a synteny track from a connection is found', () => {
   expect(calls.shown).toEqual([['hub_track', 0]])
 })
 
-test('an upload is added to the session and toggled on its level', () => {
+test('an upload is added to the session and shown on its level', () => {
   const conf = {
     trackId: 'opened',
     name: 'x',
@@ -136,7 +136,10 @@ test('an upload is added to the session and toggled on its level', () => {
   })
   doSubmit({ selectedAssemblyNames: ['hg38', 'mm39', 'rn7'], model, session })
   expect(calls.added).toEqual([conf])
-  expect(calls.toggled).toEqual([['opened', 1]])
+  // shown, never toggled: the levels were just rebuilt empty, so a toggle could
+  // only ever mean "show" — and would hide the track if that stopped holding
+  expect(calls.shown).toEqual([['opened', 1]])
+  expect(calls.toggled).toEqual([])
 })
 
 test('an upload stranded on a different pair is ignored, not misapplied', () => {

@@ -8,7 +8,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // own — the LinearComparativeView renders LevelSyntenyCanvas for each level.
 const HelperPlaceholder = () => null
 
-export default function LinearSyntenyViewF(pluginManager: PluginManager) {
+export default function LinearSyntenyViewHelperF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
       name: 'LinearSyntenyViewHelper',

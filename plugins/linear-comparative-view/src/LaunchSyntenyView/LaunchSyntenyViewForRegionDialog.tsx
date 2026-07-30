@@ -190,8 +190,16 @@ export default function LaunchSyntenyViewForRegionDialog({
         </Typography>
       ) : null}
       <div className={classes.panels}>
+        {/* keyed by position, which is also what movePanel/setPanelChecked
+        address: a self-alignment track keeps its own lane as a mate (see
+        pickMatesForRegion), so the anchor and that mate carry the same
+        assembly name and the name is not an identity */}
         {rows?.map((row, index) => (
-          <div className={classes.panelRow} key={row.assemblyName}>
+          <div
+            className={classes.panelRow}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
+            key={`${row.assemblyName}-${index}`}
+          >
             <FormControlLabel
               className={classes.panelLabel}
               control={

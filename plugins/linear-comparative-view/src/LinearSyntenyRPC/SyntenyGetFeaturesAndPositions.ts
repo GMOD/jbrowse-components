@@ -17,7 +17,9 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   targetView: SyntenyTargetViewSnap
   sessionId: string
   stopToken?: StopToken
-  colorBy?: string
+  // no colorBy: the worker emits per-instance kind/featureIdx descriptors and
+  // the display recomputes colors on the main thread, so a color-scheme change
+  // never reaches this RPC (see computeSyntenyColors)
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean

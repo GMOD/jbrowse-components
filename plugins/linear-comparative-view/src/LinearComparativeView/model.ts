@@ -62,10 +62,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        showIntraviewLinks: types.stripDefault(types.boolean, true),
-        /**
-         * #property
-         */
         linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
@@ -138,7 +134,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         // assembly left this empty while `initialized` stayed false forever, so
         // `showLoading` spun instead of falling back to the import form with the
         // banner, and an SVG export waited on it with nothing to report
-        return self.volatileError ?? self.views.map(v => v.error).find(e => !!e)
+        return self.volatileError ?? self.views.find(v => v.error)?.error
       },
 
       /**

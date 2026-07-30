@@ -12,3 +12,27 @@ export interface ParentViewDuck {
   overdrawPx: number
   diagonalizeSettled: boolean
 }
+
+// One level of the stack, as seen from a synteny display nested inside it. Same
+// circular-import reason as ParentViewDuck.
+export interface LevelDuck {
+  height: number
+  level: number
+}
+
+// Identify a level while walking up from a display, so the display finds it by
+// what it is rather than by counting hops (it sat 4 deep:
+// display -> displays[] -> track -> tracks[] -> level). A hop count silently
+// returns the wrong node if anything is ever inserted between the two, and the
+// symptom is an undefined `height`/`level` projecting as NaN somewhere far away;
+// findParentThatIs throws instead. Not `isViewModel`: the level IS registered as
+// a view type, but it carries no width/setWidth, which is exactly why
+// getContainingView walks past it to the LinearSyntenyView.
+export function isSyntenyLevel(thing: unknown): thing is LevelDuck {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'type' in thing &&
+    thing.type === 'LinearSyntenyViewHelper'
+  )
+}

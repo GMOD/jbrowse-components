@@ -1,8 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
-import { getContainingView } from '@jbrowse/core/util'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { findParentThatIs, getContainingView } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
@@ -17,6 +17,7 @@ import {
 
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 
@@ -220,13 +221,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => ({
       /**
        * #getter
+       * The level (row gap) this display's track sits on. Found by predicate
+       * rather than by hop count — see isSyntenyLevel.
        */
       get parentHelper() {
-        return getParent<{
-          height: number
-          level: number
-        }>(self, 4)
+        return findParentThatIs(self, isSyntenyLevel)
       },
+      /**
+       * #getter
+       * Index of the level (row gap) this display draws in: between
+       * `view.views[level]` and `view.views[level + 1]`.
+       */
       get level() {
         return this.parentHelper.level
       },

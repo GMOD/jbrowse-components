@@ -120,6 +120,16 @@ describe('GpuSyntenyRenderer CPU pick', () => {
   })
 })
 
+test('clear paints the empty band with no draw calls', () => {
+  // What a level with no synteny display left asks for — see the render
+  // callback in LinearSyntenyViewHelper/stateModelFactory.
+  const hal = new MockHal(SYNTENY_PASSES)
+  const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+  renderer.clear()
+
+  expect(hal.calls.map(c => c.method)).toEqual(['beginFrame', 'endFrame'])
+})
+
 describe('GpuSyntenyRenderer window-relative uniforms', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'devicePixelRatio', {

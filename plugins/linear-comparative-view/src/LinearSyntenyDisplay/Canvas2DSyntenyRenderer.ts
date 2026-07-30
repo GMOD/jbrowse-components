@@ -278,21 +278,26 @@ export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
     this.cache.delete(key)
   }
 
+  // Background wipe, and the start of every render pass. Sets the one
+  // device-scale transform the pass runs under — drawSyntenyTrack draws in
+  // logical coords and bakes each track's yTop into its y values.
+  clear() {
+    const dpr = this.dpr
+    const ctx = this.ctx
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr)
+  }
+
   render(state: SyntenyRenderState) {
     if (this.cache.regions.size === 0) {
       return false
     }
 
-    const dpr = this.dpr
     const ctx = this.ctx
-    const logicalW = this.canvas.width / dpr
-    const logicalH = this.canvas.height / dpr
+    const logicalW = this.canvas.width / this.dpr
 
-    // Single device-scale transform for the whole pass; drawSyntenyTrack draws
-    // in logical coords and bakes each track's yTop into its y values.
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(0, 0, logicalW, logicalH)
+    this.clear()
 
     const { overdrawPx } = state
     for (const [key, params] of state.perTrack) {

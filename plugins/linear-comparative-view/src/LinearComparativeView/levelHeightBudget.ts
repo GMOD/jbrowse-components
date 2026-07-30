@@ -1,10 +1,10 @@
 // A stack of synteny bands shares one screen, so their height is a budget split
 // across levels rather than a per-level constant: at the 100px default a 5-row
 // launch spends 400px on ribbons before any genome row is drawn, and the reader
-// scrolls to see the stack it just asked for. 320px is the whole band budget —
-// two levels keep the 100px default (a pairwise view is unaffected), and past
-// that each level gets a smaller share, floored where a ribbon stops being
-// readable.
+// scrolls to see the stack it just asked for. 320px is the whole band budget, so
+// up to three levels keep the 100px default (a pairwise view, at one level, is
+// unaffected) and past that each level gets a smaller share, floored where a
+// ribbon stops being readable.
 //
 // Shared by `autoScaleLevelHeights` (the "Auto-scale level heights" menu item
 // and the init path) and the launch dialog, so the height a multi-way launch

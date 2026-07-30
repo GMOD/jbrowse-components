@@ -1,6 +1,6 @@
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface SyntenyFeatureDetailModel {
   // BaseFeatureWidget declares this `types.maybe(types.string)` and only fills

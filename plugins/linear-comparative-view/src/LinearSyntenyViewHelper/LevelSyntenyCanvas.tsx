@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
-import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { transaction } from 'mobx'
@@ -12,7 +12,6 @@ import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyPickResult } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
-import type { ParentViewDuck } from './parentViewDuck.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
 
@@ -80,7 +79,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   model: LinearSyntenyViewHelperModel
 }) {
   const { classes } = useStyles()
-  const parentView = getContainingView(model) as unknown as ParentViewDuck
+  // the model already resolves the containing view (and narrows it to the duck),
+  // so the component doesn't repeat that walk or its cast
+  const { parentView } = model
   const width = parentView.width
   const height = model.height
 

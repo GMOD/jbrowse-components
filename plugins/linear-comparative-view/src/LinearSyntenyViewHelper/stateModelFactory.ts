@@ -1,10 +1,11 @@
+import { getContainingView } from '@jbrowse/core/util'
 import {
   hideTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 
@@ -97,8 +98,11 @@ export function linearSyntenyViewHelperModelFactory(
       },
     }))
     .views(self => ({
+      // The LinearSyntenyView this level belongs to. getContainingView rather
+      // than a hop count: a level is registered as a view type but carries no
+      // width/setWidth, so isViewModel walks past it to the real view.
       get parentView() {
-        return getParent<ParentViewDuck>(self, 2)
+        return getContainingView(self) as unknown as ParentViewDuck
       },
       // The pair of genome rows this level draws between, or [] for a trailing
       // level that has no row below it yet.
@@ -124,16 +128,6 @@ export function linearSyntenyViewHelperModelFactory(
           }
         }
         return out
-      },
-      /**
-       * #getter
-       */
-      get numFeats() {
-        let n = 0
-        for (const display of this.linearSyntenyDisplays) {
-          n += display.numFeats
-        }
-        return n
       },
       /**
        * #getter
@@ -255,15 +249,26 @@ export function linearSyntenyViewHelperModelFactory(
             syncUpload(b, self.geometryByDisplayKey)
           },
           render: b => {
-            const state = self.syntenyRenderState
-            if (!state) {
-              return false
-            }
             // the parent's own width, not views[0]'s: the same number one hop
             // closer (the view pushes it down to every row) and no assertion on
             // a row that may not exist yet
             b.resize(self.parentView.width, self.height)
-            return b.render(state)
+            const state = self.syntenyRenderState
+            if (state) {
+              return b.render(state)
+            }
+            // No display can paint this band: the row pair has no synteny track
+            // (a legal launch — the rows just stack with no ribbons), the one it
+            // had was hidden, or every one of them is minimized. Clearing is
+            // what drops a hidden track's ribbons off the Canvas2D backend,
+            // which keeps its last frame otherwise; reporting `true` is what
+            // lets `canvasDrawn` — and so `settled`, the synteny_canvas_done
+            // testid — resolve on a level that has nothing to show. Waiting on
+            // data is NOT this branch: a display with no data yet still
+            // contributes renderParams, and the backends answer that with
+            // `false` while their geometry cache is empty.
+            b.clear()
+            return true
           },
         })
       },

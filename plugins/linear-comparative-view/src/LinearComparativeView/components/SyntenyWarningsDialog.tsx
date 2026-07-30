@@ -21,8 +21,15 @@ const SyntenyWarningsDialog = observer(function SyntenyWarningsDialog({
       }}
     >
       <DialogContent>
-        {warnings.map(w => (
-          <Alert key={w.message} severity="warning" style={{ marginBottom: 8 }}>
+        {/* keyed by position: two levels of a stacked view raise the same
+        swapped-assemblies warning verbatim, so the message is not an identity */}
+        {warnings.map((w, idx) => (
+          <Alert
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
+            key={idx}
+            severity="warning"
+            style={{ marginBottom: 8 }}
+          >
             <Typography variant="subtitle2">{w.message}</Typography>
             {w.effect}
           </Alert>

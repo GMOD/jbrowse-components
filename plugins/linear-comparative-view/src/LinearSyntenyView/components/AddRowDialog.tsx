@@ -65,7 +65,9 @@ const AddRowDialog = observer(function AddRowDialog({
     <SubmitDialog
       open
       title="Add assembly row"
-      onCancel={handleClose}
+      onCancel={() => {
+        handleClose()
+      }}
       submitText="Add"
       submitDisabled={!canSubmit}
       onSubmit={() => {

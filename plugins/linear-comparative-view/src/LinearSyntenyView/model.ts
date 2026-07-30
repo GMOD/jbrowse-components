@@ -219,7 +219,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * nothing to switch between.
        */
       get hasLodCapableAdapter() {
-        return self.levels.flatMap(l => l.tracks).some(trackHasLodTiers)
+        return self.levels
+          .flatMap(l => l.tracks)
+          .some(track => trackHasLodTiers(track))
       },
       /**
        * #getter

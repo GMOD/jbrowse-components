@@ -24,8 +24,10 @@ export default function SyntenyContextMenu({
       }}
       anchorReference="anchorPosition"
       anchorPosition={{ top: clientY, left: clientX }}
-      onClose={onClose}
-      open={Boolean(anchorEl)}
+      onClose={() => {
+        onClose()
+      }}
+      open
       menuItems={[
         {
           label: 'Center on feature',

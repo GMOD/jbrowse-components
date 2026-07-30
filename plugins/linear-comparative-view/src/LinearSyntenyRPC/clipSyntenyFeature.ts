@@ -2,6 +2,7 @@ import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,
+  CIGAR_I,
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
@@ -15,7 +16,7 @@ import type { BpRegionIndex } from '@jbrowse/synteny-core'
 // carries, so a clip produced here stays consistent when it feeds back through
 // the same convention.
 function consumesQuery(op: number) {
-  return op !== 1 // everything except I(=1)
+  return op !== CIGAR_I
 }
 function consumesTarget(op: number) {
   return op !== CIGAR_D && op !== CIGAR_N

@@ -45,6 +45,9 @@ export function useWheelScrollZoom(
     if (!canvas) {
       return undefined
     }
+    // bound once so the callbacks below read a non-nullable element instead of
+    // re-asserting the narrowing the closure boundary loses
+    const el = canvas
     let scrollTimer: ReturnType<typeof setTimeout> | undefined
     let scrollRaf: number | undefined
     let zoomRaf: number | undefined
@@ -74,7 +77,7 @@ export function useWheelScrollZoom(
         const elapsed = wheelFrameElapsedMs(now, lastRafTimeRef.current)
         lastRafTimeRef.current = now
         const d = zoomAccumRef.current
-        const canvasLeft = canvas!.getBoundingClientRect().left
+        const canvasLeft = el.getBoundingClientRect().left
         transaction(() => {
           for (const v of parentView.views) {
             v.zoomTo(
@@ -118,9 +121,9 @@ export function useWheelScrollZoom(
       }
     }
 
-    canvas.addEventListener('wheel', onWheel, { passive: false })
+    el.addEventListener('wheel', onWheel, { passive: false })
     return () => {
-      canvas.removeEventListener('wheel', onWheel)
+      el.removeEventListener('wheel', onWheel)
       clearTimeout(scrollTimer)
       // Cancel pending frames so a callback can't fire against a detached view
       // after unmount or a parentView swap. Reset the scheduled flags too, since

@@ -118,6 +118,11 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     this.hal.deleteRegion(key)
   }
 
+  clear() {
+    this.hal.beginFrame(1, 1, 1, 1)
+    this.hal.endFrame()
+  }
+
   render(state: SyntenyRenderState) {
     if (this.cache.regions.size === 0) {
       return false

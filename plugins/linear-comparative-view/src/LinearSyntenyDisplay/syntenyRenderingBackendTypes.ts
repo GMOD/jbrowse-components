@@ -36,6 +36,13 @@ export interface SyntenyRenderingBackend {
   resize(width: number, height: number): void
   uploadGeometry(key: number, data: SyntenyInstanceData): void
   deleteGeometry(key: number): void
+  /**
+   * Paint the empty band — the background and nothing else. Called for a level
+   * that has no synteny display able to draw (no track on this row pair, or the
+   * one it had was hidden), where `render` has no state to work from: the
+   * Canvas2D backend would otherwise keep the last frame's ribbons on screen.
+   */
+  clear(): void
   render(state: SyntenyRenderState): boolean
   // Pick takes the current render state explicitly — no stale-snapshot
   // coupling with the last render() call. Callers read state from the model
