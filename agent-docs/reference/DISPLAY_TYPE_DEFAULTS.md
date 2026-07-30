@@ -169,29 +169,25 @@ readers of it. Don't re-derive tiers in a consumer — add a field to
 `SlotResolution` if you need something new.
 
 ```ts
-// discriminated on `callback` — a callback track has no settled value, so it
-// offers no `value` to read. See "Callback values" below
-type SlotResolution =
-  | { base: unknown; promoted: unknown; callback: false
-      customized: boolean // track holds its own value rather than following the default
-      value: unknown }    // final cascaded value (never the unset sentinel)
-  | { base: unknown; promoted: unknown; callback: true
-      customized: true
-      evaluate: () => unknown } // run the callback with this read's args
+interface SlotResolution {
+  base: unknown       // the slot's promotedBase (CSS `initial`)
+  promoted: unknown   // the raw session-wide promoted default, if any
+  customized: boolean // track holds its own value rather than following the default
+  value: unknown      // final cascaded value (never the unset sentinel)
+}
 
-function resolveSlot(self, slot, args = {}): SlotResolution {
+function resolveSlot(self, slot): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase // required on every promotable slot
   // `promoted` stays the raw session-wide value even for an opted-out display:
   // it's a session-wide fact, and the pin's filled/outline state reports on the
   // session, not on one display's view of it. The opt-out belongs to `inherited`
-  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  const promoted = getSession(self).getDisplayTypeDefault(self.type, slot)
   // the raw stored read (`self.configuration[slot]`) — this *is* the resolver, so
-  // not `resolveConf`, which would recurse straight back in here. It's also the
-  // read the `jexl:` branch above tested, and one read is enough for both: past
-  // that branch `readConfObject` would return the identical value, since its only
-  // extra behaviors are evaluating a callback and snapshotting an MST-node value,
-  // and a `maybe*` slot never holds one
+  // not `resolveConf`, which would recurse straight back in here, and not
+  // `readConfObject`, whose two extra behaviors are both unwanted: evaluating a
+  // `jexl:` string (which `isUsableValue` refuses outright) and snapshotting an
+  // MST-node value, which a `maybe*` slot never holds
   const own = storedSlotValue(self, slot)
   // a track is customized exactly when it holds a *usable* value — the same
   // `isUsableValue` gate a promoted default passes, so a malformed or stale own
@@ -202,16 +198,18 @@ function resolveSlot(self, slot, args = {}): SlotResolution {
   // entirely (see "Received sessions" below), collapsing to "own value, else base"
   const inherited =
     !self.ignorePromotedDefaults && isUsableValue(def, promoted) ? promoted : base
-  const value = customized ? own : inherited
-  return { base, customized, promoted, callback: false, value }
+  return { base, customized, promoted, value: customized ? own : inherited }
 }
 ```
+
+There is deliberately **no callback case** — see [No callbacks](#no-callbacks-jexl).
 
 `isUsableValue` is the single gate **both** tiers pass a candidate through — a
 promoted default and a track's own saved value. It composes four independent
 checks: the value is set at all (`undefined` IS the inherit sentinel), it isn't a
-raw `jexl:` string (nothing in the app can promote one, but the store is untyped
-and localStorage-backed), its JS shape fits the slot (a `SHAPE_CHECKS` entry for
+raw `jexl:` string (see [No callbacks](#no-callbacks-jexl) — this is the only
+place the subsystem handles them, and it handles them by refusing them), its JS
+shape fits the slot (a `SHAPE_CHECKS` entry for
 the slot `type` — a `maybeStringEnum` choice, a *finite* `maybeNumber` — else
 `promotedBase`'s object/array kind or `typeof`), and it passes the slot's
 optional semantic `validate` hook. A value
@@ -235,28 +233,31 @@ unset sentinel, so the display getter needs no post-guard — and its read type
 excludes `undefined`, so no cast either:
 `get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`.
 
-### Callback values (`jexl:`)
+### No callbacks (`jexl:`)
 
-A promotable slot can hold a `jexl:` callback like any other slot, and
-`resolveConf(self, slot, args)` forwards its `args` so the callback evaluates
-with the caller's context. But a callback returns a **different value per
-call**, so it has no single value to compare against the slot default — it can't
-meaningfully "follow the default". A `jexl:` value therefore leaves the cascade
-at the top: `customized` is true, `callback` is true, and there is no `value` at
-all — only `evaluate()`, which needs the caller's `args`.
+**A promotable slot cannot hold a `jexl:` callback**, and `resolveConf` takes no
+`args` because there is no per-feature context to supply. The two ideas are
+opposites: a promoted default is *one value shared by every track of a display
+type*, while a callback computes a *different value per feature*. A callback
+therefore has nothing to compare against the default and can't meaningfully
+"follow" one.
 
-**That's the union's whole job.** The cascade's own consumers (the pin, the
-badge, the share bake) have no per-feature context to supply, and on the callback
-branch the type gives them nothing to misread: `resolveConf` is the only reader
-that calls `evaluate()`, because it's the only one holding the caller's `args`.
-Everyone else branches — `getDisplayTypeDefaultChanges` tests `customized` first
-(which narrows the callback branch away, since it's `true` there),
-`tracksDifferingFrom` counts a callback track as differing without evaluating it,
-`getConfigSnapshotWithPromotables` leaves the raw `jexl:` string in the worker
-payload for the worker to evaluate per-feature, and
-`makeCurrentValueDisplayTypeDefaultControl` returns a **disabled** pin (a
-callback has no single current value to promote). A new consumer that forgets
-doesn't reach a menu-breaking throw at runtime; it fails to compile.
+That isn't only a design statement — it's the state of the code. The config
+editor offers its callback toggle **only on a slot declaring
+`contextVariable`**, and none of the promotable slots does, so no supported path
+can author one. The single remaining way in is a hand-edited `config.json`, and
+`isUsableValue` refuses it there: the slot reads as *not customized* and degrades
+to the inherited value, in lockstep with every other unusable value. No consumer
+branches, and `SlotResolution.value` is always readable.
+
+This replaced a discriminated union whose callback arm carried `evaluate()`, a
+`disabled` state on `DisplayTypeDefaultControl`, a greyed pin with its own
+tooltip and live-wrapper `<span>`, and a branch in four consumers — all for a
+state nothing could author and which was already degenerate wherever it did
+appear (the pin disabled itself, the badge couldn't report it, and
+`tracksDifferingFrom` counted it as permanently differing). If a promotable slot
+ever genuinely needs per-feature values, that is a sign the setting belongs on a
+plain slot, not that the union should come back.
 
 ### Exported API (`@jbrowse/core/configuration`)
 
@@ -270,18 +271,16 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
-| `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, disabled, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
-| `makeCurrentValueDisplayTypeDefaultControl(self, slot)` | same, over the track's *current* resolved value; `disabled` when it is a `jexl:` callback | "promote whatever I'm showing" for symmetric / continuous settings |
+| `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
+| `makeCurrentValueDisplayTypeDefaultControl(self, slot)` | same, over the track's *current* resolved value | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self)` | clears every promoted default for this display's type | badge "clear default" |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 
-`DisplayTypeDefaultControl` is
-`{ active: boolean; disabled: boolean; toggle: () => void }`.
-`active` = this value is the current default (filled pin);
-`disabled` greys the pin (only the promote-current builder sets it — see
-[Callback values](#callback-values-jexl));
-`toggle` sets or clears it.
+`DisplayTypeDefaultControl` is `{ active: boolean; toggle: () => void }`.
+`active` = this value is the current default (filled pin); `toggle` sets or
+clears it. There is no disabled state — a pin always has a value to promote (see
+[No callbacks](#no-callbacks-jexl)).
 
 **`toggle` writes the session default and nothing else.** No track's own value is
 ever touched — the pin edits the stylesheet, never the elements. Following
@@ -572,9 +571,8 @@ it.
    `.configuration`.
 3. Track menu: expose a `DisplayTypeDefaultControl` getter from the model built
    with the fitting `make*Control` builder, and pass it as `displayTypeDefault`
-   to `promotableToggleItem` / `promotableRadioItem`. Group slots that move
-   together into one control. The track-selector badge needs **nothing** — it
-   reads the cascade directly off any display.
+   to `promotableToggleItem` / `promotableRadioItem`. The track-selector badge
+   needs **nothing** — it reads the cascade directly off any display.
 4. **Serialization boundaries** (see
    [that section](#serialization-boundaries-getcomputedstyle)): promotable slots
    resolve on the **main thread**, so anything that ships the config elsewhere
@@ -588,6 +586,19 @@ it.
    `bakePromotedDefaultsIntoSnapshot` walks every promotable slot via
    `getDisplayTypeDefaultChanges`, so a new slot is covered automatically.
 
+   **The two worker-payload conventions are not an inconsistency to clean up.**
+   Canvas sends the whole snapshot, so a new promotable slot reaches its worker
+   for free. Alignments hand-lists resolved getters instead, and must: only three
+   of its ten promotable slots belong in the payload at all, because *every field
+   `rpcProps()` returns is an RPC cache key* — the rest are main-thread layout
+   (`featureHeight`, `heightMode`) or repaint-only (`mismatchAlpha`, the arc and
+   sashimi settings), and listing them would refetch the region on a setting that
+   only redraws. `colorBy` goes further and is narrowed through `workerColorBy`
+   so switching between schemes the shader decides on its own repaints from data
+   already in memory. Converting alignments to `getConfigSnapshotWithPromotables`
+   would undo both. See `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`
+   for the tier table that decides which side a slot lands on.
+
 ## Historical note
 
 An earlier design layered admin/user type-default configs via extra
@@ -597,7 +608,7 @@ An earlier design layered admin/user type-default configs via extra
 tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
 choice wins / display-type granularity" decisions; dropped the machinery.
 
-Three later passes removed machinery rather than adding it. A **plain**
+Later passes have only removed machinery. A **plain**
 promotable form once let `defaultValue` double as the inherit signal; no slot
 ever used it, so `ConfigSlot` now requires a `maybe*` type + `promotedBase` and
 the resolver has one path. A `PromotableDefaultsMixin` once forwarded the badge's
@@ -610,10 +621,29 @@ type per consumer. `maybeStringEnum` / `maybeFrozen` replaced that, so
 `isUsableValue`'s first check is a bare `value !== undefined` and no
 `defaultValue` comparison survives in the resolver.
 
+Two more went the same way. Controls used to act on a **group** of slots
+(`PromotableEntry[]` behind one pin), for a feature-height preset that promoted
+`featureHeight` + `featureSpacing` together; `featureSpacing` is derived now and
+every call site passed one slot, so the group form and its empty-group guard are
+gone. And the resolution used to be a **discriminated union** with a `jexl:`
+callback arm — see [No callbacks](#no-callbacks-jexl) for why that state was
+unauthorable and already degenerate.
+
+The optionality of the session store went too: `get/setDisplayTypeDefault` (with
+`setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`) are
+required on `AbstractSessionModel`, so the resolver and the control builders call
+them plainly. What that exposed is worth knowing before tightening any other
+session member: **tsc catches nothing here**, because unit-test session fakes are
+bare `types.model({…})` shims that are never annotated as `AbstractSessionModel`.
+A missing member surfaces only as a runtime `TypeError` inside a MobX reaction.
+Twenty-one of the twenty-eight shims in the repo were missing
+`getDisplayTypeDefault`, several for display types that already have promotable
+slots. Run the plugin test suites, not just `pnpm typecheck`.
+
 A naming pass also **reclaimed "pin"**: the track's own value is now
 "customized", and "pin" names the make-default affordance. The prior API's
 `isSlotPinned` / `areSlotsAtSessionDefault` / `setSlotsSessionDefault` /
 `isSlotValueSessionDefault` / `setSlotValueSessionDefault` /
-`getSlotInheritedValue` collapsed into the three `make*Control` builders (public)
+`getSlotInheritedValue` collapsed into the two `make*Control` builders (public)
 over `isPromotableDefault` (internal), and the `SessionDefault*` names became
 `DisplayTypeDefault*`.
