@@ -98,6 +98,7 @@ function makePileupData(opts: {
     readStrands: Int8Array.from(reads.map(r => r.strand ?? 0)),
     readInterchrom: new Uint8Array(numReads),
     readTagColors: new Uint32Array(0),
+    readColorCategories: new Uint8Array(0),
     segmentPositions: new Uint32Array(0),
     segmentReadIndices: new Uint32Array(0),
     segmentEdgeFlags: new Uint8Array(0),

@@ -194,13 +194,11 @@ function fillFrameUniforms(
   f[U.insertUpper] = region.insertSizeStats?.upper ?? NO_INSERT_UPPER
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[UI.colorScheme] = state.colorScheme
-  // Chain layout drives read-coloring (supplementary colors, strand flipping,
-  // mate-unmapped coloring, chevrons). The bezier connection overlay is
-  // orthogonal and does not switch coloring into chain mode.
+  // Chevron gating only — chain mode's effect on read COLOR is now resolved on
+  // the CPU into `readColorCategories`, so the shader no longer branches on it
+  // for fills. The bezier connection overlay is orthogonal to chain layout.
   i[UI.chainMode] = state.chainMode ? 1 : 0
   i[UI.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
-  i[UI.flipStrandLongRead] = state.flipStrandLongReadChains ? 1 : 0
-  i[UI.colorSuppChains] = state.colorSupplementaryChains ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
 }
 
@@ -266,40 +264,50 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   f[U.arcsYLog] = state.arcsYDomainBp !== undefined ? 1 : 0
 }
 
+// Which ColorPalette entry backs each shader color uniform. A table rather
+// than 30 assignments so it is introspectable: colorCategory.test.ts composes
+// it with `swatchPaletteKeys` to check that read.slang's category→uniform
+// lookup paints each category the color the legend swatches for it.
+export const PALETTE_UNIFORM_FIELDS = {
+  colorFwd: 'colorFwdStrand',
+  colorRev: 'colorRevStrand',
+  colorNostrand: 'colorNostrand',
+  colorPairLR: 'colorPairLR',
+  colorPairRL: 'colorPairRL',
+  colorPairRR: 'colorPairRR',
+  colorPairLL: 'colorPairLL',
+  colorBaseA: 'colorBaseA',
+  colorBaseC: 'colorBaseC',
+  colorBaseG: 'colorBaseG',
+  colorBaseT: 'colorBaseT',
+  colorBaseN: 'colorBaseN',
+  colorInsertion: 'colorInsertion',
+  colorDeletion: 'colorDeletion',
+  colorSkip: 'colorSkip',
+  colorSoftclip: 'colorSoftclip',
+  colorHardclip: 'colorHardclip',
+  colorInsertionIndicator: 'colorInsertionIndicator',
+  colorSoftclipIndicator: 'colorSoftclipIndicator',
+  colorHardclipIndicator: 'colorHardclipIndicator',
+  colorCoverage: 'colorCoverage',
+  colorModFwd: 'colorModificationFwd',
+  colorModRev: 'colorModificationRev',
+  colorLongInsert: 'colorLongInsert',
+  colorShortInsert: 'colorShortInsert',
+  colorSupplementary: 'colorSupplementary',
+  colorSplitInversion: 'colorSplitInversion',
+  colorUnmappedMate: 'colorUnmappedMate',
+  colorInterchrom: 'colorInterchrom',
+  colorMutedSnpBase: 'colorMutedSnpBase',
+} satisfies Record<string, keyof ColorPalette>
+
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through
 // the given u32 view only, no rendering side effects.
 function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
   const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
-  u[UU.colorFwd] = pack(c.colorFwdStrand)
-  u[UU.colorRev] = pack(c.colorRevStrand)
-  u[UU.colorNostrand] = pack(c.colorNostrand)
-  u[UU.colorPairLR] = pack(c.colorPairLR)
-  u[UU.colorPairRL] = pack(c.colorPairRL)
-  u[UU.colorPairRR] = pack(c.colorPairRR)
-  u[UU.colorPairLL] = pack(c.colorPairLL)
-  u[UU.colorBaseA] = pack(c.colorBaseA)
-  u[UU.colorBaseC] = pack(c.colorBaseC)
-  u[UU.colorBaseG] = pack(c.colorBaseG)
-  u[UU.colorBaseT] = pack(c.colorBaseT)
-  u[UU.colorBaseN] = pack(c.colorBaseN)
-  u[UU.colorInsertion] = pack(c.colorInsertion)
-  u[UU.colorDeletion] = pack(c.colorDeletion)
-  u[UU.colorSkip] = pack(c.colorSkip)
-  u[UU.colorSoftclip] = pack(c.colorSoftclip)
-  u[UU.colorHardclip] = pack(c.colorHardclip)
-  u[UU.colorInsertionIndicator] = pack(c.colorInsertionIndicator)
-  u[UU.colorSoftclipIndicator] = pack(c.colorSoftclipIndicator)
-  u[UU.colorHardclipIndicator] = pack(c.colorHardclipIndicator)
-  u[UU.colorCoverage] = pack(c.colorCoverage)
-  u[UU.colorModFwd] = pack(c.colorModificationFwd)
-  u[UU.colorModRev] = pack(c.colorModificationRev)
-  u[UU.colorLongInsert] = pack(c.colorLongInsert)
-  u[UU.colorShortInsert] = pack(c.colorShortInsert)
-  u[UU.colorSupplementary] = pack(c.colorSupplementary)
-  u[UU.colorSplitInversion] = pack(c.colorSplitInversion)
-  u[UU.colorUnmappedMate] = pack(c.colorUnmappedMate)
-  u[UU.colorInterchrom] = pack(c.colorInterchrom)
-  u[UU.colorMutedSnpBase] = pack(c.colorMutedSnpBase)
+  for (const [uniform, key] of Object.entries(PALETTE_UNIFORM_FIELDS)) {
+    u[UU[uniform as keyof typeof UU]] = pack(c[key])
+  }
   for (let i = 0; i < arcColorPalette.length; i++) {
     u[USLOTS.arcColor[i]!] = pack(arcColorPalette[i]!)
   }

@@ -9,7 +9,31 @@ import {
   CHAIN_FILL_SUPP_PRIMARY_FWD,
 } from '../shared/types.ts'
 import { ColorScheme } from './constants.ts'
-import { IS_GRADIENT_SPAN_FRAC } from './shaders/slang/read.iface.generated.ts'
+import {
+  IS_GRADIENT_SPAN_FRAC,
+  RC_FWD_STRAND,
+  RC_INTERCHROM,
+  RC_LONG_INSERT,
+  RC_MAPQ,
+  RC_MOD_FWD,
+  RC_MOD_REV,
+  RC_NON_SPLIT,
+  RC_NORMAL_INSERT,
+  RC_NO_STRAND,
+  RC_NO_TAG_VALUE,
+  RC_PAIR_LL,
+  RC_PAIR_LR,
+  RC_PAIR_RL,
+  RC_PAIR_RR,
+  RC_PLAIN,
+  RC_REV_STRAND,
+  RC_SHORT_INSERT,
+  RC_SPLIT_DELETION,
+  RC_SPLIT_INVERSION,
+  RC_SUPPLEMENTARY,
+  RC_TAG,
+  RC_UNMAPPED_MATE,
+} from './shaders/slang/read.iface.generated.ts'
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ColorPalette, RGBColor } from './shaders/colors.ts'
@@ -112,35 +136,89 @@ function insertSizeCategory(
 // misleading "short insert"/orientation hue. Derived from the `mateAware` flag
 // in the shared COLOR_SCHEMES registry (single source), mapped to shader
 // indices. Module-level so the per-read classification in readColorCategory (a
-// render + legend hot loop) does not reallocate this each call. The shader twin
-// `isOrientationScheme` (read.slang) tests the same membership as a bitmask;
-// exported so colorScheme.test.ts can assert this set against the shader's
-// generated CS_ORIENTATION_MASK rather than trusting a SYNC comment.
+// render + legend hot loop) does not reallocate this each call. The registry is
+// now the only source — read.slang used to mirror this membership as a bitmask
+// for its own classification, and no longer classifies at all.
 export const orientationSchemes = new Set(
   Object.values(COLOR_SCHEMES)
     .filter(s => s.mateAware)
     .map(s => ColorScheme[s.shaderScheme]),
 )
 
+// Category → the shader's RC_* index. Built from the generated constants, so
+// the GPU and this file cannot disagree on what an index means. Exhaustive by
+// type: adding a ReadColorCategory member without an index fails to compile.
+export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
+  supplementary: RC_SUPPLEMENTARY,
+  splitInversion: RC_SPLIT_INVERSION,
+  splitDeletion: RC_SPLIT_DELETION,
+  unmappedMate: RC_UNMAPPED_MATE,
+  interchrom: RC_INTERCHROM,
+  fwdStrand: RC_FWD_STRAND,
+  revStrand: RC_REV_STRAND,
+  noStrand: RC_NO_STRAND,
+  nonSplit: RC_NON_SPLIT,
+  pairLR: RC_PAIR_LR,
+  pairRL: RC_PAIR_RL,
+  pairRR: RC_PAIR_RR,
+  pairLL: RC_PAIR_LL,
+  longInsert: RC_LONG_INSERT,
+  shortInsert: RC_SHORT_INSERT,
+  normalInsert: RC_NORMAL_INSERT,
+  plain: RC_PLAIN,
+  mapq: RC_MAPQ,
+  tag: RC_TAG,
+  noTagValue: RC_NO_TAG_VALUE,
+  modFwd: RC_MOD_FWD,
+  modRev: RC_MOD_REV,
+}
+
+// Reverse of READ_COLOR_CATEGORY, for consumers holding a baked index (the
+// legend's bucket scan, the Canvas2D fill).
+export const READ_COLOR_CATEGORY_BY_INDEX = Object.entries(
+  READ_COLOR_CATEGORY,
+).reduce<ReadColorCategory[]>((acc, [name, idx]) => {
+  acc[idx] = name as ReadColorCategory
+  return acc
+}, [])
+
+// Classify every read once, into the shader's RC_* index space. This is THE
+// classification pass: the GPU uploads the result as `inst.colorCategory`, the
+// Canvas2D/SVG fallback reads it for its fill, and the legend scans it for the
+// buckets to list. Because all three consume one array, a precedence change
+// lands everywhere at once — the old arrangement re-derived the same rules in
+// read.slang and drifted silently between backends.
+export function buildReadColorCategories(
+  data: ReadColorData,
+  colorScheme: number,
+  opts?: ReadColorOpts,
+): Uint8Array {
+  const n = data.readFlags.length
+  const out = new Uint8Array(n)
+  for (let i = 0; i < n; i++) {
+    out[i] = READ_COLOR_CATEGORY[readColorCategory(i, data, colorScheme, opts)]
+  }
+  return out
+}
+
+export interface ReadColorOpts {
+  chainMode?: boolean
+  flipStrandLongReadChains?: boolean
+  colorSupplementaryChains?: boolean
+}
+
 // Classify read `i` under the active color scheme. Precedence:
 // opt-in paired-supplementary override → long-read-chain-supplementary strand
 // framing → unmapped mate → inter-chromosomal → per-scheme bucket.
 //
-// SYNC: `getReadColor` in shaders/slang/read.slang is the GPU twin and must
-// reproduce this exact precedence (it's the path most users see; this JS path
-// is the Canvas2D/SVG fallback + the legend's source). Scheme indices are the
-// one thing already shared by construction — the CS_* export-consts in
-// read.slang generate read.generated.ts, which builds the ColorScheme map. The
-// precedence/per-scheme rules below are hand-mirrored: change both together.
+// This is the ONLY implementation of that precedence. read.slang consumes the
+// baked category (see buildReadColorCategories) and paints it; it no longer
+// re-derives these rules, so there is nothing left to keep in sync.
 export function readColorCategory(
   i: number,
   data: ReadColorData,
   colorScheme: number,
-  opts?: {
-    chainMode?: boolean
-    flipStrandLongReadChains?: boolean
-    colorSupplementaryChains?: boolean
-  },
+  opts?: ReadColorOpts,
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
@@ -366,16 +444,33 @@ function categoryColor(
   }
 }
 
+// Canvas2D/SVG fill for a read whose category was already baked. The twin of
+// read.slang's `getReadColor`, and like it, a painter rather than a classifier —
+// both take the index out of the same `readColorCategories` array.
+export function readColorFromCategoryIndex(
+  categoryIndex: number,
+  i: number,
+  data: ReadColorData,
+  colorScheme: number,
+  palette: ColorPalette,
+) {
+  return categoryColor(
+    READ_COLOR_CATEGORY_BY_INDEX[categoryIndex]!,
+    i,
+    data,
+    colorScheme,
+    palette,
+  )
+}
+
+// Classify-then-paint, for callers with no baked array (the arcs legend, tests).
+// The render paths go through readColorFromCategoryIndex instead.
 export function getReadColor(
   i: number,
   data: ReadColorData,
   colorScheme: number,
   palette: ColorPalette,
-  opts?: {
-    chainMode?: boolean
-    flipStrandLongReadChains?: boolean
-    colorSupplementaryChains?: boolean
-  },
+  opts?: ReadColorOpts,
 ) {
   return categoryColor(
     readColorCategory(i, data, colorScheme, opts),
@@ -390,7 +485,7 @@ export function getReadColor(
 // exact color the renderer paints. The keys form `SwatchCategory` — the subset
 // of categories that render as a single flat color; dynamic categories
 // (mapq/tag/mod/plain) have no single swatch and are absent here.
-const swatchPaletteKeys = {
+export const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
   revStrand: 'colorRevStrand',
   noStrand: 'colorNostrand',

@@ -11,11 +11,13 @@ import {
   buildLaidOutChainMap,
   chainLayoutMaxY,
 } from './computeChainLayout.ts'
+import { overlayReadColorCategories } from './readColorCategories.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
 
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
+import type { ReadColorOpts } from './colorUtils.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 
 // Per group key: region index → laid-out data (Y arrays filled).
@@ -50,6 +52,11 @@ export interface GroupLayoutContext {
   showLinkedReadLines: boolean
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string>
+  // Inputs to the per-read color classification baked in
+  // `overlayReadColorCategories`. Here rather than in `renderState` so the GPU,
+  // the Canvas2D fallback, and the legend all read one classification.
+  colorScheme: number
+  readColorOpts: ReadColorOpts
   // Draw each group as a single row, overlap depth carried by the tint layer
   // instead of by stacking (`collapsedLayout.ts`). A group the user has sized
   // explicitly opts back out, which is what makes the label chip's expand
@@ -57,7 +64,8 @@ export interface GroupLayoutContext {
   collapseGroupRows: boolean
 }
 
-// Lay out one group's reads (Y arrays filled + linked-read lines + tag colors)
+// Lay out one group's reads (Y arrays filled + linked-read lines + tag colors
+// + color categories)
 // at a given row cap. Extracted so the fit reclaim pass can re-lay-out just the
 // groups whose cap changed instead of rebuilding every group.
 function layoutOneGroup(
@@ -68,11 +76,7 @@ function layoutOneGroup(
 ): Map<number, PileupDataResult> {
   const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
   if (collapse) {
-    return overlayReadTagColors(
-      buildCollapsedPileupMap(dataMap),
-      ctx.colorBy,
-      ctx.colorTagMap,
-    )
+    return withReadColors(ctx, buildCollapsedPileupMap(dataMap))
   }
   const base = ctx.isChainMode
     ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, maxRows: cap })
@@ -85,7 +89,21 @@ function layoutOneGroup(
         largeFeaturesFirst: ctx.largeFeaturesFirst,
       })
   const withLines = ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
-  return overlayReadTagColors(withLines, ctx.colorBy, ctx.colorTagMap)
+  return withReadColors(ctx, withLines)
+}
+
+// Tag colors first: the `noTagValue` category is decided from the baked
+// `readTagColors`, so classifying before that buckets every tag-colored read
+// wrong. One place so the two passes can't be reordered by accident.
+function withReadColors(
+  ctx: GroupLayoutContext,
+  map: Map<number, PileupDataResult>,
+) {
+  return overlayReadColorCategories(
+    overlayReadTagColors(map, ctx.colorBy, ctx.colorTagMap),
+    ctx.colorScheme,
+    ctx.readColorOpts,
+  )
 }
 
 // Lay out each group independently so one dense group can't starve the rest:

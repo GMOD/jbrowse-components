@@ -37,6 +37,7 @@ function makePileupData(
     readIds: Array.from({ length: n }, (_, i) => `id${i}`),
     readNames: Array.from({ length: n }, (_, i) => `read${i}`),
     readTagColors: new Uint32Array(0),
+    readColorCategories: new Uint8Array(0),
     segmentPositions: new Uint32Array(n * 2),
     segmentReadIndices: new Uint32Array(n),
     segmentEdgeFlags: new Uint8Array(n),

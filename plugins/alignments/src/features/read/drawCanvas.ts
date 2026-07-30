@@ -1,4 +1,4 @@
-import { getReadColor } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
@@ -25,6 +25,7 @@ interface DrawReadsRegion {
   readFlags: Uint16Array
   readPairOrientations: Uint8Array
   readTagColors: Uint32Array
+  readColorCategories: Uint8Array
   readMapqs: Uint8Array
   readInsertSizes: Float32Array
   readChainHasSupp: Uint8Array | undefined
@@ -130,11 +131,6 @@ export function drawReads(
   state: RenderState,
 ) {
   const fH = state.featureHeight
-  const colorOpts = {
-    chainMode: state.chainMode,
-    flipStrandLongReadChains: state.flipStrandLongReadChains,
-    colorSupplementaryChains: state.colorSupplementaryChains,
-  }
   const chevronFrame: ChevronFrame = {
     pxPerBp: fullBlockWidth / bpLength,
     chainMode: state.chainMode,
@@ -147,7 +143,7 @@ export function drawReads(
   ctx.lineWidth = OUTLINE_WIDTH
 
   // Assigning fillStyle re-parses the CSS string, which is the per-read cost
-  // that matters here — getReadColor's string build is minor next to it. Under
+  // that matters here — the category→CSS lookup is minor next to it. Under
   // the default scheme every read resolves to the same color, so guarding the
   // assignment collapses a deep pileup's parses to one; schemes that do vary
   // per read (mapq, tag, insert-size gradient) just fall through and assign as
@@ -182,12 +178,15 @@ export function drawReads(
     const w = Math.max(1, xR - xL)
     const outline = state.showOutline && w > 2
 
-    const fill = getReadColor(
+    // Paints the category the classification pass already decided — the exact
+    // byte read.slang gets as `inst.colorCategory`, so the two backends cannot
+    // disagree about a read's color.
+    const fill = readColorFromCategoryIndex(
+      region.readColorCategories[i]!,
       i,
       region,
       state.colorScheme,
       state.colors,
-      colorOpts,
     )
     if (fill !== lastFill) {
       ctx.fillStyle = fill

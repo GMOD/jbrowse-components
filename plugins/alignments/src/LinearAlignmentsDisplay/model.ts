@@ -67,7 +67,7 @@ import {
   updateColorTagMap as updateColorTagMapPure,
   updateQueryNameColorMap,
 } from './colorTagUtils.ts'
-import { readColorCategory } from './colorUtils.ts'
+import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import {
   buildColorPaletteFromTheme,
   makeBpToScreenX,
@@ -89,7 +89,6 @@ import {
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
-  eachGroupData,
   hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
@@ -1148,25 +1147,26 @@ export default function stateModelFactory(
          * #getter
          * Read-color buckets actually present across the rendered reads, the
          * single input that lets the legend list only relevant swatches (see
-         * legendUtils). Shares readColorCategory with the renderer so the two
-         * can't disagree. Empty while the legend is hidden so the O(reads) scan
-         * is skipped; MobX memoizes it against rpcDataMap + scheme + mode.
+         * legendUtils). Reads the same baked categories the renderer paints, so
+         * the two can't disagree. Empty while the legend is hidden so the
+         * O(reads) scan is skipped; MobX memoizes it against `laidOutByGroup`,
+         * which already folds in the scheme and the classification opts.
          */
         get colorLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
           if (this.showLegend) {
-            const colorScheme = colorSchemeIndexFor(this.colorBy.type)
-            const opts = {
-              chainMode: self.isChainMode,
-              flipStrandLongReadChains: self.flipStrandLongReadChains,
-              colorSupplementaryChains: self.colorSupplementaryChains,
-            }
-            for (const data of eachGroupData(
-              self.rpcDataMap,
-              self.hiddenGroupKeys,
-            )) {
-              for (let i = 0; i < data.readFlags.length; i++) {
-                present.add(readColorCategory(i, data, colorScheme, opts))
+            // Reads the BAKED categories off the laid-out groups, not a second
+            // classification pass over `rpcDataMap`. Scanning the raw map was
+            // subtly wrong: `readTagColors` is empty until the main thread bakes
+            // it, and the `noTagValue` bucket is decided from that array — so
+            // under a tag scheme the legend listed "Tag" for reads the renderer
+            // was painting with the no-value neutral, and never listed
+            // "No tag value" at all.
+            for (const map of this.laidOutByGroup.values()) {
+              for (const { readColorCategories } of map.values()) {
+                for (const idx of readColorCategories) {
+                  present.add(READ_COLOR_CATEGORY_BY_INDEX[idx]!)
+                }
               }
             }
           }
@@ -1358,7 +1358,23 @@ export default function stateModelFactory(
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,
             colorTagMap: self.colorTagMap,
+            colorScheme: colorSchemeIndexFor(this.colorBy.type),
+            readColorOpts: this.readColorOpts,
             collapseGroupRows: this.collapseGroupRows,
+          }
+        },
+
+        /**
+         * #getter
+         * The non-scheme inputs to read classification. One bundle so the bake
+         * (`overlayReadColorCategories`) and any ad-hoc `readColorCategory` call
+         * can't be handed a different set.
+         */
+        get readColorOpts() {
+          return {
+            chainMode: self.isChainMode,
+            flipStrandLongReadChains: self.flipStrandLongReadChains,
+            colorSupplementaryChains: self.colorSupplementaryChains,
           }
         },
 

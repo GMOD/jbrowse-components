@@ -1,5 +1,6 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
+import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import {
   Canvas2DAlignmentsRenderer,
   drawAlignmentsToCtx,
@@ -132,6 +133,11 @@ function pileupData(): PileupDataResult {
     readInsertSizes: new Float32Array([0, 0]),
     readPairOrientations: new Uint8Array([0, 0]),
     readStrands: new Int8Array([1, -1]),
+    // fwd + rev under the strand scheme — the same bytes the bake produces.
+    readColorCategories: new Uint8Array([
+      READ_COLOR_CATEGORY.fwdStrand,
+      READ_COLOR_CATEGORY.revStrand,
+    ]),
     readInterchrom: new Uint8Array([0, 0]),
     readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,

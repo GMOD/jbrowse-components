@@ -18,6 +18,7 @@ export interface ReadRegionFields {
   readPairOrientations: Uint8Array
   readStrands: Int8Array
   readTagColors: Uint32Array
+  readColorCategories: Uint8Array
   readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
   insertSizeStats?: InsertSizeBand
@@ -40,6 +41,7 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
     readPairOrientations: data.readPairOrientations,
     readStrands: data.readStrands,
     readTagColors: data.readTagColors,
+    readColorCategories: data.readColorCategories,
     readChainHasSupp: data.readChainHasSupp,
     readInterchrom: data.readInterchrom,
     insertSizeStats: data.insertSizeStats,
@@ -63,6 +65,7 @@ export function emptyReadFields(): ReadRegionFields {
     readPairOrientations: new Uint8Array(0),
     readStrands: new Int8Array(0),
     readTagColors: new Uint32Array(0),
+    readColorCategories: new Uint8Array(0),
     readChainHasSupp: undefined,
     readInterchrom: new Uint8Array(0),
     insertSizeStats: undefined,

@@ -1,5 +1,6 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
+import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
 import { drawReads, showChevron } from './drawCanvas.ts'
 
@@ -102,13 +103,21 @@ function draw(
 ) {
   const ctx = new SvgCanvas()
   const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
-  drawReads(ctx, makeRegion(reads), block, 100, fullBlockWidth, {
+  const colorScheme = state.colorScheme ?? ColorScheme.strand
+  // Categories come from the real classifier, so these assertions exercise
+  // classify->paint end to end rather than a hand-written category byte.
+  const base = makeRegion(reads)
+  const region = {
+    ...base,
+    readColorCategories: buildReadColorCategories(base, colorScheme),
+  }
+  drawReads(ctx, region, block, 100, fullBlockWidth, {
     featureHeight: 10,
     featureSpacing: 0,
     pileupTopOffset: 0,
     scrollTop: 0,
     chainMode: false,
-    colorScheme: ColorScheme.strand,
+    colorScheme,
     colors: palette,
     showOutline: false,
     ...state,
@@ -210,10 +219,14 @@ describe('drawReads visible-row-band cull', () => {
     end: 50,
     strand: 0,
   }))
-  const region = makeRegion(
+  const base = makeRegion(
     reads,
     Array.from({ length: rows }, (_, i) => i),
   )
+  const region = {
+    ...base,
+    readColorCategories: buildReadColorCategories(base, ColorScheme.strand),
+  }
   const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
   // rowHeight 10 => 1000 rows span 10000px of content.
   const count = (over: Partial<RenderState>) => {

@@ -2,7 +2,7 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
-//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, CS_ORIENTATION_MASK, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
+//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
 
 import alignmentsUniforms;
 import colorPack;
@@ -25,19 +25,44 @@ static const int CS_MODIFICATIONS = 7;
 static const int CS_TAG           = 8;
 static const int CS_IS_GRADIENT   = 9;
 
-// The mate-aware schemes, as a bitmask over the CS_* indices above: the ones
-// whose color depends on the read's MATE (insert size / pair orientation), so
-// an unmapped or inter-chromosomal mate needs its own bucket rather than a
-// misleading hue. Exported alongside the indices so this membership is no
-// longer a SYNC comment: colorScheme.test.ts asserts that the `mateAware` flags
-// in the COLOR_SCHEMES registry — which build the Canvas2D twin's
-// `orientationSchemes` — describe exactly these schemes, from both directions.
-static const int CS_ORIENTATION_MASK = (1 << CS_INSERT_SIZE)
-                                     | (1 << CS_PAIR_ORIENT)
-                                     | (1 << CS_IS_AND_ORIENT)
-                                     | (1 << CS_IS_GRADIENT);
-
-static const int CM_LINKED_READ = 1;
+// Read color categories. SINGLE SOURCE OF TRUTH for the category vocabulary:
+// `export-consts` emits these into read.generated.ts and the TS
+// `READ_COLOR_CATEGORY` map (colorUtils.ts) is built from those exports, so the
+// two sides cannot disagree on an index. RC_PLAIN is deliberately 0: a
+// zero-filled instance buffer then paints the neutral fill rather than
+// flooding the pileup with whichever category happened to land on index 0.
+//
+// Which category a read falls into is decided ONCE, on the CPU, by
+// `readColorCategory` (colorUtils.ts) — baked per read into
+// `readColorCategories` and uploaded as `inst.colorCategory`. This shader only
+// PAINTS a category; it does not classify. That is why there is no precedence
+// chain here anymore: the ordered rules (paired-supplementary override,
+// long-read chain strand framing, split inversion/deletion, unmapped mate,
+// inter-chromosomal, per-scheme) used to be hand-mirrored between this file and
+// colorUtils.ts, and hand-mirrored ordered rules drift. Now the GPU, the
+// Canvas2D/SVG fallback, and the legend all consume one classification.
+static const uint RC_PLAIN           = 0u;
+static const uint RC_SUPPLEMENTARY   = 1u;
+static const uint RC_SPLIT_INVERSION = 2u;
+static const uint RC_SPLIT_DELETION  = 3u;
+static const uint RC_UNMAPPED_MATE   = 4u;
+static const uint RC_INTERCHROM      = 5u;
+static const uint RC_FWD_STRAND      = 6u;
+static const uint RC_REV_STRAND      = 7u;
+static const uint RC_NO_STRAND       = 8u;
+static const uint RC_NON_SPLIT       = 9u;
+static const uint RC_PAIR_LR         = 10u;
+static const uint RC_PAIR_RL         = 11u;
+static const uint RC_PAIR_RR         = 12u;
+static const uint RC_PAIR_LL         = 13u;
+static const uint RC_LONG_INSERT     = 14u;
+static const uint RC_SHORT_INSERT    = 15u;
+static const uint RC_NORMAL_INSERT   = 16u;
+static const uint RC_MAPQ            = 17u;
+static const uint RC_TAG             = 18u;
+static const uint RC_NO_TAG_VALUE    = 19u;
+static const uint RC_MOD_FWD         = 20u;
+static const uint RC_MOD_REV         = 21u;
 
 // Arrowhead size in CSS px (protrusion past the read edge + cap dimensions).
 // Exported so features/read/drawCanvas.ts (Canvas2D) uses the same value.
@@ -70,12 +95,11 @@ struct Instance {
   uint  flags          : ATTR3;
   uint  mapq           : ATTR4;
   float insertSize     : ATTR5;
-  uint  pairOrient     : ATTR6;
-  int   strand         : ATTR7;
-  uint  tagColor       : ATTR8;   // ABGR u32; 0 = not set
-  uint  chainHasSupp   : ATTR9;   // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion, 4=paired split deletion
-  uint  edgeFlags      : ATTR10;  // bit 0 = is_first, bit 1 = is_last
-  uint  interchrom     : ATTR11;  // 1 = mate on a different chromosome
+  int   strand         : ATTR6;
+  uint  tagColor       : ATTR7;   // ABGR u32; 0 = not set
+  uint  edgeFlags      : ATTR8;   // bit 0 = is_first, bit 1 = is_last
+  uint  interchrom     : ATTR9;   // 1 = mate on a different chromosome
+  uint  colorCategory  : ATTR10;  // RC_* — CPU-classified, see above
 };
 
 struct VsOut {
@@ -86,154 +110,68 @@ struct VsOut {
   float  edgeFlag : COLOR3;
 };
 
-// --- color-scheme helpers ---
+// --- color painting ---
+//
+// No classification here — see the RC_* block above. Everything below maps an
+// already-decided category to pixels.
 
-float3 strandColor(int s, Uniforms u) {
-  if (s > 0) { return unpackRGBA(u.colorFwd).xyz; }
-  if (s < 0) { return unpackRGBA(u.colorRev).xyz; }
-  return unpackRGBA(u.colorNostrand).xyz;
-}
-
-float3 insertSizeColor(float is, Uniforms u) {
-  // is is |TLEN|; 0 means unset (single-end / unpaired), so it must not read as
-  // "short insert". SYNC: `is > 0` mirrors insertSizeCategory in colorUtils.ts.
-  if (is > u.insertUpper) { return unpackRGBA(u.colorLongInsert).xyz; }
-  if (is > 0.0 && is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
+// Flat palette lookup. Order-insensitive data, unlike the precedence chain this
+// replaced: a category with no arm here is caught by colorCategory.test.ts,
+// which asserts this table and the TS `swatchPaletteKeys` cover the same set.
+float3 categoryPaletteColor(uint cat, Uniforms u) {
+  if (cat == RC_FWD_STRAND)     { return unpackRGBA(u.colorFwd).xyz; }
+  if (cat == RC_REV_STRAND)     { return unpackRGBA(u.colorRev).xyz; }
+  if (cat == RC_NO_STRAND)      { return unpackRGBA(u.colorNostrand).xyz; }
+  if (cat == RC_NON_SPLIT)      { return unpackRGBA(u.colorNostrand).xyz; }
+  if (cat == RC_PAIR_LR)        { return unpackRGBA(u.colorPairLR).xyz; }
+  if (cat == RC_PAIR_RL)        { return unpackRGBA(u.colorPairRL).xyz; }
+  if (cat == RC_PAIR_RR)        { return unpackRGBA(u.colorPairRR).xyz; }
+  if (cat == RC_PAIR_LL)        { return unpackRGBA(u.colorPairLL).xyz; }
+  if (cat == RC_LONG_INSERT)    { return unpackRGBA(u.colorLongInsert).xyz; }
+  if (cat == RC_SHORT_INSERT)   { return unpackRGBA(u.colorShortInsert).xyz; }
+  if (cat == RC_INTERCHROM)     { return unpackRGBA(u.colorInterchrom).xyz; }
+  if (cat == RC_UNMAPPED_MATE)  { return unpackRGBA(u.colorUnmappedMate).xyz; }
+  if (cat == RC_SUPPLEMENTARY)  { return unpackRGBA(u.colorSupplementary).xyz; }
+  if (cat == RC_SPLIT_INVERSION){ return unpackRGBA(u.colorSplitInversion).xyz; }
+  if (cat == RC_SPLIT_DELETION) { return unpackRGBA(u.colorSupplementary).xyz; }
+  if (cat == RC_MOD_FWD)        { return unpackRGBA(u.colorModFwd).xyz; }
+  if (cat == RC_MOD_REV)        { return unpackRGBA(u.colorModRev).xyz; }
+  // RC_PLAIN / RC_NORMAL_INSERT / RC_NO_TAG_VALUE all paint the neutral fill.
   return unpackRGBA(u.colorPairLR).xyz;
 }
 
-float3 insertSizeGradientColor(float is, Uniforms u) {
-  // Ramp reaches full color IS_GRADIENT_SPAN_FRAC of the 6σ band (upper−lower)
-  // past the threshold — ~3σ (center±6σ) at 0.5 — so a moderate outlier reads as
-  // clearly colored, independent of library insert-size scale. Must match
-  // insertSizeGradient in colorUtils.ts (Canvas2D / SVG export).
+// Insert-size bands lerp toward their endpoint under the gradient scheme. The
+// category already says which endpoint, so the thresholds live only on the CPU
+// (classifyInsertSize) — this just picks the ramp. Ramp reaches full color
+// IS_GRADIENT_SPAN_FRAC of the 6s band past the threshold. Mirrors
+// gradientInsertColor in colorUtils.ts, which takes the same category.
+float3 insertSizeGradientColor(uint cat, float is, Uniforms u) {
   float3 base = unpackRGBA(u.colorPairLR).xyz;
   float span = (u.insertUpper - u.insertLower) * IS_GRADIENT_SPAN_FRAC;
-  if (span > 0.0) {
-    if (is > u.insertUpper) {
-      float t = clamp((is - u.insertUpper) / span, 0.0, 1.0);
-      return lerp(base, unpackRGBA(u.colorLongInsert).xyz, t);
-    }
-    // is 0 = unset TLEN (single-end / unpaired); leave it at the neutral base.
-    if (is > 0.0 && is < u.insertLower) {
-      float t = clamp((u.insertLower - is) / span, 0.0, 1.0);
-      return lerp(base, unpackRGBA(u.colorShortInsert).xyz, t);
-    }
+  if (span <= 0.0) { return base; }
+  if (cat == RC_LONG_INSERT) {
+    float t = clamp((is - u.insertUpper) / span, 0.0, 1.0);
+    return lerp(base, unpackRGBA(u.colorLongInsert).xyz, t);
   }
-  return base;
+  float t = clamp((u.insertLower - is) / span, 0.0, 1.0);
+  return lerp(base, unpackRGBA(u.colorShortInsert).xyz, t);
 }
 
-float3 firstOfPairColor(uint flags, int s, Uniforms u) {
-  // Read2 (0x80) reports the opposite of the fragment strand, so invert only it;
-  // read1 and single-end reads represent the fragment strand directly. Mirrors
-  // firstOfPairStrandKey (groupFeatures.ts) and colorUtils.ts.
-  bool isSecond = (flags & 128u) != 0u;
-  int eff = isSecond ? -s : s;
-  return strandColor(eff, u);
-}
-
-float3 pairOrientColor(uint po, Uniforms u) {
-  if (po == 1u) { return unpackRGBA(u.colorPairLR).xyz; }
-  if (po == 2u) { return unpackRGBA(u.colorPairRL).xyz; }
-  if (po == 3u) { return unpackRGBA(u.colorPairRR).xyz; }
-  if (po == 4u) { return unpackRGBA(u.colorPairLL).xyz; }
-  // No computed pair orientation (single-end/unpaired reads): neutral "no strand".
-  // Only SPLIT alignments show strand coloring — via the chained-supplementary
-  // branch in getReadColor, not here. Mirrors colorUtils.ts.
-  return unpackRGBA(u.colorNostrand).xyz;
-}
-
-float3 isAndOrientColor(float is, uint po, Uniforms u) {
-  // Short-insert pairs always show pink, even with abnormal orientation;
-  // otherwise orientation wins, falling back to long-/normal-insert. Mirrors
-  // readColorCategory in colorUtils.ts. is 0 = unset TLEN (unpaired) → not short.
-  if (is > 0.0 && is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
-  if (po == 2u) { return unpackRGBA(u.colorPairRL).xyz; }
-  if (po == 3u) { return unpackRGBA(u.colorPairRR).xyz; }
-  if (po == 4u) { return unpackRGBA(u.colorPairLL).xyz; }
-  if (is > u.insertUpper) { return unpackRGBA(u.colorLongInsert).xyz; }
-  return unpackRGBA(u.colorPairLR).xyz;
-}
-
-float3 modificationsColor(uint flags, Uniforms u) {
-  if ((flags & 16u) != 0u) { return unpackRGBA(u.colorModRev).xyz; }
-  return unpackRGBA(u.colorModFwd).xyz;
-}
-
-bool isOrientationScheme(int cs) {
-  return (CS_ORIENTATION_MASK & (1 << cs)) != 0;
-}
-
-// SYNC: GPU twin of readColorCategory + categoryColor in colorUtils.ts (which
-// also feeds the Canvas2D/SVG fallback and the floating legend). The precedence
-// below — opt-in paired-supplementary override → long-read-chain-supplementary
-// strand framing → unmapped mate → inter-chromosomal → per-scheme — and the
-// per-scheme color helpers are hand-mirrored there; change both together.
-// Scheme indices (CS_*) are already shared by construction via the export-consts
-// directive at the top of this file.
 float3 getReadColor(Instance inst, Uniforms u) {
-  int cs = u.colorScheme;
-  int cm = u.chainMode;
-  bool isPaired = (inst.flags & 1u) != 0u;
-
-  // Opt-in legacy behavior: paint paired supplementary chains a flat
-  // supplementary color (hides the discordant-pair signal; off by default).
-  // SYNC: mirror of the `opts.colorSupplementaryChains` branch in colorUtils.ts.
-  if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u && isPaired && u.colorSuppChains == 1) {
-    return unpackRGBA(u.colorSupplementary).xyz;
+  uint cat = inst.colorCategory;
+  // The three categories that are a per-read ramp or packed value rather than a
+  // flat swatch, so they cannot come from the palette table.
+  if (cat == RC_MAPQ) { return hueRampHalfSat(float(inst.mapq)); }
+  if (cat == RC_TAG) {
+    return inst.tagColor != 0u
+      ? unpackRGBA(inst.tagColor).xyz
+      : unpackRGBA(u.colorPairLR).xyz;
   }
-  // Long-read (unpaired) supplementary chains frame each segment's strand
-  // against the primary so an inversion at a split junction reads as a strand
-  // flip. Paired supplementary chains otherwise keep their per-scheme color —
-  // see colorUtils.ts.
-  if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u && !isPaired) {
-    int primaryStrand = (inst.chainHasSupp > 1u) ? -1 : 1;
-    int eff = (u.flipStrandLongRead == 1) ? inst.strand * primaryStrand : inst.strand;
-    return strandColor(eff, u);
+  if (u.colorScheme == CS_IS_GRADIENT
+      && (cat == RC_LONG_INSERT || cat == RC_SHORT_INSERT)) {
+    return insertSizeGradientColor(cat, inst.insertSize, u);
   }
-
-  // Paired split read crossing an inversion (chainHasSupp == 3): paint the whole
-  // chain the dedicated split-inversion hue under an orientation scheme — a
-  // distinct color, NOT the RR-pair blue, so the two stay tellable apart.
-  // SYNC: colorUtils.ts.
-  if (cm == CM_LINKED_READ && inst.chainHasSupp == 3u && isPaired
-      && (cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT)) {
-    return unpackRGBA(u.colorSplitInversion).xyz;
-  }
-  // Same-strand (co-linear) split — a deletion junction — reuses the
-  // supplementary yellow. SYNC: colorUtils.ts chainSupp === 4.
-  if (cm == CM_LINKED_READ && inst.chainHasSupp == 4u && isPaired
-      && (cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT)) {
-    return unpackRGBA(u.colorSupplementary).xyz;
-  }
-
-  bool mateUnmapped = (inst.flags & 8u) != 0u;
-  if (mateUnmapped && (isOrientationScheme(cs) || (cs == CS_NORMAL && cm == CM_LINKED_READ))) {
-    return unpackRGBA(u.colorUnmappedMate).xyz;
-  }
-
-  // Mate on another chromosome: orientation/insert size are meaningless, so
-  // paint one distinct color instead of an LR/RL/etc hue (mirrors Canvas2D).
-  if (inst.interchrom != 0u && isOrientationScheme(cs)) {
-    return unpackRGBA(u.colorInterchrom).xyz;
-  }
-
-  if (cs == CS_NORMAL)        { return unpackRGBA(u.colorPairLR).xyz; }
-  if (cs == CS_STRAND)        { return strandColor(inst.strand, u); }
-  if (cs == CS_MAPQ)          { return hueRampHalfSat(float(inst.mapq)); }
-  if (cs == CS_INSERT_SIZE)   { return insertSizeColor(inst.insertSize, u); }
-  if (cs == CS_FIRST_OF_PAIR) { return firstOfPairColor(inst.flags, inst.strand, u); }
-  if (cs == CS_PAIR_ORIENT)   { return pairOrientColor(inst.pairOrient, u); }
-  if (cs == CS_IS_AND_ORIENT) { return isAndOrientColor(inst.insertSize, inst.pairOrient, u); }
-  if (cs == CS_MODIFICATIONS) { return modificationsColor(inst.flags, u); }
-  if (cs == CS_TAG) {
-    if (inst.tagColor != 0u) {
-      return unpackRGBA(inst.tagColor).xyz;
-    }
-    return unpackRGBA(u.colorPairLR).xyz;
-  }
-  if (cs == CS_IS_GRADIENT)  { return insertSizeGradientColor(inst.insertSize, u); }
-  return unpackRGBA(u.colorPairLR).xyz;
+  return categoryPaletteColor(cat, u);
 }
 
 [shader("vertex")]

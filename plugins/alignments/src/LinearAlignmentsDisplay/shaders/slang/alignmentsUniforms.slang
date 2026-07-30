@@ -71,7 +71,6 @@ public struct Uniforms {
   public int colorScheme;
   public int chainMode;
   public int showStroke;
-  public int flipStrandLongRead;
   public int coverageScaleType; // 0 = linear, 1 = log2
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
   // 0 = show all at full alpha (user has disabled frequency filtering)
@@ -135,14 +134,9 @@ public struct Uniforms {
   public uint linkedReadColor6;
   public uint linkedReadColor7;
   public float pxPerBp;
-  // 1 = opt-in legacy behavior: paint paired supplementary chains a flat
-  // supplementary color (hides pair orientation); 0 = keep per-scheme color.
-  // Only the read pass reads it; kept last so adding it leaves every other
-  // shader's shared-UBO field offsets unchanged.
-  public int colorSuppChains;
   // Dedicated paired-split-inversion fill color (only the read pass reads it).
-  // Kept at the tail, next to colorSuppChains, for the same offset-stability
-  // reason — appending here left the other 17 shaders' generated offsets alone.
+  // Kept at the tail for offset stability — appending here leaves the other
+  // shaders' generated offsets alone.
   public uint colorSplitInversion;
   // 9th arc-palette slot (split-read deletion). Appended at the tail so adding
   // it leaves arcColor0..7's offsets — and every other field's — unchanged.

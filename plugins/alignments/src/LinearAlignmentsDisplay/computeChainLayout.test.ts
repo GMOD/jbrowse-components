@@ -67,6 +67,7 @@ function makeChainData(opts: {
     readStrands: new Int8Array(numReads),
     readInterchrom: new Uint8Array(numReads),
     readTagColors: new Uint32Array(0),
+    readColorCategories: new Uint8Array(0),
     segmentPositions: new Uint32Array(0),
     segmentReadIndices: new Uint32Array(0),
     segmentEdgeFlags: new Uint8Array(0),

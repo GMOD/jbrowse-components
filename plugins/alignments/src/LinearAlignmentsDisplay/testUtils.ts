@@ -117,6 +117,7 @@ export function makeEmptyPileupData(): PileupDataResult {
     indicatorColorTypes: new Uint8Array(0),
     indicatorPackedBuffer: new ArrayBuffer(0),
     readTagColors: new Uint32Array(0),
+    readColorCategories: new Uint8Array(0),
     modificationPositions: new Uint32Array(0),
     modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),

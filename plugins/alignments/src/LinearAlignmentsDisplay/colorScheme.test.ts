@@ -1,4 +1,3 @@
-import { orientationSchemes } from './colorUtils.ts'
 import { ColorScheme } from './model.ts'
 import {
   CS_FIRST_OF_PAIR,
@@ -8,7 +7,6 @@ import {
   CS_MAPQ,
   CS_MODIFICATIONS,
   CS_NORMAL,
-  CS_ORIENTATION_MASK,
   CS_PAIR_ORIENT,
   CS_STRAND,
   CS_TAG,
@@ -50,18 +48,5 @@ describe('ColorScheme', () => {
       tag: CS_TAG,
       insertSizeGradient: CS_IS_GRADIENT,
     })
-  })
-
-  // The mate-aware membership used to be spelled twice — the `mateAware` flags
-  // in the COLOR_SCHEMES registry (which build this set, driving the Canvas2D /
-  // SVG / legend path) and a hard-coded `cs == ... || cs == ...` chain in
-  // read.slang, kept together only by a SYNC comment. The shader now expresses
-  // it as an exported bitmask, so the two are machine-compared: adding a
-  // mate-aware scheme to one side and not the other fails here instead of
-  // silently painting an unmapped mate a misleading insert-size hue on one
-  // backend only.
-  test('the mateAware registry flags match the shader orientation mask', () => {
-    const mask = [...orientationSchemes].reduce((acc, cs) => acc | (1 << cs), 0)
-    expect(mask).toBe(CS_ORIENTATION_MASK)
   })
 })

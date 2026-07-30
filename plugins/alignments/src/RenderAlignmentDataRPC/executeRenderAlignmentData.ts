@@ -405,6 +405,9 @@ async function buildGroupResult(
     // Worker leaves readTagColors empty; the main thread bakes it from
     // readTagValues + colorTagMap (see overlayReadTagColors).
     readTagColors: new Uint32Array(0),
+    // Also main-thread baked (overlayReadColorCategories), and necessarily
+    // after readTagColors — the `noTagValue` bucket is read off it.
+    readColorCategories: new Uint8Array(0),
     readTagValues: tagColorValues,
 
     ...buildCoverageResultFields(pipeline),
