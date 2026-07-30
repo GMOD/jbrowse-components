@@ -318,20 +318,15 @@ out.
 ## Reading the signals
 
 We zoom out to the whole genome (all six arms). The `In(2L)t` Fst track rises
-into a tall block of differentiation across the entire left arm of chromosome 2
-(roughly `2L:2,200,000–13,200,000`, the inverted region), while every other arm
-sits at low background Fst. Seeing all the arms at once is what makes the signal
-read as genuinely elevated, rather than a baseline with nothing to compare it
-to.
+into a tall block of differentiation across the inverted region of chromosome
+2L, while every other arm sits at low background Fst. Viewing all the arms at
+once gives that block something to be measured against.
 
 <Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block across the whole left arm of chromosome 2 against low background on every other arm."/>
 
 Then we use the search box to jump to `Cyp6g1` (on `2R`) and add the Tajima's D
 track from the pipeline alongside π. Both statistics dip together in the same
-window: π drops to under a tenth of the arm-wide average, and Tajima's D falls
-sharply negative while sitting near zero genome-wide. Seeing both drop in the
-same window is what marks a hard sweep, where either one alone would be
-ambiguous.
+window, which marks a hard sweep where either one alone would be ambiguous.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across ~400 kb of 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip together over the swept window (Tajima's D to about -2, π to under a tenth of the flanking background): the joint trough is the hard-sweep signature."/>
 
@@ -358,8 +353,8 @@ with its phenotype to scan `3R` the same way.
 
 ## Per-sample view: the inversion genotyped across the panel
 
-The windowed Fst scan _summarizes_ the inversion into one number per window. To
-see which lines actually carry it, represent the whole arrangement as a single
+The windowed Fst scan summarizes the inversion into one number per window. To
+see which lines carry it, represent the whole arrangement as a single
 structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
 (`2L:2,225,744–13,154,180`), genotyped across every karyotyped line, and load it
 in the [multi-sample variant display](/docs/user_guides/multivariant_track). A
@@ -368,11 +363,10 @@ both breakpoints and the individual markers shrink to nothing. One SV call
 sidesteps that, because the inversion is a single feature no matter how wide it
 is.
 
-Use the regular multi-sample display here, not its matrix mode. Matrix mode
-spaces one evenly-sized column per variant, which is what you want for many
-SNPs; for a single call it would throw away the one thing that matters here, the
-call's genomic extent. The regular display draws each genotype at the call's
-true span, so the carriers line up under the Fst plateau.
+Use the regular multi-sample display here rather than its matrix mode. Matrix
+mode spaces one evenly-sized column per variant, which suits many SNPs but
+discards the call's genomic extent. The regular display draws each genotype at
+the call's true span, so the carriers line up under the Fst plateau.
 
 First write a `samples.tsv` mapping each line to its arrangement. This is the
 per-sample metadata file the display reads: its first column is the sample name
@@ -435,7 +429,7 @@ Viewed across the whole arm, the single call resolves the ~11 Mb arrangement at
 once: each row is a line, colored by its genotype at the inversion, so the 161
 standard lines form the pale homozygous-reference field and the 19 In(2L)t
 carriers (~10% of the panel) the darker block beneath it, with the karyotype
-strip down the sidebar. `groupBy` is what makes those two blocks contiguous.
+strip down the sidebar. `groupBy` is what keeps those two blocks contiguous.
 Without it the rows keep the VCF's column order, and the split only reads as two
 blocks by luck.
 

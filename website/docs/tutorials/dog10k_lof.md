@@ -23,23 +23,20 @@ tracks, so reading needs only a browser. To build the track yourself:
 
 ## The gene and the question
 
-_CYP1A2_ is a cytochrome P450 that metabolizes a long list of drugs, and dogs
-carry a nonsense variant in it. The Dog10K paper puts the gene under a
-microscope, with panels for copy number, every SNV across it, and mammalian
-constraint scores. The part reproducible from the published callset, and the
-part that matters clinically, is the single truncating variant and who carries
-it.
+_CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense
+variant. This tutorial reproduces the part of the Dog10K paper's figure that the
+published callset supports: the truncating variant and who carries it.
 
-A loss-of-function allele that reaches appreciable frequency is worth asking two
-questions about. Which breeds carry it, and is it in wild canids? The second is
+For a loss-of-function allele at appreciable frequency, the questions are which
+breeds carry it and whether it is present in wild canids. The wild canids are
 the control: a dog-only allele arose after domestication, while one shared with
 wolves did not.
 
 ## Finding the variant without looking up its coordinate
 
-The literature names this variant by its protein consequence, p.Arg373Ter. That
-is enough to find it, and deriving it beats copying a coordinate from a paper
-because it can be re-checked against the assembly you are actually using.
+The literature names this variant by its protein consequence, p.Arg373Ter, which
+is enough to locate it. Deriving the coordinate rather than copying it from a
+paper lets it be re-checked against the assembly in use.
 
 The build script rebuilds _CYP1A2_'s coding sequence from the reference and the
 RefSeq exon structure, translates it, and reports codon 373:
@@ -96,15 +93,14 @@ supplies the reading labels and a per-group swatch:
 }
 ```
 
-One framing note that decides whether the figure works. A SNV is one base wide
-however far you zoom out, so a whole-gene view of 490 of them is a field of
-ticks in which the interesting one is invisible. Zoom to the codon instead: at
-base level each sample's call is a block, and the gene track still shows which
-exon it sits in.
+Framing matters here. A SNV is one base wide however far you zoom out, so a
+whole-gene view of 490 of them is a field of ticks in which the interesting one
+is invisible. Zoom to the codon instead: at base level each sample's call is a
+block, and the gene track still shows which exon it sits in.
 
 ## Reading it
 
-<Figure caption="The CYP1A2 stop-gained variant at base level, one row per dog. The highlighted column is codon 373, where C>T makes TGA: German Hounds, Bohemian Shepherds, Shetland Sheepdogs, Black Russian Terriers, and Keeshonds carry it heterozygous (light blue) or homozygous (dark blue), while the Labrador Retrievers, Boxers, and all four wolves are homozygous reference. The variant to its right shows a different pattern, including a wolf carrier." src="/img/dog10k-cyp1a2-nonsense.png" />
+<Figure caption="The CYP1A2 stop-gained variant at base level, one row per dog, above the reference sequence and its translation. Five breeds carry it heterozygous (light blue) or homozygous (dark blue); the Labrador Retrievers, Boxers, and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
 The allele is carried by 76 of the collection's breeds and reaches homozygosity
 in several: among the dogs sampled here, no German Hound and no Shetland
@@ -112,10 +108,21 @@ Sheepdog is homozygous reference. It is absent from all 63 wolves and all four
 coyotes in the collection, which is the answer to the second question. The
 allele arose in dogs.
 
-The variant a little to the right is the useful contrast. It has its own,
-different distribution across these breeds and one of the wolves carries it, so
-"tracks breed structure" is a property of a particular variant rather than of
-the locus.
+Two neighbours sit inside the same 101 bp, and the display filters them out:
+
+```json
+{
+  "type": "LinearMultiSampleVariantDisplay",
+  "jexlFilters": ["jexl:get(feature,'start') == 38261634"]
+}
+```
+
+Drop the filter to see them as a contrast. One is the same codon's second base.
+The other has its own distribution across these breeds, with one of the wolves
+carrying it, so tracking breed structure is a property of a particular variant
+rather than of the locus. The figure shows a single column because three
+unlabelled columns in one frame invite reading that wolf as a counterexample to
+the stop-gained allele.
 
 ## The gene is also copy-number variable
 
@@ -125,24 +132,22 @@ harder to read than it looks. Those copy-number estimates were never published,
 but they do not have to be: the Dog10K share puts 15 CRAMs online with their
 indexes, so only the reads over this gene have to be fetched.
 
-Depth becomes copy number by comparison, not by calibration. Each dog's own
-flanking sequence is copy number two, so it is the denominator:
+Depth is converted to copy number by comparison within each dog. That dog's own
+flanking sequence is copy number two, so it serves as the denominator:
 
 ```
 CN = 2 * depth over the element / depth over that dog's flanks
 ```
 
-Nothing about that needs a copy-number caller, and the check on it is in the
-same picture: the flanks have to come back out at two. The build script rounds
-each window to an integer and colors it the way the paper does, which is a
-painting rather than a trace.
+This needs no copy-number caller, and it carries its own check: the flanks have
+to come back out at two. The build script rounds each window to an integer and
+colors it the way the paper does.
 
-<Figure caption="Read-depth copy number over CYP1A2, one row per dog, each 5 kb window colored by its rounded copy number (black 2, dark blue 3, blue 4, cyan 5). The Greenland Dog is black across the whole window; every other dog steps up over the gene and returns to black either side. White columns are windows the script drops as unmeasurable, either too repetitive or reading off two in every dog." src="/img/dog10k-cyp1a2-copy-number.png" />
+<Figure caption="Read-depth copy number over CYP1A2, one row per dog, each 5 kb window colored by its rounded copy number (black 2, dark blue 3, blue 4, cyan 5). The Greenland Dog is black across the whole window; every other dog steps up over the gene and returns to black either side. White columns are windows the script drops as unmeasurable: too little of them survives the repeat mask to give a depth worth normalizing." src="/img/dog10k-cyp1a2-copy-number.png" />
 
-Read against the panel above it, this is what makes the locus awkward: a
-genotype call at the stop codon is a call across however many copies that dog
-has, and the paper discounts a Hardy-Weinberg outlier here for exactly that
-reason.
+Read against the panel above it, this complicates the locus: a genotype call at
+the stop codon is a call across however many copies that dog has, and the paper
+discounts a Hardy-Weinberg outlier here for that reason.
 
 ## The same estimate across all 1,987 canids
 
@@ -152,24 +157,29 @@ collection, so the same ratio can be taken from it: one tabix slice of the 397
 GB VCF, stripped to the depth field.
 
 That is a different measurement, made only where a variant was called, so the
-build script checks it against the fifteen dogs that have both rather than
-assuming. Over the shared windows it comes out at r = 0.97 with no bias, which
-is what earns the second painting.
+build script checks it against the fifteen dogs that have both. Over the shared
+windows the two agree at r = 0.97 with no bias.
 
-<Figure caption="The same copy-number painting over every canid in the Dog10K callset, one row each. Rows are sorted by sample ID, which groups them by breed, so breeds fixed for the expansion read as solid bands while others stay black. The flanks are the control and are black across the collection." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="The same copy-number painting over every canid in the Dog10K callset, one row each, clustered by profile with the dendrogram in the sidebar. The distinct profiles read as bands; the flanks are the control and are black across the collection." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
-Two things are worth reading off it. The expansion appears in every part of the
-collection rather than in one clade, which is the paper's own conclusion and
-suggests it predates breed formation. And whole breeds sit at one copy number
-while their neighbors sit at another, which is what makes this a locus where the
-breed matters clinically.
+The expansion appears throughout the collection rather than in one clade, which
+is the paper's own conclusion and suggests it predates breed formation. The
+dendrogram also resolves a handful of distinct profiles rather than a gradient,
+so a dog's copy number at this locus is closer to a genotype than to a
+continuous measurement.
 
-One number does not reproduce. This estimate puts 80% of the collection at three
-or more copies where the paper reports 49.7%, and the two independent depth
-sources here agree with each other too closely for that to be measurement noise.
-The difference is which interval is being counted: the paper's copy number comes
-from QuicK-mer2 over an element whose extent was never published, while this one
-is measured over the windows the collection itself puts above two.
+At 1,987 rows the sidebar cannot label anything (a row is a third of a pixel),
+so the figure answers how many distinct profiles there are rather than which
+breed is which. Naming the clusters would need the breed carried onto the rows,
+which is a display feature rather than a caption.
+
+One number does not reproduce here. This estimate puts 80% of the collection at
+three or more copies where the paper reports 49.7%, and the two independent
+depth sources agree with each other too closely for that to be measurement
+noise. The difference is which interval is being counted: the paper's copy
+number comes from QuicK-mer2 over an element whose extent was never published,
+while this one is measured over the windows the collection itself puts above
+two.
 
 ## Reproduce it end to end
 

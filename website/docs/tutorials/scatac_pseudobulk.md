@@ -54,17 +54,18 @@ three things with it:
 ## Generating per-group BigWigs
 
 Two settings decide whether the rows can be compared to each other, whichever
-tool writes them:
+tool writes them.
 
-- **Normalization.** Groups differ in cell count and in total fragments, so
-  normalize each track (CPM / RPKM, or per-cell-count). Without it a tall peak
-  can just mean "more cells in this group".
-- **Bin size.** Smaller bins (10-25bp) preserve ATAC peak shape at the cost of
-  file size; larger bins (50-100bp) are smaller and fine zoomed out. 10-25bp is
-  typical.
+Normalization matters because groups differ in cell count and in total
+fragments, so each track needs normalizing (CPM / RPKM, or per-cell-count).
+Without it a tall peak can just mean "more cells in this group".
+
+Bin size trades resolution against file size. Smaller bins (10-25bp) preserve
+ATAC peak shape, larger bins (50-100bp) are smaller and fine zoomed out, and
+10-25bp is typical.
 
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
-normalized BigWig per group in a single call, which is the whole pseudobulk step
+normalized BigWig per group in a single call, which covers the pseudobulk step
 for this dataset:
 
 ```python

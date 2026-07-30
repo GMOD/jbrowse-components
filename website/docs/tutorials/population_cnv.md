@@ -9,7 +9,7 @@ tutorial_category: Structural variation
 
 **TL;DR:** point a `MultiQuantitativeTrack` at per-sample copy-number BigWigs,
 render it as a `multirowdensity` heatmap with the bicolor pivot at the diploid
-baseline of 2, and every individual becomes one row whose color _is_ a copy
+baseline of 2, and every individual becomes one row whose color encodes a copy
 number. Past a few hundred samples the format becomes the bottleneck, so the
 second half packs the same values into one Zarr store.
 
@@ -120,13 +120,13 @@ chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`, `<CN3>`,
 widest range. Between 36,155,499 and 36,461,232 the GRCh38 release of that
 callset has no copy-number record at all.
 
-That is not a callset bug so much as a limit of the representation. A VCF record
-is one interval with fixed breakpoints and a small set of symbolic alleles;
-nested and multiallelic copy number is neither. Depth carries no genotype, no
-allele frequency and no phasing, and the callset carries all three, so the two
-are complements rather than competitors.
+This is a limit of the representation rather than a callset bug. A VCF record is
+one interval with fixed breakpoints and a small set of symbolic alleles, and
+nested multiallelic copy number is neither. Depth in turn carries no genotype,
+allele frequency or phasing, all of which the callset has, so the two are
+complements.
 
-Where the variation _does_ fit the representation, they agree:
+Where the variation does fit the representation, they agree:
 
 <Figure caption="UGT2B17 on chr4, a biallelic deletion: depth is flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion at 47% allele frequency. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
@@ -136,16 +136,17 @@ The track above is 104 individuals because that is roughly where one BigWig per
 sample stops being pleasant, and the reason is not size. Reading the window in
 this tutorial's figures out of the hosted files:
 
-- One BigWig is **under 600 KB for the whole genome** at 1 kb bins, and the
-  window is a couple of kilobytes of that.
-- Filling it takes **625 HTTP requests**, six per file. A BigWig has to read its
+- One BigWig is under 600 KB for the whole genome at 1 kb bins, and the window
+  is a couple of kilobytes of that.
+- Filling it takes 625 HTTP requests, six per file. A BigWig has to read its
   header, its chrom B-tree and its R-tree index before it knows where a region's
   values live, and each of those waits on the one before it.
-- A range request to the host costs about **210 ms**, so the cost is latency
-  multiplied by file count, not bandwidth. The full panel is 24 times the files.
+- A range request to the host costs about 210 ms, so the cost is latency
+  multiplied by file count rather than bandwidth. The full panel is 24 times the
+  files.
 
 The fix is a format that answers the same question in a couple of requests: one
-array, samples by bins, chunked so that a chunk holds _every sample_ over a span
+array, samples by bins, chunked so that a chunk holds every sample over a span
 of the genome.
 
 [Zarr](https://zarr.dev/) v3 is that format, and it needs no tile server:
@@ -200,10 +201,9 @@ the converter.
 
 Filling that window for all 2504 individuals:
 
-- **One BigWig each: roughly 15,000 requests, a minute or so.** Scaled up from
-  the 104-sample track, which took 625 requests and 3 seconds against the same
-  host.
-- **One Zarr store: 3 requests, under a second.** The group metadata, the array
+- One BigWig each: roughly 15,000 requests, a minute or so. Scaled up from the
+  104-sample track, which took 625 requests and 3 seconds against the same host.
+- One Zarr store: 3 requests, under a second. The group metadata, the array
   metadata, and one chunk, at the 210 ms round trip above.
 
 The three do not change with the cohort, because the sample axis is inside the
@@ -227,23 +227,24 @@ node scripts/build_signal_zarr.ts \
 
 Omit `--region` to convert whole genomes. The example above is the store this
 tutorial's figures use: 2504 samples over 3.5 Mb, which is 35 MB of float32
-before compression and **1.4 MB on disk** after, built in about 30 seconds. Copy
-number compresses hard because most of it is the same number.
+before compression and 1.4 MB on disk after, built in about 30 seconds. Copy
+number compresses well because most of it is the same number.
 
-Three choices in the output are worth understanding, because they are what make
-the reads cheap:
+Three choices in the output are what make the reads cheap.
 
-- **Chunks are `[all samples, 256 bins]`.** One request returns every sample
-  over 256 kb, so a screenful of the cohort is one or two reads whether the
-  cohort is three samples or three thousand. This is the opposite of the natural
-  per-sample layout, and it is the entire point.
-- **Levels are a pyramid.** `--levels 1000,10000` writes the 1 kb values plus a
-  10 kb average of them, and the adapter picks the coarsest level still finer
-  than one screen pixel. Without it, a zoomed-out view reads every 1 kb bin to
-  draw each pixel once.
-- **Unmeasured bins are `NaN`, not zero.** QuicK-mer2 leaves gaps where there
-  are no unique k-mers, and a gap drawn as zero coverage reads as a homozygous
-  deletion.
+Chunks are `[all samples, 256 bins]`, so one request returns every sample over
+256 kb and a screenful of the cohort is one or two reads whether the cohort is
+three samples or three thousand. This is the opposite of the natural per-sample
+layout.
+
+Levels form a pyramid. `--levels 1000,10000` writes the 1 kb values plus a 10 kb
+average of them, and the adapter picks the coarsest level still finer than one
+screen pixel. Without it, a zoomed-out view reads every 1 kb bin to draw each
+pixel once.
+
+Unmeasured bins are `NaN` rather than zero. QuicK-mer2 leaves gaps where there
+are no unique k-mers, and a gap drawn as zero coverage reads as a homozygous
+deletion.
 
 A `group` costs the heatmap nothing. Grouped samples share a synthesized color,
 but where that color lands depends on the rendering: in a line or xy plot it is

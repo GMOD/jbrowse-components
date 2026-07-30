@@ -66,7 +66,7 @@ uses the gzipped `.gz` names.
 
 ## Bringing your own ortholog table
 
-`MCScanBlocksAdapter` only needs two things, and neither is MCScan-specific:
+`MCScanBlocksAdapter` needs two inputs, neither of them MCScan-specific:
 
 - a tab-delimited table, one row per orthogroup and one column per genome, each
   cell holding a single gene id (`.` or an empty cell for no ortholog)
@@ -122,9 +122,8 @@ join -t $'\t' -a1 -a2 -e . -o 0,1.2,2.2 \
 
 Ensembl Compara, OrthoDB, InParanoid and SonicParanoid all export gene pairs per
 genome pair, so they join the same way. The reference column is whichever genome
-you joined on, which is what makes the
-[direct vs transitive](#direct-vs-transitive-pairs) distinction below apply to
-any table built this way.
+you joined on, so the [direct vs transitive](#direct-vs-transitive-pairs)
+distinction below applies to any table built this way.
 
 ### BED files
 
@@ -259,11 +258,11 @@ Because a `.blocks` table is reference-anchored on grape (column 0), only pairs
 that include grape are direct alignments. The adapter can still serve a pair
 where neither side is the reference (peach–cacao above, say) by joining the two
 columns on their shared grape gene, but that link is transitive rather than a
-direct alignment. So row order is a real choice. When one genome dominates
+direct alignment. Row order therefore matters. When one genome dominates
 (grape's 19 chromosomes against peach's 8 or cacao's 10), put the cleaner pair
 on top. Otherwise put the reference in the middle (peach–grape–cacao) so every
-band is direct. The demo above deliberately stacks grape on the bottom instead,
-to show the transitive-band layout in action.
+band is direct. The demo above stacks grape on the bottom instead, to show the
+transitive-band layout.
 
 ## Zooming to a conserved block
 

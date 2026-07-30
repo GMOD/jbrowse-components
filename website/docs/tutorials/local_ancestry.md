@@ -232,15 +232,15 @@ carries no ancestry.
 
 The Shiloh Shepherd does not. It takes 23 wolf blocks with a median around 1.5
 Mb and a longest of nearly 10 Mb, a length distribution much closer to a
-Czechoslovakian Wolfdog than to the Tamaskan. That is worth stating carefully:
-it agrees with the Dog10K paper's observation that this individual shares more
-doubleton sites with wolves than any other breed dog, but the same paper's
-D-statistics find no significant excess of wolf allele sharing over German
-Shepherd Dogs. Only one Shiloh Shepherd exists in the collection, and both a
-single sample and a single chromosome are thin evidence. Read it as a lead to
-follow, not a settled result, and note the shape of the disagreement: a
-genome-wide sharing fraction and a block-length distribution are different
-measurements, and this is the sort of case where they diverge.
+Czechoslovakian Wolfdog than to the Tamaskan. Stated carefully: it agrees with
+the Dog10K paper's observation that this individual shares more doubleton sites
+with wolves than any other breed dog, but the same paper's D-statistics find no
+significant excess of wolf allele sharing over German Shepherd Dogs. Only one
+Shiloh Shepherd exists in the collection, and both a single sample and a single
+chromosome are thin evidence. Read it as a lead to follow, not a settled result,
+and note the shape of the disagreement: a genome-wide sharing fraction and a
+block-length distribution are different measurements, and this is the sort of
+case where they diverge.
 
 ## Checking a block against the genotypes
 

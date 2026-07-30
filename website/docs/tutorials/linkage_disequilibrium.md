@@ -10,10 +10,10 @@ pairwise r² as a heatmap. The one thing to get right is scale: the triangle is 
 kb-scale local tool, not a way to see megabase structural variants.
 
 Linkage disequilibrium (LD) is the tendency for nearby variants to be inherited
-together. JBrowse draws it as a triangular heatmap of pairwise r² between SNPs:
-**each red cell means two SNPs are almost always inherited together, white means
-they are independent.** The triangle shows you where a chunk of chromosome moves
-as a unit.
+together. JBrowse draws it as a triangular heatmap of pairwise r² between SNPs.
+A red cell means two SNPs are almost always inherited together, and white means
+they are independent, so the triangle shows where a chunk of chromosome moves as
+a unit.
 
 ## A selective sweep leaves a long haplotype
 
@@ -24,18 +24,10 @@ in dairying populations.
 
 <Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235, the -13910 C>T variant in an MCM6 intron associated with lactase persistence. Below it is haplotypic r² computed live from phased 1000 Genomes genotypes, with the recombination track (1 - r² between adjacent SNPs) above the triangle. The solid red block covers the gene, and ends where the recombination curve starts to spike."/>
 
-- **Causal variant:** ClinVar's rs4988235 annotation, independent of the
-  genotypes below it.
-- **The block it dragged along:** the red triangle of correlated SNPs.
-- **Where it ends:** correlation fades into paler flanks as recombination breaks
-  the haplotype apart.
-
-A block this long and common only forms when a haplotype rises faster than
-recombination can break it up: the signature of a recent sweep. The blue curve
-above the triangle makes that boundary explicit: the recombination track
+The blue curve above the triangle is the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
-− r² between adjacent SNPs, sits near zero across the block and spikes outside
-it.
+− r² between adjacent SNPs. It sits near zero across the block and spikes
+outside it, which marks the block's edges.
 
 ### Compute LD within one panel
 
@@ -55,9 +47,7 @@ tabix -p vcf panel.vcf.gz
 
 An inversion produces a block for a different reason: inverted and standard
 arrangements can't recombine in a heterozygote, so the whole segment stays
-correlated. The 17q21.31 inversion (around _MAPT_) is the textbook case:
-segmental duplications hide it from short-read SV callers, so the LD block is
-how you see it at all.
+correlated. The 17q21.31 inversion (around _MAPT_) is the standard example.
 
 The two causes look identical in the triangle alone. Telling them apart needs
 something outside the r² matrix: an annotated causal variant, a breakpoint call,
@@ -67,15 +57,13 @@ inversion.
 
 ## LD is a local tool, so mind the scale
 
-The triangle is a **local, kb-scale** view: r² decays with distance, so it's
-excellent for a haplotype block a few kb to a few hundred kb wide, and the wrong
-tool for a large, low-frequency structural variant like the _Drosophila_
-`In(2L)t` inversion in the
-[population genomics tutorial](/docs/tutorials/population_genomics): the sparse
-diagnostic SNPs carrying its signal are diluted by the common SNPs around them
-in any local window. A **windowed scan** catches it instead, because it
-integrates one statistic (Fst) over a large window rather than SNP-pair
-correlation.
+r² decays with distance, so the triangle suits a haplotype block a few kb to a
+few hundred kb wide. It is the wrong tool for a large, low-frequency structural
+variant like the _Drosophila_ `In(2L)t` inversion in the
+[population genomics tutorial](/docs/tutorials/population_genomics), where the
+sparse diagnostic SNPs carrying the signal are diluted by the common SNPs around
+them. A windowed scan catches that instead, integrating one statistic (Fst) over
+a large window rather than SNP-pair correlation.
 
 ## Making an LD track from your own data
 
@@ -88,9 +76,9 @@ Two ways to supply the data, covered in full in the
 - **Precomputed with PLINK**: point an `LDTrack` at PLINK `--r2` output, for
   large cohorts or to match numbers from a published analysis.
 
-One setting did most of the work above: raising the minor allele frequency
-filter thins the dense 1000 Genomes SNPs to the common, block-tagging ones,
-which also removes rare-allele r² speckle.
+Raising the minor allele frequency filter thins the dense 1000 Genomes SNPs to
+the common, block-tagging ones, and removes rare-allele r² speckle. That one
+setting does most of the work in the figures above.
 
 ## See also
 

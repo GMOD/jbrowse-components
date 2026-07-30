@@ -186,11 +186,11 @@ allele depths drive the allele-frequency track, it writes a depth bigWig, a
 minor-allele-frequency (MAF) bigWig, an integer copy-number bedGraph, and a CNV
 VCF.
 
-If you do use that MAF track, the VCF has to hold the **tumor's** calls, not the
-matched normal's. HiFiCNV builds the track by reading the `AD` field out of the
-`--maf` VCF and never looks at `--bam` for it, so a germline VCF from the normal
-produces a track sitting near 0.5 everywhere, including across arms that have
-lost a copy. With the tumor's calls a germline het inside a
+If you do use that MAF track, the VCF has to hold the tumor's calls rather than
+the matched normal's. HiFiCNV builds the track by reading the `AD` field out of
+the `--maf` VCF and never looks at `--bam` for it, so a germline VCF from the
+normal produces a track sitting near 0.5 everywhere, including across arms that
+have lost a copy. With the tumor's calls a germline het inside a
 loss-of-heterozygosity arm is homozygous in the tumor, so its minor allele
 fraction collapses toward 0 and the loss becomes visible. On chr3p, which the
 benchmark calls a single-copy loss, that is the difference between 1742
@@ -413,9 +413,7 @@ coverage changes line up with the called intervals.
 
 Raw coverage is only a sanity check on existing calls. For a signal that reads
 directly as copy number, use the depth, BAF, and copy-number tracks built above.
-Four loci in HG008-T each carry a different copy-number state, so together they
-make a compact tour of how depth, BAF, and the benchmark CNV calls read against
-one another:
+Four loci in HG008-T each carry a different copy-number state:
 
 | Locus  | State in HG008-T                 | Signature on the tracks             |
 | ------ | -------------------------------- | ----------------------------------- |
@@ -424,12 +422,10 @@ one another:
 | SMAD4  | 18q loss + LOH (CN 1, 0+1)       | depth halved, BAF splits to 0 and 1 |
 | KRAS   | Allelic gain (CN 3, 2+1)         | depth raised, BAF to 1/3 and 2/3    |
 
-The BAF column is why the unfolded track earns its place: each copy-number state
-has its own band pattern, and the bands are symmetric about 0.5. A balanced
-region is one band at 0.5, a single-copy loss splits to 0 and 1, and a CN 3 gain
-sits at 1/3 and 2/3 because one of the three copies carries the B allele (or two
-of three do). Folding the track onto 0 to 0.5 collapses each of those pairs onto
-one line and throws that away.
+Keep the BAF track unfolded. Each copy-number state has its own band pattern,
+symmetric about 0.5: a balanced region is one band at 0.5, a single-copy loss
+splits to 0 and 1, and a CN 3 gain sits at 1/3 and 2/3. Folding the track onto 0
+to 0.5 collapses each of those pairs onto one line.
 
 #### CDKN2A: a homozygous deletion vs a single-copy loss
 
@@ -461,8 +457,8 @@ chromosome with the depth track above the BAF:
   was lost and the other duplicated, so total copy number is still 2 and depth
   stays flat, yet the BAF still splits away from 0.5.
 
-The q-arm event is invisible to depth alone. Only the BAF reveals it, which is
-why the two are read together.
+The q-arm event is invisible to depth alone, which is why the two tracks are
+read together.
 
 <Figure caption="Chromosome 17 with the HiFiCNV depth track (top) over the BAF track (middle) over the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0): depth halved, BAF split to 0 and 1. The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): depth flat, yet the BAF is still split, invisible to depth alone." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
@@ -486,8 +482,8 @@ BAF track directly.
 
 The same reading covers the other two loci. `KRAS` on chr12 is a low-level gain
 (`SV_101`, CN 3, 2+1): depth is raised and the BAF shifts only modestly off 0.5,
-the partial imbalance a 2+1 gain produces rather than the full drop of a
-complete haplotype loss.
+the partial imbalance of a 2+1 gain rather than the full drop of a complete
+haplotype loss.
 
 <Figure caption="KRAS on chr12: the HiFiCNV depth track over the BAF track over the CNV calls. The gain (SV_101, CN 3, 2+1) reads as raised depth and a BAF that shifts only modestly off 0.5, the partial imbalance of a 2+1 gain." src="/img/sv_cgiab/driver_kras_gain.png" />
 

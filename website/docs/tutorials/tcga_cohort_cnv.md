@@ -130,18 +130,17 @@ there.
 
 Do not read proportions off this display. At 1104 rows in a few hundred pixels
 each row is well under one pixel tall, so rows alias together and the saturated
-colors crowd out the neutral ones: the stack maps _where_ events are, not _how
-many_ rows carry them. The ERBB2 window above is 68.5% balanced in the file and
-paints as roughly half that.
+colors crowd out the neutral ones. The stack maps where events are rather than
+how many rows carry them: the ERBB2 window above is 68.5% balanced in the file
+and paints as roughly half that.
 
 ## Add a recurrence track
 
-That caveat is one the stack cannot fix and a second track can: the same calls
-collapsed to per-bin frequencies, so the count the stack blurs gets its own
-axis. Each 100kb bin of `tcga_brca_cnv_recurrence.bedGraph.gz` carries the
-percent of the cohort gained and the percent lost, on the same log2 cutoffs the
-stack colors by (gain above 0.3, loss below -0.3), so a stripe and its peak
-count the same tumors:
+A second track fixes what the stack cannot: the same calls collapsed to per-bin
+frequencies, so the count the stack blurs gets its own axis. Each 100kb bin of
+`tcga_brca_cnv_recurrence.bedGraph.gz` carries the percent of the cohort gained
+and the percent lost, on the same log2 cutoffs the stack colors by (gain above
+0.3, loss below -0.3), so a stripe and its peak count the same tumors:
 
 ```
 #chrom  start      end        gain   loss

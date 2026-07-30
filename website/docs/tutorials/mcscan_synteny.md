@@ -71,11 +71,10 @@ chr1	33170	35791	VIT_201s0011g00030.1	0	+
 
 Column 1 must use the same reference sequence names as the JBrowse assembly.
 
-Both MCScan anchor adapters **throw** on an id that isn't in the BED, so a
-mismatch surfaces as a track error rather than an empty view. Ids get mangled by
-isoform suffixes and by jcvi stripping suffixes unless run with
-`--no_strip_names`, which is why the [script](#reproduce-it-end-to-end) passes
-it.
+Both MCScan anchor adapters throw on an id that isn't in the BED, so a mismatch
+surfaces as a track error rather than an empty view. Ids get mangled by isoform
+suffixes and by jcvi stripping suffixes unless run with `--no_strip_names`,
+which is why the [script](#reproduce-it-end-to-end) passes it.
 
 ## Producing the data
 
@@ -147,10 +146,9 @@ indexed variant the way PAF has [PIF](/docs/config_guides/synteny_track).
 
 ## Using both at once
 
-The two tracks describe the same run at different granularity, so putting both
-in one view is the useful arrangement rather than a duplicate. Add a linear
-synteny view (**Add → Linear synteny view**), pick peach and grape, and turn on
-both tracks.
+The two tracks describe the same run at different granularity, so they
+complement each other in one view. Add a linear synteny view (**Add → Linear
+synteny view**), pick peach and grape, and turn on both tracks.
 
 <Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks, red where the block is collinear and blue where it is inverted." src="/img/mcscan_anchors.png" />
 
@@ -167,10 +165,10 @@ type, or declaratively:
 }
 ```
 
-Reading the two together is the point: a bar tells you a block is there and
-which way round it runs, and the ribbons above it show whether the genes inside
-it hold their order. Strand is the `LGVSyntenyDisplay` **Color by** default; the
-menu offers the other modes.
+Read the two together: a bar states that a block is there and which way round it
+runs, and the ribbons above it show whether the genes inside it hold their
+order. Strand is the `LGVSyntenyDisplay` **Color by** default, and the menu
+offers the other modes.
 
 ## Reproduce it end to end
 

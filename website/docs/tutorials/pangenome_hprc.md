@@ -14,8 +14,8 @@ pangenome graph drawn as a graph, and the variant callset (464 haplotypes as a
 genotype matrix).
 
 Every track below is a URL you can paste. The callset ships tabix-indexed, so
-JBrowse reads the slice you are looking at straight off HPRC's S3; the graph
-route we have prebuilt and host, with the build script in
+JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
+projections we prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## What release 2 publishes
@@ -38,8 +38,8 @@ verkko assembly and QC release), so release 2 is the one for this.
 
 ## Regular GFA vs rGFA
 
-Only one thing makes the graph open by locus straight from the file: its
-coordinates.
+Whether a graph opens by locus straight from the file depends on whether its
+segments carry coordinates.
 
 A **regular GFA** (what pggb, odgi, and the full base-level Minigraph-Cactus
 graph emit) records no coordinates on its segments. The only reference positions
@@ -103,9 +103,9 @@ downloads nothing but the region in view; the adapter resolves
 }
 ```
 
-The `color` jexl is what makes the graph and the linear view read as one
-picture: it paints each segment in the graph view's own **Stable rank** colors,
-so a segment is the same color in both panels.
+The `color` jexl paints each segment in the graph view's own **Stable rank**
+colors, so a segment is the same color in both panels and the two read as one
+picture.
 
 Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
 reference and the graph becomes queryable by locus. Those hosted files are ours,
@@ -125,13 +125,11 @@ on a smaller graph than this one.
 
 :::
 
-The graph draws a window at a time rather than a whole viewport, so the way in
-is to **drag across the ruler** to rubberband one and pick **Graph genome view
-(this selection)**. That picks a window directly, with no navigating first, and
-it needs no graph track in the view: the item appears whenever the session holds
-a track whose adapter can cut a subgraph. Select more than the view will draw
-and the item greys out and names its own limit, so the size to aim at is
-something you read rather than remember.
+The graph draws a window at a time rather than a whole viewport. To pick one,
+**drag across the ruler** to rubberband a region and choose **Graph genome view
+(this selection)**. This needs no graph track in the view: the item appears
+whenever the session holds a track whose adapter can cut a subgraph. Selecting
+more than the view will draw greys the item out and displays its limit.
 
 The subgraph is cut from the same two files the track reads.
 
@@ -158,12 +156,11 @@ its node below are the same color:
 The two constants are the window's start and its length, so this belongs on the
 view rather than in a hosted config.
 
-The asymmetry between the panels is still structural. A rank-0 segment sits on
-GRCh38 and has a coordinate; a rank>0 segment sits on some other assembly's
+The asymmetry between the panels is structural. A rank-0 segment sits on GRCh38
+and has a coordinate, while a rank>0 segment sits on some other assembly's
 refName and has none, so no coloring will put those loops on a GRCh38 axis as
-segments. What the ramp shows is where each one attaches. How long each one is
-stays the job of the bubble lane and the
-[allele inventory](#the-allele-inventory).
+segments. The ramp shows where each one attaches; the bubble lane and the
+[allele inventory](#the-allele-inventory) give their lengths.
 
 The **Layout** dropdown trades that picture for an **anchored** layout, which
 puts the x axis back on GRCh38:
@@ -181,56 +178,52 @@ what the [allele inventory](#the-allele-inventory) holds in each:
 | C4           | `chr6:31,980,000-32,050,000`   | 9 alleles, longest 39 kb  |
 | LPA KIV-2    | `chr6:160,525,000-160,655,000` | 33 segments, up to 176 kb |
 
-Two things the table cannot show, both worth knowing before reading a window as
-empty.
+The table cannot show two things that matter before reading a window as empty.
+Copy number is not in the graph, because minigraph records the distinct sequence
+a bubble can hold rather than how many times a haplotype repeats it. AMY1 and C4
+are therefore long alternate alleles, and length is the only proxy for a copy
+count.
 
-**Copy number is not in the graph.** minigraph records the distinct sequence a
-bubble can hold, not how many times a haplotype repeats it, so AMY1 and C4 are
-long alternate alleles and length is the only proxy for a copy count.
-
-**Near-identical duplications collapse.** `chr5:70,880,000-70,980,000` over SMN1
-holds 2 alleles whose longest is 334 bp, because minigraph merged SMN1 and SMN2
-onto one path. A quiet window here means collapsed or invariant, never checked
-and found nothing.
+Near-identical duplications also collapse. The window over SMN1 holds only two
+short alleles, because minigraph merged SMN1 and SMN2 onto one path. A quiet
+window here means collapsed or invariant rather than checked and found nothing.
 
 ### Which haplotype an allele came from
 
 The **Layout** dropdown's third mode, **Sample rows**, keeps x on GRCh38 and
-gives each contributing assembly its own row. It is worth the switch here
-because rank is build order: at a locus this dense one rank holds alleles from a
-dozen different haplotypes, so an anchored rank row means nothing biological,
-while a sample row is one haplotype.
+gives each contributing assembly its own row. This matters at a dense locus,
+because rank is build order: one rank holds alleles from a dozen different
+haplotypes, so an anchored rank row means nothing biological while a sample row
+is one haplotype.
 
-LPA is where that pays off: its KIV-2 repeat sets Lp(a) level, and copy number
-there is not callable from short reads at all.
+LPA is a useful case, since its KIV-2 repeat sets Lp(a) level and copy number
+there is not callable from short reads.
 
 <Figure caption="The KIV-2 repeat inside LPA in the Sample rows layout, under the RefSeq genes and rGFA segments for the same window. The top row is the GRCh38 backbone; each row below it is one haplotype that donated sequence here, labelled with its HPRC id, and its marks are the alleles it donated, colored by the reference position they attach to. The bubbles lane states the length range the graph found across the cohort." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
-A window like this draws a dozen or so rows out of 464 haplotypes, and that
-ratio is the thing to read carefully. A row is the haplotype minigraph took the
-sequence **from**, the same attribution `discoveryRank` and `firstSeenIn` carry,
-not the set of haplotypes carrying the allele. Collapsing is what let the allele
-be found at all, so carriage stays the callset's job,
-[below](#structure-not-sequence).
+A window like this draws a dozen or so rows out of 464 haplotypes. A row is the
+haplotype minigraph took the sequence from, the same attribution `discoveryRank`
+and `firstSeenIn` carry, and not the set of haplotypes carrying the allele.
+Collapsing is what let the allele be found at all, so carriage remains the
+callset's job, [below](#structure-not-sequence).
 
 ### Hovering one panel highlights the other
 
 Hover a node in the graph and the reference interval it occupies is highlighted
 in every linear view beside it; hover the linear view and the segment under the
-cursor brightens in the graph. Nothing to configure, and it is the third thing a
-reference axis can hold for a rank>0 allele: not the allele's own sequence, but
-the interval between the two backbone segments it detaches from and rejoins.
-Both directions are pictured in the
+cursor brightens in the graph. This needs no configuration. For a rank>0 allele
+the interval shown is not the allele's own sequence, but the span between the
+two backbone segments it detaches from and rejoins. Both directions are pictured
+in the
 [E. coli tutorial](/docs/user_guides/graph_genome_view#hovering-one-panel-highlights-the-other).
 
 ### From a node back to a coordinate
 
-Hovering says where a node is while the cursor is on it. **Right-click a node**
-for the two answers that outlast the pointer: **Highlight in hg38** marks its
-reference interval in the linear view beside the graph and leaves it there, and
-**Open in hg38** scrolls that view to it rather than opening another pane. The
-graph's own **Launch view** menu does the same for the whole window it was cut
-from.
+Hovering says where a node is only while the cursor is on it. **Right-click a
+node** for two answers that persist: **Highlight in hg38** marks its reference
+interval in the linear view beside the graph and leaves it there, and **Open in
+hg38** scrolls that view to it rather than opening another pane. The graph's own
+**Launch view** menu does the same for the whole window it was cut from.
 
 What you are offered depends on which segment you clicked, because rGFA states
 each segment's source sequence (`SN`) and offset (`SO`):
@@ -248,23 +241,23 @@ panel a left-click opens.
 
 <Figure caption="Right-clicking one haplotype's allele in the sample-rows layout, over the band Highlight in hg38 left in the linear view above. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
-That closes a loop over the lanes above: rubberband a locus into a graph, find
-the loop worth asking about, right-click it to put the linear view on its GRCh38
-interval, then read that interval off the tracks that are anchored there. Which
-bubble it belongs to ([bubble track](#the-bubble-track)), how long the allele is
-and which haplotype it was first seen in
-([allele inventory](#the-allele-inventory)), and whether the callset genotypes
-anything there ([variant callset](#the-variant-callset)). The graph says what
-sequence exists and where it attaches; those three say how common it is.
+The lanes above combine into one route: rubberband a locus into a graph,
+right-click an allele to put the linear view on its GRCh38 interval, then read
+that interval off the tracks anchored there. The
+[bubble track](#the-bubble-track) gives the bubble it belongs to, the
+[allele inventory](#the-allele-inventory) its length and the haplotype it was
+first seen in, and the [variant callset](#the-variant-callset) whether anything
+is genotyped there. The graph states what sequence exists and where it attaches,
+and those three state how common it is.
 
-Where the contributing assemblies _are_ loaded, a handful of genomes rather than
-hundreds, the same menu opens any of them, or all at once as a synteny view. See
-the
+Where the contributing assemblies are themselves loaded, a handful of genomes
+rather than hundreds, the same menu opens any of them, or all at once as a
+synteny view. See the
 [E. coli tutorial](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
 
 ## The bubble track
 
-A bubble is where haplotypes diverge and rejoin; the bubble track shows _where_
+A bubble is where haplotypes diverge and rejoin. The bubble track reports where
 the graph varies and by how much, in one file rather than the whole graph:
 
 ```json
@@ -282,11 +275,11 @@ the graph varies and by how much, in one file rather than the whole graph:
 ```
 
 The `MinigraphBubbleAdapter` labels each bubble with its shortest and longest
-allele: one bubble in the HLA class II window runs 4,046 to 78,051 bp depending
-on the haplotype. Read the path count with care, since it counts routes
-combinatorially rather than haplotypes observed, saturating at `2147483647` (the
-track labels those bubbles uncountable). HPRC publishes no bubble file, so this
-one is ours too, built with `gfatools bubble`.
+allele, and one bubble in the HLA class II window spans tens of kilobases
+depending on the haplotype. The path count needs care, since it counts routes
+combinatorially rather than haplotypes observed, and saturates at `2147483647`
+(the track labels those bubbles uncountable). HPRC publishes no bubble file, so
+this one is ours too, built with `gfatools bubble`.
 
 ## The allele inventory
 
@@ -307,19 +300,19 @@ from the two indexes above with no assemblies, no VCF and no bubble caller.
 }
 ```
 
-An `AlignmentsTrack` over a BED is the point, not a mistake. Each row carries a
-`CIGAR` against the reference span it replaces (`2062M63348I`), and the
-alignments display draws whatever has one, so the alleles pack into rows and
-each insertion draws at its real magnitude instead of as a 1 bp box. The
+The `AlignmentsTrack` over a BED is deliberate. Each row carries a `CIGAR`
+against the reference span it replaces (`2062M63348I`), and the alignments
+display draws whatever has one, so the alleles pack into rows and each insertion
+draws at its real magnitude instead of as a 1 bp box. The
 [E. coli tutorial](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
 walks through the columns and how the walk derives them.
 
-Whole graph: 208,545 alleles, 112,995 of them insertions, 661 of those longer
-than 50 kb. At that scale start from a size filter in **Edit filters**, e.g.
+The whole graph holds a few hundred thousand alleles, about half of them
+insertions. At that scale, start from a size filter in **Edit filters**, e.g.
 `jexl:get(feature,'delta')>10000`.
 
 Read `discoveryRank` and `firstSeenIn` as the first haplotype to contribute an
-allele, never as who carries it: minigraph collapses, so an allele many
+allele rather than as who carries it. minigraph collapses, so an allele many
 haplotypes share is credited to whichever was added first, and one sample can
 end up named on half the rows in a dense window purely by build order. Carriage
 is the callset's job, [below](#structure-not-sequence).
@@ -349,28 +342,28 @@ only the slice you are viewing out of the 2.3 GB file. Paste the S3 URL into a
 }
 ```
 
-`renderingMode: "phased"` is the setting that matters. The VCF carries 232
-phased samples, so phased mode splits each into its two haplotypes: 464
-independent rows instead of 232 diploid ones, which is what makes co-inherited
-blocks visible.
+`renderingMode: "phased"` is the setting to note. The VCF carries 232 phased
+samples, and phased mode splits each into its two haplotypes, giving 464
+independent rows instead of 232 diploid ones. Co-inherited blocks are visible
+only in that form.
 
-The MHC class II region carries about **66 variants per kilobase** here, so a
-200 kb window holds over fourteen thousand records, and all but a couple of
-hundred are SNPs. The structural tier is the part a pangenome adds over a
-short-read callset, and it is already in this file: add the filter
+The MHC class II region is dense enough that a 200 kb window holds over fourteen
+thousand records, nearly all of them SNPs. The structural tier is what a
+pangenome adds over a short-read callset, and it is already in this file. Add
+the filter
 
 ```
 jexl:alleleLength(feature) >= 50
 ```
 
-from **Edit filters** and the same window drops to 220 alleles, each a real
-insertion or deletion. (`alleleLength` is the longest allele the record
-describes; a filter on `end - start` would keep only deletions, since an
+from **Edit filters** and the same window drops to a couple of hundred alleles,
+each a real insertion or deletion. (`alleleLength` is the longest allele the
+record describes; a filter on `end - start` would keep only deletions, since an
 insertion consumes no reference.)
 
-That same asymmetry is why an insertion would not draw at its true width, so the
-display widens each insertion cell to a marker sized by the inserted bp, in that
-haplotype's own genotype color
+Because an insertion consumes no reference, it would not otherwise draw at its
+true width. The display widens each insertion cell to a marker sized by the
+inserted bp, in that haplotype's own genotype color
 ([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)).
 Only haplotypes carrying the allele widen, so the marker never implies a sample
 has sequence it does not.
@@ -388,11 +381,11 @@ The graph and the callset are the same object at two resolutions. minigraph
 records structural variation (roughly >50 bp) and collapses everything smaller,
 so SNPs are absent from the graph even though every one is in the VCF. Filter
 the callset to that same tier and the two describe the same events from opposite
-ends: the graph states an allele and its length but cannot say whose it is,
-because collapsing is what let it be found at all, while the callset never lost
-the samples. Put both in sample rows and the two row stacks answer different
-questions about the same bp: the graph names the haplotype an allele came
-**from**, the callset names every haplotype that **carries** it.
+ends. The graph states an allele and its length but cannot say whose it is,
+since collapsing is what let it be found at all, while the callset never lost
+the samples. Putting both in sample rows makes the difference explicit: the
+graph names the haplotype an allele came from, and the callset names every
+haplotype that carries it.
 
 <Figure caption="One window, both products, restricted to the same 10 donors so the rows line up: the callset (top) is filtered to the same 50 bp tier the graph holds, both haplotypes of each donor labeled by name; the graph (bottom) rows only the haplotypes that donated sequence here, colored by where on the reference their alleles attach. The callset numbers a donor's haplotypes HP0/HP1, the graph .1/.2. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
@@ -416,9 +409,9 @@ rGFA (nothing to unpack). It needs an **rGFA**: `sv.gfa.gz` is one, the
 Also needs gfatools, for the segment projection and for the bubbles.
 
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-reads only those two indexes, never the graph, and writes the allele inventory:
-23 seconds off the 41 MB pair, against the 842 MB download they came from. That
-is what makes it the route that survives having no assemblies, the normal
+reads only those two indexes, never the graph, and writes the allele inventory
+in seconds off the small index pair rather than the 842 MB download they came
+from. It therefore works with no assemblies loaded, which is the normal
 situation with someone else's graph. The E. coli tutorial's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 answer the carriage question instead, at the cost of re-mapping every haplotype.

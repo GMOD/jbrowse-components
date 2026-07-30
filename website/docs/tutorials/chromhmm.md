@@ -52,7 +52,7 @@ It downloads the nine
 `cellType`-tagged BED, bgzips and tabixes it, downloads JBrowse, and writes the
 `config.json` described below, opening on the HOXA cluster.
 
-Two things about the merged file matter for loading it. Each line is standard
+Two properties of the merged file matter for loading it. Each line is standard
 BED9 plus one trailing string field, the cell-type label that becomes a row:
 
 ```

@@ -89,8 +89,8 @@ synteny track shown between each adjacent pair. Loading the two adjacent
 alignments (26695 against CHC155, CHC155 against J99) stacks all three strains
 in one view.
 
-Opening each strain's gene track from its own track selector is what makes the
-alignment readable: conserved genes line up down the stack, ribbon by ribbon.
+Open each strain's gene track from its own track selector to make the alignment
+readable, so that conserved genes line up down the stack ribbon by ribbon.
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as fliR, cbf2, efp, and lysS line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
@@ -102,14 +102,14 @@ building one from a session-spec URL.
 
 ## Coloring genes by ortholog
 
-The ribbons connect aligned _sequence_. The gene tracks color independently, and
-in bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
-standardized symbols across strains. On each gene track, open **Color by
-attribute** from the track menu and enter `gene`: every distinct value of that
-attribute gets its own deterministic color, so an ortholog carries one color
-down all three panels and a gene's synteny becomes legible by color alone.
-Features with no such attribute fall back to a single color, which is what the
-locus-tag-only genes share.
+The ribbons connect aligned sequence rather than annotated genes. The gene
+tracks color independently, and in bacteria the gene symbol is effectively the
+ortholog id, since NCBI reuses standardized symbols across strains. On each gene
+track, open **Color by attribute** from the track menu and enter `gene`: every
+distinct value of that attribute gets its own deterministic color, so an
+ortholog carries one color down all three panels and a gene's synteny becomes
+legible by color alone. Features with no such attribute fall back to a single
+color, which is what the locus-tag-only genes share.
 
 ## Using PIF for large genomes
 
