@@ -322,7 +322,7 @@ const PAGE = /* html */ `<!doctype html>
   button.deny { border-color: #ef4444; color: #dc2626; }
   button.deny.active { background: #ef4444; color: #fff; }
   button.clear { border-color: ButtonBorder; color: GrayText; }
-  .note { width: 100%; padding: 6px 9px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; }
+  .note { width: 100%; padding: 6px 9px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; font-family: inherit; resize: vertical; }
   .reviewedAt { font-size: 11px; color: GrayText; }
 </style>
 </head>
@@ -517,7 +517,7 @@ function card(spec) {
       renderUsages(spec.usages) +
       renderParts(spec) +
       (spec.liveUrl ? '<a class="livelink" href="' + esc(spec.liveUrl) + '" target="_blank" rel="noopener">Open live in JBrowse ↗</a>' : '') +
-      '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" onchange="saveNote(this)" />' +
+      '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">' + esc(v ? v.note : '') + '</textarea>' +
       '<div class="actions">' +
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
         '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
