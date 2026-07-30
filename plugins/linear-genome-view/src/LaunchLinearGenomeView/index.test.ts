@@ -43,26 +43,6 @@ test('resolution keys go to init, plain props to the snapshot, id stays pinned',
   })
 })
 
-// the spec form is the flattened init, but config/defaultSession views nest the
-// same keys under `init`; nesting them used to throw "No assembly provided" and
-// drop the whole spec
-test('a spec that nests its keys under init launches the same way', async () => {
-  const { pluginManager, session, addView } = setup()
-
-  await pluginManager.evaluateAsyncExtensionPointStrict(
-    'LaunchView-LinearGenomeView',
-    {
-      session,
-      init: { assembly: 'volvox', loc: 'ctgA:1-100', tracks: ['genes'] },
-    },
-  )
-
-  expect(addView).toHaveBeenCalledWith('LinearGenomeView', {
-    id: undefined,
-    init: { assembly: 'volvox', loc: 'ctgA:1-100', tracks: ['genes'] },
-  })
-})
-
 test('a spec with no assembly throws instead of opening an empty view', async () => {
   const { pluginManager, session, addView } = setup()
 

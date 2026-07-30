@@ -22,38 +22,31 @@ const knownLaunchPropMap: Record<keyof LinearGenomeViewLaunchProps, true> = {
 const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 const knownLaunchPropKeys = new Set(Object.keys(knownLaunchPropMap))
 
-// A declarative init is easy to typo (e.g. `tracksList`, `highlights`); MST
-// stores it as a frozen blob, so a mistyped key would otherwise be silently
-// dropped with no diagnostic. A plain view prop nested inside init is the other
-// common slip and gets its own message: the key is real, it just belongs on the
-// view snapshot next to init, where MST restores it natively.
-export function initKeyProblems(init: object) {
-  const keys = Object.keys(init)
-  return {
-    viewProps: keys.filter(k => knownLaunchPropKeys.has(k)),
-    unknown: keys.filter(
-      k => !knownInitKeys.has(k) && !knownLaunchPropKeys.has(k),
-    ),
-  }
-}
-
-// Split a launch spec: resolution keys (loc, tracks, highlight, …) go into the
-// one-shot `init` blob that afterAttach applies then discards; plain persisted
-// props (showCenterLine, colorByCDS, …) go straight onto the view snapshot,
-// where MST restores them natively. MST silently drops unknown snapshot keys, so
-// anything in neither set is a typo the caller reports rather than swallows.
-export function splitLaunchSpec(spec: object) {
+// Partition launch keys three ways, once, for every caller that needs to know
+// which is which:
+//
+// - `init`: resolution keys (loc, tracks, highlight, …) with no direct MST
+//   representation, which afterAttach applies on attach and then discards
+// - `viewProps`: plain persisted props MST restores natively, so they belong on
+//   the view snapshot rather than in the blob
+// - `unknown`: neither, i.e. a typo. MST silently drops unknown snapshot keys and
+//   `init` is a frozen blob, so nothing else would notice
+//
+// The two callers differ only in what they do with each bucket: the launcher
+// spreads a flat spec across the new view's snapshot and warns about the typos,
+// while afterAttach — which only ever sees an already-built blob — warns about
+// both a typo and a view prop that ended up inside it.
+export function partitionLaunchKeys(spec: object) {
   const init: Record<string, unknown> = {}
   const viewProps: Record<string, unknown> = {}
-  const unknown: string[] = []
+  const unknown: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(spec)) {
-    if (knownInitKeys.has(key)) {
-      init[key] = value
-    } else if (knownLaunchPropKeys.has(key)) {
-      viewProps[key] = value
-    } else {
-      unknown.push(key)
-    }
+    const bucket = knownInitKeys.has(key)
+      ? init
+      : knownLaunchPropKeys.has(key)
+        ? viewProps
+        : unknown
+    bucket[key] = value
   }
   return { init, viewProps, unknown }
 }

@@ -23,7 +23,13 @@ function stubView(id: string): StubView {
 }
 
 function setup(
-  handlers: Record<string, (session: { views: StubView[] }) => Promise<void>>,
+  handlers: Record<
+    string,
+    (
+      session: { views: StubView[] },
+      args: Record<string, unknown>,
+    ) => Promise<void>
+  >,
   // workspaces: false models an embedded product's session, which has neither
   // workspaces action. registeredViewTypes are view types the plugin manager
   // knows about, which is what separates "unknown type" from "type exists but
@@ -49,8 +55,11 @@ function setup(
     }),
     // mirrors the real PluginManager: an extension point with no registered
     // callback resolves to the extendee unchanged rather than throwing
-    evaluateAsyncExtensionPointStrict: (name: string) =>
-      handlers[name] ? handlers[name](session) : Promise.resolve(session),
+    evaluateAsyncExtensionPointStrict: (
+      name: string,
+      args: Record<string, unknown>,
+    ) =>
+      handlers[name] ? handlers[name](session, args) : Promise.resolve(session),
   } as unknown as PluginManager
   return { session, pluginManager }
 }
@@ -282,5 +291,30 @@ test('a registered view type with no launcher says that instead', async () => {
     expect.stringContaining(
       'View type(s) GraphGenomeView cannot be launched from a session spec',
     ),
+  )
+})
+
+// the config/defaultSession shape, pasted into a spec. Reported here rather than
+// unwrapped, so it reads the same for every view type — the LGV would otherwise
+// report "No assembly provided", the downstream symptom of a misplaced block
+test('a spec view nesting its settings under init is told where they go', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-LinearGenomeView': async s => {
+      s.views.push(stubView('lgv'))
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [
+        // @ts-expect-error a spec view is flat; this is the slip being caught
+        { type: 'LinearGenomeView', init: { assembly: 'volvox', loc: 'ctgA' } },
+      ],
+    },
+    pluginManager,
+  )
+
+  expect(session.notifyError).toHaveBeenCalledWith(
+    expect.stringContaining('nest their settings under "init"'),
   )
 })

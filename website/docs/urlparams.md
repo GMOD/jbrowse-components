@@ -250,10 +250,16 @@ default session. Use a full [session spec](#session-spec) for that.
 
 ### Linear genome view
 
-A "session spec" encodes a session as JSON in the URL. Each view object is the
-serialized form of a view's declarative `init` field. The embedded
-`@jbrowse/react-linear-genome-view2` component accepts the same shape directly
-via `defaultSession.view.init` (it does not parse URLs itself).
+A "session spec" encodes a session as JSON in the URL. Each view object lists
+the keys that view launches with, flat as below — a spec is arguments to a
+view's launcher, so nothing is nested. A `defaultSession` in a config writes the
+same settings under an `init` block instead, because there the view is a saved
+state snapshot (see
+[Config / session files](/docs/automating#config--session-files)); moving a view
+between the two means reshaping it, and pasting an `init` block into a spec is
+reported rather than silently ignored. The embedded
+`@jbrowse/react-linear-genome-view2` component takes the `init` form via
+`defaultSession.view.init` (it does not parse URLs itself).
 
 Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
 [extension point](/docs/developer_guides/extension_points) that builds the view
@@ -281,9 +287,7 @@ from the remaining fields. This is also how plugins add launchable view types
 The `views` array accepts multiple views opened simultaneously. Each can specify
 `loc`, `tracks`, `assembly`, and view type. `loc` is optional, omitting it shows
 the whole genome. Different view types accept different params: dotplot, for
-example, takes two assemblies. A linear genome view also accepts these keys
-nested under an `init` object, so a view can be copied to or from a
-`defaultSession` unchanged.
+example, takes two assemblies.
 
 Two fields work on every view type: `displayName` sets the title shown in the
 view header (and on its workspace tab, see

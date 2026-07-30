@@ -21,6 +21,8 @@ export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
 {
   assembly: string        // required: assembly name
   loc?: string            // initial location, e.g. 'chr1:1,000-2,000' (omit loc to show the whole genome)
+  grow?: number           // zoom out around loc for context, e.g. 0.2 pads 20% each side
+  displayedRegionNames?: string[] // without loc, restrict the whole-genome view to these chromosomes, in order
   tracks?: TrackInit[]    // tracks to open (id strings, or objects; see below)
   tracklist?: boolean     // open the track selector drawer (default: false)
   nav?: boolean           // show the navigation header (default: true)
@@ -51,8 +53,8 @@ instruction rather than persistent state, so a saved session never retains it.
   [](/docs/tutorials/embed_linear_genome_view).
 - Ship a preset view in a config file with a `defaultSession` in config.json,
   see [](/docs/config_guides/default_session).
-- Open a preset session programmatically with a session spec, which is an `init`
-  block inside a view snapshot, see
+- Open a preset session programmatically with a session spec, which lists these
+  same fields flat on each view, see
   [URL params → session spec](/docs/urlparams).
 
 All of these set the same `init` fields, so navigation, track opening, and
@@ -113,6 +115,15 @@ A `defaultSession` in config.json (or any session snapshot) can give a view an
   }
 }
 ```
+
+Here `init` is required: a `defaultSession` view is a saved state snapshot, and
+`init` is the property holding the keys that need resolving on load (`loc`,
+`tracks`, `highlight`, `tracklist`, `nav`, `displayedRegionNames`, `grow`).
+Plain view settings — `colorByCDS`, `showCenterLine`, `trackLabels`,
+`showHighlightChips` — are properties in their own right, so they sit beside
+`init`, not inside it. A [session spec](/docs/urlparams#session-spec) lists the
+same keys flat instead, since there they are arguments to the view's launcher,
+so a view moved between the two has to be reshaped.
 
 See [](/docs/config_guides/default_session).
 

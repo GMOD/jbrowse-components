@@ -20,7 +20,10 @@ export interface ViewSpec {
   // rather than by each launcher, since it is a base view prop.
   displayName?: string
   tracks?: TrackInit[]
-  assembly: string
+  // optional because whether a view type needs one at all is its launcher's
+  // business — each reports its own missing-assembly error (naming the view type)
+  // rather than being pre-validated into a generic one here
+  assembly?: string
   loc?: string
 }
 

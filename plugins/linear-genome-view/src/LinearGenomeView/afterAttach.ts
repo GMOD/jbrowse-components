@@ -9,7 +9,7 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
-import { initKeyProblems } from './initKeys.ts'
+import { partitionLaunchKeys } from './initKeys.ts'
 import { normalizeTrackInit } from './normalizeTrackInit.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
@@ -17,15 +17,17 @@ import type { InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 function warnInitKeyProblems(init: InitState) {
-  const { unknown, viewProps } = initKeyProblems(init)
-  if (unknown.length) {
+  const { viewProps, unknown } = partitionLaunchKeys(init)
+  const unknownKeys = Object.keys(unknown)
+  const viewPropKeys = Object.keys(viewProps)
+  if (unknownKeys.length) {
     console.warn(
-      `LinearGenomeView init ignored unknown key(s): ${unknown.join(', ')}`,
+      `LinearGenomeView init ignored unknown key(s): ${unknownKeys.join(', ')}`,
     )
   }
-  if (viewProps.length) {
+  if (viewPropKeys.length) {
     console.warn(
-      `LinearGenomeView init ignored view prop(s): ${viewProps.join(', ')} — set these on the view alongside init, not inside it`,
+      `LinearGenomeView init ignored view prop(s): ${viewPropKeys.join(', ')} — set these on the view alongside init, not inside it`,
     )
   }
 }

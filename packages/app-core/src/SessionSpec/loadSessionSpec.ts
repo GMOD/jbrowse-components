@@ -136,6 +136,31 @@ export async function loadSessionSpec(
       )
     }
 
+    // The two ways of writing a view are not the same shape, and this is the
+    // confusable pair:
+    //
+    // - a spec view is flat *arguments* to LaunchView-<type>, in that launcher's
+    //   own vocabulary (a dotplot takes `views`, a spreadsheet takes `uri`), and
+    //   the launcher sorts them into what the new view needs
+    // - a config/defaultSession view is MST *state*, so keys that need resolving
+    //   on load have nowhere to live but the view's own `init` property
+    //
+    // Reported rather than unwrapped here, deliberately: only a launcher knows
+    // which of its keys are one-shot commands versus plain view props, so
+    // flattening `init` centrally would erase that distinction and let a view prop
+    // nested inside it be honored from a spec while the identical config drops it.
+    // Teaching each launcher to accept both instead is per-view-type work that
+    // every future launcher has to remember — the shapes then differ by view type,
+    // which is worse than differing by surface. One check here covers every view
+    // type, including plugin-provided ones. Without it the LGV reports the
+    // downstream symptom, "No assembly provided", for a misplaced block.
+    const nested = views.filter(view => 'init' in view).map(view => view.type)
+    if (nested.length) {
+      session?.notifyError(
+        `Session spec view(s) ${nested.join(', ')} nest their settings under "init". A spec takes those keys flat (assembly, loc, tracks, …); "init" is the config/defaultSession form.`,
+      )
+    }
+
     // Launch sequentially and record the id each spec view created, so the
     // layout below can map its indices to real views. Reading session.views
     // positionally afterwards only works while every handler happens to addView
@@ -147,7 +172,8 @@ export async function loadSessionSpec(
     // spurious "init ignored unknown key(s): type" warning meant to catch typos.
     // `displayName` is applied here rather than forwarded because it is a base
     // view prop every view type has, so one path covers all of them (including
-    // plugin-provided types whose launcher never heard of it).
+    // plugin-provided types whose launcher never heard of it). A nested `init` is
+    // NOT unwrapped the same way — see the diagnostic above for why.
     const createdViewIds: (string | undefined)[] = []
     for (const { type, displayName, ...view } of views) {
       const before = new Set(session?.views.map(v => v.id))

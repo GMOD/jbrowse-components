@@ -34,6 +34,38 @@ Only keys needing on-attach resolution live here. Plain persisted view props
 MST restores them natively; nested inside `init` they are ignored with a warning
 naming them.
 
+## Two shapes, one per surface — and why they are not unified
+
+```
+spec / URL   { type, id?, displayName?, …resolution keys, …plain view props }   flat args
+snapshot     { type, id?,               init: { …resolution keys }, …props }    MST state
+```
+
+They differ because they *are* different things. A spec view is **arguments** to
+`LaunchView-<type>`, in that launcher's own vocabulary (a dotplot takes `views`, a
+spreadsheet takes `uri`), and the launcher sorts them into what the new view
+needs. A config/defaultSession view is **state**, so a key needing resolution on
+load has nowhere to live but the frozen `init` property, and a plain prop is a
+property in its own right — a view prop written *inside* `init` lands in the blob
+where nothing reads it, hence the afterAttach warning.
+
+Nesting a spec's keys under `init` is therefore **reported, not accepted**
+(`loadSessionSpec`). Two rejected alternatives, so this doesn't get relitigated:
+
+- **Flattening `init` centrally in `loadSessionSpec`** erases the
+  command-vs-prop distinction the launcher exists to draw, before the launcher can
+  see it: `init: { colorByCDS: true }` then works from a spec while the identical
+  config drops it. That asymmetry is what a `preProcessSnapshot` "hoist" was then
+  written to paper over — a `types.frozen` blob quietly relocating its own keys.
+  Both were backed out.
+- **Teaching each launcher to accept both** is per-view-type work every future
+  launcher has to remember, so the accepted shape ends up differing by view type
+  rather than by surface, which is worse. One check in `loadSessionSpec` covers
+  every view type including plugin-provided ones.
+
+The residual cost is that moving a view between a config and a URL means
+reshaping it, which is what the diagnostic names.
+
 It lives on the model as `init: types.frozen<InitState | undefined>()`
 (`model.ts`). It is **transient**: applied once on attach, then cleared with
 `setInit(undefined)`, so a saved session never carries it. (The old "#property
@@ -48,8 +80,6 @@ URL ?loc=&assembly=&tracks=&tracklist=&nav=&highlight=
   → buildJb1SessionSpec + splitHighlights (sessionLoaderHelpers.ts)
   → loadSessionSpec: evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView')
   → LaunchLinearGenomeViewF: session.addView('LinearGenomeView', { init })
-    (spec keys are flat; keys nested under `init` — the config/defaultSession
-     shape — are merged in, so either form launches)
 
 createViewState({ location, highlight })  (react-linear-genome-view)
   → view.setInit({ assembly, loc, highlight })   (when `location` OR `highlight` is set;

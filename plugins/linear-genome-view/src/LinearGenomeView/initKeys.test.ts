@@ -1,8 +1,8 @@
-import { initKeyProblems, splitLaunchSpec } from './initKeys.ts'
+import { partitionLaunchKeys } from './initKeys.ts'
 
 test('resolution keys go to init, plain view props go to the snapshot', () => {
   expect(
-    splitLaunchSpec({
+    partitionLaunchKeys({
       assembly: 'volvox',
       loc: 'ctgA:1-100',
       tracks: ['genes'],
@@ -12,23 +12,20 @@ test('resolution keys go to init, plain view props go to the snapshot', () => {
   ).toEqual({
     init: { assembly: 'volvox', loc: 'ctgA:1-100', tracks: ['genes'] },
     viewProps: { colorByCDS: true, trackLabels: 'offset' },
-    unknown: [],
+    unknown: {},
   })
 })
 
+// the launcher warns on these; afterAttach warns on the ones that reach a frozen
+// init blob. Both need the values kept, not just the names, since the blob is
+// rebuilt from the buckets
 test('a typo lands in neither bucket so the caller can report it', () => {
-  const { init, viewProps, unknown } = splitLaunchSpec({
+  const { init, viewProps, unknown } = partitionLaunchKeys({
     assembly: 'volvox',
     tracksList: true,
     colorByCds: true,
   })
   expect(init).toEqual({ assembly: 'volvox' })
   expect(viewProps).toEqual({})
-  expect(unknown).toEqual(['tracksList', 'colorByCds'])
-})
-
-test('inside init, a view prop and a typo get told apart', () => {
-  expect(
-    initKeyProblems({ assembly: 'volvox', colorByCDS: true, highlights: [] }),
-  ).toEqual({ viewProps: ['colorByCDS'], unknown: ['highlights'] })
+  expect(unknown).toEqual({ tracksList: true, colorByCds: true })
 })
