@@ -284,8 +284,10 @@ plus its index and the genotype slice the second figure uses.
 
 ## See also
 
-- [Structural variants (Dog10K)](/docs/tutorials/dog10k_svs), the other Dog10K
-  tutorial, on the same assembly
+- [Structural variants (Dog10K)](/docs/tutorials/dog10k_svs),
+  [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof) and
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection), the other
+  Dog10K tutorials, on the same assembly
 - [Phased trio analysis](/docs/tutorials/analyze_trio), the same display painted
   from hap-ibd inheritance blocks
 - [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)

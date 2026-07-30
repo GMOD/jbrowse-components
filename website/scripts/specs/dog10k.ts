@@ -483,6 +483,16 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // of them still carry the second. Two adjacent repeats in the same gene with
   // different histories, which four wolves could not show and which the earlier
   // version of this figure asserted the opposite of.
+  //
+  // THE MATRIX DISPLAY, not the positional one, and that is the whole of what
+  // review asked for: "it just doesn't seem to be telling a strong story by
+  // itself. visually it is like 'ok two verticalstripes'". Both SINEs are ~220 bp
+  // in a 6.5 kb window, so drawn at their true span they were two 35 px stripes
+  // in a frame that was otherwise blank, and the genotype of any one animal was a
+  // few pixels of colour. The matrix spaces one column per record instead, so each
+  // repeat is half the width of the panel and a row's two cells are readable side
+  // by side; the connector zone under the gene track is what maps each column
+  // back to the intron it sits in.
   // Built by scripts/build_dog10k_nhej1_sv.sh.
   {
     mode: 'url',
@@ -498,7 +508,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_denr_svs',
-          type: 'LinearMultiSampleVariantDisplay',
+          type: 'LinearMultiSampleVariantMatrixDisplay',
           // 56 rows. 700 divided to exactly 12.5px a row and cut the last one
           // against the track's own bottom border, which no viewportHeight can
           // fix -- the clipping is inside the track box, not below the fold.
@@ -692,6 +702,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // spread and no copy-number-one dog, so the sort resolves into five
           // clean bands running high to low with no loss colors interleaved.
           sortRowsBy: { refName: 'chr30', pos: 38_262_000 },
+          // NO breed swatch stripe, and this is a measurement rather than a
+          // preference. Review asked for one ("if it helps, add breed label
+          // sidebar colors too"), and a previous pass deferred it on the belief
+          // that a sub-pixel row could not carry a mark. That belief is now
+          // wrong -- SvgRowLabels floors its swatch to a whole pixel and
+          // `rowGroups` (LinearMultiRowFeatureDisplay/configSchema) is the slot
+          // for exactly this -- so it was built and measured here: the four
+          // groups the panel above names (CLUP wolves, GOLD, LABR, BOXR) are
+          // ~250 of 1,987 rows, which is 10 CSS px of a 300px lane, and
+          // `rowGroups` also pulls them out of the copy-number sort into blocks
+          // at the top of the lane. 10px of stripe cannot attribute a copy
+          // number to a breed, and it costs the sorted banding that is what this
+          // lane is for. The breed attribution is the named-animals lane above,
+          // which is the same four groups at a readable row height.
         },
       ],
     }),
@@ -750,5 +774,47 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     // gene track, two 300px lanes, their headers, and the copy-number key
     viewportHeight: 965,
+  },
+
+  // The IGF1 body-size haplotype, drawn as a clustered genotype matrix over 167
+  // canids: every animal of fourteen toy/small breeds, eleven giant breeds, and
+  // the twelve Greek gray wolves. Built by scripts/build_dog10k_igf1.sh.
+  //
+  // Position space rather than the matrix display. The matrix lays its columns
+  // out by feature index, so a haplotype boundary lands at a column number
+  // rather than at a coordinate; here it can be read against the gene track.
+  //
+  // `runClustering` orders the rows by genotype similarity. The size swatch
+  // comes from the samples TSV and is applied afterwards, so the row order and
+  // the swatch are independent.
+  {
+    mode: 'url',
+    name: 'dog10k-igf1-haplotype',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr15:41,350,000-41,750,000',
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 80,
+        },
+        {
+          trackId: 'dog10k_igf1_haplotype',
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 760,
+          runClustering: true,
+          colorBy: 'size',
+        },
+      ],
+    }),
+    readyText: 'chr15',
+    // the dendrogram only renders once the clustering RPC lands, so this waits
+    // on real completion rather than on a duration guess
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 120000,
+    settleMs: 5000,
+    // gene track, the 760px matrix, their headers, and the two keys
+    viewportHeight: 1080,
   },
 ]

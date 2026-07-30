@@ -78,6 +78,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0, 0.62],
     position: 'left',
   },
+  dog10k_selection: {
+    // the clustered matrix and the dendrogram/swatch column that reads it, past
+    // the app header and the gene track
+    src: 'dog10k-igf1-haplotype.png',
+    band: [0.3, 1],
+    position: 'left',
+  },
   dog10k_svs: {
     // the Collie rows carrying the deletion: the breed labels on the left and
     // the genotype blocks, dropping the empty right margin past them

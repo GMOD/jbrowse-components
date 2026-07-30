@@ -291,6 +291,13 @@ export const gallerySections: readonly GallerySection[] = [
           'A 7.8 kb deletion in an NHEJ1 intron genotyped across dog breeds from the Dog10K structural-variant callset: carried by Collies and relatives, absent from other breeds and from wolves.',
       },
       {
+        label: 'Dog body size haplotype',
+        spec: 'dog10k-igf1-haplotype',
+        guide: 'tutorials/dog10k_selection',
+        description:
+          'Dog10K SNVs across IGF1 for whole toy and giant breeds, clustered by genotype, with size class as the sidebar swatch.',
+      },
+      {
         label: 'Dog CYP1A2 nonsense allele',
         spec: 'dog10k-cyp1a2-nonsense',
         guide: 'tutorials/dog10k_lof',

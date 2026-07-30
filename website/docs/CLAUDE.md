@@ -184,6 +184,36 @@ point at them, not re-copy their contents (which silently goes stale).
   custom `displays` (`displayDefaults` is fine, it maps to `--displayDefaults`).
   Tag a richer block and both the build and the check flag it; leave it plain.
 
+## Voice: dry and scientific, and let the figure do the talking
+
+Docs prose is written in a plain scientific register. The figure carries the
+result; the prose says what was done, what is on screen, and what it means. It
+does not sell either one.
+
+Concretely, do not write:
+
+- **Drama and stakes.** "the answer to the question", "which is the finding",
+  "the part a per-sample panel shows and an allele frequency does not", "rather
+  than take it on faith", "not the answer the other tutorials get". A sentence
+  whose job is to tell the reader that what they are about to see is interesting
+  is doing the figure's job badly.
+- **Rhetorical framing of a method.** "what makes the picture worth looking at",
+  "is the whole point", "carries the whole figure". State the reason instead:
+  "rows selected by what they carry would group by what they carry, so the
+  clustering would reproduce the selection rather than test it."
+- **Reveals.** Building to a result over several sentences, or withholding it
+  for effect. Lead with it: "The panel separates into two clusters that
+  correspond to the size classes."
+- **Overclaiming from one picture.** Prefer "bears on X but does not establish
+  it" to a causal or historical conclusion the figure cannot support. Where a
+  claim is checkable, point at the script that prints the number rather than
+  asserting harder.
+
+This applies to `<Figure caption>` text, gallery `description`s and card labels,
+and section headings, not only body prose. See also the numbers rule in
+`website/CLAUDE.md` (a hand-computed statistic in prose is the same failure:
+prose borrowing authority the figure should be supplying).
+
 ## Tutorials (`tutorials/*`)
 
 These are about _using JBrowse_, not bioinformatics scripting. Two conventions

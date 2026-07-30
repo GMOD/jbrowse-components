@@ -211,9 +211,10 @@ against the numbers that produced them.
 
 ## See also
 
-- [Structural variants (Dog10K)](/docs/tutorials/dog10k_svs) and
-  [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other two
-  Dog10K tutorials, on the same assembly
+- [Structural variants (Dog10K)](/docs/tutorials/dog10k_svs),
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
+  [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other Dog10K
+  tutorials, on the same assembly
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 

@@ -1,0 +1,168 @@
+name	breed	size
+CHIH000005	Chihuahua	Toy/small
+CHIH000006	Chihuahua	Toy/small
+GSZG000007	Pomeranian	Toy/small
+POMR000002	Pomeranian	Toy/small
+POMR000003	Pomeranian	Toy/small
+POMR000004	Pomeranian	Toy/small
+POMR000005	Pomeranian	Toy/small
+POMR000006	Pomeranian	Toy/small
+POMR000007	Pomeranian	Toy/small
+POMR000008	Pomeranian	Toy/small
+YORK000001	Yorkshire Terrier	Toy/small
+YORK000002	Yorkshire Terrier	Toy/small
+YORK000003	Yorkshire Terrier	Toy/small
+YORK000004	Yorkshire Terrier	Toy/small
+YORK000005	Yorkshire Terrier	Toy/small
+TYFX000001	Toy Fox Terrier	Toy/small
+TYFX000002	Toy Fox Terrier	Toy/small
+TYFX000003	Toy Fox Terrier	Toy/small
+TYFX000004	Toy Fox Terrier	Toy/small
+TYFX000005	Toy Fox Terrier	Toy/small
+TYFX000006	Toy Fox Terrier	Toy/small
+TYFX000007	Toy Fox Terrier	Toy/small
+TYFX000008	Toy Fox Terrier	Toy/small
+TYFX000009	Toy Fox Terrier	Toy/small
+TYFX000010	Toy Fox Terrier	Toy/small
+MALT000001	Maltese	Toy/small
+MALT000002	Maltese	Toy/small
+MALT000003	Maltese	Toy/small
+MALT000004	Maltese	Toy/small
+PEKE000001	Pekingese	Toy/small
+PEKE000002	Pekingese	Toy/small
+PEKE000003	Pekingese	Toy/small
+SHIH000001	Shih Tzu	Toy/small
+SHIH000002	Shih Tzu	Toy/small
+SHIH000003	Shih Tzu	Toy/small
+SHIH000004	Shih Tzu	Toy/small
+SHIH000005	Shih Tzu	Toy/small
+MPIN000001	Miniature Pinscher	Toy/small
+MPIN000002	Miniature Pinscher	Toy/small
+MPIN000003	Miniature Pinscher	Toy/small
+MPIN000004	Miniature Pinscher	Toy/small
+BICH000006	Havanese	Toy/small
+HAVA000001	Havanese	Toy/small
+HAVA000002	Havanese	Toy/small
+HAVA000003	Havanese	Toy/small
+BRUS000001	Brussels Griffon	Toy/small
+BRUS000002	Brussels Griffon	Toy/small
+BRUS000003	Brussels Griffon	Toy/small
+BRUS000004	Brussels Griffon	Toy/small
+BRUS000005	Brussels Griffon	Toy/small
+BRUS000006	Brussels Griffon	Toy/small
+BRUS000007	Brussels Griffon	Toy/small
+CHIN000001	Japanese Chin	Toy/small
+CHIN000003	Japanese Chin	Toy/small
+CHIN000004	Japanese Chin	Toy/small
+CHIN000005	Japanese Chin	Toy/small
+CHIN000006	Japanese Chin	Toy/small
+CHIN000007	Japanese Chin	Toy/small
+NORF000001	Norfolk Terrier	Toy/small
+NORF000002	Norfolk Terrier	Toy/small
+NORF000003	Norfolk Terrier	Toy/small
+NORF000004	Norfolk Terrier	Toy/small
+NORF000005	Norfolk Terrier	Toy/small
+NORF000006	Norfolk Terrier	Toy/small
+NORF000007	Norfolk Terrier	Toy/small
+NOWT000001	Norwich Terrier	Toy/small
+NOWT000002	Norwich Terrier	Toy/small
+NOWT000003	Norwich Terrier	Toy/small
+NOWT000004	Norwich Terrier	Toy/small
+NOWT000005	Norwich Terrier	Toy/small
+NOWT000006	Norwich Terrier	Toy/small
+CAIR000001	Cairn Terrier	Toy/small
+CAIR000002	Cairn Terrier	Toy/small
+CAIR000003	Cairn Terrier	Toy/small
+CAIR000004	Cairn Terrier	Toy/small
+CAIR000005	Cairn Terrier	Toy/small
+STBD000001	Saint Bernard	Giant
+STBD000002	Saint Bernard	Giant
+STBD000003	Saint Bernard	Giant
+STBD000004	Saint Bernard	Giant
+STBD000005	Saint Bernard	Giant
+STBD000006	Saint Bernard	Giant
+STBD000007	Saint Bernard	Giant
+STBD000008	Saint Bernard	Giant
+STBD000009	Saint Bernard	Giant
+STBD000010	Saint Bernard	Giant
+STBD000011	Saint Bernard	Giant
+STBD000012	Saint Bernard	Giant
+STBD000013	Saint Bernard	Giant
+LEON000001	Leonberger	Giant
+LEON000003	Leonberger	Giant
+LEON000004	Leonberger	Giant
+LEON000007	Leonberger	Giant
+LEON000008	Leonberger	Giant
+LEON000009	Leonberger	Giant
+LEON000010	Leonberger	Giant
+LEON000011	Leonberger	Giant
+LEON000012	Leonberger	Giant
+LEON000013	Leonberger	Giant
+LEON000014	Leonberger	Giant
+GPYR000001	Great Pyrenees	Giant
+GPYR000002	Great Pyrenees	Giant
+GPYR000003	Great Pyrenees	Giant
+GPYR000004	Great Pyrenees	Giant
+GPYR000005	Great Pyrenees	Giant
+GPYR000006	Great Pyrenees	Giant
+PYSH000002	Great Pyrenees	Giant
+NEWF000001	Newfoundland	Giant
+NEWF000002	Newfoundland	Giant
+NEWF000003	Newfoundland	Giant
+NEWF000004	Newfoundland	Giant
+NEWF000005	Newfoundland	Giant
+NEWF000006	Newfoundland	Giant
+MAST000001	Mastiff	Giant
+MAST000002	Mastiff	Giant
+MAST000003	Mastiff	Giant
+MAST000004	Mastiff	Giant
+MAST000005	Mastiff	Giant
+MAST000006	Mastiff	Giant
+DEER000001	Scottish Deerhound	Giant
+DEER000002	Scottish Deerhound	Giant
+DEER000003	Scottish Deerhound	Giant
+BRMD000001	Bernese Mountain Dog	Giant
+BRMD000002	Bernese Mountain Dog	Giant
+BRMD000003	Bernese Mountain Dog	Giant
+BRMD000004	Bernese Mountain Dog	Giant
+BRMD000005	Bernese Mountain Dog	Giant
+BRMD000006	Bernese Mountain Dog	Giant
+BRMD000007	Bernese Mountain Dog	Giant
+BRMD000008	Bernese Mountain Dog	Giant
+BRMD000009	Bernese Mountain Dog	Giant
+BRMD000010	Bernese Mountain Dog	Giant
+NEAP000001	Neapolitan Mastiff	Giant
+NEAP000002	Neapolitan Mastiff	Giant
+NEAP000003	Neapolitan Mastiff	Giant
+NEAP000004	Neapolitan Mastiff	Giant
+NEAP000005	Neapolitan Mastiff	Giant
+BULM000001	Bullmastiff	Giant
+BULM000002	Bullmastiff	Giant
+BULM000003	Bullmastiff	Giant
+BULM000004	Bullmastiff	Giant
+BULM000005	Bullmastiff	Giant
+BULM000006	Bullmastiff	Giant
+KUVZ000001	Kuvasz	Giant
+KUVZ000003	Kuvasz	Giant
+KUVZ000004	Kuvasz	Giant
+KUVZ000005	Kuvasz	Giant
+KUVZ000006	Kuvasz	Giant
+KUVZ000007	Kuvasz	Giant
+KUVZ000008	Kuvasz	Giant
+DDBX000001	Dogue de Bordeaux	Giant
+DDBX000002	Dogue de Bordeaux	Giant
+DDBX000003	Dogue de Bordeaux	Giant
+DDBX000004	Dogue de Bordeaux	Giant
+DDBX000005	Dogue de Bordeaux	Giant
+CLUPGR000001	Greek gray wolf	Gray wolf
+CLUPGR000002	Greek gray wolf	Gray wolf
+CLUPGR000003	Greek gray wolf	Gray wolf
+CLUPGR000004	Greek gray wolf	Gray wolf
+CLUPGR000005	Greek gray wolf	Gray wolf
+CLUPGR000006	Greek gray wolf	Gray wolf
+CLUPGR000007	Greek gray wolf	Gray wolf
+CLUPGR000008	Greek gray wolf	Gray wolf
+CLUPGR000009	Greek gray wolf	Gray wolf
+CLUPGR000010	Greek gray wolf	Gray wolf
+CLUPGR000011	Greek gray wolf	Gray wolf
+CLUPGR000012	Greek gray wolf	Gray wolf

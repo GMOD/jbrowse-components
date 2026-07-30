@@ -237,8 +237,10 @@ about 35 GB of scratch.
 
 ## See also
 
-- [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other Dog10K
-  tutorial, on the same assembly
+- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
+  [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other Dog10K
+  tutorials, on the same assembly
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 - [](/docs/user_guides/sv_visualization)
