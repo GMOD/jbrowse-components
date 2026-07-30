@@ -10,37 +10,50 @@ import type { LaunchCallback } from '../types.ts'
 
 // ISO datetime -> YYYY-MM-DD (first 10 chars); empty for missing or
 // unparsable values (guards against `toISOString()` throwing RangeError)
-function formatReleaseDate(date: string) {
+function formatReleaseDate(date?: string) {
   const d = date ? new Date(date) : undefined
   return d && !Number.isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : ''
 }
 
+/**
+ * One row of a genome list. UCSC main genomes and GenArk/NCBI assemblies come
+ * from the same endpoint shape but populate disjoint halves of it, so whatever
+ * only one side supplies is optional. `accession` doubles as the row key: UCSC
+ * entries put their db name there (`hg38`), GenArk entries the assembly
+ * accession (`GCF_000951035.1`).
+ */
 export interface Entry {
-  suppressed: boolean
+  accession: string
   jbrowseConfig: string
   jbrowseMinimalConfig?: string
-  accession: string
+  // jb2hubs emits '' when the source had no taxon (parseAssemblyEntry's
+  // `taxId || ''`), so a taxon-keyed lookup has to narrow first
+  taxonId: number | ''
   commonName: string
-  ncbiAssemblyName: string
-  ncbiName: string
-  ncbiRefSeqCategory: string
-  id: string
-  name: string
   scientificName: string
-  organism: string
-  description: string
-  assemblyStatus: string
-  seqReleaseDate: string
-  taxonId: string
-  submitterOrg: string
+
+  // UCSC main genomes only. orderKey is UCSC's own display ordering.
+  name?: string
+  organism?: string
+  description?: string
+  orderKey?: number
+
+  // GenArk/NCBI only
+  ncbiName?: string
+  ncbiAssemblyName?: string
+  ncbiRefSeqCategory?: string
+  assemblyStatus?: string
+  seqReleaseDate?: string
+  submitterOrg?: string
+  suppressed?: boolean
 }
 
 export interface GenomeColumn {
   id: string
   header: string
   // plain-text accessor used for the default cell and for default sorting;
-  // columns with a custom `cell` (favorite, name) omit it
-  value?: (row: Entry) => string
+  // columns with a custom `cell` (favorite) omit it
+  value?: (row: Entry) => string | undefined
   cell?: (row: Entry) => React.ReactNode
   sortFn?: (a: Entry, b: Entry) => number
 }
@@ -64,13 +77,13 @@ export function getColumnDefinitions({
     id: 'favorite',
     header: 'Favorite',
     sortFn: (a, b) => {
-      const aIsFav = favs.has(a.id)
-      const bIsFav = favs.has(b.id)
+      const aIsFav = favs.has(a.accession)
+      const bIsFav = favs.has(b.accession)
       return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
     },
     cell: row => (
       <StarIcon
-        isFavorite={favs.has(row.id)}
+        isFavorite={favs.has(row.accession)}
         onClick={() => {
           toggleFavorite(row)
         }}
@@ -84,14 +97,14 @@ export function getColumnDefinitions({
       {
         id: 'name',
         header: 'Name',
+        value: r => r.name,
         cell: row => (
           <GenomeNameCell
             displayName={row.name}
-            shortName={row.id}
             jbrowseConfig={row.jbrowseConfig}
             jbrowseMinimalConfig={row.jbrowseMinimalConfig}
-            websiteUrl={`https://genomes.jbrowse.org/ucsc/${row.id}/`}
-            isFavorite={favs.has(row.id)}
+            websiteUrl={`https://genomes.jbrowse.org/ucsc/${row.accession}/`}
+            isFavorite={favs.has(row.accession)}
             launch={launch}
             onClose={onClose}
             toggleFavorite={() => {
@@ -114,14 +127,14 @@ export function getColumnDefinitions({
       {
         id: 'commonName',
         header: 'Common name',
+        value: r => r.commonName,
         cell: row => (
           <GenomeNameCell
             displayName={row.commonName}
-            shortName={row.accession}
             jbrowseConfig={row.jbrowseConfig}
             jbrowseMinimalConfig={row.jbrowseMinimalConfig}
             websiteUrl={`https://genomes.jbrowse.org/accession/${row.accession}/`}
-            isFavorite={favs.has(row.id)}
+            isFavorite={favs.has(row.accession)}
             launch={launch}
             onClose={onClose}
             toggleFavorite={() => {
@@ -165,7 +178,7 @@ export function getColumnDefinitions({
 
     const extraColumns: GenomeColumn[] = [
       { id: 'accession', header: 'Accession', value: r => r.accession },
-      { id: 'taxonId', header: 'Taxonomy ID', value: r => r.taxonId },
+      { id: 'taxonId', header: 'Taxonomy ID', value: r => `${r.taxonId}` },
       { id: 'submitterOrg', header: 'Submitter', value: r => r.submitterOrg },
     ]
 

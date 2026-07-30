@@ -6,7 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import { useInnerDims } from '../availableGenomes/util.ts'
+import { useInnerDims } from '../useInnerDims.ts'
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
 import { formatLastModified } from './formatLastModified.ts'

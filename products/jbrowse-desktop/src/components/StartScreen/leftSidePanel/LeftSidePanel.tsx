@@ -27,10 +27,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
-  return Promise.all(sel.map(r => fetchConfig(r.jbrowseConfig)))
-}
-
 async function getQuickstarts(sel: string[]) {
   return Promise.all(
     sel.map(entry => ipcRenderer.invoke('getQuickstart', entry)),
@@ -79,9 +75,8 @@ export default function LeftSidePanel({
     }
   }
 
-  const launchFromConfig = (
-    sel: { shortName: string; jbrowseConfig: string }[],
-  ) => launchSession(() => fetchData(sel))
+  const launchFromConfig = (configUrls: string[]) =>
+    launchSession(() => Promise.all(configUrls.map(url => fetchConfig(url))))
 
   const launchFromSnap = (snap: JBrowseConfig) =>
     launchSession(() => Promise.resolve([snap]))

@@ -1,8 +1,12 @@
 import { useRef, useState } from 'react'
 
+import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { DialogContentText } from '@mui/material'
 
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
+import defaultFavs from '../defaultFavs.ts'
 import GenomesTable from './GenomesTable.tsx'
 import GenomesTableToolbar from './GenomesTableToolbar.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
@@ -29,10 +33,10 @@ const useStyles = makeStyles()({
 
 function rowToFav(row: Entry): Fav {
   return {
-    id: row.id,
-    shortName: row.name || row.ncbiAssemblyName || row.accession,
+    id: row.accession,
+    shortName: row.name ?? row.ncbiAssemblyName ?? row.accession,
     commonName: row.commonName,
-    description: row.description || row.commonName,
+    description: row.description ?? row.commonName,
     jbrowseConfig: row.jbrowseConfig,
     jbrowseMinimalConfig: row.jbrowseMinimalConfig,
   }
@@ -50,7 +54,7 @@ export default function GenomesDataTable({
   launch: LaunchCallback
 }) {
   const { classes } = useStyles()
-  const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
+  const [dialog, setDialog] = useState<'moreInfo' | 'resetFavorites'>()
   const state = useGenomesTableState()
   const {
     typeOption,
@@ -81,9 +85,8 @@ export default function GenomesDataTable({
   // A persisted group choice can reference a category that no longer exists in
   // categories.json; fall back to the first available category so we resolve a
   // real url instead of hanging forever on the loading skeleton.
-  const categoryList = categories?.categories
   const activeCategory =
-    categoryList?.find(c => c.key === typeOption) ?? categoryList?.[0]
+    categories?.find(c => c.key === typeOption) ?? categories?.[0]
   const activeTypeOption = activeCategory?.key ?? typeOption
   const url = activeCategory?.url
   const { clades } = useTaxonomyClades()
@@ -91,8 +94,8 @@ export default function GenomesDataTable({
 
   const favs = new Set(favorites.map(f => f.id))
   const toggleFavorite = (row: Entry) => {
-    if (favs.has(row.id)) {
-      setFavorites(favorites.filter(fav => fav.id !== row.id))
+    if (favs.has(row.accession)) {
+      setFavorites(favorites.filter(fav => fav.id !== row.accession))
     } else {
       setFavorites([...favorites, rowToFav(row)])
     }
@@ -138,23 +141,31 @@ export default function GenomesDataTable({
       <GenomesTableToolbar
         state={state}
         activeTypeOption={activeTypeOption}
-        allData={allData}
         categories={categories}
-        categoriesLoading={categoriesLoading}
-        categoriesError={categoriesError}
         clades={clades}
-        setFavorites={setFavorites}
-        launch={launch}
-        onClose={onClose}
+        onLaunchSelected={() => {
+          // resolve against allData (the full group), not the visible rows, so a
+          // selection built up across searches launches every entry
+          launch(
+            [...selected]
+              .map(acc => allData.find(row => row.accession === acc))
+              .filter(notEmpty)
+              .map(row => row.jbrowseConfig),
+          )
+          onClose()
+        }}
+        onResetFavorites={() => {
+          setDialog('resetFavorites')
+        }}
         onMoreInfo={() => {
-          setMoreInfoDialogOpen(true)
+          setDialog('moreInfo')
         }}
       />
 
       {loadError ? <NetworkErrorMessage error={loadError} /> : null}
 
       {loadError ? null : categoriesLoading || genomesLoading || !url ? (
-        <SkeletonLoader />
+        <SkeletonLoader columnCount={columns.length} />
       ) : (
         <div ref={tableRef}>
           <GenomesTable
@@ -171,17 +182,36 @@ export default function GenomesDataTable({
             pageIndex={currentPage}
             pageSize={pageSize}
             totalRows={totalRows}
+            groupRows={allData.length}
             onPageChange={setPageIndex}
             onPageSizeChange={setPageSize}
           />
         </div>
       )}
-      {moreInfoDialogOpen ? (
+      {dialog === 'moreInfo' ? (
         <MoreInfoDialog
           onClose={() => {
-            setMoreInfoDialogOpen(false)
+            setDialog(undefined)
           }}
         />
+      ) : null}
+      {dialog === 'resetFavorites' ? (
+        <ConfirmDialog
+          open
+          title="Reset favorites list to defaults?"
+          onSubmit={() => {
+            setFavorites(defaultFavs)
+            setDialog(undefined)
+          }}
+          onCancel={() => {
+            setDialog(undefined)
+          }}
+        >
+          <DialogContentText>
+            Replaces your list of {favorites.length} with the three JBrowse
+            defaults (human hs1, hg38 and hg19). This cannot be undone.
+          </DialogContentText>
+        </ConfirmDialog>
       ) : null}
     </div>
   )

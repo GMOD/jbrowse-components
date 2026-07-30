@@ -9,18 +9,10 @@ export interface Category {
   url: string
 }
 
-export interface Categories {
-  categories: Category[]
-}
-
 export default function useCategories() {
-  const { data, error, isLoading } = useFetch<Categories>(CATEGORIES_URL, () =>
-    fetchJson<Categories>(CATEGORIES_URL),
+  const { data, error, isLoading } = useFetch(CATEGORIES_URL, () =>
+    fetchJson<{ categories: Category[] }>(CATEGORIES_URL),
   )
 
-  return {
-    categories: data,
-    isLoading,
-    error,
-  }
+  return { categories: data?.categories, isLoading, error }
 }

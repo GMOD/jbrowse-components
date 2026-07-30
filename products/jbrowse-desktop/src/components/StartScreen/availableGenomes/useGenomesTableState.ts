@@ -15,9 +15,13 @@ export type GenomesTableState = ReturnType<typeof useGenomesTableState>
 // single job of the wrapped setters below is to keep the "changing the result
 // set returns to page 1" invariant in one place instead of scattered across
 // call sites. The render already clamps the page index, so the resets are
-// purely so you land on the top of the new result set. Switching group
-// additionally resets the NCBI filter and drops the selection, whose row ids
-// belong to the previous group's dataset and would launch nothing.
+// purely so you land on the top of the new result set.
+//
+// Switching group additionally resets the NCBI filter (its fields exist only on
+// GenArk rows), clears the sort (the column may not exist in the new group's
+// columns) and drops the selection, whose accessions belong to the previous
+// group's dataset and would launch nothing. Leaving multiple-selection mode
+// drops the selection too, since nothing would show it or act on it.
 export function useGenomesTableState() {
   const [selected, setSelected] = useState(() => new Set<string>())
   const [sorting, setSorting] = useState<Sorting>()
@@ -39,7 +43,6 @@ export function useGenomesTableState() {
     setSelected,
     sorting,
     multipleSelection,
-    setMultipleSelection,
     showAllColumns,
     setShowAllColumns,
     pageIndex,
@@ -51,6 +54,10 @@ export function useGenomesTableState() {
     filterOption,
     typeOption,
 
+    setMultipleSelection: (v: boolean) => {
+      setMultipleSelection(v)
+      setSelected(new Set())
+    },
     setPageSize: (size: number) => {
       setPageSize(size)
       setPageIndex(0)
@@ -74,6 +81,7 @@ export function useGenomesTableState() {
     setTypeOption: (t: string) => {
       setTypeOption(t)
       setFilterOption('all')
+      setSorting(undefined)
       setSelected(new Set())
       setPageIndex(0)
     },

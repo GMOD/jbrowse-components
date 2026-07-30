@@ -1,5 +1,4 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
-import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
@@ -10,9 +9,7 @@ import CladeSelector from './CladeSelector.tsx'
 import SearchField from './SearchField.tsx'
 import { getTableMenuItems } from './getTableMenuItems.ts'
 
-import type { Fav, LaunchCallback } from '../types.ts'
-import type { Entry } from './getColumnDefinitions.tsx'
-import type { Categories } from './useCategories.ts'
+import type { Category } from './useCategories.ts'
 import type { GenomesTableState } from './useGenomesTableState.ts'
 
 const useStyles = makeStyles()({
@@ -31,40 +28,24 @@ const useStyles = makeStyles()({
 export default function GenomesTableToolbar({
   state,
   activeTypeOption,
-  allData,
   categories,
-  categoriesLoading,
-  categoriesError,
   clades,
-  setFavorites,
-  launch,
-  onClose,
+  onLaunchSelected,
+  onResetFavorites,
   onMoreInfo,
 }: {
   state: GenomesTableState
   activeTypeOption: string
-  allData: Entry[]
-  categories?: Categories
-  categoriesLoading: boolean
-  categoriesError?: unknown
+  categories?: Category[]
   clades?: Map<string, Set<number>>
-  setFavorites: (arg: Fav[]) => void
-  launch: LaunchCallback
-  onClose: () => void
+  onLaunchSelected: () => void
+  onResetFavorites: () => void
   onMoreInfo: () => void
 }) {
   const { classes } = useStyles()
   const {
     selected,
-    setSelected,
     multipleSelection,
-    setMultipleSelection,
-    showOnlyFavs,
-    setShowOnlyFavs,
-    showAllColumns,
-    setShowAllColumns,
-    filterOption,
-    setFilterOption,
     searchQuery,
     setSearchQuery,
     clade,
@@ -79,55 +60,42 @@ export default function GenomesTableToolbar({
           variant="contained"
           disabled={selected.size === 0}
           onClick={() => {
-            // resolve against allData (the full group) not the filtered rows,
-            // so a selection built up across searches launches every entry
-            const selectedRows = [...selected]
-              .map(id => allData.find(row => row.id === id))
-              .filter(notEmpty)
-              .map(r => ({
-                jbrowseConfig: r.jbrowseConfig,
-                shortName: r.accession,
-              }))
-
-            launch(selectedRows)
-            onClose()
+            onLaunchSelected()
           }}
         >
-          Go
+          {selected.size ? `Open ${selected.size} selected` : 'Open selected'}
         </Button>
       ) : null}
 
       <SearchField searchQuery={searchQuery} onChange={setSearchQuery} />
 
-      <CategorySelector
-        categories={categories}
-        typeOption={activeTypeOption}
-        categoriesLoading={categoriesLoading}
-        categoriesError={categoriesError}
-        onChange={setTypeOption}
-      />
+      {categories ? (
+        <CategorySelector
+          categories={categories}
+          typeOption={activeTypeOption}
+          onChange={setTypeOption}
+        />
+      ) : null}
       <CladeSelector clades={clades} clade={clade} onChange={setClade} />
       <CascadingMenuButton
         menuItems={() =>
           getTableMenuItems({
+            state,
             typeOption: activeTypeOption,
-            multipleSelection,
-            showOnlyFavs,
-            showAllColumns,
-            filterOption,
-            setMultipleSelection,
-            setSelected,
-            setShowOnlyFavs,
-            setShowAllColumns,
-            setFilterOption,
-            setFavorites,
+            onResetFavorites,
           })
         }
       >
         <MoreVert />
       </CascadingMenuButton>
 
-      <IconButton size="small" title="More information" onClick={onMoreInfo}>
+      <IconButton
+        size="small"
+        title="More information"
+        onClick={() => {
+          onMoreInfo()
+        }}
+      >
         <Help />
       </IconButton>
     </div>

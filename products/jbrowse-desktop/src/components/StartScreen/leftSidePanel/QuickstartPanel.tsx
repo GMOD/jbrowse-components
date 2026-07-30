@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
-import { useInnerDims } from '../availableGenomes/util.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
 import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
+import { useInnerDims } from '../useInnerDims.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
 

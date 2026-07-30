@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material'
 
-import { useInnerDims } from '../availableGenomes/util.ts'
+import { useInnerDims } from '../useInnerDims.ts'
 import SessionCard from './RecentSessionCard.tsx'
 
 import type { RecentSessionData } from '../types.ts'

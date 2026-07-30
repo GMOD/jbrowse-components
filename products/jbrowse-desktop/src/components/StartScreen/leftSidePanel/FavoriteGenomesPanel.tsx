@@ -42,52 +42,39 @@ export default function FavoriteGenomesPanel({
       <div className={classes.tableContainer}>
         <table>
           <tbody>
-            {sorted.map(
-              ({
-                id,
-                name,
-                shortName,
-                jbrowseConfig,
-                jbrowseMinimalConfig,
-              }) => (
-                <LinkMenuRow
-                  key={id}
-                  label={name}
-                  onLinkClick={() => {
-                    launch([{ shortName, jbrowseConfig }])
-                  }}
-                  menuItems={[
-                    {
-                      label: 'Launch (full config)',
-                      onClick: () => {
-                        launch([{ shortName, jbrowseConfig }])
-                      },
+            {sorted.map(({ id, name, jbrowseConfig, jbrowseMinimalConfig }) => (
+              <LinkMenuRow
+                key={id}
+                label={name}
+                onLinkClick={() => {
+                  launch([jbrowseConfig])
+                }}
+                menuItems={[
+                  {
+                    label: 'Launch (full config)',
+                    onClick: () => {
+                      launch([jbrowseConfig])
                     },
-                    ...(jbrowseMinimalConfig
-                      ? [
-                          {
-                            label: 'Launch (minimal config)',
-                            onClick: () => {
-                              launch([
-                                {
-                                  shortName,
-                                  jbrowseConfig: jbrowseMinimalConfig,
-                                },
-                              ])
-                            },
+                  },
+                  ...(jbrowseMinimalConfig
+                    ? [
+                        {
+                          label: 'Launch (minimal config)',
+                          onClick: () => {
+                            launch([jbrowseMinimalConfig])
                           },
-                        ]
-                      : []),
-                    {
-                      label: 'Remove from favorites',
-                      onClick: () => {
-                        setFavorites(favorites.filter(fav => fav.id !== id))
-                      },
+                        },
+                      ]
+                    : []),
+                  {
+                    label: 'Remove from favorites',
+                    onClick: () => {
+                      setFavorites(favorites.filter(fav => fav.id !== id))
                     },
-                  ]}
-                />
-              ),
-            )}
+                  },
+                ]}
+              />
+            ))}
           </tbody>
         </table>
       </div>

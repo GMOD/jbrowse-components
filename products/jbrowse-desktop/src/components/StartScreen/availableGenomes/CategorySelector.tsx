@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, TextField } from '@mui/material'
 
-import type { Categories } from './useCategories.ts'
+import type { Category } from './useCategories.ts'
 
 const useStyles = makeStyles()({
   root: {
@@ -10,22 +10,21 @@ const useStyles = makeStyles()({
   },
 })
 
+// Rendered only once categories.json has resolved: useFetch clears data while
+// loading and on error, so there is no state where this has a list to show but
+// is also still loading or failed.
 export default function CategorySelector({
   categories,
   typeOption,
-  categoriesLoading,
-  categoriesError,
   onChange,
 }: {
-  categories?: Categories
+  categories: Category[]
   typeOption: string
-  categoriesLoading: boolean
-  categoriesError?: unknown
   onChange: (value: string) => void
 }) {
   const { classes } = useStyles()
 
-  return categories ? (
+  return (
     <TextField
       select
       name="typeOption"
@@ -33,23 +32,15 @@ export default function CategorySelector({
       variant="outlined"
       className={classes.root}
       value={typeOption}
-      disabled={categoriesLoading}
       onChange={event => {
         onChange(event.target.value)
       }}
-      helperText={
-        categoriesLoading
-          ? 'Loading categories...'
-          : categoriesError
-            ? 'Using cached categories'
-            : ''
-      }
     >
-      {categories.categories.map(({ key, title }) => (
+      {categories.map(({ key, title }) => (
         <MenuItem key={key} value={key}>
           {title}
         </MenuItem>
       ))}
     </TextField>
-  ) : null
+  )
 }

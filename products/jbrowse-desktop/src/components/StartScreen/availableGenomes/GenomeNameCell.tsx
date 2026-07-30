@@ -9,7 +9,6 @@ import type { LaunchCallback } from '../types.ts'
  */
 export default function GenomeNameCell({
   displayName,
-  shortName,
   jbrowseConfig,
   jbrowseMinimalConfig,
   websiteUrl,
@@ -19,8 +18,7 @@ export default function GenomeNameCell({
   toggleFavorite,
   children,
 }: {
-  displayName: string
-  shortName: string
+  displayName?: string
   jbrowseConfig: string
   jbrowseMinimalConfig?: string
   websiteUrl: string
@@ -31,23 +29,39 @@ export default function GenomeNameCell({
   children?: React.ReactNode
 }) {
   const handleLaunch = () => {
-    launch([{ jbrowseConfig, shortName }])
+    launch([jbrowseConfig])
     onClose()
   }
 
   const handleMinimalLaunch = jbrowseMinimalConfig
     ? () => {
-        launch([{ jbrowseConfig: jbrowseMinimalConfig, shortName }])
+        launch([jbrowseMinimalConfig])
         onClose()
       }
     : undefined
 
   return (
     <div>
-      {displayName} (<ActionLink onClick={handleLaunch}>launch</ActionLink>){' '}
+      {displayName} (
+      <ActionLink
+        onClick={() => {
+          handleLaunch()
+        }}
+      >
+        launch
+      </ActionLink>
+      ){' '}
       {handleMinimalLaunch ? (
         <>
-          (<ActionLink onClick={handleMinimalLaunch}>minimal</ActionLink>){' '}
+          (
+          <ActionLink
+            onClick={() => {
+              handleMinimalLaunch()
+            }}
+          >
+            minimal
+          </ActionLink>
+          ){' '}
         </>
       ) : null}
       {children}
@@ -60,13 +74,27 @@ export default function GenomeNameCell({
               window.open(websiteUrl, '_blank')
             },
           },
-          { label: 'Launch', onClick: handleLaunch },
+          {
+            label: 'Launch',
+            onClick: () => {
+              handleLaunch()
+            },
+          },
           ...(handleMinimalLaunch
-            ? [{ label: 'Launch (minimal)', onClick: handleMinimalLaunch }]
+            ? [
+                {
+                  label: 'Launch (minimal)',
+                  onClick: () => {
+                    handleMinimalLaunch()
+                  },
+                },
+              ]
             : []),
           {
             label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-            onClick: toggleFavorite,
+            onClick: () => {
+              toggleFavorite()
+            },
           },
         ]}
       >

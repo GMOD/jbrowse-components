@@ -23,9 +23,12 @@ export interface JBrowseConfig {
   configuration?: Record<string, unknown>
 }
 
-export type LaunchCallback = (
-  sel: { shortName: string; jbrowseConfig: string }[],
-) => void
+/**
+ * Open a session from one or more remote config urls, merged in order. The
+ * launchers only ever fetch these urls — a per-entry display name was carried
+ * alongside for a while and never read.
+ */
+export type LaunchCallback = (configUrls: string[]) => void
 
 export interface Fav {
   id: string

@@ -1,34 +1,34 @@
-import defaultFavs from '../defaultFavs.ts'
-
-import type { Fav } from '../types.ts'
 import type { FilterOption } from './useGenomesData.ts'
+import type { GenomesTableState } from './useGenomesTableState.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
+const NCBI_FILTERS: { label: string; value: FilterOption }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'RefSeq only', value: 'refseq' },
+  { label: 'GenBank only', value: 'genbank' },
+  { label: 'Designated reference genome only', value: 'designatedReference' },
+]
+
 export function getTableMenuItems({
+  state,
   typeOption,
-  multipleSelection,
-  showOnlyFavs,
-  showAllColumns,
-  filterOption,
-  setMultipleSelection,
-  setSelected,
-  setShowOnlyFavs,
-  setShowAllColumns,
-  setFilterOption,
-  setFavorites,
+  onResetFavorites,
 }: {
+  state: GenomesTableState
   typeOption: string
-  multipleSelection: boolean
-  showOnlyFavs: boolean
-  showAllColumns: boolean
-  filterOption: FilterOption
-  setMultipleSelection: (arg: boolean) => void
-  setSelected: (arg: Set<string>) => void
-  setShowOnlyFavs: (arg: boolean) => void
-  setShowAllColumns: (arg: boolean) => void
-  setFilterOption: (arg: FilterOption) => void
-  setFavorites: (arg: Fav[]) => void
+  onResetFavorites: () => void
 }): MenuItem[] {
+  const {
+    multipleSelection,
+    setMultipleSelection,
+    showOnlyFavs,
+    setShowOnlyFavs,
+    showAllColumns,
+    setShowAllColumns,
+    filterOption,
+    setFilterOption,
+  } = state
+
   return [
     {
       label: 'Enable multiple selection',
@@ -36,19 +36,21 @@ export function getTableMenuItems({
       type: 'checkbox',
       onClick: () => {
         setMultipleSelection(!multipleSelection)
-        setSelected(new Set())
       },
     },
     {
-      label: 'Show favorites only?',
+      label: 'Show favorites only',
       checked: showOnlyFavs,
       type: 'checkbox',
       onClick: () => {
         setShowOnlyFavs(!showOnlyFavs)
       },
     },
-    ...(typeOption !== 'ucsc'
-      ? ([
+    // The extra columns, and the NCBI status fields they filter on, exist only
+    // for GenArk/NCBI assemblies; UCSC main genomes carry neither.
+    ...(typeOption === 'ucsc'
+      ? []
+      : ([
           {
             label: 'Show all columns',
             type: 'checkbox',
@@ -60,47 +62,20 @@ export function getTableMenuItems({
           {
             label: 'Filter by NCBI status',
             type: 'subMenu',
-            subMenu: [
-              {
-                label: 'All',
-                type: 'radio',
-                checked: filterOption === 'all',
-                onClick: () => {
-                  setFilterOption('all')
-                },
+            subMenu: NCBI_FILTERS.map(({ label, value }) => ({
+              label,
+              type: 'radio',
+              checked: filterOption === value,
+              onClick: () => {
+                setFilterOption(value)
               },
-              {
-                label: 'RefSeq only',
-                type: 'radio',
-                checked: filterOption === 'refseq',
-                onClick: () => {
-                  setFilterOption('refseq')
-                },
-              },
-              {
-                label: 'GenBank only',
-                type: 'radio',
-                checked: filterOption === 'genbank',
-                onClick: () => {
-                  setFilterOption('genbank')
-                },
-              },
-              {
-                label: 'Designated reference genome only',
-                type: 'radio',
-                checked: filterOption === 'designatedReference',
-                onClick: () => {
-                  setFilterOption('designatedReference')
-                },
-              },
-            ],
+            })),
           },
-        ] satisfies MenuItem[])
-      : []),
+        ] satisfies MenuItem[])),
     {
       label: 'Reset favorites list to defaults',
       onClick: () => {
-        setFavorites(defaultFavs)
+        onResetFavorites()
       },
     },
   ]

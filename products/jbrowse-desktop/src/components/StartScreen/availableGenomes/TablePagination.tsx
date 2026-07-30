@@ -23,16 +23,35 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// Spells out that the counts are scoped to the selected group, since a search
+// that comes up empty here can still have hits in one of the other groups.
+function summarize(
+  pageIndex: number,
+  pageSize: number,
+  totalRows: number,
+  groupRows: number,
+) {
+  const fmt = (n: number) => n.toLocaleString()
+  const range = totalRows
+    ? `${fmt(pageIndex * pageSize + 1)}–${fmt(Math.min(totalRows, (pageIndex + 1) * pageSize))} of ${fmt(totalRows)}`
+    : '0'
+  return totalRows === groupRows
+    ? `Showing ${range} in this group`
+    : `Showing ${range} matching (${fmt(groupRows)} in this group)`
+}
+
 export default function TablePagination({
   pageIndex,
   pageSize,
   totalRows,
+  groupRows,
   onPageChange,
   onPageSizeChange,
 }: {
   pageIndex: number
   pageSize: number
   totalRows: number
+  groupRows: number
   onPageChange: (pageIndex: number) => void
   onPageSizeChange: (pageSize: number) => void
 }) {
@@ -40,7 +59,6 @@ export default function TablePagination({
   const pageCount = Math.max(1, Math.ceil(totalRows / pageSize))
   const canPrevious = pageIndex > 0
   const canNext = pageIndex < pageCount - 1
-  const rowsOnPage = Math.min(pageSize, totalRows - pageIndex * pageSize)
 
   return (
     <div className={classes.container}>
@@ -105,7 +123,7 @@ export default function TablePagination({
         <Typography variant="body2">rows</Typography>
       </div>
       <Typography variant="body2" className={classes.summary}>
-        Showing {rowsOnPage} of {totalRows} rows
+        {summarize(pageIndex, pageSize, totalRows, groupRows)}
       </Typography>
     </div>
   )

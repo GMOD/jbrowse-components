@@ -4,59 +4,78 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import type { Fav } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
 
-type RawEntry = Entry & { orderKey?: number }
-
-// UCSC entries key their taxon by `taxId` (number); GenArk/NCBI entries key
-// it by `taxonId` (also a raw JSON number, despite Entry.taxonId being
-// typed as string for display purposes). processUcscList.ts in jb2hubs now
-// emits both; the `taxId` fallback can be dropped once that's redeployed.
-type IncomingEntry = Omit<RawEntry, 'taxonId'> & {
-  taxId?: number
-  taxonId?: number | string
-}
-type RawData = IncomingEntry[]
-
-function normalizeEntries(data: RawData): RawEntry[] {
-  return data
-    .map(r => ({
-      ...r,
-      id: r.accession,
-      taxonId: `${r.taxonId ?? r.taxId ?? ''}`,
-    }))
-    .filter(r => r.id)
-}
-
-function matchesSearch(row: RawEntry, query: string) {
+// Every field the table can display for either group, so a search matches
+// whatever the user can see — and `useSearchHighlight` can then find that match
+// in the DOM. Array.join() renders the fields a group omits as '', not
+// 'undefined'.
+function matchesSearch(row: Entry, query: string) {
   return [
+    row.name,
     row.commonName,
-    row.accession,
     row.scientificName,
-    row.ncbiAssemblyName,
     row.organism,
     row.description,
-    row.name,
+    row.accession,
+    row.ncbiAssemblyName,
+    row.assemblyStatus,
+    row.submitterOrg,
   ]
     .join(' ')
     .toLowerCase()
     .includes(query)
 }
 
-function byOrderKey(a: RawEntry, b: RawEntry) {
-  return a.orderKey !== undefined && b.orderKey !== undefined
-    ? a.orderKey - b.orderKey
-    : 0
+// UCSC's preferred ordering (human first, then by popularity). GenArk entries
+// carry no orderKey and keep the order the endpoint served them in.
+function byOrderKey(a: Entry, b: Entry) {
+  return (a.orderKey ?? 0) - (b.orderKey ?? 0)
 }
 
 export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
 
-function applyFilter(rows: RawEntry[], filterOption: FilterOption): RawEntry[] {
+function applyFilter(rows: Entry[], filterOption: FilterOption) {
   return filterOption === 'refseq'
-    ? rows.filter(r => r.ncbiName.startsWith('GCF_'))
+    ? rows.filter(r => r.ncbiName?.startsWith('GCF_'))
     : filterOption === 'genbank'
-      ? rows.filter(r => r.ncbiName.startsWith('GCA_'))
+      ? rows.filter(r => r.ncbiName?.startsWith('GCA_'))
       : filterOption === 'designatedReference'
         ? rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
         : rows
+}
+
+/**
+ * Every row of a group that is valid to launch and display, in the order the
+ * table should show them. Sorted into a copy, never in place: callers keep this
+ * array, and filterGenomes passes it straight through for filterOption 'all'.
+ */
+export function groupRows(data: Entry[] | undefined) {
+  return (data ?? []).filter(r => r.accession).toSorted(byOrderKey)
+}
+
+/** The subset of a group the current search/status/clade/favorites leave visible. */
+export function filterGenomes({
+  rows,
+  searchQuery,
+  filterOption,
+  showOnlyFavs,
+  favoriteIds,
+  cladeTaxonIds,
+}: {
+  rows: Entry[]
+  searchQuery: string
+  filterOption: FilterOption
+  showOnlyFavs: boolean
+  favoriteIds: Set<string>
+  cladeTaxonIds?: Set<number>
+}) {
+  const query = searchQuery.toLowerCase().trim()
+  return applyFilter(rows, filterOption).filter(
+    row =>
+      (!query || matchesSearch(row, query)) &&
+      (!cladeTaxonIds ||
+        (row.taxonId !== '' && cladeTaxonIds.has(row.taxonId))) &&
+      (!showOnlyFavs || favoriteIds.has(row.accession)),
+  )
 }
 
 export function useGenomesData({
@@ -74,32 +93,31 @@ export function useGenomesData({
   url?: string
   cladeTaxonIds?: Set<number>
 }): {
-  data: RawEntry[]
-  allData: RawEntry[]
+  data: Entry[]
+  allData: Entry[]
   error: unknown
   isLoading: boolean
 } {
   // no explicit type argument: it would pin `Data` and leave the key type to its
   // loose default, costing the fetcher its typed `u`
   const { data, error, isLoading } = useFetch(url, (u: string) =>
-    fetchJson<RawData>(u),
+    fetchJson<Entry[]>(u),
   )
 
-  const query = searchQuery.toLowerCase().trim()
-  const favSet = new Set(favorites.map(r => r.id))
-  // allData is the full normalized group (all row ids valid for launching);
-  // data is what the current search/clade/status/favorites filters leave
-  // visible. A persisted multi-selection is resolved against allData so rows
-  // hidden by the current filter still launch.
-  const allData = normalizeEntries(data ?? [])
-  const result = applyFilter(allData, filterOption)
-    .sort(byOrderKey)
-    .filter(
-      row =>
-        (!query || matchesSearch(row, query)) &&
-        (!cladeTaxonIds || cladeTaxonIds.has(Number(row.taxonId))) &&
-        (!showOnlyFavs || favSet.has(row.id)),
-    )
-
-  return { data: result, allData, error, isLoading }
+  // allData is the whole group, so a multi-selection built up across searches
+  // still resolves the rows the current filters hide
+  const allData = groupRows(data)
+  return {
+    data: filterGenomes({
+      rows: allData,
+      searchQuery,
+      filterOption,
+      showOnlyFavs,
+      favoriteIds: new Set(favorites.map(r => r.id)),
+      cladeTaxonIds,
+    }),
+    allData,
+    error,
+    isLoading,
+  }
 }
