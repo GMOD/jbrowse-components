@@ -297,6 +297,13 @@ export const trackFields: Record<string, FieldRecipe> = {
   coverageHeight: numberField(() => ({
     path: 'Drag the bottom edge of the coverage band to resize it.',
   })),
+  // Same shape as coverageHeight: the band has a drag handle at its lower edge
+  // (LinesConnectingMatrixToGenomicPosition, in both the matrix and LD
+  // displays), and no menu item — so a drag is the verified path rather than a
+  // guessed label.
+  lineZoneHeight: numberField(() => ({
+    path: 'Drag the bottom edge of the band of connecting lines above the rows to resize it.',
+  })),
   forceLoad: value =>
     value === true
       ? {
