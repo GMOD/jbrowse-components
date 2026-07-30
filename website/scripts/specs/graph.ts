@@ -355,6 +355,16 @@ const MHC_REGION = {
 // hprc-v2.0-mc-grch38.bubbles.bed.gz turns up at chr1:103,611,080-103,732,636,
 // with a little room either side so its flanks are on screen. 34 backbone
 // segments and 113 links here, pulling 101 distinct nodes.
+// The complement factor H cluster. CFH, CFHR3, CFHR1 and CFHR4 all fall in this
+// 200 kb, and the graph holds three deletions across it.
+const CFHR_WINDOW = 'chr1:196,700,000-196,900,000'
+const CFHR_REGION = {
+  refName: 'chr1',
+  assemblyName: 'hg38',
+  start: 196700000,
+  end: 196900000,
+}
+
 const AMY_WINDOW = 'chr1:103,600,000-103,745,000'
 const AMY_REGION = {
   refName: 'chr1',
@@ -1027,6 +1037,60 @@ export const graphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
   },
 
+  // CFHR3/CFHR1: the deletion figure, and the locus this spec file used to say
+  // could not be drawn. The note is still in hprc_lpa_kiv2 below -- "sample rows
+  // gives a carrier an empty row (a deletion contributes no segment), the
+  // anchored layout draws its edge flat along the backbone under the backbone
+  // ... Extra sequence has somewhere to be drawn; missing sequence does not."
+  // Deletion edges are what changed: a link between two backbone segments that
+  // are not neighbours is red and thick, and hovering it says how many bp are
+  // gone.
+  //
+  // Counted off the hosted link index, this window holds three of them, the
+  // largest 84,683 bp -- CFHR3 and CFHR1 together, which is one of the
+  // best-known common deletions in the human genome. The graph draws it as what
+  // it is: a red edge that leaves the backbone before CFHR3 and rejoins it after
+  // CFHR1, with the reference the deletion skips running underneath.
+  //
+  // 41 nodes, so the force layout has room to open every bubble.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_cfhr_deletion',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: CFHR_WINDOW,
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            hprcSegmentsLane(CFHR_REGION),
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: CFHR_REGION,
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+          bubbleSpread: 'open',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    viewportHeight: 1055,
+    hideTooltip: true,
+  },
   // The amylase locus on chr1, which is the figure for "this scales to a whole
   // chromosome". chr1 is 248 Mb and the graph holds 464 haplotypes of it; the
   // view fetches this 145 kb window out of two tabix indexes and draws 101
@@ -1102,15 +1166,16 @@ export const graphSpecs: ScreenshotSpec[] = [
   // copy number is the main determinant of Lp(a) and is not measurable off short
   // reads at all.
   //
-  // An EXPANSION, deliberately, and that is a constraint on the picture rather
-  // than a preference. The other standout in the same scan is the CFHR3/CFHR1
-  // deletion at chr1:196,753,088-196,837,771, whose bubble runs from 0 bp — two
-  // named genes a fifth of haplotypes do not carry — and none of the three
-  // displays draw it: sample rows gives a carrier an empty row (a deletion
-  // contributes no segment), the anchored layout draws its edge flat along the
-  // backbone under the backbone, and the callset paints the whole bubble alt for
-  // nearly every haplotype. Extra sequence has somewhere to be drawn; missing
-  // sequence does not. See website/scripts/screenshot-review-plan.md.
+  // An EXPANSION, deliberately, and that is a constraint on THIS picture rather
+  // than a preference: sample rows gives a deletion carrier an empty row, since
+  // a deletion contributes no segment to put on it.
+  //
+  // It is no longer a constraint on the view. This comment used to end "Extra
+  // sequence has somewhere to be drawn; missing sequence does not", and named
+  // the CFHR3/CFHR1 deletion as the standout the displays could not draw. The
+  // plugin now draws a deletion as what it is in the graph — a red edge routing
+  // around the backbone it skips — and pangenome/hprc_cfhr_deletion is that
+  // locus.
   {
     mode: 'url',
     name: 'pangenome/hprc_lpa_kiv2',

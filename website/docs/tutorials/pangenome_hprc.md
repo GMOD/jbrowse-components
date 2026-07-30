@@ -173,6 +173,22 @@ below the floor a node no longer draws proportional to its length, so read
 lengths off the anchored layout or the
 [allele inventory](#the-allele-inventory), not off this picture.
 
+### What the graph shows that a linear view cannot
+
+Extra sequence is a node in the graph, so it draws as a tube you can hover.
+Missing sequence is an **edge**: a link from one backbone segment to another
+that is not its neighbour, taken by the haplotypes that do not carry what lies
+between them. Those edges are red and bowed out into an arc sized by the
+reference they skip, so a deletion is a route around the backbone rather than a
+line at a joint.
+
+<Figure caption="The complement factor H cluster on chr1 as a force-directed graph, under the RefSeq genes for the same window. The large red loop is a deletion: it leaves the backbone before CFHR3 and rejoins after CFHR1, so the haplotypes taking it carry neither gene. Two smaller red loops are the other deletions the graph holds here. Node colors are reference position, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_cfhr_deletion.png" />
+
+Hovering a red edge gives the interval and the bp it removes. This is the event
+a linear view is worst at, because a deletion has nothing to draw at the
+position it occurs, and the one a graph is best at, because the alternative
+route is a real part of the structure.
+
 Chromosome size does not enter into any of this. The amylase locus sits on chr1,
 the longest human chromosome, and the graph holds 464 haplotypes of it:
 
