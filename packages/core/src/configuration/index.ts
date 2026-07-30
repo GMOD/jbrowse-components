@@ -15,7 +15,6 @@ export type {
 } from './types.ts'
 
 export {
-  getConfSnapshot,
   getConfigurationSchemaDefinition,
   getTypeNamesFromExplicitlyTypedUnion,
   isBareConfigurationSchemaType,
@@ -44,6 +43,6 @@ export {
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   openPromotableDisplays,
-  resolvePromotableConfigSnapshot,
+  getConfigSnapshotWithPromotables,
 } from './promotableDefaults.ts'
 export type { DisplayTypeDefaultControl } from './promotableDefaults.ts'

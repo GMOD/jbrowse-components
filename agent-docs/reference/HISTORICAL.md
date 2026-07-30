@@ -230,10 +230,10 @@ Two measurement traps on the way, both worth remembering:
   visible failure into a guess about 65. Redirect the whole log, then grep it.
 
 Don't "fix" the stripping itself, and don't make slot reads resolve defaults all
-the way down. `rawConfSnapshot` (the defaults-included converter) drops arrays and
+the way down. `fullConfSnapshot` (the defaults-included converter) drops arrays and
 maps of sub-schemas, so `getConf(track, 'displays')` would start returning less;
-it throws on promotable slots, and a display config nested in a track config has
-them; and promotables resolve against the *session*, which a pure config read
+it refuses promotable slots below the top level, and a display config nested in a
+track config has them; and promotables resolve against the *session*, which a pure config read
 cannot reach — there is no single correct defaults-included plain object for a
 nested display config. `readSlot` also returns the cached `getSnapshot`
 deliberately: a per-read built object was a measured perf and

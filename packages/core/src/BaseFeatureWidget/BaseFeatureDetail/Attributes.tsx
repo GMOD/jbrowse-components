@@ -1,6 +1,7 @@
+import { Suspense, lazy } from 'react'
+
 import { isObject, isUriLocation } from '../../util/index.ts'
 import ArrayValue from './ArrayValue.tsx'
-import DataGridDetails from './DataGridDetails.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
 import {
@@ -10,6 +11,11 @@ import {
 } from './util.ts'
 
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
+
+// Lazy: reaches @mui/x-data-grid, and this module sits on the eager startup
+// path via product-core's ui barrel (AboutDialog -> AboutDialogContents).
+// Only a homogeneous object array actually renders a grid.
+const DataGridDetails = lazy(() => import('./DataGridDetails.tsx'))
 
 const MAX_FIELD_NAME_WIDTH = 170
 
@@ -88,12 +94,9 @@ export default function Attributes(props: {
           // heterogeneous arrays fall through to ArrayValue which renders
           // each object as individual field sections instead of disappearing
           return isHomogeneousObjectArray(value) ? (
-            <DataGridDetails
-              key={key}
-              name={key}
-              prefix={prefix}
-              value={value}
-            />
+            <Suspense key={key} fallback={null}>
+              <DataGridDetails name={key} prefix={prefix} value={value} />
+            </Suspense>
           ) : (
             <ArrayValue
               key={key}

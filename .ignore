@@ -45,3 +45,9 @@ peptidePositioning.ts
 website/scripts/screenshot-specs.ts
 website/scripts/screenshot-spec-helpers.ts
 agent-docs/dotplot-diagonalize-analysis/proto_final.py
+website/scripts/specs/dog10k.ts
+website/docs/config
+scripts/build_ag1000g_ld.sh
+test_data/dog10k/dog10k_igf1_samples.tsv
+scripts/build_dog10k_cyp1a2.sh
+plugins/canvas/src/LinearMultiRowFeatureDisplay/applyRowGroups.test.ts

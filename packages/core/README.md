@@ -303,7 +303,7 @@ slot, and `getConf` is what you want there.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
 
-### resolvePromotableConfigSnapshot
+### getConfigSnapshotWithPromotables
 
 The display's full config snapshot with every `promotable` slot overwritten by
 its resolved value in place. For building a worker payload: a promotable slot

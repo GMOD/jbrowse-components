@@ -40,10 +40,8 @@ export { PreferencesSessionMixin } from './Preferences.ts'
 export {
   BaseSessionModel,
   DISPLAY_TYPE_DEFAULTS_PATH_HEAD,
-  displayTypeDefaultKey,
   isBaseSession,
   isSession,
-  parseDisplayTypeDefaultKey,
 } from './BaseSession.ts'
 export type { BaseSession, BaseSessionType } from './BaseSession.ts'
 export {

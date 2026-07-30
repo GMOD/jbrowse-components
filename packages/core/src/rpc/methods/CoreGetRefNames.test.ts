@@ -1,5 +1,5 @@
-import CoreGetRefNames from './CoreGetRefNames.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import CoreGetRefNames from './CoreGetRefNames.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 

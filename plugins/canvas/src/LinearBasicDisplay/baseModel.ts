@@ -5,7 +5,7 @@ import {
   getConf,
   readConfObject,
   resolveConf,
-  resolvePromotableConfigSnapshot,
+  getConfigSnapshotWithPromotables,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -886,7 +886,7 @@ export default function baseStateModelFactory(
         // RPC call site, matching the pattern used by every other display
         // type. Subclasses extend via the super-capture pattern.
         rpcProps() {
-          // resolvePromotableConfigSnapshot hands the worker concrete values for
+          // getConfigSnapshotWithPromotables hands the worker concrete values for
           // every promotable slot (chevrons, subfeatureLabels, ...) instead of
           // their raw inherit sentinels — so a new promotable worker-slot needs
           // no rpcProps change here. The excluded slots are display-only (never
@@ -901,7 +901,7 @@ export default function baseStateModelFactory(
             displayMode: _dm,
             heightMode: _hm,
             ...rest
-          } = resolvePromotableConfigSnapshot(self)
+          } = getConfigSnapshotWithPromotables(self)
           return {
             // jexlFilters carries the effective runtime filters (mirrors the
             // effectiveGeneGlyphMode substitution in the concrete model); reading

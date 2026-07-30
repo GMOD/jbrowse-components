@@ -26,7 +26,8 @@ Violations cause silent bugs, not crashes.
 - **Structural types across lazy boundaries.** Importing MST model types across
   a lazy import is a circular-reference trap — use duck-typed interfaces.
 - **`readConfObject` / `getConf` are hot-path traversals.** Cache outside loops;
-  at the rendering layer prefer `getConfSnapshot` + `readConfigValue`
+  at the rendering layer prefer `getConfigSnapshotWithPromotables` +
+  `readConfigValue`
   ([CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md)).
 
 ## Definition of done

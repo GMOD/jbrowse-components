@@ -28,7 +28,7 @@ read one section, read [The cascade](#the-cascade).
   every real value customizable over an opposite default, and keeps the
   mechanism out of the slot's own vocabulary.
 - **Standing rule at every serialization boundary:** flatten the cascade like
-  `getComputedStyle`. Worker RPC → `resolvePromotableConfigSnapshot`;
+  `getComputedStyle`. Worker RPC → `getConfigSnapshotWithPromotables`;
   share/export → `bakePromotedDefaultsIntoSnapshot`. Never emit a raw promotable
   slot.
 - Received sessions carry `ignorePromotedDefaults`: baking alone can't neutralize
@@ -52,9 +52,9 @@ read one section, read [The cascade](#the-cascade).
 | Concern | File |
 | --- | --- |
 | Read-time resolver (`resolveSlot`, `isUsableValue`) | `packages/core/src/configuration/promotableResolve.ts` |
-| Cached per-schema promotable-slot list (`promotableSlotNames`), shared with the `getConfSnapshot` guard | `packages/core/src/configuration/util.ts` |
+| Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
-| Control builders + share/worker helpers (`make*Control`, `resolvePromotableConfigSnapshot`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
+| Control builders + share/worker helpers (`make*Control`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
 | `promotable` / `promotedBase` slot metadata + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
 | Slot-definition inheritance (an override merges over the base slot, so `promotable` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
 | Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
@@ -65,7 +65,7 @@ read one section, read [The cascade](#the-cascade).
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
-| Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` — **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, so those displays get the four pins for free |
+| Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only two of the *pins* come along, though: `displayMode` and `heightMode` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts` — so a variant track resolves those two slots but can't promote them. Move the rows + getters down to `baseModel.ts` if that's wanted |
 | Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 | Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
@@ -186,10 +186,13 @@ function resolveSlot(self, slot, args = {}): SlotResolution {
   // it's a session-wide fact, and the pin's filled/outline state reports on the
   // session, not on one display's view of it. The opt-out belongs to `inherited`
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // raw read: this *is* the resolver, so `readConfObject`, not `resolveConf`
-  // (which would recurse straight back in here). No `args`: a `jexl:` slot
-  // returned above (see "Callback values"), so nothing left can consume them
-  const own = readConfObject(self.configuration, slot)
+  // the raw stored read (`self.configuration[slot]`) — this *is* the resolver, so
+  // not `resolveConf`, which would recurse straight back in here. It's also the
+  // read the `jexl:` branch above tested, and one read is enough for both: past
+  // that branch `readConfObject` would return the identical value, since its only
+  // extra behaviors are evaluating a callback and snapshotting an MST-node value,
+  // and a `maybe*` slot never holds one
+  const own = storedSlotValue(self, slot)
   // a track is customized exactly when it holds a *usable* value — the same
   // `isUsableValue` gate a promoted default passes, so a malformed or stale own
   // value reads as not-customized and degrades to the inherited value rather
@@ -218,6 +221,15 @@ in lockstep — no consumer guards on its own. `colorBy` uses `validate` so a
 to the base instead of reaching the total `COLOR_SCHEMES` lookups that throw on
 an unregistered type.
 
+One consequence is worth knowing rather than fixing. A promoted default that
+fails the gate goes *invisible* in the track UI: `isPromotableDefault` compares
+the raw stored value, so no row's pin fills (an unregistered scheme has no row at
+all), and every track resolves to base so `getDisplayTypeDefaultChanges` is empty
+and no badge appears. The stale key is still listed and individually clearable in
+Preferences → "Reset to defaults", which is the intended escape hatch — the
+alternative, deleting the key from inside `resolveSlot`, would mean writing
+observable state from a MobX computed.
+
 `resolveConf` on a promotable slot **always returns a real value**, never the
 unset sentinel, so the display getter needs no post-guard — and its read type
 excludes `undefined`, so no cast either:
@@ -240,7 +252,7 @@ that calls `evaluate()`, because it's the only one holding the caller's `args`.
 Everyone else branches — `getDisplayTypeDefaultChanges` tests `customized` first
 (which narrows the callback branch away, since it's `true` there),
 `tracksDifferingFrom` counts a callback track as differing without evaluating it,
-`resolvePromotableConfigSnapshot` leaves the raw `jexl:` string in the worker
+`getConfigSnapshotWithPromotables` leaves the raw `jexl:` string in the worker
 payload for the worker to evaluate per-feature, and
 `makeCurrentValueDisplayTypeDefaultControl` returns a **disabled** pin (a
 callback has no single current value to promote). A new consumer that forgets
@@ -254,7 +266,7 @@ group of them so several slots move as one unit.
 | Symbol | Returns / does | Drives |
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot | the display's own value getter |
-| `resolvePromotableConfigSnapshot(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
+| `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
 | `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, disabled, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
 | `makeCurrentValueDisplayTypeDefaultControl(self, slots)` | same, over the track's *current* resolved values; `disabled` when any of them is a `jexl:` callback | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
@@ -364,19 +376,32 @@ boundary means *calling* one — not writing bespoke resolution:
 
 | Boundary | Resolver | Why |
 | --- | --- | --- |
-| Worker RPC payload | `resolvePromotableConfigSnapshot(display)` | worker has no session/`preferencesOverrides` to resolve against |
+| Worker RPC payload | `getConfigSnapshotWithPromotables(display)` | worker has no session/`preferencesOverrides` to resolve against |
 | Session share / "Export session" → `session.json` (web, react-app) | `getShareableSessionSnapshot(session)` | recipient lacks the sender's local defaults |
 | desktop→web export | `bakePromotedDefaultsIntoSnapshot(session, plan.session)` | same, but bakes a snapshot `planWebExport` already transformed |
 
-**Two of those three rows are enforced, not remembered.** `getConfSnapshot`
-*throws* on a config carrying promotable slots, naming
-`resolvePromotableConfigSnapshot` in the message — so the worker row can't be got
-wrong by writing the obvious thing in a new `rpcProps()`. (An internal
-`rawConfSnapshot`, deliberately off the barrel, is what the resolver itself uses;
-its sub-config recursion still goes through the guarded form, so a promotable
-slot declared in a *nested* schema throws too — the resolver only ever walks a
-config's own top-level slot table, so a nested one would never resolve at all.)
-And `getShareableSessionSnapshot(session)` does the snapshot and the bake in one
+**Local persistence is deliberately *not* on that list** — web autosave
+(`SessionLoader`), HMR restore, and desktop's native `.jbrowse` file
+(`getSaveSession` in `products/jbrowse-desktop/src/rootModel/rootModel.ts`) all
+use a raw `getSnapshot(session)`, correctly: the same browser still has the
+`preferencesOverrides` the cascade resolves against, and baking would stamp
+`ignorePromotedDefaults: true` onto every display in the user's *own* reloaded
+session — permanently detaching their tracks from their own promoted defaults.
+The consequence to know: hand-passing a `.jbrowse` file to someone else is the
+one path that loses the sender's promoted defaults, since it's a save format, not
+an export. `ExportToWebDialog` is the desktop route that bakes.
+
+**Two of those three rows are enforced, not remembered.** The raw walker
+(`fullConfSnapshot`) is **off the `@jbrowse/core/configuration` barrel**, so
+`getConfigSnapshotWithPromotables` is the only snapshot importable at all and the
+worker row can't be got wrong by writing the obvious thing in a new `rpcProps()`
+— the mistake doesn't resolve rather than throwing at the first fetch. (It used
+to be public as `getConfSnapshot` and defend itself by throwing; unreachable
+beats guarded.) What no import can express is still checked at runtime: the
+walker refuses a promotable slot declared in a *nested* schema, because the
+cascade only ever walks a config's own top-level slot table, so a nested one
+would resolve nowhere and serialize as its bare sentinel. And
+`getShareableSessionSnapshot(session)` does the snapshot and the bake in one
 call, so the pair can't be split: a bare `getSnapshot(session)` is never a
 correct outgoing snapshot.
 
@@ -475,11 +500,19 @@ The row builders in `promotableMenuItems.tsx`:
   `f(value) => control` method on the model rather than a named getter per value,
   which is what made `sashimiArcsMode`'s base look unpinnable.
 
-Selecting a value **customizes** the track to it (`promotedBase` included). An
-explicit **"Follow default" reset item** (writes `undefined`, unsetting the slot)
-is *optional*: `displayMode` folds it into a top "Default (X)" radio;
-the others omit it (picking a value customizes, leaving it untouched follows the
-default). Don't add one reflexively.
+Selecting a value **customizes** the track to it (`promotedBase` included), and
+**no radio or checkbox group offers a "follow default" row** — picking a value
+customizes, leaving the group untouched follows the default. Don't add one
+reflexively; it's a fourth control on an already-busy row for a state the user
+reaches by not clicking.
+
+The three **slider** rows (wiggle point size, wiggle/arc line width) do have one,
+because a slider has no "untouched" position to leave alone: the reset button is
+enabled off `isSlotCustomized` and writes `undefined`. When a value-group track
+*is* customized and the user wants it back on the cascade, the paths are the
+snackbar's "Apply to N open tracks" (offered whenever a default is set) and the
+track-selector badge's "Reset to default", which drops the whole
+`trackConfigDeltas` entry.
 
 **Disabled-not-hidden for dependent options:** options that only apply once a
 parent toggle is on (the arc/read-cloud band submenu, arc coloring) stay present
@@ -544,9 +577,10 @@ it.
    [that section](#serialization-boundaries-getcomputedstyle)): promotable slots
    resolve on the **main thread**, so anything that ships the config elsewhere
    must flatten. If the worker needs the value, send
-   `resolvePromotableConfigSnapshot(self)` (or read the display's resolved getter
-   into `rpcProps()`) rather than a raw `getConfSnapshot` — a raw promotable slot
-   serializes as its inherit sentinel, which the worker can't interpret.
+   `getConfigSnapshotWithPromotables(self)` (or read the display's resolved getter
+   into `rpcProps()`) — an unresolved promotable slot serializes as its inherit
+   sentinel, which the worker can't interpret. There is no raw alternative on the
+   barrel to reach for by mistake.
    `displayMode` is excluded from the canvas worker payload entirely (compact
    scaling is main-thread). The **share/export** boundary needs nothing per-slot:
    `bakePromotedDefaultsIntoSnapshot` walks every promotable slot via

@@ -2,7 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { getConfSnapshot, readConfObject, readConfigValue } from './util.ts'
+import { fullConfSnapshot, readConfObject, readConfigValue } from './util.ts'
 
 function createPluginManager() {
   const pm = new PluginManager([])
@@ -44,14 +44,14 @@ const TestSchema = ConfigurationSchema('TestDisplay', {
   }),
 })
 
-describe('getConfSnapshot', () => {
+describe('fullConfSnapshot', () => {
   it('includes default values (unlike getSnapshot)', () => {
     const config = TestSchema.create(
       { type: 'TestDisplay' },
       { pluginManager: pm },
     )
 
-    const snap = getConfSnapshot(config)
+    const snap = fullConfSnapshot(config)
 
     expect(snap.color1).toBe('goldenrod')
     expect(snap.featureHeight).toBe(10)
@@ -59,20 +59,20 @@ describe('getConfSnapshot', () => {
     expect(snap.transcriptTypes).toEqual(['mRNA', 'transcript'])
   })
 
-  it('getSnapshot strips defaults but getConfSnapshot does not', () => {
+  it('getSnapshot strips defaults but fullConfSnapshot does not', () => {
     const config = TestSchema.create(
       { type: 'TestDisplay' },
       { pluginManager: pm },
     )
 
     const mstSnap = readConfObject(config)
-    const fullSnap = getConfSnapshot(config)
+    const fullSnap = fullConfSnapshot(config)
 
     // readConfObject with no path uses getSnapshot which strips defaults
     expect(mstSnap.color1).toBeUndefined()
     expect(mstSnap.featureHeight).toBeUndefined()
 
-    // getConfSnapshot preserves them
+    // fullConfSnapshot preserves them
     expect(fullSnap.color1).toBe('goldenrod')
     expect(fullSnap.featureHeight).toBe(10)
   })
@@ -83,7 +83,7 @@ describe('getConfSnapshot', () => {
       { pluginManager: pm },
     )
 
-    const snap = getConfSnapshot(config)
+    const snap = fullConfSnapshot(config)
     expect(snap.color1).toBe('red')
     expect(snap.featureHeight).toBe(20)
   })
@@ -95,7 +95,7 @@ describe('getConfSnapshot', () => {
       { pluginManager: pm },
     )
 
-    const snap = getConfSnapshot(config)
+    const snap = fullConfSnapshot(config)
     expect(snap.color1).toBe(jexl)
   })
 
@@ -105,7 +105,7 @@ describe('getConfSnapshot', () => {
       { pluginManager: pm },
     )
 
-    const snap = getConfSnapshot(config)
+    const snap = fullConfSnapshot(config)
     expect(snap.labels).toBeDefined()
     expect((snap.labels as Record<string, unknown>).fontSize).toBe(12)
   })
@@ -116,7 +116,7 @@ describe('getConfSnapshot', () => {
       { pluginManager: pm },
     )
 
-    const snap = getConfSnapshot(config)
+    const snap = fullConfSnapshot(config)
     const labels = snap.labels as Record<string, unknown>
     expect(labels.name).toBe("jexl:get(feature,'name')")
   })
@@ -144,7 +144,7 @@ describe('getConfSnapshot', () => {
       { pluginManager: pm },
     )
 
-    expect(getConfSnapshot(node)).toEqual({ scalar: 7, sub: { x: 1 } })
+    expect(fullConfSnapshot(node)).toEqual({ scalar: 7, sub: { x: 1 } })
   })
 })
 
@@ -197,13 +197,13 @@ describe('readConfigValue', () => {
     ).toBe(14)
   })
 
-  it('end-to-end: getConfSnapshot + readConfigValue', () => {
+  it('end-to-end: fullConfSnapshot + readConfigValue', () => {
     const jexl = "jexl:get(feature,'type')=='SNV'?'green':'purple'"
     const config = TestSchema.create(
       { type: 'TestDisplay', color1: jexl },
       { pluginManager: pm },
     )
-    const snap = getConfSnapshot(config)
+    const snap = fullConfSnapshot(config)
 
     expect(
       readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' }), pm.jexl),

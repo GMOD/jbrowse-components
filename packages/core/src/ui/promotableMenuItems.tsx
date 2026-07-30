@@ -7,13 +7,18 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 // track (inheriting native hover/sizing/keyboard), and a trailing pin
 // (endAdornment) sets/clears this value as the display type's default. Always
 // shown so the capability is discoverable.
+//
+// `keepMenuOpen` defaults to true for the same reason it's hard-coded in
+// `toggleMenuItems.ts`: these rows only write a setting, users flip several in
+// one visit, and the menu is an observer so the ticks and pins move live. A row
+// whose click opens a dialog instead (colorBy's "Tag...") passes false.
 export function promotableToggleItem({
   label,
   helpText,
   checked,
   onToggle,
   displayTypeDefault,
-  keepMenuOpen,
+  keepMenuOpen = true,
 }: {
   label: string
   helpText?: string
@@ -44,7 +49,8 @@ export function promotableToggleItem({
 // missing its trailing control reads as a bug. `displayTypeDefault` stays
 // optional only for a row that has no single value to promote yet (the colorBy
 // "Tag..." row before a tag is picked) or a display whose slot isn't promotable
-// at all (the shared colorBy menu on gwas/variants).
+// at all (the shared colorBy menu on gwas/variants). `keepMenuOpen` defaults to
+// true as in `promotableToggleItem`.
 export function promotableRadioItem({
   label,
   subLabel,
@@ -52,7 +58,7 @@ export function promotableRadioItem({
   checked,
   onClick,
   displayTypeDefault,
-  keepMenuOpen,
+  keepMenuOpen = true,
 }: {
   label: string
   subLabel?: string

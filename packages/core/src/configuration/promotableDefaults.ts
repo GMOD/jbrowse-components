@@ -4,7 +4,7 @@ import { deepEqual } from '../util/deepEqual.ts'
 import { getSession, isViewContainer, pluralize } from '../util/index.ts'
 import { setConf } from './getConf.ts'
 import { resolveSlot, storedSlotValue } from './promotableResolve.ts'
-import { promotableSlotNames, rawConfSnapshot } from './util.ts'
+import { fullConfSnapshot, promotableSlotNames } from './util.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
@@ -48,12 +48,12 @@ export function isSlotCustomized(
  * (e.g. displayMode) are still excluded by the caller — resolving them here is a
  * harmless no-op since they're dropped anyway.
  */
-export function resolvePromotableConfigSnapshot(
+export function getConfigSnapshotWithPromotables(
   self: PromotableDisplay,
 ): Record<string, unknown> {
-  // the raw walk: this is the one place allowed to snapshot a promotable config,
-  // because the loop below is what resolves every such slot
-  const snap = rawConfSnapshot(self.configuration)
+  // the unresolved walk: this is the one place allowed to snapshot a promotable
+  // config, because the loop below is what resolves every such slot
+  const snap = fullConfSnapshot(self.configuration)
   for (const slot of promotableSlotNames(self.configuration)) {
     // a callback slot keeps its raw `jexl:` string: the worker evaluates it
     // per-feature, and there's no per-feature context to resolve it here

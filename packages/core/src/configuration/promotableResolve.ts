@@ -49,12 +49,18 @@ export type PromotableDisplay = IAnyStateTreeNode & {
 
 /**
  * What the slot literally holds, unevaluated — a `jexl:` slot yields the raw
- * `jexl:...` string rather than running it. The distinction matters twice in
- * this subsystem, and both callers need the raw form for the same reason: they
- * ask "is the slot set, and to what kind of thing?", a question that has to be
- * answerable with no feature context (evaluating a callback without one throws).
- * `readConfObject` is the evaluating counterpart, and is what every value read
- * goes through.
+ * `jexl:...` string rather than running it. Both callers need the raw form for
+ * the same reason: they ask "is the slot set, and to what kind of thing?", a
+ * question that has to be answerable with no feature context (evaluating a
+ * callback without one throws). `readConfObject` is the evaluating counterpart,
+ * and is what every value read outside this subsystem goes through.
+ *
+ * For a promotable slot this is also the *whole* stored read, not a cheaper
+ * approximation of one. `readConfObject`'s two extra behaviors are both
+ * unreachable here: it evaluates a `jexl:` string (the resolver's callback
+ * branch returns before that), and it snapshots a value that is an MST node —
+ * which a promotable value never is, since `ConfigSlot` admits only `maybe*`
+ * types and those hold a primitive or a `types.frozen` plain object.
  */
 export function storedSlotValue(
   self: PromotableDisplay,
@@ -80,10 +86,7 @@ export function storedSlotValue(
  *   4. it passes the slot's optional semantic `validate` hook.
  * An unusable value is dropped so every consumer falls back in lockstep.
  */
-export function isUsableValue(
-  def: ConfigSlotDefinition,
-  value: unknown,
-): boolean {
+function isUsableValue(def: ConfigSlotDefinition, value: unknown): boolean {
   const { validate } = def
   return (
     value !== undefined &&
@@ -212,6 +215,11 @@ export function resolveSlot(
   // it. The opt-out belongs to `inherited` below, which is the only tier of the
   // cascade it may neutralize.
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  // The track's own value, before any cascade. One read serves both the callback
+  // test below and the value itself: past that branch the stored value *is* what
+  // `readConfObject` would return (see `storedSlotValue`), and it needs no `args`
+  // because nothing left here can consume them.
+  const own = storedSlotValue(self, slot)
   // A `jexl:` value leaves the cascade immediately: a callback computes a
   // different value per call (per feature), so it has no single value to weigh
   // against the cascade — writing one *is* customizing the track. Evaluating it
@@ -221,7 +229,7 @@ export function resolveSlot(
   // real `resolveConf(self, slot, { feature })` read gets exactly what an
   // ordinary slot read would — including the same error if the context is
   // missing.
-  if (isCallbackValue(storedSlotValue(self, slot))) {
+  if (isCallbackValue(own)) {
     return {
       base,
       customized: true,
@@ -230,9 +238,6 @@ export function resolveSlot(
       evaluate: () => readConfObject(self.configuration, slot, args),
     }
   }
-  // the track's own value, before any cascade. No `args`: the callback branch
-  // above already returned, so nothing left here can consume them.
-  const own = readConfObject(self.configuration, slot)
   // A track is customized exactly when it holds a *usable* value — being unset
   // is the inherit sentinel, so "set to something the slot could hold" is the
   // whole test. Routing `own` through the same gate as a promoted default means

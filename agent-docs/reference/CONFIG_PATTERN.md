@@ -14,19 +14,22 @@ MST confined to main thread; renderers work on plain objects.
   the render layer.
 - The snapshot is built inline in `rpcProps()`, the single RPC payload extension
   hook. Subclasses extend it by super-capture and spread.
-- `getConfSnapshot()` keeps defaults **and** raw `"jexl:…"` strings;
+- The snapshot keeps defaults **and** raw `"jexl:…"` strings;
   `readConfigValue(plainObj, key, feature)` evaluates them on the worker. No
-  re-hydration, no MST model needed.
+  re-hydration, no MST model needed. `getConfigSnapshotWithPromotables(self)` is
+  the only such helper on the public barrel — the raw walker under it is
+  deliberately unexported, so an unresolved cascade can't be shipped by writing
+  the obvious thing.
 - Visual settings live **directly on the display config schema**, not nested in a
   renderer sub-config. `contextVariable: ['feature']` enables jexl.
-- A runtime UI change writes the **config slot itself** (`setSlot`) and reads
-  back via `getConf`. There is no override map; `ConfigOverrideMixin` is gone.
+- A runtime UI change writes the **config slot itself** (`setConf`) and reads
+  back via `getConf` (`resolveConf` for a promotable slot). There is no override
+  map; `ConfigOverrideMixin` is gone.
 - **Every config schema must be `explicitlyTyped`.** The pluggable unions have no
   dispatcher and rely on the literal `type` discriminator; without it one bad
   field produces the multi-page "No type is applicable" wall.
-- Wholesale `{...getConfSnapshot}` ships every slot to the worker (canvas,
-  wiggle); alignments curates a narrow `rpcProps()` so visual-only changes don't
-  refetch.
+- A wholesale snapshot spread ships every slot to the worker (canvas, wiggle);
+  alignments curates a narrow `rpcProps()` so visual-only changes don't refetch.
 
 ## The pattern
 
@@ -37,6 +40,13 @@ RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
 `gpuProps()` pattern"). Subclasses that need to layer fields onto
 `displayConfig` extend `rpcProps()` via super-capture and spread:
 
+`getConfigSnapshotWithPromotables(self)` is the one snapshot helper the
+`@jbrowse/core/configuration` barrel exports, because a display's `promotable`
+slots resolve against the session at read time and a raw snapshot would ship
+their bare inherit sentinels (see
+[DISPLAY_TYPE_DEFAULTS.md](DISPLAY_TYPE_DEFAULTS.md) §"Serialization
+boundaries"). It takes the display **state node**, not the bare config.
+
 ```ts
 // Base view: assemble the snapshot once, inside rpcProps()
 .views(self => ({
@@ -44,7 +54,7 @@ RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
     return {
       adapterConfig: self.adapterConfigSnapshot,
       displayConfig: {
-        ...getConfSnapshot(self.configuration),
+        ...getConfigSnapshotWithPromotables(self),
       } as DisplayConfig,
       // ...
     }
@@ -69,8 +79,8 @@ RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
 })
 ```
 
-`getConfSnapshot()` returns ALL config values including defaults (unlike
-`getSnapshot()` which strips defaults via `postProcessSnapshot`). JEXL callback
+Both snapshot helpers return ALL config values including defaults (unlike
+`getSnapshot()`, which strips defaults via `postProcessSnapshot`). JEXL callback
 values are preserved as raw `"jexl:..."` strings.
 
 ### Rendering code: read values with JEXL support
@@ -157,8 +167,9 @@ validating every member.
 ## Runtime setting changes (write the slot directly)
 
 A runtime UI change to a display setting writes the **config slot itself**
-(`self.configuration.setSlot(key, value)`) and reads it back through `getConf` /
-`getConfSnapshot`. There is no separate override map: the earlier
+(`setConf(self, key, value)`) and reads it back through `getConf` (or
+`resolveConf` for a promotable slot). There is no separate override map: the
+earlier
 `ConfigOverrideMixin` (a `configOverrides` frozen map with `getConfWithOverride`
 / `getOverride` / `setOverride`) was collapsed. A setting's current value lives
 in the slot, so the `displayConfig` snapshot above already reflects any runtime
@@ -171,16 +182,17 @@ Where to put a new setting:
   serializes into the session and can take a declarative config default.
 - **Read-time default resolution** — when a value must resolve across tiers
   (config default → display-type/session default → per-instance pin), use the
-  promotable-slot mechanism / `getConf` rather than a shadow property.
+  promotable-slot mechanism / `resolveConf` rather than a shadow property.
 - **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
   volatile, or a sentinel like `rowHeight === 0` = fit-to-height). When a prop
   encodes a sentinel, expose the resolved value under a distinct getter
   (`effectiveRowHeight`) and make every consumer read that, never the raw prop.
 
-The wholesale `displayConfig: { ...getConfSnapshot }` form above ships every slot
-to the worker (canvas/wiggle); alignments instead curates a narrow `rpcProps()`
-so visual-only changes don't refetch (its CLAUDE.md §"Settings: storage +
-invalidation tiers").
+The wholesale `displayConfig: { ...getConfigSnapshotWithPromotables(self) }` form
+above ships every slot to the worker (canvas/wiggle, minus the handful of
+main-thread-only slots the caller destructures out); alignments instead curates a
+narrow `rpcProps()` so visual-only changes don't refetch (its CLAUDE.md
+§"Settings: storage + invalidation tiers").
 
 ## Reading a slot: node, not snapshot
 
@@ -217,7 +229,8 @@ input to `readConfObject`".
 
 | Function                                | Location                                                  | Purpose                                                   |
 | --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
-| `getConfSnapshot(config)`               | `packages/core/src/configuration/util.ts`                 | Snapshot with defaults included, JEXL strings preserved   |
+| `getConfigSnapshotWithPromotables(display)` | `packages/core/src/configuration/promotableDefaults.ts` | Snapshot with defaults included and every promotable slot resolved |
+| `fullConfSnapshot(config)`              | `packages/core/src/configuration/util.ts`                 | The walker under it. Not on the barrel — use the resolving form |
 | `readConfigValue(config, key, feature)` | `packages/core/src/configuration/util.ts`                 | Read from plain object, auto-evaluate JEXL                |
 | `createRenderConfigContext(config)`     | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Extract frequently-accessed fields for the rendering loop |
 
@@ -228,7 +241,7 @@ input to `readConfObject`".
 | `readConfObject(mstModel, key, { feature })` in workers         | `readConfigValue(plainObj, key, feature)`        |
 | `configSchema.create(snapshot, { pluginManager })` re-hydration | Not needed — plain objects work directly         |
 | `CachedConfig<T>` / `readCachedConfig()` indirection            | Removed — `readConfigValue` is simple and direct |
-| Hardcoded `mockConfig` with fallback defaults                   | `getConfSnapshot` includes real values           |
+| Hardcoded `mockConfig` with fallback defaults                   | the real snapshot includes real values           |
 | Nested `renderer: { type: "X", color1: "..." }` in config       | Direct `color1: "..."` on display config         |
 
 ## Adoption

@@ -32,11 +32,14 @@ function isAnimationMode(val: unknown): val is AnimationMode {
 // The `\0` delimiter can't appear in a display type or slot name.
 const DISPLAY_TYPE_DEFAULT_PREFIX = 'displayTypeDefault\0'
 
-export function displayTypeDefaultKey(displayType: string, slot: string) {
+// Module-private on purpose: the composite-key spelling is a storage detail of
+// this file's get/set/diff methods, and nothing outside it should be able to
+// depend on the layout.
+function displayTypeDefaultKey(displayType: string, slot: string) {
   return `${DISPLAY_TYPE_DEFAULT_PREFIX}${displayType}\0${slot}`
 }
 
-export function parseDisplayTypeDefaultKey(key: string) {
+function parseDisplayTypeDefaultKey(key: string) {
   const rest = key.startsWith(DISPLAY_TYPE_DEFAULT_PREFIX)
     ? key.slice(DISPLAY_TYPE_DEFAULT_PREFIX.length)
     : ''

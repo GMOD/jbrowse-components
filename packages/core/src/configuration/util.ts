@@ -191,44 +191,32 @@ export function readConfObject(
 }
 
 /**
- * Get a plain-object snapshot of a configuration model that includes ALL
- * values, even defaults. Unlike getSnapshot() which strips default values
- * via `types.stripDefault`, this returns every slot's current value so the
- * result can be sent to an RPC worker as a self-contained config object.
+ * Plain-object snapshot of a configuration model including ALL values, even
+ * defaults. Unlike `getSnapshot()`, which strips a slot sitting at its default
+ * via `types.stripDefault`, this returns every slot's current value, so the
+ * result is a self-contained config object an RPC worker can read with no
+ * schema. JEXL callback slots keep their raw `"jexl:..."` string for the worker
+ * to evaluate per-feature.
  *
- * For JEXL callback slots, the raw "jexl:..." string is included so the
- * worker can evaluate it per-feature.
+ * **Why this isn't exported from `@jbrowse/core/configuration`.** It was
+ * (as `getConfSnapshot`), and being reachable was the hazard. A promotable slot
+ * resolves against the session at read time, so snapshotting one raw ships the
+ * bare `undefined` inherit sentinel to a worker with no session to resolve it
+ * against — and every display in the repo now has promotable slots. The public
+ * form used to defend itself by *throwing* on such a config, which meant the
+ * obvious spelling in a new `rpcProps()` failed at runtime, on the first fetch,
+ * in whichever product exercised that display. Off the barrel, the same mistake
+ * is an unresolved import: it can't be written at all, and
+ * `getConfigSnapshotWithPromotables(display)` is the one way across the boundary.
+ * So this is the shared walker those resolvers are built on, not an entry point.
  *
- * **Throws on a config carrying `promotable` slots.** Those resolve against the
- * session at read time, so a raw snapshot of one ships the bare `undefined`
- * inherit sentinel to a worker that has no session to resolve it against — the
- * standing "flatten the cascade at every serialization boundary" rule, enforced
- * here instead of remembered. Use `resolvePromotableConfigSnapshot(display)`,
- * which needs the display state node rather than the bare config.
+ * The nested-schema guard below is the part of that defense still worth
+ * enforcing at runtime, since no import can express it.
  *
- * Note: only handles slots and direct sub-configuration models. Arrays or
- * maps of sub-schemas are silently dropped — no current consumer
- * (LinearBasicDisplay.rpcProps is the only caller) needs them.
+ * Note: only handles slots and direct sub-configuration models. Arrays or maps
+ * of sub-schemas are silently dropped — nothing has needed them.
  */
-export function getConfSnapshot(confObject: AnyConfigurationModel) {
-  assertNoPromotableSlots(confObject)
-  return rawConfSnapshot(confObject)
-}
-
-/**
- * `getConfSnapshot` without the promotable-slot guard, for the one caller that
- * legitimately snapshots a promotable config before overwriting each such slot
- * with its resolved value: `resolvePromotableConfigSnapshot`. Deliberately NOT
- * on the `@jbrowse/core/configuration` barrel — the guarded form is the public
- * entry point.
- *
- * Sub-configs still recurse through the guarded `getConfSnapshot`, so a
- * promotable slot declared inside a *nested* schema throws rather than shipping
- * a sentinel: the resolver only ever walks a config's own top-level slot table
- * (`promotableSlotNames` / `getSlotDefinition`), so a nested one would never
- * resolve at all.
- */
-export function rawConfSnapshot(confObject: AnyConfigurationModel) {
+export function fullConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
   const table = getConfigurationSchemaDefinition(confObject)
   for (const [key, def] of Object.entries(table ?? {})) {
@@ -247,20 +235,24 @@ export function rawConfSnapshot(confObject: AnyConfigurationModel) {
       // dropped: their MST node also reports as a config model, but the
       // array/map type carries no registered slot table, so recursing would
       // emit a meaningless `{}` (a type-confusion hazard for a consumer
-      // expecting the array). No current caller (rpcProps) needs them.
-      // Constants are skipped entirely.
-      result[key] = getConfSnapshot(v)
+      // expecting the array). Constants are skipped entirely.
+      assertNoPromotableSlots(v)
+      result[key] = fullConfSnapshot(v)
     }
   }
   return result
 }
 
-// The promotable-slot guard behind `getConfSnapshot`.
+// A promotable slot is only ever resolvable at a config's own top level — the
+// resolver walks that one slot table (`promotableSlotNames` / `getSlotDefinition`)
+// and never descends. So one declared inside a *nested* schema would resolve
+// nowhere and serialize as its bare inherit sentinel, with no import to get wrong
+// and no symptom until a worker read the sentinel. Fail at the snapshot instead.
 function assertNoPromotableSlots(confObject: AnyConfigurationModel) {
   const promotable = promotableSlotNames(confObject)
   if (promotable.size > 0) {
     throw new Error(
-      `getConfSnapshot on a config with promotable slots (${[...promotable].join(', ')}): those resolve against the session at read time, so this would ship the bare inherit sentinel. Use resolvePromotableConfigSnapshot(display) instead.`,
+      `nested config schema declares promotable slots (${[...promotable].join(', ')}): the cascade only resolves a display config's own top-level slots, so these would serialize as the bare inherit sentinel. Declare them on the display's own schema instead.`,
     )
   }
 }
@@ -374,7 +366,7 @@ export function isConfigurationModel(
  * merged in from `baseConfiguration` at schema construction). Undefined when the
  * node's type isn't a registered configuration schema. The single accessor for
  * "what are this config's slots?" — shared by the slot facade, promotable
- * defaults, and getConfSnapshot.
+ * defaults, and fullConfSnapshot.
  */
 export function getConfigurationSchemaDefinition(node: AnyConfigurationModel) {
   return getConfigurationSchemaMetadata(getType(node))?.definition

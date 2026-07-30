@@ -498,7 +498,7 @@ trigger list.
 The reason is that **building the payload reads far more observables than it
 returns**, so tracking the call tracks all of them:
 
-- canvas builds it from a whole config snapshot (`resolvePromotableConfigSnapshot`),
+- canvas builds it from a whole config snapshot (`getConfigSnapshotWithPromotables`),
   which reads *every* slot on the display config — so a `showLabels`,
   `heightMode` or compact/normal `displayMode` flip, all deliberately excluded
   from the payload, would refetch

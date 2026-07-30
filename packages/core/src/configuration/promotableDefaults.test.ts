@@ -11,11 +11,11 @@ import {
   makeCurrentValueDisplayTypeDefaultControl,
   makeSlotsValueDisplayTypeDefaultControl,
   resetSlotsToInherit,
-  resolvePromotableConfigSnapshot,
+  getConfigSnapshotWithPromotables,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { getConfSnapshot, readConfObject } from './util.ts'
+import { readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -633,11 +633,11 @@ describe('promotable maybeColor slot', () => {
   })
 })
 
-// resolvePromotableConfigSnapshot is the worker-payload safety net: it hands out
+// getConfigSnapshotWithPromotables is the worker-payload safety net: it hands out
 // the config snapshot with every promotable slot resolved in place, so a raw
 // inherit sentinel (an unset maybeBoolean here) never ships to a worker, and a
 // new promotable slot needs no per-slot rpcProps bookkeeping.
-describe('resolvePromotableConfigSnapshot', () => {
+describe('getConfigSnapshotWithPromotables', () => {
   const configSchema = ConfigurationSchema('SnapshotDisplay', {
     chevrons: {
       type: 'maybeBoolean',
@@ -655,7 +655,7 @@ describe('resolvePromotableConfigSnapshot', () => {
   test('resolves an unset promotable slot to the session default, leaves others', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
-    const snap = resolvePromotableConfigSnapshot(display)
+    const snap = getConfigSnapshotWithPromotables(display)
     // the raw snapshot omits the unset maybeBoolean (stripDefault) — resolve
     // fills it with the concrete session-default value the worker can use
     expect(snap.chevrons).toBe(false)
@@ -665,7 +665,7 @@ describe('resolvePromotableConfigSnapshot', () => {
   test('keeps a customized promotable value over the session default', () => {
     const { session, display } = createDisplay(configSchema, { chevrons: true })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
-    expect(resolvePromotableConfigSnapshot(display).chevrons).toBe(true)
+    expect(getConfigSnapshotWithPromotables(display).chevrons).toBe(true)
   })
 })
 
@@ -1129,9 +1129,11 @@ describe('displays nested inside a composite view', () => {
   })
 })
 
-// The "flatten the cascade at every serialization boundary" rule, enforced
-// rather than remembered: the only way to snapshot a display config for a
-// worker is the resolving one.
+// The "flatten the cascade at every serialization boundary" rule. The
+// top-level half of it is now enforced by the module graph — `fullConfSnapshot`
+// is off the `@jbrowse/core/configuration` barrel, so a new `rpcProps()` can't
+// spell the raw form at all and `getConfigSnapshotWithPromotables` is the only
+// way across. What's left to test at runtime is the half no import can express.
 describe('the serialization-boundary guard', () => {
   const schema = ConfigurationSchema('GuardedDisplay', {
     height: {
@@ -1142,17 +1144,31 @@ describe('the serialization-boundary guard', () => {
     },
   })
 
-  test('getConfSnapshot refuses a config carrying promotable slots', () => {
-    const { display } = createDisplay(schema)
-    expect(() => getConfSnapshot(display.configuration)).toThrow(
-      /resolvePromotableConfigSnapshot/,
-    )
-  })
-
-  test('resolvePromotableConfigSnapshot is the way through, and resolves', () => {
+  test('getConfigSnapshotWithPromotables is the way through, and resolves', () => {
     const { session, display } = createDisplay(schema)
     session.setDisplayTypeDefault('TestDisplay', 'height', 3)
-    expect(resolvePromotableConfigSnapshot(display)).toEqual({ height: 3 })
+    expect(getConfigSnapshotWithPromotables(display)).toEqual({ height: 3 })
+  })
+
+  // A promotable slot buried in a sub-schema resolves nowhere: the cascade only
+  // ever walks a display config's own top-level slot table. Left alone it would
+  // serialize as the bare inherit sentinel and only misbehave once a worker read
+  // it, so the snapshot refuses to build.
+  test('a promotable slot in a nested schema throws rather than serializing', () => {
+    const nested = ConfigurationSchema('NestedGuardedDisplay', {
+      labels: ConfigurationSchema('GuardedLabels', {
+        height: {
+          type: 'maybeNumber',
+          defaultValue: undefined,
+          promotedBase: 7,
+          promotable: true,
+        },
+      }),
+    })
+    const { display } = createDisplay(nested)
+    expect(() => getConfigSnapshotWithPromotables(display)).toThrow(
+      /nested config schema declares promotable slots \(height\)/,
+    )
   })
 })
 

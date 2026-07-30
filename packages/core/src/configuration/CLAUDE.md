@@ -38,18 +38,18 @@ plumbing.
 
 The promoted default lives in a personal, un-shared store, so **every boundary
 that serializes a display's config for elsewhere must flatten** — the worker via
-`resolvePromotableConfigSnapshot`, a shared/exported session via
-`getShareableSessionSnapshot`. Both are enforced rather than remembered:
-`getConfSnapshot` **throws** on a config with promotable slots (use
-`resolvePromotableConfigSnapshot(display)`; the unguarded `rawConfSnapshot` is
-off the barrel and exists only for the resolver itself), and
+`getConfigSnapshotWithPromotables`, a shared/exported session via
+`getShareableSessionSnapshot`. Both are enforced rather than remembered: the raw
+walker (`fullConfSnapshot`) is **off the barrel entirely**, so
+`getConfigSnapshotWithPromotables(display)` is the only snapshot a plugin can
+import and the obvious wrong spelling in a new `rpcProps()` doesn't resolve; and
 `getShareableSessionSnapshot` fuses the snapshot and the bake so the pair can't
 be split. A resolved value is handed out **by reference** from that store, so it
 must stay structured-cloneable: `preferencesOverrides` is a `deep: false`
 `observable.map` because a MobX Proxy makes `worker.postMessage` throw
 `DataCloneError` (`promotedValueCloneable.test.ts`). Layering: `util.ts`
 (`promotableSlotNames`, the type-cached per-schema slot list, shared by the
-enumerating callers and by `getConfSnapshot`'s own guard) ←
+enumerating callers and by `fullConfSnapshot`'s nested-schema guard) ←
 `promotableResolve.ts` (resolver) ← `getConf.ts` (reader) ←
 `promotableDefaults.ts` (control builders + share/worker helpers +
 `openPromotableDisplays`, the one open-display walk). Full model + the
@@ -130,11 +130,11 @@ getConf(track, ['adapter', 'coarseBpPerPxThreshold'])
 ```
 
 which resolves the default, and still returns `undefined` when the adapter's
-schema has no such slot. `getConfSnapshot` is the bulk form (every slot
-resolved) for handing a self-contained config across a boundary that will _not_
-re-hydrate it. For a config that is genuinely a plain object (a customized About
-dialog config), `readConfSlot` in `product-core/src/ui/util.ts` walks it
-directly and never routes into `readConfObject`.
+schema has no such slot. `getConfigSnapshotWithPromotables(display)` is the bulk
+form (every slot resolved) for handing a self-contained config across a boundary
+that will _not_ re-hydrate it. For a config that is genuinely a plain object (a
+customized About dialog config), `readConfSlot` in `product-core/src/ui/util.ts`
+walks it directly and never routes into `readConfObject`.
 
 ## `getConf` vs `readConfObject`
 
