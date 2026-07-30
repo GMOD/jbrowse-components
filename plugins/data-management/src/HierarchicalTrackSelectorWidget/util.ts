@@ -9,6 +9,13 @@ import type {
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+// The tree id of a category: its group (the config's own tracks, or a
+// connection) plus the comma-joined category path. Built in one place so the
+// hierarchy and the config slots that name a category by path agree.
+export function categoryId(groupId: string, categoryPath: string) {
+  return `${groupId}-${categoryPath}`
+}
+
 export function isUnsupported(name = '') {
   return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
 }

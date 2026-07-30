@@ -16,16 +16,18 @@ const HierarchicalTree = observer(function HierarchicalTree({
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
-  const { flattenedItems } = model
-  const { offsets, cumulativeHeight } = model.flattenedItemOffsets
+  const { rows, treeHeight } = model
   // clamp: when the list shrinks (filter/collapse) the browser caps the real
   // scrollTop but may not fire a scroll event, leaving our state stale-high and
   // rendering a blank viewport until the next manual scroll
   const effectiveScrollTop = Math.min(
     scrollTop,
-    Math.max(0, cumulativeHeight - height),
+    Math.max(0, treeHeight - height),
   )
-  const { startIndex, endIndex } = model.itemOffsets(height, effectiveScrollTop)
+  const { startIndex, endIndex } = model.visibleRange(
+    height,
+    effectiveScrollTop,
+  )
 
   return (
     <div
@@ -35,7 +37,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
         // the overscan means most scroll events don't change which rows are
         // mounted; only re-render when they cross out of the rendered window
         const next = e.currentTarget.scrollTop
-        const range = model.itemOffsets(height, next)
+        const range = model.visibleRange(height, next)
         if (range.startIndex !== startIndex || range.endIndex !== endIndex) {
           setScrollTop(next)
         }
@@ -43,21 +45,15 @@ const HierarchicalTree = observer(function HierarchicalTree({
     >
       <div
         style={{
-          height: cumulativeHeight,
+          height: treeHeight,
           width: '100%',
           position: 'relative',
         }}
       >
         {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
-          const index = startIndex + i
-          const item = flattenedItems[index]
-          return item ? (
-            <TreeItem
-              key={item.id}
-              model={model}
-              item={item}
-              top={offsets[index]!}
-            />
+          const row = rows[startIndex + i]
+          return row ? (
+            <TreeItem key={row.item.id} model={model} row={row} />
           ) : null
         })}
       </div>

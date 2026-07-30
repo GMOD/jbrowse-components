@@ -736,16 +736,88 @@ test('category collapse and expand', async () => {
 
   // collapse a category
   model.setCategoryCollapsed('Tracks', true)
-  expect(model.collapsed.get('Tracks')).toBe(true)
+  expect(model.categoryMode.get('Tracks')).toBe('collapsed')
 
   // toggle category
   model.toggleCategory('Tracks')
-  expect(model.collapsed.get('Tracks')).toBe(false)
+  expect(model.categoryMode.get('Tracks')).toBeUndefined()
 
   // expand all categories
   model.setCategoryCollapsed('Tracks', true)
   model.expandAllCategories()
-  expect(model.collapsed.size).toBe(0)
+  expect(model.categoryMode.size).toBe(0)
+})
+
+// collapsed and folder are the same slot, so a category that was collapsed
+// before being turned into a folder comes back expanded, not collapsed
+test('leaving folder mode expands the category', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const histone = 'Tracks-Epigenomics,Histone Marks'
+
+  model.setCategoryCollapsed(histone, true)
+  model.setFolderCategory(histone, true)
+  expect(model.categoryMode.get(histone)).toBe('folder')
+
+  model.setFolderCategory(histone, false)
+  expect(model.categoryMode.get(histone)).toBeUndefined()
+  expect(trackNames(model)).toContain('H3K4me3')
+})
+
+// a folder is a mode the user chose, not an accordion that happens to be shut,
+// so a bulk collapse can't quietly turn it into a collapsed category — which
+// "expand all" would then open, losing the folder for good
+test('bulk collapse leaves folders alone', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const histone = 'Tracks-Epigenomics,Histone Marks'
+
+  model.setFolderCategory(histone, true)
+  model.collapseSubCategories()
+  expect(model.categoryMode.get(histone)).toBe('folder')
+
+  model.toggleCategory(histone)
+  expect(model.categoryMode.get(histone)).toBe('folder')
+})
+
+// expanding is about the accordions; a folder is a mode the user chose and
+// isn't something "expand all categories" should silently undo
+test('expandAllCategories leaves folders alone', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setFolderCategory('Tracks-Epigenomics,Histone Marks', true)
+  model.setCategoryCollapsed('Tracks-Epigenomics', true)
+  model.expandAllCategories()
+
+  expect(model.categoryMode.get('Tracks-Epigenomics')).toBeUndefined()
+  expect(model.categoryMode.get('Tracks-Epigenomics,Histone Marks')).toBe(
+    'folder',
+  )
 })
 
 // -------------------------- Faceted model tests -
@@ -1510,7 +1582,7 @@ test('category-based folder hierarchy model groups correctly', () => {
   expect(histoneCategory!.children.length).toBe(2)
 })
 
-test('toggleFolderCategory collapses children in flattenedItems', () => {
+test('a folder category hides its children', () => {
   const session = addTestDataWithDeepCategories(
     createTestSession({ adminMode: true }),
   )
@@ -1535,23 +1607,48 @@ test('toggleFolderCategory collapses children in flattenedItems', () => {
     c => c.name === 'Histone Marks',
   )!
 
-  // before toggling, children are visible in flattened items
-  const beforeNames = model.flattenedItems
-    .filter(i => i.type === 'track')
-    .map(i => i.name)
-  expect(beforeNames).toContain('H3K4me3')
-  expect(beforeNames).toContain('H3K27ac')
+  expect(trackNames(model)).toContain('H3K4me3')
+  expect(trackNames(model)).toContain('H3K27ac')
 
-  // toggle folder category
-  model.toggleFolderCategory(histoneCategory.id)
+  model.setFolderCategory(histoneCategory.id, true)
 
-  // after toggling, children should be hidden
-  const afterNames = model.flattenedItems
-    .filter(i => i.type === 'track')
-    .map(i => i.name)
-  expect(afterNames).not.toContain('H3K4me3')
-  expect(afterNames).not.toContain('H3K27ac')
-  expect(afterNames).toContain('Regular Track')
+  expect(trackNames(model)).not.toContain('H3K4me3')
+  expect(trackNames(model)).not.toContain('H3K27ac')
+  expect(trackNames(model)).toContain('Regular Track')
+  // the folder row reports what it is hiding, whether or not any is shown
+  expect(model.folderCategoryStats.get(histoneCategory.id)).toEqual({
+    active: 0,
+    total: 2,
+  })
+})
+
+// A folder swallows its subtree, and a collapsed category hides it, so without
+// this a query would match a track and render nothing at all
+test('filtering reaches tracks inside a folder or a collapsed category', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const histone = 'Tracks-Epigenomics,Histone Marks'
+
+  model.setFolderCategory(histone, true)
+  model.setFilterText('H3K4me3')
+  expect(trackNames(model)).toEqual(['H3K4me3'])
+
+  model.setFolderCategory(histone, false)
+  model.setCategoryCollapsed(histone, true)
+  expect(trackNames(model)).toEqual(['H3K4me3'])
+
+  // clearing the box restores exactly the mode the user left behind
+  model.clearFilterText()
+  expect(model.categoryMode.get(histone)).toBe('collapsed')
+  expect(trackNames(model)).not.toContain('H3K4me3')
 })
 
 // Epigenomics is a top-level category that also holds a direct track (Regular
@@ -1573,16 +1670,110 @@ test('collapseSubCategories vs collapseTopLevelCategories scope', () => {
 
   model.expandAllCategories()
   model.collapseSubCategories()
-  expect(model.collapsed.get('Tracks-Epigenomics,Histone Marks')).toBe(true)
-  expect(model.collapsed.get('Tracks-Epigenomics')).toBeUndefined()
+  expect(model.categoryMode.get('Tracks-Epigenomics,Histone Marks')).toBe(
+    'collapsed',
+  )
+  expect(model.categoryMode.get('Tracks-Epigenomics')).toBeUndefined()
 
   model.expandAllCategories()
   model.collapseTopLevelCategories()
-  expect(model.collapsed.get('Tracks-Epigenomics')).toBe(true)
+  expect(model.categoryMode.get('Tracks-Epigenomics')).toBe('collapsed')
   expect(
-    model.collapsed.get('Tracks-Epigenomics,Histone Marks'),
+    model.categoryMode.get('Tracks-Epigenomics,Histone Marks'),
   ).toBeUndefined()
 })
+
+// one mode per category in memory, but still two localStorage keys, so a build
+// without this change reads back what this one wrote
+test('category modes persist as the collapsed and folder lists', async () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setCategoryCollapsed('Tracks-Epigenomics', true)
+  model.setFolderCategory('Tracks-Epigenomics,Histone Marks', true)
+  await timeout(1)
+
+  expect(
+    JSON.parse(
+      localStorage.getItem('collapsedCategories-/-volMyt1-LinearGenomeView')!,
+    ),
+  ).toEqual([['Tracks-Epigenomics', true]])
+  expect(
+    JSON.parse(
+      localStorage.getItem('folderCategories-/-volMyt1-LinearGenomeView')!,
+    ),
+  ).toEqual(['Tracks-Epigenomics,Histone Marks'])
+})
+
+// the exemption from the filter's forced-open is for groups that are shut
+// because they aren't loaded: opening one shows nothing, and only a click is
+// supposed to hydrate it
+test('a filter leaves a dormant connection shut', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({
+      adminMode: true,
+      jbrowseConfig: {
+        connections: [
+          {
+            connectionId: 'conn1',
+            type: 'JBrowse1Connection',
+            name: 'Conn',
+            assemblyNames: ['volMyt1'],
+          },
+        ],
+      },
+    }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setFilterText('H3K4me3')
+  const row = model.rows.find(r => r.item.id === 'connection-conn1')
+  expect(row!.mode).toBe('collapsed')
+  expect(session.connectionInstances.length).toBe(0)
+})
+
+// the group holding the config's own tracks is collapsible like any other, so
+// exempting every top-level row from the filter's forced-open left a search
+// over a collapsed "Tracks" group rendering nothing at all
+test('filtering reaches tracks inside a collapsed top-level group', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setCategoryCollapsed('Tracks', true)
+  model.setFilterText('H3K4me3')
+  expect(trackNames(model)).toEqual(['H3K4me3'])
+
+  model.clearFilterText()
+  expect(model.categoryMode.get('Tracks')).toBe('collapsed')
+  expect(trackNames(model)).toEqual([])
+})
+
+// the names of the track rows the tree is currently drawing
+function trackNames(model: HierarchicalTrackSelectorModel) {
+  return model.rows.filter(r => r.item.type === 'track').map(r => r.item.name)
+}
 
 // -------------------------- test utils -
 

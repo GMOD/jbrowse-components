@@ -1,12 +1,15 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { getNodePresentation } from '../../model.ts'
 import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { TreeCategoryNode, TreeNode } from '../../types.ts'
+import type {
+  ResolvedCategoryMode,
+  TreeCategoryNode,
+  TreeRow,
+} from '../../types.ts'
 
 const levelWidth = 10
 
@@ -68,37 +71,34 @@ function NestingMarkers({
 const CategoryRow = observer(function CategoryRow({
   item,
   model,
+  mode,
   useAccordionStyle,
   className,
 }: {
   item: TreeCategoryNode
   model: HierarchicalTrackSelectorModel
+  mode: ResolvedCategoryMode
   useAccordionStyle: boolean
   className: string
 }) {
   return useAccordionStyle ? (
     <div className={className}>
-      <TrackCategory model={model} item={item} />
+      <TrackCategory model={model} item={item} mode={mode} />
     </div>
   ) : (
-    <TrackCategory model={model} item={item} />
+    <TrackCategory model={model} item={item} mode={mode} />
   )
 })
 
 const TreeItem = observer(function TreeItem({
-  item,
+  row,
   model,
-  top,
 }: {
-  item: TreeNode
+  row: TreeRow
   model: HierarchicalTrackSelectorModel
-  top: number
 }) {
   const { classes, cx } = useStyles()
-  const { useAccordionStyle, height } = getNodePresentation(
-    item,
-    model.folderCategories,
-  )
+  const { item, mode, accordion, height, top } = row
   const { nestingLevel } = item
   const marginLeft =
     nestingLevel * levelWidth + (item.type === 'category' ? 0 : levelWidth)
@@ -113,7 +113,7 @@ const TreeItem = observer(function TreeItem({
       <div
         className={cx(
           classes.rowContent,
-          useAccordionStyle ? classes.accordionCard : undefined,
+          accordion ? classes.accordionCard : undefined,
         )}
         style={{ marginLeft }}
       >
@@ -121,7 +121,8 @@ const TreeItem = observer(function TreeItem({
           <CategoryRow
             item={item}
             model={model}
-            useAccordionStyle={useAccordionStyle}
+            mode={mode}
+            useAccordionStyle={accordion}
             className={classes.accordionColor}
           />
         ) : (

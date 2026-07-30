@@ -1,3 +1,5 @@
+import { categoryId } from './util.ts'
+
 import type { TrackNodeSource, TreeNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -9,14 +11,12 @@ export function generateHierarchy({
   trackSources,
   sessionTrackIds,
   filteredTrackSet,
-  extra,
-  noCategories,
+  groupId,
 }: {
-  noCategories?: boolean
   trackSources: TrackNodeSource[]
   sessionTrackIds: Set<string>
   filteredTrackSet: Set<AnyConfigurationModel>
-  extra?: string
+  groupId: string
 }): TreeNode[] {
   const root: NodeWithChildren = { children: [] }
   const categoryMaps = new Map<NodeWithChildren, Map<string, TreeNode>>()
@@ -32,41 +32,38 @@ export function generateHierarchy({
 
     let currLevel: NodeWithChildren = root
     let nestingLevel = 0
+    let categoryPath = ''
 
-    if (!noCategories) {
-      let categoryPath = ''
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i]!
-        categoryPath = categoryPath ? `${categoryPath},${category}` : category
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i]!
+      categoryPath = categoryPath ? `${categoryPath},${category}` : category
 
-        let categoryMap = categoryMaps.get(currLevel)
-        if (!categoryMap) {
-          categoryMap = new Map()
-          categoryMaps.set(currLevel, categoryMap)
-        }
-
-        let existing = categoryMap.get(category)
-        if (!existing) {
-          const id = extra ? `${extra}-${categoryPath}` : categoryPath
-          existing = {
-            children: [],
-            name: category,
-            id,
-            nestingLevel: i + 1,
-            type: 'category' as const,
-          }
-          currLevel.children.push(existing)
-          categoryMap.set(category, existing)
-        }
-        currLevel = existing
-        nestingLevel = i + 1
+      let categoryMap = categoryMaps.get(currLevel)
+      if (!categoryMap) {
+        categoryMap = new Map()
+        categoryMaps.set(currLevel, categoryMap)
       }
+
+      let existing = categoryMap.get(category)
+      if (!existing) {
+        existing = {
+          children: [],
+          name: category,
+          id: categoryId(groupId, categoryPath),
+          nestingLevel: i + 1,
+          type: 'category' as const,
+        }
+        currLevel.children.push(existing)
+        categoryMap.set(category, existing)
+      }
+      currLevel = existing
+      nestingLevel = i + 1
     }
 
-    // push order is fine — sortedChildren() in flattenedItems re-groups
-    // tracks before categories during virtual-scroll flattening
+    // push order is fine — sortedTreeChildren() re-groups tracks before
+    // categories while the model builds its rows
     currLevel.children.push({
-      id: extra ? `${extra},${trackId}` : trackId,
+      id: `${groupId},${trackId}`,
       trackId,
       name,
       description,

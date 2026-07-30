@@ -37,10 +37,10 @@ one fewer per row.
 **Caching the unfiltered hierarchy and pruning it per keystroke.** Measured null
 twice: 0.454/0.457 ms vs 0.422/0.457 ms at the model level (n=2000, min of 25),
 and 115/126 ms vs 111/111 ms through the rendered tree (n=1000). Tree
-construction is not the cost — a keystroke is dominated by `flattenTree` and the
-offset pass, which run either way. Preserving track-node identity so the
-memoized `TreeItem`s could bail out did not show up either; reconciling ~1000
-elements costs about what re-rendering them does.
+construction is not the cost — a keystroke is dominated by the `buildRows` walk,
+which runs either way. Preserving track-node identity so the memoized
+`TreeItem`s could bail out did not show up either; reconciling ~1000 elements
+costs about what re-rendering them does.
 
 **Resolving each track's name/description/categories once instead of per
 keystroke** (`TrackNodeSource`, kept — it is a genuine simplification). About 5%
@@ -60,14 +60,14 @@ for any string without `<` or `://`, which is every ordinary track name.
 
 Two traps, both of which produced confident wrong answers first time round.
 
-**An unobserved MobX computed is not cached.** Reading `model.flattenedItems` in
-a bare loop recomputes the whole chain every time, so a benchmark written that
-way measures the uncached path and reports no improvement from any caching. Read
+**An unobserved MobX computed is not cached.** Reading `model.rows` in a bare
+loop recomputes the whole chain every time, so a benchmark written that way
+measures the uncached path and reports no improvement from any caching. Read
 inside an `autorun`, which is what the observer components do:
 
 ```js
 const dispose = autorun(() => {
-  model.flattenedItems.length
+  model.rows.length
 })
 // setFilterText is an action, so the autorun re-runs synchronously when it ends
 const t0 = performance.now()
@@ -88,8 +88,7 @@ without touching the shared working tree. Never `git stash`.
 
 ## Still open
 
-`flattenTree` + `flattenedItemOffsets` are what a keystroke actually spends its
-time on, and `flattenedItemOffsets` allocates an object per item via
-`getNodePresentation`. At ~0.45 ms per keystroke for 2000 tracks there is
-nothing to chase yet, but that is where to look if a much larger config ever
-makes typing feel slow.
+`buildRows` is what a keystroke actually spends its time on: one walk that
+allocates a `TreeRow` per visible node, plus a three-way partition per level. At
+~0.45 ms per keystroke for 2000 tracks there is nothing to chase yet, but that is
+where to look if a much larger config ever makes typing feel slow.

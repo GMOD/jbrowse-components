@@ -13,13 +13,17 @@ import FolderIcon from '@mui/icons-material/Folder'
 import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isNodeCollapsed } from '../../model.ts'
+import { isFilterForcedOpen } from '../../model.ts'
 import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
 import MoreHorizGlyph from './MoreHorizGlyph.tsx'
 import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { TreeCategoryNode, TreeTrackNode } from '../../types.ts'
+import type {
+  ResolvedCategoryMode,
+  TreeCategoryNode,
+  TreeTrackNode,
+} from '../../types.ts'
 import type { ComponentType } from 'react'
 
 export interface FolderDialogProps {
@@ -116,6 +120,27 @@ function subcategoryCollapseMenuItems(
     : []
 }
 
+// Reads the *stored* mode rather than the resolved one, so a folder that an
+// active filter has forced open still offers "Show as list". A top-level group
+// row (a connection, or the config's own tracks) is what lazily loads a
+// connection when clicked, so it can never become a folder.
+function folderModeMenuItems(
+  model: HierarchicalTrackSelectorModel,
+  item: TreeCategoryNode,
+) {
+  const isFolder = model.categoryMode.get(item.id) === 'folder'
+  return item.nestingLevel > 0
+    ? [
+        {
+          label: isFolder ? 'Show as list' : 'Show as folder',
+          onClick: () => {
+            model.setFolderCategory(item.id, !isFolder)
+          },
+        },
+      ]
+    : []
+}
+
 // Menu items shared by folder-mode and normal-mode category labels
 function categoryTrackMenuItems(
   model: HierarchicalTrackSelectorModel,
@@ -123,12 +148,6 @@ function categoryTrackMenuItems(
 ) {
   const trackNodes = getAllTrackNodes(item)
   return [
-    {
-      label: 'Open as faceted selector...',
-      onClick: () => {
-        openFolderDialog(model, item)
-      },
-    },
     {
       label: 'Add to selection',
       onClick: () => {
@@ -202,7 +221,9 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       <span data-testid={`htsCategory-${name}`}>
         <SanitizedHTML html={name} />
       </span>
-      {stats && stats.active > 0 ? (
+      {/* shown even at zero: an empty folder and a full one with nothing
+      turned on are otherwise indistinguishable */}
+      {stats ? (
         <span className={classes.countBadge}>
           ({stats.active}/{stats.total})
         </span>
@@ -210,13 +231,10 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       <CascadingMenuButton
         className={classes.menuButton}
         data-testid={`htsCategoryMenu-${name}`}
+        // no "Open as faceted selector..." — that is what clicking the row
+        // does — and no subcategory items, since a folder draws none of them
         menuItems={() => [
-          {
-            label: 'Expand to category',
-            onClick: () => {
-              model.toggleFolderCategory(id)
-            },
-          },
+          ...folderModeMenuItems(model, item),
           ...categoryTrackMenuItems(model, item),
         ]}
         stopPropagation
@@ -233,45 +251,49 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
 const NormalCategoryLabel = observer(function NormalCategoryLabel({
   item,
   model,
+  expanded,
 }: {
   item: TreeCategoryNode
   model: HierarchicalTrackSelectorModel
+  expanded: boolean
 }) {
   const { classes } = useStyles()
   const { name, id } = item
-  const isOpen = !isNodeCollapsed(item, model.collapsed)
   const { setMenuOpen, guard } = useMenuGuardedClick()
+  // an active filter pins categories open, so a click here would rewrite the
+  // stored mode with no visible effect
+  const pinnedOpen = isFilterForcedOpen(item, model.filterActive)
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
         guard(() => {
-          model.toggleCategory(id)
+          if (!pinnedOpen) {
+            model.toggleCategory(id)
+          }
         })
       }}
     >
       <Typography data-testid={`htsCategory-${name}`}>
-        {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+        {expanded ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         <SanitizedHTML html={name} />
         {item.loading ? (
           <CircularProgress size={12} className={classes.spinner} />
         ) : null}
         <CascadingMenuButton
           data-testid={`htsCategoryMenu-${name}`}
-          menuItems={() => {
-            const subcategoryIds = getAllSubcategories(item)
-            return [
-              {
-                label: 'Collapse into folder',
-                onClick: () => {
-                  model.toggleFolderCategory(id)
-                },
+          menuItems={() => [
+            ...folderModeMenuItems(model, item),
+            {
+              label: 'Open as faceted selector...',
+              onClick: () => {
+                openFolderDialog(model, item)
               },
-              ...categoryTrackMenuItems(model, item),
-              ...subcategoryCollapseMenuItems(model, subcategoryIds),
-            ]
-          }}
+            },
+            ...categoryTrackMenuItems(model, item),
+            ...subcategoryCollapseMenuItems(model, getAllSubcategories(item)),
+          ]}
           className={classes.contrastColor}
           stopPropagation
           setOpen={open => {
@@ -288,14 +310,20 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
 const TrackCategory = observer(function TrackCategory({
   item,
   model,
+  mode,
 }: {
   item: TreeCategoryNode
   model: HierarchicalTrackSelectorModel
+  mode: ResolvedCategoryMode
 }) {
-  return model.folderCategories.has(item.id) ? (
+  return mode === 'folder' ? (
     <FolderCategoryLabel item={item} model={model} />
   ) : (
-    <NormalCategoryLabel item={item} model={model} />
+    <NormalCategoryLabel
+      item={item}
+      model={model}
+      expanded={mode === 'expanded'}
+    />
   )
 })
 

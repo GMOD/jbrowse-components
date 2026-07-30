@@ -16,13 +16,20 @@ import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { sortSources } from './sortUtils.ts'
 import {
+  categoryId,
   findSubCategories,
   findTopLevelCategories,
   getAllTrackNodes,
   trackNodeSourceFor,
 } from './util.ts'
 
-import type { TreeNode, TreeTrackNode } from './types.ts'
+import type {
+  CategoryMode,
+  ResolvedCategoryMode,
+  TreeNode,
+  TreeRow,
+  TreeTrackNode,
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -34,23 +41,11 @@ const MAX_RECENTLY_USED = 10
 const sortTrackNamesK = 'sortTrackNames'
 const sortCategoriesK = 'sortCategories'
 
-// single source of truth for how a node renders, so virtual-scroll offset math
-// (flattenedItemOffsets) and the row component (TreeItem) can't drift apart. A
-// folder category collapses to a track-height row; only an expandable
-// (non-folder) category gets the taller accordion styling
-export function getNodePresentation(
-  item: TreeNode,
-  folderCategories: { has(key: string): boolean },
-) {
-  const isCategory = item.type === 'category'
-  const isFolder = isCategory && folderCategories.has(item.id)
-  const useAccordionStyle = isCategory && !isFolder
-  return {
-    isCategory,
-    isFolder,
-    useAccordionStyle,
-    height: useAccordionStyle ? categoryItemHeight : defaultItemHeight,
-  }
+// the group holding the config's own tracks, as opposed to a connection's
+const mainGroupId = 'Tracks'
+
+interface CategoryModes {
+  get(key: string): CategoryMode | undefined
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -63,22 +58,8 @@ function favoritesK() {
   return `favoriteTracks-${keyConfigPostFix()}}`
 }
 
-function folderCategoriesK(assemblyNames: string[], viewType: string) {
-  return [
-    'folderCategories',
-    keyConfigPostFix(),
-    assemblyNames.join(','),
-    viewType,
-  ].join('-')
-}
-
-function collapsedK(assemblyNames: string[], viewType: string) {
-  return [
-    'collapsedCategories',
-    keyConfigPostFix(),
-    assemblyNames.join(','),
-    viewType,
-  ].join('-')
+function scopedK(name: string, assemblyNames: string[], viewType: string) {
+  return [name, keyConfigPostFix(), assemblyNames.join(','), viewType].join('-')
 }
 
 // top-level hierarchy category id for a connection; expanding it lazily loads
@@ -87,68 +68,97 @@ function connectionCategoryId(connectionId: string) {
   return `connection-${connectionId}`
 }
 
+// A filter has to be able to reach a track inside a collapsed category or a
+// folder, so an active query forces categories open, without disturbing the
+// modes the user gets back when they clear the box. A category collapsed by
+// default rather than by choice — a dormant connection, whose tracks aren't
+// loaded — is exempt: clicking it is what loads it (see toggleCategory), and
+// forcing it open would only draw an open arrow over an empty group
+export function isFilterForcedOpen(item: TreeNode, filterActive: boolean) {
+  return filterActive && !(item.type === 'category' && item.defaultCollapsed)
+}
+
+// A category is expanded unless the user put it in a mode, or it defaults
+// collapsed (dormant connection categories)
+function resolveCategoryMode(
+  item: TreeNode,
+  modes: CategoryModes,
+  filterActive: boolean,
+): ResolvedCategoryMode {
+  return item.type === 'category' && !isFilterForcedOpen(item, filterActive)
+    ? (modes.get(item.id) ?? (item.defaultCollapsed ? 'collapsed' : 'expanded'))
+    : 'expanded'
+}
+
+// one level of the tree in draw order — tracks, then folders, then expandable
+// categories — each item paired with the mode it resolved to, so the caller
+// doesn't resolve it a second time
 function sortedTreeChildren(
   items: TreeNode[],
-  folderCategories: { has(key: string): boolean },
+  modes: CategoryModes,
+  filterActive: boolean,
 ) {
-  const tracks: TreeNode[] = []
-  const folders: TreeNode[] = []
-  const categories: TreeNode[] = []
+  const tracks: { item: TreeNode; mode: ResolvedCategoryMode }[] = []
+  const folders: typeof tracks = []
+  const categories: typeof tracks = []
   for (const item of items) {
+    const mode = resolveCategoryMode(item, modes, filterActive)
     if (item.type === 'track') {
-      tracks.push(item)
-    } else if (folderCategories.has(item.id)) {
-      folders.push(item)
+      tracks.push({ item, mode })
+    } else if (mode === 'folder') {
+      folders.push({ item, mode })
     } else {
-      categories.push(item)
+      categories.push({ item, mode })
     }
   }
   return [...tracks, ...folders, ...categories]
 }
 
-// Binary search: returns the index of the last item whose offset <= `offset`.
-function findIndexAtOffset(offsets: number[], offset: number) {
+// The rendered rows, in order, each with the height and offset the virtual
+// scroller places it at. One walk produces the layout and the per-row
+// presentation together, so the offset math and the row component can't drift
+// apart. A folder is a track-height row whose children are not walked; only an
+// expandable (non-folder) category gets the taller accordion styling.
+function buildRows(
+  children: TreeNode[],
+  modes: CategoryModes,
+  filterActive: boolean,
+) {
+  const rows: TreeRow[] = []
+  let top = 0
+  function walk(items: TreeNode[]) {
+    for (const { item, mode } of sortedTreeChildren(
+      items,
+      modes,
+      filterActive,
+    )) {
+      const accordion = item.type === 'category' && mode !== 'folder'
+      const height = accordion ? categoryItemHeight : defaultItemHeight
+      rows.push({ item, mode, accordion, height, top })
+      top += height
+      if (mode === 'expanded' && item.children.length > 0) {
+        walk(item.children)
+      }
+    }
+  }
+  walk(children)
+  return rows
+}
+
+// Binary search: returns the index of the last row that starts at or before
+// `offset`.
+function findRowAtOffset(rows: TreeRow[], offset: number) {
   let lo = 0
-  let hi = offsets.length
+  let hi = rows.length
   while (lo < hi) {
     const mid = (lo + hi) >>> 1
-    if (offsets[mid]! <= offset) {
+    if (rows[mid]!.top <= offset) {
       lo = mid + 1
     } else {
       hi = mid
     }
   }
   return Math.max(0, lo - 1)
-}
-
-// a category is collapsed if the user explicitly toggled it, else by its
-// defaultCollapsed (used for dormant connection categories)
-export function isNodeCollapsed(
-  item: TreeNode,
-  collapsed: { get(key: string): boolean | undefined },
-) {
-  const explicit = collapsed.get(item.id)
-  const byDefault = item.type === 'category' ? item.defaultCollapsed : undefined
-  return explicit ?? byDefault ?? false
-}
-
-function flattenTree(
-  items: TreeNode[],
-  folderCategories: { has(key: string): boolean },
-  collapsed: { get(key: string): boolean | undefined },
-  result: TreeNode[] = [],
-) {
-  for (const item of sortedTreeChildren(items, folderCategories)) {
-    result.push(item)
-    if (
-      item.children.length > 0 &&
-      !isNodeCollapsed(item, collapsed) &&
-      !(item.type === 'category' && folderCategories.has(item.id))
-    ) {
-      flattenTree(item.children, folderCategories, collapsed, result)
-    }
-  }
-  return result
 }
 
 /**
@@ -202,12 +212,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       ),
       /**
        * #volatile
+       * per-category rendering mode; absent means expanded. Collapsed and
+       * folder are mutually exclusive by construction, so un-foldering a
+       * category can't reveal a stale collapse underneath it
        */
-      collapsed: observable.map<string, boolean>(),
-      /**
-       * #volatile
-       */
-      folderCategories: observable.set<string>(),
+      categoryMode: observable.map<string, CategoryMode>(),
       /**
        * #volatile
        */
@@ -375,63 +384,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleCategory(pathName: string) {
-        const session = getSession(self)
-        const conn = session.connections.find(
-          c => connectionCategoryId(c.connectionId) === pathName,
-        )
-        const isLive = conn
-          ? (session.connectionInstances ?? []).some(
-              c => c.connectionId === conn.connectionId,
-            )
-          : false
-        // account for defaultCollapsed (dormant connections) so the first click
-        // on one expands (and loads) it rather than toggling a phantom state
-        const wasCollapsed =
-          self.collapsed.get(pathName) ?? (conn ? !isLive : false)
-        if (conn && wasCollapsed) {
-          // expanding a connection = load it (no separate "turn on" step). Clear
-          // any explicit collapse so the category follows liveness via
-          // defaultCollapsed and never persists as expanded-but-unloaded
-          self.collapsed.delete(pathName)
-          session.hydrateConnection?.(conn.connectionId)
+      setCategoryMode(id: string, mode: CategoryMode | undefined) {
+        if (mode) {
+          self.categoryMode.set(id, mode)
         } else {
-          self.collapsed.set(pathName, !wasCollapsed)
+          self.categoryMode.delete(id)
         }
       },
       /**
        * #action
        */
-      setCategoryCollapsed(pathName: string, status: boolean) {
-        self.collapsed.set(pathName, status)
-      },
-      /**
-       * #action
-       */
-      expandAllCategories() {
-        self.collapsed.clear()
-      },
-      /**
-       * #action
-       */
-      setCollapsedCategories(str: [string, boolean][]) {
-        self.collapsed.replace(str)
-      },
-      /**
-       * #action
-       */
-      toggleFolderCategory(categoryId: string) {
-        if (self.folderCategories.has(categoryId)) {
-          self.folderCategories.delete(categoryId)
-        } else {
-          self.folderCategories.add(categoryId)
-        }
-      },
-      /**
-       * #action
-       */
-      setFolderCategories(ids: string[]) {
-        self.folderCategories.replace(ids)
+      clearCategoryModes() {
+        self.categoryMode.clear()
       },
       /**
        * #action
@@ -444,6 +408,66 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setFilterText(newText: string) {
         self.filterText = newText
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * the single gate on accordion state: a folder is a mode the user picked,
+       * not an accordion that happens to be shut, so every collapse/expand —
+       * one row, a bulk menu item, or "expand all" — passes it by
+       */
+      setCategoryCollapsed(id: string, collapsed: boolean) {
+        if (self.categoryMode.get(id) !== 'folder') {
+          self.setCategoryMode(id, collapsed ? 'collapsed' : undefined)
+        }
+      },
+      /**
+       * #action
+       * folder and collapsed are the same slot, so leaving folder mode always
+       * lands on an expanded category
+       */
+      setFolderCategory(id: string, isFolder: boolean) {
+        self.setCategoryMode(id, isFolder ? 'folder' : undefined)
+      },
+      /**
+       * #action
+       */
+      expandAllCategories() {
+        for (const [id, mode] of [...self.categoryMode]) {
+          if (mode === 'collapsed') {
+            self.categoryMode.delete(id)
+          }
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      toggleCategory(id: string) {
+        const session = getSession(self)
+        const conn = session.connections.find(
+          c => connectionCategoryId(c.connectionId) === id,
+        )
+        const isLive = conn
+          ? (session.connectionInstances ?? []).some(
+              c => c.connectionId === conn.connectionId,
+            )
+          : false
+        const mode = self.categoryMode.get(id)
+        // account for defaultCollapsed (dormant connections) so the first click
+        // on one expands (and loads) it rather than toggling a phantom state
+        const wasCollapsed = mode ? mode === 'collapsed' : !!conn && !isLive
+        if (conn && wasCollapsed) {
+          // expanding a connection = load it (no separate "turn on" step). Clear
+          // any explicit collapse so the category follows liveness via
+          // defaultCollapsed and never persists as expanded-but-unloaded
+          self.setCategoryMode(id, undefined)
+          session.hydrateConnection?.(conn.connectionId)
+        } else {
+          self.setCategoryCollapsed(id, !wasCollapsed)
+        }
       },
     }))
     .views(self => ({
@@ -561,10 +585,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           )
         return [
           {
-            group: 'Tracks',
-            id: 'Tracks',
+            group: mainGroupId,
+            id: mainGroupId,
             tracks: resolve(this.configAndSessionTrackConfigurations),
-            noCategories: false,
             defaultCollapsed: false,
             loading: false,
           },
@@ -574,7 +597,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               group: readConfObject(conf, 'name') as string,
               id: connectionCategoryId(conf.connectionId),
               tracks: live ? resolve(filterTracks(live.tracks, self)) : [],
-              noCategories: false,
               // dormant connections collapse by default so expanding loads them;
               // a loaded one shows its tracks
               defaultCollapsed: !live,
@@ -588,11 +610,29 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * the normalized filter box contents; empty when nothing is being
+       * searched for
+       */
+      get filterQuery() {
+        return self.filterText.trim().toLowerCase()
+      },
+
+      /**
+       * #getter
+       * a query is being searched for, which forces categories open
+       * (isFilterForcedOpen)
+       */
+      get filterActive() {
+        return this.filterQuery !== ''
+      },
+
+      /**
+       * #getter
        * tracks matching filterText. An empty query matches everything, since
        * ''.includes is always true, so there is no unfiltered special case
        */
       get filteredTrackSet() {
-        const query = self.filterText.trim().toLowerCase()
+        const query = this.filterQuery
         const result = new Set<AnyConfigurationModel>()
         for (const group of this.allTracks) {
           for (const source of group.tracks) {
@@ -678,60 +718,57 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               trackSources: s.tracks,
               sessionTrackIds,
               filteredTrackSet,
-              extra: s.id,
-              noCategories: s.noCategories,
+              groupId: s.id,
             }),
           })),
         }
       },
     }))
     .views(self => ({
-      get flattenedItems() {
-        return flattenTree(
+      /**
+       * #getter
+       * every rendered row, in order, with its height and scroll offset
+       */
+      get rows() {
+        return buildRows(
           self.hierarchy.children,
-          self.folderCategories,
-          self.collapsed,
+          self.categoryMode,
+          self.filterActive,
         )
-      },
-      get flattenedItemOffsets() {
-        const items = this.flattenedItems
-        const offsets: number[] = []
-        let cumulativeHeight = 0
-        for (const item of items) {
-          offsets.push(cumulativeHeight)
-          cumulativeHeight += getNodePresentation(
-            item,
-            self.folderCategories,
-          ).height
-        }
-        return { cumulativeHeight, offsets }
       },
     }))
     .views(self => ({
-      itemOffsets(height: number, scrollTop: number) {
-        const { offsets } = self.flattenedItemOffsets
-
-        if (offsets.length === 0) {
-          return { startIndex: 0, endIndex: -1 }
-        }
-
-        const start = Math.max(
-          0,
-          findIndexAtOffset(offsets, scrollTop) - overscan,
-        )
-        const end = Math.min(
-          offsets.length - 1,
-          findIndexAtOffset(offsets, scrollTop + height) + overscan,
-        )
-
-        return { startIndex: start, endIndex: end }
+      /**
+       * #getter
+       */
+      get treeHeight() {
+        const last = self.rows.at(-1)
+        return last ? last.top + last.height : 0
+      },
+      /**
+       * #method
+       */
+      visibleRange(height: number, scrollTop: number) {
+        const { rows } = self
+        return rows.length === 0
+          ? { startIndex: 0, endIndex: -1 }
+          : {
+              startIndex: Math.max(
+                0,
+                findRowAtOffset(rows, scrollTop) - overscan,
+              ),
+              endIndex: Math.min(
+                rows.length - 1,
+                findRowAtOffset(rows, scrollTop + height) + overscan,
+              ),
+            }
       },
       // structure-only, so showing/hiding a track doesn't re-walk every folder
       // subtree; only folderCategoryStats' cheap counting pass re-runs
       get folderTrackNodes() {
         const map = new Map<string, TreeTrackNode[]>()
-        for (const item of self.flattenedItems) {
-          if (item.type === 'category' && self.folderCategories.has(item.id)) {
+        for (const { item, mode } of self.rows) {
+          if (mode === 'folder' && item.type === 'category') {
             map.set(item.id, getAllTrackNodes(item))
           }
         }
@@ -783,11 +820,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
-      // collapsed/folderCategories/recentlyUsed keys are scoped to the assembly
-      // (+ view type), which isn't known until the view resolves, so they load
-      // lazily. `loadedScope` = the scope now in the model; persist writes only
-      // for that scope, so load/persist order never matters and an assembly
-      // switch can't write the old scope's state under the new key.
+      // categoryMode/recentlyUsed keys are scoped to the assembly (+ view
+      // type), which isn't known until the view resolves, so they load lazily.
+      // `loadedScope` = the scope now in the model; persist writes only for
+      // that scope, so load/persist order never matters and an assembly switch
+      // can't write the old scope's state under the new key.
       let loadedScope: string | undefined
 
       function scopeKey(
@@ -797,19 +834,25 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return view ? `${assemblyNames.join(',')}|${view.type}` : ''
       }
 
-      // apply saved collapse state, or seed it from the hierarchical config
-      // defaults when nothing is persisted yet
-      function loadCollapsed(assemblyNames: string[], viewType: string) {
-        const lc = localStorageGetJSON<[string, boolean][] | undefined>(
-          collapsedK(assemblyNames, viewType),
+      // One in-memory mode per category, persisted as the two lists it shipped
+      // as, so an older build reads back what this one wrote
+      function loadCategoryModes(assemblyNames: string[], viewType: string) {
+        const session = getSession(self)
+        const r = ['hierarchical', 'defaultCollapsed']
+        const savedCollapsed = localStorageGetJSON<
+          [string, boolean][] | undefined
+        >(scopedK('collapsedCategories', assemblyNames, viewType), undefined)
+        const savedFolders = localStorageGetJSON<string[] | undefined>(
+          scopedK('folderCategories', assemblyNames, viewType),
           undefined,
         )
-        if (lc) {
-          self.setCollapsedCategories(lc)
+
+        self.clearCategoryModes()
+        if (savedCollapsed) {
+          for (const [id, collapsed] of savedCollapsed) {
+            self.setCategoryCollapsed(id, collapsed)
+          }
         } else {
-          const session = getSession(self)
-          const r = ['hierarchical', 'defaultCollapsed']
-          self.expandAllCategories()
           if (getConf(session, [...r, 'topLevelCategories'])) {
             self.collapseTopLevelCategories()
           }
@@ -817,25 +860,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             self.collapseSubCategories()
           }
           for (const elt of getConf(session, [...r, 'categoryNames'])) {
-            self.setCategoryCollapsed(`Tracks-${elt}`, true)
+            self.setCategoryCollapsed(categoryId(mainGroupId, elt), true)
           }
         }
-      }
-
-      function loadFolderCategories(assemblyNames: string[], viewType: string) {
-        const stc = localStorageGetJSON<string[] | undefined>(
-          folderCategoriesK(assemblyNames, viewType),
-          undefined,
-        )
-        if (stc) {
-          self.setFolderCategories(stc)
-        } else {
-          self.setFolderCategories(
-            getConf(getSession(self), [
-              'hierarchical',
-              'defaultFolderCategories',
-            ]).map((elt: string) => `Tracks-${elt}`),
+        // applied last: folder wins over a collapse recorded for the same
+        // category, the two can't both be in effect
+        const folders =
+          savedFolders ??
+          getConf(session, ['hierarchical', 'defaultFolderCategories']).map(
+            (elt: string) => categoryId(mainGroupId, elt),
           )
+        for (const id of folders) {
+          self.setFolderCategory(id, true)
         }
       }
 
@@ -845,8 +881,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
         )
         if (view) {
-          loadCollapsed(assemblyNames, view.type)
-          loadFolderCategories(assemblyNames, view.type)
+          loadCategoryModes(assemblyNames, view.type)
         }
         loadedScope = scopeKey(assemblyNames, view)
       }
@@ -858,10 +893,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           favorites,
           recentlyUsed,
           assemblyNames,
-          collapsed,
-          folderCategories,
           view,
         } = self
+        const modes = [...self.categoryMode]
         // skip until load has populated this scope (guards against writing empty
         // defaults or a previous scope's state)
         if (scopeKey(assemblyNames, view) === loadedScope) {
@@ -870,10 +904,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           localStorageSetJSON(sortTrackNamesK, sortTrackNames)
           localStorageSetJSON(sortCategoriesK, sortCategories)
           if (view) {
-            localStorageSetJSON(collapsedK(assemblyNames, view.type), collapsed)
-            localStorageSetJSON(folderCategoriesK(assemblyNames, view.type), [
-              ...folderCategories,
-            ])
+            localStorageSetJSON(
+              scopedK('collapsedCategories', assemblyNames, view.type),
+              modes
+                .filter(([, m]) => m === 'collapsed')
+                .map(([id]) => [id, true]),
+            )
+            localStorageSetJSON(
+              scopedK('folderCategories', assemblyNames, view.type),
+              modes.filter(([, m]) => m === 'folder').map(([id]) => id),
+            )
           }
         }
       }

@@ -31,6 +31,24 @@ export interface TreeCategoryNode {
 
 export type TreeNode = TreeTrackNode | TreeCategoryNode
 
+// a category the user has taken out of the default expanded state. Collapsed
+// hides the children under an accordion header; folder replaces the whole
+// subtree with a single row that opens a faceted selector
+export type CategoryMode = 'collapsed' | 'folder'
+
+export type ResolvedCategoryMode = CategoryMode | 'expanded'
+
+// one rendered row of the virtualized tree, with the presentation and layout
+// the model resolved for it. Tracks always carry mode 'expanded'. `accordion`
+// is what makes the row taller, so the component must not re-derive it
+export interface TreeRow {
+  item: TreeNode
+  mode: ResolvedCategoryMode
+  accordion: boolean
+  height: number
+  top: number
+}
+
 // a track config plus every slot the tree reads from it, resolved once in
 // model.allTracks so a filterText keystroke does no config reads
 export interface TrackNodeSource {

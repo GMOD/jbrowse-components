@@ -56,19 +56,26 @@ Example config.json with examples of these hierarchical settings:
 `defaultCollapsed` options only apply on initial startup. Afterwards the user's
 preference is preserved in their session.
 
+Typing in the filter box opens every category for as long as the query is
+active, so a match inside a collapsed category or a folder is still shown.
+Clearing the box restores whatever was collapsed before.
+
 ## Folder categories (supertracks)
 
-Categories can be displayed in "folder mode", which collapses the entire
-category into a compact folder row. Clicking a folder opens a faceted track
-selector scoped to just the tracks in that category.
+Categories can be displayed in "folder mode", which replaces the entire category
+with a compact folder row showing how many of its tracks are turned on. Clicking
+a folder opens a faceted track selector scoped to just the tracks in that
+category.
 
 - [`hierarchical.defaultFolderCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultfoldercategories):
   categories to display as folders at startup. Use the category name for
   top-level categories, or a comma-joined path for nested categories (e.g.
   `"Wiggle,Wiggle Rendering Styles"`)
 
-Users can also toggle any category between folder and normal mode at runtime via
-the category's context menu ("Collapse into folder" / "Expand to category").
+Users can also switch any category between folder and normal mode at runtime via
+the category's context menu ("Show as folder" / "Show as list"). Top-level group
+rows (the config's own tracks, and each connection) can't become folders, since
+clicking a connection's row is what loads it.
 
 Example config.json:
 
