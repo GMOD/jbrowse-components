@@ -152,9 +152,9 @@ export default function ReadVsRefDialog({
         <div className={classes.root}>
           {(primaryFeature.get('flags') as number) & SAM_FLAG_SECONDARY ? (
             <Typography style={{ color: 'orange' }}>
-              Note: You selected a secondary alignment (which generally does
-              not have SA tags or SEQ fields) so do a full reconstruction of
-              the alignment
+              Note: You selected a secondary alignment (which generally does not
+              have SA tags or SEQ fields) so do a full reconstruction of the
+              alignment
             </Typography>
           ) : null}
           <Typography>

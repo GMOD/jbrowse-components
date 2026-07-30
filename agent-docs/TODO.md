@@ -259,3 +259,4 @@ while a tabix line's cost is quantized by feature) is not MAF-specific and is
 logged in ARCHITECTURAL_LIMITS.md.
 
 
+'color:orange' instead of color="warning"

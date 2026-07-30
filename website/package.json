@@ -20,6 +20,7 @@
     "screenshots:build": "pnpm --filter @jbrowse/web build && pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack && node scripts/generate-screenshots.ts",
     "check-spec-recipes": "node scripts/check-spec-recipes.ts",
     "check-config-cli": "node scripts/check-config-cli.ts",
+    "check-config-blocks": "node scripts/check-config-blocks.ts",
     "gen:gallery-links": "node scripts/gen-gallery-links.ts",
     "gen:gallery-links-check": "node scripts/gen-gallery-links.ts --check",
     "gen:gallery-thumbs": "node scripts/gen-gallery-thumbs.ts",
