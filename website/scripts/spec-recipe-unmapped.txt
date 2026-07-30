@@ -17,6 +17,7 @@ collapseGroupRows
 color
 colorBy
 colorByChromosome
+colorDomain
 colorScheme
 connectedView
 conservationMode

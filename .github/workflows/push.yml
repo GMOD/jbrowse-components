@@ -180,13 +180,19 @@ jobs:
         run: node website/scripts/check-sidebar.ts
       - name: Check no link duplicates its target's title
         run: node website/scripts/check-wiki-titles.ts
-      # Round-trips every `json addtrack` doc block through the real
-      # `jbrowse add-track`, so a Config/CLI tab whose derived command drifts
-      # from the shown config fails the build. Needs the CLI's built dist.
+      # Round-trips every `json addtrack`/`json addassembly` doc block through
+      # the real `jbrowse add-track`/`add-assembly`, so a Config/CLI tab whose
+      # derived command drifts from the shown config fails the build. Needs the
+      # CLI's built dist.
       - name: Check addtrack config/CLI blocks round-trip
         run: |
           pnpm --filter @jbrowse/cli build
           node website/scripts/check-config-cli.ts
+      # And that every complete track/assembly config in the docs is tagged for
+      # that tab in the first place, rather than shipping as an untagged block
+      # or a bare adapter/display blob that reads as a config but isn't one.
+      - name: Check docs JSON config blocks follow the convention
+        run: node website/scripts/check-config-blocks.ts
       - name: Check tutorial build scripts are valid
         run: python3 scripts/check-build-scripts.py
       - name: Check color tables are up to date

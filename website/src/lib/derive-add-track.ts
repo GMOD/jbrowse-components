@@ -1,7 +1,8 @@
 // Derive the `jbrowse add-track` command equivalent to a track config object.
 //
-// Only "CLI-clean" configs are derivable: a single-file `uri` adapter with no
-// extra adapter slots, no custom displays, and no other top-level track slots.
+// Only "CLI-clean" configs are derivable: a single-file `uri` adapter whose only
+// other slots are ones a flag covers (`bed1`/`bed2`, a synteny adapter's own
+// `assemblyNames`), no custom displays, and no other top-level track slots.
 // add-track's `--config` is a *shallow* top-level merge (see
 // products/jbrowse-cli `buildTrackConfig`), so it cannot faithfully add adapter
 // slots or displays without replacing the whole adapter — anything richer than
@@ -9,6 +10,17 @@
 // those, and scripts/check-config-cli.ts round-trips every emitted command
 // through the real CLI so a wrong derivation fails the build rather than
 // shipping.
+
+import {
+  asRecord,
+  commaList,
+  flag,
+  formatCommand,
+  loadFlag,
+  nonEmpty,
+} from './derive-cli-command.ts'
+
+export { asRecord }
 
 // extension -> adapterType, mirroring guessAdapterFromFileName in
 // products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts. Kept to
@@ -24,6 +36,16 @@ const EXT_ADAPTER: [RegExp, string][] = [
   [/\.(bw|bigwig)$/i, 'BigWigAdapter'],
   [/\.(bb|bigbed)$/i, 'BigBedAdapter'],
   [/\.hic$/i, 'HicAdapter'],
+  // the synteny family, longest extension first so .anchors.simple isn't read
+  // as .anchors. An all-vs-all adapter over one of these files is reached with
+  // --adapterType: the CLI reuses the extension's file layout under the given
+  // type name rather than dropping the location.
+  [/\.pif\.b?gz$/i, 'PairwiseIndexedPAFAdapter'],
+  [/\.paf(\.gz)?$/i, 'PAFAdapter'],
+  [/\.anchors\.simple(\.gz)?$/i, 'MCScanSimpleAnchorsAdapter'],
+  [/\.anchors(\.gz)?$/i, 'MCScanAnchorsAdapter'],
+  [/\.chain(\.gz)?$/i, 'ChainAdapter'],
+  [/\.delta(\.gz)?$/i, 'DeltaAdapter'],
 ]
 
 function inferredAdapterType(uri: string) {
@@ -44,34 +66,31 @@ const ADAPTER_TRACK_TYPE: Record<string, string> = {
   BedpeAdapter: 'VariantTrack',
   BedAdapter: 'FeatureTrack',
   HicAdapter: 'HicTrack',
+  PAFAdapter: 'SyntenyTrack',
   PairwiseIndexedPAFAdapter: 'SyntenyTrack',
+  AllVsAllPAFAdapter: 'SyntenyTrack',
+  AllVsAllIndexedPAFAdapter: 'SyntenyTrack',
+  ChainAdapter: 'SyntenyTrack',
+  DeltaAdapter: 'SyntenyTrack',
+  MashMapAdapter: 'SyntenyTrack',
+  BlastTabularAdapter: 'SyntenyTrack',
+  MCScanAnchorsAdapter: 'SyntenyTrack',
+  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
+  MCScanBlocksAdapter: 'SyntenyTrack',
 }
+
+// add-track writes `assemblyNames` onto the adapter itself for every adapter
+// that resolves to a SyntenyTrack (addSyntenyAssemblyNames in the CLI), taking
+// them from -a. Such an adapter slot is therefore derivable rather than an
+// extra, but only when it matches the track's own list.
+const SYNTENY_ADAPTERS = new Set(
+  Object.entries(ADAPTER_TRACK_TYPE)
+    .filter(([, trackType]) => trackType === 'SyntenyTrack')
+    .map(([adapterType]) => adapterType),
+)
 
 function inferredTrackType(adapterType: string) {
   return ADAPTER_TRACK_TYPE[adapterType] ?? 'FeatureTrack'
-}
-
-export function asRecord(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === 'object'
-    ? (value as Record<string, unknown>)
-    : {}
-}
-
-// A non-empty string, or undefined — so callers can test presence by truthiness.
-function nonEmpty(value: unknown) {
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
-
-// A comma list for a repeatable flag, or undefined when there's nothing to pass.
-function commaList(value: unknown) {
-  return Array.isArray(value) && value.length > 0 && value.every(nonEmpty)
-    ? value.join(',')
-    : undefined
-}
-
-// `flag value` when `value` is set, nothing when it isn't.
-function flag(name: string, value: string | undefined) {
-  return value === undefined ? [] : [name, value]
 }
 
 // The `add-track` argv (without the `jbrowse` program name) equivalent to a
@@ -93,7 +112,14 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
   // `baseUri` is deliberately *not* pulled out here: add-track emits a bare
   // UriLocation, so a config carrying one isn't CLI-clean. It counts as an
   // extra adapter slot and falls through to the verbatim add-track-json tab.
-  const { type: adapterType, uri, ...adapterExtra } = asRecord(adapter)
+  const {
+    type: adapterType,
+    uri,
+    assemblyNames: adapterAssemblies,
+    bed1,
+    bed2,
+    ...adapterExtra
+  } = asRecord(adapter)
   const defaults = asRecord(displayDefaults)
 
   const id = nonEmpty(trackId)
@@ -105,8 +131,17 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
   // add-track can only place the data file for a recognized extension; an
   // unknown one (e.g. .ld.gz) yields an adapter with no location
   const guessedAdapter = file && inferredAdapterType(file)
+  // the CLI derives a synteny adapter's own assemblyNames from -a, so that slot
+  // is derivable exactly when it repeats the track's list; anything else (an
+  // assemblyNameToPanSN map, a differing list) is an extra slot
+  const derivableAssemblies =
+    adapterAssemblies === undefined ||
+    (adapterName !== undefined &&
+      SYNTENY_ADAPTERS.has(adapterName) &&
+      commaList(adapterAssemblies) === assemblies)
   const noExtraSlots =
     displays === undefined &&
+    derivableAssemblies &&
     Object.keys(adapterExtra).length === 0 &&
     Object.keys(restTop).length === 0
 
@@ -136,34 +171,19 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
           inferredTrackType(adapterName) === type ? undefined : type,
         ),
         ...flag('--category', commaList(category)),
+        // the MCScan adapters pair genes by name, so each takes a BED per
+        // genome alongside the anchors file
+        ...flag('--bed1', nonEmpty(bed1)),
+        ...flag('--bed2', nonEmpty(bed2)),
         ...flag(
           '--displayDefaults',
           Object.keys(defaults).length > 0
             ? JSON.stringify(defaults)
             : undefined,
         ),
-        // local paths need --load; URLs are referenced in place
-        ...flag('--load', /^\w+:\/\//.test(file) ? undefined : 'copy'),
+        ...loadFlag(file),
       ]
     : null
-}
-
-// Quote a token for a POSIX shell only when it carries a shell-significant
-// character; plain tokens (ids, URLs, comma lists) stay bare.
-function shellArg(value: string) {
-  return /^[A-Za-z0-9_./:,=@+-]+$/.test(value)
-    ? value
-    : `"${value.replaceAll(/(["\\$`])/g, '\\$1')}"`
-}
-
-// Render the argv as a readable multi-line shell command: the positional file
-// on the first line, then one `--flag value` pair per continued line.
-function formatCommand(args: string[]) {
-  const [subcommand = '', uri = '', ...flags] = args
-  const pairs = flags.flatMap((token, i) =>
-    i % 2 === 0 ? [`${token} ${shellArg(flags[i + 1] ?? '')}`] : [],
-  )
-  return [`jbrowse ${subcommand} ${shellArg(uri)}`, ...pairs].join(' \\\n  ')
 }
 
 export function deriveAddTrack(config: unknown): string | null {

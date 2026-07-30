@@ -36,8 +36,9 @@ import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
+import { deriveAddAssemblyArgs } from '../src/lib/derive-add-assembly.ts'
 import { asRecord, deriveAddTrackArgs } from '../src/lib/derive-add-track.ts'
-import { isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
+import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
 import { reportProblems, walkFiles } from './check-utils.ts'
 
 const root = join(import.meta.dirname, '..', '..')
@@ -48,6 +49,7 @@ interface Block {
   file: string
   line: number
   json: string
+  kind: 'track' | 'assembly'
 }
 
 const parser = unified().use(remarkParse).use(remarkGfm)
@@ -56,14 +58,16 @@ const parser = unified().use(remarkParse).use(remarkGfm)
 // plugin's own predicate over the same mdast it sees — so the gate can't check
 // a different set than the site renders. The body stays text: invalid JSON is a
 // problem to report against this file and line, not a crash.
-function addtrackBlocks(md: string, file: string): Block[] {
+function taggedBlocks(md: string, file: string): Block[] {
   const blocks: Block[] = []
   visit(parser.parse(md), 'code', node => {
-    if (isAddtrack(node)) {
+    const assembly = isAddassembly(node)
+    if (isAddtrack(node) || assembly) {
       blocks.push({
         file,
         line: node.position?.start.line ?? 0,
         json: node.value,
+        kind: assembly ? 'assembly' : 'track',
       })
     }
   })
@@ -109,12 +113,8 @@ function targetConfig(assemblyNames: unknown) {
   }
 }
 
-// Run the CLI against a throwaway config and return the track it added.
-function runCli(
-  target: object,
-  argv: (dir: string) => string[],
-  trackId: unknown,
-) {
+// Run the CLI against a throwaway config and return the config it wrote.
+function runCliConfig(target: object, argv: (dir: string) => string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'cfgcli-'))
   try {
     const cfgPath = join(dir, 'config.json')
@@ -122,13 +122,22 @@ function runCli(
     execFileSync('node', [cli, ...argv(dir), '--target', cfgPath], {
       stdio: 'pipe',
     })
-    const result = JSON.parse(readFileSync(cfgPath, 'utf8')) as {
-      tracks: Record<string, unknown>[]
+    return JSON.parse(readFileSync(cfgPath, 'utf8')) as {
+      tracks?: Record<string, unknown>[]
+      assemblies?: Record<string, unknown>[]
     }
-    return result.tracks.find(t => t.trackId === trackId)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+}
+
+// Run the CLI against a throwaway config and return the track it added.
+function runCli(
+  target: object,
+  argv: (dir: string) => string[],
+  trackId: unknown,
+) {
+  return runCliConfig(target, argv).tracks?.find(t => t.trackId === trackId)
 }
 
 // Run add-track for one block and return the mismatch reason, or '' on success.
@@ -188,13 +197,109 @@ function roundTripJson(config: Record<string, unknown>): string {
   }
 }
 
+// Run add-assembly for one block and return the mismatch reason, or '' on
+// success. Like the track path the comparison is semantic: add-assembly writes
+// the legacy `*Location` slots plus the boilerplate ReferenceSequenceTrack the
+// shorthand leaves implicit, so what is compared is the assembly's identity
+// (name, aliases, sequence adapter type and file) and every slot the derived
+// command claimed to set.
+function roundTripAssembly(
+  config: Record<string, unknown>,
+  args: string[],
+): string {
+  try {
+    // --force skips the file-existence checks, so no data file has to exist,
+    // and inPlace keeps the config referencing the path as written
+    const argv = args.map((a, i) => (args[i - 1] === '--load' ? 'inPlace' : a))
+    const result = runCliConfig({ assemblies: [], tracks: [] }, () => [
+      ...argv,
+      '--force',
+    ])
+    const got = result.assemblies?.find(a => a.name === config.name)
+    if (got === undefined) {
+      return 'assembly not added'
+    }
+    const src = asRecord(asRecord(config.sequence).adapter)
+    const gotAdapter = asRecord(asRecord(got.sequence).adapter)
+    const srcUri = nonEmptyString(config.uri) ?? nonEmptyString(src.uri)
+    // slots with no dedicated flag ride in --config; each must come back as-is
+    const passedThrough = Object.keys(config).filter(
+      k =>
+        ![
+          'name',
+          'uri',
+          'aliases',
+          'displayName',
+          'refNameColors',
+          'refNameAliases',
+          'sequence',
+        ].includes(k),
+    )
+    return [
+      diff('name', got.name, config.name),
+      diff(
+        'aliases',
+        JSON.stringify(got.aliases ?? []),
+        JSON.stringify(config.aliases ?? []),
+      ),
+      diff('displayName', got.displayName, config.displayName),
+      diff(
+        'refNameColors',
+        JSON.stringify(got.refNameColors ?? []),
+        JSON.stringify(config.refNameColors ?? []),
+      ),
+      // an omitted adapter type is inferred by both the CLI and JBrowse, so
+      // only a declared one is compared
+      src.type === undefined
+        ? ''
+        : diff('sequence adapter', gotAdapter.type, src.type),
+      diff('sequence uri', basename(adapterUri(gotAdapter)), basename(srcUri)),
+      diff(
+        'refNameAliases',
+        basename(aliasFileUri(got.refNameAliases)),
+        basename(aliasFileUri(config.refNameAliases)),
+      ),
+      ...passedThrough.map(k =>
+        diff(k, JSON.stringify(got[k]), JSON.stringify(config[k])),
+      ),
+    ]
+      .filter(Boolean)
+      .join('; ')
+  } catch (e) {
+    return `add-assembly failed: ${firstLine(e)}`
+  }
+}
+
+function nonEmptyString(value: unknown) {
+  return typeof value === 'string' && value ? value : undefined
+}
+
+// the aliases file, through either the uri shorthand or the adapter's location
+function aliasFileUri(refNameAliases: unknown) {
+  const slot = asRecord(refNameAliases)
+  const adapter = asRecord(slot.adapter)
+  return (
+    nonEmptyString(slot.uri) ??
+    nonEmptyString(adapter.uri) ??
+    nonEmptyString(asRecord(adapter.location).uri)
+  )
+}
+
 // Parse and round-trip one block; '' when it checks out.
-function checkBlock(json: string): string {
+function checkBlock(json: string, kind: 'track' | 'assembly'): string {
   let config: Record<string, unknown>
   try {
     config = asRecord(JSON.parse(json))
   } catch (e) {
     return `not valid JSON: ${firstLine(e)}`
+  }
+  if (kind === 'assembly') {
+    const args = deriveAddAssemblyArgs(config)
+    // no add-assembly-json exists, so an underivable assembly is a tagging
+    // mistake rather than a fallback case, and the plugin warns on it too
+    return args === null
+      ? 'no add-assembly equivalent: leave this block untagged'
+      : roundTripAssembly(config, args)
   }
   const args = deriveAddTrackArgs(config)
   return args === null ? roundTripJson(config) : roundTrip(config, args)
@@ -203,9 +308,9 @@ function checkBlock(json: string): string {
 const errorLines: string[] = []
 let checked = 0
 for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
-  for (const block of addtrackBlocks(readFileSync(file, 'utf8'), file)) {
+  for (const block of taggedBlocks(readFileSync(file, 'utf8'), file)) {
     checked++
-    const reason = checkBlock(block.json)
+    const reason = checkBlock(block.json, block.kind)
     if (reason) {
       errorLines.push(
         `  ${block.file.slice(root.length + 1)}:${block.line}`,
@@ -253,12 +358,35 @@ for (const fixture of FALLBACK_FIXTURES) {
   }
 }
 
+// An assembly config the derivation refuses gets no CLI tab, so nothing in the
+// docs exercises that branch. This fixture stands in for it: a legacy
+// multi-location sequence, which add-assembly builds itself and no flag set
+// reproduces.
+const UNDERIVABLE_ASSEMBLY = {
+  name: 'fixture_legacy',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'fixture_legacy-ReferenceSequenceTrack',
+    adapter: {
+      type: 'IndexedFastaAdapter',
+      fastaLocation: { uri: 'g.fa' },
+      faiLocation: { uri: 'g.fa.fai' },
+    },
+  },
+}
+if (deriveAddAssemblyArgs(UNDERIVABLE_ASSEMBLY) !== null) {
+  errorLines.push(
+    `  underivable assembly fixture (${UNDERIVABLE_ASSEMBLY.name})`,
+    `    → expected this fixture to have no add-assembly equivalent\n`,
+  )
+}
+
 if (errorLines.length) {
   errorLines.unshift(
-    `Found addtrack blocks whose derived command doesn't round-trip:\n`,
+    `Found addtrack/addassembly blocks whose derived command doesn't round-trip:\n`,
   )
 }
 reportProblems(
   errorLines,
-  `All ${checked} addtrack block(s) + ${FALLBACK_FIXTURES.length} fallback fixture(s) round-trip through jbrowse add-track / add-track-json.`,
+  `All ${checked} addtrack/addassembly block(s) + ${FALLBACK_FIXTURES.length + 1} fixture(s) round-trip through jbrowse add-track / add-track-json / add-assembly.`,
 )

@@ -154,7 +154,12 @@ const agLdTrack = (trackId: string, name: string, file: string) => ({
 // white. The band is drawn by JBrowse from these coordinates, so unlike a
 // painted-on callout it cannot drift from the data.
 const TWO_LA_HIGHLIGHT = [
-  { refName: 'chr2L', start: 20_524_058, end: 42_165_532, assemblyName: 'anoGam3' },
+  {
+    refName: 'chr2L',
+    start: 20_524_058,
+    end: 42_165_532,
+    assemblyName: 'anoGam3',
+  },
 ]
 
 // The per-population point, shown rather than asserted, WITHOUT making a figure
@@ -170,11 +175,7 @@ const TWO_LA_HIGHLIGHT = [
 // not what this page is for. The population-specific-sweep lesson is carried by
 // the Anopheles figure, where the populations are mosquitoes and presence or
 // absence of the arrangement is itself the result.
-const lctPanelTrack = (
-  trackId: string,
-  name: string,
-  file: string,
-) => ({
+const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   type: 'VariantTrack',
   trackId,
   name,

@@ -273,10 +273,10 @@
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T19:39:22.282Z",
-    "hash": "ef1df23139283544be0c045d6b19361cc581be5b"
+    "status": "bad",
+    "note": "the menu does not need to be open in the second view",
+    "reviewedAt": "2026-07-30T14:10:33.288Z",
+    "hash": "3bab1d24b5c7c3b42fb1738e75dd690da23ea7b5"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -681,8 +681,8 @@
     "name": "multi-sv-trio",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T19:43:09.133Z",
-    "hash": "314943582a1a2323d6df06bd6208ac9594b76458"
+    "reviewedAt": "2026-07-30T14:00:47.983Z",
+    "hash": "fa3188f02b5728fc46b3ab33b6d1e88ad4fd22fb"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -840,9 +840,9 @@
   "alignments/haplotype": {
     "name": "alignments/haplotype",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:07:47.930Z",
-    "hash": "c9a41a66ddb6edd4a3a617a9fac118e3b7e3a8f3"
+    "note": "this changed from blue+red to red+green which is undesirable. i think we need to assume HP:1 is the first in index not HP:0",
+    "reviewedAt": "2026-07-30T13:56:51.585Z",
+    "hash": "9b56103ed16376f191856df28d219b07b795c1d8"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
@@ -1320,10 +1320,10 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "good",
-    "note": "DONE, and the group-by attribute now exists. Added a 'Split read (SA tag)' dimension to the alignments Group by... menu: SA is written on every segment of a split alignment, primary included, so the two sections are the reads crossing a breakpoint and the reads spanning it intact. The figure groups by it, and the split section holds the magenta breakpoint arc and the red-blue-red split reads while the background reads sit below, so the contrast is structural instead of something the reader hunts for. The two painted-on paragraphs are gone - the section dividers say what they said. Two related changes: the old 'Supplementary' grouping was removed (reviewer: splitting supplementary from non-supplementary does not make sense - it is the SAM flag, so a split read's own first segment filed with the reads that never split); and splitRead works in linked-reads mode, unlike every other per-read dimension, because it supplies a chain key (a fragment is split if any of its reads is), which matters because long-read SV viewing is chain mode. Tests in groupFeatures.test.ts + getGroupByMenuItem.test.ts.",
-    "reviewedAt": "2026-07-29T22:11:54.769Z",
-    "hash": "9baeb26c215dfebd77fe2ac520df2d101f8e1522"
+    "status": "bad",
+    "note": "change to reduce arc height. ",
+    "reviewedAt": "2026-07-30T14:02:25.341Z",
+    "hash": "37fb8309c1034057a6f8386c7765996573da993d"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1484,9 +1484,9 @@
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
-    "status": "bad",
-    "note": "visualizing this in bandage graph likely interesting. might not work in all vsall paf,but same locus in pggb or minigraph-cactus tutorial worthwhile",
-    "reviewedAt": "2026-07-27T19:43:04.158Z",
+    "status": "good",
+    "note": "RESOLVED as asked: the same locus is now drawn as a graph. The four-strain minigraph rGFA holds K-12's paa island as one 21.8 kb segment (s502), and the paths index says NCTC86 is the only strain whose walk goes through it (>s502>s2388>s504>s505) while Sakai/CFT073/IAI39 detour through 4.5-5.5 kb alternates - the same reading as this figure's lanes, off the graph instead of off the PAF. New figure pangenome/rgfa_paa_bubble (force-directed/Bandage layout, segments lane and nodes on one reference-position ramp) plus a 'The same gap, drawn as a graph' section in allvsall_synteny.md. It runs on a gfatools slice (ecoli_paa_subgraph.gfa, now built by scripts/build_ecoli_pangenome_graph.sh and hosted with the other demo assets) rather than the in-app launch: the tabix cut expands one hop off the region and a link is indexed at its reference-side endpoint, so CFT073's and IAI39's arms - which leave at s501 and rejoin at s506 - came in as 43 bp/558 bp stubs with nothing behind them. This figure itself is unchanged.",
+    "reviewedAt": "2026-07-30T07:10:36.077Z",
     "hash": "ebb0761283df71446e7324035120ec8eb635c37b"
   },
   "popgen/genotype_matrix_in2lt": {
@@ -1952,10 +1952,10 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T19:42:15.666Z",
-    "hash": "c8e0ce363a62429fa9a1b98da3dff0428316f58b"
+    "status": "bad",
+    "note": "should have the force directed bandage graph version also. potentially as a 'left+right' two part image",
+    "reviewedAt": "2026-07-30T14:07:03.193Z",
+    "hash": "4f876b05f3685d31c6f6eec057ccbdda91fc6ac2"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2043,24 +2043,24 @@
   },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
-    "status": "good",
+    "status": "bad",
     "note": "would be interesting to see linearized multiway synteny of several haplotypes with gene annotation in each. also, the bubble shapes have changed since the original screenshot. i think forceparams changed maybe. i dont like this. RESOLVED for the shapes: the change was bubbleSpread:'open' on this spec, which raises Bandage's floor on a node's drawn length by 2.5x -- at 30 nodes the alt arms get long enough to stop closing into lenses, so the drawing splays. 'wide' (10x) is worse still, measured. Back to 'auto', which is the layout the earlier review of this figure did not object to. The raised floor stays on hprc_cfhr_deletion and hprc_amylase_graph. NOT DONE: multiway synteny of several haplotypes needs per-haplotype assemblies, PAFs between them and per-haplotype gene annotation; hprc.json has one assembly (hg38) and the HPRC graph tracks are all projections onto it, so this is a data-hosting project rather than a spec edit. The graph's own linearization of the same idea is the sample-rows layout, already in hprc_lpa_kiv2 and hprc_graph_vs_callset.",
-    "reviewedAt": "2026-07-30T06:29:14.484Z",
-    "hash": "aab1658421f30f253f305a67bb42b1696d97477e"
+    "reviewedAt": "2026-07-30T14:09:42.351Z",
+    "hash": "96d88c732629879eb283333e6889ce4ec990f28e"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
-    "status": "good",
-    "note": "sort of hard to see the way that the SV track relates to the graph. if that was more obvious it would be great. can consider using bandage graph instead or modifying coloring or whatever helps. also the different rank rows are quite tall, we need comppressed visualizations with efficient use of y-axis real estate. reducing everything abotu this screenshot in the y-axis is valuable, but particularly the backbone graph. FIXED: root cause wasn't color, the segments lane already carried the reference-position ramp. It was scale: the callset held all 464 haplotypes while the graph's sample-rows layout draws only the ~12 that actually walk a non-reference path here, so 452 callset rows had nothing to compare against and the 12 that mattered were lost in the stack. Replaced runClustering with a fixed layout of the same 10 donors the graph shows (both haplotypes each, derived from the segments/links tabix over the same window), dropping the callset to 20 labeled rows that line up by name with the graph's rows below. Regenerated. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Also two caption corrections: the graph rows only the haplotypes that donated sequence here (12 of the 20 callset rows), which is what a reader notices first about the pair, and the callset numbers a donor HP0/HP1 while the graph uses PanSN .1/.2. CORRECTION: that FIXED note was already committed when this review was written, so the review is a verdict ON it -- the row-set matching landed and the reviewer still could not read the correspondence, and the y-axis ask was never touched. Y-AXIS: the cause is in the plugin. Both row layouts spaced rows at a flat 5% of the window span, a per-row constant with no ceiling on the total, so the drawing's aspect grew with the row count: 16 haplotypes plus the backbone is 0.8 of the span tall, past MAX_CANVAS_HEIGHT, and zoom-to-fit then binds on y so the backbone shrinks off the linear view's axis -- which is also why the correspondence is hard to read. The ceiling moves to the total (0.35 of the span), so many rows pack tighter instead of the pane growing; verified locally against this figure (graph pane 600 -> ~400 px, rows 52 -> 26 px, backbone back on the full width, 176 px of blank to reclaim from viewportHeight) and on hprc_lpa_kiv2; hprc_mhc_anchored is under the ceiling and unchanged. Plugin commit 473850d, published as 68ed649ed8e6 and repinned; figure regenerated and viewportHeight 1336 -> 1160. hprc_lpa_kiv2 got the same treatment (1049 -> 990); every other graph figure is under the ceiling and byte-identical.",
-    "reviewedAt": "2026-07-29T21:01:57.649Z",
-    "hash": "9ebd86ca857ed5b7d1a58325d1e8dddd35e1a25a"
+    "status": "bad",
+    "note": "sort of hard to see the way that the SV track relates to the graph. if this cannot be made obvious, we should delete the multi-sample variant view. also, can consider using force directed bandage graph (generally looks better) and modifying colorings. also the different rank rows are quite tall, we need compressed visualizations with efficient use of y-axis real estate. reducing everything about this screenshot in the y-axis is valuable, but particularly the backbone graph. FIXED: root cause wasn't color, the segments lane already carried the reference-position ramp. It was scale: the callset held all 464 haplotypes while the graph's sample-rows layout draws only the ~12 that actually walk a non-reference path here, so 452 callset rows had nothing to compare against and the 12 that mattered were lost in the stack. Replaced runClustering with a fixed layout of the same 10 donors the graph shows (both haplotypes each, derived from the segments/links tabix over the same window), dropping the callset to 20 labeled rows that line up by name with the graph's rows below. Regenerated. The shared HPRC segments lane went from a pinned 45px to heightMode grow: it packs 2-4 rows depending on how the window overlaps, so 45 cut the last row against the lane border and raised a scrollbar over the blocks in every figure carrying it. Also two caption corrections: the graph rows only the haplotypes that donated sequence here (12 of the 20 callset rows), which is what a reader notices first about the pair, and the callset numbers a donor HP0/HP1 while the graph uses PanSN .1/.2. CORRECTION: that FIXED note was already committed when this review was written, so the review is a verdict ON it -- the row-set matching landed and the reviewer still could not read the correspondence, and the y-axis ask was never touched. Y-AXIS: the cause is in the plugin. Both row layouts spaced rows at a flat 5% of the window span, a per-row constant with no ceiling on the total, so the drawing's aspect grew with the row count: 16 haplotypes plus the backbone is 0.8 of the span tall, past MAX_CANVAS_HEIGHT, and zoom-to-fit then binds on y so the backbone shrinks off the linear view's axis -- which is also why the correspondence is hard to read. The ceiling moves to the total (0.35 of the span), so many rows pack tighter instead of the pane growing; verified locally against this figure (graph pane 600 -> ~400 px, rows 52 -> 26 px, backbone back on the full width, 176 px of blank to reclaim from viewportHeight) and on hprc_lpa_kiv2; hprc_mhc_anchored is under the ceiling and unchanged. Plugin commit 473850d, published as 68ed649ed8e6 and repinned; figure regenerated and viewportHeight 1336 -> 1160. hprc_lpa_kiv2 got the same treatment (1049 -> 990); every other graph figure is under the ceiling and byte-identical.",
+    "reviewedAt": "2026-07-30T14:08:49.642Z",
+    "hash": "d95719ab145f16228541a96d2c23d3dc8b37d40d"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:07:10.258Z",
-    "hash": "f9c3bfeb25b53b28e91ccc5e5f4cb9cac522ded6"
+    "status": "bad",
+    "note": "if this is a 'two part image' (refers to 'the same subgraph') may want to make it a split left+right image",
+    "reviewedAt": "2026-07-30T14:07:38.199Z",
+    "hash": "655c5e4799bf4aedb88d93271bbdd6a933607f88"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2071,10 +2071,10 @@
   },
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:07:00.722Z",
-    "hash": "e80440a99df6d68fda93c05fa5a199309360592f"
+    "status": "bad",
+    "note": "please change to force directed bandage graph",
+    "reviewedAt": "2026-07-30T14:06:55.445Z",
+    "hash": "1a7b930b1587fbca5a163cc65cd71e2665d0c858"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2128,57 +2128,58 @@
   "pangenome/pggb_locus_graph": {
     "name": "pangenome/pggb_locus_graph",
     "status": "good",
-    "note": "FIXED in the plugin (renderer/GeometryBuilder.ts, published as ae1aa4cabf9e and pinned in the three test_data/graphgenomeview configs). The reference-position ramp now paints an off-reference node a paler, softer version of the SAME hue as the reference it replaces (45%/72% against 70%/50%) instead of the identical swatch, so the Rank 1 row is no longer a copy of the Reference row. Rank went on lightness rather than on a second hue range, which would have had to mean position and rank at once and could state neither: hue is still position, which is the whole reason the scheme exists and the only thing a linear track can reproduce. referencePositionColor in specs/graph.ts carries the same branch off the feature rank field, so a lane opened on a contributing assembly cannot disagree with the graph beside it.",
-    "reviewedAt": "2026-07-27T19:41:53.825Z",
-    "hash": "31665ca039c2b39e63fdd044ec342e183243ba7e"
+    "note": "should have the force directed bandage graph version also. potentially as a 'left+right' two part image",
+    "reviewedAt": "2026-07-30T14:07:10.292Z",
+    "hash": "800f9aa9f523dffe4f7a880ff5e3355b1f373a7c"
   },
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
     "status": "good",
-    "note": "Two frames now (reviewer: red box on the view menu icon, and a second frame showing what the launch produces). Frame one is the cascade with a box anchored on the graph view menu icon; frame two is the four-band synteny view the synteny entry opens. The K12 linear view was dropped from the session so the menu is not floating over 350px of context it does not need, which is the large complaint. Window moved to chr:4,400,000-4,450,000: at the old ECOLI_WINDOW, IAI39 reaches the subgraph through 8 bp, so the launch opened four panels at four unrelated scales. Every 50 kb window was scored on the smallest span any strain contributes and this one has all five between 38 kb and 69 kb. Also FIXED in the plugin while shooting it: launchSyntenyView passed init.tracks as a flat [trackId], which LinearSyntenyView reads as the level-0 shorthand, so a five-strain launch drew ribbons on the top band only and opened the four below as bare rulers.",
-    "reviewedAt": "2026-07-27T18:30:00.000Z",
-    "hash": "f2a388ee371e50d22f2c599e7a8805daca3570b5"
+    "note": "we need to just use bandage graphs. the backbone graphs are too hard to understand. across all our figures. backbone too complicated. if we wanted linear, we'd use our lineargenomeview. in the second frame we might just want the graphgenomeview panel to be closed, and we need the things being clicked in menus to have red boxes around them. previous agent notes: Two frames now (reviewer: red box on the view menu icon, and a second frame showing what the launch produces). Frame one is the cascade with a box anchored on the graph view menu icon; frame two is the four-band synteny view the synteny entry opens. The K12 linear view was dropped from the session so the menu is not floating over 350px of context it does not need, which is the large complaint. Window moved to chr:4,400,000-4,450,000: at the old ECOLI_WINDOW, IAI39 reaches the subgraph through 8 bp, so the launch opened four panels at four unrelated scales. Every 50 kb window was scored on the smallest span any strain contributes and this one has all five between 38 kb and 69 kb. Also FIXED in the plugin while shooting it: launchSyntenyView passed init.tracks as a flat [trackId], which LinearSyntenyView reads as the level-0 shorthand, so a five-strain launch drew ribbons on the top band only and opened the four below as bare rulers.",
+    "reviewedAt": "2026-07-30T12:33:03.977Z",
+    "hash": "152699ebff53e17f3e8e33ee5be001b44803da42"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:07:34.496Z",
-    "hash": "6cb1f2ba828f8552c3252976c8bd5ed813a3363a"
+    "status": "bad",
+    "note": "PLUGIN FIX MADE, FIGURE PENDING A PUBLISH: the changes below are in jbrowse-plugin-graphgenomeview (tests+lint+typecheck green, verified by rendering against a local build), but these PNGs pin esmUrl to a content-addressed bundle, so the committed figure only moves after a betabuild and an esmUrl bump. All three asks applied. FORCE LAYOUT: sample rows drew the 33 segments as a reference lane with eleven stubs on grey threads, which is what \"i just dont get it\" was about; as a graph it is a chain of bubbles. NON-SPECTRUM NON-BACKBONE: off-reference nodes are one flat charcoal (rgb(60,65,72)) rather than a paler ramp hue, in the plugin and in the linear lane jexl that mirrors it, so a hue means reference position and only that. THE RED LOOP now says \"skips 27.7 kb\" -- it is a deletion edge, and the old \"-27.7 kb\" was what made it unreadable. viewportHeight 990 -> 1170 (the run reported 75px cut). The Sample rows explanation in pangenome_hprc.md keeps its section and now points at hprc_graph_vs_callset, which is still drawn that way.",
+    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "hash": "8950bb44c2b76c20381cde814dba8c099a8e0a81"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
     "status": "bad",
-    "note": "this may not be the primary point of the screenshot but i dont necessarily understand the lines that are drawn to the backbone. some only have 1 line and some have 3. how should users interpret these? it should be clear to users ideally. can also try to make back-to-back comparison of backbone linear and bandage force directed modes FIXED in prose, no new figure: a line is one graph link, drawn when both endpoints are inside the cut. Counted out of ecoli_minigraph.links.bed.gz over chr:4,053,156-4,067,028, every allele in the window has exactly two links total (one leaving the backbone, one rejoining): s1814 and s1815 have both endpoints in the cut and draw two lines; s1813, s1816 and the rank-2 s2272 have their other neighbour (s1271, s1280, s1285) outside it and draw one. The mark with three lines is two alleles drawn on top of each other, s1813 (4 bp) and s1814 (53 bp), both under the minimum node width at 3.1% zoom: 4 marks for 5 alleles, and 7 drawn lines for the 7 off-backbone links, which is how the counts were confirmed. The caption said 'three short rank-1 alleles' and there are four. The back-to-back anchored/force-directed comparison was declined: the HPRC tutorial already pictures both layouts, and the standing instruction on this set is to pare figures down rather than add.",
-    "reviewedAt": "2026-07-29T21:00:29.740Z",
-    "hash": "92048cc129fbc207cd8ad488521b6db69e18a479"
+    "note": "PLUGIN FIX MADE, FIGURE PENDING A PUBLISH: the changes below are in jbrowse-plugin-graphgenomeview (tests+lint+typecheck green, verified by rendering against a local build), but these PNGs pin esmUrl to a content-addressed bundle, so the committed figure only moves after a betabuild and an esmUrl bump. BANDAGE IS NOW THE DEFAULT LAYOUT, so this figure gets it without asking: the plugin default moved from anchored to force-directed (model.ts layoutMode), which is the general form of \"bandage graph should be the default\" and also fixes hprc_lpa_kiv2 and every launch taken by hand. The frames that are deliberately anchored (rgfa_subgraph_launch, hprc_mhc_anchored, the pggb pair) now state layoutMode explicitly. Stage 2 viewportHeight 345 -> 560, because a force drawing is about as tall as it is wide where the anchored one was three flat rows. MENU ITEMS BOXED: stage 1 now rings \"Launch view\" and \"Graph genome view (this segment)\", the two rows stage 2 clicks. The guide prose that counted lines to the backbone was rewritten for the new drawing.",
+    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "hash": "2f1ee0210658fc0634ce34fb55faf5a209e87eda"
   },
   "pangenome/rgfa_strain_launch": {
     "name": "pangenome/rgfa_strain_launch",
-    "status": "good",
-    "note": "NEW. The third corner of the graph <-> linear <-> synteny trip, and the figure the launch fix made possible. K12 chr:2,056,000-2,064,000 is the asnW/asnU/asnV tRNA cluster, the sites E. coli pathogenicity islands integrate at; the graph gives CFT073 58,692 bp there in two segments while the other strains reach it through a few bp, so one long row is unambiguous. Launch view -> CFT073 opens chr:2,252,539-2,317,207 on CFT073 own coordinates, where its gene track names it clbA-clbS, the colibactin operon. Window chosen by scanning the segs/links BEDs: 8 kb is what keeps the launched locus at 65 kb, narrow enough for the clb genes to carry labels (a wider seed pulls in the yersiniabactin island and opens 130 kb of unlabelled boxes). Before the plugin fix this launch opened on No tracks active.",
-    "hash": "f270c5464058ecffc9c724f5a11c0bdb9af71dc2"
+    "status": "bad",
+    "note": "PLUGIN FIX MADE, FIGURE PENDING A PUBLISH: the changes below are in jbrowse-plugin-graphgenomeview (tests+lint+typecheck green, verified by rendering against a local build), but these PNGs pin esmUrl to a content-addressed bundle, so the committed figure only moves after a betabuild and an esmUrl bump. REBUILT AS TWO FRAMES, which is what was missing: the single frame showed the graph and its result side by side with the menu already dismissed, so the step between them was invisible. Frame one is the cascade with the view menu icon, \"Launch view\", \"Linear genome view\" and the \"CFT073 chr:\" row all boxed; frame two is the view that row opens. The K12 linear view on top is gone (three views at 925px left the launched panel a strip, and the graph title already states the K12 window). ON THE SYNTENY ASK: the launch of a real LinearSyntenyView is the same menu one row down and already has its own figure, rgfa_launch_out_menu, which was reworked in the same pass for its own review note -- clicked rows boxed, and frame two now closes the graph pane so it is the five-panel synteny view alone. Splitting the two routes across the two figures means neither frame has to serve both.",
+    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "hash": "c1f5c3c395543820caf180a7aa887dac6658965e"
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "good",
-    "note": "DONE: one panel. It was a two-stage stack (graph->linear on top, linear->graph below), i.e. four panels of the same window, which is what made it unreadable. Kept the graph->linear direction: the effect is a band appearing in the linear view where there wasn't one, drawn from real coordinates. The reverse direction was the weaker half anyway - hovering a gene brightens a backbone segment that already spans the frame, so the two graphs looked identical - and it now lives in the guide's prose instead. Caption trimmed to the single frame. One blemish left, which is a plugin fix not a spec one: the graph pins its hover tooltip bottom-left of its own pane, where the last row's label is, so 'Sakai' and the node name overlap. Logged under Open plugin work in screenshot-review-plan.md; hideTooltip does not reach it (that only hides core's BaseTooltip).",
-    "reviewedAt": "2026-07-29T21:57:26.096Z",
-    "hash": "a835d84f1419537728b6a7dc012a6293da507d6f"
+    "status": "bad",
+    "note": "this should be a force directed graph ideally. the linarebackbone is not a good layout",
+    "reviewedAt": "2026-07-30T14:05:22.130Z",
+    "hash": "c07bd8eaeebcf730a5e25de3408968a2f8255428"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:06:31.112Z",
-    "hash": "833226900822e5693a440c576b382d9b8229824f"
+    "note": "RETIRED per the note (\"might consider deleting. i just dont get what is being shown\"). Spec and PNG deleted; gallery links and figure manifest regenerated. The Sample rows section of graph_genome_view.md now shows pggb_locus_sample_rows instead, which is the same layout on a graph where it reads: every strain row is populated across the window rather than three threads dangling to 1bp stubs. That figure also got better in this pass -- its alt marks are charcoal now, and the flood of \"1 bp\" node labels the new label rule would otherwise have added is what the fits-the-node rule keeps out.",
+    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "hash": "293c33aedb718533611d66642b71603dd7a2e3af"
   },
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T19:41:46.359Z",
-    "hash": "49ed779cf0bcc0820c03ef3a9497ffe7e820444f"
+    "reviewedAt": "2026-07-30T14:05:59.823Z",
+    "hash": "970e69541a807584bd46b9a9cdcff7e56e9204cb"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2190,9 +2191,9 @@
   "dog10k-cyp1a2-cohort-copy-number": {
     "name": "dog10k-cyp1a2-cohort-copy-number",
     "status": "bad",
-    "note": "it it helps, add breed label sidebar colors too tree-sidebar PALETTE CHANGED as agreed: diverging about copy number two (red loss / grey baseline / blue-purple-magenta gain) instead of black-at-two. CN2 was 78% of the painted bp, so the baseline had the most ink; the expansion over CYP1A2 is now the only ink and the losses read as a distinct direction. Recolored the committed BEDs itemRgb in place (no CRAM or VCF refetch) and updated both CN_COLOR blocks in build_dog10k_cyp1a2_cn.sh plus its header, which still described QuicK-mer2 colors. Found and fixed a drift trap while doing it: the legend is a hand-written `legend` config slot that restates the palette, so the first regen shipped a picture and a legend that disagreed. Both slots updated, and the build script now prints the legend JSON to check against. BREED BOXES not built: SvgRowLabels bails below a 6px row and a row here is 0.32px, so it needs a row-annotation stripe in the tree gutter, drawn independently of the label box. Design validated (reserve a fixed stripe width in treeSidebarRightEdge so labels shift, own thin canvas at left:treeAreaWidth, resize handle moves right by the same, drawn even when showTree is false, sources gain an annotation color) but not implemented -- it is a shared tree-sidebar package change affecting variants/MAF/multirow and wants its own tests. Caption fixed meanwhile: it claimed rows were sorted by sample ID when the spec clusters. PALETTE CHANGED AGAIN: the blue-purple-magenta gain tail came back around to the loss end, so a ten read as a neighbour of a zero. Now ColorBrewer RdBu diverging about two -- blue loss, grey baseline, red gain -- on the same two anchor colors as the 1000 Genomes copy-number figure (negColor #2166ac, posColor #b2182b), so the two cohort paintings read the same direction. The ramp saturates at CN 6+ rather than running to the highest call; capping at 4 was considered and rejected on the data, because 52% of the 63 CLUP wolves reach five against 13% of breed dogs, and three of the fifteen CRAM dogs reach five from read depth rather than the callset proxy. Above six is 18 canids with no group to them, so they share the last color and keep their measured value in the feature name and copyNumber column. Caveat on that justification: no CRAM is a wolf, so the wolf enrichment rests on the DP proxy alone and is deliberately NOT stated in the tutorial. It is also not visible in this figure -- the rows cluster but carry no breed, which is the BREED BOXES stripe still deferred above, so the cap preserves a distinction the reader cannot yet attribute.",
-    "reviewedAt": "2026-07-29T20:36:53.455Z",
-    "hash": "21d3b551571967796090565a3127e629e1e20bda"
+    "note": "it it helps, add breed label sidebar colors too tree-sidebar PALETTE CHANGED as agreed: diverging about copy number two (red loss / grey baseline / blue-purple-magenta gain) instead of black-at-two. CN2 was 78% of the painted bp, so the baseline had the most ink; the expansion over CYP1A2 is now the only ink and the losses read as a distinct direction. Recolored the committed BEDs itemRgb in place (no CRAM or VCF refetch) and updated both CN_COLOR blocks in build_dog10k_cyp1a2_cn.sh plus its header, which still described QuicK-mer2 colors. Found and fixed a drift trap while doing it: the legend is a hand-written `legend` config slot that restates the palette, so the first regen shipped a picture and a legend that disagreed. Both slots updated, and the build script now prints the legend JSON to check against. BREED BOXES not built: SvgRowLabels bails below a 6px row and a row here is 0.32px, so it needs a row-annotation stripe in the tree gutter, drawn independently of the label box. Design validated (reserve a fixed stripe width in treeSidebarRightEdge so labels shift, own thin canvas at left:treeAreaWidth, resize handle moves right by the same, drawn even when showTree is false, sources gain an annotation color) but not implemented -- it is a shared tree-sidebar package change affecting variants/MAF/multirow and wants its own tests. Caption fixed meanwhile: it claimed rows were sorted by sample ID when the spec clusters. PALETTE CHANGED AGAIN: the blue-purple-magenta gain tail came back around to the loss end, so a ten read as a neighbour of a zero. Now ColorBrewer RdBu diverging about two -- blue loss, grey baseline, red gain -- on the same two anchor colors as the 1000 Genomes copy-number figure (negColor #2166ac, posColor #b2182b), so the two cohort paintings read the same direction. The ramp saturates at CN 6+ rather than running to the highest call; capping at 4 was considered and rejected on the data, because 52% of the 63 CLUP wolves reach five against 13% of breed dogs, and three of the fifteen CRAM dogs reach five from read depth rather than the callset proxy. Above six is 18 canids with no group to them, so they share the last color and keep their measured value in the feature name and copyNumber column. Caveat on that justification: no CRAM is a wolf, so the wolf enrichment rests on the DP proxy alone and is deliberately NOT stated in the tutorial. It is also not visible in this figure -- the rows cluster but carry no breed, which is the BREED BOXES stripe still deferred above, so the cap preserves a distinction the reader cannot yet attribute. BREED STRIPE: BUILT, MEASURED, AND REMOVED AGAIN, so the previous deferral is now an answer rather than a promise. The earlier reason (\"SvgRowLabels bails below a 6px row\") is stale -- it floors a sub-pixel swatch to a whole pixel now, and rowGroups on LinearMultiRowFeatureDisplay is the slot for this exact job, so it was wired up with the four groups the named lane above uses (CLUP wolves, GOLD, LABR, BOXR). Measured on the rendered PNG: the wolf swatch is 19 device px of a ~600 device px lane, and all four groups together are ~10 CSS px. rowGroups also partitions rows into contiguous blocks by design, so those animals get pulled out of the copy-number sort into a block at the top of the lane. 10px of stripe cannot attribute a copy number to a breed and it costs the sorted banding this lane exists for, so it is reverted with the measurement recorded in the spec. The breed attribution is the named-animals lane above, which is the same four groups at a row height a reader can follow.",
+    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "hash": "b088a7fd54cf60e112ece1afcc4845a274d14c36"
   },
   "dog10k-cyp1a2-copy-number": {
     "name": "dog10k-cyp1a2-copy-number",
@@ -2211,16 +2212,16 @@
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
     "status": "bad",
-    "note": "are you happy with this figure? appears to be using matrix mode but no lines connective to genomic position are visible. is this a bug? NOT A BUG, and not matrix mode: this is LinearMultiSampleVariantDisplay, which draws each record at its true genomic span, so the two 220 bp SINEs are columns at their own coordinates and need no connector lines. (Connectors belong to LinearMultiSampleVariantMatrixDisplay, which dog10k-wolfdog-block-genotypes uses -- that is where you saw them.) One real defect fixed: 775px cut the last wolf row against the frame. Still only middling as a figure -- 24 of 25 samples are het or hom-alt, so the contrast is light-blue vs dark-blue rather than present vs absent, and one hom-ref animal cannot carry the dimorphism story. A panel picked for hom-ref carriers would fix that; needs a rebuild. REBUILT, and the previous caption was factually wrong. It said 'all four wolves are homozygous for the deletion, meaning the repeats are absent', and the prose said 'the wolves have no copy of either repeat' -- but CLUPGR000003 is 0/0 at the second SINE in the committed VCF, i.e. it carries that repeat on both chromosomes. Checked across the whole callset: the first SINE is absent from all 55 wolves, the second is carried by 23 of them (3 hom-ref, 20 het). Two adjacent repeats in one gene with different ages, which is a better story than the one the figure was asserting, and four wolves cannot show it. Panel rebuilt to fix the note's complaint at the same time: every animal of every breed, no head-N truncation, because within-breed distribution is the content here. Eight Mastiff/Terrier-clade breeds (the four the paper names plus the four largest others of the clade; Bullmastiff/Continental Bulldog/Cane Corso/Boston Terrier behave the same and were left out only for length), all 6 Labrador Retrievers, all 12 Greek gray wolves = 56 rows. All three genotypes now have real weight instead of one hom-ref animal. Second fix, which was the reason grey read as absence: the display default fills the lane REFERENCE_COLOR and omits hom-ref cells, which is right when a cell means 'carries the variant' and wrong here, since the reference carries the SINEs -- so hom-ref, the state the figure is about, was indistinguishable from empty lane. Set referenceDrawingMode:'draw' and every genotype gets a box on white. Track height 700 divided to exactly 12.5px/row and cut the last wolf row against the track's own border (not the fold, so no viewportHeight would have fixed it); 730 now. Mapped referenceDrawingMode in spec-recipe/fields.ts so the recipe dialog teaches the toggle.",
-    "reviewedAt": "2026-07-29T20:39:01.330Z",
-    "hash": "e67ecbf9693a3054dcfa72cf1f2f0202691aacc7"
+    "note": "need to zoom out more. Unclear what is going on here. FIXED and regenerated (no plugin involved). \"ok two verticalstripes\" was literal: both SINEs are ~220 bp in a 6.5 kb window, so drawn at their true span they were two 35px stripes in an otherwise blank frame and any one animal genotype was a few pixels. Switched to LinearMultiSampleVariantMatrixDisplay, which spaces one column per record: each repeat is now half the panel, a row is two readable cells side by side, and the connector zone under the gene track is what maps a column back to the intron it sits in. Same 56 animals, same referenceDrawingMode:draw, so grey still means the repeat is present. The story reads off the picture now: the Mastiff clade het for both, the Labradors dark for both, the wolves dark on the left column and mixed on the right. Caption updated.",
+    "reviewedAt": "2026-07-30T13:57:15.466Z",
+    "hash": "0b17d79434ac4ca37d6b03fe39f4ffe27396ccca"
   },
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
     "status": "bad",
     "note": "are you happy with this figure? is it showing anything actually interesting? REBUILT, and it was showing nothing: the claim (Saarloos 1 hap1 tracks wolves, hap2 tracks dogs) is true in the data -- 207 alt haplotypes vs 46, against 215-320 for wolves and 35-60 for dogs -- but invisible at 36 sparse salt-and-pepper rows under 264px of information-free painting stripes. Root cause of the weak panel: the block VCF took `head -8 wolves.txt` and `head -8 dogs.txt`, i.e. alphabetical heads, which is how an Alaskan Malamute and an Akita ended up standing in for 'dog' (both wolf-shifted spitz breeds; AMAL hap1 carried more wolf-diagnostic alleles than any wolf). Clustering was tried first and rejected on evidence: at one locus the UPGMA 2-cut is unstable (8/16 to 20/24 wolf purity depending on window), because wolf and dog share most variation. What works is the standard ancestry-informative-marker view. The build script now writes AF_wolf/AF_dog per site with `bcftools +fill-tags -S` over the full FLARE panels (36 European wolves, 318 one-per-breed dogs) before the sample subset, and the display filters `AF_wolf>=0.8 && AF_dog<=0.15` -> 21 markers in one 11 kb LD block. Rows: all 12 Greek gray wolves, all 11 painted animals, all 7 German Shepherd-lineage dogs (the breed both wolfdogs were crossed back to; 0-2 of 21 across its 14 haplotypes, so the negative control is clean). Every painted row carries FLARE's own per-haplotype call in its label AND its swatch AND its gutter tint, so a reader checks rows without a callout. featureColor paints alt cells the painting's wolf orange (the default blue collided with the Dog swatch). Result: 34 of 36 non-reference rows follow their call; the two that do not (Saarloos 2 hap2, Saarloos 4 hap2, both called Dog, both filled) are the figure's point -- these markers average AF 0.86 in wolves and 0.098 in dogs, 11.4% of the collection's 3,138 breed-dog haplotypes carry them, so ~1.9 carriers among 17 dog-called haplotypes is the prediction and there are 2. Also fixed a plugin gap this exposed: getVariantLegendSections dropped the cell legend for ANY custom featureColor, but a plain CSS color is exactly the case a key can be built for, so the figure had no key at all. Plain colors now keep the genotype legend with the alt swatch recolored (test added); popgen/in2lt_per_sample gains a Genotypes key it never had and was regenerated.",
-    "reviewedAt": "2026-07-29T20:40:00.078Z",
-    "hash": "166dacc4cf36bdc8eb60735da8bed24e1dd81638"
+    "reviewedAt": "2026-07-30T14:10:40.188Z",
+    "hash": "9d9d6c3a138c6428e0b28a1889a5b0ef7e03e1e5"
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
@@ -2249,5 +2250,89 @@
     "note": "RESOLVED, same ask applied to this figure (the note's 'stop codon' wording is from the CYP1A2 item; here the effect belongs to the deletion). New callout left of the column, arrow into it: '7.8 kb intron deletion, recessive: / homozygotes have Collie eye anomaly'. Recessive is the load-bearing word -- CEA is recessive (Parker et al. 2007, OMIA 000218-9615), so dark = affected and light = unaffected carrier, which is what a reader could not get from 'heterozygous alt / homozygous alt'. The pill covers only lane the filtered single-record display paints nothing in, so no cell is hidden. Also fixed a real blemish while here: the window ran to 25,600,000, reaching past NHEJ1 (ends 25,595,616) into SLC23A3/LOC111094448, whose packed row overflowed the 110px gene track -- the capture carried the track's overflow widget and a half-cut gene label. Right edge now 25,596,000, so the gene track holds NHEJ1's three transcripts alone. Gallery links regenerated for the new loc. One sentence in dog10k_svs.md backs the recessive claim.",
     "reviewedAt": "2026-07-30T05:39:32.276Z",
     "hash": "9e7cd39da335e12dad21c59fd3b42f2f0707f0a9"
+  },
+  "pangenome/hprc_amylase_graph": {
+    "name": "pangenome/hprc_amylase_graph",
+    "status": "bad",
+    "note": "PLUGIN FIX MADE, FIGURE PENDING A PUBLISH: the changes below are in jbrowse-plugin-graphgenomeview (tests+lint+typecheck green, verified by rendering against a local build), but these PNGs pin esmUrl to a content-addressed bundle, so the committed figure only moves after a betabuild and an esmUrl bump. (1) NEGATIVE LENGTHS GONE: the -94.2 kb was a deletion arc, and a signed number beside a graph can only read as a length that went negative. An arc removes reference rather than carrying negative sequence, so it now says the verb: \"skips 94.2 kb\". (2) MISSING LENGTHS EXPLAINED: the rule was a flat 46 screen px of drawn node regardless of how long the text was, which is invisible from outside the code. Two rules now, both about the drawing: a label has to fit its node within a factor of two (so the answer is in the picture -- the node is shorter than the words), and a label is dropped when its box would overlap one already placed, biggest-allele-first. That second rule also fixes labels printing on top of each other, which this figure did (\"-10 kb3.2 kb\"). Node label coverage roughly doubles here. (3) The alternative alleles now paint one flat charcoal instead of a pale version of the reference-position hue, so the rainbow means reference position and nothing else. Local render checked: no signed labels, no overlaps, backbone reads as a colored thread with charcoal arms off it.",
+    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "hash": "dcbdebf6762de58cd086d25d9df4900561b6e609"
+  },
+  "dog10k-igf1-haplotype": {
+    "name": "dog10k-igf1-haplotype",
+    "status": "bad",
+    "note": "you can consider using the 'matrix' mode for this. hard to see the overarching pattern from snps",
+    "reviewedAt": "2026-07-30T13:58:10.387Z",
+    "hash": "043d6abb048f4037b7de5eb437af2ac0b7c2983c"
+  },
+  "dog10k-slc28a3-copy-number": {
+    "name": "dog10k-slc28a3-copy-number",
+    "status": "bad",
+    "note": "this still has a vertical white bar to left of cnv, looks like glitch potentially",
+    "reviewedAt": "2026-07-30T13:58:31.821Z",
+    "hash": "aa8300d6f4f9516973b793b494181a62b5f3e8a3"
+  },
+  "ld/anopheles_2la": {
+    "name": "ld/anopheles_2la",
+    "status": "bad",
+    "note": "i would like a red text annotation on both cameroon and gabon tracks that says  why this is interesting. remove highlight also",
+    "reviewedAt": "2026-07-30T13:59:08.816Z",
+    "hash": "ee8d8e67f0e41956f7ba0764882b1fd6cb6b6307"
+  },
+  "ld/lct_pooled_vs_panel": {
+    "name": "ld/lct_pooled_vs_panel",
+    "status": "bad",
+    "note": "we need to add the gene track, reduce linezoneheight, and zoom out more. we need to see why this is important. you can also compare to a non-lactase population group explicitly instead of all if that helps.",
+    "reviewedAt": "2026-07-30T13:59:52.294Z",
+    "hash": "75fda41d33c3baf573f2aec21fbcb3e8893a1196"
+  },
+  "mcscan_synteny/anchors_vs_simple": {
+    "name": "mcscan_synteny/anchors_vs_simple",
+    "status": "bad",
+    "note": " in the second screenshot show .anchors.simple and .anchors open at same time",
+    "reviewedAt": "2026-07-30T14:00:42.018Z",
+    "hash": "7b5c85cfdf16964773e07173e9a0dad51819262a"
+  },
+  "mcscan_synteny/dotplot": {
+    "name": "mcscan_synteny/dotplot",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-30T14:00:44.976Z",
+    "hash": "86bb7a64be8e42a0accd234746ff11080fea7d37"
+  },
+  "multiway_synteny/blocks_one_vs_all": {
+    "name": "multiway_synteny/blocks_one_vs_all",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-30T14:02:28.361Z",
+    "hash": "37760caeafac3bdee98e961c3c96ae06d0ba0cbb"
+  },
+  "sv_synteny/ortholog_colors": {
+    "name": "sv_synteny/ortholog_colors",
+    "status": "bad",
+    "note": "the colors are just very bad here. ideally it is drawn from a nice rainbow palette",
+    "reviewedAt": "2026-07-30T14:04:11.895Z",
+    "hash": "0236d1459aacb84a56b0cebc54f85d30b1fea03a"
+  },
+  "sv_synteny/assembly_order_warning": {
+    "name": "sv_synteny/assembly_order_warning",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-30T14:04:19.294Z",
+    "hash": "21fd51427d36a78046cb1b051b88e40700b72ef4"
+  },
+  "pangenome/rgfa_paa_bubble": {
+    "name": "pangenome/rgfa_paa_bubble",
+    "status": "bad",
+    "note": "add to docs, and use a linearsyntenyview instead of just lineargenomeview, showing how it is a big insertion not in the others",
+    "reviewedAt": "2026-07-30T14:05:03.494Z",
+    "hash": "60d98a76dc214d304c92a9006a849da1ac74a99c"
+  },
+  "pangenome/hprc_cfhr_deletion": {
+    "name": "pangenome/hprc_cfhr_deletion",
+    "status": "bad",
+    "note": "unclear to me what 'skips' refers to. is it something missing from reference? we may need to think about this. the 'red' coloring is too close to the rainbow also. ",
+    "reviewedAt": "2026-07-30T14:09:42.273Z",
+    "hash": "bd321d9b0ad105e824dbd51ac7afc07a795231f3"
   }
 }
