@@ -1,15 +1,9 @@
 import { useState } from 'react'
 
-import { AssemblySelector } from '@jbrowse/core/ui'
+import { AssemblySelector, LabeledCheckbox } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Checkbox,
-  FormControlLabel,
-  Link,
-  Paper,
-  Typography,
-} from '@mui/material'
+import { Link, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { DEFAULT_WORKFLOW } from '../AddTrackWidget/workflowNames.ts'
@@ -111,15 +105,11 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
       {rows.length > 0 ? (
         <>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={stripExtensions}
-                onChange={event => {
-                  setStripExtensions(event.target.checked)
-                }}
-              />
-            }
+          <LabeledCheckbox
+            checked={stripExtensions}
+            onChange={val => {
+              setStripExtensions(val)
+            }}
             label="Strip file extensions from track names"
           />
           <TrackPreviewTable

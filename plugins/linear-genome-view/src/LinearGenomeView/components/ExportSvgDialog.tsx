@@ -1,5 +1,9 @@
-import { BaseExportSvgDialog, useExportSvgPreference } from '@jbrowse/core/ui'
-import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
+import {
+  BaseExportSvgDialog,
+  LabeledCheckbox,
+  useExportSvgPreference,
+} from '@jbrowse/core/ui'
+import { MenuItem, TextField } from '@mui/material'
 
 import type { TrackLabelMode } from '../types.ts'
 import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
@@ -36,15 +40,11 @@ export default function ExportSvgDialog({
         model.exportSvg({ ...opts, trackLabels, showGridlines })
       }
       checkboxes={
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showGridlines}
-              onChange={() => {
-                setShowGridlines(val => !val)
-              }}
-            />
-          }
+        <LabeledCheckbox
+          checked={showGridlines}
+          onChange={val => {
+            setShowGridlines(val)
+          }}
           label="Show gridlines"
         />
       }

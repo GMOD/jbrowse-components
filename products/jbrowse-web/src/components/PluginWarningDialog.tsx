@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
-import { ConfirmDialog } from '@jbrowse/core/ui'
-import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
+import { ConfirmDialog, LabeledCheckbox } from '@jbrowse/core/ui'
+import { Alert, Button } from '@mui/material'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
@@ -72,15 +72,11 @@ export default function PluginWarningDialog({
         </Button>
         {show ? <div>{details}</div> : null}
       </Alert>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={remember}
-            onChange={event => {
-              setRemember(event.target.checked)
-            }}
-          />
-        }
+      <LabeledCheckbox
+        checked={remember}
+        onChange={val => {
+          setRemember(val)
+        }}
         label="Remember on this site"
       />
     </ConfirmDialog>

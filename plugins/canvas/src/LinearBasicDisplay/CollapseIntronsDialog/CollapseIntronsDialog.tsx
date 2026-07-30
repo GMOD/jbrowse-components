@@ -1,15 +1,13 @@
 import { useState } from 'react'
 
-import { Dialog, NumberTextField } from '@jbrowse/core/ui'
+import { Dialog, LabeledCheckbox, NumberTextField } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
-  Checkbox,
   DialogActions,
   DialogContent,
   DialogContentText,
-  FormControlLabel,
   FormGroup,
 } from '@mui/material'
 import { isObservableArray } from 'mobx'
@@ -105,26 +103,18 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           className={classes.windowSizeField}
         />
         <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={flip}
-                onChange={event => {
-                  setFlip(event.target.checked)
-                }}
-              />
-            }
+          <LabeledCheckbox
+            checked={flip}
+            onChange={val => {
+              setFlip(val)
+            }}
             label="Reverse region order (read minus-strand gene 5'→3')"
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={soloOnly}
-                onChange={event => {
-                  setSoloOnly(event.target.checked)
-                }}
-              />
-            }
+          <LabeledCheckbox
+            checked={soloOnly}
+            onChange={val => {
+              setSoloOnly(val)
+            }}
             label="Show only this feature (hide others in the track)"
           />
         </FormGroup>

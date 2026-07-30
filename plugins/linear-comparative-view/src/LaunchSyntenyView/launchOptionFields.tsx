@@ -1,7 +1,6 @@
-import { NumberTextField } from '@jbrowse/core/ui'
+import { LabeledCheckbox, NumberTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { HelpTooltip } from '@jbrowse/synteny-core'
-import { Checkbox, FormControlLabel } from '@mui/material'
 
 // The option fields the launch dialogs carry: the pairwise launch (one clicked
 // alignment) and the region launch (every assembly a locus aligns to) ask the
@@ -26,17 +25,13 @@ export function FlipInvertedTargetsCheckbox({
 }) {
   const { classes } = useStyles()
   return (
-    <FormControlLabel
+    <LabeledCheckbox
       className={classes.formControl}
-      control={
-        <Checkbox
-          size="small"
-          checked={checked}
-          onChange={event => {
-            onChange(event.target.checked)
-          }}
-        />
-      }
+      size="small"
+      checked={checked}
+      onChange={val => {
+        onChange(val)
+      }}
       // the "why" is a tooltip rather than two wrapped lines of dialog: an
       // unflipped inverted panel runs right to left, which is what the reader
       // needs on demand, not permanently
@@ -63,17 +58,13 @@ export function CollapsePanelsCheckbox({
 }) {
   const { classes } = useStyles()
   return (
-    <FormControlLabel
+    <LabeledCheckbox
       className={classes.formControl}
-      control={
-        <Checkbox
-          size="small"
-          checked={checked}
-          onChange={event => {
-            onChange(event.target.checked)
-          }}
-        />
-      }
+      size="small"
+      checked={checked}
+      onChange={val => {
+        onChange(val)
+      }}
       label={
         <span>
           Collapse panels to rulers{' '}

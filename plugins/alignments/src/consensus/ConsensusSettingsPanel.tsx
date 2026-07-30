@@ -1,5 +1,6 @@
+import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, FormControlLabel, TextField } from '@mui/material'
+import { TextField } from '@mui/material'
 
 import FractionSlider from './FractionSlider.tsx'
 import SettingLabel from './SettingLabel.tsx'
@@ -70,17 +71,13 @@ export default function ConsensusSettingsPanel({
           setCallFract(v)
         }}
       />
-      <FormControlLabel
+      <LabeledCheckbox
         className={classes.checkbox}
-        control={
-          <Checkbox
-            size="small"
-            checked={ambiguityCodes}
-            onChange={event => {
-              setAmbiguityCodes(event.target.checked)
-            }}
-          />
-        }
+        size="small"
+        checked={ambiguityCodes}
+        onChange={val => {
+          setAmbiguityCodes(val)
+        }}
         label="Report disagreeing positions as IUPAC ambiguity codes"
       />
       {ambiguityCodes ? (
@@ -93,30 +90,22 @@ export default function ConsensusSettingsPanel({
           }}
         />
       ) : null}
-      <FormControlLabel
+      <LabeledCheckbox
         className={classes.checkbox}
-        control={
-          <Checkbox
-            size="small"
-            checked={includeInsertions}
-            onChange={event => {
-              setIncludeInsertions(event.target.checked)
-            }}
-          />
-        }
+        size="small"
+        checked={includeInsertions}
+        onChange={val => {
+          setIncludeInsertions(val)
+        }}
         label="Include insertions supported by the reads"
       />
-      <FormControlLabel
+      <LabeledCheckbox
         className={classes.checkbox}
-        control={
-          <Checkbox
-            size="small"
-            checked={excludeSecondary}
-            onChange={event => {
-              setExcludeSecondary(event.target.checked)
-            }}
-          />
-        }
+        size="small"
+        checked={excludeSecondary}
+        onChange={val => {
+          setExcludeSecondary(val)
+        }}
         label="Exclude secondary alignments"
       />
     </div>

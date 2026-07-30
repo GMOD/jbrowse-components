@@ -1,10 +1,15 @@
 import { useState } from 'react'
 
-import { ErrorBanner, SubmitDialog, TagTextField } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  LabeledCheckbox,
+  SubmitDialog,
+  TagTextField,
+} from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
@@ -139,15 +144,11 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         </Typography>
       ) : null}
       <div>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={colorByTag}
-              onChange={event => {
-                setColorByTag(event.target.checked)
-              }}
-            />
-          }
+        <LabeledCheckbox
+          checked={colorByTag}
+          onChange={val => {
+            setColorByTag(val)
+          }}
           label="Also color reads by this tag"
         />
       </div>

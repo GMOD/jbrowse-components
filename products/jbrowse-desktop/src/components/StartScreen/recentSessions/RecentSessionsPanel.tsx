@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
+import {
+  CascadingMenuButton,
+  ErrorMessage,
+  LabeledCheckbox,
+} from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { mutate, useFetch } from '@jbrowse/core/util/useFetch'
@@ -14,9 +18,7 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
   Button,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   IconButton,
   Menu,
   MenuItem,
@@ -278,27 +280,19 @@ export default function RecentSessionPanel({
             </IconButtonWithTooltip>
           </div>
         ) : null}
-        <FormControlLabel
+        <LabeledCheckbox
           label="Show autosaves"
-          control={
-            <Checkbox
-              checked={showAutosaves}
-              onChange={() => {
-                setShowAutosaves(!showAutosaves)
-              }}
-            />
-          }
+          checked={showAutosaves}
+          onChange={val => {
+            setShowAutosaves(val)
+          }}
         />
-        <FormControlLabel
+        <LabeledCheckbox
           label="Show favorites only"
-          control={
-            <Checkbox
-              checked={showFavoritesOnly}
-              onChange={() => {
-                setShowFavoritesOnly(!showFavoritesOnly)
-              }}
-            />
-          }
+          checked={showFavoritesOnly}
+          onChange={val => {
+            setShowFavoritesOnly(val)
+          }}
         />
 
         <CascadingMenuButton

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
+import { ErrorMessage, LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   getBpDisplayStr,
@@ -12,9 +12,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import {
   Button,
-  Checkbox,
   CircularProgress,
-  FormControlLabel,
   IconButton,
   MenuItem,
   TextField,
@@ -200,21 +198,17 @@ export default function LaunchSyntenyViewForRegionDialog({
             // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
             key={`${row.assemblyName}-${index}`}
           >
-            <FormControlLabel
+            <LabeledCheckbox
               className={classes.panelLabel}
-              control={
-                <Checkbox
-                  size="small"
-                  // the anchor is the assembly the region was selected on, and
-                  // every mate's coordinates were resolved against it, so it is
-                  // in the stack unconditionally — it can only be moved
-                  disabled={row.kind === 'anchor'}
-                  checked={row.kind === 'anchor' || row.checked}
-                  onChange={event => {
-                    setRows(setPanelChecked(rows, index, event.target.checked))
-                  }}
-                />
-              }
+              size="small"
+              // the anchor is the assembly the region was selected on, and
+              // every mate's coordinates were resolved against it, so it is in
+              // the stack unconditionally — it can only be moved
+              disabled={row.kind === 'anchor'}
+              checked={row.kind === 'anchor' || row.checked}
+              onChange={val => {
+                setRows(setPanelChecked(rows, index, val))
+              }}
               label={
                 row.kind === 'anchor'
                   ? `${row.assemblyName} (your selection)`

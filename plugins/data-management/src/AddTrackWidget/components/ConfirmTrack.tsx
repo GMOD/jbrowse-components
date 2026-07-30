@@ -1,6 +1,10 @@
 import { Suspense } from 'react'
 
-import { AssemblySelector, PluggableComponent } from '@jbrowse/core/ui'
+import {
+  AssemblySelector,
+  LabeledCheckbox,
+  PluggableComponent,
+} from '@jbrowse/core/ui'
 import {
   getEnv,
   getSession,
@@ -9,13 +13,7 @@ import {
 } from '@jbrowse/core/util'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { FormControl, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import StatusMessage from './AddTrackStatusMessage.tsx'
@@ -120,16 +118,12 @@ const ConfirmTrack = observer(function ConfirmTrack({
 
         {isElectron && supportedForIndexing && (
           <FormControl>
-            <FormControlLabel
+            <LabeledCheckbox
               label="Index track for text searching?"
-              control={
-                <Checkbox
-                  checked={textIndexTrack}
-                  onChange={e => {
-                    model.setTextIndexTrack(e.target.checked)
-                  }}
-                />
-              }
+              checked={textIndexTrack}
+              onChange={val => {
+                model.setTextIndexTrack(val)
+              }}
             />
           </FormControl>
         )}

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 import type { GridColDef } from '@mui/x-data-grid'
@@ -38,16 +39,12 @@ export default function VariantConsequenceDataGrid({
   // suppress the card entirely rather than show an empty table.
   return rows.length && columns.length ? (
     <BaseCard title={title}>
-      <FormControlLabel
+      <LabeledCheckbox
         label={<Typography variant="body2">Show options</Typography>}
-        control={
-          <Checkbox
-            checked={showOptions}
-            onChange={event => {
-              setShowOptions(event.target.checked)
-            }}
-          />
-        }
+        checked={showOptions}
+        onChange={val => {
+          setShowOptions(val)
+        }}
       />
       <DataGrid
         rowHeight={25}

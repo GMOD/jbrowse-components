@@ -1,4 +1,4 @@
-import { ActionLink } from '@jbrowse/core/ui'
+import { ActionLink, LabeledCheckbox } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { formatRelativeTime, measureGridWidth } from '@jbrowse/core/util'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
@@ -6,13 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
-import {
-  Button,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Tooltip,
-} from '@mui/material'
+import { Button, IconButton, Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -126,15 +120,11 @@ const SessionManager = observer(function SessionManager({
   return (
     <div>
       <div className={classes.mb}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showOnlyFavs}
-              onChange={() => {
-                setShowOnlyFavs(val => !val)
-              }}
-            />
-          }
+        <LabeledCheckbox
+          checked={showOnlyFavs}
+          onChange={val => {
+            setShowOnlyFavs(val)
+          }}
           label="Show favorites only?"
         />
         <Button

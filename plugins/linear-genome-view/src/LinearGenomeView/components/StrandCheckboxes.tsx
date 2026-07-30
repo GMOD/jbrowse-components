@@ -1,9 +1,5 @@
-import {
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  Typography,
-} from '@mui/material'
+import { LabeledCheckbox } from '@jbrowse/core/ui'
+import { FormGroup, Typography } from '@mui/material'
 
 import type { ReactNode } from 'react'
 
@@ -26,28 +22,20 @@ export default function StrandCheckboxes({
   return (
     <>
       <FormGroup row>
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={searchForward}
-              onChange={event => {
-                setSearchForward(event.target.checked)
-              }}
-            />
-          }
+        <LabeledCheckbox
+          size="small"
+          checked={searchForward}
+          onChange={val => {
+            setSearchForward(val)
+          }}
           label="Forward strand"
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={searchReverse}
-              onChange={event => {
-                setSearchReverse(event.target.checked)
-              }}
-            />
-          }
+        <LabeledCheckbox
+          size="small"
+          checked={searchReverse}
+          onChange={val => {
+            setSearchReverse(val)
+          }}
           label="Reverse strand"
         />
         {children}

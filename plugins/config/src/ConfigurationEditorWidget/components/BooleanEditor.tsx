@@ -1,9 +1,5 @@
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-} from '@mui/material'
+import { LabeledCheckbox } from '@jbrowse/core/ui'
+import { FormControl, FormHelperText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const BooleanEditor = observer(function BooleanEditor({
@@ -20,16 +16,12 @@ const BooleanEditor = observer(function BooleanEditor({
 }) {
   return (
     <FormControl>
-      <FormControlLabel
+      <LabeledCheckbox
         label={slot.name}
-        control={
-          <Checkbox
-            checked={!!slot.value}
-            onChange={evt => {
-              slot.set(evt.target.checked)
-            }}
-          />
-        }
+        checked={!!slot.value}
+        onChange={val => {
+          slot.set(val)
+        }}
       />
       <FormHelperText>{slot.description}</FormHelperText>
     </FormControl>

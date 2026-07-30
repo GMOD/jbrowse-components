@@ -1,8 +1,7 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
+import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, FormControlLabel } from '@mui/material'
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
@@ -72,17 +71,13 @@ export default function LaunchSyntenyViewDialog({
       }}
     >
       {region && hasCIGAR ? (
-        <FormControlLabel
+        <LabeledCheckbox
           className={classes.formControl}
-          control={
-            <Checkbox
-              size="small"
-              checked={useRegionOfInterest}
-              onChange={event => {
-                setUseRegionOfInterest(event.target.checked)
-              }}
-            />
-          }
+          size="small"
+          checked={useRegionOfInterest}
+          onChange={val => {
+            setUseRegionOfInterest(val)
+          }}
           label="Use CIGAR to map the current visible region to the target"
         />
       ) : null}

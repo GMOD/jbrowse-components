@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 import DataGridFlexContainer from '../../ui/DataGridFlexContainer.tsx'
-import { SanitizedHTML } from '../../ui/index.ts'
+import { LabeledCheckbox, SanitizedHTML } from '../../ui/index.ts'
 import { getStr, measureGridWidth } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import FieldName from './FieldName.tsx'
@@ -45,15 +45,11 @@ export default function DataGridDetails({
   return (
     <div className={classes.margin}>
       <FieldName prefix={prefix} name={name} />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={checked}
-            onChange={e => {
-              setChecked(e.target.checked)
-            }}
-          />
-        }
+      <LabeledCheckbox
+        checked={checked}
+        onChange={val => {
+          setChecked(val)
+        }}
         label={<Typography variant="body2">Show options</Typography>}
       />
       <DataGridFlexContainer>

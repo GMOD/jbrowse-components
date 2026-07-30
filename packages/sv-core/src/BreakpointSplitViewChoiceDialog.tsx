@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, LabeledCheckbox } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
   DialogContent,
+  FormGroup,
   List,
   ListItemButton,
   ListItemIcon,
@@ -15,7 +16,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Checkbox2 from './Checkbox2.tsx'
 import { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
 import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
 
@@ -149,35 +149,37 @@ const BreakpointSplitViewChoiceDialog = observer(
         title={isSplitLevel ? 'Split level options' : 'Single level options'}
       >
         <DialogContent>
-          {view ? (
-            <Checkbox2
-              checked={copyTracks}
-              label="Copy tracks into the new view"
-              onChange={event => {
-                setCopyTracks(event.target.checked)
-              }}
-            />
-          ) : null}
-
-          {isSplitLevel ? (
-            view && copyTracks ? (
-              <Checkbox2
-                checked={mirror}
-                label="Mirror the copied tracks"
-                onChange={event => {
-                  setMirror(event.target.checked)
+          <FormGroup>
+            {view ? (
+              <LabeledCheckbox
+                checked={copyTracks}
+                label="Copy tracks into the new view"
+                onChange={val => {
+                  setCopyTracks(val)
                 }}
               />
-            ) : null
-          ) : (
-            <Checkbox2
-              checked={focusOnBreakends}
-              label="Focus on breakends"
-              onChange={event => {
-                setFocusOnBreakends(event.target.checked)
-              }}
-            />
-          )}
+            ) : null}
+
+            {isSplitLevel ? (
+              view && copyTracks ? (
+                <LabeledCheckbox
+                  checked={mirror}
+                  label="Mirror the copied tracks"
+                  onChange={val => {
+                    setMirror(val)
+                  }}
+                />
+              ) : null
+            ) : (
+              <LabeledCheckbox
+                checked={focusOnBreakends}
+                label="Focus on breakends"
+                onChange={val => {
+                  setFocusOnBreakends(val)
+                }}
+              />
+            )}
+          </FormGroup>
 
           <TextField
             label="Window size (bp)"

@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
 import {
-  Checkbox,
   CircularProgress,
-  FormControlLabel,
   MenuItem,
   TextField,
   ToggleButton,
@@ -14,6 +12,7 @@ import { observer } from 'mobx-react'
 
 import { getSession } from '../util/index.ts'
 import ErrorBanner from './ErrorBanner.tsx'
+import LabeledCheckbox from './LabeledCheckbox.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 import { useExportSvgPreference } from './useExportSvgPreference.ts'
 
@@ -181,15 +180,11 @@ export default observer(function BaseExportSvgDialog({
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {checkboxes}
           {offscreenCanvas ? (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rasterizeLayers}
-                  onChange={() => {
-                    setRasterizePreference(val => !val)
-                  }}
-                />
-              }
+            <LabeledCheckbox
+              checked={rasterizeLayers}
+              onChange={val => {
+                setRasterizePreference(val)
+              }}
               label="Rasterize canvas based tracks? File may be much larger if this is turned off"
             />
           ) : (

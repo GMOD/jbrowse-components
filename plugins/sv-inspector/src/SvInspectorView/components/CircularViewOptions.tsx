@@ -1,5 +1,5 @@
+import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SvInspectorViewModel } from '../model.ts'
@@ -22,17 +22,11 @@ const CircularViewOptions = observer(function CircularViewOptions({
       className={classes.circularViewOptions}
       style={{ height: svInspector.circularViewOptionsBarHeight }}
     >
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
-            onChange={e => {
-              svInspector.setOnlyDisplayRelevantRegionsInCircularView(
-                e.target.checked,
-              )
-            }}
-          />
-        }
+      <LabeledCheckbox
+        checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
+        onChange={val => {
+          svInspector.setOnlyDisplayRelevantRegionsInCircularView(val)
+        }}
         label="show only regions with data"
       />
     </div>

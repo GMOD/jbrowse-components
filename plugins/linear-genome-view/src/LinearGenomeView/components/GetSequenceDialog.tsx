@@ -4,6 +4,7 @@ import {
   CopyToClipboardButton,
   Dialog,
   ErrorBanner,
+  LabeledCheckbox,
   LoadingEllipses,
   MonospaceTextField,
 } from '@jbrowse/core/ui'
@@ -14,10 +15,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
-  Checkbox,
   DialogActions,
   DialogContent,
-  FormControlLabel,
   FormGroup,
   Typography,
 } from '@mui/material'
@@ -119,26 +118,18 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           }
         />
         <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={rev}
-                onChange={event => {
-                  setRev(event.target.checked)
-                }}
-              />
-            }
+          <LabeledCheckbox
+            checked={rev}
+            onChange={val => {
+              setRev(val)
+            }}
             label="Reverse sequence"
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={comp}
-                onChange={event => {
-                  setComp(event.target.checked)
-                }}
-              />
-            }
+          <LabeledCheckbox
+            checked={comp}
+            onChange={val => {
+              setComp(val)
+            }}
             label="Complement sequence"
           />
         </FormGroup>
