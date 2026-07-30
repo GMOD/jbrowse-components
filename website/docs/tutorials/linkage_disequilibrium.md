@@ -1,84 +1,150 @@
 ---
 title: Linkage disequilibrium
-description: Read an LD triangle across a selective sweep and an inversion
+description: Read an LD triangle, and find out first whether your locus will show up in one
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** JBrowse computes an LD triangle live from phased genotypes and draws
-pairwise r² as a heatmap. The one thing to get right is scale: the triangle is a
-kb-scale local tool, not a way to see megabase structural variants.
+**TL;DR:** JBrowse draws pairwise LD as a triangular heatmap, either computed
+live from phased genotypes or read from precomputed PLINK output. Scale is not
+the limit people assume: a 22 Mb inversion reads as one block. What actually
+decides whether you see anything is the panel, the allele frequency, and the
+metric, and you can test all three before you build a figure.
 
-Linkage disequilibrium (LD) is the tendency for nearby variants to be inherited
-together. JBrowse draws it as a triangular heatmap of pairwise r² between SNPs.
-A red cell means two SNPs are almost always inherited together, and white means
-they are independent, so the triangle shows where a chunk of chromosome moves as
-a unit.
+## Prerequisites
+
+Nothing to install for the two figures below, which load hosted data. The
+[reproduce script](#reproduce-it-end-to-end) needs `plink` (1.9, not plink2),
+`htslib` (`bgzip`, `tabix`), `samtools`, `curl` and `python3`.
+
+## Reading the triangle
+
+A red cell means two variants are almost always inherited together and white
+means they are independent, so the triangle shows where a chunk of chromosome
+travels as a unit. The
+[`LDDisplay`](/docs/config/sharedlddisplay/) is per-population by
+construction: LD is a correlation across whatever samples you hand it.
 
 ## A selective sweep leaves a long haplotype
 
-When positive selection drives one haplotype to high frequency quickly, every
-SNP on it rides along, producing a long stretch of correlated SNPs. The classic
-example is lactase persistence: a regulatory variant near _LCT_ swept recently
-in dairying populations.
+When selection drives one haplotype to high frequency quickly, every variant on
+it rides along, leaving a stretch of correlated variants. Lactase persistence is
+the classic example.
 
-<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235, the -13910 C>T variant in an MCM6 intron associated with lactase persistence. Below it is haplotypic r² computed live from phased 1000 Genomes genotypes, with the recombination track (1 - r² between adjacent SNPs) above the triangle. The solid red block covers the gene, and ends where the recombination curve starts to spike."/>
+<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235; below it is haplotypic r² computed live from phased 1000 Genomes genotypes, with the recombination track above the triangle. The solid block covers the banded gene and ends where the recombination curve spikes."/>
 
-The blue curve above the triangle is the recombination track
+The blue curve is the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
-− r² between adjacent SNPs. It sits near zero across the block and spikes
-outside it, which marks the block's edges.
+− r² between adjacent variants. It sits near zero across the block and spikes
+outside it, marking the block's edges.
 
 ### Compute LD within one panel
 
-r² is a correlation across whatever samples you hand it, so an LD track should
-point at a single population panel. Pooling panels that carry different
-haplotypes at different frequencies averages the correlation away: run this same
-window over the full 1000 Genomes callset instead of the European panel above
-and the block turns pink and fragmented, with no dip in the recombination curve
-left to see. Subset the VCF before loading it:
+Pooling panels that carry different haplotypes at different frequencies averages
+the correlation away. Run the window above over the full 1000 Genomes callset
+instead of one panel and the block turns pink and fragmented, with no dip left in
+the recombination curve. Subset first:
 
 ```bash
 bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
 tabix -p vcf panel.vcf.gz
 ```
 
-## An inversion suppresses recombination
+The same applies to species. A panel mixing two species invents LD that neither
+species has.
 
-An inversion produces a block for a different reason: inverted and standard
-arrangements can't recombine in a heterozygote, so the whole segment stays
-correlated. The 17q21.31 inversion (around _MAPT_) is the standard example.
+## An inversion is what the triangle is best at
 
-The two causes look identical in the triangle alone. Telling them apart needs
-something outside the r² matrix: an annotated causal variant, a breakpoint call,
-or each sample's karyotype, as in the
-[population genomics tutorial](/docs/tutorials/population_genomics)'s fly
-inversion.
+Inverted and standard arrangements cannot recombine in a heterozygote, so
+wherever both are present the whole segment stays correlated. The 2La inversion
+in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, far past what
+can be computed live from a VCF, so this one is precomputed with PLINK and read
+through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
-## LD is a local tool, so mind the scale
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L. The banded region is the published 2La extent: r² fills it in the Cameroon panel, and the Gabon panel below has nothing there under identical settings. Both panels carry a separate block at the low-coordinate end of the arm."/>
 
-r² decays with distance, so the triangle suits a haplotype block a few kb to a
-few hundred kb wide. It is the wrong tool for a large, low-frequency structural
-variant like the _Drosophila_ `In(2L)t` inversion in the
-[population genomics tutorial](/docs/tutorials/population_genomics), where the
-sparse diagnostic SNPs carrying the signal are diluted by the common SNPs around
-them. A windowed scan catches that instead, integrating one statistic (Fst) over
-a large window rather than SNP-pair correlation.
+The band is drawn from the published breakpoint coordinates, so the block's edges
+can be checked against them by eye rather than described. The lower panel is a
+control rather than a second example: that population is effectively fixed for
+one arrangement, so it has no arrangement to correlate.
+
+It is not an empty track, though, and that is the useful part. Both panels show a
+block at the low-coordinate end of the arm, where the arrangement has nothing to
+do with it. A control tells you the display works and the region is genuinely
+uncorrelated; a blank track would only tell you something failed.
+
+## Will your locus show up at all?
+
+A blank or washed-out triangle usually means the locus was never going to show,
+not that the display failed. Four checks, all cheap, and the
+[reproduce script](#reproduce-it-end-to-end) prints the numbers for each:
+
+- **Is there variation left?** A sweep that went to fixation leaves almost no
+  common variants to correlate. Compare common-variant density at your locus
+  against a neutral window in the same panel.
+- **Is the feature segregating in this panel?** Compare long-range LD inside a
+  candidate span against an equally distant control. A population fixed for
+  either arrangement can never show a block, whatever you do to the display.
+- **Is the background already high?** A bottlenecked panel can show a healthy
+  inside/outside ratio while its whole arm renders red. Read the absolute
+  background, not only the ratio.
+- **Is the feature really two alleles?** r² is a two-allele statistic. Where
+  several haplotypes segregate at one locus, they fragment the correlation
+  instead of concentrating it, which is why insecticide-resistance alleles at
+  _Vgsc_ produce no block in this data even though the sweep is real.
+
+## Pick the metric before you blame the data
+
+r² and D' answer different questions and disagree about the same data. D' runs
+higher inside a block, but it also tints the region outside it, while r²
+collapses to near zero there. Contrast against background is what makes a block
+legible, not how bright its cells are, so r² usually draws the sharper boundary
+even though it looks dimmer. Switch with
+[`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric) and compare; the
+reproduce script prints both ratios side by side for every panel.
+
+Raising the minor allele frequency filter
+([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))
+thins dense callsets to the common, block-tagging variants and removes
+rare-allele speckle. Push it too high and it deletes the tagging variants
+themselves, so the block fades.
+
+## Reproduce it end to end
+
+The Anopheles figure is built by
+[`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh):
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ag1000g_ld.sh
+bash build_ag1000g_ld.sh              # writes ./ag1000g_ld_build/jbrowse2
+npx --yes serve ag1000g_ld_build/jbrowse2
+```
+
+It downloads the phased haplotypes and the reference, runs each check in the
+section above and prints the result, builds the tabix-indexed `.ld.gz` tracks,
+and writes a `config.json` opening on the inversion. The numbers it prints are
+how the panel and the metric were chosen, so a different locus can be assessed
+the same way.
+
+Data is Ag1000G phase 2 AR1, whose terms of use were lifted in March 2022. Cite
+the release: Anopheles gambiae 1000 Genomes Consortium, "Genome variation and
+population structure among 1142 mosquitoes of the African malaria vector species
+Anopheles gambiae and Anopheles coluzzii", Genome Research 2020;30:1533-1548.
 
 ## Making an LD track from your own data
 
-Two ways to supply the data, covered in full in the
+Two ways to supply the data, covered in the
 [variant track config guide](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display):
 
-- **Computed live from a VCF**: attach an `LDDisplay` to a `VariantTrack`. r² is
-  computed from the visible region's genotypes, no extra files needed; phased
-  genotypes give exact haplotypic r² (what the figure above uses).
-- **Precomputed with PLINK**: point an `LDTrack` at PLINK `--r2` output, for
-  large cohorts or to match numbers from a published analysis.
+- **Computed live from a VCF**: attach an `LDDisplay` to a `VariantTrack`. No
+  extra files; phased genotypes give exact haplotypic r².
+- **Precomputed with PLINK**: point an `LDTrack` at `plink --r2` output. This is
+  the only option once the region is larger than a VCF's genotypes can be
+  correlated on the fly, and it is what the inversion figure uses.
 
-Raising the minor allele frequency filter thins the dense 1000 Genomes SNPs to
-the common, block-tagging ones, and removes rare-allele r² speckle. That one
-setting does most of the work in the figures above.
+Note that `plink --r2 dprime` does not merely add a column: the modifier also
+switches r² itself to the haplotype-frequency estimate. plink2 removed `--r2`
+and splits it into `--r2-phased` and `--r2-unphased`.
 
 ## See also
 

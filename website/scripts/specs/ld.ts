@@ -9,9 +9,10 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 //
 // A companion MAPT 17q21.31 inversion figure was dropped in 969c44cc21: no
 // accessible callset has usable per-sample genotypes for that inversion, so it
-// could only have been shown with a proxy. The inversion case is covered in
-// prose in the linkage_disequilibrium tutorial, with no figure — don't
-// reintroduce one without real genotypes behind it.
+// could only have been shown with a proxy. The inversion case now has a figure
+// (`ld/anopheles_2la`, below) that clears that bar with real per-sample phased
+// genotypes, in a mosquito rather than a proxy human callset — the standing
+// rule is unchanged, don't add an inversion figure without genotypes behind it.
 //
 // Data is a region slice of the phase3 1000 Genomes VCF (chr2:135.8–137.4 Mb)
 // re-hosted on jbrowse.org S3 so the figure and its live "Open in JBrowse" link
@@ -25,8 +26,12 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // is 0.83 within the 503-sample European panel and 0.48 pooled, and the
 // recombination curve's dip over the block only exists in the former. The
 // panel was cut with `bcftools view -S` and uploaded beside the pooled file.
-// Don't put two population panels side by side to make this point — that reads
-// as a comparison between groups rather than one about how r² is computed.
+// Don't put two *human* population panels side by side to make this point — a
+// figure comparing human groups is not what this page is for, and the point is
+// about how r² is computed rather than about the groups. Stacked panels are
+// fine where the populations aren't human: the Anopheles figure below is two
+// mosquito panels, because there the presence and absence of the arrangement
+// *is* the result.
 const HG19_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg19/config.json')}`
 
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
@@ -75,7 +80,124 @@ const LCT_HIGHLIGHT = [
   },
 ]
 
+// The 2La inversion in Anopheles gambiae: ~22 Mb of chromosome arm 2L that does
+// not recombine in a heterozygote, so wherever both arrangements segregate the
+// whole segment travels as one unit. This is the case precomputed LD exists for
+// — 22 Mb is far past what an LDDisplay can compute live from a VCF, so the r²
+// comes from `plink --r2` read back through PlinkLDTabixAdapter.
+//
+// Built by scripts/build_ag1000g_ld.sh from Ag1000G phase 2 AR1 phased
+// haplotypes. That script prints the evidence for each choice made here rather
+// than asserting it; re-run it to re-derive any claim below.
+//
+// Phase 2 rather than the current release for two reasons, the second deciding
+// it: Ag3's documented download URLs return 403 to anonymous callers, AND phase
+// 1/2 terms of use were lifted in March 2022 (fully open access) while phase 3
+// still reserves first global analyses to the Consortium. Open access still
+// asks that the release be cited, which the tutorial does:
+//   Anopheles gambiae 1000 Genomes Consortium. Genome variation and population
+//   structure among 1142 mosquitoes of the African malaria vector species
+//   Anopheles gambiae and Anopheles coluzzii. Genome Res 2020;30:1533-1548.
+//
+// WHY THESE TWO PANELS. An inversion can only show a block where both
+// arrangements are present, so the panel is not interchangeable. The script's
+// probe table ranks every panel by long-range LD inside the span against
+// outside it: Cameroon is the strongest with the lowest background, and Gabon
+// sits below 1x, meaning it is effectively fixed for one arrangement. That is
+// what makes the lower panel a control rather than a second example: the same
+// file, the same window, the same settings, and nothing inside the band.
+//
+// Note the Gabon panel is NOT empty overall, it just has nothing where the
+// inversion is. It carries its own block at the low-coordinate end of the arm,
+// near Vgsc, because both resistance alleles at codon 995 segregate in that
+// population so there is something there to correlate. Don't caption it as a
+// blank track.
+//
+// WHY r² AND NOT D'. D' is brighter inside the span but also tints the region
+// outside it, while r² collapses to near zero there, so r² draws much the
+// sharper boundary despite dimmer cells. Contrast against background, not cell
+// brightness, is what makes a block legible.
+//
+// ASSEMBLY: the hosted UCSC anoGam3 hub. anoGam3 is AgamP3 and the LD is on
+// AgamP4, which sounds wrong but is safe for the arms: 2L/2R/3L/3R are
+// byte-identical between the two releases (verified by sequence comparison at
+// both 2La breakpoints and at Vgsc; AgamP4's changes were to unplaced
+// scaffolds). The hub names the arm chr2L and the .ld.gz names it 2L, which its
+// chromAlias reconciles at query time, exactly as the hg19 case above does.
+const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoGam3/config.json')}`
+
+const agLdTrack = (trackId: string, name: string, file: string) => ({
+  type: 'LDTrack',
+  trackId,
+  name,
+  assemblyNames: ['anoGam3'],
+  adapter: {
+    type: 'PlinkLDTabixAdapter',
+    uri: `https://jbrowse.org/demos/popgen/${file}`,
+  },
+  displays: [
+    {
+      type: 'LDTrackDisplay',
+      ldMetric: 'r2',
+      // lay SNPs out at their real coordinates, not evenly spaced, so the
+      // block's edges land where the inversion's edges are
+      useGenomicPositions: true,
+      showLegend: true,
+      height: 300,
+    },
+  ],
+})
+
+// Published 2La extent (White et al. 2007, AgamP3 coordinates, which are the
+// AgamP4 ones on this arm). It is banded rather than described so the reader can
+// check the claim by eye: the block fills the band and the rest of the arm is
+// white. The band is drawn by JBrowse from these coordinates, so unlike a
+// painted-on callout it cannot drift from the data.
+const TWO_LA_HIGHLIGHT = [
+  { refName: 'chr2L', start: 20_524_058, end: 42_165_532, assemblyName: 'anoGam3' },
+]
+
 export const ldSpecs: ScreenshotSpec[] = [
+  {
+    mode: 'url',
+    name: 'ld/anopheles_2la',
+    url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        agLdTrack(
+          'ag1000g_2l_cmgam',
+          'Cameroon, both arrangements segregating (r²)',
+          'ag1000g_2L_CMgam.ld.gz',
+        ),
+        agLdTrack(
+          'ag1000g_2l_gagam',
+          'Gabon, fixed for one arrangement (r²)',
+          'ag1000g_2L_GAgam.ld.gz',
+        ),
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'anoGam3',
+          // the whole arm, so the block is bounded by white on both sides
+          // rather than cropped to the answer
+          loc: 'chr2L',
+          highlight: TWO_LA_HIGHLIGHT,
+          // No gene track. A whole arm is ~38 kb per pixel, so a gene is well
+          // under one pixel and the track contributes nothing but a "Too many
+          // features" banner across the top; showOnlyGenes changes which
+          // features are admitted, not whether they can be resolved.
+          tracks: [
+            { trackId: 'ag1000g_2l_cmgam', type: 'LDTrackDisplay' },
+            { trackId: 'ag1000g_2l_gagam', type: 'LDTrackDisplay' },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readyTimeout: 180000,
+    // two LD tracks(300 each) + 2 headers + ruler/overview
+    viewportHeight: 770,
+    settleMs: 25000,
+  },
   {
     mode: 'url',
     name: 'ld/lct_lactase',
