@@ -8,12 +8,13 @@ import { convertTagsToPlainArrays } from '../shared/util.ts'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 
+import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-export default class CramSlightlyLazyFeature implements Feature {
+export default class CramSlightlyLazyFeature implements MismatchFeature {
   // parameter properties auto-create the record/adapter fields
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
   constructor(

@@ -5,10 +5,14 @@ import { extractPerBaseLetter } from './extract.ts'
 import type { PerBaseLetterEntry } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+// `numericCigar: false` models an adapter that carries only the text CIGAR —
+// NUMERIC_CIGAR is an optimization BAM/CRAM can supply for free, not something a
+// feature has to have (see packedCigarOps).
 function makeFeature(opts: {
   start: number
   cigar: string
   seq: string
+  numericCigar?: boolean
 }): Feature {
   const numericCigar = new Uint32Array(parseCigar2(opts.cigar))
   return {
@@ -20,7 +24,7 @@ function makeFeature(opts: {
         case 'CIGAR':
           return opts.cigar
         case 'NUMERIC_CIGAR':
-          return numericCigar
+          return opts.numericCigar === false ? undefined : numericCigar
         case 'seq':
           return opts.seq
         default:
@@ -36,6 +40,7 @@ function run(opts: {
   seq: string
   regionStart?: number
   regionEnd?: number
+  numericCigar?: boolean
 }) {
   const out: PerBaseLetterEntry[] = []
   extractPerBaseLetter(
@@ -122,6 +127,29 @@ describe('extractPerBaseLetter', () => {
       [202, 'G'],
       [203, 'T'],
     ])
+  })
+
+  // A text-only adapter (SAM, or any plugin-supplied feature) must paint the
+  // same bases as one handing over the packed array — otherwise NUMERIC_CIGAR is
+  // a hidden requirement whose absence silently draws nothing.
+  test('a text-only CIGAR gives the same result as the packed one', () => {
+    const args = { start: 100, cigar: '2S3M2I2M2D2M', seq: 'NNACGTTGTAC' }
+    expect(run({ ...args, numericCigar: false })).toEqual(run(args))
+    expect(run({ ...args, numericCigar: false })).toEqual([
+      [100, 'A'],
+      [101, 'C'],
+      [102, 'G'],
+      [103, 'G'],
+      [104, 'T'],
+      [107, 'A'],
+      [108, 'C'],
+    ])
+  })
+
+  test('no CIGAR at all: emits nothing', () => {
+    expect(
+      run({ start: 100, cigar: '', seq: 'ACGT', numericCigar: false }),
+    ).toEqual([])
   })
 
   test('missing seq: emits nothing', () => {

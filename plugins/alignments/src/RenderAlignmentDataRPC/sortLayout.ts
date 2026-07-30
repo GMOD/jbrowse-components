@@ -12,6 +12,16 @@ import type { PileupDataResult } from './types'
 
 const DELETION_CHAR = 42 // '*'
 
+// Sort types that rank reads by the longest interbase event at the sort
+// position, mapped to the interbase kind each one measures. A lookup miss is
+// what identifies the comparator-based types (position/strand/tag), so this
+// table is the whole "is this an interbase sort" test.
+const INTERBASE_SORT_TYPES: Partial<Record<SortedBy['type'], number>> = {
+  insertion: INTERBASE_INSERTION,
+  softclip: INTERBASE_SOFTCLIP,
+  hardclip: INTERBASE_HARDCLIP,
+}
+
 /**
  * Total order over read indices, used as the final tiebreak of every placement
  * order in this file: genomic span first, then the read's unique id.
@@ -164,6 +174,7 @@ function buildSortKeyMap(
   sortPos: number,
 ): { map: Map<number, number>; desc: boolean } | undefined {
   let result: { map: Map<number, number>; desc: boolean } | undefined
+  const targetType = INTERBASE_SORT_TYPES[type]
   if (type === 'basePair') {
     const { mismatchReadIndices, mismatchPositions, mismatchBases } = data
     const { gapReadIndices, gapPositions, gapTypes } = data
@@ -186,13 +197,7 @@ function buildSortKeyMap(
       }
     }
     result = { map: baseAtPos, desc: false }
-  } else if (['insertion', 'softclip', 'hardclip'].includes(type)) {
-    const targetType =
-      type === 'insertion'
-        ? INTERBASE_INSERTION
-        : type === 'softclip'
-          ? INTERBASE_SOFTCLIP
-          : INTERBASE_HARDCLIP
+  } else if (targetType !== undefined) {
     const { interbaseReadIndices, interbasePositions } = data
     const { interbaseLengths, interbaseTypes } = data
     const lengthAtPos = new Map<number, number>()

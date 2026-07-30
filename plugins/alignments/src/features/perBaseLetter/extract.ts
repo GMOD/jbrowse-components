@@ -1,4 +1,7 @@
-import { forEachAlignedBaseInRegion } from '../alignedBaseWalk.ts'
+import {
+  forEachAlignedBaseInRegion,
+  packedCigarOps,
+} from '../alignedBaseWalk.ts'
 
 import type { PerBaseLetterEntry } from './types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -14,7 +17,7 @@ export function extractPerBaseLetter(
   out: PerBaseLetterEntry[],
 ) {
   const seq = feature.get('seq') as string | undefined
-  const cigarOps = feature.get('NUMERIC_CIGAR') as ArrayLike<number> | undefined
+  const cigarOps = packedCigarOps(feature)
   if (seq && seq.length > 0 && cigarOps && cigarOps.length > 0) {
     const start = feature.get('start')
     forEachAlignedBaseInRegion(cigarOps, start, region, (position, q) => {

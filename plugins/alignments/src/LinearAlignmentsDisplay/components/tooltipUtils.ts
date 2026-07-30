@@ -97,18 +97,14 @@ export function formatLenRange(minLen: number, maxLen: number) {
 
 const PAIR_ORIENTATION_NAMES = ['', 'LR', 'RL', 'RR', 'LL'] as const
 
-function orientationDescription(pairOrientation: number) {
-  const name = PAIR_ORIENTATION_NAMES[pairOrientation] ?? ''
-  if (name === 'RR') {
-    return 'Both mates reverse strand'
-  }
-  if (name === 'RL') {
-    return 'Outward facing pair'
-  }
-  if (name === 'LL') {
-    return 'Both mates forward strand'
-  }
-  return name ? `Abnormal orientation (${name})` : undefined
+// Only the abnormal orientations get a line of their own — LR (1) is the normal
+// pair and 0 is "unknown", neither of which is worth reporting. Indexed by the
+// same pairOrientationToNum encoding as PAIR_ORIENTATION_NAMES, so a lookup miss
+// IS the "nothing to say" answer and no separate `> 1` guard is needed.
+const ABNORMAL_ORIENTATION_DESCRIPTIONS: Record<number, string> = {
+  2: 'Outward facing pair',
+  3: 'Both mates reverse strand',
+  4: 'Both mates forward strand',
 }
 
 // Human-readable pair anomalies for the tooltip. An unmapped mate or an
@@ -152,11 +148,9 @@ function getPairTypeDescriptions({
     ]
   }
   const out: string[] = []
-  if (pairOrientation > 1) {
-    const orient = orientationDescription(pairOrientation)
-    if (orient) {
-      out.push(orient)
-    }
+  const orient = ABNORMAL_ORIENTATION_DESCRIPTIONS[pairOrientation]
+  if (orient) {
+    out.push(orient)
   }
   const insertClass = classifyInsertSize(insertSize, insertSizeStats)
   if (insertClass === 'long') {

@@ -7,13 +7,14 @@ import {
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
+import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type BamAdapter from './BamAdapter.ts'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
   extends BamRecord
-  implements Feature
+  implements MismatchFeature
 {
   public adapter!: BamAdapter
   // shared region-wide reference string (covers many reads); refOffset locates

@@ -152,14 +152,23 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       checkStopToken(stopToken)
 
       for (const record of records) {
-        // a record carrying MD needs no reference and walks in full, so leave
-        // its span unbounded (see BamSlightlyLazyFeature.forEachMismatch)
-        if (!record.NUMERIC_MD && regionSeq !== undefined && span) {
-          // share the one region string; refOffset locates this read in it
-          record.ref = regionSeq
-          record.refOffset = record.start - span.start
-        }
-        observer.next(record)
+        // A record carrying MD needs no reference and walks in full, so leave
+        // its span unbounded (see BamSlightlyLazyFeature.forEachMismatch);
+        // otherwise emit a view bound to this region's shared reference string,
+        // with refOffset locating the read in it.
+        //
+        // A VIEW, not a write onto the record: unlike BAM's per-region records,
+        // these instances are cached for the file's lifetime and every region's
+        // fetch gets the same object. Since a display puts all its needed
+        // regions in flight at once, writing `ref`/`refOffset` here let the last
+        // fetch to resolve relocate the read in every other region — a read
+        // overlapping two of them then walked one region's mismatches against
+        // the other's sequence.
+        observer.next(
+          !record.NUMERIC_MD && regionSeq !== undefined && span
+            ? record.withRegionRef(regionSeq, record.start - span.start)
+            : record,
+        )
       }
       observer.complete()
     }, stopToken)

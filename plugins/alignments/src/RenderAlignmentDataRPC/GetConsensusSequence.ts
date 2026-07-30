@@ -5,14 +5,12 @@ import {
 } from '@jbrowse/alignments-core'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import { isMismatchFeature } from '../shared/extractCigarFeatures.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 
 import type { FilterBy } from '../shared/types.ts'
-import type {
-  ConsensusFeature,
-  ConsensusVariant,
-} from '@jbrowse/alignments-core'
+import type { ConsensusVariant } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -96,9 +94,11 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
 
     const reference = regionSequence.slice(region.start - regionSequenceStart)
 
-    const features = featuresArray.filter(
-      (f): f is typeof f & ConsensusFeature => 'forEachMismatch' in f,
-    )
+    // Only per-base alignment features can be tallied — the same discriminator
+    // the render path uses, rather than a second inline `'forEachMismatch' in f`
+    // that could drift from it. `MismatchFeature` satisfies core's
+    // `ConsensusFeature` structurally.
+    const features = featuresArray.filter(f => isMismatchFeature(f))
 
     // Features are already flag-filtered at fetch time by filterBy; reuse the
     // same flagExclude here so the tally can't re-drop reads the user chose to

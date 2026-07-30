@@ -1478,6 +1478,14 @@ export default function stateModelFactory(
          * off-path skips the per-read region scan entirely. Source of truth for
          * the per-section arc feed (`sourceSections`) and the shared cross-group
          * `arcsYDomainBp`.
+         *
+         * Hidden lanes are skipped, not just unread: the per-section consumers
+         * look this up by an already-filtered `groupOrder` key, but the
+         * cross-group scans (`arcsYDomainBp`, `arcLegendCategories`) walk every
+         * entry — so a hidden lane's arcs would size the read-cloud Y axis the
+         * visible lanes share and key legend swatches for arcs nothing draws.
+         * Skipping also saves the whole per-read arc pass over a lane no section
+         * renders.
          */
         get arcsByGroup() {
           const out = new Map<string, Map<number, ArcsUploadData>>()
@@ -1513,8 +1521,11 @@ export default function stateModelFactory(
               ? (refName: string) => assembly.getCanonicalRefName2(refName)
               : undefined,
           }
+          const hidden = self.hiddenGroupKeys
           for (const [key, rawMap] of this.rawDataByGroup) {
-            out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))
+            if (!hidden.has(key)) {
+              out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))
+            }
           }
           return out
         },

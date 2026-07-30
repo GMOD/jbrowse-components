@@ -25,14 +25,41 @@ import type {
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature } from '@jbrowse/core/util'
 
-// Alignment features (BAM/CRAM) expose a zero-alloc mismatch iterator on top of
-// the base Feature interface.
+/**
+ * The capability an alignment source adds on top of `Feature`: per-base CIGAR
+ * detail. BAM, CRAM and SAM implement it; a synteny/PAF block does not.
+ *
+ * Implemented explicitly (`implements MismatchFeature`) by all three adapter
+ * feature classes, so this is the checked contract rather than a convention.
+ * That matters because the render path reads most of it through the untyped
+ * `feature.get(<string>)`, where a member that quietly went missing produced no
+ * error — just a blank overlay or a NaN.
+ *
+ * Required vs. optional is the whole point of the split below.
+ */
 export interface MismatchFeature extends Feature {
+  // The zero-alloc mismatch iterator, and the discriminator `isMismatchFeature`
+  // probes for.
   forEachMismatch: (
     callback: MismatchCallback,
     windowStart?: number,
     windowEnd?: number,
   ) => void
+
+  // REQUIRED. The render path reads the start clip from here instead of
+  // building a CIGAR string per read — expensive for CRAM, which would also
+  // retain the string in its feature LRU. Read straight off the packed CIGAR by
+  // every implementer (`clipLengthAtStartOfReadNumeric`).
+  readonly clipLengthAtStartOfRead: number
+
+  // OPTIONAL — a performance hint, never a requirement. The packed
+  // `(len << 4) | opIndex` CIGAR: BAM and CRAM already hold it in that form
+  // straight out of the binary record, so handing it over saves consumers a
+  // parse. A source that has only the text `CIGAR` omits it and renders
+  // identically — `packedCigarOps` (features/alignedBaseWalk.ts) parses the
+  // string instead. Anything reading this MUST go through that helper, or the
+  // hint silently becomes a requirement.
+  readonly NUMERIC_CIGAR?: ArrayLike<number>
 }
 
 // Only BAM/CRAM features carry per-base mismatch/CIGAR detail. Other features

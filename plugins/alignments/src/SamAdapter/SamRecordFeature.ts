@@ -15,6 +15,7 @@ import {
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 
+import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { SamRecordData } from './parseSam.ts'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -29,6 +30,16 @@ function encodeMd(md: string) {
   return out
 }
 
+// The packed forms of one record, memoized on a holder shared by every region
+// view of it (see `withRegionRef`) rather than on the feature object — a view is
+// a second object over the same record, and memoizing per-object would re-parse
+// the CIGAR/SEQ/MD once per region the read appears in.
+interface NumericCache {
+  cigar?: Uint32Array
+  seq?: Uint8Array
+  md?: Uint8Array
+}
+
 /**
  * A SAM text alignment as a `Feature`, exposing the same fields and the same
  * `forEachMismatch` walk that BAM/CRAM records do — so a SAM record renders in
@@ -39,20 +50,38 @@ function encodeMd(md: string) {
  * objects live for the lifetime of the loaded file (unlike BAM's per-region
  * records), so a pan back over the same reads reuses them.
  */
-export default class SamRecordFeature implements Feature {
-  // shared region-wide reference string; refOffset locates this read within it.
-  // Set by the adapter for records with no MD tag, exactly as BamAdapter does.
-  public ref?: string
-  public refOffset = 0
-
-  private numericCigar?: Uint32Array
-  private numericSeq?: Uint8Array
-  private numericMd?: Uint8Array
-
+export default class SamRecordFeature implements MismatchFeature {
   constructor(
     private record: SamRecordData,
     private uniqueId: string,
+    // Shared with every region view of this record; the adapter's cached
+    // instance creates it and `withRegionRef` passes it along.
+    private numeric: NumericCache = {},
+    // Region-wide reference string this view resolves its mismatches against,
+    // and this read's index into it. Immutable, and set only by
+    // `withRegionRef`: because the adapter caches one record object for the
+    // file's lifetime, every displayed region's fetch sees the SAME instance,
+    // so writing the fetched region's reference onto it would relocate the read
+    // for every other region in flight (all needed regions are fetched at once).
+    public readonly ref?: string,
+    public readonly refOffset = 0,
   ) {}
+
+  /**
+   * A per-fetch view of this record bound to one region's reference slice.
+   * Shares the record and its packed-array cache, and keeps the same feature id
+   * — ids must not depend on the queried region (the pileup's read lookups
+   * compare them across regions).
+   */
+  withRegionRef(ref: string, refOffset: number) {
+    return new SamRecordFeature(
+      this.record,
+      this.uniqueId,
+      this.numeric,
+      ref,
+      refOffset,
+    )
+  }
 
   id() {
     return this.uniqueId
@@ -131,23 +160,23 @@ export default class SamRecordFeature implements Feature {
   }
 
   get NUMERIC_CIGAR() {
-    this.numericCigar ??= parseCigar2Typed(this.record.CIGAR)
-    return this.numericCigar
+    this.numeric.cigar ??= parseCigar2Typed(this.record.CIGAR)
+    return this.numeric.cigar
   }
 
   get NUMERIC_SEQ() {
-    this.numericSeq ??= encodeSeqNumeric(this.record.seq)
-    return this.numericSeq
+    this.numeric.seq ??= encodeSeqNumeric(this.record.seq)
+    return this.numeric.seq
   }
 
   // An MD tag makes the walk reference-free; without one the adapter supplies
   // `ref` instead.
   get NUMERIC_MD() {
     const md = this.record.tags.MD
-    if (this.numericMd === undefined && typeof md === 'string') {
-      this.numericMd = encodeMd(md)
+    if (this.numeric.md === undefined && typeof md === 'string') {
+      this.numeric.md = encodeMd(md)
     }
-    return this.numericMd
+    return this.numeric.md
   }
 
   get clipLengthAtStartOfRead() {
