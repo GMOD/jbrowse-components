@@ -237,6 +237,10 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
   ),
   showOnlyGenes: checkbox('Show only genes'),
+  // Three sibling checkboxes at the top of the reference-sequence track menu
+  // (LinearReferenceSequenceDisplay.trackMenuItems)
+  showForward: checkbox('Show forward'),
+  showReverse: checkbox('Show reverse'),
   showTranslation: checkbox('Show translation'),
   showSashimiLabels: checkbox('Sashimi arcs → Show labels'),
   readConnectionsDown: checkbox(

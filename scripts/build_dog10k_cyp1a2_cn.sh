@@ -30,9 +30,11 @@
 #     dropped, which is the only cross-sample step in the script.
 #
 # The output is the paper's own presentation: each window rounded to an integer
-# copy number and colored by it, with the palette from QuicK-mer2's
-# make-colortrack-fordisplay.py (2 black, 3 dark blue, 4 blue, 5 cyan, 6 green)
-# and adjacent equal windows merged. That is a BED9 painting, one row per dog.
+# copy number and colored by it, adjacent equal windows merged. That is a BED9
+# painting, one row per dog. The palette is NOT QuicK-mer2's
+# make-colortrack-fordisplay.py one (2 black, 3 dark blue, 4 blue, 5 cyan, 6
+# green): see CN_COLOR below for why a filled block wants a light baseline where
+# a line plot wants black.
 #
 # Fifteen dogs is every CRAM the share publishes, but not every dog it has depth
 # for. The SNV callset carries a per-sample DP at every site for all 1,987
@@ -222,9 +224,15 @@ flank_left_end, flank_right_start = int(sys.argv[1]), int(sys.argv[2])
 # single window carries.
 FLANK_TOLERANCE = 0.2
 
-CN_COLOR = {0: '224,224,224', 1: '160,160,160', 2: '0,0,0', 3: '0,0,153',
-            4: '51,51,255', 5: '0,255,255', 6: '0,153,0', 7: '255,255,0',
-            8: '255,153,51', 9: '153,76,0', 10: '204,0,0'}
+# Diverging about copy number two: red for loss, a light grey baseline, then
+# blue -> purple -> magenta for gain. Copy number two is ~78% of the painted
+# area, so giving the baseline the least ink is what lets the expansion read;
+# QuicK-mer2's own black-at-two palette is built for a line plot, where two is a
+# thin trace rather than a filled block. Grey rather than white, so the baseline
+# stays distinct from a window dropped as unmeasurable, which paints nothing.
+CN_COLOR = {0: '165,15,21', 1: '251,146,114', 2: '224,224,224',
+            3: '158,202,225', 4: '66,146,198', 5: '8,81,156', 6: '8,48,107',
+            7: '84,39,143', 8: '136,20,148', 9: '190,20,140', 10: '240,20,130'}
 
 paths = sorted(glob.glob('cn.*.bedGraph'))
 cohort = {}
@@ -287,7 +295,7 @@ bcftools query -l dp.vcf.gz > cohort.samples
 bcftools query -f '%POS[\t%DP]\n' dp.vcf.gz > cohort.dp
 
 python3 - "$CHROM" "$BIN" "$FLANK_LEFT_END" "$FLANK_RIGHT_START" <<'PY'
-import glob, os, statistics, sys
+import glob, json, os, statistics, sys
 
 chrom, BIN = sys.argv[1], int(sys.argv[2])
 flank_left_end, flank_right_start = int(sys.argv[3]), int(sys.argv[4])
@@ -296,9 +304,15 @@ FLANK_TOLERANCE = 0.2
 # measurement rather than a coincidence.
 MINSITES = 10
 
-CN_COLOR = {0: '224,224,224', 1: '160,160,160', 2: '0,0,0', 3: '0,0,153',
-            4: '51,51,255', 5: '0,255,255', 6: '0,153,0', 7: '255,255,0',
-            8: '255,153,51', 9: '153,76,0', 10: '204,0,0'}
+# Diverging about copy number two: red for loss, a light grey baseline, then
+# blue -> purple -> magenta for gain. Copy number two is ~78% of the painted
+# area, so giving the baseline the least ink is what lets the expansion read;
+# QuicK-mer2's own black-at-two palette is built for a line plot, where two is a
+# thin trace rather than a filled block. Grey rather than white, so the baseline
+# stays distinct from a window dropped as unmeasurable, which paints nothing.
+CN_COLOR = {0: '165,15,21', 1: '251,146,114', 2: '224,224,224',
+            3: '158,202,225', 4: '66,146,198', 5: '8,81,156', 6: '8,48,107',
+            7: '84,39,143', 8: '136,20,148', 9: '190,20,140', 10: '240,20,130'}
 
 samples = [line.strip() for line in open('cohort.samples')]
 depths = [{} for _ in samples]
@@ -382,6 +396,16 @@ print('over the element the collection medians %.2f copies; %d of %d dogs '
       '(%.0f%%) round to three or more'
       % (statistics.median(over), sum(v >= 2.5 for v in over), len(over),
          100 * sum(v >= 2.5 for v in over) / len(over)))
+
+# The display's `legend` config slot restates this palette, because BED9 carries
+# a color per feature and nothing to key a category off. Nothing checks the two
+# agree, and they have drifted before (the painting was recolored and the legend
+# was not), so print the block to paste rather than leaving it to be remembered.
+print()
+print('legend slot for the copy-number displays, paste into the track config:')
+print(json.dumps([{'label': 'CN %d' % cn, 'color': 'rgb(%s)' % rgb}
+                  for cn, rgb in sorted(CN_COLOR.items())
+                  if cn in {int(r[3].split()[1]) for r in rows}], indent=2))
 PY
 
 bgzip -f dog10k_cyp1a2_cohort_cn.bed
@@ -390,4 +414,5 @@ tabix -f -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 echo
 echo "Wrote $(pwd)/dog10k_cyp1a2_cn.bed.gz, one painted row per CRAM dog, and"
 echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset."
-echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay."
+echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
+echo "check its legend slot against the block printed above."

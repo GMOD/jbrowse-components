@@ -2190,30 +2190,30 @@
   "dog10k-cyp1a2-cohort-copy-number": {
     "name": "dog10k-cyp1a2-cohort-copy-number",
     "status": "bad",
-    "note": "it it helps, add breed label sidebar colors too tree-sidebar",
+    "note": "it it helps, add breed label sidebar colors too tree-sidebar PALETTE CHANGED as agreed: diverging about copy number two (red loss / grey baseline / blue-purple-magenta gain) instead of black-at-two. CN2 was 78% of the painted bp, so the baseline had the most ink; the expansion over CYP1A2 is now the only ink and the losses read as a distinct direction. Recolored the committed BEDs itemRgb in place (no CRAM or VCF refetch) and updated both CN_COLOR blocks in build_dog10k_cyp1a2_cn.sh plus its header, which still described QuicK-mer2 colors. Found and fixed a drift trap while doing it: the legend is a hand-written `legend` config slot that restates the palette, so the first regen shipped a picture and a legend that disagreed. Both slots updated, and the build script now prints the legend JSON to check against. BREED BOXES not built: SvgRowLabels bails below a 6px row and a row here is 0.32px, so it needs a row-annotation stripe in the tree gutter, drawn independently of the label box. Design validated (reserve a fixed stripe width in treeSidebarRightEdge so labels shift, own thin canvas at left:treeAreaWidth, resize handle moves right by the same, drawn even when showTree is false, sources gain an annotation color) but not implemented -- it is a shared tree-sidebar package change affecting variants/MAF/multirow and wants its own tests. Caption fixed meanwhile: it claimed rows were sorted by sample ID when the spec clusters.",
     "reviewedAt": "2026-07-29T20:36:53.455Z",
-    "hash": "ee5f3693a92a953abc07e53dda6d1aabd1d36a8b"
+    "hash": "21d3b551571967796090565a3127e629e1e20bda"
   },
   "dog10k-cyp1a2-copy-number": {
     "name": "dog10k-cyp1a2-copy-number",
     "status": "bad",
-    "note": "this figure is less interesting after we did the full cohort. does this show something actually interesting? there is also a white gap in the middle, not sure if that is a bug?",
+    "note": "this figure is less interesting after we did the full cohort. does this show something actually interesting? there is also a white gap in the middle, not sure if that is a bug? The white gap is NOT a bug -- proven. chr30:38,265,000-38,270,000 is 91.7% RepeatMasker-annotated (413 unique bp of 5,000), below the script MINUNIQUE=1000, so it is dropped for every dog identically; 38,225,000 goes the same way at 893 bp. The cohort figure fills it because callset depth filters on MINSITES instead. The caption already said this. Fixed the real defect: 730px cut the last dog row. Open question left for you: CN2 is 78% of the painted area in both CN figures and it is solid black, so the baseline gets maximum ink and the amplification has to compete with it. Inverting to a light baseline with the ramp reserved for gains is a palette change to both figures and the build script -- your call, since black-CN2 is QuicK-mer2 own convention. RETIRED per your call ('i dont really want to use that random subset of cram'). Spec and PNG deleted, and the tutorial section rewritten so callset depth is the measurement and the CRAM depth is only the r=0.97 validation of it. The track (dog10k_cyp1a2_cn) and its BED stay in the config so a reader can still add the lane; what is gone is presenting an arbitrary fifteen dogs as a figure.",
     "reviewedAt": "2026-07-29T20:37:54.475Z",
-    "hash": "2a2faae549d4f9276ab967ed3f5693c74da5ea8f"
+    "hash": "fdcf344e75efd2b66f9697bb11512ce8ff56136e"
   },
   "dog10k-cyp1a2-nonsense": {
     "name": "dog10k-cyp1a2-nonsense",
     "status": "bad",
-    "note": "are you happy with this figure?",
+    "note": "are you happy with this figure? NOT HAPPY as it stood: it asserted a stop codon it could not show. There was no sequence track at all (the assembly was a ChromSizesAdapter, so no sequence existed), and three variants sat in the 101 bp -- the target, the same codon second base at 38,261,636, and 38,261,650, which a wolf carries. A reader comparing that wolf row to the caption sees a counterexample. FIXED three ways: assembly sequence is now the real canFam4 2bit (hgdownload, CORS *, chromSizesLocation kept so no full header scan), so the figure shows CGA and its Arg with the translation; lane filtered to the stop-gained site alone; one anchored label + arrow names the consequence, because three forward frames are drawn and nothing says the CDS frame is the bottom one (verified: codons begin == 1 mod 3 from the exon phase-2 start at 38,261,549; CGA -> R, and C>T -> TGA). Also dropped the view highlight -- it tinted the genotype blues into teal/olive so the one column stopped matching its own legend.",
     "reviewedAt": "2026-07-29T20:38:20.889Z",
-    "hash": "ab58a7306a4822076e561814d53452d7c07e7156"
+    "hash": "0bfdc3483ffec9e0e0f4338f0e509eda03e24b2a"
   },
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
     "status": "bad",
-    "note": "are you happy with this figure? appears to be using matrix mode but no lines connective to genomic position are visible. is this a bug?",
+    "note": "are you happy with this figure? appears to be using matrix mode but no lines connective to genomic position are visible. is this a bug? NOT A BUG, and not matrix mode: this is LinearMultiSampleVariantDisplay, which draws each record at its true genomic span, so the two 220 bp SINEs are columns at their own coordinates and need no connector lines. (Connectors belong to LinearMultiSampleVariantMatrixDisplay, which dog10k-wolfdog-block-genotypes uses -- that is where you saw them.) One real defect fixed: 775px cut the last wolf row against the frame. Still only middling as a figure -- 24 of 25 samples are het or hom-alt, so the contrast is light-blue vs dark-blue rather than present vs absent, and one hom-ref animal cannot carry the dimorphism story. A panel picked for hom-ref carriers would fix that; needs a rebuild.",
     "reviewedAt": "2026-07-29T20:39:01.330Z",
-    "hash": "feff2746bf0f3034ff4dc47aadd9d32eba190269"
+    "hash": "e67ecbf9693a3054dcfa72cf1f2f0202691aacc7"
   },
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
@@ -2246,8 +2246,8 @@
   "dog10k-nhej1-cea-deletion": {
     "name": "dog10k-nhej1-cea-deletion",
     "status": "bad",
-    "note": "are you happy with this figure? looks kind of unclear. if needed we can use clustering to improve visual layout, but i just dont necessarily understand the 'story'. I do not want extended caption prose, i want the figure to be so exceedingly clear, that users understand it immediately. if needed we can color by SV type",
+    "note": "are you happy with this figure? looks kind of unclear. if needed we can use clustering to improve visual layout, but i just dont necessarily understand the 'story'. I do not want extended caption prose, i want the figure to be so exceedingly clear, that users understand it immediately. if needed we can color by SV type NOT HAPPY, and the cause was provable rather than aesthetic. The window holds nine SV records and the wide block was two of them: a 3,432 bp deletion nested inside the 7,801 bp CEA one, no-call in exactly the four Collies homozygous for the big one (COLL 1/3/4/13 in both lists -- their region is gone, so it cannot be genotyped), so its yellow sat hard against the darkest blue and the pair read as one striped block. Eight other records added ticks. FIXED by filtering the lane to the one deletion (jexlFilters on start == 25574004): one block, three states, every carrier a Collie-clade breed, everything else grey. Caption cut from five sentences to one; the nested-deletion story moved into the tutorial body, where it now also teaches the filter. Did NOT color by SV type -- with one record there is one type. Note the Lancashire Heeler rows keep the carrier-clade swatch and carry nothing, which is true (0/4) and worth seeing.",
     "reviewedAt": "2026-07-29T20:43:08.880Z",
-    "hash": "44608f8d47acc41fe22658079c892a043925b32b"
+    "hash": "ff10108c27ac2983480cca3d32ca6248efa78bf7"
   }
 }

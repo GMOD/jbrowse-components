@@ -24,16 +24,10 @@ tracks, so reading needs only a browser. To build the track yourself:
 ## The variant
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
-Dog10K collection and looked for SVs whose allele frequencies track breed
-clades. Of the 64 they flag in the Collie and Shetland Sheepdog clade, one is a
-7.8 kb deletion inside an intron of _NHEJ1_: the variant associated with Collie
-eye anomaly, a disorder of ocular development in Collies and related breeds.
-They note it carries a stronger selection signal than any SNP in the region.
-
-That makes a good first structural variant to look at, because the claim is
-checkable by eye. If the deletion is what the literature says it is, it should
-be common in Collies and their relatives, absent from unrelated breeds, and
-absent from wolves.
+Dog10K collection and flagged those whose allele frequencies track breed clades.
+One is a 7.8 kb deletion in an intron of _NHEJ1_, the variant associated with
+Collie eye anomaly. If it is what the literature says, it should be common in
+Collies and their relatives and absent from unrelated breeds and from wolves.
 
 ## Slicing one locus out of the callset
 
@@ -102,27 +96,37 @@ gives each group a swatch, without touching the VCF:
 }
 ```
 
-Adding the assembly's gene annotation above it is what turns a block into a
-finding: the deletion has to be read against _NHEJ1_'s exons to be an intronic
-deletion rather than a coding one.
+Add the assembly's gene annotation above it. The deletion has to be read against
+_NHEJ1_'s exons to be identified as intronic rather than coding.
 
 ## Reading it
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Eleven of thirteen Collies carry it (dark blue homozygous, light blue heterozygous), along with two Shetland Sheepdogs and one Silken Windhound. Australian Shepherds, German Shepherds, Labrador Retrievers, and the four wolves are homozygous reference. The yellow blocks are a second, nested deletion that could not be genotyped in the dogs homozygous for the first. The gene track above shows both fall in an intron." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 The picture matches the literature: the deletion is common in the Collie clade,
 homozygous in several animals, and absent everywhere else in this set including
-the wolves. Reading the gene model with it shows why a 7.8 kb deletion can
-segregate at this frequency at all, since it removes intronic sequence rather
-than coding exons.
+the wolves. Reading the gene model with it shows why a deletion this size can
+segregate at this frequency, since it removes intronic sequence rather than
+coding exons.
 
-### The yellow blocks
+### Why the lane shows one record
 
-The no-calls are worth chasing rather than ignoring, because they are not noise.
-They belong to a second deletion, 3.4 kb at chr37:25,578,185, which sits
-**inside** the 7.8 kb one. It is called reference in every dog in the panel
-except four, where it is missing, and those four are exactly the dogs homozygous
-for the larger deletion:
+The window holds nine SV records, and the figure filters to this one:
+
+```json
+{
+  "type": "LinearMultiSampleVariantDisplay",
+  "jexlFilters": ["jexl:get(feature,'start') == 25574004"]
+}
+```
+
+The filter is not cosmetic. Unfiltered, a second deletion nested inside the 7.8
+kb one paints a band of yellow no-calls against the darkest blue, and the two
+records read as one striped block rather than as one deletion.
+
+Those no-calls are not noise. The nested deletion is called reference in every
+dog in the panel except four, where it is missing, and those four are exactly
+the dogs homozygous for the larger deletion:
 
 ```bash
 # -i POS=… because -r is END-aware and would also return the deletion this one
@@ -133,9 +137,8 @@ bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
 ```
 
 A dog with no copy of the surrounding sequence has no reads there to genotype
-the nested call from, so the genotyper returns missing. That is a structure a
-SNV callset does not have, and it is the kind of thing worth understanding
-before treating a no-call as a failed sample.
+the nested call from, so the genotyper returns missing. A SNV callset has no
+equivalent structure, so a no-call here should not be read as a failed sample.
 
 ### What the panel does not say
 
@@ -155,30 +158,27 @@ Schall and Kidd report two deletions in adjacent introns of _DENR_ in the
 Mastiff clade, each removing a SINEC2A1 repeat with an intact poly(A) tail and
 target-site duplications. Both SINEs are present in the `UU_Cfam_GSD_1.0`
 reference, which is a German Shepherd, so "deletion" here means the repeat is
-**absent** in that dog. Dimorphic SINE and LINE-1 variants like these are over
+absent in that dog. Dimorphic SINE and LINE-1 variants like these make up over
 45% of all deletions in the callset, which is why a dog SV panel looks nothing
 like a SNV panel.
 
 <Figure caption="Two ~220 bp SINEC2A1 deletions in adjacent DENR introns. The Mastiff-clade breeds still carry the repeats (grey homozygous reference, light blue heterozygous); the Labrador Retrievers, Collies, and all four wolves are homozygous for the deletion, meaning the repeats are absent. The reference genome, a German Shepherd, carries them." src="/img/dog10k-denr-sine-deletions.png" />
 
-Reading it against the Collie eye anomaly figure is the point. That deletion was
-7.8 kb, at a few percent frequency, and present only in one clade. These are 220
-bp, at about 90% frequency, and it is the reference that carries the rare
-allele: the wolves have no copy of either repeat, which is what the paper means
-by calling the insertions recent. A callset that mixes both kinds is why "how
-many structural variants does this dog have" depends entirely on which genome
-you called against.
+This contrasts with the Collie eye anomaly figure. That deletion was 7.8 kb, at
+a few percent frequency, and present only in one clade. These are 220 bp, at
+about 90% frequency, and it is the reference that carries the rare allele. The
+wolves have no copy of either repeat, which is what the paper means by calling
+the insertions recent. Because a callset mixes both kinds, "how many structural
+variants does this dog have" depends on which genome you called against.
 
 The shipped slice keeps only these two variants. The locus carries seven others,
-one of which overlaps the first SINE, and a per-sample panel of all of them is
-unreadable without saying anything the two do not already say.
+one of which overlaps the first SINE, but a per-sample panel of all of them is
+unreadable and adds nothing the two do not already show.
 
 ## Where to go next
 
-The same recipe reaches every other variant in the callset. Three SVs sit in
-introns of _HMGA2_ in the Spitz group, a gene associated with body weight and
-ear type, and relaxing the significance threshold adds an _AP3B1_ variant in the
-Collie and Shetland Sheepdog clade, the gene behind gray Collie syndrome.
+The same recipe reaches every other variant in the callset. Schall and Kidd's
+table of clade-associated SVs is the place to pick the next locus.
 
 ## Reproduce it end to end
 

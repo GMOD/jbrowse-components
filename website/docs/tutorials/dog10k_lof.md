@@ -129,8 +129,9 @@ the stop-gained allele.
 The paper reports half the collection at three or more copies of _CYP1A2_, which
 is the other half of its figure and the reason a genotype at this locus is
 harder to read than it looks. Those copy-number estimates were never published,
-but they do not have to be: the Dog10K share puts 15 CRAMs online with their
-indexes, so only the reads over this gene have to be fetched.
+but they do not have to be: the SNV callset already carries a per-sample `DP` at
+every site, so one tabix slice of it, stripped to the depth field, covers every
+canid in the collection.
 
 Depth is converted to copy number by comparison within each dog. That dog's own
 flanking sequence is copy number two, so it serves as the denominator:
@@ -140,27 +141,18 @@ CN = 2 * depth over the element / depth over that dog's flanks
 ```
 
 This needs no copy-number caller, and it carries its own check: the flanks have
-to come back out at two. The build script rounds each window to an integer and
-colors it the way the paper does.
+to come back out at two.
 
-<Figure caption="Read-depth copy number over CYP1A2, one row per dog, each 5 kb window colored by its rounded copy number (black 2, dark blue 3, blue 4, cyan 5). The Greenland Dog is black across the whole window; every other dog steps up over the gene and returns to black either side. White columns are windows the script drops as unmeasurable: too little of them survives the repeat mask to give a depth worth normalizing." src="/img/dog10k-cyp1a2-copy-number.png" />
+Callset depth is a different measurement from read depth, taken only where a
+variant was called, so the build script validates it rather than assuming. The
+Dog10K share also publishes 15 CRAMs, and running the same ratio over their
+reads gives an independent estimate for those dogs; over the shared windows the
+two agree at r = 0.97 with no bias. That painting is in the config as
+`dog10k_cyp1a2_cn` if you want to add it, but it is not shown here: which 15
+dogs have CRAMs is an accident of what the share published, so the picture
+invites a question about those breeds that the data cannot answer.
 
-Read against the panel above it, this complicates the locus: a genotype call at
-the stop codon is a call across however many copies that dog has, and the paper
-discounts a Hardy-Weinberg outlier here for that reason.
-
-## The same estimate across all 1,987 canids
-
-Fifteen CRAMs is every read set the share publishes, but not every dog it has
-depth for. The SNV callset carries a per-sample `DP` at every site for the whole
-collection, so the same ratio can be taken from it: one tabix slice of the 397
-GB VCF, stripped to the depth field.
-
-That is a different measurement, made only where a variant was called, so the
-build script checks it against the fifteen dogs that have both. Over the shared
-windows the two agree at r = 0.97 with no bias.
-
-<Figure caption="The same copy-number painting over every canid in the Dog10K callset, one row each, clustered by profile with the dendrogram in the sidebar. The distinct profiles read as bands; the flanks are the control and are black across the collection." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2 for every canid in the Dog10K callset, one row each, each 5 kb window colored by its rounded copy number and clustered by profile with the dendrogram in the sidebar. Grey is copy number two, so the expansion over the gene is the only ink; the flanks are the control and stay grey across the collection." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The expansion appears throughout the collection rather than in one clade, which
 is the paper's own conclusion and suggests it predates breed formation. The

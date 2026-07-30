@@ -279,6 +279,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       assembly: 'UU_Cfam_GSD_1.0',
       // the whole NHEJ1 gene, so the deletion is visibly inside an intron
       loc: 'chr37:25,508,000-25,600,000',
+      // No view highlight over the deletion: it is the only record the lane
+      // draws, so nothing needs pointing at, and the tint would wash the het/hom
+      // blues into teal and olive against an untinted legend.
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
@@ -290,6 +293,13 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiSampleVariantDisplay',
           height: 560,
           layout: CEA_LAYOUT,
+          // The window holds nine SV records, and unfiltered they defeat the
+          // figure: the 3,432 bp deletion 4 kb downstream is no-call in exactly
+          // the four Collies homozygous for this one (its region is gone, so it
+          // cannot be genotyped), so it paints a yellow stripe hard against the
+          // darkest blue and the pair reads as one striped block rather than as
+          // one deletion. `start` is POS-1.
+          jexlFilters: ["jexl:get(feature,'start') == 25574004"],
         },
       ],
     }),
@@ -329,8 +339,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr26',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track plus all 25 sample rows and the genotype legend
-    viewportHeight: 775,
+    // gene track plus all 25 sample rows and the genotype legend. 775 cut the
+    // last wolf row's blocks against the frame.
+    viewportHeight: 805,
   },
 
   // The CYP1A2 nonsense variant (Meadows et al. 2023, Fig 10): chr30:38,261,635
@@ -348,80 +359,109 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       // zoom out, so this is the only scale at which a per-sample call reads as
       // a block rather than a tick
       loc: 'chr30:38,261,590-38,261,690',
-      // the stop-gained codon, marked in-app rather than painted on
-      highlight: ['chr30:38,261,634-38,261,638'],
+      // No view highlight on the codon, deliberately. It tints every track it
+      // crosses, and over the genotype lane that washes the het/hom blues into
+      // teal and olive -- the one column the figure is about stops matching the
+      // legend beside it. The anchored arrow below marks the codon instead, off
+      // the same coordinate, so nothing drifts and the colors stay true.
       tracks: [
+        // CYP1A2 is on the + strand, so codon 373 reads directly off the
+        // forward sequence: the translation row is what makes CGA -> TGA a
+        // visible fact rather than a claim in the caption. Reverse strand off,
+        // it says nothing here and costs a row.
+        {
+          trackId: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
+          type: 'LinearReferenceSequenceDisplay',
+          showForward: true,
+          showReverse: false,
+          showTranslation: true,
+          height: 80,
+        },
         {
           trackId: 'canFam4_ncbi_refseq',
           type: 'LinearBasicDisplay',
-          height: 90,
+          height: 60,
         },
         {
           trackId: 'dog10k_cyp1a2_snvs',
           type: 'LinearMultiSampleVariantDisplay',
           height: 500,
           layout: CYP_LAYOUT,
+          // Only the stop-gained site. Two neighbours are in frame otherwise --
+          // 38,261,636 (the same codon's second base) and 38,261,650, which a
+          // wolf carries -- and with three anonymous columns the wolf row reads
+          // as a counterexample to the very claim the figure makes. `start` is
+          // POS-1.
+          jexlFilters: ["jexl:get(feature,'start') == 38261634"],
         },
       ],
     }),
     readyText: 'chr30',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track plus all 39 sample rows and the genotype legend
-    viewportHeight: 870,
+    // sequence + gene track plus all 39 sample rows and the genotype legend.
+    // 870 (pre-sequence-track) cut the last wolf row's block against the frame.
+    viewportHeight: 930,
+    // The sequence track puts CGA and its Arg on screen, but three forward
+    // frames are drawn and nothing says which is the coding one -- the CDS frame
+    // is the bottom row (codons begin at positions == 1 mod 3 here, from the
+    // exon's phase-2 start at 38,261,549), and the other two carry an unrelated
+    // red stop 30 bp left of the site. One label names the consequence so the
+    // reader doesn't have to pick a frame.
+    annotations: [
+      {
+        type: 'text',
+        text: 'CGA → TGA (Arg373 → stop)',
+        fontSize: 22,
+        anchor: {
+          track: 'dog10k_cyp1a2_snvs',
+          locus: 'chr30:38,261,637',
+          fracY: 0,
+          // right of the genotype column, over empty homozygous-reference grey
+          dx: 24,
+          dy: 26,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'dog10k_cyp1a2_snvs',
+          locus: 'chr30:38,261,637',
+          fracY: 0,
+          dx: 24,
+          dy: 14,
+        },
+        anchor: {
+          track: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
+          locus: 'chr30:38,261,636',
+          fracY: 1,
+        },
+      },
+    ],
   },
 
-  // Copy number over the same gene (Meadows et al. 2023, Fig 10a), from read
-  // depth over the 15 CRAMs the Dog10K share publishes. Painted the way the
-  // paper and QuicK-mer2 itself draw copy number: each 5 kb window rounded to
-  // an integer and colored by it (2 black, 3 dark blue, 4 blue, 5 cyan), which
-  // is the same BED9 painting the wolfdog ancestry figure above uses. A wiggle
-  // per dog was the alternative and it renders each window's 7-10% spread as
-  // wobble that reads like structure; rounding states the call instead. Built
-  // by scripts/build_dog10k_cyp1a2_cn.sh.
-  {
-    mode: 'url',
-    name: 'dog10k-cyp1a2-copy-number',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      // the copy-number element plus ~30 kb of copy-number-two sequence either
-      // side, which is the comparison the figure rests on
-      loc: 'chr30:38,235,000-38,295,000',
-      tracks: [
-        {
-          trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
-          height: 90,
-        },
-        {
-          trackId: 'dog10k_cyp1a2_cn',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 400,
-        },
-      ],
-    }),
-    readyText: 'chr30',
-    // gate on the data-driven color key rather than a settle, same reason as
-    // the ancestry painting: canvasDrawn can flip on an empty first paint
-    readySelector: '[data-testid="multirow-color-legend"]',
-    readyTimeout: 90000,
-    settleMs: 6000,
-    // gene track plus all 15 dog rows and the copy-number key
-    viewportHeight: 730,
-  },
+  // No figure for the 15-CRAM read-depth painting (`dog10k_cyp1a2_cn`, still in
+  // the config so a reader can add it). The CRAMs are an arbitrary fifteen dogs
+  // -- whichever ones the share happens to publish -- so the picture invited
+  // "why these breeds", and the cohort painting below covers the same locus over
+  // every canid in the collection. The BED remains as what the cohort estimate
+  // is validated against, not as something to look at.
 
-  // The same estimate over the whole collection. The 15 CRAMs are all the share
-  // publishes, but the SNV callset carries a per-sample DP at every site for all
+  // Copy number over the gene (Meadows et al. 2023, Fig 10a) across the whole
+  // collection. The SNV callset carries a per-sample DP at every site for all
   // 1,987 canids, and the same ratio of element depth to that dog's own flank
-  // depth reproduces the CRAM answer (r = 0.97 per window, no bias) — so this
-  // paints every dog in the collection rather than the fifteen with reads.
+  // depth reproduces the CRAM answer (r = 0.97 per window, no bias). Painted as
+  // BED9, each 5 kb window rounded to an integer and colored by it, same as the
+  // wolfdog ancestry figure above. A wiggle per dog was the alternative and it
+  // renders each window's 7-10% spread as wobble that reads like structure;
+  // rounding states the call instead.
+  //
   // Clustered rather than left in sample order: 1,987 rows is far past the point
   // where a reader can follow one, so the question stops being "which dog is
   // this" and becomes "how many distinct copy-number profiles are there". The
   // dendrogram answers that, and clustering is also what makes the sub-pixel
-  // rows honest — at 0.35px a row neighbours overpaint each other, so whichever
-  // wins a pixel has to stand for the ones it covers. Built by
-  // scripts/build_dog10k_cyp1a2_cn.sh.
+  // rows honest -- at 0.35px a row neighbours overpaint each other, so whichever
+  // wins a pixel has to stand for the ones it covers.
   {
     mode: 'url',
     name: 'dog10k-cyp1a2-cohort-copy-number',
