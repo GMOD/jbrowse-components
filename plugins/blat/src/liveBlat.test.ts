@@ -1,9 +1,11 @@
 /**
  * Live UCSC round-trip: a real hgBlat response, parsed and converted to SAM.
  *
- * Skipped unless UCSC_API_KEY is set, since it needs an account key (keyless
- * hgBlat is behind a Cloudflare Turnstile) and the network. Everything else
- * about the conversion is covered offline by pslToSam.test.ts / blatQuery.test.ts;
+ * Skipped unconditionally (see the describe.skip below) since it needs a real
+ * UCSC account key (keyless hgBlat is behind a Cloudflare Turnstile) and hits
+ * the network under that key's rate limit. Un-skip it locally for a manual
+ * check; don't run it routinely. Everything else about the conversion is
+ * covered offline by pslToSam.test.ts / blatQuery.test.ts;
  * what only a live run can show is that the response shape those tests fake is
  * the shape the server actually sends, and that a hit's coordinates come back
  * where the query was taken from.
@@ -65,9 +67,10 @@ function substitute(seq: string, at: number, base: string) {
   return seq.slice(0, at) + base + seq.slice(at + 1)
 }
 
-const maybe = apiKey ? describe : describe.skip
-
-maybe('live UCSC BLAT round-trip', () => {
+// Skipped unconditionally, not just when UCSC_API_KEY is unset: this hits a
+// real UCSC endpoint under a real account key and rate limit, so it should
+// only run when someone deliberately un-skips it for a manual check.
+describe.skip('live UCSC BLAT round-trip', () => {
   it('places four variants of a known hg38 locus back at that locus', async () => {
     fetchMock.dontMock()
 

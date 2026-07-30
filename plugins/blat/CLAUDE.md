@@ -21,13 +21,18 @@ hits UCSC directly through the main-process `blatFetch` bridge.
 
 ## Live round-trip test
 
-`src/liveBlat.test.ts` is the only test that talks to UCSC. It **skips** unless
-`UCSC_API_KEY` is set, so CI never touches the network or spends the rate limit:
+`src/liveBlat.test.ts` is the only test that talks to UCSC. It's
+`describe.skip`ped unconditionally — not just gated on `UCSC_API_KEY` — so
+neither CI nor a routine local/agent test run ever spends the rate limit or
+makes a real request under your account key. To run it manually, remove the
+`.skip` and set the key:
 
 ```bash
 set -a; . ~/.env; set +a
 pnpm jest plugins/blat/src/liveBlat
 ```
+
+Put the `.skip` back afterward.
 
 It fetches a known hg38 locus from `api.genome.ucsc.edu`, submits four variants
 of it (exact, 6bp deletion, junk-prefixed, three SNVs) as one FASTA, and asserts
