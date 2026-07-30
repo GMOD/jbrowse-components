@@ -230,12 +230,24 @@ export default class BamSlightlyLazyFeature
  * is a different object each time), so every property site that sees them goes
  * megamorphic and each read retains a prototype chain. Don't reintroduce it.
  *
- * The `~4.5x` is on property reads ALONE, which is the worst possible framing —
- * the real extract pass also walks CIGARs and fills typed arrays, so the share
- * is far smaller, and only MD-less BAMs pay it at all. Getting to zero would
- * mean threading the fetch's `(ref, refStart)` pair down into `forEachMismatch`
- * rather than binding it per read; that reaches `buildConsensusTally` in
- * alignments-core too, so it is a cross-package change rather than a local one.
+ * The `~4.5x` column is property reads ALONE and does not survive contact with
+ * the real consumer. Re-measured through `extractFeatureArrays` against the same
+ * binding written onto the record (the incorrect zero-allocation path), over
+ * BAMs spanning MD/no-MD and 148bp/550bp/25kb/537kb reads, arms interleaved rep
+ * by rep and min-of-15: **every case lands within a few percent of parity**.
+ * Whatever the wrapper costs is lost under the CIGAR walk and the typed-array
+ * fills, and only MD-less reads allocate one at all.
+ *
+ * So do NOT "optimize" this away. The zero-allocation form — threading the
+ * fetch's `(ref, refStart)` pair into `forEachMismatch` instead of binding it
+ * per read — would reach `buildConsensusTally` in alignments-core, and it is
+ * now measured to buy nothing.
+ *
+ * Two traps if you re-measure. Unwrapping the features to get a baseline leaves
+ * `ref` undefined, and `forEachMismatchNumeric` then skips mismatch detection
+ * entirely — that comparison reports 10x and is meaningless. And running the
+ * arms as two blocks lets whichever goes second inherit the other's warmup,
+ * which alone flipped one case from 1.375x to 0.954x.
  *
  * Three delegation traps, all load-bearing:
  *   - `getTag` is duck-typed by `@jbrowse/modifications-utils`' `getTag()`, not

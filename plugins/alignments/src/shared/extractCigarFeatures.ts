@@ -9,7 +9,7 @@ import {
   parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
-import { emitGap } from '../features/gap/extract.ts'
+import { emitGap, getEffectiveStrand } from '../features/gap/extract.ts'
 import { emitHardclip } from '../features/hardclip/extract.ts'
 import { emitInsertion } from '../features/insertion/extract.ts'
 import { emitMismatch } from '../features/mismatch/extract.ts'
@@ -95,6 +95,11 @@ function makeCigarEmitter(
   output: CigarEmitOutput,
   showSoftClipping: boolean,
 ): MismatchCallback {
+  // Resolved once per read, and only if a skip actually turns up: it costs two
+  // `feature.get()` calls, and most reads have no skip at all. Hoisted out of
+  // `emitGap` because it is a property of the read, not of the gap — see
+  // getEffectiveStrand.
+  let skipStrand: number | undefined
   return (type, start, length, base, qual, _altbase, cliplen) => {
     if (type === MISMATCH_TYPE) {
       emitMismatch(
@@ -133,10 +138,11 @@ function makeCigarEmitter(
         readIndex,
         featureStart,
         strand,
-        feature,
+        0,
         output.gaps,
       )
     } else if (type === SKIP_TYPE) {
+      skipStrand ??= getEffectiveStrand(feature)
       emitGap(
         'skip',
         start,
@@ -144,7 +150,7 @@ function makeCigarEmitter(
         readIndex,
         featureStart,
         strand,
-        feature,
+        skipStrand,
         output.gaps,
       )
     } else if (type === HARDCLIP_TYPE) {
