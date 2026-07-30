@@ -27,6 +27,12 @@ _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense
 variant. This tutorial reproduces the part of the Dog10K paper's figure that the
 published callset supports: the truncating variant and who carries it.
 
+The consequence is recessive, which is why the two shades of blue in the figure
+mean different things: liver microsomes from dogs homozygous for the truncating
+allele carry no CYP1A2 protein and those dogs are poor metabolizers of drugs the
+enzyme clears, while heterozygotes express it normally
+([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)).
+
 For a loss-of-function allele at appreciable frequency, the questions are which
 breeds carry it and whether it is present in wild canids. The wild canids are
 the control: a dog-only allele arose after domestication, while one shared with

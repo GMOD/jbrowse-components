@@ -7,50 +7,50 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Three PUR (Puerto Rican, 1000 Genomes) copy-number BigWigs from the Kidd lab
-// wired into a single MultiQuantitativeTrack as a session track (session tracks
-// don't inherit the config's baseUri, so absolute urls are used). This mirrors
-// the docs "Multiple signals on one track, each its own color" recipe exactly:
-// three named subadapters, each given the recipe's own #f00/#f60/#fa0 color.
-// Drawn over the AMY1 amylase cluster, the textbook human copy-number-variable
-// locus, so the three individuals' CN traces differ visibly.
+// PUR (Puerto Rican, 1000 Genomes) copy-number BigWigs from the Kidd lab wired
+// into a single MultiQuantitativeTrack as a session track (session tracks don't
+// inherit the config's baseUri, so absolute urls are used). This mirrors the
+// docs "Multiple signals on one track, each its own color" recipe exactly: named
+// subadapters, one color each.
+//
+// Eight individuals rather than the three it started as, chosen from the data:
+// scanning all 104 PUR samples over the AMY1A window gives a flat integer CN per
+// sample from 1 to 4, so three samples drew three plateaus that happened to be
+// adjacent. These eight cover every level and every step pattern in the
+// population — 4 over the whole cluster, 4 over one block and 3 over the other,
+// the reference-flat 2, and 1 (a lost copy) — which is what makes the stack read
+// as individuals differing rather than as three colored bars.
 const PUR_CNV = 'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR'
+
+// Okabe-Ito, the palette the other multi-sample figures use, ordered so
+// neighboring rows never share a hue.
+const COOKBOOK_MULTIWIG_SAMPLES = [
+  { name: 'HG01080', color: '#0072B2' },
+  { name: 'HG01054', color: '#D55E00' },
+  { name: 'HG00739', color: '#009E73' },
+  { name: 'HG00553', color: '#CC79A7' },
+  { name: 'HG01070', color: '#E69F00' },
+  { name: 'HG00554', color: '#56B4E9' },
+  { name: 'HG00551', color: '#8B008B' },
+  { name: 'HG01083', color: '#666666' },
+]
+
 const COOKBOOK_MULTIWIG_TRACK = {
   type: 'MultiQuantitativeTrack',
   trackId: 'cookbook_multiwig',
-  name: 'PUR copy number (3 samples)',
+  name: 'PUR copy number (8 samples)',
   assemblyNames: ['hg38'],
   adapter: {
     type: 'MultiWiggleAdapter',
-    subadapters: [
-      {
-        type: 'BigWigAdapter',
-        name: 'HG00551',
-        color: '#f00',
-        bigWigLocation: {
-          uri: `${PUR_CNV}/HG00551.qm2.CN.1k.bw`,
-          locationType: 'UriLocation',
-        },
+    subadapters: COOKBOOK_MULTIWIG_SAMPLES.map(({ name, color }) => ({
+      type: 'BigWigAdapter',
+      name,
+      color,
+      bigWigLocation: {
+        uri: `${PUR_CNV}/${name}.qm2.CN.1k.bw`,
+        locationType: 'UriLocation',
       },
-      {
-        type: 'BigWigAdapter',
-        name: 'HG00553',
-        color: '#f60',
-        bigWigLocation: {
-          uri: `${PUR_CNV}/HG00553.qm2.CN.1k.bw`,
-          locationType: 'UriLocation',
-        },
-      },
-      {
-        type: 'BigWigAdapter',
-        name: 'HG00554',
-        color: '#fa0',
-        bigWigLocation: {
-          uri: `${PUR_CNV}/HG00554.qm2.CN.1k.bw`,
-          locationType: 'UriLocation',
-        },
-      },
-    ],
+    })),
   },
 }
 
@@ -118,11 +118,14 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     viewportHeight: 520,
   },
 
-  // "Multiple signals on one track, each its own color" recipe: the three-sample
+  // "Multiple signals on one track, each its own color" recipe: the eight-sample
   // colored MultiQuantitativeTrack above, over the AMY1 amylase copy-number
-  // locus, with the NCBI RefSeq genes for context. Rendered multirowxy (one
+  // locus, with the NCBI RefSeq genes for context. Rendered multirowline (one
   // stacked row per signal) so each individual's copy-number trace reads in its
-  // own color.
+  // own color. Line and not the multirowxy this used to be: the values are flat
+  // integer plateaus, so a filled area paints each row as a solid bar whose only
+  // readable feature is its top edge, and eight bars read as a bar chart. As
+  // step traces the levels and the places they step at are the picture.
   {
     mode: 'url',
     name: 'cookbook_multiwig',
@@ -137,8 +140,16 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             { trackId: 'ncbi_refseq_109_hg38', height: 70 },
             {
               trackId: 'cookbook_multiwig',
-              height: 240,
-              defaultRendering: 'multirowxy',
+              height: 480,
+              defaultRendering: 'multirowline',
+              // Pinned, and identical for every row: copy number is an absolute
+              // quantity, and per-row autoscale is what made the old figure
+              // unreadable. Each row's own maximum became the top of its plot,
+              // so a plateau at 2 and a plateau at 4 both filled their row and
+              // the difference between two individuals vanished. 5 rather than 4
+              // so the highest level still has headroom above it.
+              minScore: 0,
+              maxScore: 5,
             },
           ],
         },
@@ -147,6 +158,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
     settleMs: 8000,
-    viewportHeight: 600,
+    viewportHeight: 840,
   },
 ]

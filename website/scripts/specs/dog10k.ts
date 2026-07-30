@@ -394,8 +394,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-nhej1-cea-deletion',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      // the whole NHEJ1 gene, so the deletion is visibly inside an intron
-      loc: 'chr37:25,508,000-25,600,000',
+      // The whole NHEJ1 gene (chr37:25,513,157-25,595,616 in canFam4 RefSeq) and
+      // nothing past it, so the deletion is visibly inside an intron. The old
+      // right edge at 25,600,000 reached into SLC23A3/LOC111094448, which added
+      // a fourth packed row the 110px gene track could not fit -- so the capture
+      // carried the track's overflow/resize widget and a half-cut gene label.
+      loc: 'chr37:25,510,000-25,596,000',
       // No view highlight over the deletion: it is the only record the lane
       // draws, so nothing needs pointing at, and the tint would wash the het/hom
       // blues into teal and olive against an untinted legend.
@@ -425,6 +429,45 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track plus all 36 sample rows and the genotype legend
     viewportHeight: 915,
+    // What the deletion does, beside the column that carries it. The legend can
+    // say "homozygous alt" but not that homozygous is the affected state: CEA is
+    // recessive (Parker et al. 2007; OMIA 000218-9615), so the dark cells are
+    // affected animals and the light ones are unaffected carriers, which is the
+    // difference between the two blues a reader cannot otherwise infer. The pill
+    // sits left of the column, over lane that paints nothing — the filtered lane
+    // has one record, so no cell is covered.
+    annotations: [
+      {
+        type: 'text',
+        text: '7.8 kb intron deletion, recessive:\nhomozygotes have Collie eye anomaly',
+        fontSize: 22,
+        maxWidth: 460,
+        anchor: {
+          track: 'dog10k_nhej1_svs',
+          locus: 'chr37:25,574,005-25,581,807',
+          fracY: 0,
+          dx: -704,
+          dy: 170,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'dog10k_nhej1_svs',
+          locus: 'chr37:25,574,005-25,581,807',
+          fracY: 0,
+          dx: -249,
+          dy: 175,
+        },
+        anchor: {
+          track: 'dog10k_nhej1_svs',
+          locus: 'chr37:25,574,005-25,581,807',
+          fracY: 0,
+          dx: -100,
+          dy: 175,
+        },
+      },
+    ],
   },
 
   // The two SINEC2A1 deletions in DENR introns (Schall & Kidd 2025, Fig S6):
@@ -542,10 +585,17 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // exon's phase-2 start at 38,261,549), and the other two carry an unrelated
     // red stop 30 bp left of the site. One label names the consequence so the
     // reader doesn't have to pick a frame.
+    //
+    // Second line is the phenotype, and it says *homozygotes* because that is
+    // what the pharmacology shows: liver microsomes from T/T dogs carry no
+    // CYP1A2 protein while C/T and C/C do, and every poor metabolizer typed in
+    // Mise et al. 2004 / Tenmizu et al. 2004 was T/T. So the dark cells are the
+    // affected animals and the light ones are carriers — a distinction the
+    // legend can state but not interpret.
     annotations: [
       {
         type: 'text',
-        text: 'CGA → TGA (Arg373 → stop)',
+        text: 'CGA → TGA (Arg373 → stop)\nhomozygotes make no CYP1A2:\npoor drug metabolizers',
         fontSize: 22,
         anchor: {
           track: 'dog10k_cyp1a2_snvs',

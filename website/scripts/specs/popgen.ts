@@ -310,22 +310,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    // One label per block, because the two blocks ARE the figure. They anchor to
-    // the genotype track's own rendering container, where row r sits at fracY
-    // r/180: the standard label rides the middle of rows 0-160, and the carrier
-    // arrow lands in the middle of rows 161-179 (170.5/180). Without the arrow
-    // the carrier block reads as a stray strip at the bottom edge, since 19 of
-    // 180 rows is a tenth of the track however tall it is.
+    // One label, on the block that needs naming. It anchors to the genotype
+    // track's own rendering container, where row r sits at fracY r/180, so the
+    // arrow lands in the middle of rows 161-179 (170.5/180) — without it the
+    // carrier block reads as a stray strip at the bottom edge, since 19 of 180
+    // rows is a tenth of the track however tall it is. The standard lines above
+    // carried a label of their own and it named empty lane: those rows are
+    // homozygous reference, so there is nothing there for a callout to point at.
     annotations: [
-      {
-        type: 'text',
-        text: '161 standard lines',
-        anchor: {
-          track: 'dgrp_In2Lt_sv',
-          locus: 'chr2L:7,000,000',
-          fracY: 0.35,
-        },
-      },
       {
         type: 'text',
         text: '19 In(2L)t carriers',

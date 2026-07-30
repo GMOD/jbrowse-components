@@ -466,9 +466,17 @@ jbrowse add-track --multiwig v1.bw,v2.bw --load copy --name Grains
 
 `--multiwig` also takes a `.json` sources file of the `name`/`color` rows above.
 `subadapters` is just a list, so past a handful of samples, generate it from
-your samplesheet.
+your samplesheet. Past a few hundred, one file per sample stops being the right
+shape at all: see
+[population copy number](/docs/tutorials/population_cnv#scaling-past-one-population),
+which serves the same display from a single Zarr store instead.
 
-<Figure caption="A three-sample MultiQuantitativeTrack over the AMY1 cluster (multirowxy): each 1000 Genomes sample's copy number draws in its own color and varies across the locus." src="/img/cookbook_multiwig.png"/>
+A quantity with an absolute meaning wants `minScore`/`maxScore` written on the
+display. Autoscale is per row, so an individual whose signal never leaves the
+baseline gets the same full-height plot as one with a real amplification, and
+the rows stop being comparable.
+
+<Figure caption="An eight-sample MultiQuantitativeTrack over the AMY1 cluster (multirowline), each 1000 Genomes individual its own color on a shared 0 to 5 copy-number scale: the rows step between copy-number levels at different places." src="/img/cookbook_multiwig.png"/>
 
 ## Variant tracks
 
