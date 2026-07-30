@@ -112,9 +112,9 @@ function pairOrientationCategory(po: number): ReadColorCategory {
 
 // Map the shared insert-size class onto the render/legend category vocabulary.
 // The threshold rule (including the unset-TLEN guard) lives in classifyInsertSize
-// so this and the arc path (arcs/compute.ts) share one source; SYNC only the
-// class→category naming here with insertSizeColor / isAndOrientColor in
-// read.slang.
+// so this and the arc path (arcs/compute.ts) share one source. The shader
+// used to re-apply those thresholds; it now receives the resulting category,
+// so this naming has no GPU twin to stay in step with.
 const insertClassCategory: Record<
   ReturnType<typeof classifyInsertSize>,
   ReadColorCategory
@@ -318,7 +318,7 @@ export function readColorCategory(
       // Fragment strand inferred from the first mate: read2 (0x80) reports the
       // opposite of the fragment, so invert only it. Read1 and single-end reads
       // represent the fragment strand directly (must match firstOfPairStrandKey
-      // in groupFeatures.ts and firstOfPairColor in read.slang).
+      // in groupFeatures.ts — the shader no longer derives this).
       const isSecond = (flags & 128) !== 0
       return strandCategory(isSecond ? -strand : strand)
     }
@@ -402,9 +402,9 @@ function gradientInsertColor(
 // home. The `default` narrows to SwatchCategory, so a newly added *dynamic*
 // category fails to compile until it gets a case here.
 //
-// SYNC: the color helpers in read.slang (strandColor / insertSizeColor /
-// insertSizeGradientColor / pairOrientColor / modificationsColor / mapq hue)
-// are the GPU twins of these per-category colors — keep the two in sync.
+// read.slang's `categoryPaletteColor` is the GPU twin, but a flat table rather
+// than a mirrored rule set, and colorCategory.test.ts machine-compares the two
+// via `swatchPaletteKeys` — so this is checked, not a SYNC promise.
 function categoryColor(
   cat: ReadColorCategory,
   i: number,
