@@ -17,6 +17,9 @@ interface RegionView {
   ref?: string
   refOffset: number
   id: () => string
+  get: (field: string) => unknown
+  // duck-typed by modifications-utils' getTag(); see the surface test below
+  getTag?: (tag: string) => unknown
 }
 
 // Synthetic reference: base at p is 'ACGT'[p % 4], so any slice is well-defined
@@ -143,4 +146,43 @@ test('parallel region fetches each get their own reference slice', async () => {
   for (const l of shared) {
     expect(rightById.get(l.id())!.refOffset).not.toBe(l.refOffset)
   }
+})
+
+// A reference-bound read is a wrapper around the cached record, so it has to
+// re-expose the surface the pipeline uses. Two members degrade SILENTLY if the
+// wrapper drops them, which is why they get their own assertions rather than
+// being left to the `Feature` type:
+//
+//   - `getTag` is duck-typed by modifications-utils' getTag(). Absent, that
+//     helper still "works" by falling back to `get('tags')` — which decodes
+//     every tag on the read to answer one, on the hot path.
+//   - `get('mismatches')` depends on the binding, so forwarding it to the
+//     unbound record would quietly return mismatches resolved against nothing.
+test('a reference-bound read keeps the surface the pipeline relies on', async () => {
+  const adapter = makeAdapter()
+  const feats = await fetchRegion(adapter, 20000, 22000)
+  const f = feats[0]!
+
+  // it really is bound (otherwise the assertions below prove nothing)
+  expect(f.ref).toBeDefined()
+
+  expect(typeof f.getTag).toBe('function')
+  const tags = f.get('tags') as Record<string, unknown>
+  const [someTag] = Object.keys(tags)
+  expect(someTag).toBeDefined()
+  expect(f.getTag!(someTag!)).toEqual(tags[someTag!])
+
+  // extended_cigar.bam has no MD, so mismatches can only come from the bound
+  // reference — an unbound record would report none
+  const mismatches = f.get('mismatches') as unknown[]
+  expect(mismatches.length).toBeGreaterThan(0)
+
+  // fields routed straight through still answer (a dropped one reads undefined)
+  expect(typeof f.get('start')).toBe('number')
+  expect(f.get('refName')).toBe('1')
+  expect(typeof f.get('CIGAR')).toBe('string')
+  expect(typeof f.get('flags')).toBe('number')
+  expect((f.get('NUMERIC_CIGAR') as ArrayLike<number>).length).toBeGreaterThan(
+    0,
+  )
 })

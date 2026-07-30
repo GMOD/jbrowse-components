@@ -36,19 +36,9 @@ export default class BamSlightlyLazyFeature
    * against another's sequence. (It usually got away with it: different query
    * ranges normally produce different chunk keys, so the cache misses and each
    * fetch decodes its own copy. That is an accident of the key, not a guarantee.)
-   *
-   * `Object.create` rather than a copy: BamRecord memoizes on `this`
-   * (`_cachedTags`, `_cachedNumericCigar`, …), and a prototype-delegating view
-   * reads whatever the shared record has already computed instead of re-decoding
-   * it. Only `ref`/`refOffset` become own properties, shadowing the base. The
-   * feature id is inherited, so it stays region-independent as the pileup's read
-   * lookups require.
    */
-  withRegionRef(ref: string, refOffset: number): BamSlightlyLazyFeature {
-    const view: BamSlightlyLazyFeature = Object.create(this)
-    view.ref = ref
-    view.refOffset = refOffset
-    return view
+  withRegionRef(ref: string, refOffset: number): MismatchFeature {
+    return new RegionBoundBamFeature(this, ref, refOffset)
   }
 
   id() {
@@ -216,5 +206,126 @@ export default class BamSlightlyLazyFeature
       tags: convertTagsToPlainArrays(this.tags),
       qual: this.qualString,
     }
+  }
+}
+
+/**
+ * One read bound to a single fetch's reference slice — what `withRegionRef`
+ * returns, and the only thing `BamAdapter` emits for a read lacking MD.
+ *
+ * A delegating wrapper rather than a copy or an `Object.create` view, purely for
+ * speed. The shared record must not be mutated (see `withRegionRef`), so the
+ * binding needs its own object; of the ways to make one, only a plain class
+ * keeps a single hidden class across every read. Benchmarked at 300k reads
+ * (build + the property reads the extract pass makes), relative to just mutating
+ * the shared record — which is what the correctness bug bought:
+ *
+ *                          build    read    heap
+ *   mutate (incorrect)        1x      1x    +30MB
+ *   this wrapper              1x    ~4.5x   +41MB
+ *   Object.assign clone     ~10x     ~6x    +73MB
+ *   Object.create(record)  ~100x   ~200x   +550MB
+ *
+ * `Object.create(record)` gives every view its own hidden class (its prototype
+ * is a different object each time), so every property site that sees them goes
+ * megamorphic and each read retains a prototype chain. Don't reintroduce it.
+ *
+ * The `~4.5x` is on property reads ALONE, which is the worst possible framing —
+ * the real extract pass also walks CIGARs and fills typed arrays, so the share
+ * is far smaller, and only MD-less BAMs pay it at all. Getting to zero would
+ * mean threading the fetch's `(ref, refStart)` pair down into `forEachMismatch`
+ * rather than binding it per read; that reaches `buildConsensusTally` in
+ * alignments-core too, so it is a cross-package change rather than a local one.
+ *
+ * Three delegation traps, all load-bearing:
+ *   - `getTag` is duck-typed by `@jbrowse/modifications-utils`' `getTag()`, not
+ *     declared on `Feature`, so nothing would catch its absence — and the
+ *     fallback decodes EVERY tag on the read to answer one.
+ *   - `get('mismatches')` must resolve against THIS binding, so it can't be
+ *     forwarded to the unbound base like every other field.
+ *   - `fields`/`toJSON` are only reached off the render path, so they forward.
+ */
+class RegionBoundBamFeature implements MismatchFeature {
+  constructor(
+    private base: BamSlightlyLazyFeature,
+    public readonly ref: string,
+    public readonly refOffset: number,
+  ) {}
+
+  id() {
+    return this.base.id()
+  }
+
+  get start() {
+    return this.base.start
+  }
+
+  get clipLengthAtStartOfRead() {
+    return this.base.clipLengthAtStartOfRead
+  }
+
+  get NUMERIC_CIGAR() {
+    return this.base.NUMERIC_CIGAR
+  }
+
+  // the bound twin of BamSlightlyLazyFeature.mismatches
+  get mismatches() {
+    return collectMismatches(this)
+  }
+
+  // Duck-typed by modifications-utils' getTag(); without it that helper falls
+  // back to `get('tags')`, which decodes every tag on the read to answer one.
+  getTag(tagName: string) {
+    return this.base.getTag(tagName)
+  }
+
+  // 'mismatches' is the one field that depends on the binding — everything else
+  // is a property of the record and forwards.
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(field: string): unknown
+  get(field: string): unknown {
+    return field === 'mismatches' ? this.mismatches : this.base.get(field)
+  }
+
+  parent() {
+    return undefined
+  }
+
+  children() {
+    return undefined
+  }
+
+  toJSON(): SimpleFeatureSerialized {
+    return this.base.toJSON()
+  }
+
+  // The reference-resolving walk — the whole reason this object exists. Mirrors
+  // BamSlightlyLazyFeature.forEachMismatch, reading the packed arrays off the
+  // shared record but the reference off this binding.
+  forEachMismatch(
+    callback: MismatchCallback,
+    windowStart?: number,
+    windowEnd?: number,
+  ) {
+    const { ref, refOffset, base } = this
+    const start = base.start
+    forEachMismatchNumeric(
+      base.NUMERIC_CIGAR,
+      base.NUMERIC_SEQ,
+      base.seq_length,
+      base.NUMERIC_MD,
+      base.qual,
+      ref,
+      callback,
+      refOffset,
+      windowStart === undefined ? -refOffset : windowStart - start,
+      windowEnd === undefined ? ref.length - refOffset : windowEnd - start,
+    )
   }
 }
