@@ -1,11 +1,5 @@
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Divider,
-  Typography,
-} from '@mui/material'
+import { InfoDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 
 import SearchResultsTable from './SearchResultsTable.tsx'
 
@@ -26,38 +20,24 @@ export default function SearchResultsDialog({
   handleClose: () => void
 }) {
   return (
-    <Dialog open maxWidth="xl" onClose={handleClose} title="Search results">
-      <DialogContent>
-        {!searchResults.length ? (
+    <InfoDialog open maxWidth="xl" onClose={handleClose} title="Search results">
+      {!searchResults.length ? (
+        <Typography>
+          No results found for <b>{searchQuery}</b>
+        </Typography>
+      ) : (
+        <>
           <Typography>
-            No results found for <b>{searchQuery}</b>
+            Showing results for <b>{searchQuery}</b>
           </Typography>
-        ) : (
-          <>
-            <Typography>
-              Showing results for <b>{searchQuery}</b>
-            </Typography>
-            <SearchResultsTable
-              model={model}
-              handleClose={handleClose}
-              assemblyName={assemblyName}
-              searchResults={searchResults}
-            />
-          </>
-        )}
-      </DialogContent>
-      <Divider />
-      <DialogActions>
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleClose()
-          }}
-          color="primary"
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <SearchResultsTable
+            model={model}
+            handleClose={handleClose}
+            assemblyName={assemblyName}
+            searchResults={searchResults}
+          />
+        </>
+      )}
+    </InfoDialog>
   )
 }

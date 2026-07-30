@@ -1,9 +1,8 @@
 import { useRef } from 'react'
 
-import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { Dialog } from '../../../ui/index.ts'
+import { InfoDialog } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import SequenceBody from '../SequenceBody.tsx'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
@@ -18,7 +17,7 @@ import type {
 } from '../model.ts'
 
 const useStyles = makeStyles()({
-  dialogContent: {
+  content: {
     width: '80em',
   },
 })
@@ -56,7 +55,7 @@ const SequenceDialog = observer(function SequenceDialog({
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
   return (
-    <Dialog
+    <InfoDialog
       maxWidth="xl"
       open
       title="Sequence view"
@@ -64,7 +63,7 @@ const SequenceDialog = observer(function SequenceDialog({
         handleClose()
       }}
     >
-      <DialogContent className={classes.dialogContent}>
+      <div className={classes.content}>
         <div>
           <SequenceTypeSelector
             model={sequenceFeatureDetails}
@@ -93,19 +92,8 @@ const SequenceDialog = observer(function SequenceDialog({
           hoverTarget={hoverTarget}
           onForceLoad={onForceLoad}
         />
-      </DialogContent>
-
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </InfoDialog>
   )
 })
 

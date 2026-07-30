@@ -4,13 +4,12 @@ import {
   CopyToClipboardButton,
   ErrorBanner,
   LoadingEllipses,
+  SubmitForm,
 } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   Button,
-  DialogActions,
-  DialogContent,
   FormControlLabel,
   Paper,
   Radio,
@@ -82,110 +81,94 @@ const ClusterManualTab = observer(function ClusterManualTab({
   const tsv = matrix ? matrixToTsv(matrix) : ''
 
   return (
-    <>
-      <DialogContent>
-        {children}
-        <Paper style={{ padding: 16 }}>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              disabled={!script}
-              onClick={() => {
-                void download(script, 'cluster.R')
-              }}
-            >
-              Download Rscript
-            </Button>
-            or{' '}
-            <CopyToClipboardButton
-              variant="contained"
-              disabled={!script}
-              value={() => script}
-            >
-              Copy Rscript to clipboard
-            </CopyToClipboardButton>
-            or{' '}
-            <Button
-              variant="contained"
-              disabled={!tsv}
-              onClick={() => {
-                void download(tsv, tsvFilename)
-              }}
-            >
-              Download TSV
-            </Button>
-          </div>
-          <ClusterAdvancedOptions>
-            <RadioGroup>
-              {Object.entries(methods).map(([key, label]) => (
-                <FormControlLabel
-                  key={key}
-                  value={key}
-                  checked={clusterMethod === key}
-                  control={<Radio />}
-                  label={label}
-                  onChange={() => {
-                    setClusterMethod(key)
-                  }}
-                />
-              ))}
-            </RadioGroup>
-            {advancedOptions}
-          </ClusterAdvancedOptions>
-          {loading ? (
-            <LoadingEllipses
-              variant="h6"
-              message={`Generating ${matrixLabel}`}
-            />
-          ) : error ? (
-            <ErrorBanner error={error} />
-          ) : null}
-          <TextField
-            variant="outlined"
-            multiline
-            minRows={5}
-            maxRows={10}
-            fullWidth
-            label="Paste result of the R script here"
-            value={paste}
-            onChange={event => {
-              setPaste(event.target.value)
+    <SubmitForm
+      submitText="Apply clustering"
+      submitDisabled={!paste.trim()}
+      onCancel={() => {
+        handleClose()
+      }}
+      onSubmit={() => {
+        try {
+          // parseClusterOrder yields 1-based R indices; applyOrder takes
+          // 0-based, and validates the order covers every row before
+          // anything is applied
+          applyOrder(parseClusterOrder(paste).map(idx => idx - 1))
+          handleClose()
+        } catch (e) {
+          // a bad paste keeps the dialog open so the user can fix it
+          console.error(e)
+          getSession(model).notifyError(`${e}`, e)
+        }
+      }}
+    >
+      {children}
+      <Paper style={{ padding: 16 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            disabled={!script}
+            onClick={() => {
+              void download(script, 'cluster.R')
             }}
-            slotProps={{ input: { style: { fontFamily: 'Courier New' } } }}
-          />
-        </Paper>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          disabled={!paste.trim()}
-          onClick={() => {
-            try {
-              // parseClusterOrder yields 1-based R indices; applyOrder takes
-              // 0-based, and validates the order covers every row before
-              // anything is applied
-              applyOrder(parseClusterOrder(paste).map(idx => idx - 1))
-              handleClose()
-            } catch (e) {
-              // a bad paste keeps the dialog open so the user can fix it
-              console.error(e)
-              getSession(model).notifyError(`${e}`, e)
-            }
+          >
+            Download Rscript
+          </Button>
+          or{' '}
+          <CopyToClipboardButton
+            variant="contained"
+            disabled={!script}
+            value={() => script}
+          >
+            Copy Rscript to clipboard
+          </CopyToClipboardButton>
+          or{' '}
+          <Button
+            variant="contained"
+            disabled={!tsv}
+            onClick={() => {
+              void download(tsv, tsvFilename)
+            }}
+          >
+            Download TSV
+          </Button>
+        </div>
+        <ClusterAdvancedOptions>
+          <RadioGroup>
+            {Object.entries(methods).map(([key, label]) => (
+              <FormControlLabel
+                key={key}
+                value={key}
+                checked={clusterMethod === key}
+                control={<Radio />}
+                label={label}
+                onChange={() => {
+                  setClusterMethod(key)
+                }}
+              />
+            ))}
+          </RadioGroup>
+          {advancedOptions}
+        </ClusterAdvancedOptions>
+        {loading ? (
+          <LoadingEllipses variant="h6" message={`Generating ${matrixLabel}`} />
+        ) : error ? (
+          <ErrorBanner error={error} />
+        ) : null}
+        <TextField
+          variant="outlined"
+          multiline
+          minRows={5}
+          maxRows={10}
+          fullWidth
+          label="Paste result of the R script here"
+          value={paste}
+          onChange={event => {
+            setPaste(event.target.value)
           }}
-        >
-          Apply clustering
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </>
+          slotProps={{ input: { style: { fontFamily: 'Courier New' } } }}
+        />
+      </Paper>
+    </SubmitForm>
   )
 })
 

@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  InfoDialog,
+  LabeledCheckbox,
+  MonospaceTextField,
+} from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem } from '@jbrowse/core/util'
@@ -12,12 +17,8 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Box,
   Button,
-  Checkbox,
   CircularProgress,
-  DialogActions,
-  DialogContent,
   DialogContentText,
-  FormControlLabel,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -69,122 +70,108 @@ const ShareDialog = observer(function ShareDialog({
   const disabled = loading || !!error
   return (
     <>
-      <Dialog
+      <InfoDialog
         maxWidth="xl"
         open
         onClose={handleClose}
         title="JBrowse Shareable Link"
-      >
-        <DialogContent>
-          <DialogContentText>
-            Copy the URL below to share your current JBrowse session.
-            <CascadingMenuButton
-              tooltip="Session sharing settings"
-              menuItems={[
-                ...SHARE_MODES.map(({ value, label }) => ({
-                  label,
-                  type: 'radio' as const,
-                  checked: currentSetting === value,
-                  onClick: () => {
-                    localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
-                    setCurrentSetting(value)
-                  },
-                })),
-                {
-                  label: 'About session URLs',
-                  onClick: () => {
-                    setInfoDialogOpen(true)
-                  },
-                },
-              ]}
-            >
-              <SettingsIcon />
-            </CascadingMenuButton>
-          </DialogContentText>
-
-          {error ? (
-            <ErrorBanner
-              error={error}
-              onReset={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                mutate()
+        actions={
+          <>
+            <Button
+              startIcon={<BookmarkAddIcon />}
+              disabled={disabled}
+              onClick={event => {
+                event.preventDefault()
+                // point the address bar at the assembled share URL (inline
+                // sessions live in the hash, see buildShareUrl) so the bookmark
+                // the user saves is the shareable one
+                if (url) {
+                  window.history.replaceState(null, '', url)
+                }
+                alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
               }}
-            />
-          ) : loading ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CircularProgress size={16} />
-              <Typography>Generating {currentSetting} URL...</Typography>
-            </Box>
-          ) : (
-            <>
-              <ShareLinkField value={url} />
-              {plaintext ? (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={showReadableJson}
-                      onChange={event => {
-                        setShowReadableJson(event.target.checked)
-                      }}
-                    />
-                  }
-                  label="Show readable JSON"
-                />
-              ) : null}
-              {plaintext && showReadableJson ? (
-                <MonospaceTextField
-                  label="Session JSON"
-                  value={plaintext}
-                  readOnly
-                  fullWidth
-                  maxRows={20}
-                />
-              ) : null}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            startIcon={<BookmarkAddIcon />}
-            disabled={disabled}
-            onClick={event => {
-              event.preventDefault()
-              // point the address bar at the assembled share URL (inline
-              // sessions live in the hash, see buildShareUrl) so the bookmark
-              // the user saves is the shareable one
-              if (url) {
-                window.history.replaceState(null, '', url)
-              }
-              alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
-            }}
+            >
+              Create browser Bookmark
+            </Button>
+            <Button
+              startIcon={<ContentCopyIcon />}
+              disabled={disabled}
+              onClick={async () => {
+                const { default: copy } =
+                  await import('@jbrowse/core/util/copyToClipboard')
+                if (copy(url)) {
+                  session.notify('Copied to clipboard', 'success')
+                }
+              }}
+            >
+              Copy to Clipboard
+            </Button>
+          </>
+        }
+      >
+        <DialogContentText>
+          Copy the URL below to share your current JBrowse session.
+          <CascadingMenuButton
+            tooltip="Session sharing settings"
+            menuItems={[
+              ...SHARE_MODES.map(({ value, label }) => ({
+                label,
+                type: 'radio' as const,
+                checked: currentSetting === value,
+                onClick: () => {
+                  localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
+                  setCurrentSetting(value)
+                },
+              })),
+              {
+                label: 'About session URLs',
+                onClick: () => {
+                  setInfoDialogOpen(true)
+                },
+              },
+            ]}
           >
-            Create browser Bookmark
-          </Button>
+            <SettingsIcon />
+          </CascadingMenuButton>
+        </DialogContentText>
 
-          <Button
-            startIcon={<ContentCopyIcon />}
-            disabled={disabled}
-            onClick={async () => {
-              const { default: copy } =
-                await import('@jbrowse/core/util/copyToClipboard')
-              if (copy(url)) {
-                session.notify('Copied to clipboard', 'success')
-              }
+        {error ? (
+          <ErrorBanner
+            error={error}
+            onReset={() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              mutate()
             }}
-          >
-            Copy to Clipboard
-          </Button>
-
-          <Button
-            onClick={() => {
-              handleClose()
-            }}
-            autoFocus
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+          />
+        ) : loading ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={16} />
+            <Typography>Generating {currentSetting} URL...</Typography>
+          </Box>
+        ) : (
+          <>
+            <ShareLinkField value={url} />
+            {plaintext ? (
+              <LabeledCheckbox
+                checked={showReadableJson}
+                onChange={val => {
+                  setShowReadableJson(val)
+                }}
+                label="Show readable JSON"
+              />
+            ) : null}
+            {plaintext && showReadableJson ? (
+              <MonospaceTextField
+                label="Session JSON"
+                value={plaintext}
+                readOnly
+                fullWidth
+                maxRows={20}
+              />
+            ) : null}
+          </>
+        )}
+      </InfoDialog>
 
       <ShareInfoDialog
         open={infoDialogOpen}

@@ -1,5 +1,4 @@
-import { ErrorBanner, SubmitCancelActions } from '@jbrowse/core/ui'
-import { DialogContent } from '@mui/material'
+import { ErrorBanner, SubmitForm } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import ClusterProgress from '../ClusterProgress.tsx'
@@ -26,34 +25,31 @@ const ClusterAutoTab = observer(function ClusterAutoTab({
     run: runClustering,
   })
   return (
-    <>
-      <DialogContent>
-        {children}
-        <ClusterAdvancedOptions>{advancedOptions}</ClusterAdvancedOptions>
-        <div>
-          {loading ? (
-            <ClusterProgress
-              status={status}
-              onStop={() => {
-                stop()
-              }}
-            />
-          ) : null}
-          {error ? <ErrorBanner error={error} /> : null}
-        </div>
-      </DialogContent>
-      <SubmitCancelActions
-        submitText="Run clustering"
-        submitDisabled={loading || !canRun}
-        onSubmit={() => {
-          void run()
-        }}
-        onCancel={() => {
-          stop()
-          handleClose()
-        }}
-      />
-    </>
+    <SubmitForm
+      submitText="Run clustering"
+      submitDisabled={loading || !canRun}
+      onSubmit={() => {
+        void run()
+      }}
+      onCancel={() => {
+        stop()
+        handleClose()
+      }}
+    >
+      {children}
+      <ClusterAdvancedOptions>{advancedOptions}</ClusterAdvancedOptions>
+      <div>
+        {loading ? (
+          <ClusterProgress
+            status={status}
+            onStop={() => {
+              stop()
+            }}
+          />
+        ) : null}
+        {error ? <ErrorBanner error={error} /> : null}
+      </div>
+    </SubmitForm>
   )
 })
 

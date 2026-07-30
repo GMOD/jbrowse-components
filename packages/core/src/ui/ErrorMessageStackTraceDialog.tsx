@@ -1,18 +1,9 @@
-import CloseIcon from '@mui/icons-material/Close'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-} from '@mui/material'
-
 import { readConfObject } from '../configuration/index.ts'
 import { hasSharedArrayBuffer } from '../util/stopToken.ts'
 import { useFetch } from '../util/useFetch.ts'
 import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
+import InfoDialog from './InfoDialog.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import { formatErrorStack } from './formatErrorStack.ts'
 import {
@@ -89,36 +80,14 @@ export default function ErrorMessageStackTraceDialog({
     .join('\n')
 
   return (
-    <Dialog
+    <InfoDialog
       open
       onClose={() => {
         onClose()
       }}
       maxWidth="xl"
-    >
-      <DialogTitle>
-        Stack trace
-        <IconButton
-          onClick={() => {
-            onClose()
-          }}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent>
-        {isLoading ? (
-          <LoadingEllipses variant="h6" />
-        ) : (
-          <ErrorMessageStackTraceContents text={errorBoxText} extra={extra} />
-        )}
-      </DialogContent>
-      <DialogActions>
+      title="Stack trace"
+      actions={
         <CopyToClipboardButton
           variant="contained"
           color="secondary"
@@ -127,16 +96,13 @@ export default function ErrorMessageStackTraceDialog({
         >
           Copy stack trace to clipboard
         </CopyToClipboardButton>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            onClose()
-          }}
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      }
+    >
+      {isLoading ? (
+        <LoadingEllipses variant="h6" />
+      ) : (
+        <ErrorMessageStackTraceContents text={errorBoxText} extra={extra} />
+      )}
+    </InfoDialog>
   )
 }

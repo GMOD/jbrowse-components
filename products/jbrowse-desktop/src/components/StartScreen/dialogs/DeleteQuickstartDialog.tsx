@@ -13,7 +13,7 @@ export default function DeleteQuickstartDialog({
   quickstartToDelete: string
   onClose: () => void
 }) {
-  const { error, onSubmit } = useIpcAction(
+  const { error, pending, onSubmit } = useIpcAction(
     () => ipcRenderer.invoke('deleteQuickstart', quickstartToDelete),
     onClose,
   )
@@ -21,6 +21,7 @@ export default function DeleteQuickstartDialog({
     <ConfirmDialog
       open
       title={`Delete "${quickstartToDelete}"?`}
+      submitDisabled={pending}
       onSubmit={onSubmit}
       onCancel={onClose}
     >

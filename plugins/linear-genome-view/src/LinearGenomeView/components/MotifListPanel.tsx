@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
-import { SubmitCancelActions } from '@jbrowse/core/ui'
+import { SubmitForm } from '@jbrowse/core/ui'
 import { isPalindromic, parseMotifList, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogContent, TextField, Typography } from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import StrandCheckboxes from './StrandCheckboxes.tsx'
@@ -85,56 +85,20 @@ const MotifListPanel = observer(function MotifListPanel({
   }
 
   return (
-    <>
-      <DialogContent className={classes.dialogContent}>
-        <TextField
-          multiline
-          fullWidth
-          rows={12}
-          variant="outlined"
-          label="Motifs"
-          value={text}
-          onChange={event => {
-            setText(event.target.value)
-          }}
-          slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
-        />
-        {errors.length > 0 ? (
-          <Typography color="error" variant="body2">
-            {errors.map(e => `Line ${e.line}: ${e.message}`).join('\n')}
-          </Typography>
-        ) : (
-          <Typography variant="body2" color="textSecondary">
-            {motifs.length === 0
-              ? 'Add at least one motif'
-              : `${motifs.length} ${pluralize(motifs.length, 'motif')}`}
-          </Typography>
-        )}
-        {hasStrandedMotif ? (
-          <StrandCheckboxes
-            searchForward={searchForward}
-            searchReverse={searchReverse}
-            setSearchForward={setSearchForward}
-            setSearchReverse={setSearchReverse}
-          />
-        ) : motifs.length > 0 ? (
-          <Typography variant="body2" color="textSecondary">
-            All motifs are palindromic, so each match covers both strands.
-          </Typography>
-        ) : null}
-      </DialogContent>
-      <SubmitCancelActions
-        onSubmit={() => {
-          handleSubmitCombined()
-        }}
-        onCancel={() => {
-          handleClose()
-        }}
-        submitDisabled={!canSubmit}
-        submitText="Launch as one track"
-      >
-        {motifs.length > 1 ? (
+    <SubmitForm
+      contentClassName={classes.dialogContent}
+      onSubmit={() => {
+        handleSubmitCombined()
+      }}
+      onCancel={() => {
+        handleClose()
+      }}
+      submitDisabled={!canSubmit}
+      submitText="Launch as one track"
+      actions={
+        motifs.length > 1 ? (
           <Button
+            type="button"
             onClick={() => {
               handleSubmitSeparate()
             }}
@@ -144,9 +108,45 @@ const MotifListPanel = observer(function MotifListPanel({
           >
             Launch one track per motif
           </Button>
-        ) : null}
-      </SubmitCancelActions>
-    </>
+        ) : null
+      }
+    >
+      <TextField
+        multiline
+        fullWidth
+        rows={12}
+        variant="outlined"
+        label="Motifs"
+        value={text}
+        onChange={event => {
+          setText(event.target.value)
+        }}
+        slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
+      />
+      {errors.length > 0 ? (
+        <Typography color="error" variant="body2">
+          {errors.map(e => `Line ${e.line}: ${e.message}`).join('\n')}
+        </Typography>
+      ) : (
+        <Typography variant="body2" color="textSecondary">
+          {motifs.length === 0
+            ? 'Add at least one motif'
+            : `${motifs.length} ${pluralize(motifs.length, 'motif')}`}
+        </Typography>
+      )}
+      {hasStrandedMotif ? (
+        <StrandCheckboxes
+          searchForward={searchForward}
+          searchReverse={searchReverse}
+          setSearchForward={setSearchForward}
+          setSearchReverse={setSearchReverse}
+        />
+      ) : motifs.length > 0 ? (
+        <Typography variant="body2" color="textSecondary">
+          All motifs are palindromic, so each match covers both strands.
+        </Typography>
+      ) : null}
+    </SubmitForm>
   )
 })
 

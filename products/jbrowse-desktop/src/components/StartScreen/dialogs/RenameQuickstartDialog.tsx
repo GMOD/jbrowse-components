@@ -22,7 +22,7 @@ export default function RenameQuickstartDialog({
   // includes() flags a spurious conflict the moment the dialog opens
   const nameConflict =
     newName !== quickstartToRename && quickstartNames.includes(newName)
-  const { error, onSubmit } = useIpcAction(async () => {
+  const { error, pending, onSubmit } = useIpcAction(async () => {
     if (nameConflict) {
       throw new Error('A quickstart with this name already exists')
     }
@@ -35,6 +35,7 @@ export default function RenameQuickstartDialog({
       maxWidth="xs"
       fullWidth
       title="Rename quickstart"
+      submitDisabled={pending}
       onSubmit={onSubmit}
       onCancel={onClose}
     >

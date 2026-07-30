@@ -1,18 +1,16 @@
-import { DialogContent } from '@mui/material'
-
-import Dialog from './Dialog.tsx'
+import InfoDialog from './InfoDialog.tsx'
 
 export default function CascadingMenuHelpDialog({
   onClose,
   helpText,
   label,
 }: {
-  onClose: (event: React.MouseEvent | React.KeyboardEvent) => void
+  onClose: () => void
   helpText: React.ReactNode
   label?: React.ReactNode
 }) {
   return (
-    <Dialog
+    <InfoDialog
       open
       onClose={onClose}
       title="Help"
@@ -24,7 +22,7 @@ export default function CascadingMenuHelpDialog({
         e.stopPropagation()
       }}
     >
-      <DialogContent>{helpText}</DialogContent>
-    </Dialog>
+      {helpText}
+    </InfoDialog>
   )
 }

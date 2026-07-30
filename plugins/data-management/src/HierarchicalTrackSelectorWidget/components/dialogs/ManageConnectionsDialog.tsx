@@ -1,15 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Dialog } from '@jbrowse/core/ui'
+import { InfoDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  IconButton,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -44,48 +37,40 @@ const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
   const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session
   return (
-    <Dialog open onClose={handleClose} maxWidth="lg" title="Manage connections">
-      <DialogContent>
-        <Typography>
-          Click the X icon to delete the connection from your config completely
-        </Typography>
-        <div className={classes.connectionContainer}>
-          {connections.map(conf => {
-            const name = readConfObject(conf, 'name')
-            return (
-              <Typography key={conf.connectionId}>
-                {adminMode || sessionConnections?.includes(conf) ? (
-                  <IconButton
-                    onClick={() => {
-                      onDelete(conf)
-                    }}
-                  >
-                    <CloseIcon color="error" />
-                  </IconButton>
-                ) : (
-                  <DisabledButton />
-                )}
-                {name}
-              </Typography>
-            )
-          })}
-          {!connections.length ? (
-            <Typography>No connections found</Typography>
-          ) : null}
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-          color="primary"
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <InfoDialog
+      open
+      onClose={handleClose}
+      maxWidth="lg"
+      title="Manage connections"
+    >
+      <Typography>
+        Click the X icon to delete the connection from your config completely
+      </Typography>
+      <div className={classes.connectionContainer}>
+        {connections.map(conf => {
+          const name = readConfObject(conf, 'name')
+          return (
+            <Typography key={conf.connectionId}>
+              {adminMode || sessionConnections?.includes(conf) ? (
+                <IconButton
+                  onClick={() => {
+                    onDelete(conf)
+                  }}
+                >
+                  <CloseIcon color="error" />
+                </IconButton>
+              ) : (
+                <DisabledButton />
+              )}
+              {name}
+            </Typography>
+          )
+        })}
+        {!connections.length ? (
+          <Typography>No connections found</Typography>
+        ) : null}
+      </div>
+    </InfoDialog>
   )
 })
 

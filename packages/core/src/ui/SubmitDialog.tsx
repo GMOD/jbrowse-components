@@ -1,77 +1,51 @@
-import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Dialog from './Dialog.tsx'
+import SubmitForm from './SubmitForm.tsx'
 
 import type { Props as DialogComponentProps } from './Dialog.tsx'
-import type { ButtonProps } from '@mui/material'
+import type { SubmitFormProps } from './SubmitForm.tsx'
 
-export interface SubmitDialogProps extends DialogComponentProps {
-  onCancel: () => void
-  onSubmit: () => void
-  cancelText?: string
-  submitText?: string
-  submitDisabled?: boolean
-  submitColor?: ButtonProps['color']
-  submitStartIcon?: React.ReactNode
-  // When provided, the secondary button becomes a "Restore default" action
-  // (calls onReset, does NOT dismiss) in place of Cancel — for dialogs whose
-  // settings apply live, where Submit is really just "Close". onCancel still
-  // handles backdrop/escape dismissal.
-  onReset?: () => void
-  resetText?: string
-}
+// MUI's DialogProps carries DOM `onSubmit`/`onReset` handlers on the root div;
+// drop them so the form's own callbacks are what these names mean here.
+export interface SubmitDialogProps
+  extends
+    Omit<DialogComponentProps, 'onSubmit' | 'onReset'>,
+    Omit<SubmitFormProps, 'children'> {}
 
 const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
   const {
     onSubmit,
     onCancel,
-    cancelText = 'Cancel',
-    submitText = 'Submit',
-    submitDisabled = false,
-    submitColor = 'primary',
+    cancelText,
+    submitText,
+    submitDisabled,
+    submitColor,
     submitStartIcon,
     onReset,
-    resetText = 'Restore default',
+    resetText,
+    actions,
+    contentClassName,
     children,
     ...dialogProps
   } = props
   return (
     <Dialog onClose={onCancel} {...dialogProps}>
-      <form
-        onSubmit={event => {
-          event.preventDefault()
-          if (!submitDisabled) {
-            onSubmit()
-          }
-        }}
+      <SubmitForm
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        cancelText={cancelText}
+        submitText={submitText}
+        submitDisabled={submitDisabled}
+        submitColor={submitColor}
+        submitStartIcon={submitStartIcon}
+        onReset={onReset}
+        resetText={resetText}
+        actions={actions}
+        contentClassName={contentClassName}
       >
-        <DialogContent>{children}</DialogContent>
-        <DialogActions>
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={() => {
-              if (onReset) {
-                onReset()
-              } else {
-                onCancel()
-              }
-            }}
-          >
-            {onReset ? resetText : cancelText}
-          </Button>
-          <Button
-            type="submit"
-            color={submitColor}
-            variant="contained"
-            disabled={submitDisabled}
-            startIcon={submitStartIcon}
-          >
-            {submitText}
-          </Button>
-        </DialogActions>
-      </form>
+        {children}
+      </SubmitForm>
     </Dialog>
   )
 })

@@ -14,7 +14,7 @@ export default function DeleteSessionDialog({
   onClose: () => void
 }) {
   const count = sessionsToDelete.length
-  const { error, onSubmit } = useIpcAction(
+  const { error, pending, onSubmit } = useIpcAction(
     () =>
       ipcRenderer.invoke(
         'deleteSessions',
@@ -26,6 +26,7 @@ export default function DeleteSessionDialog({
     <ConfirmDialog
       open
       title={`Delete ${count} ${count === 1 ? 'session' : 'sessions'}?`}
+      submitDisabled={pending}
       onSubmit={onSubmit}
       onCancel={onClose}
     >

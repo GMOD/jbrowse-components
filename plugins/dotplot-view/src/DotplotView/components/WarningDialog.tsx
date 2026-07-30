@@ -1,7 +1,7 @@
-import { Dialog } from '@jbrowse/core/ui'
+import { InfoDialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DialogContent, DialogContentText } from '@mui/material'
+import { DialogContentText } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -53,7 +53,7 @@ const WarningDialog = observer(function WarningDialog({
     { field: 'effect', width: measureGridWidth(rows.map(r => r.effect)) },
   ]
   return (
-    <Dialog
+    <InfoDialog
       open
       onClose={() => {
         handleClose()
@@ -61,7 +61,7 @@ const WarningDialog = observer(function WarningDialog({
       maxWidth="xl"
       title="Dotplot rendered with warnings"
     >
-      <DialogContent className={classes.content}>
+      <div className={classes.content}>
         <DialogContentText>
           Found warnings while rendering the dotplot. This is often due to
           out-of-bound features that may indicate the wrong assemblies are being
@@ -77,8 +77,8 @@ const WarningDialog = observer(function WarningDialog({
             disableColumnMenu
           />
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </InfoDialog>
   )
 })
 

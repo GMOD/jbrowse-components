@@ -1,13 +1,8 @@
 import { useState } from 'react'
 
-import { SubmitCancelActions } from '@jbrowse/core/ui'
+import { LabeledCheckbox, SubmitForm } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Checkbox,
-  DialogContent,
-  FormControlLabel,
-  TextField,
-} from '@mui/material'
+import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import StrandCheckboxes from './StrandCheckboxes.tsx'
@@ -59,51 +54,45 @@ const SequencePatternPanel = observer(function SequencePatternPanel({
   }
 
   return (
-    <>
-      <DialogContent className={classes.dialogContent}>
-        <TextField
-          size="small"
-          value={value}
-          onChange={e => {
-            setValue(e.target.value)
-          }}
-          label="Sequence pattern"
-          placeholder="e.g. AACT(C|T)"
-          error={!!patternError}
-          helperText={
-            patternError ? `${patternError}` : 'Plain sequence or a regex'
-          }
-        />
-        <StrandCheckboxes
-          searchForward={searchForward}
-          searchReverse={searchReverse}
-          setSearchForward={setSearchForward}
-          setSearchReverse={setSearchReverse}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={caseInsensitive}
-                onChange={event => {
-                  setCaseInsensitive(event.target.checked)
-                }}
-              />
-            }
-            label="Case insensitive"
-          />
-        </StrandCheckboxes>
-      </DialogContent>
-      <SubmitCancelActions
-        onSubmit={() => {
-          handleSubmit()
+    <SubmitForm
+      contentClassName={classes.dialogContent}
+      onSubmit={() => {
+        handleSubmit()
+      }}
+      onCancel={() => {
+        handleClose()
+      }}
+      submitDisabled={!canSubmit}
+    >
+      <TextField
+        size="small"
+        value={value}
+        onChange={e => {
+          setValue(e.target.value)
         }}
-        onCancel={() => {
-          handleClose()
-        }}
-        submitDisabled={!canSubmit}
+        label="Sequence pattern"
+        placeholder="e.g. AACT(C|T)"
+        error={!!patternError}
+        helperText={
+          patternError ? `${patternError}` : 'Plain sequence or a regex'
+        }
       />
-    </>
+      <StrandCheckboxes
+        searchForward={searchForward}
+        searchReverse={searchReverse}
+        setSearchForward={setSearchForward}
+        setSearchReverse={setSearchReverse}
+      >
+        <LabeledCheckbox
+          size="small"
+          checked={caseInsensitive}
+          onChange={val => {
+            setCaseInsensitive(val)
+          }}
+          label="Case insensitive"
+        />
+      </StrandCheckboxes>
+    </SubmitForm>
   )
 })
 

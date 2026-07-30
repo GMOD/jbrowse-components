@@ -1,6 +1,6 @@
-import { Dialog, ExternalLink } from '@jbrowse/core/ui'
+import { ExternalLink, InfoDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DialogContent, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
 const useStyles = makeStyles()({
   content: {
@@ -19,13 +19,13 @@ export default function AboutDialog({
 }) {
   const { classes } = useStyles()
   return (
-    <Dialog
+    <InfoDialog
       open={open}
       onClose={onClose}
       maxWidth="xl"
       title={`JBrowse v${version}`}
     >
-      <DialogContent className={classes.content}>
+      <div className={classes.content}>
         <Typography>
           JBrowse is a GMOD project © 2019-2026, The Evolutionary Software
           Foundation
@@ -56,7 +56,7 @@ export default function AboutDialog({
             </ExternalLink>
           </li>
         </ul>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </InfoDialog>
   )
 }

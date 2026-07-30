@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { Dialog, ErrorBanner, LoadingEllipses } from '../../../ui/index.ts'
+import { ErrorBanner, InfoDialog, LoadingEllipses } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails.tsx'
 import { SequenceFeatureDetailsF } from '../model.ts'
@@ -15,7 +14,7 @@ import type {
 import type { SequenceHoverTarget } from '../model.ts'
 
 const useStyles = makeStyles()({
-  dialogContent: {
+  content: {
     width: '80em',
   },
 })
@@ -46,7 +45,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   const [model] = useState(() => SequenceFeatureDetailsF().create())
 
   return (
-    <Dialog
+    <InfoDialog
       maxWidth="xl"
       open
       title={
@@ -58,7 +57,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
         handleClose()
       }}
     >
-      <DialogContent className={classes.dialogContent}>
+      <div className={classes.content}>
         {error ? (
           <ErrorBanner error={error} />
         ) : feature ? (
@@ -73,20 +72,8 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
         ) : (
           <LoadingEllipses message="Loading feature" />
         )}
-      </DialogContent>
-
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-          color="primary"
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </InfoDialog>
   )
 })
 

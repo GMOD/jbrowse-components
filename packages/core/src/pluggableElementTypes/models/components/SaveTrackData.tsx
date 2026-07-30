@@ -5,10 +5,7 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'
 import {
   Button,
-  DialogActions,
-  DialogContent,
   DialogContentText,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -21,8 +18,8 @@ import { observer } from 'mobx-react'
 
 import {
   CopyToClipboardButton,
-  Dialog,
   ErrorBanner,
+  InfoDialog,
 } from '../../../ui/index.ts'
 import { getContainingView, saveAs } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
@@ -55,17 +52,13 @@ function HelpDialog({
   onClose: () => void
 }) {
   return (
-    <Dialog open={text !== undefined} onClose={onClose}>
-      <DialogTitle>Format Information</DialogTitle>
-      <DialogContent>
-        <DialogContentText>{text}</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button variant="contained" autoFocus onClick={onClose}>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <InfoDialog
+      open={text !== undefined}
+      onClose={onClose}
+      title="Format Information"
+    >
+      <DialogContentText>{text}</DialogContentText>
+    </InfoDialog>
   )
 }
 
@@ -112,8 +105,39 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   }
 
   return (
-    <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
-      <DialogContent className={classes.root}>
+    <InfoDialog
+      maxWidth="xl"
+      open
+      onClose={handleClose}
+      title="Save track data"
+      actions={
+        <>
+          <CopyToClipboardButton
+            disabled={loading || !!error}
+            value={str}
+            copiedLabel="Copied!"
+            startIcon={<ContentCopyIcon />}
+          >
+            Copy to clipboard
+          </CopyToClipboardButton>
+          <Button
+            variant="contained"
+            disabled={loading || !!error}
+            onClick={() => {
+              const ext = options[type!]!.extension
+              saveAs(
+                new Blob([str], { type: 'text/plain;charset=utf-8' }),
+                `jbrowse_track_data.${ext}`,
+              )
+            }}
+            startIcon={<GetAppIcon />}
+          >
+            Download
+          </Button>
+        </>
+      }
+    >
+      <div className={classes.root}>
         {error ? <ErrorBanner error={error} /> : null}
         <div>
           <TextField
@@ -174,46 +198,14 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             },
           }}
         />
-      </DialogContent>
-      <DialogActions>
-        <CopyToClipboardButton
-          disabled={loading || !!error}
-          value={str}
-          copiedLabel="Copied!"
-          startIcon={<ContentCopyIcon />}
-        >
-          Copy to clipboard
-        </CopyToClipboardButton>
-        <Button
-          variant="contained"
-          disabled={loading || !!error}
-          onClick={() => {
-            const ext = options[type!]!.extension
-            saveAs(
-              new Blob([str], { type: 'text/plain;charset=utf-8' }),
-              `jbrowse_track_data.${ext}`,
-            )
-          }}
-          startIcon={<GetAppIcon />}
-        >
-          Download
-        </Button>
-        <Button
-          type="submit"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Close
-        </Button>
-      </DialogActions>
+      </div>
       <HelpDialog
         text={helpText}
         onClose={() => {
           setHelpText(undefined)
         }}
       />
-    </Dialog>
+    </InfoDialog>
   )
 })
 

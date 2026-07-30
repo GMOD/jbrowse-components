@@ -4,9 +4,10 @@ import { SAM_FLAG_SECONDARY, variantsToVcf } from '@jbrowse/alignments-core'
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   CopyToClipboardButton,
-  Dialog,
   ErrorBanner,
   ExternalLink,
+  InfoDialog,
+  LabeledCheckbox,
   LoadingEllipses,
   MonospaceTextField,
 } from '@jbrowse/core/ui'
@@ -25,15 +26,7 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { defaultFilterFlags } from '../shared/util.ts'
@@ -200,15 +193,88 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   const noVariants = noSequence || !variantCount
 
   return (
-    <Dialog
+    <InfoDialog
       maxWidth="xl"
       open
       title={`Consensus sequence — ${trackName}`}
       onClose={() => {
         handleClose()
       }}
+      actions={
+        <>
+          <CopyToClipboardButton
+            value={sequence}
+            copiedLabel="Copied"
+            disabled={noSequence || sequenceTooLarge}
+            color="primary"
+            startIcon={<ContentCopyIcon />}
+          >
+            Copy to clipboard
+          </CopyToClipboardButton>
+          <Button
+            variant="contained"
+            onClick={() => {
+              download(
+                sequence,
+                'jbrowse_consensus.fa',
+                'text/x-fasta;charset=utf-8',
+              )
+            }}
+            disabled={noSequence}
+            color="primary"
+            startIcon={<GetAppIcon />}
+          >
+            Download FASTA
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              download(vcf, 'jbrowse_consensus.vcf', 'text/plain;charset=utf-8')
+            }}
+            disabled={noVariants}
+            color="primary"
+            startIcon={<GetAppIcon />}
+          >
+            Download VCF ({variantCount})
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              const session = getSession(model)
+              if (!isSessionWithAddTracks(session)) {
+                session.notify('This session cannot add tracks', 'warning')
+                return
+              }
+              const region = regions[0]!
+              addAndShowTrack(
+                session,
+                {
+                  type: 'VariantTrack',
+                  trackId: `consensus-variants-${Date.now()}`,
+                  name: `Consensus variants ${region.refName}:${region.start + 1}-${region.end}`,
+                  assemblyNames: [region.assemblyName],
+                  adapter: {
+                    type: 'VcfAdapter',
+                    vcfLocation: {
+                      locationType: 'UriLocation',
+                      uri: `data:text/plain;base64,${btoa(vcf)}`,
+                    },
+                  },
+                },
+                model,
+              )
+              handleClose()
+            }}
+            disabled={noVariants}
+            color="primary"
+            startIcon={<AddIcon />}
+          >
+            Open as variant track
+          </Button>
+        </>
+      }
     >
-      <DialogContent style={{ width: '80em' }}>
+      <div style={{ width: '80em' }}>
         <div
           style={{ display: 'flex', alignItems: 'center', gap: 12, margin: 4 }}
         >
@@ -250,16 +316,12 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               : sequence
           }
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={showOptions}
-              onChange={event => {
-                setShowOptions(event.target.checked)
-              }}
-            />
-          }
+        <LabeledCheckbox
+          size="small"
+          checked={showOptions}
+          onChange={val => {
+            setShowOptions(val)
+          }}
           label={<Typography variant="body2">Show options</Typography>}
         />
         {showOptions ? <ConsensusSettingsPanel settings={settings} /> : null}
@@ -271,87 +333,8 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             Details
           </ExternalLink>
         </Typography>
-      </DialogContent>
-      <DialogActions>
-        <CopyToClipboardButton
-          value={sequence}
-          copiedLabel="Copied"
-          disabled={noSequence || sequenceTooLarge}
-          color="primary"
-          startIcon={<ContentCopyIcon />}
-        >
-          Copy to clipboard
-        </CopyToClipboardButton>
-        <Button
-          variant="contained"
-          onClick={() => {
-            download(
-              sequence,
-              'jbrowse_consensus.fa',
-              'text/x-fasta;charset=utf-8',
-            )
-          }}
-          disabled={noSequence}
-          color="primary"
-          startIcon={<GetAppIcon />}
-        >
-          Download FASTA
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            download(vcf, 'jbrowse_consensus.vcf', 'text/plain;charset=utf-8')
-          }}
-          disabled={noVariants}
-          color="primary"
-          startIcon={<GetAppIcon />}
-        >
-          Download VCF ({variantCount})
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            const session = getSession(model)
-            if (!isSessionWithAddTracks(session)) {
-              session.notify('This session cannot add tracks', 'warning')
-              return
-            }
-            const region = regions[0]!
-            addAndShowTrack(
-              session,
-              {
-                type: 'VariantTrack',
-                trackId: `consensus-variants-${Date.now()}`,
-                name: `Consensus variants ${region.refName}:${region.start + 1}-${region.end}`,
-                assemblyNames: [region.assemblyName],
-                adapter: {
-                  type: 'VcfAdapter',
-                  vcfLocation: {
-                    locationType: 'UriLocation',
-                    uri: `data:text/plain;base64,${btoa(vcf)}`,
-                  },
-                },
-              },
-              model,
-            )
-            handleClose()
-          }}
-          disabled={noVariants}
-          color="primary"
-          startIcon={<AddIcon />}
-        >
-          Open as variant track
-        </Button>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </InfoDialog>
   )
 })
 

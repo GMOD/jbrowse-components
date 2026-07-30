@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { SubmitCancelActions } from '@jbrowse/core/ui'
+import { SubmitForm } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  DialogContent,
   MenuItem,
   TextField,
   ToggleButton,
@@ -130,94 +129,92 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   }
 
   return (
-    <>
-      <DialogContent className={classes.dialogContent}>
-        <TextField
-          select
-          variant="outlined"
-          size="small"
-          label="Enzyme"
-          value={enzyme}
-          helperText={presetSummary}
-          onChange={event => {
-            applyPreset(event.target.value)
-          }}
-        >
-          {[...Object.keys(ENZYME_PRESETS), 'Custom'].map(name => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
-          ))}
-        </TextField>
-        {enzyme === 'Custom' ? (
-          <>
+    <SubmitForm
+      contentClassName={classes.dialogContent}
+      onSubmit={() => {
+        handleSubmit()
+      }}
+      onCancel={() => {
+        handleClose()
+      }}
+      submitDisabled={!canSubmit}
+    >
+      <TextField
+        select
+        variant="outlined"
+        size="small"
+        label="Enzyme"
+        value={enzyme}
+        helperText={presetSummary}
+        onChange={event => {
+          applyPreset(event.target.value)
+        }}
+      >
+        {[...Object.keys(ENZYME_PRESETS), 'Custom'].map(name => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+      </TextField>
+      {enzyme === 'Custom' ? (
+        <>
+          <TextField
+            size="small"
+            label="PAM (IUPAC)"
+            value={pam}
+            error={!pamValid}
+            helperText={pamValid ? undefined : 'Use IUPAC codes only'}
+            onChange={event => {
+              setPam(event.target.value.toUpperCase())
+            }}
+          />
+          <div className={classes.row}>
             <TextField
               size="small"
-              label="PAM (IUPAC)"
-              value={pam}
-              error={!pamValid}
-              helperText={pamValid ? undefined : 'Use IUPAC codes only'}
+              label="Guide length (bp)"
+              value={guideLengthStr}
+              error={!guideLengthValid}
               onChange={event => {
-                setPam(event.target.value.toUpperCase())
+                setGuideLengthStr(event.target.value)
               }}
             />
-            <div className={classes.row}>
-              <TextField
-                size="small"
-                label="Guide length (bp)"
-                value={guideLengthStr}
-                error={!guideLengthValid}
-                onChange={event => {
-                  setGuideLengthStr(event.target.value)
-                }}
-              />
-              <TextField
-                size="small"
-                label="Cut offset (bp)"
-                value={cutOffsetStr}
-                error={!cutOffsetValid}
-                onChange={event => {
-                  setCutOffsetStr(event.target.value)
-                }}
-              />
-            </div>
-            <div className={classes.toggleRow}>
-              <Typography variant="body2" color="textSecondary">
-                PAM location
-              </Typography>
-              <ToggleButtonGroup
-                exclusive
-                size="small"
-                value={pamLocation}
-                onChange={(_event, value) => {
-                  if (value) {
-                    setPamLocation(value)
-                  }
-                }}
-              >
-                <ToggleButton value="3prime">3′ (Cas9)</ToggleButton>
-                <ToggleButton value="5prime">5′ (Cas12a)</ToggleButton>
-              </ToggleButtonGroup>
-            </div>
-          </>
-        ) : null}
-        <StrandCheckboxes
-          searchForward={searchForward}
-          searchReverse={searchReverse}
-          setSearchForward={setSearchForward}
-          setSearchReverse={setSearchReverse}
-        />
-      </DialogContent>
-      <SubmitCancelActions
-        onSubmit={() => {
-          handleSubmit()
-        }}
-        onCancel={() => {
-          handleClose()
-        }}
-        submitDisabled={!canSubmit}
+            <TextField
+              size="small"
+              label="Cut offset (bp)"
+              value={cutOffsetStr}
+              error={!cutOffsetValid}
+              onChange={event => {
+                setCutOffsetStr(event.target.value)
+              }}
+            />
+          </div>
+          <div className={classes.toggleRow}>
+            <Typography variant="body2" color="textSecondary">
+              PAM location
+            </Typography>
+            <ToggleButtonGroup
+              exclusive
+              size="small"
+              value={pamLocation}
+              onChange={(_event, value) => {
+                if (value) {
+                  setPamLocation(value)
+                }
+              }}
+            >
+              <ToggleButton value="3prime">3′ (Cas9)</ToggleButton>
+              <ToggleButton value="5prime">5′ (Cas12a)</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+        </>
+      ) : null}
+      <StrandCheckboxes
+        searchForward={searchForward}
+        searchReverse={searchReverse}
+        setSearchForward={setSearchForward}
+        setSearchReverse={setSearchReverse}
       />
-    </>
+    </SubmitForm>
   )
 })
 

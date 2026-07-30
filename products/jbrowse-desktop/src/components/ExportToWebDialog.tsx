@@ -1,7 +1,12 @@
 import { useState } from 'react'
 
 import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
-import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  InfoDialog,
+  LabeledCheckbox,
+  MonospaceTextField,
+} from '@jbrowse/core/ui'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
@@ -18,9 +23,6 @@ import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 import {
   Alert,
   Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
   DialogContentText,
   FormControlLabel,
   IconButton,
@@ -149,132 +151,120 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   const disabled = loading || !!error
   return (
     <>
-      <Dialog
+      <InfoDialog
         maxWidth="xl"
         open
         onClose={() => {
           handleClose()
         }}
         title="Export session to web"
-      >
-        <DialogContent>
-          <DialogContentText>
-            Open this desktop session in jbrowse-web.
-            <IconButton
+        actions={
+          <>
+            <Button
+              variant="contained"
+              startIcon={<OpenInBrowserIcon />}
+              disabled={disabled}
               onClick={() => {
-                setInfoDialogOpen(true)
+                window.open(url, '_blank')
               }}
             >
-              <HelpOutlineIcon />
-            </IconButton>
-          </DialogContentText>
-
-          <RadioGroup
-            row
-            value={mode}
-            onChange={event => {
-              setMode(event.target.value as SessionShareMode)
-            }}
-          >
-            <FormControlLabel
-              value="short"
-              control={<Radio />}
-              label="Short link"
-            />
-            <FormControlLabel
-              value="long"
-              control={<Radio />}
-              label="Long link"
-            />
-            <FormControlLabel
-              value="json"
-              control={<Radio />}
-              label="Plaintext JSON"
-            />
-          </RadioGroup>
-
-          {error ? (
-            <ErrorBanner
-              error={error}
-              onReset={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                mutate()
+              Open in browser
+            </Button>
+            <Button
+              startIcon={<ContentCopyIcon />}
+              disabled={disabled}
+              onClick={async () => {
+                const { default: copy } =
+                  await import('@jbrowse/core/util/copyToClipboard')
+                if (copy(url)) {
+                  session.notify('Copied to clipboard', 'success')
+                }
               }}
-            />
-          ) : loading ? (
-            <Typography>Generating {mode} URL...</Typography>
-          ) : (
-            <>
-              {data ? <PortabilityWarning plan={data.plan} /> : null}
-              {data?.plan.strategy === 'hostedConfigBase' ? (
-                <Typography variant="caption" color="textSecondary">
-                  Reuses the hosted config {data.plan.configUrl}
-                </Typography>
-              ) : (
-                <Typography variant="caption" color="textSecondary">
-                  Self-contained session (carries its own assemblies and tracks)
-                </Typography>
-              )}
-              <ShareLinkField value={url} />
-              {plaintext ? (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={showReadableJson}
-                      onChange={event => {
-                        setShowReadableJson(event.target.checked)
-                      }}
-                    />
-                  }
-                  label="Show readable JSON"
-                />
-              ) : null}
-              {plaintext && showReadableJson ? (
-                <MonospaceTextField
-                  label="Session JSON"
-                  value={plaintext}
-                  readOnly
-                  fullWidth
-                  maxRows={20}
-                />
-              ) : null}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            startIcon={<OpenInBrowserIcon />}
-            disabled={disabled}
+            >
+              Copy to clipboard
+            </Button>
+          </>
+        }
+      >
+        <DialogContentText>
+          Open this desktop session in jbrowse-web.
+          <IconButton
             onClick={() => {
-              window.open(url, '_blank')
+              setInfoDialogOpen(true)
             }}
           >
-            Open in browser
-          </Button>
-          <Button
-            startIcon={<ContentCopyIcon />}
-            disabled={disabled}
-            onClick={async () => {
-              const { default: copy } =
-                await import('@jbrowse/core/util/copyToClipboard')
-              if (copy(url)) {
-                session.notify('Copied to clipboard', 'success')
-              }
+            <HelpOutlineIcon />
+          </IconButton>
+        </DialogContentText>
+
+        <RadioGroup
+          row
+          value={mode}
+          onChange={event => {
+            setMode(event.target.value as SessionShareMode)
+          }}
+        >
+          <FormControlLabel
+            value="short"
+            control={<Radio />}
+            label="Short link"
+          />
+          <FormControlLabel
+            value="long"
+            control={<Radio />}
+            label="Long link"
+          />
+          <FormControlLabel
+            value="json"
+            control={<Radio />}
+            label="Plaintext JSON"
+          />
+        </RadioGroup>
+
+        {error ? (
+          <ErrorBanner
+            error={error}
+            onReset={() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              mutate()
             }}
-          >
-            Copy to clipboard
-          </Button>
-          <Button
-            onClick={() => {
-              handleClose()
-            }}
-            autoFocus
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+          />
+        ) : loading ? (
+          <Typography>Generating {mode} URL...</Typography>
+        ) : (
+          <>
+            {data ? <PortabilityWarning plan={data.plan} /> : null}
+            {data?.plan.strategy === 'hostedConfigBase' ? (
+              <Typography variant="caption" color="textSecondary">
+                Reuses the hosted config {data.plan.configUrl}
+              </Typography>
+            ) : (
+              <Typography variant="caption" color="textSecondary">
+                Self-contained session (carries its own assemblies and tracks)
+              </Typography>
+            )}
+            <ShareLinkField value={url} />
+            {plaintext ? (
+              <LabeledCheckbox
+                checked={showReadableJson}
+                onChange={val => {
+                  setShowReadableJson(val)
+                }}
+                label="Show readable JSON"
+              />
+            ) : null}
+            {plaintext && showReadableJson ? (
+              <MonospaceTextField
+                label="Session JSON"
+                value={plaintext}
+                readOnly
+                fullWidth
+                maxRows={20}
+              />
+            ) : null}
+          </>
+        )}
+      </InfoDialog>
       <ExportToWebInfoDialog
         open={infoDialogOpen}
         onClose={() => {

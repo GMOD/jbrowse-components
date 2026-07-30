@@ -1,6 +1,5 @@
-import Dialog from '@jbrowse/core/ui/Dialog'
+import InfoDialog from '@jbrowse/core/ui/InfoDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DialogContent } from '@mui/material'
 
 const useStyles = makeStyles()({
   max: {
@@ -12,12 +11,12 @@ export default function DrawerHeaderHelpDialog({
   onClose,
   helpText,
 }: {
-  onClose: (event: React.MouseEvent | React.KeyboardEvent) => void
+  onClose: () => void
   helpText: React.ReactNode
 }) {
   const { classes } = useStyles()
   return (
-    <Dialog
+    <InfoDialog
       open
       onClose={onClose}
       title="Help"
@@ -26,7 +25,7 @@ export default function DrawerHeaderHelpDialog({
         e.stopPropagation()
       }}
     >
-      <DialogContent className={classes.max}>{helpText}</DialogContent>
-    </Dialog>
+      <div className={classes.max}>{helpText}</div>
+    </InfoDialog>
   )
 }

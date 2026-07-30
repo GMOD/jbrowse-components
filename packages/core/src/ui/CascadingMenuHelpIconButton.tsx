@@ -49,8 +49,9 @@ export default function CascadingMenuHelpIconButton({
         <CascadingMenuHelpDialog
           helpText={helpText}
           label={label}
-          onClose={event => {
-            event.stopPropagation()
+          // the dialog stops click/mousedown propagation on its own root, so
+          // closing it can't reach the menu underneath
+          onClose={() => {
             setHelpDialogOpen(false)
           }}
         />

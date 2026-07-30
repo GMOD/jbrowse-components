@@ -85,6 +85,7 @@
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
     "./ui/Icons": "./src/ui/Icons.tsx",
+    "./ui/InfoDialog": "./src/ui/InfoDialog.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
@@ -473,6 +474,10 @@
       "./ui/Icons": {
         "types": "./esm/ui/Icons.d.ts",
         "import": "./esm/ui/Icons.js"
+      },
+      "./ui/InfoDialog": {
+        "types": "./esm/ui/InfoDialog.d.ts",
+        "import": "./esm/ui/InfoDialog.js"
       },
       "./ui/LoadingEllipses": {
         "types": "./esm/ui/LoadingEllipses.d.ts",
@@ -991,6 +996,9 @@
         ],
         "ui/Icons": [
           "esm/ui/Icons.d.ts"
+        ],
+        "ui/InfoDialog": [
+          "esm/ui/InfoDialog.d.ts"
         ],
         "ui/LoadingEllipses": [
           "esm/ui/LoadingEllipses.d.ts"

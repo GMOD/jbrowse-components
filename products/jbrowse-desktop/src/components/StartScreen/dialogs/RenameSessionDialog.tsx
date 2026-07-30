@@ -16,7 +16,7 @@ export default function RenameSessionDialog({
   onClose: () => void
 }) {
   const [newName, setNewName] = useState(sessionToRename.name)
-  const { error, onSubmit } = useIpcAction(async () => {
+  const { error, pending, onSubmit } = useIpcAction(async () => {
     if (!newName.trim()) {
       throw new Error('Session name cannot be empty')
     }
@@ -28,6 +28,7 @@ export default function RenameSessionDialog({
       maxWidth="xs"
       fullWidth
       title="Rename session"
+      submitDisabled={pending}
       onSubmit={onSubmit}
       onCancel={onClose}
     >
