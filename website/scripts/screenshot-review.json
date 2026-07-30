@@ -2288,10 +2288,10 @@
   },
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
-    "status": "bad",
-    "note": " in the second screenshot show .anchors.simple and .anchors open at same time",
+    "status": "good",
+    "note": "DONE: the second frame now has both files open. The block ribbon is the band, and the .anchors file it was built from is a lane in each panel, so which gene pairs went into one block is in that frame instead of being carried across from the frame above. Tried the literal reading first (both tracks on the synteny level) and measured it: the block ribbons paint straight over the gene ribbons in the same pink, the band goes solid, and neither file is readable - there is no per-track color to separate them from a session spec, since the synteny level takes bare trackIds. Frame 1 is unchanged. Caption updated.",
     "reviewedAt": "2026-07-30T14:00:42.018Z",
-    "hash": "7b5c85cfdf16964773e07173e9a0dad51819262a"
+    "hash": "d07b15c1e3e3ab31b9a364f190dd51ddbbda4d21"
   },
   "mcscan_synteny/dotplot": {
     "name": "mcscan_synteny/dotplot",
@@ -2309,10 +2309,10 @@
   },
   "sv_synteny/ortholog_colors": {
     "name": "sv_synteny/ortholog_colors",
-    "status": "bad",
-    "note": "the colors are just very bad here. ideally it is drawn from a nice rainbow palette",
+    "status": "good",
+    "note": "PARTLY DONE, and the actual defect was not the palette. Two thirds of the genes in this window carry no 'gene' attribute at all, only a locus tag, so randomColor(undefined) painted every one of them the same strong magenta - most of the frame was one color, and it read as a large named group. Those are grey now, so a color in the figure means what the section says it means: an ortholog symbol, the same color down all three panels. The picture is much quieter and the six named orthologs are what stands out. NOT DONE: drawing the remaining colors from a curated rainbow. This figure documents what the 'Color by attribute' dialog writes (ColorByAttributeDialog builds this exact jexl), so a hand-picked palette would be a picture of something the dialog cannot produce; and randomColor's hash was chosen over a cat10-style fixed palette on measurement - prettier at six values, collides badly past ten - for a function that also colors BAM tag values and consequence terms. If you want the fixed palette anyway, that is a core change to randomColor plus its test, not a spec edit; say the word.",
     "reviewedAt": "2026-07-30T14:04:11.895Z",
-    "hash": "0236d1459aacb84a56b0cebc54f85d30b1fea03a"
+    "hash": "68ba1746ee75cba4658ab6d6ab17cd3f3cf7460f"
   },
   "sv_synteny/assembly_order_warning": {
     "name": "sv_synteny/assembly_order_warning",

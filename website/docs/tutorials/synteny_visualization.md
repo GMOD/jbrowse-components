@@ -113,10 +113,18 @@ ortholog id, since NCBI reuses standardized symbols across strains. On each gene
 track, open **Color by attribute** from the track menu and enter `gene`: every
 distinct value of that attribute gets its own deterministic color, so an
 ortholog carries one color down all three panels and a gene's synteny becomes
-legible by color alone. Features with no such attribute fall back to a single
-color, which is what the locus-tag-only genes share.
+legible by color alone.
 
-<Figure caption="The same three strains with each gene track colored by its gene attribute. prfB, fliR, cbf2, efp and lysS hold one color per symbol down all three panels; the locus-tag-only genes share the fallback color." src="/img/sv_synteny/ortholog_colors.png" />
+Features with no such attribute all take one fallback color, and in this window
+that is two thirds of the genes, so the fallback ends up the loudest thing on
+screen. Editing the expression the dialog wrote to send them somewhere neutral
+fixes that:
+
+```
+jexl:get(feature,'gene') ? randomColor(get(feature,'gene')) : 'rgb(175,175,175)'
+```
+
+<Figure caption="The same three strains with each gene track colored by its gene attribute. prfB, fliR, cbf2, efp, pseI and lysS hold one color per symbol down all three panels; the genes that carry only a locus tag are grey." src="/img/sv_synteny/ortholog_colors.png" />
 
 ## Using PIF for large genomes
 

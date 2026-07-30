@@ -59,7 +59,7 @@ each genome, so `.anchors.simple` draws one ribbon per block where `.anchors`
 draws one per gene pair. Neither file carries coordinates: the gene ids are
 whatever your annotation used, and the BED files are what resolve them.
 
-<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="One block of the same run, drawn from each file in turn. Top: .anchors, one ribbon per orthologous gene pair. Bottom: .anchors.simple, the same block as a single ribbon." />
+<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="One block of the same run, drawn from each file in turn. Top: .anchors, one ribbon per orthologous gene pair. Bottom: .anchors.simple as the single block ribbon, with the .anchors file open at the same time as a lane in each panel, so the gene pairs that went into the block are in the same frame." />
 
 ### BED files
 

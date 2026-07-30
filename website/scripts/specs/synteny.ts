@@ -89,7 +89,16 @@ const TNNT3_FRAME = {
 // collapseEmptyRows drops each row to its scalebar rather than a "No tracks
 // active" block.
 function mcscanFilePartSpecs(): ScreenshotSpec[] {
-  const part = (name: string, trackId: string, label: string) => ({
+  // `lane` puts a SECOND MCScan file in both panels as a feature lane, so a
+  // frame can hold both files at once. Not as a second ribbon set on the same
+  // level: measured, and the block ribbons paint straight over the gene ribbons
+  // in the same pink, so the band goes solid and neither file is readable.
+  const part = (
+    name: string,
+    trackId: string,
+    label: string,
+    lane?: string,
+  ) => ({
     mode: 'url' as const,
     name,
     url: sessionSpec(DOTPLOT_CONFIG, {
@@ -101,8 +110,20 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
           levelHeights: [260],
           collapseEmptyRows: true,
           views: [
-            { assembly: 'grape', loc: 'chr19:5,000,000-7,900,000' },
-            { assembly: 'peach', loc: 'Pp04:12,300,000-15,100,000' },
+            {
+              assembly: 'grape',
+              loc: 'chr19:5,000,000-7,900,000',
+              tracks: lane
+                ? [{ trackId: lane, type: 'LGVSyntenyDisplay', height: 40 }]
+                : [],
+            },
+            {
+              assembly: 'peach',
+              loc: 'Pp04:12,300,000-15,100,000',
+              tracks: lane
+                ? [{ trackId: lane, type: 'LGVSyntenyDisplay', height: 40 }]
+                : [],
+            },
           ],
         },
       ],
@@ -110,8 +131,9 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 8000,
-    // two collapsed scalebar rows around one 260px band
-    viewportHeight: 445,
+    // two collapsed scalebar rows around one 260px band, plus the anchors lane
+    // in each panel where the frame carries one
+    viewportHeight: lane ? 595 : 445,
     annotations: [
       { type: 'text' as const, x: 24, y: 56, fontSize: 22, text: label },
     ],
@@ -122,10 +144,15 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
       'grape_peach_synteny_mcscan',
       '.anchors: one ribbon per gene pair',
     ),
+    // Both files at once, per review ("show .anchors.simple and .anchors open at
+    // same time"). The block ribbons are the band; the gene anchors they were
+    // built from are the lane in each panel, so which gene pairs went into one
+    // block is IN this frame rather than carried across from the one above.
     part(
       'mcscan_synteny/anchors_simple',
       'grape_peach_synteny_mcscan_simple',
       '.anchors.simple: one ribbon per block',
+      'grape_peach_synteny_mcscan',
     ),
   ]
 }
@@ -1578,17 +1605,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
-  // The "Coloring genes by ortholog" section of synteny_visualization.md, which
-  // had no figure: the same three-strain stack with the gene tracks colored by
-  // their `gene` attribute instead of one flat color. The jexl is what the "Color
-  // by attribute" dialog writes, and randomColor hashes the value, so a symbol
-  // carries one color down all three panels and the genes with only a locus tag
-  // (no `gene` attribute) share the fallback color.
+  // The "Coloring genes by ortholog" section of synteny_visualization.md: the
+  // same three-strain stack with the gene tracks colored by their `gene`
+  // attribute instead of one flat color, so a symbol carries one color down all
+  // three panels.
+  //
+  // Review: "the colors are just very bad here". Most of the frame was one
+  // strong magenta, and that was not a palette problem: two thirds of these
+  // genes carry no `gene` attribute at all, only a locus tag, so
+  // `randomColor(undefined)` painted every one of them the same color and they
+  // read as a large named group. They are grey now, so a color in this figure
+  // means what the section says it means — an ortholog symbol, the same color
+  // in all three panels.
+  //
+  // The colored genes stay on `randomColor` rather than a curated rainbow,
+  // because the figure documents what the "Color by attribute" dialog writes
+  // (ColorByAttributeDialog builds this exact jexl) and a hand-picked palette
+  // would be a picture of something the dialog cannot produce. `randomColor`'s
+  // hash was measured against a cat10-style fixed palette when it was written:
+  // the fixed palette is prettier at six values and collides badly past ten,
+  // and it is the same function coloring BAM tag values and consequence terms.
   {
     mode: 'url',
     name: 'sv_synteny/ortholog_colors',
     url: hpyloriSyntenyWithGenes({
-      geneColor: "jexl:randomColor(get(feature,'gene'))",
+      geneColor:
+        "jexl:get(feature,'gene') ? randomColor(get(feature,'gene')) : 'rgb(175,175,175)'",
     }),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
