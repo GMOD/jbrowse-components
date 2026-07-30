@@ -38,7 +38,6 @@ describe('row height resolution', () => {
     expect(m.nrow).toBe(3)
     expect(m.effectiveRowHeight).toBe(m.availableHeight / 3)
     expect(m.totalHeight).toBeCloseTo(m.availableHeight)
-    expect(m.hasOverflow).toBe(false)
     expect(m.scrollableHeight).toBe(0)
   })
 
@@ -50,15 +49,14 @@ describe('row height resolution', () => {
     const rh = m.availableHeight // each row as tall as the whole viewport
     m.setRowHeight(rh)
     expect(m.totalHeight).toBe(rh * 3)
-    expect(m.hasOverflow).toBe(true)
     expect(m.scrollableHeight).toBe(rh * 2)
   })
 
   // With more samples than pixels (e.g. a 3202-sample cohort in a 200px
   // display), the auto-fit height is legitimately sub-1px. effectiveRowHeight
   // must return that fractional value, not floor it to 1 -- flooring here
-  // would make totalHeight balloon past availableHeight and falsely report
-  // overflow/scroll in a mode that's documented to never scroll.
+  // would make totalHeight balloon past availableHeight and falsely report a
+  // scroll in a mode that's documented to never have one.
   it('fit mode keeps a sub-1px row height when samples outnumber pixels', () => {
     const m = createDisplay()
     m.setSources(
@@ -67,7 +65,6 @@ describe('row height resolution', () => {
     const expected = m.availableHeight / 3202
     expect(expected).toBeLessThan(1)
     expect(m.effectiveRowHeight).toBe(expected)
-    expect(m.hasOverflow).toBe(false)
     expect(m.scrollableHeight).toBe(0)
   })
 
@@ -137,5 +134,32 @@ describe('row height resolution', () => {
     m.resizeHeight(oldHeight - m.lineZoneHeight)
     expect(m.height).toBe(2 * oldHeight - m.lineZoneHeight)
     expect(m.rowHeight).toBeCloseTo(20)
+  })
+
+  // Shrinking the matrix to its 20px floor leaves no room for rows at all (the
+  // default 20px connector zone takes the lot), and a proportional rescale onto
+  // that would land the pinned height on 0 -- the fit-to-height sentinel -- or
+  // below it. Either silently changes the mode, and a negative height then
+  // sticks: `rowHeight > 0` gates the rescale, so growing back never repairs it.
+  // The pinned height has to survive the trip down and scale again on the way
+  // up.
+  it('resizeHeight keeps a pinned rowHeight through a zero-room shrink (matrix)', () => {
+    const configSchema = matrixConfigFactory()
+    const m = matrixStateModelFactory(configSchema).create({
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      configuration: configSchema.create({
+        type: 'LinearMultiSampleVariantMatrixDisplay',
+        displayId: 'test-matrix-shrink',
+      }),
+    })
+    m.setRowHeight(10)
+    const oldHeight = m.height
+    m.resizeHeight(-oldHeight) // clamps to the 20px floor == lineZoneHeight
+    expect(m.height).toBe(20)
+    expect(m.availableHeight).toBe(0)
+    expect(m.rowHeight).toBe(10)
+    // and the pinned height still scales once there is room again
+    m.resizeHeight(oldHeight - 20)
+    expect(m.rowHeight).toBeCloseTo(10)
   })
 })

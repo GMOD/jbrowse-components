@@ -437,7 +437,17 @@ export async function executeVariantCellData({
   // Explicit, not inferred from the data: PS coloring used to switch itself on
   // whenever a FORMAT carried PS, which silently replaced the alt-allele colors
   // the legend was still describing and gave no way back.
-  const colorByPhaseSet = featureColor === PHASE_SET_COLOR
+  //
+  // Gated on phased mode here rather than in each cell loop, because a phase set
+  // is a per-haplotype fact and only the phased loop paints one: the allele-count
+  // loop never reads PS, so outside phased mode this only bought the heavy
+  // per-sample `samples` read (the flat `genotypes` map doesn't carry PS) for
+  // cells that then paint by genotype anyway. `getVariantLegendSections` resolves
+  // the same combination the same way, so the key and the cells agree. Reachable
+  // because the two settings are independent: a config can declare both, and
+  // switching rendering mode leaves `featureColor` alone.
+  const colorByPhaseSet =
+    featureColor === PHASE_SET_COLOR && renderingMode === 'phased'
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
   // layout-ordered sources without HP to avoid a circular sampleInfo dependency;

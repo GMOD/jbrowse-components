@@ -23,8 +23,6 @@ import type {
 } from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-export type FeatureGenotypeInfo = VariantFeatureGenotypes
-
 export interface VariantCellData {
   // Absolute genomic positions in uint32 (start, end) interleaved.
   // The renderer + shader split via hpSplitUint against the per-block
@@ -39,7 +37,7 @@ export interface VariantCellData {
   // claim every sample carries it.
   cellCarriesAlt: Uint8Array
   numCells: number
-  featureGenotypeMap: Record<string, FeatureGenotypeInfo>
+  featureGenotypeMap: Record<string, VariantFeatureGenotypes>
   cellFeatureIndices: Uint32Array
   featureIdList: string[]
   // Absolute genomic (start, end) interleaved per *feature*, aligned to
@@ -136,7 +134,7 @@ export function computeVariantCells({
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
 
-  const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
+  const featureGenotypeMap: Record<string, VariantFeatureGenotypes> = {}
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
   // shrinks down from maxCells, so they can never collide before the buffer is
   // full: every genotype contributes at most one cell.
@@ -203,7 +201,12 @@ export function computeVariantCells({
     const featureType = feature.get('type')! || ''
     const bpLen = end - start
     const shape = getShapeType(featureType)
-    const alt = feature.get('ALT') as string[]
+    // A monomorphic record spells ALT '.', which @gmod/vcf parses to undefined.
+    // It still ships (its alleles are called, just all reference) and draws a
+    // reference cell, so normalize here: `VariantFeatureInfo.alt` is a
+    // non-optional contract and every tooltip / feature-widget consumer reads it
+    // unguarded.
+    const alt = (feature.get('ALT') as string[] | undefined) ?? []
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
     const description = feature.get('description') as string

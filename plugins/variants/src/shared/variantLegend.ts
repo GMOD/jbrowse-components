@@ -111,6 +111,80 @@ export function getSampleGroupLegendItems(
     }))
 }
 
+// The cell-coloring section for a resolved `featureColor` key: the impact-tier
+// key for the consequence preset, the present SV types for the SV-type preset,
+// the phasing rule for the phase-set preset, or the genotype key — which is also
+// where a plain CSS color lands, since "every alt cell is that color" is a
+// genotype key with one alt swatch. Undefined only for a real jexl expression,
+// whose output can't be enumerated into swatches.
+function getCellColorSection({
+  cellColorKey,
+  renderingMode,
+  hasSecondaryAlt,
+  hasUnphased,
+  hasNoCall,
+  svTypeColors,
+}: {
+  cellColorKey: string
+  renderingMode: string
+  hasSecondaryAlt: boolean
+  hasUnphased: boolean
+  hasNoCall: boolean
+  svTypeColors?: Record<string, string>
+}): LegendSection | undefined {
+  if (cellColorKey === CONSEQUENCE_IMPACT_JEXL) {
+    return {
+      id: 'consequenceImpact',
+      title: 'Consequence impact',
+      items: IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
+    }
+  }
+  if (cellColorKey === SV_TYPE_COLOR) {
+    return {
+      id: 'svType',
+      title: 'SV type',
+      items: Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
+        color,
+        label: svTypeDisplayLabel(type),
+      })),
+    }
+  }
+  if (cellColorKey === PHASE_SET_COLOR) {
+    return {
+      id: 'phaseSet',
+      title: 'Phase set',
+      // No swatch list of the phase sets present: a PS id is an arbitrary
+      // per-sample integer with unbounded cardinality in a viewport, so
+      // enumerating them is noise that would also have to be truncated
+      // arbitrarily. The rule is what a reader needs — equal hue down a row means
+      // one phasing block. Ref/no-call/unphased keep their own colors, so those
+      // swatches stay literal.
+      items: [
+        { color: REFERENCE_COLOR, label: 'Reference' },
+        { label: 'Alt allele (hue identifies the phase set)' },
+        ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
+        ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+      ],
+    }
+  }
+  if (cellColorKey.startsWith('jexl:')) {
+    return undefined
+  }
+  return {
+    id: 'genotypes',
+    title: 'Genotypes',
+    items: getGenotypeLegendItems({
+      renderingMode,
+      hasSecondaryAlt,
+      hasUnphased,
+      hasNoCall,
+      // '' (the default genotype coloring) is falsy, so it reads as "no
+      // override" — the same meaning it has in the `featureColor` slot.
+      altColorOverride: cellColorKey,
+    }),
+  }
+}
+
 // The legend split into independently-closable sections: the genotype/cell
 // coloring and (when colorBy is set) the sample-grouping coloring used for the
 // sidebar row labels — two distinct color meanings that share one legend box.
@@ -152,71 +226,14 @@ export function getVariantLegendSections({
     featureColor === PHASE_SET_COLOR && renderingMode !== 'phased'
       ? ''
       : featureColor
-  const cellSection: LegendSection | undefined = cellColorKey
-    ? cellColorKey === CONSEQUENCE_IMPACT_JEXL
-      ? {
-          id: 'consequenceImpact',
-          title: 'Consequence impact',
-          items: IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
-        }
-      : cellColorKey === SV_TYPE_COLOR
-        ? {
-            id: 'svType',
-            title: 'SV type',
-            items: Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
-              color,
-              label: svTypeDisplayLabel(type),
-            })),
-          }
-        : cellColorKey === PHASE_SET_COLOR
-          ? {
-              id: 'phaseSet',
-              title: 'Phase set',
-              // No swatch list of the phase sets present: a PS id is an
-              // arbitrary per-sample integer with unbounded cardinality in a
-              // viewport, so enumerating them is noise that would also have to
-              // be truncated arbitrarily. The rule is what a reader needs —
-              // equal hue down a row means one phasing block. Ref/no-call/
-              // unphased keep their own colors, so those swatches stay literal.
-              items: [
-                { color: REFERENCE_COLOR, label: 'Reference' },
-                { label: 'Alt allele (hue identifies the phase set)' },
-                ...(hasUnphased
-                  ? [{ color: UNPHASED_COLOR, label: 'Unphased' }]
-                  : []),
-                ...(hasNoCall
-                  ? [{ color: NO_CALL_COLOR, label: 'No call' }]
-                  : []),
-              ],
-            }
-          : // Anything left that isn't a jexl expression is a plain CSS color,
-            // which is the one custom case a key *can* be built for: every alt
-            // cell is that color and nothing else changed. Only a real
-            // expression, whose output can't be enumerated here, drops the
-            // section.
-            cellColorKey.startsWith('jexl:')
-            ? undefined
-            : {
-                id: 'genotypes',
-                title: 'Genotypes',
-                items: getGenotypeLegendItems({
-                  renderingMode,
-                  hasSecondaryAlt,
-                  hasUnphased,
-                  hasNoCall,
-                  altColorOverride: cellColorKey,
-                }),
-              }
-    : {
-        id: 'genotypes',
-        title: 'Genotypes',
-        items: getGenotypeLegendItems({
-          renderingMode,
-          hasSecondaryAlt,
-          hasUnphased,
-          hasNoCall,
-        }),
-      }
+  const cellSection = getCellColorSection({
+    cellColorKey,
+    renderingMode,
+    hasSecondaryAlt,
+    hasUnphased,
+    hasNoCall,
+    svTypeColors,
+  })
   return [
     ...(cellSection ? [cellSection] : []),
     ...(groupItems.length

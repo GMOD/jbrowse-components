@@ -149,6 +149,21 @@ describe('getPhasedGenotypeMatrix', () => {
     expect([...rows['HG002 HP0']!]).toEqual([1])
   })
 
+  // `sampleInfo` is keyed by the bare VCF sample identity, and so is the
+  // "<sampleName> HP<n>" row label the display's own `sources` getter builds.
+  // A local copy of the expansion here keyed both off `name` instead, so a
+  // source whose render name differs from its sampleName fell back to diploid
+  // and produced rows the pasted cluster order could not be lined up against.
+  test('keys ploidy and row labels off sampleName, not the render name', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { HG001: '0|1|1' })],
+      sources: [{ name: 'renamed', sampleName: 'HG001' }],
+      sampleInfo: { HG001: { isPhased: true, maxPloidy: 3 } },
+    })
+    expect(Object.keys(rows)).toEqual(['HG001 HP0', 'HG001 HP1', 'HG001 HP2'])
+    expect([...rows['HG001 HP2']!]).toEqual([1])
+  })
+
   test('keeps rows aligned to the feature order', async () => {
     const rows = await build({
       features: [

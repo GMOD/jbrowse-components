@@ -528,3 +528,30 @@ describe('phase-set coloring is opt-in', () => {
     expect(on.cellColors[0]).not.toBe(on.cellColors[1])
   })
 })
+
+// A monomorphic record spells its ALT column '.', which @gmod/vcf parses to
+// `undefined`. It still ships (its alleles are called, just all reference) and
+// with reference drawing on it gets a cell, so `VariantFeatureInfo.alt` has to
+// hold `[]` rather than the raw undefined — every tooltip and the feature widget
+// read `.alt` unguarded.
+test('a site with no ALT alleles reports an empty alt list', () => {
+  const feature = makeFeature({
+    genotypes: { S1: '0/0' },
+    ALT: undefined,
+    REF: 'A',
+    name: 'mono1',
+    description: 'no alternative alleles',
+    type: 'remark',
+    start: 100,
+    end: 101,
+  })
+  const result = computeVariantCells({
+    filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+    sources: [{ name: 'S1', sampleName: 'S1' }],
+    renderingMode: 'alleleCount',
+    referenceDrawingMode: 'draw',
+    featureGenotypes: genotypeLookup([feature]),
+  })
+  expect(result.numCells).toBe(1)
+  expect(result.featureGenotypeMap.f1!.alt).toEqual([])
+})

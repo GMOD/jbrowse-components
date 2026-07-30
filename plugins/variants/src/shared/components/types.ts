@@ -3,13 +3,17 @@ import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 // What the left-hand sample gutter (SvgSampleRowLabelGutter) reads: the rows to
 // label, how tall they are, and where the viewport currently sits.
+//
+// The viewport is `availableHeight`, not the display `height`: the rows sit below
+// `lineZoneHeight` (the matrix display's connector zone), so the band the gutter
+// clips and virtualizes against is what's left after it — same height the canvas
+// under it is drawn at.
 export interface SampleRowLabelsModel {
   id: string
   scrollTop: number
-  height: number
+  availableHeight: number
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
-  totalHeight: number
   canDisplayLabels: boolean
   effectiveRowHeight: number
   sources?: Source[]

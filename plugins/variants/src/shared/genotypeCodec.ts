@@ -36,21 +36,6 @@ export function decodeGenotype(
   return code === 0 ? undefined : dict[code - 1]
 }
 
-export function decodeGenotypes(
-  dict: string[],
-  sampleNames: string[],
-  codes: Uint16Array,
-) {
-  const out: Record<string, string> = {}
-  for (let i = 0; i < codes.length; i++) {
-    const code = codes[i]!
-    if (code !== 0) {
-      out[sampleNames[i]!] = dict[code - 1]!
-    }
-  }
-  return out
-}
-
 export function buildSampleIndex(sampleNames: string[]) {
   const m = new Map<string, number>()
   for (let i = 0; i < sampleNames.length; i++) {

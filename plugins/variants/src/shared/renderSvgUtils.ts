@@ -1,15 +1,18 @@
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SampleRowLabelsModel } from './components/types.ts'
 import type { Source } from './types.ts'
-import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
-import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendSection,
+  LgvSvgExportable,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // Extends SampleRowLabelsModel because the export paints its sidebar row colors with
 // the same live component the on-screen overlay does — see SvgVariantOverlay.
+// `LgvSvgExportable` brings the display-band `height` the export shell frames
+// with; the gutter's own viewport is the `availableHeight` below `lineZoneHeight`.
 export interface RenderSvgBaseModel
-  extends SvgExportable, SampleRowLabelsModel {
+  extends LgvSvgExportable, SampleRowLabelsModel {
   cellData: CellDataResult | undefined
-  regionTooLarge: boolean
   // Top strip the rows sit below (the matrix display's connector-line zone,
   // always 0 for the regular display).
   lineZoneHeight: number

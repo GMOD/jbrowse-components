@@ -763,16 +763,28 @@ export default function MultiSampleVariantBaseModelF(
          * (`height - lineZoneHeight`), not the full height, so scale by the
          * available-height ratio — otherwise the visible fraction of rows drifts
          * on resize whenever `lineZoneHeight` is non-zero (the matrix display).
+         *
+         * Both available heights have to be positive to rescale at all. A
+         * display shrunk to where `lineZoneHeight` swallows it has no room for
+         * rows, and scaling onto that lands the pinned height on 0 — which is
+         * the fit-to-height sentinel, so the mode flips — or below it, which
+         * then sticks, since `rowHeight > 0` is what gates the rescale on the
+         * way back up. Leaving the pinned height alone while there is nothing to
+         * draw in keeps it exactly where the user put it.
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height
           const newHeight = Math.max(oldHeight + distance, 20)
           const oldAvailableHeight = oldHeight - self.lineZoneHeight
+          const newAvailableHeight = newHeight - self.lineZoneHeight
           setConf(self, 'height', newHeight)
-          if (self.rowHeight > 0 && oldAvailableHeight > 0) {
+          if (
+            self.rowHeight > 0 &&
+            oldAvailableHeight > 0 &&
+            newAvailableHeight > 0
+          ) {
             self.rowHeight =
-              (self.rowHeight * (newHeight - self.lineZoneHeight)) /
-              oldAvailableHeight
+              (self.rowHeight * newAvailableHeight) / oldAvailableHeight
           }
           return newHeight - oldHeight
         },
@@ -1041,8 +1053,9 @@ export default function MultiSampleVariantBaseModelF(
          * renderers) would propagate NaN/Infinity. A resolved getter must never hand
          * back a degenerate value. The floor must not catch legitimate
          * sub-1px auto-fit heights (many-sample tracks squeezed into a short
-         * display) — that's the normal case `hasOverflow` relies on staying
-         * false for.
+         * display) — flooring those would balloon `totalHeight` past
+         * `availableHeight` and make `scrollableHeight` report a scroll in the
+         * one mode documented never to have one.
          */
         get effectiveRowHeight() {
           const height =
@@ -1148,27 +1161,16 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Whether the rows are taller than the viewport, i.e. the display
-         * scrolls. Drives native-scroll gating in displays that scroll their
-         * rows in a native overflow container (the plain display); auto-fit
-         * mode keeps this false since `rowHeight` derives from `availableHeight`.
-         */
-        get hasOverflow(): boolean {
-          return this.totalHeight > self.availableHeight
-        },
-        /**
-         * #getter
          * Max valid `scrollTop`: how far the rows can scroll before the bottom
-         * row reaches the viewport floor. Zero when the rows fit.
+         * row reaches the viewport floor. Zero when the rows fit — which auto-fit
+         * mode always does, since `effectiveRowHeight` derives from
+         * `availableHeight`. `scrollableHeight > 0` is therefore also the "does
+         * this display scroll" answer; both displays scroll virtually (fixed
+         * canvas + VerticalScrollbar overlay), so there is no native overflow
+         * container to gate separately.
          */
         get scrollableHeight() {
           return Math.max(0, this.totalHeight - self.availableHeight)
-        },
-        /**
-         * #getter
-         */
-        get featuresReady() {
-          return !!self.featuresVolatile
         },
         /**
          * #method

@@ -1,7 +1,6 @@
 import {
   buildSampleIndex,
   decodeGenotype,
-  decodeGenotypes,
   internGenotype,
 } from './genotypeCodec.ts'
 
@@ -50,17 +49,6 @@ describe('genotypeCodec', () => {
     const sampleIndex = buildSampleIndex(sampleNames)
     expect(decodeGenotype(dict, sampleIndex, codes, 'C')).toBeUndefined()
     expect(decodeGenotype(dict, sampleIndex, codes, 'missing')).toBeUndefined()
-  })
-
-  test('decodeGenotypes reconstructs the sparse map', () => {
-    const sampleNames = ['A', 'B', 'C']
-    const dict: string[] = []
-    const dictIndex = new Map<string, number>()
-    const codes = pack({ A: '0|0', C: '1|1' }, sampleNames, dict, dictIndex)
-    expect(decodeGenotypes(dict, sampleNames, codes)).toEqual({
-      A: '0|0',
-      C: '1|1',
-    })
   })
 
   test('dict is shared/deduped across features', () => {

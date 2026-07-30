@@ -17,7 +17,7 @@ const SvgSampleRowLabelGutter = observer(function SvgSampleRowLabelGutter({
   const {
     id,
     scrollTop,
-    height,
+    availableHeight: height,
     canDisplayLabels,
     effectiveRowHeight: rowHeight,
     sources,

@@ -7,7 +7,6 @@ import type { SampleRowLabelsModel } from './types.ts'
 import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 
 interface VariantOverlayModel extends SampleRowLabelsModel {
-  availableHeight: number
   showLegend: boolean
   legendSections(): LegendSection[]
   setShowLegend(s: boolean): void

@@ -96,7 +96,7 @@ export default function configSchemaF() {
         type: 'number',
         defaultValue: 250,
         description:
-          'Starting height in pixels for the genotype matrix, excluding the lineZoneHeight band; drag-resizable, and the rows divide it while row height is on auto-fit',
+          'Starting height in pixels for the whole display, including the lineZoneHeight band above the rows; drag-resizable, and the rows divide what is left over while row height is on auto-fit',
       },
       /**
        * #slot

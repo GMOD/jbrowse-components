@@ -1,7 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
-import { resolveSampleName } from '../shared/getSources.ts'
+import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
@@ -57,25 +57,18 @@ export async function getPhasedGenotypeMatrix({
     adapterConfig,
   })
 
-  // Flatten sources to one entry per output row, up front. A source that
-  // already names one haplotype ("HG001 HP0", carrying `HP`) contributes just
-  // that row and keeps its own name — that's how a re-cluster over a
-  // subtree-filtered set arrives, where one haplotype of a sample can be
-  // visible and the other not. An unexpanded sample contributes one row per
-  // haplotype under the `"<sampleName> HP<n>"` convention in
-  // shared/getSources.ts. Either way the order matches
-  // expandSourcesToHaplotypes, which is what lets the caller line the returned
-  // `order` up with its own rows.
-  const rowSpecs = sources.flatMap(s => {
-    const key = resolveSampleName(s)
-    return s.HP === undefined
-      ? Array.from({ length: sampleInfo[s.name]?.maxPloidy ?? 2 }, (_, hp) => ({
-          key,
-          hp,
-          name: `${s.name} HP${hp}`,
-        }))
-      : [{ key, hp: s.HP, name: s.name }]
-  })
+  // Flatten sources to one entry per output row, up front, through the same
+  // `expandSourcesToHaplotypes` the worker's cell computation and the model's
+  // `sources` getter use. That is what lets the caller line the returned `order`
+  // up with its own rows — a local copy of the expansion drifted here once
+  // already, keying ploidy off `name` instead of the resolved `sampleName` and
+  // building the `"<sampleName> HP<n>"` label itself.
+  //
+  // A source that already names one haplotype ("HG001 HP0", carrying `HP`)
+  // contributes just that row and keeps its own name — that's how a re-cluster
+  // over a subtree-filtered set arrives, where one haplotype of a sample can be
+  // visible and the other not.
+  const rowSpecs = expandSourcesToHaplotypes({ sources, sampleInfo })
 
   const rawFeatures = await updateStatus(
     'Downloading features',
@@ -127,19 +120,19 @@ export async function getPhasedGenotypeMatrix({
   // pre-expanded source is its own HP rather than a ploidy count.
   let maxPloidy = 1
   for (const spec of rowSpecs) {
-    if (spec.hp + 1 > maxPloidy) {
-      maxPloidy = spec.hp + 1
+    if (spec.HP + 1 > maxPloidy) {
+      maxPloidy = spec.HP + 1
     }
   }
   const used = new Uint8Array(samplesLen)
   const rowSampleIdx = Int32Array.from(rowSpecs, spec => {
-    const idx = sampleIdxByKey.get(spec.key) ?? -1
+    const idx = sampleIdxByKey.get(spec.sampleName) ?? -1
     if (idx !== -1) {
       used[idx] = 1
     }
     return idx
   })
-  const rowHp = Int32Array.from(rowSpecs, spec => spec.hp)
+  const rowHp = Int32Array.from(rowSpecs, spec => spec.HP)
   // Per-sample haplotype indicators for the feature being read, laid out
   // [sample0 hp0..hpN, sample1 hp0..hpN, ...]. One flat buffer rather than a
   // subarray view per sample, which would allocate inside the hot loop.
@@ -182,7 +175,7 @@ export async function getPhasedGenotypeMatrix({
       // read by each of its haplotype rows.
       let scannedKey: string | undefined
       for (let k = 0; k < rowArrays.length; k++) {
-        const { key, hp } = rowSpecs[k]!
+        const { sampleName: key, HP: hp } = rowSpecs[k]!
         if (key !== scannedKey) {
           const val = genotypes[key]
           readPhasedAlleleIndicators(

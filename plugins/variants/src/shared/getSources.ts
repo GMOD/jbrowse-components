@@ -9,11 +9,17 @@ export function resolveSampleName(source: Source) {
   return source.sampleName ?? source.name
 }
 
+// Every row a haplotype expansion produces names exactly one haplotype, so `HP`
+// is resolved rather than optional. Consumers that index *by* haplotype (the
+// phased genotype-matrix rows) get that from the type instead of restating a
+// ploidy fallback of their own.
+export type HaplotypeSource = ProcessedSource & { HP: number }
+
 export function makeHaplotypeSources(
   source: Source,
   ploidy: number,
-): ProcessedSource[] {
-  const results: ProcessedSource[] = []
+): HaplotypeSource[] {
+  const results: HaplotypeSource[] = []
   const sampleName = resolveSampleName(source)
   for (let i = 0; i < ploidy; i++) {
     results.push({
@@ -38,11 +44,12 @@ export function expandSourcesToHaplotypes({
 }: {
   sources: Source[]
   sampleInfo: Record<string, SampleInfo>
-}): ProcessedSource[] {
+}): HaplotypeSource[] {
   return sources.flatMap(source => {
     const sampleName = resolveSampleName(source)
-    if (source.HP !== undefined) {
-      return [{ ...source, sampleName }]
+    const { HP } = source
+    if (HP !== undefined) {
+      return [{ ...source, sampleName, HP }]
     }
     return makeHaplotypeSources(source, sampleInfo[sampleName]?.maxPloidy ?? 2)
   })
