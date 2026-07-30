@@ -31,7 +31,7 @@ export interface GraphNodeGeometry extends ViewportRect {
 //
 // Returns undefined when the view/node/canvas isn't there, so the caller can
 // fail the spec by name rather than acting on (0,0).
-export async function graphNodeGeometry(
+async function graphNodeGeometry(
   page: Page,
   anchor: AnnotationAnchor,
 ): Promise<GraphNodeGeometry | undefined> {

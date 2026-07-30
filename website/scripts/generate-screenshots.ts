@@ -85,10 +85,21 @@ const { values } = parseArgs({
   },
 })
 
-// Parse a numeric CLI option, returning undefined when absent or non-finite.
-function optNum(raw: string | undefined) {
-  const n = raw ? Number(raw) : Number.NaN
-  return Number.isFinite(n) ? n : undefined
+// Parse a numeric CLI option, returning undefined when absent. A present but
+// unparseable value exits rather than falling back to the default: the same
+// reason parseArgs is strict about unknown flags — `--diff-threshold .5%` or
+// `--concurrency 4x` otherwise runs the whole suite under the default and
+// reports success, which is indistinguishable from the flag having worked.
+function optNum(name: string, raw: string | undefined) {
+  if (raw === undefined) {
+    return undefined
+  }
+  const n = Number(raw)
+  if (!Number.isFinite(n)) {
+    console.error(`--${name} expects a number, got "${raw}"`)
+    process.exit(1)
+  }
+  return n
 }
 
 const { headed, filter, exact, force, check, firefox } = values
@@ -110,9 +121,10 @@ const SLACK_WARN_PX = 100
 // content rather than framing it. A few px is normal rounding; a clipped track
 // row is tens.
 const CLIP_WARN_PX = 8
-const diffThreshold = optNum(values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
-const externalPort = optNum(values.port)
-const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
+const diffThreshold =
+  optNum('diff-threshold', values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
+const externalPort = optNum('port', values.port)
+const servePort = optNum('localport', values.localport) ?? DEFAULT_LOCAL_PORT
 // Math.max(1, …) so `--concurrency 0` can't spin up zero workers and silently
 // skip every render spec while still exiting 0.
 //
@@ -124,7 +136,7 @@ const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
 // unexplained, and predate this default. Pass --concurrency for wall-clock.
 const CONCURRENCY = Math.max(
   1,
-  optNum(values.concurrency) ?? (headed || check ? 1 : 4),
+  optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 4),
 )
 
 const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
@@ -202,14 +214,29 @@ function tempPath(prefix: string, name: string, suffix = '') {
   )
 }
 
+// The ceiling for every wait a spec is subject to. readyText is only the track
+// label (present well before a slow remote BAM finishes), so a spec that says it
+// needs longer gets that everywhere — the fixed default otherwise cut off slow
+// whole-genome-alignment blocks mid-load and captured a "Loading" panel.
+function readyTimeoutOf(spec: BrowserScreenshotSpec) {
+  return spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
+}
+
+// One round of the post-first-paint settle: nothing is drawing, every canvas
+// display has painted, and no display is still in its `loading` phase. Each keys
+// off a different signal, and none is sufficient alone — see the waits' own docs
+// in @jbrowse/browser-test-utils.
+async function settlePass(page: Page, spec: BrowserScreenshotSpec) {
+  await waitForQuiescent(page, { timeout: readyTimeoutOf(spec) })
+  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+  await waitForDisplayPhases(page, readyTimeoutOf(spec))
+}
+
 // Wait out a spec's readiness signals before capture: its readyText/readySelector
 // become visible, the loading overlay clears, any in-track "Loading…"/"Rendering…"
-// indicator quiesces, and canvas displays signal paint-complete. readyText is
-// only the track label (present well before a slow remote BAM finishes), so the
-// spec's readyTimeout gates every wait here — the fixed default otherwise cut off
-// slow whole-genome-alignment blocks mid-load and captured a "Loading" panel.
+// indicator quiesces, and canvas displays signal paint-complete.
 async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
-  const readyTimeout = spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
+  const readyTimeout = readyTimeoutOf(spec)
   const readySelectors = [
     spec.readyText ? textSelector(spec.readyText) : undefined,
     spec.readySelector,
@@ -234,13 +261,7 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
     await debugDump(page, spec.name)
     throw e
   }
-  await waitForQuiescent(page, { timeout: readyTimeout })
-  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
-  // The one non-proxy wait: no display is in its `loading` phase. The waits
-  // above key off first paint, an overlay a debounced fetch may not have raised
-  // yet, and status text — all of which can read "ready" mid-fetch, which is how
-  // a "Loading" frame gets captured at all.
-  await waitForDisplayPhases(page, readyTimeout)
+  await settlePass(page, spec)
   // Belt and braces for the displays that publish no phase (non-LGV views, and
   // anything not routed through DisplayChrome): re-run while an overlay is still
   // up. Bounded, so a view that never finishes fails through assertRenderSettled
@@ -257,9 +278,7 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
       waitForDownloads: true,
       timeout: readyTimeout,
     })
-    await waitForQuiescent(page, { timeout: readyTimeout })
-    await waitForDisplayPhases(page, readyTimeout)
-    await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+    await settlePass(page, spec)
   }
 }
 
@@ -531,14 +550,16 @@ async function shoot(
   await waitForRasterize(page)
   // last gate before anything is written: same document we readied?
   await assertSamePageAsReady(page, spec)
-  const clip = spec.crop
-  await page.screenshot(clip ? { path: file, clip } : { path: file })
-  if (!clip) {
-    clippedPx.set(
-      spec.name,
-      Math.max(clippedPx.get(spec.name) ?? 0, await overflowPx(page)),
-    )
-  }
+  await page.screenshot({ path: file, clip: spec.crop })
+}
+
+// Note how much of the page this capture cut off, for the end-of-run report.
+// Skipped for a `crop` spec, which frames deliberately.
+async function recordOverflow(page: Page, name: string) {
+  clippedPx.set(
+    name,
+    Math.max(clippedPx.get(name) ?? 0, await overflowPx(page)),
+  )
 }
 
 // CSS px of page laid out below the bottom of the viewport, i.e. content the
@@ -731,10 +752,7 @@ async function renderSpecToTemp(
   await runActions(page, spec.name, spec.actions)
   // same as in captureStages: actions can kick off a re-render, so wait it out
   // before asserting/capturing rather than racing it
-  await waitForDisplayPhases(
-    page,
-    spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS,
-  )
+  await waitForDisplayPhases(page, readyTimeoutOf(spec))
   await assertViewsRendered(page, spec.name)
   if (!spec.allowUnsettled) {
     await assertRenderSettled(page, spec)
@@ -745,6 +763,9 @@ async function renderSpecToTemp(
     await captureStages(page, spec, spec.stages, renderPath)
   } else {
     await shoot(page, spec, spec.annotations, renderPath)
+    if (!spec.crop) {
+      await recordOverflow(page, spec.name)
+    }
   }
   optimizePng(renderPath)
   return renderPath
@@ -763,6 +784,25 @@ async function captureStages(
   const stageFiles = stages.map((_, i) =>
     tempPath('jb-shot', spec.name, `-${i}`),
   )
+  try {
+    await captureEachStage(page, spec, stages, stageFiles)
+    execFileSync(IM, [...stageFiles, '-append', renderPath])
+  } finally {
+    // also on the way out of a failed stage, so a spec that throws mid-figure
+    // doesn't leave half its frames behind in tmp
+    for (const f of stageFiles) {
+      fs.rmSync(f, { force: true })
+    }
+  }
+}
+
+// Drive each stage and leave its frame in the matching stageFiles entry.
+async function captureEachStage(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  stages: ScreenshotStage[],
+  stageFiles: string[],
+) {
   for (const [i, stage] of stages.entries()) {
     // Resized before the stage acts, not just before its shot, so the actions
     // hit the layout they are captured against. Width is left alone — the
@@ -794,20 +834,16 @@ async function captureStages(
     // shot used to race it, landing on the pre-sort order often enough to drift
     // 17% between runs. Wait for the phases the actions disturbed; a no-op when
     // the stage only opened a menu.
-    await waitForDisplayPhases(
-      page,
-      spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS,
-    )
+    await waitForDisplayPhases(page, readyTimeoutOf(spec))
     await shoot(page, spec, stage.annotations, stageFiles[i]!)
+    if (!spec.crop) {
+      await recordOverflow(page, spec.name)
+    }
     // re-check after each stage capture: assertViewsRendered only runs once
     // before the loop, so a stage that captures a blank view body (a rare
     // paint race after the stage's interaction) would otherwise be committed
     // silently — the staged frames ARE the published image.
     await assertViewsRendered(page, spec.name)
-  }
-  execFileSync(IM, [...stageFiles, '-append', renderPath])
-  for (const f of stageFiles) {
-    fs.rmSync(f, { force: true })
   }
 }
 
@@ -923,6 +959,90 @@ function printReport(title: string, lines: string[]) {
   console.error(`\n${bar}`)
 }
 
+interface RunTotals {
+  passed: number
+  failed: number
+  kept: number
+  skipped: number
+  failures: { name: string; error: string }[]
+  flaky: { name: string; frac: number }[]
+  changed: { name: string; result: CommitResult }[]
+  // kept only because the spec raised its own diffThreshold above the run
+  // default — the case where a real change hides behind a jitter allowance
+  suppressed: { name: string; frac: number }[]
+  slacked: { name: string; px: number }[]
+}
+
+const pct = (n: number) => `${(n * 100).toFixed(3)}%`
+
+function printSummary(totals: RunTotals) {
+  const { passed, failed, kept, skipped } = totals
+  const { failures, flaky, changed, suppressed, slacked } = totals
+  console.log(
+    `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
+      check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
+    }${skipped > 0 ? `, ${skipped} skipped (curated / heavy remote data)` : ''}`,
+  )
+  if (changed.length > 0) {
+    printReport(
+      `UPDATED SCREENSHOTS (${changed.length})`,
+      changed.map(({ name, result }) =>
+        result.status === 'updated'
+          ? `• ${name}.png (${result.detail})`
+          : `• ${name}.png (new)`,
+      ),
+    )
+  }
+  if (suppressed.length > 0) {
+    printReport(
+      `KEPT BEHIND A RAISED diffThreshold (${suppressed.length}) — re-run these with --force if you changed them on purpose`,
+      suppressed.map(
+        ({ name, frac }) =>
+          `• ${name}.png: ${pct(frac)} differs, over the ${pct(diffThreshold)} default`,
+      ),
+    )
+  }
+  const clipped = [...clippedPx]
+    .filter(([, px]) => px > CLIP_WARN_PX)
+    .sort((a, b) => b[1] - a[1])
+  if (clipped.length > 0) {
+    printReport(
+      `CONTENT CLIPPED BELOW THE FOLD (${clipped.length}) — the capture cut these off; raise the spec's viewportHeight by about this much`,
+      clipped.map(
+        ([name, px]) =>
+          `• ${name}.png: ${px} css px of page below the viewport`,
+      ),
+    )
+  }
+  if (slacked.length > 0) {
+    printReport(
+      `BLANK BELOW THE CONTENT, IN A FIGURE THAT JUST CHANGED (${slacked.length}) — if the app got shorter here, lower the spec's viewportHeight by about this much`,
+      [...slacked]
+        .sort((a, b) => b.px - a.px)
+        .map(
+          ({ name, px }) =>
+            `• ${name}.png: ${Math.round(px / DEVICE_SCALE_FACTOR)} css px of blank below the last content`,
+        ),
+    )
+  }
+  if (flaky.length > 0) {
+    printReport(
+      `FLAKY SPECS (${flaky.length}) — nondeterministic renders`,
+      flaky.map(
+        ({ name, frac }) => `• ${name}: ${pct(frac)} drift between renders`,
+      ),
+    )
+  }
+  if (failures.length > 0) {
+    printReport(
+      `FAILURE SUMMARY (${failures.length})`,
+      failures.map(
+        ({ name, error }) => `\n• ${name}\n  ${error.replaceAll('\n', '\n  ')}`,
+      ),
+    )
+  }
+}
+
 async function main() {
   // `--filter a,b,c` matches a spec when any comma-separated token matches, so
   // "re-render these few" is one invocation instead of a shell loop. The flag is
@@ -967,7 +1087,6 @@ async function main() {
   )
 
   let server: Server | undefined
-  const port = DEFAULT_PORT
 
   if (needsLocalServer) {
     if (!externalPort && !fs.existsSync(buildPath)) {
@@ -976,15 +1095,15 @@ async function main() {
       )
       process.exit(1)
     }
-    server = await createTestServer(port, {
+    server = await createTestServer(servePort, {
       jbrowseWebRoot: testDataRoot,
       repoRoot,
       proxyPort: externalPort,
     })
     console.log(
       externalPort
-        ? `Proxy on port ${port}, app on port ${externalPort}`
-        : `Server on port ${port}`,
+        ? `Proxy on port ${servePort}, app on port ${externalPort}`
+        : `Server on port ${servePort}`,
     )
   }
 
@@ -1047,13 +1166,11 @@ async function main() {
   let skipped = 0
   let started = 0
   const total = renderSpecs.length + composeSpecs.length
-  const failures: { name: string; error: string }[] = []
-  const flaky: { name: string; frac: number }[] = []
-  const changed: { name: string; result: CommitResult }[] = []
-  // kept only because the spec raised its own diffThreshold above the run
-  // default — the case where a real change hides behind a jitter allowance
-  const suppressed: { name: string; frac: number }[] = []
-  const slacked: { name: string; px: number }[] = []
+  const failures: RunTotals['failures'] = []
+  const flaky: RunTotals['flaky'] = []
+  const changed: RunTotals['changed'] = []
+  const suppressed: RunTotals['suppressed'] = []
+  const slacked: RunTotals['slacked'] = []
 
   // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
   // keeping the interleaved per-worker lines readable.
@@ -1115,12 +1232,11 @@ async function main() {
     fs.rmSync(a, { force: true })
     fs.rmSync(b, { force: true })
     if (frac === null || frac >= specThreshold(spec)) {
-      const pct =
-        frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
-      console.log(`  ✗ ${spec.name} FLAKY (${pct} between two renders)`)
+      const drift = frac === null ? 'size-mismatch' : pct(frac)
+      console.log(`  ✗ ${spec.name} FLAKY (${drift} between two renders)`)
       flaky.push({ name: spec.name, frac: frac ?? 1 })
     } else {
-      console.log(`  ✓ ${spec.name} stable (${(frac * 100).toFixed(3)}%)`)
+      console.log(`  ✓ ${spec.name} stable (${pct(frac)})`)
     }
   }
 
@@ -1165,11 +1281,13 @@ async function main() {
         }
       } else if (check) {
         await checkTwice(spec, suffix =>
-          withFreshPage(spec, p => renderSpecToTemp(p, spec, port, suffix)),
+          withFreshPage(spec, p =>
+            renderSpecToTemp(p, spec, servePort, suffix),
+          ),
         )
       } else {
         result = await withFreshPage(spec, page =>
-          captureSpec(page, spec, port),
+          captureSpec(page, spec, servePort),
         )
       }
       if (result) {
@@ -1180,14 +1298,12 @@ async function main() {
           }
         } else {
           changed.push({ name: spec.name, result })
-        }
-        // Only for an image this run actually wrote. Slack is news when it
-        // appears — the app or a plugin started laying something out shorter —
-        // and 28% of the committed corpus has some, most of it a deliberate
-        // framing choice around a dialog or an empty state. Reporting all of it
-        // every run would be noise nobody reads; reporting the ones that just
-        // moved is the signal.
-        if (result.status !== 'kept') {
+          // Only for an image this run actually wrote. Slack is news when it
+          // appears — the app or a plugin started laying something out shorter
+          // — and 28% of the committed corpus has some, most of it a deliberate
+          // framing choice around a dialog or an empty state. Reporting all of
+          // it every run would be noise nobody reads; reporting the ones that
+          // just moved is the signal.
           const slack = trailingBackgroundPx(
             path.join(outDir, `${spec.name}.png`),
           )
@@ -1225,71 +1341,18 @@ async function main() {
     server?.close()
   }
 
-  console.log(
-    `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
-      check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
-    }${skipped > 0 ? `, ${skipped} skipped (curated / heavy remote data)` : ''}`,
-  )
-  if (changed.length > 0) {
-    printReport(
-      `UPDATED SCREENSHOTS (${changed.length})`,
-      changed.map(({ name, result }) =>
-        result.status === 'updated'
-          ? `• ${name}.png (${result.detail})`
-          : `• ${name}.png (new)`,
-      ),
-    )
-  }
-  if (suppressed.length > 0) {
-    printReport(
-      `KEPT BEHIND A RAISED diffThreshold (${suppressed.length}) — re-run these with --force if you changed them on purpose`,
-      suppressed.map(
-        ({ name, frac }) =>
-          `• ${name}.png: ${(frac * 100).toFixed(3)}% differs, over the ${(diffThreshold * 100).toFixed(3)}% default`,
-      ),
-    )
-  }
-  const clipped = [...clippedPx]
-    .filter(([, px]) => px > CLIP_WARN_PX)
-    .sort((a, b) => b[1] - a[1])
-  if (clipped.length > 0) {
-    printReport(
-      `CONTENT CLIPPED BELOW THE FOLD (${clipped.length}) — the capture cut these off; raise the spec's viewportHeight by about this much`,
-      clipped.map(
-        ([name, px]) =>
-          `• ${name}.png: ${px} css px of page below the viewport`,
-      ),
-    )
-  }
-  if (slacked.length > 0) {
-    printReport(
-      `BLANK BELOW THE CONTENT, IN A FIGURE THAT JUST CHANGED (${slacked.length}) — if the app got shorter here, lower the spec's viewportHeight by about this much`,
-      slacked
-        .sort((a, b) => b.px - a.px)
-        .map(
-          ({ name, px }) =>
-            `• ${name}.png: ${Math.round(px / DEVICE_SCALE_FACTOR)} css px of blank below the last content`,
-        ),
-    )
-  }
-  if (flaky.length > 0) {
-    printReport(
-      `FLAKY SPECS (${flaky.length}) — nondeterministic renders`,
-      flaky.map(
-        ({ name, frac }) =>
-          `• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`,
-      ),
-    )
-  }
-  if (failures.length > 0) {
-    printReport(
-      `FAILURE SUMMARY (${failures.length})`,
-      failures.map(
-        ({ name, error }) => `\n• ${name}\n  ${error.replaceAll('\n', '\n  ')}`,
-      ),
-    )
-  }
-  // exit non-zero once, after both reports print — a --check run can be both
+  printSummary({
+    passed,
+    failed,
+    kept,
+    skipped,
+    failures,
+    flaky,
+    changed,
+    suppressed,
+    slacked,
+  })
+  // exit non-zero once, after every report prints — a --check run can be both
   // flaky and have hard failures, and swallowing either report hides real work
   if (flaky.length > 0 || failures.length > 0) {
     process.exit(1)

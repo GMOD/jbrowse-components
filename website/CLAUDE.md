@@ -70,6 +70,15 @@ Pass `--force` to rewrite every PNG regardless. A code change still needs a
 `pnpm build` in `products/jbrowse-web` first (the generator renders the built
 bundle, not source).
 
+**The difference is flattened by max-of-RGB, not by luminance.**
+`-colorspace Gray` weights blue at 0.0722, so a channel had to move 69% before
+it cleared the 5% per-pixel threshold at all: recoloring a quarter of a frame
+`#0000ff` -> `#0000aa` measured **0.000%** and read as unchanged.
+`-grayscale Brightness` thresholds every channel on its own merits. It is
+bit-identical to the explicit `-separate … -evaluate-sequence Max` and, across
+25 consecutive figure revisions, within a few percent of the old luminance
+numbers — glyph jitter is achromatic, so the noise floor above is unaffected.
+
 **The difference is eroded a pixel before it is measured, so a Chrome update
 doesn't read as a changed figure.** Chrome self-updates under the generator
 (`findChromeExecutable` prefers the system browser), and a browser update shifts

@@ -31,6 +31,15 @@ const DIFF_FUZZ = '5%'
 // the whole content-stable gate. Thresholding the difference image and taking its
 // mean is a plain fraction-of-pixels in every ImageMagick build.
 //
+// The difference is flattened with `-grayscale Brightness` (max of R/G/B), NOT
+// `-colorspace Gray` (Rec709 luminance). Luminance weights blue at 0.0722, so a
+// blue-only recolor had to move a channel by 69% before it cleared the 5%
+// threshold at all: recoloring a quarter of the frame #0000ff -> #0000aa measured
+// 0.000% and read as "unchanged". Brightness thresholds every channel on its own
+// merits, which is what a per-pixel "did this change" test means. Verified
+// bit-identical to `-separate -threshold -evaluate-sequence Max` across 25
+// consecutive figure revisions, at the same cost.
+//
 // The thresholded difference is then eroded by a pixel, because the raw fraction
 // cannot tell a changed figure from a changed Chrome. A browser update shifts
 // glyph metrics fractionally, which repaints the antialiased outline of every
@@ -62,8 +71,8 @@ export function pngDiffFraction(a: string, b: string): number | null {
       '-compose',
       'difference',
       '-composite',
-      '-colorspace',
-      'Gray',
+      '-grayscale',
+      'Brightness',
       '-threshold',
       DIFF_FUZZ,
       '-morphology',
