@@ -183,7 +183,9 @@ function CoverageRow({
   )
 }
 
-function CoverageTooltipContents({
+// Exported for its colocated test only — deliberately NOT re-exported from the
+// plugin entry, since nothing outside this file renders it (MAF has its own).
+export function CoverageTooltipContents({
   bin,
   refName,
 }: {
