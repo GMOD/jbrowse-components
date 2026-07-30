@@ -540,13 +540,22 @@ export const HG38_470WAY_30 = [
 // each adjacent pair and a gene annotation track on each genome, used by the
 // synteny_visualization.md tutorial.
 //
-export function hpyloriSyntenyWithGenes() {
+// `geneColor` is the display's `color` slot, written on all three gene tracks at
+// once: the "Color by attribute" dialog produces
+// `jexl:randomColor(get(feature,'<attr>'))`, and in bacteria the `gene`
+// attribute is the ortholog id, so the same symbol takes the same color in every
+// panel. Omitted by default, which encodes byte-identically to the version
+// without the parameter.
+export function hpyloriSyntenyWithGenes({
+  geneColor,
+}: { geneColor?: string } = {}) {
   // showOnlyGenes collapses each locus to its gene glyph (no CDS/mRNA
   // sub-features), so the lane reads as a tidy row of genes rather than nested
   // boxes
   const geneTrack = (trackId: string) => ({
     trackId,
     showOnlyGenes: true,
+    ...(geneColor ? { color: geneColor } : {}),
   })
   return hpyloriUrl({
     views: [

@@ -55,9 +55,11 @@ VIT_201s0011g02300.1	VIT_201s0011g02530.1	Prupe.1G299800.1	Prupe.1G303200.1	39	+
 ```
 
 The adapter turns those four gene ids into one feature spanning the block on
-each genome, so `.anchors.simple` draws as solid blocks where `.anchors` draws
-as a fan of per-gene ribbons. Neither file carries coordinates: the gene ids are
+each genome, so `.anchors.simple` draws one ribbon per block where `.anchors`
+draws one per gene pair. Neither file carries coordinates: the gene ids are
 whatever your annotation used, and the BED files are what resolve them.
+
+<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="One block of the same run, drawn from each file in turn. Top: .anchors, one ribbon per orthologous gene pair. Bottom: .anchors.simple, the same block as a single ribbon." />
 
 ### BED files
 
@@ -169,6 +171,19 @@ Read the two together: a bar states that a block is there and which way round it
 runs, and the ribbons above it show whether the genes inside it hold their
 order. Strand is the `LGVSyntenyDisplay` **Color by** default, and the menu
 offers the other modes.
+
+## The same anchors as a dotplot
+
+Either anchor track also loads in a dotplot (**Add → Dotplot view**, then pick
+it in Quick start), where a gene pair is one point and a synteny block is a run
+of them.
+
+The two axes start in the order each assembly's index has, which for 19 grape
+chromosomes against 8 peach ones scatters the runs over the plot. **Re-order
+chromosomes** in the view menu sorts the vertical axis to follow the horizontal
+one, using the alignments themselves.
+
+<Figure caption="Grape against peach, every point one orthologous gene pair from the .anchors file, colored by peach chromosome after Re-order chromosomes. Each run of points is one MCScan block, and one peach color on several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
 
 ## Reproduce it end to end
 

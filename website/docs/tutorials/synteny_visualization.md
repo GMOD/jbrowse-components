@@ -44,9 +44,14 @@ The flags each do one thing:
   genomes are. `asm5` covers up to about 5% divergence; these _H. pylori_
   strains are the same species but diverge well past that, so they need `asm20`.
 - `-c` emits the base-level CIGAR the linear synteny view draws from.
-- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`), which is what lets
-  JBrowse compute per-alignment identity and offer
-  [Color by → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons).
+- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`). The ribbon band
+  treats both as matches, but the same track opened in a plain linear genome
+  view draws per-base mismatches the way a read pileup does, and the `X`
+  operations are what it reads them from. Per-alignment identity does not depend
+  on it: that comes from the PAF's own divergence tag, or from its match counts,
+  so
+  [Color by → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
+  works either way.
 
 Using [MUMmer](https://github.com/mummer4/mummer) or UCSC chains instead is
 fine: JBrowse loads `.delta` and `.chain` directly, and
@@ -111,6 +116,8 @@ ortholog carries one color down all three panels and a gene's synteny becomes
 legible by color alone. Features with no such attribute fall back to a single
 color, which is what the locus-tag-only genes share.
 
+<Figure caption="The same three strains with each gene track colored by its gene attribute. prfB, fliR, cbf2, efp and lysS hold one color per symbol down all three panels; the locus-tag-only genes share the fallback color." src="/img/sv_synteny/ortholog_colors.png" />
+
 ## Using PIF for large genomes
 
 A bacterial PAF is small enough to load whole. For a large whole-genome
@@ -123,6 +130,14 @@ jbrowse add-track alignment.pif.gz -a query,target --load copy
 ```
 
 ## Troubleshooting
+
+`assemblyNames` in the wrong order is the common one, and JBrowse checks for it
+once at view load: it asks the adapter which chromosomes belong to the top row
+and compares them against that assembly's own. When they belong to the other row
+instead, a warning appears in the view header, and the dialog behind it names
+the remedy.
+
+<Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the header warning reports the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
 | Problem                                          | Possible cause                                  | Solution                                                                                                                                                                    |
 | ------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

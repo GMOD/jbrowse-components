@@ -69,6 +69,67 @@ const TNNT3_FRAME = {
   settleMs: 12000,
 }
 
+// The two files one MCScan run writes, each drawn on its own and stacked into
+// one figure. Same window and same view settings in both parts, so the only
+// variable is which file the adapter is reading: `.anchors` puts a ribbon on
+// every orthologous gene pair, `.anchors.simple` puts one ribbon on each block
+// those pairs make up. The tutorial stated that difference in prose and showed
+// one figure with both tracks on at once, where neither is separable.
+//
+// The window is one MCScan block, read out of the .anchors.simple file itself:
+// its highest-scoring collinear pair with a 1:1 span, grape chr19
+// 5,138,069-7,773,743 against peach Pp04 12,426,874-14,979,513, with 160 gene
+// pairs inside it. Each panel frames that block plus a little padding, at
+// matching bp/px, so `.anchors.simple` is one wide ribbon across the whole
+// figure while `.anchors` resolves into the 160 near-parallel threads it is made
+// of. Straight ribbons, not curved: within a single collinear block a curve only
+// bows what is a flat correspondence.
+//
+// Neither panel carries a track: the subject is the ribbon band, so
+// collapseEmptyRows drops each row to its scalebar rather than a "No tracks
+// active" block.
+function mcscanFilePartSpecs(): ScreenshotSpec[] {
+  const part = (name: string, trackId: string, label: string) => ({
+    mode: 'url' as const,
+    name,
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [[trackId]],
+          drawCurves: false,
+          levelHeights: [260],
+          collapseEmptyRows: true,
+          views: [
+            { assembly: 'grape', loc: 'chr19:5,000,000-7,900,000' },
+            { assembly: 'peach', loc: 'Pp04:12,300,000-15,100,000' },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    // two collapsed scalebar rows around one 260px band
+    viewportHeight: 445,
+    annotations: [
+      { type: 'text' as const, x: 24, y: 56, fontSize: 22, text: label },
+    ],
+  })
+  return [
+    part(
+      'mcscan_synteny/anchors',
+      'grape_peach_synteny_mcscan',
+      '.anchors: one ribbon per gene pair',
+    ),
+    part(
+      'mcscan_synteny/anchors_simple',
+      'grape_peach_synteny_mcscan_simple',
+      '.anchors.simple: one ribbon per block',
+    ),
+  ]
+}
+
 // The three frames of the "launch a synteny view from a selection" flow, all
 // starting from the same one-vs-all lane session and the same rubberband drag
 // over ~chr:800,000-808,000 of its 20 kb window. Each frame carries the actions
@@ -434,6 +495,57 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 12000,
+  },
+
+  // The last paragraph of multiway_synteny.md, which had no figure: the same
+  // .blocks track in a PLAIN LGV. With no second row there is no target
+  // assembly, so the adapter serves every pair the table covers at once and the
+  // grape row carries its peach and its cacao orthologs together;
+  // "Group by... > Mate assembly" splits that into one labelled lane per genome.
+  // Baked into the session (groupBy on the track entry) rather than driven
+  // through the menu, so the figure can't drift from it.
+  //
+  // Same window as the gene-ortholog figure above (grape 11), so the two are the
+  // same locus read the two ways: as a stack of three genomes, and as one genome
+  // with a lane per mate.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/blocks_one_vs_all',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'grape',
+            loc: '11:1,840,000-1,927,000',
+            tracks: [
+              {
+                trackId: 'grape_genes',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+                showDescriptions: false,
+              },
+              {
+                trackId: 'grape_peach_cacao_blocks',
+                type: 'LGVSyntenyDisplay',
+                groupBy: { type: 'mateAssembly' },
+                // an anchor block is short at this zoom, and what the figure is
+                // about is which lane has one, so the bars get some thickness
+                featureHeight: 14,
+                height: 90,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 428,
   },
   {
     mode: 'url',
@@ -990,6 +1102,40 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 640,
   },
 
+  ...mcscanFilePartSpecs(),
+  {
+    mode: 'compose',
+    name: 'mcscan_synteny/anchors_vs_simple',
+    parts: ['mcscan_synteny/anchors', 'mcscan_synteny/anchors_simple'],
+  },
+
+  // The same MCScan run as a dotplot, which mcscan_synteny.md never mentioned:
+  // one dot per orthologous gene pair, so the whole-genome plot is the one jcvi
+  // itself draws, from the file the tutorial has already loaded. Per-query
+  // coloring gives each peach chromosome its own color, which is what separates
+  // the syntenic runs from the scatter of single anchors. autoDiagonalize
+  // reorders the grape axis to follow peach: in raw .fai order the same runs are
+  // scattered over the plot, and grape has 19 chromosomes to peach's 8, so
+  // reading which pairs correspond is the whole point of the reorder.
+  {
+    mode: 'url',
+    name: 'mcscan_synteny/dotplot',
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+          tracks: ['grape_peach_synteny_mcscan'],
+          colorBy: 'query',
+          autoDiagonalize: true,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 8000,
+  },
+
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
   // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
   // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
@@ -1430,6 +1576,90 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
     settleMs: 12000,
+  },
+
+  // The "Coloring genes by ortholog" section of synteny_visualization.md, which
+  // had no figure: the same three-strain stack with the gene tracks colored by
+  // their `gene` attribute instead of one flat color. The jexl is what the "Color
+  // by attribute" dialog writes, and randomColor hashes the value, so a symbol
+  // carries one color down all three panels and the genes with only a locus tag
+  // (no `gene` attribute) share the fallback color.
+  {
+    mode: 'url',
+    name: 'sv_synteny/ortholog_colors',
+    url: hpyloriSyntenyWithGenes({
+      geneColor: "jexl:randomColor(get(feature,'gene'))",
+    }),
+    readyText: 'NC_018939.1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+    // the default 800 clips the bottom strain's gene labels
+    viewportHeight: 812,
+  },
+
+  // The mistake the tutorial's Troubleshooting table describes, and the app's own
+  // report of it. `assemblyNames` on a synteny track is [query, target], the
+  // reverse of the minimap2 argument order, so writing it the other way round is
+  // the common misconfiguration: JBrowse then asks the adapter for the top row's
+  // refNames and gets the bottom row's, which is what the one-shot check at view
+  // load compares. A session track is the only way to state it — the hosted
+  // config's own track is correct — so this reuses that PIF with the two names
+  // swapped, and the view draws nothing because no name resolves.
+  {
+    mode: 'url',
+    name: 'sv_synteny/assembly_order_warning',
+    url: hpyloriUrl({
+      sessionTracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'hpylori_reversed_assembly_names',
+          name: '26695 vs CHC155 (assemblyNames reversed)',
+          assemblyNames: ['hpylori_26695', 'hpylori_chc155'],
+          adapter: {
+            type: 'PairwiseIndexedPAFAdapter',
+            assemblyNames: ['hpylori_26695', 'hpylori_chc155'],
+            pifGzLocation: {
+              uri: 'https://jbrowse.org/demos/hpylori/26695_vs_chc155.pif.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: 'https://jbrowse.org/demos/hpylori/26695_vs_chc155.pif.gz.tbi',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [['hpylori_reversed_assembly_names']],
+          collapseEmptyRows: true,
+          levelHeights: [200],
+          views: [
+            { assembly: 'hpylori_26695', loc: 'NC_018939.1' },
+            { assembly: 'hpylori_chc155', loc: 'NZ_AP026446.1' },
+          ],
+        },
+      ],
+    }),
+    // the warning icon IS the subject, so it is also the ready signal: it
+    // appears when the load-time check has resolved, which is later than the
+    // canvas reporting an empty draw
+    readySelector: '[aria-label*="synteny warning"]',
+    readyTimeout: 120000,
+    settleMs: 6000,
+    // an empty band is the point here, so the shoot-time settled check has to
+    // allow a view with nothing drawn in it
+    allowUnsettled: true,
+    viewportHeight: 425,
+    actions: [
+      { type: 'click', selector: '[aria-label*="synteny warning"]' },
+      { type: 'waitForText', text: 'Synteny warnings' },
+      { type: 'delay', ms: 1500 },
+    ],
   },
 
   // ────────────────────────────────────────────────────────────────────────

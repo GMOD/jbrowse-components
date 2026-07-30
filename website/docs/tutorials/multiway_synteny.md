@@ -294,7 +294,10 @@ direct.
 The same track dropped into a plain linear genome view (as an
 `LGVSyntenyDisplay`) draws every pair at once rather than one, so a grape row
 shows both its peach and its cacao links; **Group by... > Mate assembly** splits
-them into a lane per genome.
+them into a lane per genome. That is the one-genome reading of the same table:
+no second row to frame, and a lane per genome that has an ortholog there.
+
+<Figure caption="The same block on grape alone, with the MCScan blocks track grouped by mate assembly. The peach and cacao lanes carry the anchors each genome shares with the grape genes above, so a gene with an ortholog in one of them draws a bar in one lane." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Reproduce it end to end
 
