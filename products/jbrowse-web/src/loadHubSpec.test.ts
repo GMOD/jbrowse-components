@@ -135,6 +135,10 @@ describe('loadHubSpec', () => {
       ok: true,
       text: async () => 'hub myHub\nshortLabel My Cool Hub\nlongLabel x',
     } as Response)
+    // the rename comes from loadHubSpec's own fetch, not the connection's
+    // doConnect; that real connect would separately try (and fail) to
+    // validate this minimal hub.txt as a full genomes hub
+    jest.spyOn(console, 'error').mockImplementation(() => {})
 
     await loadHubSpec(
       { hubURL: ['https://example.com/hubs/my-hub/hub.txt'] },

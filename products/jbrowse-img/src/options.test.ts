@@ -35,8 +35,13 @@ test('applies fallbacks when options are absent', () => {
 })
 
 test('validates trackLabels against the allowed modes', () => {
-  expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
-  expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
+    expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
+  } finally {
+    warn.mockRestore()
+  }
 })
 
 test('warns on an invalid enum value instead of silently defaulting', () => {

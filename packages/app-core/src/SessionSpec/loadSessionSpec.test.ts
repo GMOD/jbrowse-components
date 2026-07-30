@@ -47,8 +47,10 @@ function setup(
     getElementTypeRecord: () => ({
       has: (type: string) => registeredViewTypes.includes(type),
     }),
+    // mirrors the real PluginManager: an extension point with no registered
+    // callback resolves to the extendee unchanged rather than throwing
     evaluateAsyncExtensionPointStrict: (name: string) =>
-      handlers[name]!(session),
+      handlers[name] ? handlers[name](session) : Promise.resolve(session),
   } as unknown as PluginManager
   return { session, pluginManager }
 }
@@ -156,22 +158,29 @@ test('a launch handler that throws surfaces an error instead of a silent no-op',
     },
   })
 
-  await loadSessionSpec(
-    {
-      views: [
-        { type: 'Bad', assembly: 'volvox' },
-        { type: 'Good', assembly: 'volvox' },
-      ],
-    },
-    pluginManager,
-  )
+  // loadSessionSpec also console.errors a launch failure so it's visible in
+  // the browser console, not just the snackbar; that's expected here
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    await loadSessionSpec(
+      {
+        views: [
+          { type: 'Bad', assembly: 'volvox' },
+          { type: 'Good', assembly: 'volvox' },
+        ],
+      },
+      pluginManager,
+    )
 
-  // the bad view reports the real error, and the loop still launches the good one
-  expect(session.notifyError).toHaveBeenCalledWith(
-    expect.stringContaining('Failed to launch Bad view'),
-    expect.any(Error),
-  )
-  expect(session.views.map(v => v.id)).toEqual(['good'])
+    // the bad view reports the real error, and the loop still launches the good one
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to launch Bad view'),
+      expect.any(Error),
+    )
+    expect(session.views.map(v => v.id)).toEqual(['good'])
+  } finally {
+    error.mockRestore()
+  }
 })
 
 test('displayName is applied to whatever view type the spec launched', async () => {
