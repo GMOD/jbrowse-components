@@ -1,9 +1,11 @@
+import { radioItems } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { featuresPerPx } from '../RenderFeatureDataRPC/densityGate.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // Add id if absent, remove it if present — the shared body of the pin/solo
@@ -67,48 +69,22 @@ export async function fetchCanvasFeatureDetails(
   }
 }
 
-// A "Show..."/track-menu submenu of mutually-exclusive radio options. Keeps the
-// call sites declarative (just the option data) instead of repeating the
-// checked/onClick mapping at each menu.
-export function radioSubMenu<T extends string>(
-  label: string,
-  current: T,
-  options: readonly { value: T; label: string }[],
-  onSelect: (value: T) => void,
-) {
-  return {
-    label,
-    subMenu: options.map(option => ({
-      label: option.label,
-      type: 'radio' as const,
-      checked: current === option.value,
-      onClick: () => {
-        onSelect(option.value)
-      },
-    })),
-  }
-}
-
-// Same option data as radioSubMenu but rendered inline: a subHeader followed by
-// the radios, so a settings menu reads as one flat list of checkboxes/radios
-// instead of nesting a submenu the user has to hover into.
+// A named group of mutually-exclusive radio options rendered inline: a
+// subHeader followed by the radios, so a settings menu reads as one flat list
+// of checkboxes/radios instead of nesting a submenu the user has to hover into.
+// The rows come from core's `radioItems` rather than being spelled out here, so
+// every radio in every canvas menu keeps the menu open on click — a hand-rolled
+// copy is how the "Gene glyph" submenu ended up dismissing the whole track menu
+// while its siblings stayed put.
 export function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
   options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
-) {
+): MenuItem[] {
   return [
     { type: 'subHeader' as const, label: header },
-    ...options.map(option => ({
-      label: option.label,
-      type: 'radio' as const,
-      checked: current === option.value,
-      keepMenuOpen: true,
-      onClick: () => {
-        onSelect(option.value)
-      },
-    })),
+    ...radioItems(options, current, onSelect),
   ]
 }
 

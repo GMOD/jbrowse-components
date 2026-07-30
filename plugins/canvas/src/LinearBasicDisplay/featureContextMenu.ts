@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession, pluralize } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -69,9 +69,9 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
   pinnedFeatureIdSet: ReadonlySet<string>
   highlightedFeatureIdSet: ReadonlySet<string>
   soloFeatureIdSet: ReadonlySet<string>
-  soloFeatureIds: { length: number }
+  soloFeatureCount: number
   soloApplied: boolean
-  hiddenFeatureIds: { length: number }
+  hiddenFeatureCount: number
   selectFeatureById: (
     featureId: string,
     subfeatureInfo: SubfeatureInfo | undefined,
@@ -98,14 +98,14 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
 // menu (Show/hide submenu) and the track menu (Edit filters submenu). Empty
 // when nothing is hidden.
 export function showHiddenFeaturesMenuItems(self: {
-  hiddenFeatureIds: { length: number }
+  hiddenFeatureCount: number
   showAllHidden: () => void
-}) {
-  const n = self.hiddenFeatureIds.length
+}): MenuItem[] {
+  const n = self.hiddenFeatureCount
   return n > 0
     ? [
         {
-          label: `Show ${n} hidden feature${n > 1 ? 's' : ''}`,
+          label: `Show ${n} hidden ${pluralize(n, 'feature')}`,
           icon: VisibilityIcon,
           onClick: () => {
             self.showAllHidden()
@@ -311,7 +311,7 @@ function showHideItem({ self, info }: MenuContext): MenuItem {
       {
         label: self.pinnedFeatureIdSet.has(featureId)
           ? 'Unpin from top'
-          : 'Pin to top of layout',
+          : 'Pin to top',
         icon: VerticalAlignTopIcon,
         onClick: () => {
           self.togglePinnedFeature(featureId)
@@ -325,21 +325,26 @@ function showHideItem({ self, info }: MenuContext): MenuItem {
           self.hideFeature(featureId)
         },
       },
-      // Reachable from any still-visible feature; the track menu's
-      // "Clear filters" covers the case where everything got hidden.
+      // Reachable from any still-visible feature; the track menu carries the
+      // same item under "Edit filters" for the case where everything in view
+      // got hidden and there is no feature left to right-click.
       ...showHiddenFeaturesMenuItems(self),
     ],
   }
 }
 
-// Applying a collected set is done from the "N selected" badge (see
+// Applying a collected list is done from the "N selected" badge (see
 // SoloSelectionChip), so this only ever offers:
 //  - applied → show everything again (and optionally drop this feature)
 //  - otherwise → the one-shot isolate + add/remove this feature
+//
+// One noun throughout — "show-only list" — so these rows and the chip's tooltip
+// name the same thing. It used to go by "set" in the add/remove rows and "view"
+// in the applied one, which read as two unrelated features.
 function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
-  const inSoloSet = self.soloFeatureIdSet.has(featureId)
-  const removeFromSet = {
-    label: 'Remove from set',
+  const inSoloList = self.soloFeatureIdSet.has(featureId)
+  const removeFromList = {
+    label: 'Remove from show-only list',
     icon: PlaylistRemoveIcon,
     onClick: () => {
       self.toggleSoloFeature(featureId)
@@ -348,17 +353,15 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
   return self.soloApplied
     ? [
         {
-          label: 'Show all features',
+          label: 'Show all features again',
           icon: FilterAltOffIcon,
           onClick: () => {
             self.clearSolo()
           },
         },
         // Removing the only remaining feature would empty the view, which
-        // "Show all features" above already covers.
-        ...(inSoloSet && self.soloFeatureIds.length > 1
-          ? [{ ...removeFromSet, label: 'Remove this feature from view' }]
-          : []),
+        // "Show all features again" above already covers.
+        ...(inSoloList && self.soloFeatureCount > 1 ? [removeFromList] : []),
       ]
     : [
         {
@@ -368,10 +371,10 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
             self.soloFeature(featureId)
           },
         },
-        inSoloSet
-          ? removeFromSet
+        inSoloList
+          ? removeFromList
           : {
-              label: 'Add to set',
+              label: 'Add to show-only list',
               icon: PlaylistAddIcon,
               onClick: () => {
                 self.toggleSoloFeature(featureId)
@@ -447,9 +450,11 @@ function copyJsonItem(
 }
 
 // Up to four copy entries would clutter the top level as plain "Copy …" items,
-// so they're grouped under one submenu — unless only one applies (the label
-// layer resolves no base and only the feature's own tooltip), where a submenu
-// holding a single item is pure indirection. Every label says "Copy", so an
+// so they're grouped under one submenu — unless only one applies, where a
+// submenu holding a single item is pure indirection. That happens for a
+// nameless feature clicked away from a transcript (no HGVS position, no
+// tooltip rows, no subfeature); the label layer always has a tooltip, since a
+// rendered label means the feature had a name. Every label says "Copy", so an
 // item reads the same either way.
 function copyItems(ctx: MenuContext): MenuItem[] {
   const { self, info } = ctx

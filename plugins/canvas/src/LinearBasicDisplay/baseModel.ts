@@ -682,9 +682,15 @@ export default function baseStateModelFactory(
         /**
          * #method
          * Whether anything is currently narrowing what the display shows, so the
-         * track menu can offer "Clear filters" (and only then). Paired with
+         * track menu can offer "Clear all filters" (and only then). Paired with
          * `clearAllFeatureFilters`: every filter counted here must be reset
          * there, or the menu offers a recovery that doesn't fully recover.
+         *
+         * `soloApplied`, not `soloFeatureIds.length` — while the user is still
+         * collecting (ctrl+click, the right-click "Add to show-only list") the
+         * set only draws boxes and nothing is filtered yet, so counting it made
+         * the track menu offer to clear filters that weren't in effect. The
+         * SoloSelectionChip's × is the recovery for an unapplied collection.
          *
          * A method rather than a getter so a subclass can super-capture and OR in
          * its own filters (LinearBasicDisplay's "Show only genes"), the same
@@ -693,7 +699,7 @@ export default function baseStateModelFactory(
         hasFeatureFilters(): boolean {
           return (
             self.jexlFiltersSetting !== undefined ||
-            self.soloFeatureIds.length > 0 ||
+            self.soloApplied ||
             self.hiddenFeatureIds.length > 0
           )
         },
@@ -809,6 +815,38 @@ export default function baseStateModelFactory(
         // the overlay highlight and the context-menu toggle labels.
         get soloFeatureIdSet(): ReadonlySet<string> {
           return new Set(self.soloFeatureIds)
+        },
+
+        /**
+         * #getter
+         */
+        // How many features the user has hidden one at a time, for the
+        // "Show N hidden features" recovery item. The menu builders read this
+        // rather than the array, so their structural `self` types ask for a
+        // number instead of an observable they'd only call `.length` on.
+        get hiddenFeatureCount() {
+          return self.hiddenFeatureIds.length
+        },
+
+        /**
+         * #getter
+         */
+        // Size of the show-only list, whether or not it has been applied.
+        // `soloFeatureIdSet.size` would answer the same question, but that
+        // getter allocates a Set for membership tests the count doesn't need.
+        get soloFeatureCount() {
+          return self.soloFeatureIds.length
+        },
+
+        /**
+         * #getter
+         */
+        // How many highlight boxes are drawn, for the "Clear N highlights"
+        // recovery item. Counts the specs, not the resolved boxes: a highlight
+        // the user has panned away from resolves to nothing but is exactly the
+        // one the track-level clear exists to reach.
+        get featureHighlightCount() {
+          return self.featureHighlights.length
         },
 
         /**

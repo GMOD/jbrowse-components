@@ -1,6 +1,5 @@
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui'
-import AspectRatioIcon from '@mui/icons-material/AspectRatio'
 
 import { getHeightModeOptions } from './heightMode.ts'
 
@@ -22,6 +21,11 @@ export type HeightModeMenuModel = PromotableDisplay & {
 // the whole builder — not just the labels — makes the canvas and alignments
 // menus identical by construction rather than by two call sites that happen to
 // agree. `noun` is the singular of what the track holds ('feature', 'read').
+//
+// Callers render these under a "Track sizing" subHeader inside the per-feature
+// size menu ("Feature height" / "Read height"), so one menu holds both halves
+// of the diametric split: the size radios are how tall each feature is drawn,
+// these are how the TRACK responds to more content than fits.
 export function heightModeMenuItems(
   model: HeightModeMenuModel,
   noun: string,
@@ -30,6 +34,10 @@ export function heightModeMenuItems(
     promotableRadioItem({
       label: option.label,
       checked: model.heightMode === option.value,
+      // Like every other radio that only writes a setting. These render
+      // directly below the size presets, which already keep the menu open, so
+      // dismissing here made one submenu behave two ways.
+      keepMenuOpen: true,
       onClick: () => {
         model.setHeightMode(option.value)
       },
@@ -40,24 +48,4 @@ export function heightModeMenuItems(
       ),
     }),
   )
-}
-
-// The whole "Track sizing" submenu entry, so the canvas and alignments track
-// menus render an identical item (label, icon, radios) by construction. It sits
-// as a SIBLING of the per-feature "Read height" / "Feature height" size menu —
-// the two halves of the diametric split: this entry is how the TRACK responds
-// to more content than fits (fixed / autogrow / fit-to-display), the size menu
-// is how tall each feature is drawn.
-export function getTrackSizingMenuItem(
-  model: HeightModeMenuModel,
-  noun: string,
-  opts?: { disabled?: boolean; disabledHelpText?: string },
-): MenuItem {
-  return {
-    label: 'Track sizing',
-    icon: AspectRatioIcon,
-    disabled: opts?.disabled,
-    disabledHelpText: opts?.disabledHelpText,
-    subMenu: heightModeMenuItems(model, noun),
-  }
 }

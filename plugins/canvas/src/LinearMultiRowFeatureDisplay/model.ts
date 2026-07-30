@@ -27,6 +27,7 @@ import {
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
@@ -930,10 +931,13 @@ export default function stateModelFactory(
                 },
               ]
             : []),
+          // Same label and icon as the track menu's entry — one action,
+          // reachable from two places, so it must not read as two.
           ...(self.layout.length
             ? [
                 {
-                  label: 'Clear row sort',
+                  label: 'Reset row order',
+                  icon: RestartAltIcon,
                   onClick: () => {
                     self.clearLayout()
                   },

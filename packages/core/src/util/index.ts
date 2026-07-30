@@ -400,6 +400,16 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
+// Regular-plural noun for a count, for the "N hidden features" / "Clear N
+// highlights" family of labels. Takes the count rather than returning a bare
+// suffix so the call site reads as the sentence it produces, and so `0` pairs
+// with the plural ("0 features") the way English does — the hand-written
+// `n > 1 ? 's' : ''` scattered around got that right only because every one of
+// those labels was already gated on n > 0.
+export function pluralize(count: number, noun: string) {
+  return count === 1 ? noun : `${noun}s`
+}
+
 // heuristic measurement for a column of a @mui/x-data-grid, pass in
 // values from a column
 export function measureGridWidth(

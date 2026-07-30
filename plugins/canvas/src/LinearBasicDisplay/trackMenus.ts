@@ -1,8 +1,8 @@
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
-import { promotableRadioItem } from '@jbrowse/core/ui'
+import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import HeightIcon from '@mui/icons-material/Height'
@@ -35,6 +35,10 @@ export const STRAND_COLOR_JEXL =
 // passed in at the call site, so a drifted field fails to typecheck there.
 interface ShowSubmenuSelf {
   showDescriptions: boolean
+  // What the render actually does with showDescriptions: collapsed mode and the
+  // auto-labels density gate both suppress them. Read here so the checkbox can
+  // say why it looks inert — see showSubmenuCheckboxItems.
+  effectiveShowDescriptions: boolean
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
   setShowDescriptions: (value: boolean) => void
@@ -55,8 +59,8 @@ interface FeatureHeightSelf extends IAnyStateTreeNode, HeightModeMenuModel {
 }
 
 interface TrackMenuSelf {
-  hiddenFeatureIds: { length: number }
-  featureHighlights: { length: number }
+  hiddenFeatureCount: number
+  featureHighlightCount: number
   // the model's own answer (subclasses OR in their filters), not recomputed
   // here from its parts — see hasFeatureFilters on the canvas base
   hasFeatureFilters: () => boolean
@@ -74,16 +78,16 @@ interface TrackMenuSelf {
 // the navigation that created it (a text-search highlight is only ever replaced
 // by the next search) — so without this a highlight the user has panned away
 // from is unreachable. Empty when nothing is highlighted, matching the
-// "Show N hidden features" / "Clear filters" shape.
+// "Show N hidden features" / "Clear all filters" shape.
 function clearHighlightsMenuItems(self: {
-  featureHighlights: { length: number }
+  featureHighlightCount: number
   clearFeatureHighlights: () => void
-}) {
-  const n = self.featureHighlights.length
+}): MenuItem[] {
+  const n = self.featureHighlightCount
   return n > 0
     ? [
         {
-          label: `Clear ${n} highlight${n > 1 ? 's' : ''}`,
+          label: `Clear ${n} ${pluralize(n, 'highlight')}`,
           icon: Highlighter,
           onClick: () => {
             self.clearFeatureHighlights()
@@ -99,24 +103,23 @@ function clearHighlightsMenuItems(self: {
 // checkboxes-then-radios rather than an interleaved mix.
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
-    {
-      label: 'Show descriptions',
-      type: 'checkbox' as const,
-      checked: self.showDescriptions,
-      keepMenuOpen: true,
-      onClick: () => {
+    checkboxItem(
+      'Show descriptions',
+      self.showDescriptions,
+      () => {
         self.setShowDescriptions(!self.showDescriptions)
       },
-    },
-    {
-      label: 'Show outline',
-      type: 'checkbox' as const,
-      checked: self.showOutline,
-      keepMenuOpen: true,
-      onClick: () => {
-        self.setShowOutline(!self.showOutline)
-      },
-    },
+      // Ticked-but-inert is the confusing state: collapsed mode drops every
+      // label, and the auto-labels density gate takes descriptions down with
+      // the names. Say so rather than disabling the row — the setting is still
+      // meaningful, it just isn't reaching the canvas at this zoom/mode.
+      self.showDescriptions && !self.effectiveShowDescriptions
+        ? { subLabel: 'Hidden by the current label settings' }
+        : undefined,
+    ),
+    checkboxItem('Show outline', self.showOutline, () => {
+      self.setShowOutline(!self.showOutline)
+    }),
   ]
 }
 
@@ -212,7 +215,6 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
 // calling the builders above directly, so a subclass's override of any of them
 // lands here.
 export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
-  const hasFeatureFilters = self.hasFeatureFilters()
   return [
     {
       label: 'Show...',
@@ -222,35 +224,49 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
     ...self.featureHeightMenuItems(),
     ...self.colorMenuItems(),
     ...clearHighlightsMenuItems(self),
-    {
-      label: 'Edit filters',
-      icon: FilterAltIcon,
-      subMenu: [
-        {
-          label: 'Filter by...',
-          icon: ClearAllIcon,
-          onClick: () => {
-            self.openFilterDialog()
-          },
-        },
-        // Track-level unhide: the per-feature "Show N hidden" item is
-        // only reachable from a still-visible feature's menu, so this is
-        // the sole recovery once every feature in view is hidden.
-        ...showHiddenFeaturesMenuItems(self),
-        ...(hasFeatureFilters
-          ? [
-              {
-                label: 'Clear filters',
-                icon: FilterAltOffIcon,
-                onClick: () => {
-                  self.clearAllFeatureFilters()
-                },
-              },
-            ]
-          : []),
-      ],
-    },
+    ...filterMenuItems(self),
   ]
+}
+
+// The filter family. On an unfiltered track this is the single "Filter by..."
+// dialog opener, so it sits at the top level — an "Edit filters" submenu
+// wrapping one row is pure indirection (same rule copyItems applies to itself).
+// Once something is narrowing the view the recovery items join it and the group
+// earns its submenu.
+function filterMenuItems(self: TrackMenuSelf): MenuItem[] {
+  const filterBy = {
+    label: 'Filter by...',
+    icon: FilterAltIcon,
+    onClick: () => {
+      self.openFilterDialog()
+    },
+  }
+  const recovery = [
+    // Track-level unhide: the per-feature "Show N hidden" item is only
+    // reachable from a still-visible feature's menu, so this is the sole
+    // recovery once every feature in view is hidden.
+    ...showHiddenFeaturesMenuItems(self),
+    ...(self.hasFeatureFilters()
+      ? [
+          {
+            label: 'Clear all filters',
+            icon: FilterAltOffIcon,
+            onClick: () => {
+              self.clearAllFeatureFilters()
+            },
+          },
+        ]
+      : []),
+  ]
+  return recovery.length
+    ? [
+        {
+          label: 'Edit filters',
+          icon: FilterAltIcon,
+          subMenu: [filterBy, ...recovery],
+        },
+      ]
+    : [filterBy]
 }
 
 // The color-related track-menu entry: a single "Color by..." whose "Solid

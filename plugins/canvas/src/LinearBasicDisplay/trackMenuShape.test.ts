@@ -1,0 +1,126 @@
+import { createTestEnvironment } from './testEnv.ts'
+
+import type { MenuItem } from '@jbrowse/core/ui'
+
+// The shape of the canvas track menu, as opposed to what its items do. Three
+// things regressed silently before this existed: a radio group that dismissed
+// the whole menu, a filter submenu wrapping one row, and a "Clear all filters"
+// offered while nothing was filtered.
+
+function labelOf(item: MenuItem) {
+  return 'label' in item ? item.label : undefined
+}
+
+function find(items: MenuItem[], label: string) {
+  const item = items.find(i => labelOf(i) === label)
+  if (item) {
+    return item
+  } else {
+    throw new Error(
+      `"${label}" not found in [${items.map(labelOf).join(', ')}]`,
+    )
+  }
+}
+
+function subMenuOf(items: MenuItem[], label: string) {
+  const item = find(items, label)
+  if ('subMenu' in item) {
+    return item.subMenu
+  } else {
+    throw new Error(`"${label}" has no submenu`)
+  }
+}
+
+describe('canvas track menu shape', () => {
+  it('keeps the menu open for every radio and checkbox that only writes a setting', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const items: MenuItem[] = display.trackMenuItems()
+
+    // Gene glyph used to be built by a hand-rolled radio helper that omitted
+    // keepMenuOpen, so picking a mode dismissed the track menu while its
+    // sibling groups (Feature labels, Feature height, ...) stayed put.
+    for (const group of [
+      subMenuOf(items, 'Gene glyph'),
+      subMenuOf(items, 'Show...'),
+      subMenuOf(items, 'Feature height'),
+    ]) {
+      for (const item of group) {
+        if (item.type === 'radio' || item.type === 'checkbox') {
+          expect([labelOf(item), item.keepMenuOpen]).toEqual([
+            labelOf(item),
+            true,
+          ])
+        }
+      }
+    }
+  })
+
+  it('offers Filter by... at the top level until a recovery item joins it', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    // nothing narrowing the view: one row, no submenu to hover into
+    const items: MenuItem[] = display.trackMenuItems()
+    expect(labelOf(find(items, 'Filter by...'))).toBe('Filter by...')
+    expect(items.some(i => labelOf(i) === 'Edit filters')).toBe(false)
+
+    // hiding a feature adds the unhide recovery, so the group earns a submenu
+    display.hideFeature('gene1')
+    const filtering = subMenuOf(display.trackMenuItems(), 'Edit filters')
+    expect(filtering.map(labelOf)).toEqual([
+      'Filter by...',
+      'Show 1 hidden feature',
+      'Clear all filters',
+    ])
+  })
+
+  it('does not offer to clear filters for a show-only list that is still being collected', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    // ctrl+clicking features collects them; the chip draws boxes and nothing
+    // is filtered yet, so the track menu must not claim there are filters
+    display.toggleSoloFeature('gene1')
+    display.toggleSoloFeature('gene2')
+    expect(display.hasFeatureFilters()).toBe(false)
+    const collecting: MenuItem[] = display.trackMenuItems()
+    expect(collecting.some(i => labelOf(i) === 'Edit filters')).toBe(false)
+
+    // applying it is what filters, and what earns the recovery
+    display.applySolo()
+    expect(display.hasFeatureFilters()).toBe(true)
+    expect(
+      subMenuOf(display.trackMenuItems(), 'Edit filters').map(labelOf),
+    ).toContain('Clear all filters')
+
+    display.clearAllFeatureFilters()
+    expect(display.hasFeatureFilters()).toBe(false)
+  })
+
+  it('says so when Show descriptions is ticked but the render is suppressing it', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setShowLabels('on')
+    display.setShowDescriptions(true)
+
+    const enabled = find(
+      subMenuOf(display.trackMenuItems(), 'Show...'),
+      'Show descriptions',
+    )
+    expect(enabled.type === 'checkbox' && enabled.checked).toBe(true)
+    expect('subLabel' in enabled ? enabled.subLabel : undefined).toBeUndefined()
+
+    // collapsed drops every label kind, but the setting is deliberately left
+    // alone — without the subLabel the row reads as a ticked box doing nothing
+    display.setDisplayMode('collapsed')
+    const inert = find(
+      subMenuOf(display.trackMenuItems(), 'Show...'),
+      'Show descriptions',
+    )
+    expect(inert.type === 'checkbox' && inert.checked).toBe(true)
+    expect('subLabel' in inert ? inert.subLabel : undefined).toBe(
+      'Hidden by the current label settings',
+    )
+  })
+})

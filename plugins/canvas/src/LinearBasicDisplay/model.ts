@@ -8,7 +8,12 @@ import {
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
+import {
+  checkboxItem,
+  promotableRadioItem,
+  promotableToggleItem,
+  radioItems,
+} from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -17,7 +22,6 @@ import SegmentIcon from '@mui/icons-material/Segment'
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
-import { radioSubMenu } from './baseModelHelpers.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -230,15 +234,9 @@ export default function stateModelFactory(
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
-            {
-              label: 'Show only genes',
-              type: 'checkbox' as const,
-              checked: self.showOnlyGenes,
-              keepMenuOpen: true,
-              onClick: () => {
-                self.setShowOnlyGenes(!self.showOnlyGenes)
-              },
-            },
+            checkboxItem('Show only genes', self.showOnlyGenes, () => {
+              self.setShowOnlyGenes(!self.showOnlyGenes)
+            }),
             promotableToggleItem({
               label: 'Show chevrons',
               checked: self.displayDirectionalChevrons,
@@ -283,11 +281,11 @@ export default function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Gene glyph',
               icon: SegmentIcon,
-              ...radioSubMenu(
-                'Gene glyph',
-                self.geneGlyphMode,
+              subMenu: radioItems(
                 GENE_GLYPH_MODE_OPTIONS,
+                self.geneGlyphMode,
                 value => {
                   self.setGeneGlyphMode(value)
                 },
