@@ -239,7 +239,6 @@ function modificationsMenu(
         label: 'One color per modification type',
         helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
         checked: model.colorBy.type === 'modifications' && !byTwoColor,
-        keepMenuOpen: true,
         onClick: () => {
           patchMods(model, clearView)
         },
@@ -250,7 +249,6 @@ function modificationsMenu(
         helpText:
           'Everything the by-type view does, plus it paints the not-modified side blue instead of leaving it blank: modified sites keep their per-type colors, while low-probability and unmodified sites turn blue. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
         checked: byTwoColor,
-        keepMenuOpen: true,
         onClick: () => {
           patchMods(model, { ...clearView, ...twoColorView })
         },
@@ -398,7 +396,6 @@ function colorRadio(
   return promotableRadioItem({
     label,
     checked: model.colorBy.type === type,
-    keepMenuOpen: true,
     onClick: () => {
       model.setColorScheme({ type })
     },
@@ -432,6 +429,10 @@ function tagSection(
         promotableRadioItem({
           label: active ? `Tag (${colorBy.tag})...` : 'Tag...',
           checked: colorBy.type === 'tag',
+          // the only promotable row whose click opens a dialog rather than
+          // writing a value, so it dismisses the menu instead of the builder's
+          // default of staying open
+          keepMenuOpen: false,
           onClick: () => {
             getSession(model).queueDialog((onClose: () => void) => [
               ColorByTagDialog,

@@ -141,6 +141,26 @@ describe('color by menu', () => {
     expect(labels(model)).toEqual(['Tag (HP)...'])
   })
 
+  // promotableRadioItem defaults keepMenuOpen to true, which is right for every
+  // row that just writes a scheme — users try several, and the menu is an
+  // observer so the ticks move live. The tag row is the one exception: its click
+  // opens a dialog, so it has to opt out or the dialog appears behind a menu the
+  // user then has to dismiss.
+  test('scheme rows stay open, the tag row (a dialog) dismisses', () => {
+    const model = makeModel()
+    const rows = allItems(model, { includeTagOption: true }).filter(
+      i => 'checked' in i,
+    )
+    expect(rows.length).toBeGreaterThan(1)
+    for (const row of rows) {
+      const label = 'label' in row ? String(row.label) : ''
+      expect([label, row.keepMenuOpen]).toEqual([
+        label,
+        !label.startsWith('Tag'),
+      ])
+    }
+  })
+
   test('the tag pin promotes the tag actually in use', () => {
     const model = makeModel()
     model.colorBy = { type: 'tag', tag: 'HP' }

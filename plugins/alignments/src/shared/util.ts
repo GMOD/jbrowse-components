@@ -28,11 +28,6 @@ export function getMappingQuality(feature: Feature) {
   return mappingQual ?? 255
 }
 
-// Get `key`'s entry, lazily creating + inserting it on first miss. The shared
-// shape of every "accumulate into a Map of arrays / nested Maps" pass. (The TC39
-// `Map.prototype.getOrInsertComputed` upsert proposal would fold this into one
-// lookup, but it isn't in shipping runtimes yet and the second lookup is noise
-// next to the per-read work — swap it in here once it lands, if ever.)
 // Element-wise equality for two id lists, so a setter can skip rewriting an MST
 // array with the same contents (a rewrite replaces the node and invalidates
 // everything computed from it, which primitive props get for free).
@@ -40,6 +35,11 @@ export function sameStrings(a: readonly string[], b: readonly string[]) {
   return a.length === b.length && a.every((s, i) => s === b[i])
 }
 
+// Get `key`'s entry, lazily creating + inserting it on first miss. The shared
+// shape of every "accumulate into a Map of arrays / nested Maps" pass. (The TC39
+// `Map.prototype.getOrInsertComputed` upsert proposal would fold this into one
+// lookup, but it isn't in shipping runtimes yet and the second lookup is noise
+// next to the per-read work — swap it in here once it lands, if ever.)
 export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V): V {
   let value = map.get(key)
   if (value === undefined) {

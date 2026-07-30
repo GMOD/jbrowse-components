@@ -30,9 +30,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *       type: 'LinearArcDisplay',
  *       displayId: 'interactions-LinearArcDisplay',
  *       displayMode: 'semicircles',
- *       color: "jexl:get(feature,'strand')==-1?'red':'blue'",
+ *       color: "jexl:feature.strand==-1?'red':'blue'",
  *       arcHeight: 80,
- *       label: "jexl:get(feature,'name')",
+ *       label: "jexl:feature.name",
  *     },
  *   ],
  * }

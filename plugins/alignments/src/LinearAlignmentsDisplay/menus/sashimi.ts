@@ -54,7 +54,6 @@ export function getSashimiMenuItem(model: SashimiModel) {
               model.setShowSashimiLabels(!model.showSashimiLabels)
             },
             displayTypeDefault: model.showSashimiLabelsDisplayTypeDefault,
-            keepMenuOpen: true,
           }),
           {
             label: 'Arc placement',
@@ -63,7 +62,6 @@ export function getSashimiMenuItem(model: SashimiModel) {
               promotableRadioItem({
                 label: option.label,
                 checked: model.sashimiArcsMode === option.value,
-                keepMenuOpen: true,
                 onClick: () => {
                   model.setSashimiArcsMode(option.value)
                 },

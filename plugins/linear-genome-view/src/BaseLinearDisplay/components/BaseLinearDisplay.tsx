@@ -66,5 +66,4 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
 
 export default BaseLinearDisplay
 
-export { default as Tooltip } from './Tooltip.tsx'
 export { default as BlockMsg } from '../../shared/BlockMsg.tsx'

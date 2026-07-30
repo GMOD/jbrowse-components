@@ -37,7 +37,6 @@ export function heightModeMenuItems(
       // Like every other radio that only writes a setting. These render
       // directly below the size presets, which already keep the menu open, so
       // dismissing here made one submenu behave two ways.
-      keepMenuOpen: true,
       onClick: () => {
         model.setHeightMode(option.value)
       },

@@ -7,18 +7,12 @@ import {
 } from '@jbrowse/alignments-core'
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getConf } from '@jbrowse/core/configuration'
-import { Dialog, ErrorMessage, NumberTextField } from '@jbrowse/core/ui'
+import { ErrorMessage, NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import {
-  Button,
-  CircularProgress,
-  DialogActions,
-  DialogContent,
-  Typography,
-} from '@mui/material'
+import { CircularProgress, Typography } from '@mui/material'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
@@ -133,57 +127,52 @@ export default function ReadVsRefDialog({
   }
 
   return (
-    <Dialog open onClose={handleClose} title="Set window size">
-      <DialogContent>
-        {error ? (
-          <ErrorMessage error={error} />
-        ) : !primaryFeature ? (
-          <div>
-            <Typography>
-              To accurately perform comparison we are fetching the primary
-              alignment. Loading primary feature...
+    <SubmitDialog
+      open
+      title="Set window size"
+      submitDisabled={!primaryFeature || windowSize === undefined}
+      onCancel={() => {
+        handleClose()
+      }}
+      onSubmit={() => {
+        void onSubmit()
+      }}
+    >
+      {error ? (
+        <ErrorMessage error={error} />
+      ) : !primaryFeature ? (
+        <div>
+          <Typography>
+            To accurately perform comparison we are fetching the primary
+            alignment. Loading primary feature...
+          </Typography>
+          <CircularProgress />
+        </div>
+      ) : (
+        <div className={classes.root}>
+          {(primaryFeature.get('flags') as number) & SAM_FLAG_SECONDARY ? (
+            <Typography style={{ color: 'orange' }}>
+              Note: You selected a secondary alignment (which generally does
+              not have SA tags or SEQ fields) so do a full reconstruction of
+              the alignment
             </Typography>
-            <CircularProgress />
-          </div>
-        ) : (
-          <div className={classes.root}>
-            {(primaryFeature.get('flags') as number) & SAM_FLAG_SECONDARY ? (
-              <Typography style={{ color: 'orange' }}>
-                Note: You selected a secondary alignment (which generally does
-                not have SA tags or SEQ fields) so do a full reconstruction of
-                the alignment
-              </Typography>
-            ) : null}
-            <Typography>
-              Show an extra window size around each part of the split alignment.
-              Using a larger value can allow you to see more genomic context.
-            </Typography>
+          ) : null}
+          <Typography>
+            Show an extra window size around each part of the split alignment.
+            Using a larger value can allow you to see more genomic context.
+          </Typography>
 
-            <NumberTextField
-              defaultValue={0}
-              min={0}
-              onValueChange={setWindowSize}
-              label="Set window size"
-              errorText="Must be a non-negative number"
-            />
-          </div>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button variant="contained" color="secondary" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button
-          disabled={!primaryFeature || windowSize === undefined}
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            void onSubmit()
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <NumberTextField
+            defaultValue={0}
+            min={0}
+            onValueChange={val => {
+              setWindowSize(val)
+            }}
+            label="Set window size"
+            errorText="Must be a non-negative number"
+          />
+        </div>
+      )}
+    </SubmitDialog>
   )
 }

@@ -1206,7 +1206,7 @@ describe('regionKeys/reversedRegions derive from rpcDataMap', () => {
 
 // The SettingsInvalidate cache key is what rpcProps() *returns*, not what it
 // reads. rpcProps builds its payload from a whole config snapshot
-// (resolvePromotableConfigSnapshot), which touches every slot on the display
+// (getConfigSnapshotWithPromotables), which touches every slot on the display
 // config — so a read-tracked invalidation refetched the track whenever a purely
 // main-thread setting changed, despite those slots being deliberately excluded
 // from the payload.

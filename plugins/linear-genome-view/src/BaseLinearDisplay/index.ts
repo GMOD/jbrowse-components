@@ -4,7 +4,6 @@ export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 export {
   BlockMsg,
   DisplayContainer,
-  Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
 export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'

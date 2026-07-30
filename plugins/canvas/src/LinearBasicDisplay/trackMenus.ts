@@ -195,7 +195,6 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
           promotableRadioItem({
             label: option.label,
             checked: self.displayMode === option.value,
-            keepMenuOpen: true,
             onClick: () => {
               self.setDisplayMode(option.value)
             },

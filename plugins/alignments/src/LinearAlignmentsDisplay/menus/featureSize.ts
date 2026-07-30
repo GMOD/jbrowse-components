@@ -58,13 +58,13 @@ export function getFeatureHeightMenuItem(
     disabledHelpText: opts?.disabledHelpText,
     subMenu: [
       // Size presets: each writes its exact height (preserving grow, dropping fit
-      // back to fixed); the pin promotes that height as the session default.
-      // keepMenuOpen so size + mode can be set in one open menu.
+      // back to fixed); the pin promotes that height as the session default. The
+      // rows stay open (promotableRadioItem's default) so size + mode can both be
+      // set in one visit.
       ...Object.values(COMPACTNESS_PRESETS).map(preset =>
         promotableRadioItem({
           label: preset.label,
           checked: sizeActive && matchesPreset(preset),
-          keepMenuOpen: true,
           onClick: () => {
             model.setFeatureHeight(preset.featureHeight)
           },
@@ -101,7 +101,6 @@ export function getFeatureHeightMenuItem(
         promotableRadioItem({
           label: option.label,
           checked: mode === option.value,
-          keepMenuOpen: true,
           onClick: () => {
             model.setHeightMode(option.value)
           },

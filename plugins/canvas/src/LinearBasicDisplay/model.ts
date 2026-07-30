@@ -165,7 +165,7 @@ export default function stateModelFactory(
               // effectiveGeneGlyphMode is a zoom-dependent transform (not a plain
               // promotable resolve), so it's substituted here; the promotable
               // slots (chevrons, subfeatureLabels) are already resolved by the
-              // base rpcProps via resolvePromotableConfigSnapshot.
+              // base rpcProps via getConfigSnapshotWithPromotables.
               geneGlyphMode: self.effectiveGeneGlyphMode,
             },
             showOnlyGenes: self.showOnlyGenes,
@@ -240,7 +240,6 @@ export default function stateModelFactory(
             promotableToggleItem({
               label: 'Show chevrons',
               checked: self.displayDirectionalChevrons,
-              keepMenuOpen: true,
               onToggle: () => {
                 self.setDisplayDirectionalChevrons(
                   !self.displayDirectionalChevrons,
@@ -263,7 +262,6 @@ export default function stateModelFactory(
               promotableRadioItem({
                 label: option.label,
                 checked: self.subfeatureLabels === option.value,
-                keepMenuOpen: true,
                 onClick: () => {
                   self.setSubfeatureLabels(option.value)
                 },

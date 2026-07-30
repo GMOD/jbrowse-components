@@ -38,7 +38,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```json
  * {
  *   "type": "LinearBasicDisplay",
- *   "color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"
+ *   "color": "jexl:feature.type=='gene'?'blue':'gray'"
  * }
  * ```
  *

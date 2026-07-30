@@ -85,7 +85,6 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setMismatchAlpha(!model.mismatchAlpha)
         },
         displayTypeDefault: model.mismatchAlphaDisplayTypeDefault,
-        keepMenuOpen: true,
       }),
       promotableToggleItem({
         label: 'Show soft clipping',
@@ -94,7 +93,6 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setShowSoftClipping(!model.showSoftClipping)
         },
         displayTypeDefault: model.softClippingDisplayTypeDefault,
-        keepMenuOpen: true,
       }),
       checkboxItem(
         'Show interbase indicators',

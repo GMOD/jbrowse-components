@@ -156,13 +156,16 @@ test('a large insertion labels itself with the bp count', () => {
   expect(draw(region).texts).toEqual([{ text: '113174', x: 105, y: 10 }])
 })
 
+// The label is the magnitude: a signed one reads as a length that went negative,
+// which is what docs review took "-9048" for on the pangenome path figures. The
+// grey line and the legend already carry the direction.
 test('a deletion draws a line across the reference span it removes', () => {
   const region = { ...wide, featureDeltas: Int32Array.from([0, -3217]) }
   const { calls, texts } = draw(region)
   // feature 1 spans x 500-600 on row 1 (y 20-40), so the line sits at its
   // vertical middle
   expect(calls).toEqual([{ x: 500, y: 29, w: 100, h: 2, fillStyle: '#333' }])
-  expect(texts).toEqual([{ text: '-3217', x: 550, y: 25 }])
+  expect(texts).toEqual([{ text: '3217', x: 550, y: 25 }])
 })
 
 test('a deletion narrower than the label threshold draws the line only', () => {

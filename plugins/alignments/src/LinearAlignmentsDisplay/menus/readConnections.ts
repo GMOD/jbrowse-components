@@ -44,7 +44,6 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
         model.setLinkedReads(linked ? 'off' : 'normal')
       },
       displayTypeDefault: model.pairsDisplayTypeDefault,
-      keepMenuOpen: true,
     }),
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
@@ -60,7 +59,6 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
         )
       },
       displayTypeDefault: model.arcsDisplayTypeDefault,
-      keepMenuOpen: true,
     }),
     promotableToggleItem({
       label: 'Show read cloud',
@@ -71,7 +69,6 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
         )
       },
       displayTypeDefault: model.readCloudDisplayTypeDefault,
-      keepMenuOpen: true,
     }),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
@@ -98,7 +95,6 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
             model.setReadConnectionsDown(!model.readConnectionsDown)
           },
           displayTypeDefault: model.readConnectionsDownDisplayTypeDefault,
-          keepMenuOpen: true,
         }),
         checkboxItem(
           'Show off-screen mate connections',

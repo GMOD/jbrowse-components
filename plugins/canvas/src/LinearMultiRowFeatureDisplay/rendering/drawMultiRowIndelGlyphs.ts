@@ -153,7 +153,14 @@ export function drawMultiRowIndelGlyphs(
             )
             if (labelFits && width >= 30) {
               ctx.textAlign = 'center'
-              ctx.fillText(String(delta), left + width / 2, yMid - h / 4)
+              // The MAGNITUDE, not the signed delta. `delta` is negative here by
+              // definition, and a bare "-9048" beside a graph reads as a
+              // sequence length that went negative -- docs review hit exactly
+              // that on the pangenome path figures. The glyph and the legend
+              // already say which direction this is, and the alignments deletion
+              // label this borrows its idiom from prints a positive gap length
+              // too (computeVisibleLabels).
+              ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
             }
           }
         }
