@@ -97,12 +97,19 @@ const turnedOffSchema = ConfigurationSchema(
   { baseConfiguration: promotableSchema },
 )
 
+// `resolveConf` asks for the display node the cascade reads (type + config +
+// the received-session opt-out), so these model that rather than a bare config
+// holder. Type-only fixtures — never `.create()`d.
 const PromotableContainer = types.model('ConfigNarrowingPromotableContainer', {
+  type: types.string,
   configuration: ConfigurationReference(promotableSchema),
+  ignorePromotedDefaults: types.boolean,
 })
 
 const TurnedOffContainer = types.model('ConfigNarrowingTurnedOffContainer', {
+  type: types.string,
   configuration: ConfigurationReference(turnedOffSchema),
+  ignorePromotedDefaults: types.boolean,
 })
 
 describe('getConf slot-value type narrowing', () => {

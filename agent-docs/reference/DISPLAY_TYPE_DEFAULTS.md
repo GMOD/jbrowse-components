@@ -51,7 +51,7 @@ read one section, read [The cascade](#the-cascade).
 
 | Concern | File |
 | --- | --- |
-| Read-time resolver (`resolveSlot`, `isUsableValue`) | `packages/core/src/configuration/promotableResolve.ts` |
+| Read-time resolver (`resolveSlot`, `isUsableValue`) + the `ResolvableDisplay` / `PromotableDisplay` shapes | `packages/core/src/configuration/promotableResolve.ts` |
 | Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
 | Control builders + share/worker helpers (`make*Control`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
@@ -204,6 +204,29 @@ function resolveSlot(self, slot): SlotResolution {
 
 There is deliberately **no callback case** — see [No callbacks](#no-callbacks-jexl).
 
+### What a display has to be
+
+Two shapes, split by read vs write:
+
+- **`ResolvableDisplay`** — `IAnyStateTreeNode` + `type` + `configuration` +
+  `ignorePromotedDefaults`. Everything the cascade needs to *read* a slot, and
+  what **every public entry point takes**: `resolveConf`, both `make*Control`
+  builders, `isSlotCustomized`, `getConfigSnapshotWithPromotables`,
+  `getDisplayTypeDefaultChanges`, `clearPromotedDefaults`.
+- **`PromotableDisplay`** — that plus `setIgnorePromotedDefaults`. Needed only
+  where a display is *collected to be reset*: `openPromotableDisplays` and the
+  chain down to `resetSlotToInherit`, the subsystem's one write to a display.
+
+Asking for the display node rather than a bare `{ configuration }` is what keeps
+`resolveConf` **cast-free** — hand it a config holder and tsc names the missing
+members instead of the read failing at runtime with
+`getDisplayTypeDefault(undefined, slot)`. Splitting off the setter is what keeps
+that affordable: a mixin or test double that only resolves a slot doesn't have to
+fake a member it never calls. An MST mixin whose own `self` is an empty model
+still casts (`confNode(self)` in `HeightModeMixin` / `WiggleScoreConfigMixin`) —
+that's the mixin not seeing props the concrete display declares, and the cast
+target names exactly what the cascade reads.
+
 `isUsableValue` is the single gate **both** tiers pass a candidate through — a
 promoted default and a track's own saved value. It composes four independent
 checks: the value is set at all (`undefined` IS the inherit sentinel), it isn't a
@@ -269,7 +292,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 
 | Symbol | Returns / does | Drives |
 | --- | --- | --- |
-| `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot | the display's own value getter |
+| `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot. Takes a `ResolvableDisplay`, so a bare `{ configuration }` is a compile error | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
 | `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
 | `makeCurrentValueDisplayTypeDefaultControl(self, slot)` | same, over the track's *current* resolved value | "promote whatever I'm showing" for symmetric / continuous settings |
@@ -628,6 +651,13 @@ every call site passed one slot, so the group form and its empty-group guard are
 gone. And the resolution used to be a **discriminated union** with a `jexl:`
 callback arm — see [No callbacks](#no-callbacks-jexl) for why that state was
 unauthorable and already degenerate.
+
+A third: the resolver used to take `PromotableDisplay` everywhere and
+`resolveConf` reached it through an `as unknown as` — so every caller owed the
+setter, and the cast meant a wrong node failed at runtime rather than at the call.
+Splitting `ResolvableDisplay` off removed the cast; the fallout was nine sites,
+all of them fakes under-modelling a real display (two type-only fixtures and one
+mixin's minimal cast target), not a design conflict.
 
 The optionality of the session store went too: `get/setDisplayTypeDefault` (with
 `setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`) are

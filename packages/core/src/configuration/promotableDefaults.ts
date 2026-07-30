@@ -8,7 +8,10 @@ import { fullConfSnapshot, promotableSlotNames } from './util.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
-import type { PromotableDisplay } from './promotableResolve.ts'
+import type {
+  PromotableDisplay,
+  ResolvableDisplay,
+} from './promotableResolve.ts'
 
 /**
  * Session-wide "promoted defaults" for display-type config slots — the UI /
@@ -29,7 +32,7 @@ import type { PromotableDisplay } from './promotableResolve.ts'
  * promoted default, so the reset control lights up on a no-op.
  */
 export function isSlotCustomized(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
 ): boolean {
   return resolveSlot(self, slot).customized
@@ -49,7 +52,7 @@ export function isSlotCustomized(
  * harmless no-op since they're dropped anyway.
  */
 export function getConfigSnapshotWithPromotables(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
 ): Record<string, unknown> {
   // the unresolved walk: this is the one place allowed to snapshot a promotable
   // config, because the loop below is what resolves every such slot
@@ -140,7 +143,7 @@ export function openPromotableDisplays(
   return views.flatMap(displaysInView)
 }
 
-function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
+function openDisplaysOfType(self: ResolvableDisplay): PromotableDisplay[] {
   return openPromotableDisplays(getSession(self)).filter(
     display => display.type === self.type,
   )
@@ -188,7 +191,7 @@ export function resetSlotToInherit(
  * promotableDefaults.test.ts); not part of the public barrel.
  */
 export function isPromotableDefault(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
   value: unknown,
 ): boolean {
@@ -202,7 +205,7 @@ export function isPromotableDefault(
  * (exercised by promotableDefaults.test.ts); not part of the public barrel.
  */
 export function tracksDifferingFrom(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
   value: unknown,
 ): PromotableDisplay[] {
@@ -229,7 +232,7 @@ export function tracksDifferingFrom(
  * track is now simply counted in "Apply to N open tracks" like any other.
  */
 function applyDefaultToggle(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
   value: unknown,
   on: boolean,
@@ -281,7 +284,7 @@ function applyDefaultToggle(
  * two toggles sharing one slot (arcs vs read cloud) stay independent.
  */
 export function makeDisplayTypeDefaultControl(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
   onValue: unknown,
 ): DisplayTypeDefaultControl {
@@ -302,7 +305,7 @@ export function makeDisplayTypeDefaultControl(
  * not a fixed on-value.
  */
 export function makeCurrentValueDisplayTypeDefaultControl(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
 ): DisplayTypeDefaultControl {
   return makeDisplayTypeDefaultControl(
@@ -319,7 +322,7 @@ export function makeCurrentValueDisplayTypeDefaultControl(
  * default. Drives the track-selector "affected by a session default" badge.
  */
 export function getDisplayTypeDefaultChanges(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
 ): TrackConfigChange[] {
   const changes: TrackConfigChange[] = []
   for (const slot of promotableSlotNames(self.configuration)) {
@@ -345,7 +348,7 @@ export function getDisplayTypeDefaultChanges(
  * Clear every promoted default for this display type, so sibling tracks revert
  * to their own config values. Backs the badge's "clear default" action.
  */
-export function clearPromotedDefaults(self: PromotableDisplay): void {
+export function clearPromotedDefaults(self: ResolvableDisplay): void {
   const session = getSession(self)
   for (const slot of promotableSlotNames(self.configuration)) {
     session.setDisplayTypeDefault(self.type, slot, undefined)

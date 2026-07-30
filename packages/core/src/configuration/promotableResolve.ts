@@ -34,7 +34,19 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * promotable slot is object-valued (`maybeFrozen`, e.g. alignments `colorBy`),
  * where a fresh MST-reconstructed value is never `===` the stored one.
  */
-export type PromotableDisplay = IAnyStateTreeNode & {
+/**
+ * Everything the cascade needs to **read** a promotable slot: the display type
+ * it keys the session-wide default on, the config holding the track's own value,
+ * and the received-session opt-out.
+ *
+ * Deliberately excludes the setter. The subsystem performs exactly one write to
+ * a display (`resetSlotToInherit` lifting the opt-out), so every read entry
+ * point — `resolveConf`, the control builders, the worker snapshot, the badge
+ * diff — asks for this narrower shape instead. That is what lets those take a
+ * display state node directly rather than through a cast: a mixin or a test
+ * double no longer has to fake a member it never uses.
+ */
+export type ResolvableDisplay = IAnyStateTreeNode & {
   type: string
   configuration: AnyConfigurationModel
   /**
@@ -43,6 +55,15 @@ export type PromotableDisplay = IAnyStateTreeNode & {
    * BaseDisplay, which every real display composes.
    */
   ignorePromotedDefaults: boolean
+}
+
+/**
+ * A `ResolvableDisplay` the subsystem may also write to. Required only where a
+ * display is *collected* to be reset — `openPromotableDisplays` and everything
+ * downstream of it — because `resetSlotToInherit` clears the opt-out when the
+ * user deliberately opts a received display back into the cascade.
+ */
+export type PromotableDisplay = ResolvableDisplay & {
   setIgnorePromotedDefaults: (flag: boolean) => void
 }
 
@@ -60,7 +81,7 @@ export type PromotableDisplay = IAnyStateTreeNode & {
  * those hold a primitive or a `types.frozen` plain object.
  */
 export function storedSlotValue(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
 ): unknown {
   return self.configuration[slot]
@@ -173,7 +194,7 @@ export interface SlotResolution {
 // public reader over it, and the control builders in `promotableDefaults.ts`
 // read a field off it.
 export function resolveSlot(
-  self: PromotableDisplay,
+  self: ResolvableDisplay,
   slot: string,
 ): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)

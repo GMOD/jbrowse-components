@@ -52,8 +52,12 @@ must stay structured-cloneable: `preferencesOverrides` is a `deep: false`
 enumerating callers and by `fullConfSnapshot`'s nested-schema guard) ←
 `promotableResolve.ts` (resolver) ← `getConf.ts` (reader) ←
 `promotableDefaults.ts` (control builders + share/worker helpers +
-`openPromotableDisplays`, the one open-display walk). Full model + the
-`ignorePromotedDefaults` opt-out:
+`openPromotableDisplays`, the one open-display walk). `resolveConf` and every
+control builder take a **`ResolvableDisplay`** (`type` + `configuration` +
+`ignorePromotedDefaults`) — the display node, not a bare `{ configuration }` —
+which is what keeps them cast-free; the wider `PromotableDisplay` adds
+`setIgnorePromotedDefaults` and is needed only by `resetSlotToInherit` and the
+walk that feeds it. Full model + the `ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## Slot overrides merge over `baseConfiguration`

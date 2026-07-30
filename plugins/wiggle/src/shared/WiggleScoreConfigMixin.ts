@@ -6,16 +6,26 @@ import {
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ResolvableDisplay,
+} from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// The mixin composes onto a display that supplies `configuration`, but that
-// prop is declared by the concrete display, not here, so `self` isn't typed
-// with it. This is the shared read/write handle for both `getConf` and
-// `setConf`. Mirrors TrackHeightMixin's cast idiom. Slot names go unchecked
+// The mixin composes onto a display that supplies these props, but they're
+// declared by the concrete display, not here, so `self` isn't typed with them.
+// This is the shared read/write handle for `getConf`, `setConf` and
+// `resolveConf`. Mirrors TrackHeightMixin's cast idiom. Slot names go unchecked
 // here because `AnyConfigurationModel` is widened, unlike in a display whose
 // factory pins its schema.
-interface ConfNode {
+//
+// It extends `ResolvableDisplay` rather than declaring `configuration` alone
+// because two of the slots read through it (`scatterPointSize`, `lineWidth`) are
+// promotable, and the cascade keys the session-wide tier on `type` and honours
+// `ignorePromotedDefaults`. Every display this composes onto is a BaseDisplay,
+// so all three are really there — the cast is about what the *mixin* can see,
+// not about what the node has.
+type ConfNode = ResolvableDisplay & {
   configuration: AnyConfigurationModel
 }
 const confNode = (self: object) => self as ConfNode

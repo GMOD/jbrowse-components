@@ -12,7 +12,7 @@ import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export function makeRenderingTypeSubMenu(
@@ -66,7 +66,7 @@ export function makePointSizeMenuItems(
     renderingType: string
     scatterPointSize: number
     setScatterPointSize: (n?: number) => void
-  } & PromotableDisplay,
+  } & ResolvableDisplay,
 ): MenuItem[] {
   if (!self.renderingType.includes('scatter')) {
     return []
@@ -91,7 +91,7 @@ export function makeLineWidthMenuItems(
     renderingType: string
     lineWidth: number
     setLineWidth: (n?: number) => void
-  } & PromotableDisplay,
+  } & ResolvableDisplay,
 ): MenuItem[] {
   if (!self.renderingType.includes('line')) {
     return []

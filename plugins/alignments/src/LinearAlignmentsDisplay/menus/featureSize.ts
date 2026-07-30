@@ -9,7 +9,7 @@ import HeightIcon from '@mui/icons-material/Height'
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
 import { capitalizeFirst } from './menuHelpers.ts'
 
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
@@ -31,7 +31,7 @@ export {
 // absorbs overflow — so picking a size never changes the mode and vice versa.
 // Each group reads as a plain "pick one". `configuredFeatureHeight` drives the
 // size group; `heightMode` the mode group.
-interface FeatureHeightModel extends PromotableDisplay {
+interface FeatureHeightModel extends ResolvableDisplay {
   configuredFeatureHeight: number
   heightMode: HeightMode
   setFeatureHeight: (height?: number) => void

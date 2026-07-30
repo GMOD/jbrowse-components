@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import TrackSettingsChangesDialog from '../dialogs/TrackSettingsChangesDialog.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
   editButton: {
@@ -28,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
 // so the resolution can't drift; a closed track has no display and so no badge.
 interface OpenTrack {
   configuration: { trackId: string }
-  displays: PromotableDisplay[]
+  displays: ResolvableDisplay[]
 }
 function openDisplays(model: HierarchicalTrackSelectorModel, trackId: string) {
   const view: { tracks?: OpenTrack[] } | undefined = model.view
@@ -50,7 +50,7 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
   model: HierarchicalTrackSelectorModel
   trackId: string
   name: string
-  displays: PromotableDisplay[]
+  displays: ResolvableDisplay[]
 }) {
   const { classes } = useStyles()
   const session = getSession(model)

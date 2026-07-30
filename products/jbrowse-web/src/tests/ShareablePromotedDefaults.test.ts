@@ -8,7 +8,7 @@ import { doBeforeEach, getPluginManager } from './util.tsx'
 
 import type {
   AnyConfigurationModel,
-  PromotableDisplay,
+  ResolvableDisplay,
 } from '@jbrowse/core/configuration'
 
 const TRACK_ID = 'volvox_filtered_vcf'
@@ -46,7 +46,7 @@ function openVcfDisplay(adminMode = false) {
   const view = session.views[0]!
   view.showTrack(TRACK_ID)
   const display = view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
-    .displays[0]! as unknown as PromotableDisplay
+    .displays[0]! as unknown as ResolvableDisplay
   return { rootModel, session, display }
 }
 
@@ -135,7 +135,7 @@ test('the shared snapshot reproduces the sender value in a recipient with no pro
   const recipientSession = recipient.session as unknown as TestSession
   const recipientDisplay = recipientSession.views[0]!.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
-  )!.displays[0]! as unknown as PromotableDisplay
+  )!.displays[0]! as unknown as ResolvableDisplay
 
   expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
@@ -157,7 +157,7 @@ test("a recipient's own promoted default does not repaint the received track", (
   recipientSession.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
   const recipientDisplay = recipientSession.views[0]!.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
-  )!.displays[0]! as unknown as PromotableDisplay
+  )!.displays[0]! as unknown as ResolvableDisplay
 
   // stays at what the sender saw, not the recipient's promoted value
   expect(resolveConf(recipientDisplay, SLOT)).toBe('normal')
@@ -286,7 +286,7 @@ test('fidelity survives the real share encode/decode (long-URL round-trip)', asy
   const recipientSession = recipient.session as unknown as TestSession
   const recipientDisplay = recipientSession.views[0]!.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
-  )!.displays[0]! as unknown as PromotableDisplay
+  )!.displays[0]! as unknown as ResolvableDisplay
 
   expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })

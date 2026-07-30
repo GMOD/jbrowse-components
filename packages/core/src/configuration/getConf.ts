@@ -1,7 +1,7 @@
 import { resolveSlot } from './promotableResolve.ts'
 import { readConfObject } from './util.ts'
 
-import type { PromotableDisplay } from './promotableResolve.ts'
+import type { ResolvableDisplay } from './promotableResolve.ts'
 import type {
   AnyConfigurationModel,
   ConfigurationSchemaForModel,
@@ -79,17 +79,18 @@ export function resolveConf<
   SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
     ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
-  model: { configuration: CONFMODEL },
+  // the display state node itself, not just its `.configuration`: the cascade
+  // keys the session-wide tier on `type` and honours `ignorePromotedDefaults`.
+  // Asking for that shape is what keeps this cast-free — hand it a bare config
+  // holder and tsc names the missing members instead of failing at the first read
+  model: ResolvableDisplay & { configuration: CONFMODEL },
   slot: SLOT,
 ): ConfigurationSlotValueResolved<
   ConfigurationSchemaForModel<CONFMODEL>,
   SLOT
 > {
-  // `model` is the display state node the resolver needs (type + session +
-  // ignorePromotedDefaults); only display state models carry promotable slots.
-  // The resolution is `unknown`, which the declared return type can't infer.
-  return resolveSlot(model as unknown as PromotableDisplay, slot)
-    .value as ConfigurationSlotValueResolved<
+  // the resolution is `unknown`, which the declared return type can't infer
+  return resolveSlot(model, slot).value as ConfigurationSlotValueResolved<
     ConfigurationSchemaForModel<CONFMODEL>,
     SLOT
   >

@@ -3,8 +3,16 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
 import type { HeightMode } from './heightMode.ts'
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IReactionDisposer } from 'mobx'
+
+// The mixin's own `self` is the empty model it declares, so it can't see the
+// props the concrete display supplies. `ResolvableDisplay` is what the promotable
+// `heightMode` read needs (type + configuration + the received-session opt-out);
+// every display composing this is a BaseDisplay, so all three are really there.
+// The mixin took a `TConf extends PromotableDisplay` type parameter for this,
+// but no caller ever passed one — it only ever resolved to its own default.
+const confNode = (self: object) => self as ResolvableDisplay
 
 /**
  * #stateModel HeightModeMixin
@@ -25,9 +33,7 @@ import type { IReactionDisposer } from 'mobx'
  * so routing the layout through it would make that height depend on itself (a MobX
  * computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
  */
-export default function HeightModeMixin<
-  TConf extends PromotableDisplay = PromotableDisplay,
->() {
+export default function HeightModeMixin() {
   return types
     .model({})
     .views(self => ({
@@ -38,7 +44,7 @@ export default function HeightModeMixin<
        * -> `fixed` cascade and never returns the `inherit` sentinel.
        */
       get heightMode(): HeightMode {
-        return resolveConf(self as unknown as TConf, 'heightMode')
+        return resolveConf(confNode(self), 'heightMode')
       },
       /**
        * #getter
@@ -48,7 +54,7 @@ export default function HeightModeMixin<
        * (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
        */
       get fitTargetHeight(): number {
-        return getConf(self as unknown as TConf, 'height') as number
+        return getConf(confNode(self), 'height') as number
       },
       /**
        * #getter
@@ -58,7 +64,7 @@ export default function HeightModeMixin<
        * this, so the two can't diverge.
        */
       get growMaxHeight(): number {
-        return getConf(self as unknown as TConf, 'growMaxHeight') as number
+        return getConf(confNode(self), 'growMaxHeight') as number
       },
     }))
     .views(self => ({

@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export { makeSizeMenu }
@@ -18,7 +18,7 @@ export function makeScatterPointSizeMenuItem(
   self: {
     scatterPointSize: number
     setScatterPointSize: (n?: number) => void
-  } & PromotableDisplay,
+  } & ResolvableDisplay,
   opts: { label: string },
 ): MenuItem {
   return makeSizeMenu({

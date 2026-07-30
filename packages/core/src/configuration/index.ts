@@ -35,7 +35,10 @@ export {
   preProcessSlotValues,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
-export type { PromotableDisplay } from './promotableResolve.ts'
+export type {
+  PromotableDisplay,
+  ResolvableDisplay,
+} from './promotableResolve.ts'
 export {
   clearPromotedDefaults,
   getDisplayTypeDefaultChanges,
