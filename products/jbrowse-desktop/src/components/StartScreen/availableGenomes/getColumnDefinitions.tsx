@@ -26,25 +26,28 @@ export interface Entry {
   accession: string
   jbrowseConfig: string
   jbrowseMinimalConfig?: string
-  // jb2hubs emits '' when the source had no taxon (parseAssemblyEntry's
-  // `taxId || ''`), so a taxon-keyed lookup has to narrow first
-  taxonId: number | ''
+  taxonId?: number
   commonName: string
   scientificName: string
 
-  // UCSC main genomes only. orderKey is UCSC's own display ordering.
+  // UCSC main genomes only. orderKey is UCSC's own display ordering, and
+  // sourceName is its assembly provenance line, which for 69 of the 236 dbs
+  // ends in the GC[AF] accession that names the same assembly at NCBI.
   name?: string
   organism?: string
   description?: string
+  sourceName?: string
   orderKey?: number
 
-  // GenArk/NCBI only
+  // GenArk/NCBI only. pairedAccession is the GCA of a GCF entry (or vice
+  // versa) — the same assembly under the other authority's accession.
   ncbiName?: string
   ncbiAssemblyName?: string
   ncbiRefSeqCategory?: string
   assemblyStatus?: string
   seqReleaseDate?: string
   submitterOrg?: string
+  pairedAccession?: string
   suppressed?: boolean
 }
 
@@ -91,8 +94,14 @@ export function getColumnDefinitions({
     ),
   }
 
+  const taxonIdColumn: GenomeColumn = {
+    id: 'taxonId',
+    header: 'Taxonomy ID',
+    value: r => r.taxonId?.toString(),
+  }
+
   if (typeOption === 'ucsc') {
-    return [
+    const baseColumns: GenomeColumn[] = [
       favoriteColumn,
       {
         id: 'name',
@@ -121,6 +130,13 @@ export function getColumnDefinitions({
       { id: 'organism', header: 'Organism', value: r => r.organism },
       { id: 'description', header: 'Description', value: r => r.description },
     ]
+
+    const extraColumns: GenomeColumn[] = [
+      { id: 'sourceName', header: 'Source', value: r => r.sourceName },
+      taxonIdColumn,
+    ]
+
+    return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns
   } else {
     const baseColumns: GenomeColumn[] = [
       favoriteColumn,
@@ -178,7 +194,12 @@ export function getColumnDefinitions({
 
     const extraColumns: GenomeColumn[] = [
       { id: 'accession', header: 'Accession', value: r => r.accession },
-      { id: 'taxonId', header: 'Taxonomy ID', value: r => `${r.taxonId}` },
+      {
+        id: 'pairedAccession',
+        header: 'Paired accession',
+        value: r => r.pairedAccession,
+      },
+      taxonIdColumn,
       { id: 'submitterOrg', header: 'Submitter', value: r => r.submitterOrg },
     ]
 

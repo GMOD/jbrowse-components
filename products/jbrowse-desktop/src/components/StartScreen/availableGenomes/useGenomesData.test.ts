@@ -18,6 +18,8 @@ const hg38 = entry({
   name: 'hg38',
   organism: 'Human',
   description: 'Dec. 2013 (GRCh38/hg38)',
+  sourceName:
+    'GRCh38 Genome Reference Consortium Human Reference 38 (GCA_000001405.15)',
   scientificName: 'Homo sapiens',
   commonName: 'Human',
   taxonId: 9606,
@@ -32,6 +34,7 @@ const panda = entry({
   ncbiRefSeqCategory: 'reference genome',
   assemblyStatus: 'Chromosome',
   submitterOrg: 'Shenzhen Institutes',
+  pairedAccession: 'GCA_000004335.4',
   taxonId: 9646,
 })
 const genbankOnly = entry({
@@ -40,7 +43,7 @@ const genbankOnly = entry({
   ncbiName: 'GCA_000001.1_asm',
   taxonId: 4321,
 })
-const noTaxon = entry({ accession: 'GCA_000002.1', taxonId: '' })
+const noTaxon = entry({ accession: 'GCA_000002.1', taxonId: undefined })
 
 const defaults = {
   searchQuery: '',
@@ -84,6 +87,17 @@ test('search matches fields only one of the two groups supplies', () => {
   expect(matching('shenzhen')).toEqual(['GCF_000004335.4']) // submitter
   expect(matching('GCF_000004335')).toEqual(['GCF_000004335.4']) // accession
   expect(matching('  HUMAN ')).toEqual(['hg38']) // trimmed, case-insensitive
+})
+
+test('search finds an assembly by the other authority accession', () => {
+  const rows = [hg38, panda]
+  const matching = (searchQuery: string) =>
+    filterGenomes({ ...defaults, rows, searchQuery }).map(r => r.accession)
+
+  // hg38 records GCA_000001405.15 only inside its UCSC sourceName
+  expect(matching('GCA_000001405')).toEqual(['hg38'])
+  // the GCF panda entry is reachable by its paired GCA accession
+  expect(matching('GCA_000004335.4')).toEqual(['GCF_000004335.4'])
 })
 
 test('search does not match the fields a group omits', () => {

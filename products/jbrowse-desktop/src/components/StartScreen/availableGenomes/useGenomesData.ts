@@ -8,6 +8,11 @@ import type { Entry } from './getColumnDefinitions.tsx'
 // whatever the user can see — and `useSearchHighlight` can then find that match
 // in the DOM. Array.join() renders the fields a group omits as '', not
 // 'undefined'.
+//
+// sourceName and pairedAccession are the two halves' alias identifiers: they
+// name the same assembly under the other authority's accession (hg38's
+// sourceName carries GCA_000001405.15; a GCF entry's pairedAccession its GCA).
+// Both are shown as columns under "Show all columns", so a hit stays findable.
 function matchesSearch(row: Entry, query: string) {
   return [
     row.name,
@@ -19,6 +24,8 @@ function matchesSearch(row: Entry, query: string) {
     row.ncbiAssemblyName,
     row.assemblyStatus,
     row.submitterOrg,
+    row.sourceName,
+    row.pairedAccession,
   ]
     .join(' ')
     .toLowerCase()
@@ -73,7 +80,7 @@ export function filterGenomes({
     row =>
       (!query || matchesSearch(row, query)) &&
       (!cladeTaxonIds ||
-        (row.taxonId !== '' && cladeTaxonIds.has(row.taxonId))) &&
+        (row.taxonId !== undefined && cladeTaxonIds.has(row.taxonId))) &&
       (!showOnlyFavs || favoriteIds.has(row.accession)),
   )
 }

@@ -46,19 +46,18 @@ export function getTableMenuItems({
         setShowOnlyFavs(!showOnlyFavs)
       },
     },
-    // The extra columns, and the NCBI status fields they filter on, exist only
-    // for GenArk/NCBI assemblies; UCSC main genomes carry neither.
+    {
+      label: 'Show all columns',
+      type: 'checkbox',
+      checked: showAllColumns,
+      onClick: () => {
+        setShowAllColumns(!showAllColumns)
+      },
+    },
+    // the NCBI status fields this filters on exist only on GenArk/NCBI rows
     ...(typeOption === 'ucsc'
       ? []
       : ([
-          {
-            label: 'Show all columns',
-            type: 'checkbox',
-            checked: showAllColumns,
-            onClick: () => {
-              setShowAllColumns(!showAllColumns)
-            },
-          },
           {
             label: 'Filter by NCBI status',
             type: 'subMenu',
