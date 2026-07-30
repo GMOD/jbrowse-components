@@ -32,6 +32,7 @@ export function useGenomesTableState() {
   const [searchQuery, setSearchQuery] = useState('')
   const [clade, setClade] = useState('')
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
+  const [allGroups, setAllGroups] = useState(false)
   const [filterOption, setFilterOption] = useState<FilterOption>('all')
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
@@ -53,7 +54,17 @@ export function useGenomesTableState() {
     showOnlyFavs,
     filterOption,
     typeOption,
+    allGroups,
 
+    // cross-group results have their own columns, so a sort naming a
+    // group-only column has to go, as does a selection of rows about to be
+    // replaced by hits from every group
+    setAllGroups: (v: boolean) => {
+      setAllGroups(v)
+      setSorting(undefined)
+      setSelected(new Set())
+      setPageIndex(0)
+    },
     setMultipleSelection: (v: boolean) => {
       setMultipleSelection(v)
       setSelected(new Set())

@@ -100,6 +100,17 @@ test('search finds an assembly by the other authority accession', () => {
   expect(matching('GCA_000004335.4')).toEqual(['GCF_000004335.4'])
 })
 
+test('every token has to match, in any field', () => {
+  const rows = [hg38, panda]
+  const matching = (searchQuery: string) =>
+    filterGenomes({ ...defaults, rows, searchQuery }).map(r => r.accession)
+
+  // 'giant' is the common name, 'melanoleuca' the scientific one
+  expect(matching('giant melanoleuca')).toEqual(['GCF_000004335.4'])
+  expect(matching('human GRCh38')).toEqual(['hg38'])
+  expect(matching('human panda')).toEqual([])
+})
+
 test('search does not match the fields a group omits', () => {
   // Array.join renders a missing field as '', so 'undefined' must match nothing
   expect(

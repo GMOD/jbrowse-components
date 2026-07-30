@@ -3,13 +3,21 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import GenomesDataTable from './GenomesDataTable.tsx'
+import { SEARCH_INDEX_URL } from './searchIndex.ts'
 
 import type { Fav } from '../types.ts'
 
 const UCSC_URL = 'https://example.com/ucsc.json'
 
 const categories = {
-  categories: [{ key: 'ucsc', title: 'UCSC Main Genomes', url: UCSC_URL }],
+  categories: [
+    { key: 'ucsc', title: 'UCSC Main Genomes', url: UCSC_URL },
+    {
+      key: 'primates',
+      title: 'UCSC GenArk - Primates',
+      url: 'https://example.com/primates.json',
+    },
+  ],
 }
 
 const ucscRows = [
@@ -38,20 +46,45 @@ const ucscRows = [
   },
 ]
 
+// [accession, commonName, scientificName, assemblyName, assemblyStatus, source,
+//  taxonId, ncbiStatus, year, rank, altAccession]
+const searchIndex = [
+  ['hg38', 'Human', 'Homo sapiens', 'GRCh38', '', 'ucsc', 9606, 0, 2013, 2, ''],
+  [
+    'GCF_000004335.4',
+    'giant panda',
+    'Ailuropoda melanoleuca',
+    'ASM433v2',
+    'Chromosome',
+    'primates',
+    9646,
+    1,
+    2009,
+    0,
+    '',
+  ],
+]
+
+let fetched: string[] = []
+
 const bodyFor = (url: string) =>
   url === UCSC_URL
     ? ucscRows
-    : url.includes('categories')
-      ? categories
-      : { mammal: [9606, 10090] }
+    : url === SEARCH_INDEX_URL
+      ? searchIndex
+      : url.includes('categories')
+        ? categories
+        : { mammal: [9606, 10090] }
 
 beforeEach(() => {
-  globalThis.fetch = jest.fn((url: string) =>
-    Promise.resolve({
+  fetched = []
+  globalThis.fetch = jest.fn((url: string) => {
+    fetched.push(url)
+    return Promise.resolve({
       ok: true,
       json: () => Promise.resolve(bodyFor(url)),
-    }),
-  ) as unknown as typeof fetch
+    })
+  }) as unknown as typeof fetch
   localStorage.clear()
 })
 
@@ -105,9 +138,47 @@ test('a search that matches nothing says so instead of showing a blank table', a
 
   fireEvent.change(search, { target: { value: 'no such genome' } })
   expect(
-    await screen.findByText('No genomes match the current search and filters'),
+    await screen.findByText(/No matches in UCSC Main Genomes/),
   ).toBeTruthy()
   expect(screen.getByText('Showing 0 matching (2 in this group)')).toBeTruthy()
+})
+
+test('running out of matches in a group offers the search across all of them', async () => {
+  const { launch } = setup()
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
+
+  // the 7.5MB index is not fetched until the user asks for the wider search
+  await screen.findByText(/No matches in UCSC Main Genomes/)
+  expect(fetched).not.toContain(SEARCH_INDEX_URL)
+
+  fireEvent.click(screen.getByText('search all groups'))
+
+  // a hit from a group other than the selected one, labelled with its group
+  expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
+  expect(screen.getByText('UCSC GenArk - Primates')).toBeTruthy()
+  expect(screen.getByText('GCF_000004335.4')).toBeTruthy()
+  expect(
+    screen.getByText('Showing 1–1 of 1 matching (2 across all groups)'),
+  ).toBeTruthy()
+
+  // launchable via a config url rebuilt from the accession alone
+  fireEvent.click(screen.getByText('launch'))
+  expect(launch).toHaveBeenCalledWith([
+    'https://jbrowse.org/hubs/genark/GCF/000/004/335/GCF_000004335.4/config.json',
+  ])
+})
+
+test('clearing the query returns to browsing the selected group', async () => {
+  setup()
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
+  fireEvent.click(await screen.findByText('search all groups'))
+  expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
+
+  fireEvent.change(search, { target: { value: '' } })
+  expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
+  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
 })
 
 test('sort headers are buttons and expose their direction', async () => {

@@ -1,6 +1,8 @@
 import { fetchJson } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
+import { matchesAllTokens, searchTokens } from './searchTokens.ts'
+
 import type { Fav } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
 
@@ -13,7 +15,7 @@ import type { Entry } from './getColumnDefinitions.tsx'
 // name the same assembly under the other authority's accession (hg38's
 // sourceName carries GCA_000001405.15; a GCF entry's pairedAccession its GCA).
 // Both are shown as columns under "Show all columns", so a hit stays findable.
-function matchesSearch(row: Entry, query: string) {
+function haystack(row: Entry) {
   return [
     row.name,
     row.commonName,
@@ -26,10 +28,7 @@ function matchesSearch(row: Entry, query: string) {
     row.submitterOrg,
     row.sourceName,
     row.pairedAccession,
-  ]
-    .join(' ')
-    .toLowerCase()
-    .includes(query)
+  ].join(' ')
 }
 
 // UCSC's preferred ordering (human first, then by popularity). GenArk entries
@@ -75,10 +74,10 @@ export function filterGenomes({
   favoriteIds: Set<string>
   cladeTaxonIds?: Set<number>
 }) {
-  const query = searchQuery.toLowerCase().trim()
+  const tokens = searchTokens(searchQuery)
   return applyFilter(rows, filterOption).filter(
     row =>
-      (!query || matchesSearch(row, query)) &&
+      matchesAllTokens(haystack(row), tokens) &&
       (!cladeTaxonIds ||
         (row.taxonId !== undefined && cladeTaxonIds.has(row.taxonId))) &&
       (!showOnlyFavs || favoriteIds.has(row.accession)),

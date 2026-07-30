@@ -27,9 +27,21 @@ export function getTableMenuItems({
     setShowAllColumns,
     filterOption,
     setFilterOption,
+    allGroups,
+    setAllGroups,
   } = state
 
   return [
+    {
+      label: 'Search all groups',
+      helpText:
+        'Search every group at once instead of only the selected one, using a prebuilt index of all ~50k assemblies',
+      checked: allGroups,
+      type: 'checkbox',
+      onClick: () => {
+        setAllGroups(!allGroups)
+      },
+    },
     {
       label: 'Enable multiple selection',
       checked: multipleSelection,

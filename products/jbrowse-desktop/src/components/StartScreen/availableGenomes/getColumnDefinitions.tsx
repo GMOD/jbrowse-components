@@ -39,6 +39,11 @@ export interface Entry {
   sourceName?: string
   orderKey?: number
 
+  // the group this row came from. processHubJson stamps it on GenArk rows
+  // ('primates', or 'uncategorized' for a non-main category); UCSC rows only
+  // carry it when they arrive via the cross-group search index.
+  source?: string
+
   // GenArk/NCBI only. pairedAccession is the GCA of a GCF entry (or vice
   // versa) — the same assembly under the other authority's accession.
   ncbiName?: string
@@ -61,6 +66,14 @@ export interface GenomeColumn {
   sortFn?: (a: Entry, b: Entry) => number
 }
 
+// genomes.jbrowse.org keys UCSC main genomes by db name and everything else by
+// assembly accession
+function websiteUrl(accession: string, isUcsc: boolean) {
+  return isUcsc
+    ? `https://genomes.jbrowse.org/ucsc/${accession}/`
+    : `https://genomes.jbrowse.org/accession/${accession}/`
+}
+
 export function getColumnDefinitions({
   typeOption,
   favs,
@@ -68,6 +81,7 @@ export function getColumnDefinitions({
   launch,
   onClose,
   showAllColumns,
+  groupTitles,
 }: {
   typeOption: string
   favs: Set<string>
@@ -75,6 +89,9 @@ export function getColumnDefinitions({
   launch: LaunchCallback
   onClose: () => void
   showAllColumns: boolean
+  // set only for cross-group results, where rows come from several groups and
+  // the group each one belongs to becomes a column
+  groupTitles?: Map<string, string>
 }): GenomeColumn[] {
   const favoriteColumn: GenomeColumn = {
     id: 'favorite',
@@ -100,7 +117,71 @@ export function getColumnDefinitions({
     value: r => r.taxonId?.toString(),
   }
 
-  if (typeOption === 'ucsc') {
+  // Cross-group results: rows arrive from the search index with only the fields
+  // it carries, so the columns are the intersection of both shapes plus the
+  // group each hit came from.
+  if (groupTitles) {
+    const baseColumns: GenomeColumn[] = [
+      favoriteColumn,
+      {
+        id: 'commonName',
+        header: 'Common name',
+        value: r => r.commonName,
+        cell: row => (
+          <GenomeNameCell
+            displayName={row.commonName}
+            jbrowseConfig={row.jbrowseConfig}
+            jbrowseMinimalConfig={row.jbrowseMinimalConfig}
+            websiteUrl={websiteUrl(row.accession, row.source === 'ucsc')}
+            isFavorite={favs.has(row.accession)}
+            launch={launch}
+            onClose={onClose}
+            toggleFavorite={() => {
+              toggleFavorite(row)
+            }}
+          >
+            {row.ncbiRefSeqCategory === 'reference genome' ? (
+              <Tooltip title="NCBI designated reference">
+                <Check style={{ color: green[600] }} />
+              </Tooltip>
+            ) : null}
+            {row.suppressed ? (
+              <Tooltip title="NCBI RefSeq suppressed">
+                <Close style={{ color: red[600] }} />
+              </Tooltip>
+            ) : null}
+          </GenomeNameCell>
+        ),
+      },
+      {
+        id: 'source',
+        header: 'Group',
+        value: r => (r.source ? groupTitles.get(r.source) : undefined),
+      },
+      {
+        id: 'scientificName',
+        header: 'Scientific name',
+        value: r => r.scientificName,
+      },
+      {
+        id: 'ncbiAssemblyName',
+        header: 'Assembly',
+        value: r => r.ncbiAssemblyName,
+      },
+      { id: 'accession', header: 'Accession', value: r => r.accession },
+    ]
+
+    const extraColumns: GenomeColumn[] = [
+      {
+        id: 'assemblyStatus',
+        header: 'Assembly status',
+        value: r => r.assemblyStatus,
+      },
+      taxonIdColumn,
+    ]
+
+    return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns
+  } else if (typeOption === 'ucsc') {
     const baseColumns: GenomeColumn[] = [
       favoriteColumn,
       {
@@ -112,7 +193,7 @@ export function getColumnDefinitions({
             displayName={row.name}
             jbrowseConfig={row.jbrowseConfig}
             jbrowseMinimalConfig={row.jbrowseMinimalConfig}
-            websiteUrl={`https://genomes.jbrowse.org/ucsc/${row.accession}/`}
+            websiteUrl={websiteUrl(row.accession, true)}
             isFavorite={favs.has(row.accession)}
             launch={launch}
             onClose={onClose}
@@ -149,7 +230,7 @@ export function getColumnDefinitions({
             displayName={row.commonName}
             jbrowseConfig={row.jbrowseConfig}
             jbrowseMinimalConfig={row.jbrowseMinimalConfig}
-            websiteUrl={`https://genomes.jbrowse.org/accession/${row.accession}/`}
+            websiteUrl={websiteUrl(row.accession, false)}
             isFavorite={favs.has(row.accession)}
             launch={launch}
             onClose={onClose}

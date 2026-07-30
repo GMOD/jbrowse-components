@@ -92,6 +92,7 @@ export default function GenomesTable({
   setSelected,
   sorting,
   toggleSort,
+  emptyMessage,
 }: {
   columns: GenomeColumn[]
   rows: Entry[]
@@ -100,6 +101,7 @@ export default function GenomesTable({
   setSelected: (arg: Set<string>) => void
   sorting?: Sorting
   toggleSort: (colId: string) => void
+  emptyMessage: React.ReactNode
 }) {
   const { classes } = useStyles()
   const allSelected =
@@ -185,7 +187,7 @@ export default function GenomesTable({
               className={classes.empty}
               colSpan={columns.length + (multipleSelection ? 1 : 0)}
             >
-              No genomes match the current search and filters
+              {emptyMessage}
             </td>
           </tr>
         )}
