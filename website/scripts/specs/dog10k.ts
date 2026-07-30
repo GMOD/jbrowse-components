@@ -356,6 +356,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiSampleVariantMatrixDisplay',
           renderingMode: 'phased',
           height: 700,
+          // A run of alt cells is one solid orange band, so at the 20px schema
+          // default nothing in the frame said how many markers it was made of
+          // and the lane read as two painted blocks. The connector band ties each
+          // column back to its position in the 11 kb block, which is what makes
+          // it visibly a 21-marker panel.
+          lineZoneHeight: 55,
           layout: DOG_VCF_LAYOUT,
           // Paint the alt cells in the painting's own wolf orange rather than
           // the default genotype blue. Two reasons: carrying these alleles *is*

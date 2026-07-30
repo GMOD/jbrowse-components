@@ -405,9 +405,9 @@ file. A pangenome graph does say it: the island is a segment, and each strain's
 walk either goes through that segment or takes a detour around it.
 
 The E. coli tutorials also build a minigraph graph of the same five strains, and
-the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of it
-beside the alignment. Drawn together, the ribbons and the graph are two readings
-of the same event:
+the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
+it beside the alignment. Drawn together, the ribbons and the graph are two
+readings of the same event:
 
 <Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the banded island; the Sakai band only reaches the frame past its right edge. Below, the same window as a graph: the island is the one long node on the backbone, and the detour the other strains take is the short arm beside it." src="/img/pangenome/rgfa_paa_bubble.png" />
 

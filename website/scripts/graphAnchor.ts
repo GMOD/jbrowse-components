@@ -56,7 +56,9 @@ export async function graphNodeGeometry(
       // either that or the bare GFA segment id
       const positions = view?.nodePositions
       const pts =
-        positions?.[nodeId] ?? positions?.[`${nodeId}+`] ?? positions?.[`${nodeId}-`]
+        positions?.[nodeId] ??
+        positions?.[`${nodeId}+`] ??
+        positions?.[`${nodeId}-`]
       if (!view || !pts?.length) {
         return undefined
       }

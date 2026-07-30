@@ -92,6 +92,23 @@ before editing, don't revert what you didn't touch.
 
 ## Useful facts learned (durable, not tied to any one session)
 
+- **Point at a graph node by NAME, never by pixel.**
+  `anchor: { view, graphNode: 's2037' }` works on a click, a rightclick, a hover
+  and on any annotation; it resolves through the view's own `nodePositions` and
+  transform (`scripts/graphAnchor.ts`), and throws if the node is not there, so a
+  moved node fails the spec instead of acting on empty canvas. A box anchor takes
+  the node's drawn bounds, everything else takes a point ON the polyline (a bent
+  node's bounding-box centre can be in the hole the arc encloses).
+  `node scripts/probe-graph-nodes.ts <spec> [--view=N] [--hover=<id>]` prints a
+  cut's node ids with lengths, ranks and resolved coordinates, so a spec picks
+  its target from the graph rather than from a finished PNG. Every hand-measured
+  coordinate in this set had a comment listing the occasions it had gone stale.
+- **`{ mode: 'compose', direction: 'horizontal' }`** places parts side by side
+  (`+append`) instead of stacking. Use it when the two parts are the same view
+  drawn two ways — stacked, the second reads as the next step rather than as the
+  alternative. Size each part to its own content: `+append` pads the shorter one,
+  so a shared height only adds dead space to the part that did not need it.
+
 - **jbrowse-img (CliSpec) gene tracks: use `--hub <genome> --track <trackId>`,
   not a raw `--gffgz <url>`.** `--hub hg38` supplies the assembly (built-in
   refName aliases, no `--fasta`/`--aliases` needed) plus a bonus ideogram, and
@@ -191,7 +208,7 @@ cd website && node scripts/generate-screenshots.ts --force --filter pangenome/
 `betabuild` uploads to the public `s3://jbrowse.org/demos/graphgenomeviewer/`,
 moves the unversioned entry point the published figures' live links resolve, and
 invalidates CloudFront — **ask before running it.** Last published
-`68ed649ed8e6` (2026-07-30).
+`5e1c0d4f42b5` (2026-07-30).
 
 Regenerating the whole `pangenome/` set with `--force` after a publish sweeps in
 churn the publish did not cause: the E. coli figures that mount no graph view at
@@ -268,15 +285,6 @@ channel), not a spec edit.
 
 ## Open plugin work
 
-- **The graph's hover tooltip sits on top of the last row's label.**
-  `tooltipStyle` in `GraphCanvas.tsx` pins it `bottom: 8, left: 8` of the graph
-  pane, and the row labels are drawn down the left edge, so on a graph with
-  enough rows to reach the bottom the two overlap — `pangenome/rgfa_hover_sync`
-  captures it reading "Sakai" and the node name as one word. Bottom-right would
-  clear it (the layout runs left-to-right from the labels, so the right edge is
-  empty at the bottom on every figure in this set). A spec cannot work around
-  it: the tooltip is an inline-styled div with no testid, and `hideTooltip` only
-  reaches core's `BaseTooltip`. Needs the publish loop above.
 - **A launch's tracks are the assembly's annotation, and only for the single
   view.** `launchTracks` scans the session for FeatureTracks on the assembly
   being opened, which is what makes `pangenome/rgfa_strain_launch` possible (the

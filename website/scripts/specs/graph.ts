@@ -1254,8 +1254,17 @@ export const graphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               // pinned, not grown: a bubble's label is two lines and the lane
               // packs few enough rows to fit them, so growing it only adds
-              // whitespace under the last one
-              height: 90,
+              // whitespace under the last one. One row now that the lane is
+              // filtered, so 90 was 30px of that whitespace.
+              height: 60,
+              // The bubble this figure is about, and not the 136 bp four-segment
+              // one that also falls in the window. That one sits 6 kb from the
+              // right edge, which is not enough room for its two label lines, so
+              // it printed a sentence cut off mid-word — and the caption never
+              // referred to it. `segmentCount` is a field on the bubble feature
+              // (MinigraphBubbleAdapter), so this filters on the same number the
+              // label leads with.
+              jexlFiltersSetting: ["jexl:get(feature,'segmentCount') >= 5"],
             },
             hprcSegmentsLane(C4_REGION),
           ],
