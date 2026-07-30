@@ -117,15 +117,15 @@
             },
             {
               "label": "CN 3",
-              "color": "rgb(158,202,225)"
+              "color": "rgb(244,165,130)"
             },
             {
               "label": "CN 4",
-              "color": "rgb(66,146,198)"
+              "color": "rgb(214,96,77)"
             },
             {
               "label": "CN 5",
-              "color": "rgb(8,81,156)"
+              "color": "rgb(178,24,43)"
             }
           ]
         }
@@ -163,11 +163,11 @@
           "legend": [
             {
               "label": "CN 0",
-              "color": "rgb(165,15,21)"
+              "color": "rgb(33,102,172)"
             },
             {
               "label": "CN 1",
-              "color": "rgb(251,146,114)"
+              "color": "rgb(146,197,222)"
             },
             {
               "label": "CN 2",
@@ -175,35 +175,19 @@
             },
             {
               "label": "CN 3",
-              "color": "rgb(158,202,225)"
+              "color": "rgb(244,165,130)"
             },
             {
               "label": "CN 4",
-              "color": "rgb(66,146,198)"
+              "color": "rgb(214,96,77)"
             },
             {
               "label": "CN 5",
-              "color": "rgb(8,81,156)"
+              "color": "rgb(178,24,43)"
             },
             {
-              "label": "CN 6",
-              "color": "rgb(8,48,107)"
-            },
-            {
-              "label": "CN 7",
-              "color": "rgb(84,39,143)"
-            },
-            {
-              "label": "CN 8",
-              "color": "rgb(136,20,148)"
-            },
-            {
-              "label": "CN 9",
-              "color": "rgb(190,20,140)"
-            },
-            {
-              "label": "CN 10",
-              "color": "rgb(240,20,130)"
+              "label": "CN 6+",
+              "color": "rgb(103,0,31)"
             }
           ]
         }
@@ -212,7 +196,7 @@
     {
       "type": "VariantTrack",
       "trackId": "dog10k_wolfdog_block_genotypes",
-      "name": "Dog10K phased genotypes (wolves, Saarloos, dogs)",
+      "name": "Dog10K phased genotypes (Greek wolves, wolfdogs, German Shepherds)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",

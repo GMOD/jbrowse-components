@@ -59,63 +59,106 @@ const CEA_GROUPS = [
   },
 ]
 
-// Sidebar labels for the wolf-block genotype figure. The VCF keeps the Dog10K
-// sample IDs (they are the data's identity, and the build script writes this
-// same order); `layout` only relabels the rows, two per sample since the matrix
-// is drawn in phased mode.
-// The swatch colors are the painting's own Okabe-Ito pair (wolf orange, dog
-// blue), so a reference row's swatch and an ancestry block of the same color
-// mean the same thing across both figures; the two targets take a neutral
-// swatch, since which panel they match is the question rather than a given.
+// Sidebar rows for the marker figure. The VCF keeps the Dog10K sample IDs (they
+// are the data's identity, and the build script writes this same order);
+// `layout` only relabels the rows, two per sample since the matrix is drawn in
+// phased mode.
+//
+// The swatches are the painting's own Okabe-Ito pair, and they carry the whole
+// figure: orange means "this haplotype is a wolf haplotype" and blue means "this
+// one is a dog haplotype". For the two reference groups that is a fact about the
+// animal. For the eleven painted animals it is *the painting's call in this
+// window*, per haplotype, read off the committed BED — so a reader's rule is
+// "orange swatch, filled row", and every row either follows it or is the
+// disagreement worth looking at.
 const WOLF_SWATCH = '#E69F00'
 const DOG_SWATCH = '#0072B2'
-const TARGET_SWATCH = '#555555'
-const DOG_VCF_LAYOUT = [
-  ...[
-    'CLUPEA000001',
-    'CLUPEU000002',
-    'CLUPGR000001',
-    'CLUPGR000002',
-    'CLUPGR000003',
-    'CLUPGR000004',
-    'CLUPGR000005',
-    'CLUPGR000006',
-  ].map((sample, i) => ({
-    sample,
-    label: `Wolf ${i + 1}`,
-    color: WOLF_SWATCH,
-  })),
-  { sample: 'SAAR000001', label: 'Saarloos 1', color: TARGET_SWATCH },
-  { sample: 'GRSD000002', label: 'German Shepherd 1', color: TARGET_SWATCH },
-  ...[
-    'AFFN000001',
-    'AFGH000001',
-    'AIRT000001',
-    'AKBH000001',
-    'AMAL000001',
-    'ALDB000001',
-    'AKIT000001',
-    'AMBD000001',
-  ].map((sample, i) => ({
-    sample,
-    label: `Dog ${i + 1}`,
-    color: DOG_SWATCH,
-  })),
-].flatMap(({ sample, label, color }) =>
-  // HP is 0-based on the wire (`<sample> HP0`/`HP1`, see makeHaplotypeSources);
-  // the labels count from 1 to match the painting track's row names
-  [0, 1].map(hp => ({
+
+const GREEK_WOLVES = Array.from(
+  { length: 12 },
+  (_, i) => `CLUPGR0000${String(i + 1).padStart(2, '0')}`,
+)
+
+const GSD_REFERENCE = [
+  'GRSD000003',
+  'OLGS000001',
+  'OLGS000002',
+  'OLGS000003',
+  'OLGS000004',
+  'OLGS000005',
+  'OLGS000006',
+]
+
+// FLARE's per-haplotype call across chr1:107.9-108.1 Mb, from
+// test_data/dog10k/dog10k_wolfdog_ancestry.chr1.bed.gz. Every one of these
+// haplotypes has a single call spanning the whole window, so one letter per
+// haplotype is the complete story rather than a summary:
+//   tabix dog10k_wolfdog_ancestry.chr1.bed.gz chr1:107935000-108005000
+const PAINTED = [
+  { sample: 'SAAR000001', label: 'Saarloos 1', calls: 'WD' },
+  { sample: 'SAAR000002', label: 'Saarloos 2', calls: 'WD' },
+  { sample: 'SAAR000003', label: 'Saarloos 3', calls: 'DD' },
+  { sample: 'SAAR000004', label: 'Saarloos 4', calls: 'DD' },
+  { sample: 'CZEC000001', label: 'Czechoslovakian 1', calls: 'DD' },
+  { sample: 'CZEC000002', label: 'Czechoslovakian 2', calls: 'DD' },
+  { sample: 'CZEC000003', label: 'Czechoslovakian 3', calls: 'WW' },
+  { sample: 'CZEC000004', label: 'Czechoslovakian 4', calls: 'WD' },
+  { sample: 'GRSD000002', label: 'German Shepherd 1', calls: 'DD' },
+  { sample: 'SHIL000001', label: 'Shiloh Shepherd 1', calls: 'DD' },
+  { sample: 'TMSK000001', label: 'Tamaskan 1', calls: 'DD' },
+]
+
+// HP is 0-based on the wire (`<sample> HP0`/`HP1`, see makeHaplotypeSources);
+// the labels count from 1 to match the painting track's row names
+function haplotypeRows({
+  sample,
+  label,
+  color,
+  suffix = () => '',
+}: {
+  sample: string
+  label: string
+  color: (hp: number) => string
+  suffix?: (hp: number) => string
+}) {
+  return [0, 1].map(hp => ({
     name: `${sample} HP${hp}`,
     sampleName: sample,
     HP: hp,
-    label: `${label} hap${hp + 1}`,
-    color,
-  })),
-)
+    label: `${label} hap${hp + 1}${suffix(hp)}`,
+    color: color(hp),
+  }))
+}
 
-// Row labels for the DENR figure. The Mastiff-clade breeds the paper names
-// (Boxer, Bull Terrier, Miniature Bull Terrier, English Bulldog) take one
-// swatch, the two comparison breeds another, and the wolves the third.
+const DOG_VCF_LAYOUT = [
+  ...GREEK_WOLVES.flatMap((sample, i) =>
+    haplotypeRows({
+      sample,
+      label: `Greek wolf ${i + 1}`,
+      color: () => WOLF_SWATCH,
+    }),
+  ),
+  // The call goes in the label as well as the swatch. An 8px swatch is a fine
+  // grouping cue but too small to *check* a row against, and checking is the
+  // whole job here — the two rows that disagree with their call have to be
+  // findable without a callout painted over the figure.
+  ...PAINTED.flatMap(({ sample, label, calls }) =>
+    haplotypeRows({
+      sample,
+      label,
+      color: hp => (calls[hp] === 'W' ? WOLF_SWATCH : DOG_SWATCH),
+      suffix: hp => (calls[hp] === 'W' ? ': Wolf' : ': Dog'),
+    }),
+  ),
+  ...GSD_REFERENCE.flatMap((sample, i) =>
+    haplotypeRows({
+      sample,
+      label: i === 0 ? 'German Shepherd Dog' : `Old German Shepherd ${i}`,
+      color: () => DOG_SWATCH,
+    }),
+  ),
+]
+
 // Row labels for the CYP1A2 figure. Breeds carrying the nonsense allele first,
 // then two that do not, then the wolves — which is where the control lives: no
 // wolf or coyote in the whole collection carries it.
@@ -138,11 +181,18 @@ const CYP_LAYOUT = CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
   })),
 )
 
+// Every animal of every breed, in the order the build script writes them: for
+// these two variants the distribution *within* a breed is the content, and a
+// head-N panel had 24 of 25 dogs het or hom-alt. Eight Mastiff/Terrier-clade
+// breeds (the four the paper names plus the four largest others of the clade),
+// then Labrador Retrievers as the unrelated breed, then all twelve Greek gray
+// wolves — enough wolves for the second SINE's wolf carriers to show, which is
+// what separates it from the first.
 const DENR_GROUPS = [
   {
     label: 'Boxer',
     color: '#0072B2',
-    ids: ['BOXR000001', 'BOXR000002', 'BOXR000003', 'BOXR000004'],
+    ids: ['BOXR000001', 'BOXR000002', 'BOXR000003', 'BOXR000004', 'BOXR000005'],
   },
   {
     label: 'Bull Terrier',
@@ -160,19 +210,61 @@ const DENR_GROUPS = [
     ids: ['BULD000002', 'BULD000003'],
   },
   {
+    // BULD000001 is a French Bulldog in the sample table despite the prefix; the
+    // label follows the table, not the ID
+    label: 'French Bulldog',
+    color: '#0072B2',
+    ids: [
+      'BULD000001',
+      'FBUL000001',
+      'FBUL000002',
+      'FBUL000003',
+      'FBUL000004',
+      'FBUL000005',
+      'FBUL000006',
+    ],
+  },
+  {
+    label: 'Staffordshire Bull Terrier',
+    color: '#0072B2',
+    ids: [
+      'STAF000001',
+      'STAF000002',
+      'STAF000003',
+      'STAF000004',
+      'STAF000005',
+      'STAF000006',
+    ],
+  },
+  {
+    label: 'Dogue de Bordeaux',
+    color: '#0072B2',
+    ids: ['DDBX000001', 'DDBX000002', 'DDBX000003', 'DDBX000004', 'DDBX000005'],
+  },
+  {
+    label: 'Neapolitan Mastiff',
+    color: '#0072B2',
+    ids: ['NEAP000001', 'NEAP000002', 'NEAP000003', 'NEAP000004', 'NEAP000005'],
+  },
+  {
     label: 'Labrador Retriever',
     color: '#999999',
-    ids: ['LABR000001', 'LABR000002', 'LABR000003', 'LABR000004'],
+    ids: [
+      'LABR000001',
+      'LABR000002',
+      'LABR000003',
+      'LABR000004',
+      'LABR000005',
+      'LABR000006',
+    ],
   },
   {
-    label: 'Collie',
-    color: '#999999',
-    ids: ['COLL000001', 'COLL000002', 'COLL000003'],
-  },
-  {
-    label: 'Wolf',
+    label: 'Greek wolf',
     color: '#E69F00',
-    ids: ['CLUPGR000001', 'CLUPGR000002', 'CLUPGR000003', 'CLUPGR000004'],
+    ids: Array.from(
+      { length: 12 },
+      (_, i) => `CLUPGR0000${String(i + 1).padStart(2, '0')}`,
+    ),
   },
 ]
 
@@ -229,33 +321,57 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     viewportHeight: 665,
   },
 
-  // The genotypes under one wolf block. Saarloos 1 is painted Wolf on hap1 and
-  // Dog on hap2 across chr1:105.3-113.2 Mb, so in a window inside that block its
-  // two haplotype rows should track different reference groups: the phased
-  // matrix puts eight gray wolves above it and eight breed dogs below, and the
-  // wolf-assigned row matches the block of wolf rows while the dog-assigned row
-  // matches the dogs. The German Shepherd sits between them as the control.
-  // Sample IDs stay the data's own; `layout` only relabels the sidebar.
+  // Does the painting survive contact with the genotypes it was inferred from?
+  // The check is the 21 markers in this window whose alt allele is common in the
+  // wolf panel and rare in the dog panel (AF_wolf >= 0.8, AF_dog <= 0.15, both
+  // written per site by the build script from the full panels). They sit in one
+  // 11 kb LD block, so each row is effectively one haplotype read 21 times, and
+  // a row is either filled or empty rather than speckled.
+  //
+  // The rows are the twelve Greek gray wolves (filled, by construction), the
+  // eleven painted animals swatched by the painting's own per-haplotype call,
+  // and the seven German Shepherd-lineage dogs as the dog background both
+  // wolfdog breeds were crossed back to. No ancestry-painting track above it:
+  // at 15 kb the painting is a stack of solid stripes, and the swatch column
+  // already carries its calls.
+  //
+  // 34 of the 36 non-reference rows follow their call, and the two that don't —
+  // Saarloos 2 hap2 and Saarloos 4 hap2, both called Dog, both filled — are the
+  // figure's point rather than a defect in it. The markers average AF 0.86 in
+  // wolves and 0.098 in dogs, so 11.4% of the collection's 3,138 breed-dog
+  // haplotypes carry them; across 17 dog-called haplotypes that predicts ~1.9
+  // carriers and there are 2. A block call at one locus is an estimate, and this
+  // is what the estimate looks like where it is wrong.
   {
     mode: 'url',
     name: 'dog10k-wolfdog-block-genotypes',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr1:107,980,000-108,020,000',
+      // the markers span chr1:107,986,844-107,998,239; this frames them with a
+      // little margin either side
+      loc: 'chr1:107,985,000-108,000,000',
       tracks: [
-        {
-          trackId: 'dog10k_wolfdog_ancestry',
-          type: 'LinearMultiRowFeatureDisplay',
-          // every row again, so the two Saarloos 1 rows the matrix below
-          // explains are read in the company of the other animals
-          height: 264,
-        },
         {
           trackId: 'dog10k_wolfdog_block_genotypes',
           type: 'LinearMultiSampleVariantMatrixDisplay',
           renderingMode: 'phased',
-          height: 380,
+          height: 700,
           layout: DOG_VCF_LAYOUT,
+          // Paint the alt cells in the painting's own wolf orange rather than
+          // the default genotype blue. Two reasons: carrying these alleles *is*
+          // the wolf signal, so the cell and the ancestry block above it end up
+          // the same color; and the default blue is the same blue as the Dog
+          // swatch, which made a dog-called row that carries the haplotype (the
+          // two the figure is about) read as a swatch rather than as data.
+          featureColor: WOLF_SWATCH,
+          // Without this the lane draws every one of the window's ~150 sites,
+          // nearly all of which are shared between wolves and dogs and say
+          // nothing about ancestry — which is what made the old version of this
+          // figure a wall of salt-and-pepper. `AF_wolf`/`AF_dog` are
+          // `Number=A`, hence the [0].
+          jexlFilters: [
+            "jexl:get(feature,'INFO').AF_wolf[0] >= 0.8 && get(feature,'INFO').AF_dog[0] <= 0.15",
+          ],
         },
       ],
     }),
@@ -263,8 +379,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="variant-matrix-display-done"]',
     readyTimeout: 90000,
     settleMs: 6000,
-    // painting + all 36 genotype rows, nothing below
-    viewportHeight: 884,
+    // all 60 haplotype rows and the genotype legend, nothing below. 905 fit the
+    // last row's label but cut its cell band against the frame.
+    viewportHeight: 920,
   },
 
   // The Collie eye anomaly deletion (Schall & Kidd 2025, Fig 9): a 7.8 kb
@@ -311,11 +428,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   },
 
   // The two SINEC2A1 deletions in DENR introns (Schall & Kidd 2025, Fig S6):
-  // ~220 bp mobile-element dimorphisms, the opposite kind of variant to the
-  // rare 7.8 kb deletion above. The SINEs are present in the German Shepherd
-  // reference, so "deletion" means the SINE is absent — which is the state of
-  // every wolf here and of the Collies and Labradors, while the Mastiff-clade
-  // breeds still carry them. Built by scripts/build_dog10k_nhej1_sv.sh.
+  // ~220 bp mobile-element dimorphisms, the opposite kind of variant to the rare
+  // 7.8 kb deletion above. The SINEs are present in the German Shepherd
+  // reference, so a "deletion" call means the SINE is absent, and homozygous
+  // reference (grey) means the animal carries it on both chromosomes.
+  //
+  // Two columns, and the panel is sized so each of the three genotypes has real
+  // weight in it rather than one animal (see DENR_GROUPS). Read left to right:
+  // the Mastiff/Terrier clade carries both repeats, the Labradors have lost
+  // both, and the twelve wolves have lost the first one entirely while a third
+  // of them still carry the second. Two adjacent repeats in the same gene with
+  // different histories, which four wolves could not show and which the earlier
+  // version of this figure asserted the opposite of.
+  // Built by scripts/build_dog10k_nhej1_sv.sh.
   {
     mode: 'url',
     name: 'dog10k-denr-sine-deletions',
@@ -331,17 +456,26 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_denr_svs',
           type: 'LinearMultiSampleVariantDisplay',
-          height: 430,
+          // 56 rows. 700 divided to exactly 12.5px a row and cut the last one
+          // against the track's own bottom border, which no viewportHeight can
+          // fix -- the clipping is inside the track box, not below the fold.
+          height: 730,
           layout: DENR_LAYOUT,
+          // Draw reference alleles instead of filling the lane grey. The default
+          // 'skip' paints the whole background REFERENCE_COLOR and omits
+          // homozygous-reference cells, which is the right default when a cell
+          // means "carries the variant" — but here the reference allele is the
+          // SINE being present, so an omitted cell is the state the figure is
+          // about and it was indistinguishable from empty lane.
+          referenceDrawingMode: 'draw',
         },
       ],
     }),
     readyText: 'chr26',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track plus all 25 sample rows and the genotype legend. 775 cut the
-    // last wolf row's blocks against the frame.
-    viewportHeight: 805,
+    // gene track plus all 56 sample rows and the genotype legend
+    viewportHeight: 1094,
   },
 
   // The CYP1A2 nonsense variant (Meadows et al. 2023, Fig 10): chr30:38,261,635

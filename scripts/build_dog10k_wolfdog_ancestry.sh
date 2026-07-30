@@ -71,7 +71,19 @@ awk -F'\t' '$2 ~ /Wolfdog/ {print $1}' keep.tsv > targets.txt
 awk -F'\t' '$3=="Breed_Dogs" && $2 !~ /Wolfdog|Shiloh|Tamaskan/ {print $1"\t"$2}' \
   keep.tsv | grep -v -F -f targets.txt | sort -t$'\t' -k2,2 -u | cut -f1 > dogs.txt
 
-cat wolves.txt dogs.txt targets.txt | sort -u > all.txt
+# Reference rows for the marker figure below, which needs more depth in two
+# specific groups than the one-per-breed FLARE panel carries. Not part of FLARE's
+# input: these only widen the chromosome slice so the figure can draw them.
+#   greek.txt  — every Greek gray wolf, the collection's largest single European
+#                wolf population, standing in for "what a wolf looks like here"
+#   gsdref.txt — every German Shepherd-lineage dog except the GRSD000002
+#                control, i.e. the dog background both wolfdog breeds were
+#                crossed back to
+awk -F'\t' '$3=="Wolf" && $2=="Greece"{print $1}' keep.tsv > greek.txt
+awk -F'\t' '$3=="Breed_Dogs" && $2 ~ /German Shepherd/{print $1}' keep.tsv \
+  | grep -v GRSD000002 > gsdref.txt
+
+cat wolves.txt dogs.txt targets.txt greek.txt gsdref.txt | sort -u > all.txt
 awk '{print $1"\tWolf"}' wolves.txt > refpanel.txt
 awk '{print $1"\tDog"}' dogs.txt >> refpanel.txt
 
@@ -134,17 +146,36 @@ echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (plus its .tbi)."
 echo "Load it with the track JSON in the local ancestry tutorial."
 
 # ── Genotype slice behind the second tutorial figure ────────────────────────
-# A 200 kb window inside the 7.9 Mb block that Saarloos 1 (SAAR000001) carries
-# as Wolf on hap1 and Dog on hap2, holding the eight wolves and eight dogs the
-# figure stacks around it. Wider than the figure's own 40 kb frame so the view
-# still has data when you pan off it. Sample IDs stay as they are; the figure
+# A 200 kb window at chr1:107.9-108.1 Mb, inside blocks the painting calls Wolf
+# on five of the sixteen wolfdog haplotypes and Dog on the other eleven. That
+# mix is the point: the figure checks both kinds of call at once.
+#
+# Rows are the twelve Greek gray wolves, all eleven painted animals, and the
+# seven German Shepherd-lineage dogs. Sample IDs stay as they are; the figure
 # relabels the rows in its display config rather than rewriting the data.
+#
+# Each site carries the alt-allele frequency in each FLARE reference panel, so
+# the figure can filter itself down to the ancestry-informative markers instead
+# of drawing two thousand mostly uninformative columns. The frequencies are
+# computed over the full panels (36 European wolves, 318 one-per-breed dogs)
+# *before* the sample subset, so they stay panel-wide estimates and do not
+# describe the thirty samples the file ends up holding — which is why AC/AF/AN
+# are dropped rather than left to be read as the same thing.
 if [ "$CHROM" = chr1 ]; then
-  { head -8 wolves.txt; echo SAAR000001; echo GRSD000002; head -8 dogs.txt; } \
-    > block.samples
+  { cat greek.txt; cat targets.txt; cat gsdref.txt; } > block.samples
+  { awk '{print $1"\twolf"}' wolves.txt
+    awk '{print $1"\tdog"}' dogs.txt; } > afgroups.txt
   tabix -f -p vcf "$CHROM.subset.vcf.gz"
-  bcftools view -r chr1:107900000-108100000 -S block.samples --force-samples \
-    -Oz -o dog10k_wolfdog_chr1_block.vcf.gz "$CHROM.subset.vcf.gz"
+  bcftools view -r chr1:107900000-108100000 -Ou "$CHROM.subset.vcf.gz" \
+    | bcftools +fill-tags -Ou -- -S afgroups.txt -t AF \
+    | bcftools view -S block.samples --force-samples -Ou \
+    | bcftools annotate -x INFO/AC,INFO/AF,INFO/AN,INFO/NS \
+      -Oz -o dog10k_wolfdog_chr1_block.vcf.gz
   tabix -f -p vcf dog10k_wolfdog_chr1_block.vcf.gz
-  echo "Wrote $(pwd)/dog10k_wolfdog_chr1_block.vcf.gz (the genotype figure's window)."
+  echo
+  echo "Wrote $(pwd)/dog10k_wolfdog_chr1_block.vcf.gz (the marker figure's window)."
+  echo "Markers the figure keeps (AF_wolf >= 0.8 and AF_dog <= 0.15):"
+  bcftools query -f '%POS\t%INFO/AF_wolf\t%INFO/AF_dog\n' \
+    dog10k_wolfdog_chr1_block.vcf.gz \
+    | awk '$2>=0.8 && $3<=0.15 {n++; print "  "$0} END {print "  "n" markers"}'
 fi

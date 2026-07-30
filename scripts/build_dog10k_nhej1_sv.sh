@@ -71,20 +71,37 @@ echo "Wrote $(pwd)/dog10k_nhej1_svs.vcf.gz (plus its .tbi)."
 echo "Load it with the track JSON in the structural-variant tutorial."
 
 # ── The DENR SINE dimorphisms ───────────────────────────────────────────────
-# The same recipe at a second locus, for the Mastiff-clade breeds the paper
-# names plus two comparison breeds and the same wolves. Only the two SINEC2A1
-# deletions are kept: the locus carries seven other SVs, and one of them
-# overlaps the first SINE, which makes a per-sample panel of the region
-# unreadable without saying anything extra.
+# The same recipe at a second locus. Only the two SINEC2A1 deletions are kept:
+# the locus carries seven other SVs, and one of them overlaps the first SINE,
+# which makes a per-sample panel of the region unreadable without saying
+# anything extra.
+#
+# Every animal of every breed here, no head-N truncation, because for these two
+# variants the distribution *within* a breed is the content. An earlier version
+# took four Boxers, four Bull Terriers, two English Bulldogs and three Collies,
+# and 24 of its 25 dogs came out het or hom-alt: the figure reduced to light blue
+# against dark blue, with a single homozygous-reference animal left to carry the
+# whole "the reference allele is the rare one" point.
+#
+# Mastiff/Terrier-clade breeds: the four the paper names, plus four more of the
+# clade so its genotypes are a distribution rather than an anecdote. The clade
+# breeds left out (Bullmastiff, Continental Bulldog, Cane Corso, Boston Terrier)
+# behave the same way; these four are simply the larger ones.
+#
+# Wolves: all twelve Greek gray wolves rather than four, which is what makes the
+# two SINEs distinguishable. The first is absent from all 55 wolves in the
+# callset; the second is carried by 23 of them. The two adjacent repeats have
+# different histories, and four wolves cannot show that.
 python3 - <<'PY' > denr.samples
 rows = [l.rstrip('\n').split('\t') for l in open('samples.txt')][1:]
 rows = [r for r in rows if r[11] == 'YES' and r[16] == 'TRUE']
-groups = [('Boxer', 4), ('Bull Terrier', 4), ('Miniature Bull Terrier', 4),
-          ('English Bulldog', 2), ('Labrador Retriever', 4), ('Collie', 3)]
+breeds = ['Boxer', 'Bull Terrier', 'Miniature Bull Terrier', 'English Bulldog',
+          'French Bulldog', 'Staffordshire Bull Terrier', 'Dogue de Bordeaux',
+          'Neapolitan Mastiff', 'Labrador Retriever']
 out = []
-for breed, n in groups:
-    out += [r[0] for r in rows if r[1] == breed][:n]
-out += [r[0] for r in rows if r[2] == 'Wolf' and r[1] == 'Greece'][:4]
+for breed in breeds:
+    out += [r[0] for r in rows if r[1] == breed]
+out += [r[0] for r in rows if r[2] == 'Wolf' and r[1] == 'Greece']
 print('\n'.join(out))
 PY
 

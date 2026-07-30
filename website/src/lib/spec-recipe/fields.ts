@@ -236,6 +236,18 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show mismatches',
     'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
   ),
+  // A 'draw'/'skip' enum behind a checkbox, so it can't use `checkbox()` (which
+  // only takes booleans). Label and polarity from the multi-sample variant
+  // displays' own menu item: checked means 'draw'.
+  referenceDrawingMode: value =>
+    typeof value === 'string'
+      ? {
+          path: `${TRACK_MENU} → Show reference alleles (${
+            value === 'skip' ? 'unchecked' : 'checked'
+          })`,
+          note: 'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
+        }
+      : undefined,
   showOnlyGenes: checkbox('Show only genes'),
   // Three sibling checkboxes at the top of the reference-sequence track menu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
