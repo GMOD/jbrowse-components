@@ -124,11 +124,16 @@ function groupedTupleHeads(node: ts.Expression): string[] | undefined {
     : undefined
 }
 
+interface Projection {
+  name: string
+  grouped: boolean
+}
+
 // `X.map(...)` / `X.flatMap(...)` -> the name of X, so a derived constant can be
 // resolved from the table it projects. The projection itself isn't interpreted:
 // every such table in the codebase maps to its tuple heads, and a table that
 // didn't would surface as a wrong list, so we only accept the two shapes above.
-function projectionSource(node: ts.Expression) {
+function projectionSource(node: ts.Expression): Projection | undefined {
   return ts.isCallExpression(node) &&
     ts.isPropertyAccessExpression(node.expression) &&
     (node.expression.name.text === 'map' ||
@@ -179,14 +184,67 @@ function samePairs(a: [string, string][], b: [string, string][]) {
   )
 }
 
+// What a tuple table can project to, precomputed so the derived pass compares
+// values rather than syntax: two files declaring the same table with different
+// formatting agree, the way samePairs' comment above requires.
+interface TableProjections {
+  heads: string[] | undefined
+  groupedHeads: string[] | undefined
+}
+
+// The table map feeding derived resolution needs the same conflict rule as the
+// three indexes above, or an ambiguous table still resolves its derived
+// constant — off whichever file the program happened to parse last, which is
+// exactly the guessing the module exists to avoid. `record` flags the table
+// itself as ambiguous, but that says nothing about the projection of it.
+function recordTable(
+  tables: Map<string, TableProjections | null>,
+  name: string,
+  value: ts.Expression,
+) {
+  const projections = {
+    heads: tupleHeads(value),
+    groupedHeads: groupedTupleHeads(value),
+  }
+  const prior = tables.get(name)
+  if (prior === undefined) {
+    tables.set(name, projections)
+  } else if (
+    prior === null ||
+    prior.heads?.join('\0') !== projections.heads?.join('\0') ||
+    prior.groupedHeads?.join('\0') !== projections.groupedHeads?.join('\0')
+  ) {
+    tables.set(name, null)
+  }
+}
+
+// And the derived constants themselves: `const B = A.map(...)` declared twice
+// against different tables is ambiguous even when both tables resolve cleanly.
+function recordDerived(
+  derived: Map<string, Projection | null>,
+  name: string,
+  projection: Projection,
+) {
+  const prior = derived.get(name)
+  if (prior === undefined) {
+    derived.set(name, projection)
+  } else if (
+    prior === null ||
+    prior.name !== projection.name ||
+    prior.grouped !== projection.grouped
+  ) {
+    derived.set(name, null)
+  }
+}
+
 /**
  * Scan already-parsed source files for top-level string-array constants. Takes
  * the shared program's trees (see createDocProgram) rather than paths: reparsing
  * the repo here cost a second full parse of everything the program already had.
  */
 export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
-  const literals = new Map<string, ts.Expression>()
-  const derived = new Map<string, { name: string; grouped: boolean }>()
+  const tables = new Map<string, TableProjections | null>()
+  const derived = new Map<string, Projection | null>()
   for (const sf of sourceFiles) {
     if (!/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(sf.text)) {
       continue
@@ -208,13 +266,13 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
               recordScalar(name, value.text)
             } else if (direct) {
               record(name, direct)
-              literals.set(name, value)
+              recordTable(tables, name, value)
             } else if (tupleHeads(value) ?? groupedTupleHeads(value)) {
-              literals.set(name, value)
+              recordTable(tables, name, value)
             } else {
               const projection = projectionSource(value)
               if (projection) {
-                derived.set(name, projection)
+                recordDerived(derived, name, projection)
               }
             }
           }
@@ -222,16 +280,20 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
       }
     }
   }
-  // second pass: derived constants, now that every table is known
-  for (const [name, { name: from, grouped }] of derived) {
-    const table = literals.get(from)
-    const values = table
-      ? grouped
-        ? groupedTupleHeads(table)
-        : tupleHeads(table)
-      : undefined
-    if (values) {
-      record(name, values)
+  // second pass: derived constants, now that every table is known. A null on
+  // either side is an ambiguous name, and falls through to no entry in `index`
+  // — i.e. the source-block fallback, not a guess.
+  for (const [name, projection] of derived) {
+    if (projection) {
+      const table = tables.get(projection.name)
+      const values = table
+        ? projection.grouped
+          ? table.groupedHeads
+          : table.heads
+        : undefined
+      if (values) {
+        record(name, values)
+      }
     }
   }
 }

@@ -73,6 +73,83 @@ describe('scalarConstantValue', () => {
   })
 })
 
+describe('enumConstantValues, derived constants', () => {
+  test('a projection of a tuple table resolves to the tuple heads', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'derived.ts',
+        `const TABLE_T9 = [['a', 'A'], ['b', 'B']] as const
+         const VALUES_T9 = TABLE_T9.map(([value]) => value)`,
+      ),
+    ])
+    expect(enumConstantValues('VALUES_T9')).toEqual(['a', 'b'])
+  })
+
+  test('a flatMap over a grouped table resolves to every inner head', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'grouped.ts',
+        `const GROUPS_T10 = [['Group', [['a', 'A'], ['b', 'B']]]] as const
+         const VALUES_T10 = GROUPS_T10.flatMap(([, opts]) => opts.map(([v]) => v))`,
+      ),
+    ])
+    expect(enumConstantValues('VALUES_T10')).toEqual(['a', 'b'])
+  })
+
+  test('an ambiguous source table drops the constant derived from it', () => {
+    buildEnumConstantIndex([
+      sourceFile('table-a.ts', `const AMBIG_TABLE_T11 = [['a', 'A']] as const`),
+      sourceFile('table-b.ts', `const AMBIG_TABLE_T11 = [['z', 'Z']] as const`),
+      sourceFile(
+        'table-use.ts',
+        `const DERIVED_T11 = AMBIG_TABLE_T11.map(([value]) => value)`,
+      ),
+    ])
+    // the table's own name is ambiguous, and so is anything projected from it —
+    // otherwise the projection documents whichever file parsed last
+    expect(enumConstantValues('AMBIG_TABLE_T11')).toBeUndefined()
+    expect(enumConstantValues('DERIVED_T11')).toBeUndefined()
+  })
+
+  test('the same table declared twice still resolves its derived constant', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'agree-a.ts',
+        `const AGREED_TABLE_T12 = [['a', 'A']] as const`,
+      ),
+      sourceFile(
+        'agree-b.ts',
+        `const AGREED_TABLE_T12 = [
+           ['a', 'A'],
+         ] as const`,
+      ),
+      sourceFile(
+        'agree-use.ts',
+        `const DERIVED_T12 = AGREED_TABLE_T12.map(([value]) => value)`,
+      ),
+    ])
+    // formatting differs, values don't — comparing projections rather than
+    // source text keeps this resolving
+    expect(enumConstantValues('DERIVED_T12')).toEqual(['a'])
+  })
+
+  test('a derived name projected from two different tables is dropped', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'two-src-a.ts',
+        `const LEFT_T13 = [['a', 'A']] as const
+         const DERIVED_T13 = LEFT_T13.map(([value]) => value)`,
+      ),
+      sourceFile(
+        'two-src-b.ts',
+        `const RIGHT_T13 = [['z', 'Z']] as const
+         const DERIVED_T13 = RIGHT_T13.map(([value]) => value)`,
+      ),
+    ])
+    expect(enumConstantValues('DERIVED_T13')).toBeUndefined()
+  })
+})
+
 describe('slotFieldConstantPairs', () => {
   test('a shared slot table resolves to its slots, in declaration order', () => {
     buildEnumConstantIndex([
