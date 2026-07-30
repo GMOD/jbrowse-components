@@ -51,7 +51,8 @@ three fixtures (`test_data/graphgenomeview/{config,hprc,ecoli_pangenome}.json`)
 pin it; `test_data/graphgenomeview/README.md` states the rule. The unversioned
 url stays current, which is what the published figures' live links point at.
 
-Currently pinned: `a02d972621cb`. Bumping it is a one-line diff — regenerate the
+The pinned hash lives in the three fixtures, and only there — don't restate it
+here, it has drifted twice already. Bumping it is a one-line diff; regenerate the
 graph figures in the same commit.
 
 This is what the old failure mode looked like, so it is recognisable if the pin
@@ -139,6 +140,183 @@ Two findings to respect, both already paid for:
   hanging at 15+ GB; the pointer-heavy Python data model is the cause and a flat
   int64-CSR rewrite is their fix. For E. coli none of this matters, so the spike
   is cheap; for human it is the whole cost.
+
+## 6. The axis: y in pixels, x from the linear view
+
+**The highest-value change in this file, and it is one number becoming two.**
+Both reference-anchored layouts set row spacing in *bp*
+(`ROW_SPACING_SPAN_FRACTION = 0.05` of the backbone span, in `anchoredLayout.ts`
+and `sampleRowLayout.ts`), and the view scales both axes by one `self.scale`. So
+a row pitch is 5% of the drawn width — ~50 px in every published figure —
+whatever the rows contain, which is an ~8 px tall mark. Three separate
+complaints are that one decision:
+
+- the open `hprc_graph_vs_callset` review verdict ("the different rank rows are
+  quite tall, we need compressed visualizations with efficient use of y-axis real
+  estate, but particularly the backbone graph");
+- **the panels do not actually line up.** `hprc_mhc_anchored` is the figure whose
+  whole argument is a shared axis, and the segments lane above spans the full
+  pane while the backbone below starts after `FIT_PADDING` (40) plus the row-label
+  gutter and ends short of the right edge. Sharing a coordinate system is not
+  sharing a pixel mapping;
+- "sample rows stops aligning past ~12 rows" in
+  [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) is the same
+  bug seen from the other end: rows in bp make a tall drawing, `canvasHeight`
+  caps at 600, and the fit then binds on height and centres.
+
+The plumbing is already there: `Renderer.updateTransform` takes `scaleX` and
+`scaleY` separately and the model passes `self.scale` to both. Give the layouts a
+row pitch in px, drive `scaleX` from bp, and take `scaleX`/`translateX` from the
+connected LGV's `bpPerPx`/`offsetPx` when `connectedViewId` is set. Then rows are
+a track's row height, the backbone sits under the ruler that measures it, and
+`MAX_CANVAS_HEIGHT`/`canvasHeight`'s aspect-ratio derivation can go.
+
+Do this before item 5. It is also what makes a compact figure possible for the
+one verdict still open on that figure.
+
+## 7. The window is not navigable from inside the view
+
+`loadedRegion` is written once by the launch and there is no action that changes
+it (`refetchIfNeeded` returns early when `self.graph` is set). Pan and zoom move
+the *drawing*, so seeing the next 60 kb means going back to the linear view and
+rubberbanding again. Fetch cost does not scale with window size (~1.3 s,
+dominated by HTTP setup), so nothing about the data makes this expensive.
+
+Cheapest useful version: follow the connected LGV. With item 6 done the graph is
+already reading that view's transform, so a debounced refetch when its region
+leaves `loadedRegion` — under `MAX_GRAPH_REGION_BP`, showing the existing
+"zoom in to view graph" message past it — turns the graph into a second panel of
+one navigation. A locstring field plus widen/narrow buttons is the fallback if
+following turns out to fight the user.
+
+## 8. Small UI debts, each cheap
+
+- **A declaratively launched graph view is titled "Untitled view."** Every HPRC
+  figure shows it. `viewTitle` (`packages/app-core/src/ui/App/viewTitle.ts`)
+  falls back through `assemblyNames`, which this model does not expose;
+  `launchSubgraphView` only avoids it by writing `displayName`. One getter
+  returning `[loadedRegion.assemblyName]` fixes both the title and any other
+  assembly-aware app machinery.
+- **The perf readout is published.** `fetch 12371ms · layout 4ms · geom 9ms` sits
+  in the toolbar of every graph figure. Keep the `data-*` attributes browser
+  tests assert on; put the text behind the settings menu.
+- **The hover tooltip is pinned bottom-left**, where it covers a row label
+  (already noted as an unverified observation in
+  [PANGENOME_FIGURE_PASS_HANDOFF.md](PANGENOME_FIGURE_PASS_HANDOFF.md) item 4 —
+  it is real, and it is this).
+- **Sample rows are sorted alphabetically** (`contributingSamples`), so a row's
+  neighbours mean nothing. Sorting by the allele length or leftmost position a
+  row carries reads the way a sorted pileup does.
+- **A row set cannot be requested.** Rows come from whoever contributed here, so
+  the graph in `hprc_graph_vs_callset` cannot be made to line up row-for-row with
+  a genotype matrix of chosen donors, which is exactly what that figure's open
+  verdict asks for. An explicit list of samples to row (empty rows included)
+  would make the two panels comparable, and would also let the graph label
+  `HG00642.1` where the callset labels `HG00642 HP0`.
+
+## 9. Rebuild the hosted index reference-only (config, not code)
+
+Measured in [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md):
+9.18 MB of `.tbi` is downloaded before any subgraph can be cut, 95% of it
+indexing donor contigs no query on the demo path reaches, and a reference-only
+rebuild returns byte-identical rows for 19× less. Emit the small pair beside the
+full one in `build_rgfa_tabix.sh`, point the HPRC configs at it, and the 12 s
+`fetch` in every graph figure goes with it. Keep the full pair for `context > 0`
+and for a segments track on a contributing assembly.
+
+## Demo opportunities, in the order I would shoot them
+
+Every file, locus and measured cost behind these is in
+[reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) — the bubble
+scan, the release-2 files, and why CHM13 is the only donor worth loading.
+
+- **Load CHM13 as a second assembly. Cheapest item in this file by far.** Three
+  built interaction paths are dead on HPRC only because the config loads one
+  assembly: right-click a node → open the donor, highlight into the donor's view,
+  and the whole synteny launch (which needs two openable contributors). CHM13
+  contributes alleles throughout, spells its contigs `chr6`, and needs no
+  hosting — UCSC's `hs1` TwoBit, `hs1` gene bigBed, and the 2.7 MB
+  `hg38ToHs1.over.chain.gz` through `ChainAdapter`. The figure is one click:
+  an allele in the graph, opened on T2T coordinates with its own genes beside it.
+- **The mitochondrial pangenome, force-directed. Built and verified, needs two
+  files hosted.** HPRC release 2's pggb build ships per chromosome and **chrM is
+  78 kb compressed** against 2.5-7.4 GB for every autosome, so it is the one
+  human graph small enough to hand the view as a file — no index, no launch, no
+  region, and it is base-level rather than SV-resolution. The whole graph is
+  4,749 nodes / 6,540 edges / **234 haplotype paths** over 16.6 kb, path-anchored
+  on `GRCh38#0#chrM`, node depth 1-234 (so the `depth` colour scheme means "how
+  many haplotypes carry this"), and FMMM lays it out in 1.6 s at aspect ratio
+  1.07.
+  **But the whole graph draws as a rope** — 4,749 nodes over a 900 px pane is
+  0.19 px each against a fixed node thickness. The legible cut is a narrow window
+  with all 234 haplotypes; the plugin's `GRAPH_SCALE_AND_LOD.md` now records the
+  measured ceiling. Two ready:
+  - `chrM:8,200-8,400`, **61 nodes / 84 edges / 234 paths** — the 9 bp
+    COII/tRNA-Lys deletion region, a handful of bubbles at 15 px per node.
+    This is the one to shoot.
+  - `chrM:16,024-16,400`, 351 nodes / 234 paths — HVS-I, the most-sequenced
+    stretch of human DNA in population genetics. Denser, still speckled.
+
+  Recipe (odgi and zstd are on the box; both outputs are in this session's
+  scratchpad): fetch
+  `pangenomes/freeze/release2/pggb/gfas/by-chromosome/20251014_hprc25272.p98-k311.chrM.gfa.zst`,
+  `zstd -d`, `odgi build -g`, then
+  `odgi extract -i chrM.og -o w.og -r 'GRCh38#0#chrM:8200-8400' -c 0` and
+  `odgi view -i w.og -g`. 67 kb and 305 kb of GFA respectively. Pair with
+  `bubbleSpread: 'open'` and `colorScheme: 'depth'`, and the spec is declarative
+  (`gfaLocation`) with no menu-driving. Also worth stating in the tutorial: the
+  12 most divergent haplotypes are pickable with `odgi similarity` plus a
+  farthest-point walk, and the first pick after GRCh38 is HG03270 at 7.8%
+  dissimilarity — the deep African split, which is the right answer.
+- **Shoot 5q13 (SMN1/SMN2), not another MHC window.** Three overlapping
+  mega-bubbles at 27-72 segments each plus an inversion, in a region RefSeq
+  itself describes as impossible to organize, where copy number sets spinal
+  muscular atrophy severity and short reads cannot count it. The graph, the
+  bubble lane and a carriage matrix all have something different to say about the
+  same 300 kb. The current locus table in `pangenome_hprc.md` is five loci picked
+  off a list; this one was picked by scanning the bubble file, which is also the
+  method worth writing down.
+- **Draw orientation.** 246 of 130,510 bubbles carry the inversion flag, and
+  `StableCoordinate.strand` reaches the node popup while nothing draws it — so
+  the one structural event a graph shows better than any linear view is currently
+  invisible in ours. Arrowheads or a reversed-node treatment makes AMY1,
+  15q13/HERC2, 10q23 and LCR22 read as inversions on sight. This is the same
+  missing data the `computeEdgeCurves` reverse-complement bug needs (see the
+  plugin's `bubbleCrossing.test.ts`), so the two land together.
+- **"240 kb that GRCh38 does not have."** `chr16:74,406,294-74,406,329` is a
+  35 bp anchor with a 239,774 bp allele; `chr1:248,122,398-248,180,452` is 18
+  segments and a clean 0 → 247,631 presence/absence over an olfactory-receptor
+  cluster. The pangenome's whole claim, in one window, at a segment count that
+  draws instantly.
+- **Carriage, at the graph's own granularity** (`pgbi.vcf.gz`). The HPRC tutorial
+  currently ends "carriage remains the callset's job" and hands off to
+  `wave.vcf.gz`, whose decomposition is a finer grain than the graph's alleles.
+  This file is one record per snarl with 462 haplotypes of `GT`, so a matrix
+  beside the graph has one column per bubble — which is what makes
+  `hprc_graph_vs_callset` legible instead of two pictures at different grains.
+  `LV=0` filters to the same top-level bubbles the hosted bubble track holds.
+  Joining its `AF` onto the allele inventory would also let both panels colour by
+  allele frequency, which is a statement nothing else in JBrowse can make: this
+  100 kb insertion is carried by 41% of 462 haplotypes, that one by 0.2%.
+- **What the insertion is** (the WashU MEI BED, 10 MB, one file, hg38). The graph
+  says 315 bp of novel sequence attaches here; this says `AluY`, intact, and
+  lists the haplotypes carrying it. Cheapest of the data adds and it contributes
+  information no projection of the graph can.
+- **Linearized multiway synteny of several haplotypes** (impg `all-vs-1` PAFs).
+  The open verdict on `hprc_c4_subgraph` verbatim: "would be interesting to see
+  linearized multiway synteny of several haplotypes with gene annotation in
+  each". The alignments exist per haplotype against GRCh38; `make-pif` indexes
+  them. Gene annotation per haplotype is the unresolved half — release 1 has CAT
+  GENCODE38 (`submissions/FC7E9302-…--Y1_CAT_ANNOTATION_GENCODE38`), release 2
+  needs checking or a liftoff, so scope this at r1 samples that are also in r2 if
+  the annotation search comes up empty.
+- **A chromosome-scale band, config only.** `GRAPH_SCALE_AND_LOD.md` in the
+  plugin repo works out that a `LinearWiggleDisplay` on the existing bubble
+  track gives the overview band with no new rendering code
+  (`MinigraphBubbleAdapter` already sets `score: segmentCount`), and it is still
+  unbuilt. It is the one thing that makes the graph navigable at chromosome
+  scale, and the next figure after it is a whole-chr6 variability profile with
+  the MHC as a visible spike.
 
 ## Traps worth knowing before you touch the figures
 

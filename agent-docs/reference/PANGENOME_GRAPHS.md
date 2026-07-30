@@ -182,6 +182,108 @@ own loci: C4 (`GRCh38#0#chr6:31,980,000-32,050,000`, 70 kb) and MHC class II
   panel (same ids, same rank colors), the chaining and nesting of an alternate
   path, and working on a bare minigraph rGFA with no `deconstruct` step.
 
+## The hosted index is 95% dead weight (measured 2026-07-30)
+
+Every graph launch downloads both tabix indexes before it can cut anything, and
+that fixed cost is what the perf readout reports as `fetch 12371ms` in the
+published HPRC graph figures. It is index download, not query:
+
+| file                | data     | `.tbi`   | indexed sequences |
+| ------------------- | -------- | -------- | ----------------- |
+| `segs.bed.gz`       | 6.7 MB   | 4.42 MB  | 13,717            |
+| `links.bed.gz`      | 34.2 MB  | 4.76 MB  | 13,581            |
+| reference rows only | 2.5/12.5 | 0.21/0.26 | 195              |
+
+195 of those 13,717 sequences are `GRCh38#*`; the rest are donor contigs.
+`getSubgraph` at the default `context: 0` queries **only** the reference
+refName, and a reference-keyed link row states both endpoints in full, so the
+donor rows are unreachable on the demo path. Rebuilding the pair from
+`$1 ~ /^GRCh38/` returns byte-identical rows at
+`GRCh38#0#chr6:32,500,000-32,560,000` for **19× less index** (9.18 MB → 0.48
+MB). Donor rows are still needed for `context > 0` hops and for a segments
+track opened on a contributing assembly (the E. coli case, not HPRC), so this
+is a second smaller pair rather than a filter on the only one.
+
+## The bubble file is a locus finder (scanned 2026-07-30)
+
+`hprc-v2.0-mc-grch38.bubbles.bed.gz` is 130,510 bubbles, and it carries enough
+per row to rank loci without opening the graph: segment count, path count,
+shortest and longest allele, and an **inversion flag that is set on only 246 of
+them**. That 246 is small enough to treat as a complete list.
+
+Scoring on `longest - shortest` alone returns pericentromeric and satellite
+regions with thousands of segments — a real answer to "where does the graph hold
+the most sequence", and undrawable. Filtering to what the view can draw
+(delta ≥ 20 kb, ≤ 200 segments, span ≤ 300 kb) leaves 30 candidates, and the
+gene names come off the hosted `ncbiRefSeq.gff.gz` (note `gene` rows carry
+`gene_id=`, not `gene_name=`). The ones worth knowing:
+
+| locus                          | segs | inv | shortest → longest | genes                    |
+| ------------------------------ | ---- | --- | ------------------ | ------------------------ |
+| `chr5:70,996,742-71,121,626`   | 27   |     | 0 → 375,610        | GTF2H2, NAIP, OCLNP1     |
+| `chr5:69,967,884-70,150,288`   | 50   | yes | 140,991 → 433,090  | SMN2, SERF1B             |
+| `chr22:22,674,713-22,919,615`  | 137  |     | 32,072 → 303,712   | IGLL5 (the IGL locus)    |
+| `chr14:105,558,722-106,679,859` | 3784 | yes | 106,366 → 2,455,720 | ADAM6, ELK2AP (IGH)     |
+| `chr22:18,185,648-19,023,244`  | 2194 | yes | 74,902 → 1,180,034 | DGCR6, FAM230A (LCR22)   |
+| `chr1:103,611,080-103,732,636` | 95   | yes | 26,889 → 316,616   | AMY1A, AMY1B, AMY2A      |
+| `chr19:42,738,980-42,854,205`  | 146  |     | 0 → 490,126        | PSG3, PSG8               |
+| `chr1:248,122,398-248,180,452` | 18   |     | 0 → 247,631        | OR2M2, OR2M5             |
+| `chr10:87,233,092-87,429,953`  | 10   | yes | 64,643 → 329,055   | NUTM2A, NUTM2D           |
+| `chr16:74,406,294-74,406,329`  | 40   |     | 35 → 239,774       | CLEC18B                  |
+| `chr15:28,452,488-28,603,853`  | 98   | yes | 27,815 → 332,579   | GOLGA8G, HERC2P11        |
+| `chr1:12,780,118-13,315,943`   | 658  | yes | 61,683 → 1,101,014 | PRAMEF*, HNRNPCL*        |
+
+5q13 is three overlapping mega-bubbles plus an inversion at 27-72 segments
+apiece, which is the rare combination of drawable and famous: RefSeq's own
+`NAIP` description calls the region "a 500 kb inverted duplication… prone to
+rearrangements… difficulty in determining the organization of this genomic
+region", and SMN1 copy number is what sets spinal muscular atrophy severity.
+
+## Only two donors can be loaded as assemblies
+
+Of the 464 donor haplotypes in the segment index, exactly **HG002.1, HG002.2 and
+CHM13** spell their contigs `chr1`-style; the other 460 use GenBank accessions
+(`CM086511.1`). So those are the only contributors a session can open a linear
+view on, and the whole outbound launch menu (`nodeLaunchTargets`,
+`launchableAssemblies`, the synteny launch) is dead on HPRC purely because the
+config loads one assembly.
+
+CHM13 costs nothing to add: UCSC hosts it as `hs1`
+(`test_data/hs1/config.json` already has the assembly stanza, a TwoBit off
+`hgdownload`), genes are `gbdb/hs1/ncbiRefSeq/ncbiRefSeq.bb`, and
+`goldenPath/hg38/liftOver/hg38ToHs1.over.chain.gz` is 2.7 MB and reads through
+`ChainAdapter`, which is what a synteny launch out of the graph needs. Pair it
+with `assemblyNameToPanSN: { "hs1": "CHM13" }`.
+
+HG002's parents are **not** in the graph (`pgbi.vcf.gz` has HG002 and HG005 but
+no HG003/HG004), so there is no trio to show inside the pangenome.
+
+## Release 2 files nothing here reads yet (probed 2026-07-30)
+
+All three are public on `s3://human-pangenomics` and all three answer a question
+the sections above record as unanswerable.
+
+- **`submissions/671F0A25-…--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz`**
+  (3.5 GB, `.tbi` published beside it) is the **carriage file this page says does
+  not exist**. Snarl-level rather than decomposed: `AT` per allele is its
+  traversal through the graph, `LV`/`PS` place it in the snarl tree, and 231
+  phased samples give 462 haplotypes of `GT`. Remote `tabix` over the C4 window
+  (70 kb) is 1,107 records, 3.2 MB of text, 1.7 s — browsable, unlike its size
+  suggests. Records with no `LV` field are the long alleles (`REF` up to 39 kb);
+  451 of the 1,107 are `LV=0`. **The join to our graph is positional, not by
+  id**: `ID`/`AT` name base-level integer nodes (`>161001867>161004536`), not the
+  `sNNNNN` of `sv.gfa`.
+- **`submissions/afb0c613-…--WashU_HPRCv2_MEI/all.final.INDEL.unique.gt.combined.hg38.bed`**
+  (10 MB, hg38, one file) names what an insertion *is*:
+  `chrom start end class score strand INS|DEL carriers intactness`, where class
+  is `AluY`/`SVA`/`L1…` and `carriers` is `SAMPLE:1|0,…` phased per haplotype.
+  bgzip + tabix and it is a `FeatureTrack`.
+- **`pangenomes/freeze/release2/impg/pafs/all-vs-1/*.merged.paf.gz`**, one per
+  haplotype against GRCh38 (0.5-0.7 GB gzipped each). The input for a
+  per-haplotype linearized synteny stack (`jbrowse make-pif`). Not range
+  indexed, so a locus demo means streaming one file per haplotype and filtering
+  on the target side.
+
 ## Indel glyphs (shipped)
 
 Two length-aware passes, both an `OverlayCanvas` over whichever backend painted
@@ -258,5 +360,6 @@ done in [guides/PANGENOME_GRAPH_NEXT.md](../guides/PANGENOME_GRAPH_NEXT.md).
   The input exists: `~/ecoli_graph5/pggb/*.smooth.final.og.lay.tsv`.
 - **Bubble collapse is the one that matters** for scale. Path anchoring gives a
   base-level graph an axis; it does not give it a node budget.
-- **HPRC has no per-haplotype path track** — `--call` would need the 464
-  assemblies re-mapped, so it stays on `wave.vcf.gz`.
+- **HPRC needs no per-haplotype path track after all.** `--call` would need the
+  464 assemblies re-mapped, but `pgbi.vcf.gz` (above) already states carriage at
+  bubble granularity and is tabix-indexed.
