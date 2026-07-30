@@ -294,6 +294,12 @@ export interface EmbeddedSpec extends CommonSpecFields {
 export interface ComposeSpec extends BaseSpecFields {
   mode: 'compose'
   parts: string[] // spec names whose static/img PNGs are stacked, top to bottom
+  // 'horizontal' places the parts side by side (`+append`) instead of stacking
+  // them. Use it when the two states are the SAME view drawn two ways and a
+  // reader compares them across rather than down — the layout pair, where
+  // stacking makes the second look like the next step rather than the
+  // alternative. The parts then have to share a HEIGHT rather than a width.
+  direction?: 'vertical' | 'horizontal'
 }
 
 export type BrowserScreenshotSpec = SessionUrlSpec | EmbeddedSpec

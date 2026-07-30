@@ -1952,10 +1952,10 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "should have the force directed bandage graph version also. potentially as a 'left+right' two part image",
+    "status": "good",
+    "note": "DONE, left+right as suggested. The figure is now a horizontal compose of the same pggb subgraph drawn twice over the same linear view: anchored on the graph's K12 path (the shared-axis claim the figure was always making) and force-directed beside it. Seeing the force drawing is what turns the axis in the other half into a choice rather than the only way a graph can be drawn. Mechanism: ComposeSpec grew a 'direction' field, so a compose can '+append' instead of '-append'. Each half is sized to its own content rather than to the taller of the two - the anchored pane is two rows and the force drawing fills a 600px box - because +append pads the shorter one anyway, and that way each half is still a right-sized figure on its own live link. The Figure now carries links= for both halves, since a compose spec has no session of its own. Caption rewritten for the pair.",
     "reviewedAt": "2026-07-30T14:07:03.193Z",
-    "hash": "4f876b05f3685d31c6f6eec057ccbdda91fc6ac2"
+    "hash": "d7afd0938e8f624cb61f1b8f273e4c0caacfc1e3"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2057,10 +2057,10 @@
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
-    "status": "bad",
-    "note": "if this is a 'two part image' (refers to 'the same subgraph') may want to make it a split left+right image",
+    "status": "good",
+    "note": "DONE, and the note had found a real error. The caption said 'the same subgraph in the anchored layout' while the figure above it was a DIFFERENT locus (amylase on chr1) drawn force-directed, so the pair the prose promised did not exist and this figure was one half of a comparison with nothing to compare against - which is what 'if this is a two part image ... may want to make it a split left+right image' was reacting to. Both halves are now genuinely the same subgraph: same MHC class II window, same gene and segments lanes, same reference-position colors, differing only in layoutMode. Side by side rather than stacked, because stacked the second reads as the next step rather than as the alternative. Each half sized to its own content (the composite pads the shorter one), and the Figure carries links= for both, since the compose spec has no session of its own.",
     "reviewedAt": "2026-07-30T14:07:38.199Z",
-    "hash": "655c5e4799bf4aedb88d93271bbdd6a933607f88"
+    "hash": "901921475f4e3c59d64c2f7ad36b0cb7942d67fd"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",

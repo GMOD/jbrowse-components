@@ -507,7 +507,7 @@ way, so the track needs no color configuration and cannot drift from the graph.
 Nodes the reference path never visits are the alternate alleles. They have no
 K12 position, so they are absent from the linear track.
 
-<Figure caption="A slice of the five-strain graph anchored on its K12 path, under a linear view of the same locus. Both panels are on the same axis and in the same Depth colors: the backbone row below is the node strip above, and the step from green to yellow is where the fifth strain rejoins the shared sequence, in both. The alternate alleles sit on the row below the backbone. They have no K12 coordinate, and their drawn width is a visibility floor rather than their length in bp, which the node tooltip gives." src="/img/pangenome/local_subgraph.png" />
+<Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the backbone row is the node strip above it and the green-to-yellow step, where the fifth strain rejoins the shared sequence, is at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis. The alternate alleles have no K12 coordinate either way, and their drawn width is a visibility floor rather than their length in bp, which the node tooltip gives." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
 
 ## Reproduce it end to end
 

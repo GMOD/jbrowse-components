@@ -622,6 +622,158 @@ function pggbLocusSession(layoutMode: 'auto' | 'samplerows') {
   })
 }
 
+// The layout trade, as one subgraph drawn twice — the halves of
+// pangenome/hprc_mhc_anchored. The HPRC tutorial spends a paragraph on the
+// trade and its figure used to be the anchored half alone, captioned "the same
+// subgraph in the anchored layout" against a force-directed figure of a
+// DIFFERENT locus, so the pair the prose promised did not exist. Both halves are
+// now the same window, the same tracks and the same colors, differing only in
+// layoutMode: the anchored one's backbone lines up under the linear view, the
+// force one does not and shows the graph's shape instead.
+//
+// Reference-position colors on both, so a reader can check the axis claim
+// without measuring (review: "just hard to figure out correspondence between
+// linear and graph"): in the anchored half the segment above and the node below
+// share an x AND a color, in the force half only the color survives.
+//
+// Each half is sized to its own content rather than to the taller of the two:
+// `+append` pads the shorter one, so the composite carries the difference as
+// background while each half stays a right-sized figure on its own live link.
+// The force drawing is about as tall as it is wide; the anchored one is seven
+// rank rows.
+// The halves of pangenome/local_subgraph: the same pggb subgraph over the same
+// linear view, anchored on the K12 path and force-directed. The anchored half is
+// the figure's original claim (the strip's green-to-yellow step is the same step
+// in the graph's backbone, at the same x); the force half is what the drawing
+// looks like with nothing holding it to that axis, which is what makes the claim
+// legible as a choice.
+//
+// One height for both, because `+append` pads the shorter one: the anchored
+// layout sizes its pane to two rows and the force drawing is much taller, so the
+// height is the force one's and the anchored half carries the difference as page
+// background.
+function localSubgraphPartSpecs(): ScreenshotSpec[] {
+  const part = (
+    name: string,
+    layoutMode: 'auto' | 'force',
+    viewportHeight: number,
+  ): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: sessionSpec(CONFIG, {
+      // the shared graphgenomeview fixture config carries only the K12
+      // assembly, so both lanes come in as session tracks
+      sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_NODES_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1,004,450-1,005,010',
+          tracks: [
+            {
+              trackId: PGGB_NODES_TRACK,
+              type: 'LinearBasicDisplay',
+              // one row of color: the strip is 36 nodes over 561 bp, and their
+              // ids are bare integers that carry nothing at this width
+              displayMode: 'collapsed',
+              height: 40,
+            },
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              // grey, so the only colors in the frame are the graph's: at the
+              // default goldenrod the gene boxes read as more depth-5 nodes
+              color: 'rgb(130,130,130)',
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
+          colorScheme: 'depth',
+          layoutMode,
+          referencePath: 'K12',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    // half the composed width each
+    viewportWidth: 830,
+    // Each half sized to its own content, not to the taller of the two: the
+    // anchored layout has a pinned aspect ratio — row spacing is a fraction of
+    // the reference span — so its pane is two rows, while the force drawing
+    // fills a 600px box. `+append` pads the shorter one to match, so the
+    // composite carries the difference as background while each half stays a
+    // right-sized figure on its own live link.
+    viewportHeight,
+    hideTooltip: true,
+  })
+  return [
+    part('pangenome/local_subgraph_anchored', 'auto', 640),
+    part('pangenome/local_subgraph_force', 'force', 1025),
+  ]
+}
+
+function mhcLayoutPartSpecs(): ScreenshotSpec[] {
+  const part = (
+    name: string,
+    layoutMode: 'auto' | 'force',
+    viewportHeight: number,
+  ): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,500,000-32,560,000',
+          // Genes and the segments lane only. The bubbles lane was here too and
+          // came out badly at this window: the class II bubble runs the whole
+          // width and the five small ones pack against the right edge, where
+          // each of their two label lines is cut off horizontally, which no
+          // height fixes. Nothing in this figure's caption reads the lane
+          // either - it is about the axis the graph shares with the tracks -
+          // and pangenome/hprc_c4_subgraph and hprc_lpa_kiv2 both carry the
+          // bubbles lane on windows where its labels fit.
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            hprcSegmentsLane(MHC_REGION),
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: MHC_REGION,
+          layoutMode,
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    settleMs: 4000,
+    // half the composed width each
+    viewportWidth: 820,
+    viewportHeight,
+    hideTooltip: true,
+  })
+  return [
+    part('pangenome/hprc_mhc_layout_force', 'force', 1055),
+    part('pangenome/hprc_mhc_layout_anchored', 'auto', 775),
+  ]
+}
+
 export const graphSpecs: ScreenshotSpec[] = [
   // A pggb graph opened at a locus, with no window cut beforehand. Until this
   // existed the pggb tutorial had to send the reader to `odgi extract` for
@@ -706,56 +858,21 @@ export const graphSpecs: ScreenshotSpec[] = [
   // and nothing in the file marks one as the reference, and a whole-file import
   // has no region to infer it from either. 'K12' matches on the PanSN sample
   // name of `K12#1#chr:1004500-1004961`.
+  ...localSubgraphPartSpecs(),
   {
-    mode: 'url',
+    mode: 'compose',
     name: 'pangenome/local_subgraph',
-    url: sessionSpec(CONFIG, {
-      // the shared graphgenomeview fixture config carries only the K12
-      // assembly, so both lanes come in as session tracks
-      sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_NODES_SESSION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:1,004,450-1,005,010',
-          tracks: [
-            {
-              trackId: PGGB_NODES_TRACK,
-              type: 'LinearBasicDisplay',
-              // one row of color: the strip is 36 nodes over 561 bp, and their
-              // ids are bare integers that carry nothing at this width
-              displayMode: 'collapsed',
-              height: 40,
-            },
-            {
-              trackId: 'K12_genes',
-              type: 'LinearBasicDisplay',
-              height: 60,
-              // grey, so the only colors in the frame are the graph's: at the
-              // default goldenrod the gene boxes read as more depth-5 nodes
-              color: 'rgb(130,130,130)',
-            },
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
-          colorScheme: 'depth',
-          layoutMode: 'auto',
-          referencePath: 'K12',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 90000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    viewportWidth: 1000,
-    // The anchored layout has a pinned aspect ratio — row spacing is a fraction
-    // of the reference span — so the graph pane sizes itself to two rows rather
-    // than to the 600px box FMMM filled. The frame is the linear view plus that.
-    viewportHeight: 640,
-    hideTooltip: true,
+    parts: [
+      'pangenome/local_subgraph_anchored',
+      'pangenome/local_subgraph_force',
+    ],
+    // Left+right, per review ("should have the force directed bandage graph
+    // version also. potentially as a 'left+right' two part image"). The anchored
+    // half is the one that makes the shared-axis claim, so it goes first; the
+    // force half is the same subgraph with nothing holding it to the axis, which
+    // is what says the axis in the other half is a real thing rather than the
+    // only way a graph can be drawn.
+    direction: 'horizontal',
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA
   // segments as a feature track over a 50 kb K12 window, and the subgraph the
@@ -1073,65 +1190,24 @@ export const graphSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The anchored counterpart to the force layout: an MHC subgraph with x back on
-  // GRCh38, which is the trade the HPRC tutorial spends a paragraph on and had
-  // no picture of. Read against hprc_c4_subgraph, the two are the whole argument
-  // for having both layouts — this one lines up under the linear view above it,
-  // the force one does not and shows the graph's shape instead.
-  // layoutMode is stated: the view's own default is the force drawing, and this
-  // figure is the anchored one.
-  //
-  // Reference-position colors here too, for a reason this figure has and its
-  // force sibling does not: sharing an axis is not the same as being seen to
-  // share one. Review: "just hard to figure out correspondence between linear
-  // and graph". A reader can now check the claim without measuring — the
-  // segment under the x they are looking at and the node below it are the same
-  // color, and the ramp runs the same way in both panels.
+  ...mhcLayoutPartSpecs(),
   {
-    mode: 'url',
+    mode: 'compose',
     name: 'pangenome/hprc_mhc_anchored',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,500,000-32,560,000',
-          // Genes and the segments lane only. The bubbles lane was here too and
-          // came out badly at this window: the class II bubble runs the whole
-          // width and the five small ones pack against the right edge, where
-          // each of their two label lines is cut off horizontally, which no
-          // height fixes. Nothing in this figure's caption reads the lane
-          // either - it is about the axis the graph shares with the tracks -
-          // and pangenome/hprc_c4_subgraph and hprc_lpa_kiv2 both carry the
-          // bubbles lane on windows where its labels fit.
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
-            hprcSegmentsLane(MHC_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: MHC_REGION,
-          layoutMode: 'auto',
-          colorScheme: 'reference-position',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 90000,
-    settleMs: 4000,
-    viewportWidth: 1000,
-    // the two-lane linear stack plus the graph canvas in full: at 1000 the rank
-    // rows ran off the bottom edge, which reads as a broken layout
-    viewportHeight: 803,
-    hideTooltip: true,
+    parts: [
+      'pangenome/hprc_mhc_layout_force',
+      'pangenome/hprc_mhc_layout_anchored',
+    ],
+    // LEFT AND RIGHT, not stacked. Review: "if this is a 'two part image'
+    // (refers to 'the same subgraph') may want to make it a split left+right
+    // image". It reads as a pair because the caption said "the same subgraph in
+    // the anchored layout" while the figure above it was a different locus
+    // (amylase, chr1) drawn force-directed — so the pair the prose promised did
+    // not exist and this figure was one half of it. Now both halves are the
+    // same subgraph, same window, same tracks, differing only in layoutMode, and
+    // side by side is the orientation for "two ways of drawing one thing":
+    // stacked, the second reads as the next step rather than as the alternative.
+    direction: 'horizontal',
   },
 
   // The human pangenome at C4, the second locus this graph is worth opening at
@@ -1644,7 +1720,11 @@ export const graphSpecs: ScreenshotSpec[] = [
     // it was opened on, and in a force drawing there is no row label to fall back
     // on.
     annotations: [
-      { type: 'circle', anchor: { view: 1, graphNode: HPRC_ALLELE }, radius: 22 },
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: HPRC_ALLELE },
+        radius: 22,
+      },
       { type: 'box', anchor: { text: 'Highlight in hg38' } },
     ],
   },

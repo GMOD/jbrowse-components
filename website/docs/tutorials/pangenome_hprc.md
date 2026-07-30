@@ -189,9 +189,9 @@ reference position, and an arc has no position of its own.
 
 <Figure caption="The complement factor H cluster on chr1 as a force-directed graph, under the RefSeq genes for the same window. The large dark loop labelled with what it skips is a deletion: it leaves the backbone before CFHR3 and rejoins after CFHR1, so the haplotypes taking it carry neither gene. Two smaller dark loops are the other deletions the graph holds here, and every node says how much sequence it carries. Node colors are reference position, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
-Hovering one of these edges gives the interval and the bp it removes. This is the event
-a linear view is worst at, because a deletion has nothing to draw at the
-position it occurs, and the one a graph is best at, because the alternative
+Hovering one of these edges gives the interval and the bp it removes. This is
+the event a linear view is worst at, because a deletion has nothing to draw at
+the position it occurs, and the one a graph is best at, because the alternative
 route is a real part of the structure.
 
 Chromosome size does not enter into any of this. The amylase locus sits on chr1,
@@ -209,7 +209,7 @@ the proxy, and the shape of the alternatives is what the graph adds.
 The **Layout** dropdown trades that picture for an **anchored** layout, which
 puts the x axis back on GRCh38:
 
-<Figure caption="The same subgraph in the anchored layout. Every x is now a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs directly below the position it attaches to, stacked by rank. Sharing an axis is not the same as being seen to share one, so the reference-position colors stay on: the block above and the node below it are the same color at the same bp." src="/img/pangenome/hprc_mhc_anchored.png" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing about it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs below the position it attaches to, stacked by rank. Reference-position colors are on in both, so the segment above and the node below share a color either way, and in the anchored half an x as well." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is named with a window small enough to draw. The counts are
 what the [allele inventory](#the-allele-inventory) holds in each:

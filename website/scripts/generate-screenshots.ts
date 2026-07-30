@@ -892,9 +892,10 @@ function mirrorFile(src: string, dest: string) {
 }
 
 // Stack the committed PNGs of `spec.parts` into one figure (top to bottom) with
-// the same `convert -append` a `stages` capture uses. Runs after the render
-// pool so the parts are already fresh on disk; a filter that targets only the
-// compose spec recomposes from the committed parts.
+// the same `convert -append` a `stages` capture uses, or side by side with
+// `+append` when the spec asks for it. Runs after the render pool so the parts
+// are already fresh on disk; a filter that targets only the compose spec
+// recomposes from the committed parts.
 async function captureComposeSpec(spec: ComposeSpec) {
   const partPath = (part: string) => path.join(outDir, `${part}.png`)
   const missing = spec.parts.filter(part => !fs.existsSync(partPath(part)))
@@ -903,7 +904,8 @@ async function captureComposeSpec(spec: ComposeSpec) {
   }
   const partPaths = spec.parts.map(partPath)
   const renderPath = tempPath('jb-compose', spec.name)
-  execFileSync(IM, [...partPaths, '-append', renderPath])
+  const append = spec.direction === 'horizontal' ? '+append' : '-append'
+  execFileSync(IM, [...partPaths, append, renderPath])
   optimizePng(renderPath)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   return commit(renderPath, outputPath, spec)
