@@ -113,6 +113,41 @@ describe('sorting', () => {
   })
 })
 
+describe('html-valued metadata', () => {
+  // metadata cells render through SanitizedHTML, so searching and sorting have
+  // to work on the displayed text rather than the raw slot
+  function setupWithMarkup() {
+    const { session, faceted } = setup()
+    for (const [trackId, note] of [
+      ['charlie', '<i>zebra</i>'],
+      ['alpha', '<b>aardvark</b>'],
+    ]) {
+      session.sessionTracks
+        .find((t: { trackId: string }) => t.trackId === trackId)!
+        .setSlot('metadata', { note })
+    }
+    faceted.setShowSparse(true)
+    return faceted
+  }
+
+  test('a query matches the text, not the markup around it', () => {
+    const faceted = setupWithMarkup()
+    faceted.setFilterText('zebra')
+    expect(faceted.rows.map(r => r.name)).toEqual(['charlie'])
+    // 'i' would match the <i> tag if the raw slot were searched
+    faceted.setFilterText('<i>')
+    expect(faceted.rows).toHaveLength(0)
+  })
+
+  test('sorting orders by the text, not by the leading angle bracket', () => {
+    const faceted = setupWithMarkup()
+    faceted.setSort('metadata.note', true)
+    expect(
+      faceted.sortedRows.filter(r => r.metadata.note).map(r => r.name),
+    ).toEqual(['alpha', 'charlie'])
+  })
+})
+
 describe('live track source', () => {
   test('a track deleted while the selector is open drops out of the rows', () => {
     const { session, faceted } = setup()

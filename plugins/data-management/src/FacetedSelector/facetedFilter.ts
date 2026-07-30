@@ -1,6 +1,36 @@
+import { coarseStripHTML } from '@jbrowse/core/util'
+
 import { getRowStr } from './components/util.ts'
 
 import type { Row } from './components/util.ts'
+
+/**
+ * The text a free-text query matches a row against: its name, category,
+ * adapter, description, and every metadata value, tags stripped and lowercased.
+ * Built once per row in allRows (mirroring the tree's trackNodeSourceFor) so a
+ * keystroke neither re-reads configs nor re-strips HTML, and so a query can't
+ * match a tag name that never appears on screen. Newline-joined so a query
+ * can't span two fields.
+ */
+export function rowSearchText(row: {
+  name: string
+  category?: string
+  adapter?: string
+  description?: string
+  metadata: Record<string, unknown>
+}) {
+  return coarseStripHTML(
+    [
+      row.name,
+      row.category,
+      row.adapter,
+      row.description,
+      ...Object.values(row.metadata),
+    ]
+      .filter(v => v !== undefined && v !== null)
+      .join('\n'),
+  ).toLowerCase()
+}
 
 // The facets with a non-empty selection, each as a lookup set. Facets with no
 // selection are dropped since they don't constrain anything.
@@ -11,25 +41,15 @@ function activeFilterSets(filters: Map<string, string[]>) {
 }
 
 /**
- * Free-text filter over a row's name, category, adapter, description, and every
- * metadata value. Case-insensitive substring match; an empty query returns all
- * rows.
+ * Free-text filter against each row's precomputed searchText. Case-insensitive
+ * substring match; an empty query returns the same rows array.
  */
-export function filterRowsByText<T extends Row>(rows: T[], query: string): T[] {
+export function filterRowsByText<T extends { searchText: string }>(
+  rows: T[],
+  query: string,
+): T[] {
   const q = query.toLowerCase()
-  if (!q) {
-    return rows
-  }
-  return rows.filter(
-    row =>
-      `${row.name ?? ''}`.toLowerCase().includes(q) ||
-      `${row.category ?? ''}`.toLowerCase().includes(q) ||
-      `${row.adapter ?? ''}`.toLowerCase().includes(q) ||
-      `${row.description ?? ''}`.toLowerCase().includes(q) ||
-      Object.values(row.metadata ?? {}).some(
-        v => v != null && `${v}`.toLowerCase().includes(q),
-      ),
-  )
+  return q ? rows.filter(row => row.searchText.includes(q)) : rows
 }
 
 /**

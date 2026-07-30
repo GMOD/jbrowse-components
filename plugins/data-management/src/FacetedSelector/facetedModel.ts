@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
+  coarseStripHTML,
   localStorageGetBoolean,
   localStorageGetItem,
   localStorageGetNumber,
@@ -19,6 +20,7 @@ import {
   computeFacetCategoryCounts,
   filterRowsByFacets,
   filterRowsByText,
+  rowSearchText,
 } from './facetedFilter.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 
@@ -218,24 +220,25 @@ export function facetedStateTreeF() {
       get allRows() {
         const session = self.session
         return session
-          ? self.getTracks().map(
-              track =>
-                ({
-                  id: track.trackId as string,
-                  conf: track,
-                  name: getTrackName(track, session),
-                  category: readConfObject(track, 'category')?.join(', '),
-                  adapter: (track.adapter as { type?: string } | undefined)
-                    ?.type,
-                  description: readConfObject(track, 'description') as
-                    | string
-                    | undefined,
-                  metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
-                    string,
-                    unknown
-                  >,
-                }) as const,
-            )
+          ? self.getTracks().map(track => {
+              const row = {
+                id: track.trackId as string,
+                conf: track,
+                name: getTrackName(track, session),
+                category: readConfObject(track, 'category')?.join(', ') as
+                  | string
+                  | undefined,
+                adapter: (track.adapter as { type?: string } | undefined)?.type,
+                description: readConfObject(track, 'description') as
+                  | string
+                  | undefined,
+                metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
+                  string,
+                  unknown
+                >,
+              }
+              return { ...row, searchText: rowSearchText(row) } as const
+            })
           : []
       },
     }))
@@ -354,15 +357,19 @@ export function facetedStateTreeF() {
           return filteredRows
         }
         const dir = sortAscending ? 1 : -1
-        return [...filteredRows].sort(
-          (a, b) =>
-            dir *
-            getRowStr(sortField, a).localeCompare(
-              getRowStr(sortField, b),
-              undefined,
-              { numeric: true },
-            ),
-        )
+        // sort on what the cell displays, not the raw slot: a value wrapped in
+        // markup would otherwise sort under '<'. Keys are stripped once per row
+        // rather than once per comparison.
+        return filteredRows
+          .map(row => ({
+            row,
+            key: coarseStripHTML(getRowStr(sortField, row)),
+          }))
+          .sort(
+            (a, b) =>
+              dir * a.key.localeCompare(b.key, undefined, { numeric: true }),
+          )
+          .map(({ row }) => row)
       },
     }))
 }

@@ -1,3 +1,4 @@
+import { coarseStripHTML } from '@jbrowse/core/util'
 import { cx } from '@jbrowse/core/util/tss-react'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
@@ -28,7 +29,12 @@ const FacetedTableRow = observer(function FacetedTableRow({
           onChange={() => {
             onToggle(row.id)
           }}
-          slotProps={{ input: { 'aria-label': `Select ${row.name}` } }}
+          slotProps={{
+            input: {
+              // a name can carry markup; a screen reader shouldn't read tags
+              'aria-label': `Select ${coarseStripHTML(row.name)}`,
+            },
+          }}
           sx={checkboxSx}
         />
       </td>

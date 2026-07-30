@@ -49,7 +49,9 @@ export function getFacetedColumns({
         ({
           id,
           header: facetLabel(id, nonMetadataFieldSet),
-          cell: row => getRowStr(id, row),
+          // any metadata value (or category/description) can carry markup, and
+          // SanitizedHTML short-circuits to a plain span when it doesn't
+          cell: row => <SanitizedHTML html={getRowStr(id, row)} />,
         }) satisfies FacetedColumn,
     ),
   ]

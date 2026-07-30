@@ -2,6 +2,7 @@ import {
   computeFacetCategoryCounts,
   filterRowsByFacets,
   filterRowsByText,
+  rowSearchText,
 } from './facetedFilter.ts'
 
 import type { Row } from './components/util.ts'
@@ -12,8 +13,10 @@ interface TestRow extends Row {
   adapter?: string
   description?: string
   metadata: Record<string, unknown>
+  searchText: string
 }
 
+// searchText comes from rowSearchText here exactly as it does in allRows
 const rows: TestRow[] = [
   {
     id: 't1',
@@ -35,7 +38,24 @@ const rows: TestRow[] = [
     category: 'Quantitative',
     metadata: { sampleType: 'tumor', assay: 'DNA' },
   },
-]
+].map(row => ({ ...row, searchText: rowSearchText(row) }))
+
+describe('rowSearchText', () => {
+  test('joins the searchable fields, lowercased', () => {
+    expect(rows[0]!.searchText).toBe(
+      'genes\nannotation\ngff3tabixadapter\ntumor\nrna',
+    )
+  })
+
+  test('strips markup so a query matches the displayed text, not the tags', () => {
+    const searchText = rowSearchText({
+      name: '<i>Genes</i>',
+      metadata: { note: 'see <a href="http://example.com">link</a>' },
+    })
+    expect(searchText).toBe('genes\nsee link')
+    expect(searchText).not.toContain('href')
+  })
+})
 
 describe('filterRowsByText', () => {
   test('empty query returns the same rows reference', () => {
