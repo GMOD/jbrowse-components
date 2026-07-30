@@ -2330,9 +2330,9 @@
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
-    "status": "bad",
-    "note": "unclear to me what 'skips' refers to. is it something missing from reference? we may need to think about this. the 'red' coloring is too close to the rainbow also. ",
+    "status": "good",
+    "note": "DONE, both parts, in the plugin and published (5e1c0d4f42b5, pins bumped in the three test_data/graphgenomeview configs). WHAT 'SKIPS' REFERS TO: the reference, and the label now says so - 'skips 84.7 kb of reference'. Yes, it is something missing from the reference: a deletion contributes no node, only an edge from one backbone segment to another that is not its neighbour, so the arc's number is the reference span the haplotypes taking it do not carry. THE RED: measured, and the collision was real to within three points. The arc was rgb(214,39,40); the reference-position ramp is hue 0 to 300 at 70%/50%, so its hue-0 end is rgb(217,38,38) - at the start of any region the deletion arc and the backbone under it were the same red. Near-black now (rgb(24,24,28)), with the label recolored to match: nothing else in the drawing is near-black (nodes are ramp hues or the off-reference charcoal, plain links are mid grey), so weight and darkness carry the arc instead of a hue and hue keeps meaning reference position and only that. hprc_amylase_graph and hprc_lpa_kiv2 carry the same arcs and were regenerated with it; both had been kept behind the content-stable gate at 0.245% and 0.069%, which is the case the website CLAUDE.md says to --force and diff. Prose in pangenome_hprc.md updated off 'those edges are red'.",
     "reviewedAt": "2026-07-30T14:09:42.273Z",
-    "hash": "bd321d9b0ad105e824dbd51ac7afc07a795231f3"
+    "hash": "b5fdaa5c28c342046e48cb72a99521f009a18d31"
   }
 }
