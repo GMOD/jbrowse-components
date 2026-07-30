@@ -34,7 +34,8 @@
 # painting, one row per dog. The palette is NOT QuicK-mer2's
 # make-colortrack-fordisplay.py one (2 black, 3 dark blue, 4 blue, 5 cyan, 6
 # green): see CN_COLOR below for why a filled block wants a light baseline where
-# a line plot wants black.
+# a line plot wants black, and why the ramp saturates rather than running to the
+# highest call.
 #
 # Fifteen dogs is every CRAM the share publishes, but not every dog it has depth
 # for. The SNV callset carries a per-sample DP at every site for all 1,987
@@ -224,15 +225,35 @@ flank_left_end, flank_right_start = int(sys.argv[1]), int(sys.argv[2])
 # single window carries.
 FLANK_TOLERANCE = 0.2
 
-# Diverging about copy number two: red for loss, a light grey baseline, then
-# blue -> purple -> magenta for gain. Copy number two is ~78% of the painted
-# area, so giving the baseline the least ink is what lets the expansion read;
-# QuicK-mer2's own black-at-two palette is built for a line plot, where two is a
-# thin trace rather than a filled block. Grey rather than white, so the baseline
-# stays distinct from a window dropped as unmeasurable, which paints nothing.
-CN_COLOR = {0: '165,15,21', 1: '251,146,114', 2: '224,224,224',
-            3: '158,202,225', 4: '66,146,198', 5: '8,81,156', 6: '8,48,107',
-            7: '84,39,143', 8: '136,20,148', 9: '190,20,140', 10: '240,20,130'}
+# ColorBrewer RdBu diverging about copy number two: blue for loss, a light grey
+# baseline, red for gain. Same direction and the same two anchor colors as the
+# 1000 Genomes copy-number figure's palette (negColor #2166ac at the low end,
+# posColor #b2182b), so the two cohort paintings read the same way. Copy number
+# two is ~78% of the painted area, so giving the baseline the least ink is what
+# lets the expansion read; QuicK-mer2's own black-at-two palette is built for a
+# line plot, where two is a thin trace rather than a filled block. Grey rather
+# than white, so the baseline stays distinct from a window dropped as
+# unmeasurable, which paints nothing.
+#
+# The ramp saturates at CN_CAP rather than running to the highest call. A ramp
+# long enough to give copy number ten its own color has to leave red, and the
+# violets it reaches for come back around to the loss end -- a ten and a zero
+# read as neighbours. Copy number six and up is 18 canids with no group to them,
+# so they share the ramp's last color and keep their measured value in the
+# feature name and the copyNumber column. Five stays its own step because that
+# is where the tail has structure: 52% of the 63 CLUP wolves reach it against
+# 13% of breed dogs, and three of the fifteen CRAM dogs reach it from read depth
+# rather than from this callset proxy.
+CN_CAP = 6
+CN_COLOR_CAP = '103,0,31'
+CN_COLOR = {0: '33,102,172', 1: '146,197,222', 2: '224,224,224',
+            3: '244,165,130', 4: '214,96,77', 5: '178,24,43'}
+
+def cn_color(cn):
+    return CN_COLOR_CAP if cn >= CN_CAP else CN_COLOR[cn]
+
+def cn_label(cn):
+    return 'CN %d+' % CN_CAP if cn >= CN_CAP else 'CN %d' % cn
 
 paths = sorted(glob.glob('cn.*.bedGraph'))
 cohort = {}
@@ -274,7 +295,7 @@ rows.sort(key=lambda r: (r[0], r[1]))
 with open('dog10k_cyp1a2_cn.bed', 'w') as fh:
     for chrom, start, end, cn, label in rows:
         fh.write('\t'.join([chrom, str(start), str(end), 'CN %d' % cn, '0', '.',
-                            str(start), str(end), CN_COLOR[cn], label,
+                            str(start), str(end), cn_color(cn), label,
                             str(cn)]) + '\n')
 print('%d painted segments across %d dogs' % (len(rows), len(paths)))
 PY
@@ -304,15 +325,35 @@ FLANK_TOLERANCE = 0.2
 # measurement rather than a coincidence.
 MINSITES = 10
 
-# Diverging about copy number two: red for loss, a light grey baseline, then
-# blue -> purple -> magenta for gain. Copy number two is ~78% of the painted
-# area, so giving the baseline the least ink is what lets the expansion read;
-# QuicK-mer2's own black-at-two palette is built for a line plot, where two is a
-# thin trace rather than a filled block. Grey rather than white, so the baseline
-# stays distinct from a window dropped as unmeasurable, which paints nothing.
-CN_COLOR = {0: '165,15,21', 1: '251,146,114', 2: '224,224,224',
-            3: '158,202,225', 4: '66,146,198', 5: '8,81,156', 6: '8,48,107',
-            7: '84,39,143', 8: '136,20,148', 9: '190,20,140', 10: '240,20,130'}
+# ColorBrewer RdBu diverging about copy number two: blue for loss, a light grey
+# baseline, red for gain. Same direction and the same two anchor colors as the
+# 1000 Genomes copy-number figure's palette (negColor #2166ac at the low end,
+# posColor #b2182b), so the two cohort paintings read the same way. Copy number
+# two is ~78% of the painted area, so giving the baseline the least ink is what
+# lets the expansion read; QuicK-mer2's own black-at-two palette is built for a
+# line plot, where two is a thin trace rather than a filled block. Grey rather
+# than white, so the baseline stays distinct from a window dropped as
+# unmeasurable, which paints nothing.
+#
+# The ramp saturates at CN_CAP rather than running to the highest call. A ramp
+# long enough to give copy number ten its own color has to leave red, and the
+# violets it reaches for come back around to the loss end -- a ten and a zero
+# read as neighbours. Copy number six and up is 18 canids with no group to them,
+# so they share the ramp's last color and keep their measured value in the
+# feature name and the copyNumber column. Five stays its own step because that
+# is where the tail has structure: 52% of the 63 CLUP wolves reach it against
+# 13% of breed dogs, and three of the fifteen CRAM dogs reach it from read depth
+# rather than from this callset proxy.
+CN_CAP = 6
+CN_COLOR_CAP = '103,0,31'
+CN_COLOR = {0: '33,102,172', 1: '146,197,222', 2: '224,224,224',
+            3: '244,165,130', 4: '214,96,77', 5: '178,24,43'}
+
+def cn_color(cn):
+    return CN_COLOR_CAP if cn >= CN_CAP else CN_COLOR[cn]
+
+def cn_label(cn):
+    return 'CN %d+' % CN_CAP if cn >= CN_CAP else 'CN %d' % cn
 
 samples = [line.strip() for line in open('cohort.samples')]
 depths = [{} for _ in samples]
@@ -386,7 +427,7 @@ rows.sort(key=lambda r: (r[0], r[1]))
 with open('dog10k_cyp1a2_cohort_cn.bed', 'w') as fh:
     for chrom, start, end, value, sample in rows:
         fh.write('\t'.join([chrom, str(start), str(end), 'CN %d' % value, '0',
-                            '.', str(start), str(end), CN_COLOR[value], sample,
+                            '.', str(start), str(end), cn_color(value), sample,
                             str(value)]) + '\n')
 
 element = [w for w in windows if w not in dropped and cohort_median[w] >= 2.5]
@@ -403,9 +444,9 @@ print('over the element the collection medians %.2f copies; %d of %d dogs '
 # was not), so print the block to paste rather than leaving it to be remembered.
 print()
 print('legend slot for the copy-number displays, paste into the track config:')
-print(json.dumps([{'label': 'CN %d' % cn, 'color': 'rgb(%s)' % rgb}
-                  for cn, rgb in sorted(CN_COLOR.items())
-                  if cn in {int(r[3].split()[1]) for r in rows}], indent=2))
+painted = {min(CN_CAP, int(r[3].split()[1])) for r in rows}
+print(json.dumps([{'label': cn_label(cn), 'color': 'rgb(%s)' % cn_color(cn)}
+                  for cn in sorted(painted)], indent=2))
 PY
 
 bgzip -f dog10k_cyp1a2_cohort_cn.bed
