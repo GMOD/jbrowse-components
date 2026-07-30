@@ -2211,10 +2211,10 @@
   },
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
-    "status": "bad",
-    "note": "need to zoom out more. Unclear what is going on here. FIXED and regenerated (no plugin involved). \"ok two verticalstripes\" was literal: both SINEs are ~220 bp in a 6.5 kb window, so drawn at their true span they were two 35px stripes in an otherwise blank frame and any one animal genotype was a few pixels. Switched to LinearMultiSampleVariantMatrixDisplay, which spaces one column per record: each repeat is now half the panel, a row is two readable cells side by side, and the connector zone under the gene track is what maps a column back to the intron it sits in. Same 56 animals, same referenceDrawingMode:draw, so grey still means the repeat is present. The story reads off the picture now: the Mastiff clade het for both, the Labradors dark for both, the wolves dark on the left column and mixed on the right. Caption updated.",
+    "status": "good",
+    "note": "DONE. Zoomed out from 6.5 kb to 18 kb, which is all of DENR (chr26:6,929,118-6,943,861 in the canFam4 RefSeq the figure already loads) plus flanks: the old window cut the gene at both edges, so the transcript rows ran off both sides and there was nothing to be 'in an intron' OF. Free to do here because the track holds exactly the two SINE records the build script selected (POS 6931055 and 6933974), so the matrix keeps its two columns however wide the window is. The second half of 'unclear what is going on': a matrix lays columns out by feature index, so the only thing saying which column is which repeat is the band of connector lines above the rows, and at the 20px schema default that band was a sliver. lineZoneHeight 60 gives it a real diagonal, and over a whole-gene window the two lines visibly land in the first two introns. Caption updated to point at them.",
     "reviewedAt": "2026-07-30T13:57:15.466Z",
-    "hash": "0b17d79434ac4ca37d6b03fe39f4ffe27396ccca"
+    "hash": "f6d35709635f18bb0ed00c4893591a556bba270b"
   },
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
@@ -2260,17 +2260,17 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "bad",
-    "note": "you can consider using the 'matrix' mode for this. hard to see the overarching pattern from snps",
+    "status": "good",
+    "note": "DONE, matrix mode as suggested. In position space the records sit where they are, and over 400 kb most of the panel is the gaps between them, so the shared haplotype read as speckle - which is what 'hard to see the overarching pattern' was. One column per record gives every SNV the same width and the clades come out as solid blocks: the small-breed cluster carries alt across most of the window, the giant cluster is grey (reference) through the middle, and the size swatch beside the dendrogram lines up with the split. The reason the spec had avoided the matrix was that a boundary then lands at a column rather than a coordinate; the connector band above the rows answers that, at 34px rather than the 20px default - not higher, because with hundreds of records no single line can be followed and a tall band is just a grey wedge over the rows. Caption updated.",
     "reviewedAt": "2026-07-30T13:58:10.387Z",
-    "hash": "043d6abb048f4037b7de5eb437af2ac0b7c2983c"
+    "hash": "43d83c5b637e94311a8ec281a9a2e09d0e2fac95"
   },
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
-    "status": "bad",
-    "note": "this still has a vertical white bar to left of cnv, looks like glitch potentially",
+    "status": "good",
+    "note": "NOT A GLITCH, and now the frame says so instead of leaving it to the caption. Traced it: the stripe is exactly one 5 kb window, chr1:75,575,000-75,580,000, missing from both lanes' BEDs (tabix shows Grand Basset Griffon Vendeen 1 running 75,530,000-75,575,000 then resuming at 75,580,000). build_dog10k_slc28a3_cn.sh drops any window whose median across the whole collection sits below two copies, on the stated grounds that a window every canid reads low is measuring the reference rather than any dog; the same rule suppresses four blue stripes that would otherwise run down the collection lane at the weight of the duplication. Checked the obvious alternative and ruled it out: RepeatMasker over that window is 44.3% masked with 2,784 unique bp, in line with its neighbours on both sides, so this is not the MINUNIQUE dropout that produced the CYP1A2 gap. What it IS is where the duplication's left breakpoint falls (ELEMENT_START 75,578,115 is inside the window), which is why depth there reads low in every animal. Since the same gap has now been read as a rendering bug twice and a caption did not stop it, the figure carries an anchored 'no call: every canid reads low here' callout with an arrow onto the stripe. Caption also states it.",
     "reviewedAt": "2026-07-30T13:58:31.821Z",
-    "hash": "aa8300d6f4f9516973b793b494181a62b5f3e8a3"
+    "hash": "5221134576bd196dd79d34352a9c54a6857c6305"
   },
   "ld/anopheles_2la": {
     "name": "ld/anopheles_2la",

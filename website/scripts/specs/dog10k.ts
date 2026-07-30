@@ -499,7 +499,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-denr-sine-deletions',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr26:6,929,500-6,936,000',
+      // All of DENR (chr26:6,929,118-6,943,861 in canFam4 RefSeq) plus flanks,
+      // per review ("need to zoom out more"). The old 6.5 kb window cut the gene
+      // at both edges, so the transcript rows ran off both sides and the
+      // connector zone pointed into a gene the reader could not see the shape
+      // of. Zooming out costs nothing here: the track holds exactly the two SINE
+      // records the build script selected, so the matrix still has two columns
+      // however wide the window is.
+      loc: 'chr26:6,927,500-6,945,500',
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
@@ -513,6 +520,13 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // against the track's own bottom border, which no viewportHeight can
           // fix -- the clipping is inside the track box, not below the fold.
           height: 730,
+          // The two columns are laid out by feature index, so the only thing
+          // saying which repeat is which is the band of lines tying each column
+          // back to its position in the gene above. At the 20px default that
+          // band is a sliver; over a whole-gene window it has to carry a real
+          // diagonal, which is what makes the left column the first intron's
+          // repeat rather than just the left half of a panel.
+          lineZoneHeight: 60,
           layout: DENR_LAYOUT,
           // Draw reference alleles instead of filling the lane grey. The default
           // 'skip' paints the whole background REFERENCE_COLOR and omits
@@ -774,15 +788,59 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     // gene track, two 300px lanes, their headers, and the copy-number key
     viewportHeight: 965,
+    // The white stripe, named. It is one 5 kb window, chr1:75,575,000-75,580,000,
+    // and it is unpainted on purpose: build_dog10k_slc28a3_cn.sh drops any window
+    // whose median across the whole collection sits below two copies, because a
+    // window every canid reads low is measuring the reference rather than any
+    // dog (the same rule suppresses four blue stripes that would otherwise run
+    // down the collection lane at the weight of the duplication). This one is
+    // where the duplication's left breakpoint falls (ELEMENT_START 75,578,115),
+    // which is why it reads low. Review has now read the gap as a rendering
+    // glitch twice, once here and once on the CYP1A2 figure, and a caption did
+    // not stop it — so the frame says it.
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          track: 'canFam4_ncbi_refseq',
+          locus: 'chr1:75,553,000',
+          fracY: 0.45,
+        },
+        text: 'no call: every canid reads low here',
+        fontSize: 17,
+        maxWidth: 300,
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'canFam4_ncbi_refseq',
+          locus: 'chr1:75,563,000',
+          fracY: 0.7,
+        },
+        anchor: {
+          track: 'dog10k_slc28a3_breed_cn',
+          locus: 'chr1:75,577,500',
+          fracY: 0,
+          dy: 40,
+        },
+      },
+    ],
   },
 
   // The IGF1 body-size haplotype, drawn as a clustered genotype matrix over 167
   // canids: every animal of fourteen toy/small breeds, eleven giant breeds, and
   // the twelve Greek gray wolves. Built by scripts/build_dog10k_igf1.sh.
   //
-  // Position space rather than the matrix display. The matrix lays its columns
-  // out by feature index, so a haplotype boundary lands at a column number
-  // rather than at a coordinate; here it can be read against the gene track.
+  // THE MATRIX DISPLAY, per review ("consider using the 'matrix' mode for this.
+  // hard to see the overarching pattern from snps"). In position space the
+  // records sit where they are, which over 400 kb means most of the panel is the
+  // gaps between them and the shared haplotype reads as speckle rather than as a
+  // block. One column per record instead gives every SNV the same width, so a
+  // set of animals carrying the same alleles is a solid band. The cost is that a
+  // boundary now lands at a column rather than at a coordinate, which is what
+  // the connector band above the rows is for. Only a little above its 20px
+  // default: with hundreds of records no single line can be followed, and a tall
+  // band is just a grey wedge over the rows the figure is about.
   //
   // `runClustering` orders the rows by genotype similarity. The size swatch
   // comes from the samples TSV and is applied afterwards, so the row order and
@@ -801,8 +859,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_igf1_haplotype',
-          type: 'LinearMultiSampleVariantDisplay',
+          type: 'LinearMultiSampleVariantMatrixDisplay',
           height: 760,
+          lineZoneHeight: 34,
           runClustering: true,
           colorBy: 'size',
         },

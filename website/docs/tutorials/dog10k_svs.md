@@ -164,7 +164,7 @@ absent in that dog. Dimorphic SINE and LINE-1 variants like these make up over
 45% of all deletions in the callset, which is why a dog SV panel looks nothing
 like a SNV panel.
 
-<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. Grey is homozygous reference, meaning the repeat is present on both chromosomes; light blue heterozygous; dark blue homozygous for the deletion, meaning the repeat is gone. The Mastiff-clade breeds carry both repeats, the Labrador Retrievers have lost both, and the Greek wolves have lost the left one entirely while a third of them still carry the right one." src="/img/dog10k-denr-sine-deletions.png" />
+<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. The window holds the whole gene and the lines above the matrix tie each column back to the intron it sits in. Grey is homozygous reference, meaning the repeat is present on both chromosomes; light blue heterozygous; dark blue homozygous for the deletion, meaning the repeat is gone. The Mastiff-clade breeds carry both repeats, the Labrador Retrievers have lost both, and the Greek wolves have lost the left one entirely while a third of them still carry the right one." src="/img/dog10k-denr-sine-deletions.png" />
 
 This contrasts with the Collie eye anomaly figure. That deletion was long, rare,
 and confined to one clade. These are short, common, and it is the reference that
@@ -201,7 +201,7 @@ ratio of a dog's depth over the element to its depth over the flanks is a copy
 number for all 1,987 canids. [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof)
 builds that estimate and validates it against read depth.
 
-<Figure caption="Copy number over SLC28A3 from callset depth, each 5 kb window colored by its rounded call, grey being two copies. Above, every Grand Basset Griffon Vendéen, Basset Hound and German Shepherd in the collection. Below, all 1,987 canids sorted by copy number over the duplication. Every GBGV carries it, three of the seven Basset Hounds carry it, and the collection lane is grey apart from the band at the top." src="/img/dog10k-slc28a3-copy-number.png" />
+<Figure caption="Copy number over SLC28A3 from callset depth, each 5 kb window colored by its rounded call, grey being two copies. Above, every Grand Basset Griffon Vendéen, Basset Hound and German Shepherd in the collection. Below, all 1,987 canids sorted by copy number over the duplication. Every GBGV carries it, three of the seven Basset Hounds carry it, and the collection lane is grey apart from the band at the top. The unpainted stripe is one window that every canid in the collection reads below two copies, which measures the reference rather than any dog, so the build script paints nothing there." src="/img/dog10k-slc28a3-copy-number.png" />
 
 The element runs wider than the gene, and its edges land where the SV callset
 puts a duplication. Under 5% of the collection carry it, which is why the lower

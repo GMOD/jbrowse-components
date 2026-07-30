@@ -117,7 +117,7 @@ sample table, so the two are independent.
 
 ## Reading it
 
-<Figure caption="SNVs across 400 kb at IGF1, one row per canid, clustered by genotype with size class as the sidebar swatch. The upper cluster is the toy and small breeds and the lower one the giant breeds; the block separating them begins and ends inside the window." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across 400 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch. The upper cluster is the toy and small breeds and the lower one the giant breeds. Even column widths are what make the shared haplotype a solid block rather than speckle; the lines above the rows tie each column back to its position." src="/img/dog10k-igf1-haplotype.png" />
 
 The panel separates into two clusters that correspond to the size classes.
 
