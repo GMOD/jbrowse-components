@@ -601,8 +601,6 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       chainMode: false,
       showLinkedReadLines: false,
       collapseGroupRows: false,
-      flipStrandLongReadChains: true,
-      colorSupplementaryChains: false,
       readConnectionsLineWidth: 1,
       readConnections: 'off',
       readConnectionsDown: false,

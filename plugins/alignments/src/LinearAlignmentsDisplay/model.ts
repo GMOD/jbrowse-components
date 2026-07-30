@@ -2247,8 +2247,6 @@ export default function stateModelFactory(
             chainMode: self.isChainMode,
             showLinkedReadLines: self.showLinkedReadLines,
             collapseGroupRows: self.collapseGroupRows,
-            flipStrandLongReadChains: self.flipStrandLongReadChains,
-            colorSupplementaryChains: self.colorSupplementaryChains,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
           }

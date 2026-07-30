@@ -49,6 +49,34 @@ it back through `rpcProps()` makes a discover→assign→refetch loop. It's now
 tier-2 — worker reports raw `readTagValues`, main thread bakes `readTagColors`
 in `laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
 
+### Read color is classified at tier 2, not painted at tier 4
+
+A read's color bucket is decided **once**, on the main thread, by
+`readColorCategory` → `buildReadColorCategories`, and overlaid onto each
+laid-out group by `overlayReadColorCategories` (`groupLayout.ts`, immediately
+after `overlayReadTagColors` — the `noTagValue` bucket is read off the baked tag
+colors, so that order is load-bearing). Both renderers and the legend consume
+the resulting `readColorCategories` byte array; `read.slang` paints an `RC_*`
+index and does not classify. See `colorCategory.test.ts`.
+
+Two consequences for this table:
+
+- **`flipStrandLongReadChains` / `colorSupplementaryChains` are tier 2**, not
+  tier 4. They are classification inputs, so they belong in
+  `groupLayoutContext.readColorOpts` and are deliberately **absent from
+  `renderState`** — leaving them there would additionally invalidate the canvas
+  for a value no renderer reads.
+- **`colorLegendCategories` reads `laidOutByGroup`**, not `rpcDataMap`. It must:
+  `readTagColors` is empty on the raw map, and `noTagValue` is decided from it,
+  so the raw scan listed "Tag" for reads the renderer painted with the no-value
+  neutral. The cost is that the legend recomputes on relayout (e.g. a resize);
+  it is gated on `showLegend` and scans a `Uint8Array`.
+
+If classification ever needs to stop re-running per relayout, the bake depends
+only on `(rawByGroup, colorScheme, readColorOpts)` — never on Y placement — so
+it can be hoisted to its own memoized getter. Tag colors would have to move with
+it to keep the ordering above.
+
 ## Grouping: three different "is it grouped?" questions
 
 Don't collapse these — each gates something different, and one is not derived

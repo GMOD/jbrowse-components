@@ -64,10 +64,11 @@ export interface RenderState {
   // The overlap tint is what makes that depth readable, hence a second reason
   // (besides chain mode) for that layer to draw.
   collapseGroupRows: boolean
-  flipStrandLongReadChains: boolean
-  // Opt-in legacy behavior: paint paired supplementary chains a flat
-  // supplementary color (hides pair orientation). Off by default.
-  colorSupplementaryChains: boolean
+  // NOT here: flipStrandLongReadChains / colorSupplementaryChains. Both feed
+  // read classification only, which now happens once on the CPU
+  // (readColorCategories) — the renderers receive the resulting category and
+  // never re-decide. Carrying them would make two layout-tier settings
+  // needlessly invalidate the canvas as well.
   readConnectionsLineWidth: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); read-cloud mode passes the

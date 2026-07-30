@@ -54,8 +54,6 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     chainMode: false,
     showLinkedReadLines: false,
     collapseGroupRows: false,
-    flipStrandLongReadChains: false,
-    colorSupplementaryChains: false,
     readConnectionsLineWidth: 1,
     readConnections: 'off',
     readConnectionsDown: false,

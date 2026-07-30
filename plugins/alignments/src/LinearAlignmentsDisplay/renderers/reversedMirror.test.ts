@@ -321,8 +321,6 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     },
     chainMode: false,
     showLinkedReadLines: false,
-    flipStrandLongReadChains: false,
-    colorSupplementaryChains: false,
     readConnectionsLineWidth: 1,
     readConnections: 'off',
     readConnectionsDown: false,
