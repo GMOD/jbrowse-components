@@ -68,6 +68,14 @@ const lctTrack = (name: string) => ({
 // 136.82 Mb and collapses to ~0.15 immediately past it.
 const LCT_LOC = 'chr2:136,200,000-137,000,000'
 
+// The pooled-vs-panel figure takes a wider window than the single-panel one
+// (review: "zoom out more"), so the panel lane's block ends inside the picture
+// on both sides rather than running off the frame. Not wider than this: at 2 Mb
+// a second, larger block upstream of LCT dominates both lanes and the
+// pooled-versus-panel difference stops being the thing the eye lands on, which
+// is the whole subject.
+const LCT_WIDE_LOC = 'chr2:136,000,000-137,200,000'
+
 // Band the LCT/MCM6 locus so the reader sees the high-r² block sits right over
 // the lactase gene (the enhancer variant rs4988235 is in an MCM6 intron,
 // upstream of LCT).
@@ -149,18 +157,13 @@ const agLdTrack = (trackId: string, name: string, file: string) => ({
 })
 
 // Published 2La extent (White et al. 2007, AgamP3 coordinates, which are the
-// AgamP4 ones on this arm). It is banded rather than described so the reader can
-// check the claim by eye: the block fills the band and the rest of the arm is
-// white. The band is drawn by JBrowse from these coordinates, so unlike a
-// painted-on callout it cannot drift from the data.
-const TWO_LA_HIGHLIGHT = [
-  {
-    refName: 'chr2L',
-    start: 20_524_058,
-    end: 42_165_532,
-    assemblyName: 'anoGam3',
-  },
-]
+// AgamP4 ones on this arm). Used to anchor the two callouts, one per population
+// lane, so each sits over the span it is about. It was also drawn as a
+// `highlight` band across both lanes; review asked for that off, and it was
+// doing the callouts' job badly anyway — a tinted rectangle says "look here"
+// and the reader still has to be told that the block filling it in one lane and
+// not the other is the whole result.
+const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 
 // The per-population point, shown rather than asserted, WITHOUT making a figure
 // out of human population differences. Both lanes are the same locus, window,
@@ -195,6 +198,15 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
       showRecombination: true,
       minorAlleleFrequencyFilter: 0.35,
       height: 330,
+      // The connector zone is a fan of lines from each SNP down to its column,
+      // and at this window there are enough of them to read as a solid grey
+      // wedge. Review asked for it smaller; 100 is the schema default. Not
+      // smaller than this: with `useGenomicPositions` off, this zone is also
+      // where the recombination curve and its 0..1 axis are drawn
+      // (`effectiveLineZoneHeight` in LDDisplay/shared.ts), and at 40 the tick
+      // labels overlap into a smudge. `recombinationZoneHeight` does NOT get
+      // the space back here, it only applies on the genomic-positions path.
+      lineZoneHeight: 70,
     },
   ],
 })
@@ -220,9 +232,19 @@ export const ldSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: LCT_LOC,
+          loc: LCT_WIDE_LOC,
           highlight: LCT_HIGHLIGHT,
           tracks: [
+            // The genes, so the band has something to be over (review: "we need
+            // to add the gene track ... we need to see why this is important").
+            // showOnlyGenes because 2 Mb of hg19 RefSeq is otherwise a wall of
+            // transcripts and the point is which gene the block sits on.
+            {
+              trackId: 'hg19-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              showOnlyGenes: true,
+            },
             { trackId: 'kgp_lct_pooled', type: 'LDDisplay' },
             { trackId: 'kgp_lct_panel', type: 'LDDisplay' },
           ],
@@ -234,9 +256,9 @@ export const ldSpecs: ScreenshotSpec[] = [
     readySelector:
       'body:has([data-testid="ld-display-done"][data-display-phase="ready"]):not(:has([data-testid="ld-display"])):not(:has([data-display-phase="loading"]))',
     readyTimeout: 240000,
-    // two LD tracks (330 triangle + 50 recombination zone each) + 2 headers +
-    // ruler/overview
-    viewportHeight: 900,
+    // the gene lane, then two LD tracks (330 triangle + 50 recombination zone
+    // each) + 2 headers + ruler/overview
+    viewportHeight: 995,
     settleMs: 8000,
   },
   {
@@ -262,7 +284,6 @@ export const ldSpecs: ScreenshotSpec[] = [
           // the whole arm, so the block is bounded by white on both sides
           // rather than cropped to the answer
           loc: 'chr2L',
-          highlight: TWO_LA_HIGHLIGHT,
           // No gene track. A whole arm is ~38 kb per pixel, so a gene is well
           // under one pixel and the track contributes nothing but a "Too many
           // features" banner across the top; showOnlyGenes changes which
@@ -288,24 +309,38 @@ export const ldSpecs: ScreenshotSpec[] = [
     // two LD tracks(300 each) + 2 headers + ruler/overview
     viewportHeight: 770,
     settleMs: 8000,
+    // One callout per lane, saying what each lane shows rather than only naming
+    // the span (review: "a red text annotation on both cameroon and gabon
+    // tracks that says why this is interesting"). Both anchor to the same
+    // published locus in their own track, so they sit over the span they
+    // describe and move with the layout. chr2L, not 2L: the anchor locus is
+    // resolved against the assembly's canonical names (the .ld.gz's own 2L is
+    // the adapter's business), so a bare name here resolves to nothing and
+    // fails the spec outright.
     annotations: [
       {
         type: 'text',
-        // Names the band so the figure reads without its caption, which is what
-        // a gallery thumbnail needs. Anchored to the band's own locus in the
-        // upper track rather than positioned by hand, so it tracks the layout.
-        // chr2L, not 2L: the anchor locus is resolved against the assembly's
-        // canonical names (the .ld.gz's own 2L is the adapter's business), so a
-        // bare name here resolves to nothing and fails the spec outright
         anchor: {
           track: 'ag1000g_2l_cmgam',
-          locus: 'chr2L:20,524,058-42,165,532',
+          locus: TWO_LA_LOCUS,
           fracY: 0,
-          dy: 18,
+          dy: 20,
         },
-        text: '2La inversion',
+        text: '2La inversion, both arrangements present:\nthe whole span is one block',
         fontSize: 18,
-        maxWidth: 200,
+        maxWidth: 430,
+      },
+      {
+        type: 'text',
+        anchor: {
+          track: 'ag1000g_2l_gagam',
+          locus: TWO_LA_LOCUS,
+          fracY: 0,
+          dy: 20,
+        },
+        text: 'Same span, one arrangement fixed:\nnothing to link',
+        fontSize: 18,
+        maxWidth: 430,
       },
     ],
   },

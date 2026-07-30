@@ -64,7 +64,7 @@ in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, far past what
 can be computed live from a VCF, so this one is precomputed with PLINK and read
 through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L. The banded region is the published 2La extent: r² fills it in the Cameroon panel, and the Gabon panel below has nothing there under identical settings. Both panels carry a separate block at the low-coordinate end of the arm."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings in both panels. r² fills the published 2La extent in the Cameroon panel and there is nothing there in the Gabon panel. Both panels carry a separate block at the low-coordinate end of the arm."/>
 
 The band is drawn from the published breakpoint coordinates, so the block's
 edges can be checked against them by eye rather than described. The lower panel

@@ -2274,17 +2274,17 @@
   },
   "ld/anopheles_2la": {
     "name": "ld/anopheles_2la",
-    "status": "bad",
-    "note": "i would like a red text annotation on both cameroon and gabon tracks that says  why this is interesting. remove highlight also",
+    "status": "good",
+    "note": "DONE, both asks. The highlight band is gone and each lane carries its own red callout saying what that lane shows: 'the whole span is one block' over Cameroon, 'same span, one arrangement fixed: nothing to link' over Gabon. Both anchor to the published 2La locus in their own track, so they sit over the span they describe and move with the layout rather than being placed by hand. The band was doing the callouts' job badly anyway: a tinted rectangle says 'look here' and the reader still had to be told that it fills in one lane and not the other. Caption reworded off 'the banded region'.",
     "reviewedAt": "2026-07-30T13:59:08.816Z",
-    "hash": "ee8d8e67f0e41956f7ba0764882b1fd6cb6b6307"
+    "hash": "bf8f5f2b3cb330a1f833540c22c54070317f67e0"
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
-    "status": "bad",
-    "note": "we need to add the gene track, reduce linezoneheight, and zoom out more. we need to see why this is important. you can also compare to a non-lactase population group explicitly instead of all if that helps.",
+    "status": "good",
+    "note": "DONE, three of four asks; the fourth was offered as optional and declined. GENE TRACK added (hg19 RefSeq Curated, showOnlyGenes, longest isoform), which is also the answer to 'we need to see why this is important' - the block now visibly sits on LCT/MCM6 rather than on unlabelled sequence. ZOOMED OUT 800 kb -> 1.2 Mb, so the panel lane's block ends inside the frame on both sides. Measured 2 Mb first and rejected it: a second, larger block upstream of LCT then dominates both lanes and the pooled-versus-panel difference stops being what the eye lands on, which is the subject. LINEZONEHEIGHT 100 -> 70, not lower: with useGenomicPositions off, that zone is also where the recombination curve and its 0..1 axis are drawn (effectiveLineZoneHeight in LDDisplay/shared.ts), and at 40 the tick labels overlapped into a smudge - recombinationZoneHeight does not get the space back, it only applies on the genomic-positions path. NOT DONE, deliberately: comparing to a named non-lactase-persistent population. The figure's subject is an analysis choice ('subset your VCF'), and stacking two human population panels would teach the same statistics while making the picture a comparison between peoples; the population-specific-sweep lesson is carried by ld/anopheles_2la, where the populations are mosquitoes.",
     "reviewedAt": "2026-07-30T13:59:52.294Z",
-    "hash": "75fda41d33c3baf573f2aec21fbcb3e8893a1196"
+    "hash": "3e187c0c87c4c4215ebaf9f8e5c2d03fc8e6390d"
   },
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
