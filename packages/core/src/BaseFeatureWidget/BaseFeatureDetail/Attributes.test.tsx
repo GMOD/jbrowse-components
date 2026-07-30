@@ -62,8 +62,9 @@ describe('Attributes', () => {
     expect(queryByText('file')).toBeNull()
   })
 
-  test('homogeneous object array renders via the data grid', () => {
-    const { getByText } = renderWithTheme(
+  // DataGridDetails is lazy(), so the grid only appears after the chunk resolves
+  test('homogeneous object array renders via the data grid', async () => {
+    const { findByText } = renderWithTheme(
       <Attributes
         attributes={{
           transcripts: [
@@ -73,6 +74,6 @@ describe('Attributes', () => {
         }}
       />,
     )
-    expect(getByText('transcripts')).toBeTruthy()
+    expect(await findByText('transcripts')).toBeTruthy()
   })
 })
