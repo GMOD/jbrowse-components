@@ -15,9 +15,7 @@ import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
-  computeRenderTransform,
   computeTriangleYScalar,
-  viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -237,16 +235,7 @@ export default function sharedModelFactory(
        * on a successful load, hanging SVG export.
        */
       get dataCurrent(): boolean {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return (
-          self.rpcData !== null &&
-          viewportMatchesLastDrawn({
-            lastDrawnOffsetPx: self.lastDrawnOffsetPx,
-            lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-            viewOffsetPx: view.offsetPx,
-            viewBpPerPx: view.bpPerPx,
-          })
-        )
+        return self.rpcData !== null && self.viewportFresh
       },
       /**
        * #getter
@@ -378,21 +367,6 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Forward transform { scale, viewOffsetX } shared by GPU render,
-       * mouse hit-test, and the matrix→genomic-position SVG lines. See
-       * `computeRenderTransform` for the math.
-       */
-      get renderTransform() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return computeRenderTransform({
-          lastDrawnOffsetPx: self.lastDrawnOffsetPx,
-          lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-          viewOffsetPx: view.offsetPx,
-          viewBpPerPx: view.bpPerPx,
-        })
-      },
-      /**
-       * #getter
        * Per-frame render state for the GPU backend. Read by the upload/render
        * autorun — every change to any tracked observable (view.bpPerPx,
        * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
@@ -403,7 +377,7 @@ export default function sharedModelFactory(
       // LDUploadData.
       get renderState(): LDRenderState {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const { scale, viewOffsetX } = this.renderTransform
+        const { scale, viewOffsetX } = self.renderTransform
         const canvasWidth = Math.round(
           view.dynamicBlocks.totalWidthPxWithoutBorders,
         )
@@ -438,7 +412,7 @@ export default function sharedModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(view.assemblyNames[0]!)
-        const { scale, viewOffsetX } = this.renderTransform
+        const { scale, viewOffsetX } = self.renderTransform
         const pitch = self.cellWidth * Math.SQRT2
         return assembly
           ? self.snps
@@ -476,7 +450,7 @@ export default function sharedModelFactory(
         if (mouseY < this.effectiveLineZoneHeight) {
           return undefined
         }
-        const { scale, viewOffsetX } = this.renderTransform
+        const { scale, viewOffsetX } = self.renderTransform
         const dataX = (mouseX - viewOffsetX) / scale
         const dataY = (mouseY - this.effectiveLineZoneHeight) / scale
         // Reverse the rendering's `scale(1, yScalar) · rotate(-π/4)` then
@@ -515,9 +489,12 @@ export default function sharedModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Starts the upload/render autorun. Data + color ramp both derive from
-       * the same rpcData object, so a single identity-diffed slot handles
-       * both uploads.
+       * Starts the upload/render autorun. No upload-diffing helper here on
+       * purpose: matrix and color ramp both derive from the one `rpcData`
+       * object, so the upload autorun's whole dependency set is that field and
+       * it can't re-fire without both genuinely being stale. (HiC needs
+       * `createGlobalUploadSync` because its palette is a config slot with an
+       * input independent of the RPC result.)
        */
       startRenderingBackend(backend: LDRenderingBackend) {
         self.attachRenderingBackend<LDRenderingBackend>(backend, {

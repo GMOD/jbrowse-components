@@ -419,9 +419,10 @@ export default function stateModelFactory(
                 ...self.rpcProps(),
                 stopToken: ctx.stopToken,
                 bpPerPx,
-                statusCallback: self.makeRegionStatusCallback(
-                  needed[0]!.displayedRegionIndex,
-                ),
+                // One batched call for every region, so there is nothing to
+                // aggregate: the plain status callback, not the per-region one
+                // the fan-out displays use to merge N concurrent bars.
+                statusCallback: self.makeStatusCallback(),
               }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)

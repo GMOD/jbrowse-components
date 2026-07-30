@@ -59,8 +59,12 @@ is what preserves the sort invariant above), and the buffers are only `slice`d
 when cells were skipped — a fully-genotyped VCF returns them untrimmed, so read
 `numCells`, never `.length`.
 
-The matrix display does not use any of this — it inverts `columnGeometry`
-instead, since its columns are laid out by feature index rather than position.
+The matrix display does not use any of this **hit-test** machinery — it inverts
+`columnGeometry` instead, since its columns are laid out by feature index rather
+than position. It does use the same both-ends partition
+(`computeVariantMatrixCells`, pinned by its own `cell bucket ordering` tests),
+for the same memory reason: 25 B/cell → 12 B/cell. It always draws ref cells
+(`skip` mode is a grey background there), so both buckets always land.
 
 ## Cell coloring is one exclusive axis (`featureColor`)
 
@@ -147,7 +151,7 @@ invalidates:
 | Tier             | Change triggers           | Wired in                                      |
 | ---------------- | ------------------------- | --------------------------------------------- |
 | **Fetch input**  | refetch (recompute cells) | `rpcProps()`, watched by `SettingsInvalidate` |
-| **Layout input** | reorder rows, no refetch  | `sourcesBase` / `sources` / `hierarchy`       |
+| **Layout input** | reorder rows              | `sourcesBase` / `sources` / `hierarchy`       |
 | **Render input** | repaint only              | subclass `renderState` getter                 |
 
 `rpcProps()` is the only structural marker of a fetch input — wrong tier means
@@ -155,6 +159,14 @@ needless refetches or stale cells. `renderingMode` spans all three (hence its
 special-cased setter). Invariant: **`rpcProps()` must not read fetch-derived
 state** (`sampleInfo`, `cellData`, `sources`) or it loops via `setCellData`;
 that's why it reads `sourcesBase`, not `sources`.
+
+Note the layout tier is **not** "no refetch": `sourcesBase` is literally
+`rpcProps().sources`, so a reorder — drag, cluster, `colorBy`/`groupBy` — does
+refetch, and has to. The worker assigns each cell a `rowIndex` against the
+source order it was handed, so cells computed for the old order describe the
+wrong rows. Only `sources` (the phased-expanded render view) and `hierarchy` are
+layout-only, which is exactly why `rpcProps()` reads the un-expanded
+`sourcesBase`.
 
 The tier is **per display**, not per setting, so the base `rpcProps()` carries
 only what both send and a subclass extends it by super-capture.
@@ -287,6 +299,11 @@ slots, both in `rpcProps()`.
 
 The `"<sampleName> HP<n>"` convention and ploidy defaulting live only in
 `expandSourcesToHaplotypes` (`shared/getSources.ts`), called by the worker, the
-`sources` getter, and the cluster dialog. Don't re-inline the
-`flatMap(... makeHaplotypeSources ...)` pattern — labels and rendered rows
-drift.
+`sources` getter, `getPhasedGenotypeMatrix`, and the cluster dialog. Don't
+re-inline the `flatMap(... makeHaplotypeSources ...)` pattern — labels and
+rendered rows drift. `getPhasedGenotypeMatrix` is where that already happened:
+its copy keyed both the ploidy lookup and the label off `name` rather than the
+resolved `sampleName`, so a source whose render name differs from its sample
+name got diploid rows the pasted cluster order couldn't be lined up against.
+`HP` is non-optional on the returned `HaplotypeSource`, so a caller indexing by
+haplotype takes it from the type instead of restating a `?? 2` of its own.

@@ -200,6 +200,16 @@ export function doAfterAttach(
           if (isCurrent() && !isAbortException(e)) {
             self.setError(e)
           }
+        } finally {
+          // Only the current fetch clears these — a superseded one resolving
+          // late must not unset what the newer fetch just set (same guard as
+          // synteny's fetch). `setRpcData`/`setError` cover the two ordinary
+          // exits; this covers the one they miss, an abort raised while still
+          // current, which otherwise strands `fetching` true forever.
+          if (isCurrent()) {
+            self.setFetching(false)
+            self.setStatusMessage(undefined)
+          }
         }
       },
       { name: 'DotplotFetch', scheduler: debounce.scheduler },

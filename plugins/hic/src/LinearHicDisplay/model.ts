@@ -15,10 +15,8 @@ import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
-  computeRenderTransform,
   computeTriangleYScalar,
   installGlobalFetchAutorun,
-  viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
 
@@ -187,15 +185,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `setRpcData`, so the two move together).
        */
       get dataCurrent(): boolean {
-        return (
-          self.rpcData !== null &&
-          viewportMatchesLastDrawn({
-            lastDrawnOffsetPx: self.lastDrawnOffsetPx,
-            lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-            viewOffsetPx: self.view.offsetPx,
-            viewBpPerPx: self.view.bpPerPx,
-          })
-        )
+        return self.rpcData !== null && self.viewportFresh
       },
       get colorScheme(): HicColorScheme {
         return getConf(self, 'colorScheme')
@@ -306,21 +296,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       // "rpcProps()/gpuProps() pattern".
       rpcProps(): { normalization: string } {
         return { normalization: self.activeNormalization }
-      },
-
-      /**
-       * #getter
-       * Forward transform { scale, viewOffsetX } shared by GPU render,
-       * mouse hit-test, and SVG export. See `computeRenderTransform` for
-       * the math.
-       */
-      get renderTransform() {
-        return computeRenderTransform({
-          lastDrawnOffsetPx: self.lastDrawnOffsetPx,
-          lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-          viewOffsetPx: self.view.offsetPx,
-          viewBpPerPx: self.view.bpPerPx,
-        })
       },
     }))
     .views(self => ({

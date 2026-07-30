@@ -447,11 +447,16 @@ rpcManager.call(sessionId, 'RenderXxxData', {
 
 `sessionId` belongs in the **first** argument only — `RpcManager.call` injects
 it into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
-reason. Passing it again in the object is redundant (several older call sites
-still do).
+reason. Passing it again in the object is redundant; no call site does anymore.
 
 `adapterConfig` is provided by `BaseDisplayModel` (via
-`getConf(this.parentTrack, 'adapter')`) — no display redefines it.
+`getConf(this.parentTrack, 'adapter')`) — and is a **structural** arg, so it is
+absent from the cache key. That matters for the one display whose adapter config
+is itself a function of user settings: GC content folds `gcMode` / `windowSize` /
+`windowDelta` into the `GCContentAdapter` config its `adapterConfig` getter
+builds, so it lists those three in `rpcProps()` purely as cache keys. A display
+that overrides `adapterConfig` from mutable state has to do the same, or its
+settings change nothing until something else invalidates.
 
 `rpcProps()` is the **only** extension point for the RPC payload. Each display
 defines its own typed shape; subclasses that layer on fields capture `super` and

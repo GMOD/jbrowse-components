@@ -16,11 +16,11 @@ interface LDModel extends IAnyStateTreeNode {
 }
 
 export function doAfterAttach(self: LDModel) {
-  // A force-load (raising userByteLimit) also clears regionTooLarge and
-  // bumps reloadCounter, so the byte limit needs no tracker of its own — either
-  // of those (already tracked) refires the fetch. regionTooLarge is a derived
-  // getter (see shared.ts), so it self-releases on zoom-in with no imperative
-  // clear; nothing here needs to watch or reset it.
+  // `regionTooLarge` is a derived getter (see shared.ts): a pure function of the
+  // cached byte estimate, the viewport, and `forceLoadTrack`, so it self-releases
+  // on zoom-in and flips on force-load with no imperative clear, and `shouldFetch`
+  // reading it below is all the tracking either needs. `reload()` refires through
+  // `reloadCounter`, which the skeleton reads above its gate.
   installGlobalFetchAutorun(self, {
     shouldFetch: () => self.showLDTriangle && !self.regionTooLarge,
     fetch: () => {

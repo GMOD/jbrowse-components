@@ -35,11 +35,9 @@ export default function SharedModelF(
       }) {
         setConf(self, 'windowSize', windowSize)
         setConf(self, 'windowDelta', windowDelta)
-        self.reload()
       },
       setGCMode(mode: 'content' | 'skew') {
         setConf(self, 'gcMode', mode)
-        self.reload()
       },
     }))
     .views(self => ({
@@ -53,6 +51,31 @@ export default function SharedModelF(
         return getConf(self, 'gcMode')
       },
     }))
+    .views(self => {
+      const { rpcProps: superRpcProps } = self
+      return {
+        /**
+         * #method
+         * The three GC parameters are fetch inputs: both subclasses fold them
+         * into the `GCContentAdapter` config their `adapterConfig` getter
+         * builds, so each changes what the worker computes. `adapterConfig` is a
+         * structural arg and deliberately not a cache key, so listing them here
+         * is the only thing that invalidates the loaded regions. They ride along
+         * in the payload too; the worker ignores them and reads the adapter.
+         *
+         * They used to live outside `rpcProps()`, with each setter calling
+         * `reload()` by hand — which covered the track menu and nothing else.
+         */
+        rpcProps() {
+          return {
+            ...superRpcProps(),
+            windowSize: self.windowSize,
+            windowDelta: self.windowDelta,
+            gcMode: self.gcMode,
+          }
+        },
+      }
+    })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {

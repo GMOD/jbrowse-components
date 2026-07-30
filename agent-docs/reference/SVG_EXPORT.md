@@ -246,9 +246,9 @@ freshness (capture a stale viewport) — both have shipped.
   time `isLoading` can be false with no data yet, and a `displayPhase !==
   'loading'` test would capture an empty render. `dataCurrent` is an overridable
   getter (default `false`) each display must implement. HiC and LD return
-  `rpcData !== null && viewportMatchesLastDrawn(…)` (comparing the
+  `rpcData !== null && self.viewportFresh` — the mixin-owned half comparing the
   `setLastDrawnViewport` snapshot committed alongside `setRpcData` to the live
-  `offsetPx`/`bpPerPx`); arc compares a region signature. Presence alone
+  `offsetPx`/`bpPerPx`; arc compares a region signature. Presence alone
   (`rpcData !== null`) would leave an in-place-refetch gap: a pan/zoom export
   resolving on the pre-pan matrix during the debounce+RPC window, since neither
   fetch clears `rpcData` at refetch start. A display that forgets to override
@@ -321,7 +321,7 @@ only how it is computed, and there are three ways:
 | Mechanism | Foundation | Implementation |
 | --- | --- | --- |
 | Spatial coverage | `MultiRegionDisplayMixin` | `viewportWithinLoadedData && loadedRegions.size > 0` |
-| Viewport-snapshot compare | `GlobalFetchMixin` (HiC, LD) | `viewportMatchesLastDrawn(…)` |
+| Viewport-snapshot compare | `GlobalFetchMixin` (HiC, LD) | `viewportFresh` (`StaleViewportRescaleMixin`) |
 | Signature compare | `GlobalFetchMixin` (arc), synteny, dotplot | `isDataCurrent(loaded, current)` |
 
 Consumers — `computeSvgReady`, the `settled` capture gates, BreakpointSplitView's

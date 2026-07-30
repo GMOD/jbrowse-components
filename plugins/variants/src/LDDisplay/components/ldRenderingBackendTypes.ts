@@ -1,3 +1,4 @@
+import type { LDDataResult } from '../../RenderLDDataRPC/types.ts'
 import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 export interface LDRenderState {
@@ -33,8 +34,10 @@ export interface LDRenderingBackend extends GlobalRenderingBackend<
 
 // The fetch blob carries more than the backends draw from (recombination track,
 // hover metadata, …), so upload and render share this one narrowing instead of
-// each spelling out the field list.
-export function toLDUploadData(data: LDUploadData): LDUploadData {
+// each spelling out the field list. The parameter must stay the WIDE type: typed
+// `LDUploadData` this was an identity function, and tsc checked nothing — a field
+// added to `LDUploadData` and forgotten here would fail at neither end.
+export function toLDUploadData(data: LDDataResult): LDUploadData {
   return {
     ldValues: data.ldValues,
     boundaries: data.boundaries,
