@@ -321,7 +321,9 @@ describe('apply a promoted default to open tracks', () => {
     expect(isSlotCustomized(self, 'customHeight')).toBe(true)
     expect(resolveConf(self, 'customHeight')).toBe(20)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
-    expect(session.lastNotify?.action?.name).toBe('Override 2 customized tracks')
+    expect(session.lastNotify?.action?.name).toBe(
+      'Override 2 customized tracks',
+    )
   })
 
   test('pin then unpin leaves the clicked track exactly as it was', () => {
@@ -372,7 +374,9 @@ describe('apply a promoted default to open tracks', () => {
 
     makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
     // all three open tracks hold their own value, `self` included
-    expect(session.lastNotify?.action?.name).toBe('Override 3 customized tracks')
+    expect(session.lastNotify?.action?.name).toBe(
+      'Override 3 customized tracks',
+    )
 
     // user closes one of the tracks the action was offered for
     session.views[1]!.closeTrack(0)

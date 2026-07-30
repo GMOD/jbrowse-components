@@ -67,10 +67,10 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Adapter:** [SamAdapter](../samadapter)
 - **Adapter:** [BamAdapter](../bamadapter)
 - **Adapter:** [CramAdapter](../cramadapter)
 - **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)
+- **Adapter:** [SamAdapter](../samadapter)
 - **Extended by:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **State model:** [runtime API](../../models/linearalignmentsdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)

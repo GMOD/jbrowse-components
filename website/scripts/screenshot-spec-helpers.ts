@@ -1086,10 +1086,17 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // flanks — the inversion is legible in the pileup itself, not only in the
     // arcs.
     'linkedReads:normal',
+    // Split the pileup on SA-tag presence, as inversion_long_read does
+    // (reviewer): the reads that cross the two breakpoints get their own
+    // labelled section under the arcs, and the flat background pileup goes
+    // below it, so the section divider says which reads carry the SV rather
+    // than leaving the reader to pick the colored ones out of a single stack.
+    'group:splitRead',
     'coverageHeight:80',
-    // deep enough that the whole pileup renders rather than running off the
-    // bottom of the image (reviewer)
-    'height:820',
+    // grouping stacks two coverage lanes and truncates the "Not split" lane at
+    // a row boundary, so the whole SV signal fits well under the 820 the
+    // ungrouped stack needed — at 820 the bottom third was empty
+    'height:560',
     '--loc',
     'chr1:197,786,900-197,789,700',
     '--width',

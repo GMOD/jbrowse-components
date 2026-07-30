@@ -66,9 +66,9 @@ A promotable "default for all tracks of this type" control, bundled so a menu
 row's trailing pin consumes it as a single prop. `active` = this value is
 currently the session default (a filled pin); `toggle` sets it as the default or
 clears it, touching no track's own value (see `applyDefaultToggle`). On set it
-raises a snackbar with an "Override N customized tracks" action for every open track
-not already showing this value — that action is the only thing in the subsystem
-that rewrites a track.
+raises a snackbar with an "Override N customized tracks" action for every open
+track not already showing this value — that action is the only thing in the
+subsystem that rewrites a track.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
@@ -187,6 +187,17 @@ node has no session ancestor.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
+### getTrackConfigWithPromotables
+
+See TrackConfigWithPromotables.
+
+```js
+// type signature
+(session: AbstractSessionModel, trackConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => TrackConfigWithPromotables
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### isSlotCustomized
 
@@ -347,5 +358,26 @@ slot, which the declared slot value type doesn't include.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
+### TrackConfigWithPromotables
+
+A track config snapshot with every display's `promotable` slots resolved, plus
+the list of values that came from a session-wide default rather than from the
+config itself.
+
+For handing a track's config to somewhere that leaves the cascade for good — the
+About dialog's "Copy config", whose output a user pastes into a `config.json`. A
+raw `getSnapshot` records a slot a track merely _follows_ as absent
+(`stripDefault` collapsed it), so the copied config renders differently from the
+track it was copied from. This is `getComputedStyle` at that boundary, and
+`fromDisplayTypeDefaults` is what lets the UI say so rather than silently
+materializing a session preference into a track config.
+
+Resolves through the open display when the track is open (so a received
+session's `ignorePromotedDefaults` is honored), and from the display config
+alone when it isn't — an unopened track has no display state, but "what would
+this render as" still has an answer.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 <!-- API_DOCS_END -->

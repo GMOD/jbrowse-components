@@ -286,15 +286,16 @@ breakpoints joined by **purple inversion-junction arcs**, where a read's two
 halves map in opposite orientations. `linkedReads:normal` chains each read's
 split segments, so the same inversion reads in the pileup itself: a **blue
 reverse-strand core between red forward-strand flanks**, spanning breakpoint to
-breakpoint.
+breakpoint. `group:splitRead` puts those reads in their own labelled section
+above the flat background pileup.
 
 ```bash
 jb2export --hub hg38 \
-  --bam https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam arcs:down linkedReads:normal coverageHeight:80 height:440 \
+  --bam https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam arcs:down linkedReads:normal group:splitRead coverageHeight:80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion: purple arcs connect each split read's two segments, and the chained reads show a blue reverse-strand core between red forward-strand flanks, breakpoint to breakpoint](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/sv_read_arcs.png)
+![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/sv_read_arcs.png)
 
 More alignment recipes (see [Track modifiers](#track-modifiers) for all
 options):

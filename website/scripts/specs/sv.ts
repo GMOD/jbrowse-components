@@ -1,3 +1,4 @@
+import { GROUP_BY_LABELS } from '../../../plugins/alignments/src/shared/groupByLabels.ts'
 import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
@@ -5,13 +6,20 @@ import {
   HG008_BAF_TRACK,
   HG008_DEPTH_TRACK,
   VOLVOX,
+  cascadeBoxes,
   cgiabUrl,
   kgUrl,
   lgvSession,
+  menuCascade,
   sessionSpec,
+  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// straight from the menu's own label table, so the click path and the boxes
+// drawn on it can't drift from the radio they point at
+const SPLIT_READ_LABEL = GROUP_BY_LABELS.splitRead
 
 // hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
 // showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
@@ -259,12 +267,9 @@ export const svSpecs: ScreenshotSpec[] = [
   // force-load byte gate so the reads auto-load instead of sitting on "Loading";
   // readySelector waits for the pileup canvas to actually paint before capture.
   //
-  // NOTE (color regression, reported separately): coloring HG002 reads by the HP
-  // tag now uses the darker MUI-200 TAG_COLOR_PALETTE
-  // (plugins/alignments/src/LinearAlignmentsDisplay/colorTagUtils.ts) instead of
-  // origin/main's pale Paul-Tol palette, so the haplotypes read darker than the
-  // old "nice pink and blue". That palette is a code constant, not a spec field,
-  // so it is not fixed here.
+  // The HP colors are a code constant, not a spec field: TAG_COLOR_PALETTE in
+  // plugins/alignments/src/LinearAlignmentsDisplay/colorTagUtils.ts, indexed
+  // anchored at 1 so HP:1 is the pale blue and HP:2 the pink.
   {
     mode: 'url',
     name: 'smalldel',
@@ -595,6 +600,40 @@ export const svSpecs: ScreenshotSpec[] = [
     // the bottom edge — reviewer: increase browser height)
     viewportHeight: 960,
     settleMs: 40000,
+    // the track menu icon keeps its "Track settings" tooltip after the menu is
+    // dismissed, and the cursor parks over the pileup, which raises the read
+    // tooltip — neither belongs in the result frame
+    hideSelectors: ['.MuiTooltip-popper'],
+    hideTooltip: true,
+    // Two-stage figure: the menu path that produces the grouping, then the
+    // grouping itself. The session already carries `groupBy: splitRead`, so
+    // frame one shows the radio *checked* over the applied result rather than a
+    // before-state — the live link opens the grouped view either way, which a
+    // click-only capture would lose.
+    stages: [
+      {
+        actions: [
+          trackMenuIcon('HG00151_ONT_1000g'),
+          ...menuCascade(['Group by...', SPLIT_READ_LABEL]),
+        ],
+        annotations: cascadeBoxes(['Group by...', SPLIT_READ_LABEL]),
+      },
+      {
+        // Escape twice: the Group by submenu, then the track menu. Then park
+        // the cursor on empty app-bar space — Escape leaves it over the radio,
+        // i.e. over the pileup the menu was covering. NOT a click on `body`:
+        // that lands mid-page on a read, which opens the feature-details drawer
+        // and narrows the view (the capture came back rezoomed to 4.08kb).
+        actions: [
+          { type: 'press', key: 'Escape' },
+          { type: 'press', key: 'Escape' },
+          { type: 'waitForText', text: SPLIT_READ_LABEL, hidden: true },
+          { type: 'waitForText', text: 'Group by...', hidden: true },
+          { type: 'hover', from: { x: 300, y: 15 } },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
+    ],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)

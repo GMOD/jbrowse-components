@@ -922,9 +922,9 @@
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "FIXED: stage 1 now boxes the Tag... radio inside the Group by submenu alongside the Group by... parent, so the menu path is boxed end to end. Force-regenerated (the added box is 0.1% of the frame, under the content-stable threshold).",
-    "reviewedAt": "2026-07-26T06:12:17.113Z",
-    "hash": "6e7c04e77d31d77f224b0dc5d9d792ab6aa3064d"
+    "note": "please investigate the hp coloring, should be HP:1 is blue and HP:2 is pink i believe, but we have i think HP:1 pink HP:2 green FIXED: the palette was indexed by the tag value straight through, so HP:1 took slot 1 (pink) and HP:2 slot 2 (green). tagValueColor now anchors at 1 -- every tool that writes HP numbers haplotypes from 1 -- so HP:1 is the leading pale blue and HP:2 the pink, and HP:0 (unphased) lands at the palette end instead of sharing a color with a real haplotype. Regenerated alignments/haplotype, smalldel and jbrowse-img/alignments_haplotype too.",
+    "reviewedAt": "2026-07-30T20:35:09.295Z",
+    "hash": "abbfc20650a045f97df0fa7d7f1ff7e5e468b771"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -982,9 +982,9 @@
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T04:21:33.455Z",
-    "hash": "5c3de0546a7f1d4e84d1c6f14c94090dd187bbf0"
+    "note": "this should be blue and pink but it is pink and red due to the hp numeric indexes i think, please fix. ",
+    "reviewedAt": "2026-07-30T20:16:15.082Z",
+    "hash": "b672de36a60a6d177aa07549542549bff4fbd642"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
@@ -1436,9 +1436,9 @@
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T14:20:55.230Z",
-    "hash": "a533c6533607a3f5aa15ff6d7c7f9551028ed7b0"
+    "note": "consider adding the groupBy similar to inversion_long_read DONE: group:splitRead added (jb2export supports it), so the SA-tag reads get their own labelled section under the arcs and the flat background pileup sits below, as in inversion_long_read. Height dropped 820->560 since grouping truncates the Not split lane at a row boundary; the old figure was a third empty. Docs + README command line updated to match.",
+    "reviewedAt": "2026-07-30T20:34:32.405Z",
+    "hash": "a99f35568c1fbe17f44c26ff73803b715ffd0977"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
@@ -1959,10 +1959,10 @@
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:06:20.903Z",
-    "hash": "c197d2ebbcf6e36c6870c8176b1a6686bb5c2e26"
+    "status": "bad",
+    "note": "using bezier curves for the connections similar to breakpoint split view might help indicate the 'directionality' of the nodes?",
+    "reviewedAt": "2026-07-30T20:34:11.874Z",
+    "hash": "bcc3684c50eb733ac934ed3b2ec4ea70611706e5"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2135,9 +2135,9 @@
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
     "status": "good",
-    "note": "we need to just use bandage graphs. the backbone graphs are too hard to understand. across all our figures. backbone too complicated. if we wanted linear, we'd use our lineargenomeview. in the second frame we might just want the graphgenomeview panel to be closed, and we need the things being clicked in menus to have red boxes around them. previous agent notes: Two frames now (reviewer: red box on the view menu icon, and a second frame showing what the launch produces). Frame one is the cascade with a box anchored on the graph view menu icon; frame two is the four-band synteny view the synteny entry opens. The K12 linear view was dropped from the session so the menu is not floating over 350px of context it does not need, which is the large complaint. Window moved to chr:4,400,000-4,450,000: at the old ECOLI_WINDOW, IAI39 reaches the subgraph through 8 bp, so the launch opened four panels at four unrelated scales. Every 50 kb window was scored on the smallest span any strain contributes and this one has all five between 38 kb and 69 kb. Also FIXED in the plugin while shooting it: launchSyntenyView passed init.tracks as a flat [trackId], which LinearSyntenyView reads as the level-0 shorthand, so a five-strain launch drew ribbons on the top band only and opened the four below as bare rulers.",
-    "reviewedAt": "2026-07-30T12:33:03.977Z",
-    "hash": "152699ebff53e17f3e8e33ee5be001b44803da42"
+    "note": "we need to just use force directed bandage graphs. the backbone graphs are too hard to understand. across all our figures. backbone too complicated. if we wanted linear, we'd use our lineargenomeview. in the second frame we might just want the graphgenomeview panel to be closed, and we need the things being clicked in menus to have red boxes around them. previous agent notes: Two frames now (reviewer: red box on the view menu icon, and a second frame showing what the launch produces). Frame one is the cascade with a box anchored on the graph view menu icon; frame two is the four-band synteny view the synteny entry opens. The K12 linear view was dropped from the session so the menu is not floating over 350px of context it does not need, which is the large complaint. Window moved to chr:4,400,000-4,450,000: at the old ECOLI_WINDOW, IAI39 reaches the subgraph through 8 bp, so the launch opened four panels at four unrelated scales. Every 50 kb window was scored on the smallest span any strain contributes and this one has all five between 38 kb and 69 kb. Also FIXED in the plugin while shooting it: launchSyntenyView passed init.tracks as a flat [trackId], which LinearSyntenyView reads as the level-0 shorthand, so a five-strain launch drew ribbons on the top band only and opened the four below as bare rulers.",
+    "reviewedAt": "2026-07-30T20:16:18.496Z",
+    "hash": "0ecc59da3a07387030d9dd809c14e148b42e496f"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
@@ -2191,8 +2191,8 @@
   "dog10k-cyp1a2-cohort-copy-number": {
     "name": "dog10k-cyp1a2-cohort-copy-number",
     "status": "bad",
-    "note": "it it helps, add breed label sidebar colors too tree-sidebar PALETTE CHANGED as agreed: diverging about copy number two (red loss / grey baseline / blue-purple-magenta gain) instead of black-at-two. CN2 was 78% of the painted bp, so the baseline had the most ink; the expansion over CYP1A2 is now the only ink and the losses read as a distinct direction. Recolored the committed BEDs itemRgb in place (no CRAM or VCF refetch) and updated both CN_COLOR blocks in build_dog10k_cyp1a2_cn.sh plus its header, which still described QuicK-mer2 colors. Found and fixed a drift trap while doing it: the legend is a hand-written `legend` config slot that restates the palette, so the first regen shipped a picture and a legend that disagreed. Both slots updated, and the build script now prints the legend JSON to check against. BREED BOXES not built: SvgRowLabels bails below a 6px row and a row here is 0.32px, so it needs a row-annotation stripe in the tree gutter, drawn independently of the label box. Design validated (reserve a fixed stripe width in treeSidebarRightEdge so labels shift, own thin canvas at left:treeAreaWidth, resize handle moves right by the same, drawn even when showTree is false, sources gain an annotation color) but not implemented -- it is a shared tree-sidebar package change affecting variants/MAF/multirow and wants its own tests. Caption fixed meanwhile: it claimed rows were sorted by sample ID when the spec clusters. PALETTE CHANGED AGAIN: the blue-purple-magenta gain tail came back around to the loss end, so a ten read as a neighbour of a zero. Now ColorBrewer RdBu diverging about two -- blue loss, grey baseline, red gain -- on the same two anchor colors as the 1000 Genomes copy-number figure (negColor #2166ac, posColor #b2182b), so the two cohort paintings read the same direction. The ramp saturates at CN 6+ rather than running to the highest call; capping at 4 was considered and rejected on the data, because 52% of the 63 CLUP wolves reach five against 13% of breed dogs, and three of the fifteen CRAM dogs reach five from read depth rather than the callset proxy. Above six is 18 canids with no group to them, so they share the last color and keep their measured value in the feature name and copyNumber column. Caveat on that justification: no CRAM is a wolf, so the wolf enrichment rests on the DP proxy alone and is deliberately NOT stated in the tutorial. It is also not visible in this figure -- the rows cluster but carry no breed, which is the BREED BOXES stripe still deferred above, so the cap preserves a distinction the reader cannot yet attribute. BREED STRIPE: BUILT, MEASURED, AND REMOVED AGAIN, so the previous deferral is now an answer rather than a promise. The earlier reason (\"SvgRowLabels bails below a 6px row\") is stale -- it floors a sub-pixel swatch to a whole pixel now, and rowGroups on LinearMultiRowFeatureDisplay is the slot for this exact job, so it was wired up with the four groups the named lane above uses (CLUP wolves, GOLD, LABR, BOXR). Measured on the rendered PNG: the wolf swatch is 19 device px of a ~600 device px lane, and all four groups together are ~10 CSS px. rowGroups also partitions rows into contiguous blocks by design, so those animals get pulled out of the copy-number sort into a block at the top of the lane. 10px of stripe cannot attribute a copy number to a breed and it costs the sorted banding this lane exists for, so it is reverted with the measurement recorded in the spec. The breed attribution is the named-animals lane above, which is the same four groups at a row height a reader can follow.",
-    "reviewedAt": "2026-07-30T16:10:00.000Z",
+    "note": "i am not a huge fan of the full dog10k below the small selection. i also wish the windows were smaller than 5kb. i am also wondering if we should actually use quick-kmer2 or look at their fastCN results on the kiddlab share server instead of our coarse estimate from the VCF. we can use the canFam 3.1 assembly if they have that precomputed",
+    "reviewedAt": "2026-07-30T20:37:01.256Z",
     "hash": "b088a7fd54cf60e112ece1afcc4845a274d14c36"
   },
   "dog10k-cyp1a2-copy-number": {
@@ -2318,8 +2318,8 @@
     "name": "sv_synteny/assembly_order_warning",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-30T14:04:19.294Z",
-    "hash": "21fd51427d36a78046cb1b051b88e40700b72ef4"
+    "reviewedAt": "2026-07-30T20:33:38.018Z",
+    "hash": "6cfcd4a28f940e3d1230a3afc155476894618e30"
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",

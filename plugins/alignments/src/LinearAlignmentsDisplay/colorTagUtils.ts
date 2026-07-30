@@ -42,7 +42,8 @@ function addValues(
 function tagValueColor(value: string) {
   const n = TAG_COLOR_PALETTE.length
   const num = Number(value)
-  const idx = Number.isInteger(num) && num >= 0 ? num + n - 1 : hashString(value)
+  const idx =
+    Number.isInteger(num) && num >= 0 ? num + n - 1 : hashString(value)
   return TAG_COLOR_PALETTE[idx % n]!
 }
 

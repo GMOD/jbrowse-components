@@ -54,6 +54,7 @@ the whole surface.
 | <span id="getter-dialogprops">**DialogProps**</span><br><code>Record&lt;string, unknown&gt;</code> |  | BaseSessionModel |
 | <span id="getter-animationmode">**animationMode**</span><br><code>AnimationMode</code> | resolved feature-layout animation mode (never undefined) | BaseSessionModel |
 | <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value. | BaseSessionModel |
+| <span id="getter-numbergrouping">**numberGrouping**</span><br><code>boolean</code> | resolved thousand-separator preference. Read for display in the Preferences dialog; the formatter itself reads a plain module variable set at startup in each realm (see `setNumberGrouping`), because worker- built strings can't see a main-thread observable. | BaseSessionModel |
 | <span id="getter-snackbarmessageset">**snackbarMessageSet**</span><br><code>Map&lt;string, SnackbarMessage&gt;</code> |  | [SnackbarModel](../snackbarmodel#getter-snackbarmessageset) |
 
 ## Methods

@@ -274,6 +274,8 @@ export function resolveSlotIn(
   // where the sender saw the *base* value: nothing gets baked (it equals base),
   // so without the opt-out the recipient's own promoted default would repaint it.
   const inherited =
-    !ctx.ignorePromotedDefaults && isUsableValue(def, promoted) ? promoted : base
+    !ctx.ignorePromotedDefaults && isUsableValue(def, promoted)
+      ? promoted
+      : base
   return { base, customized, promoted, value: customized ? own : inherited }
 }

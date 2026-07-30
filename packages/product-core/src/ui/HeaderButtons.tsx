@@ -64,7 +64,11 @@ function HeaderButtons({
           correct for a config file, but worth saying out loud */}
       {hideUris || !n ? null : (
         <Tooltip title={fromDisplayTypeDefaults.join(', ')}>
-          <Typography variant="caption" color="textSecondary" className={classes.note}>
+          <Typography
+            variant="caption"
+            color="textSecondary"
+            className={classes.note}
+          >
             includes {n} {pluralize(n, 'setting')} from your session-wide
             defaults
           </Typography>

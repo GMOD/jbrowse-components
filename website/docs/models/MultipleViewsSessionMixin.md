@@ -61,6 +61,7 @@ the whole surface.
 | <span id="getter-dialogprops">**DialogProps**</span><br><code>Record&lt;string, unknown&gt;</code> |  | [BaseSessionModel](../basesessionmodel#getter-dialogprops) |
 | <span id="getter-animationmode">**animationMode**</span><br><code>AnimationMode</code> | <span data-pagefind-ignore>resolved feature-layout animation mode (never undefined)</span> | [BaseSessionModel](../basesessionmodel#getter-animationmode) |
 | <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | <span data-pagefind-ignore>resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value.</span> | [BaseSessionModel](../basesessionmodel#getter-scrollzoom) |
+| <span id="getter-numbergrouping">**numberGrouping**</span><br><code>boolean</code> | <span data-pagefind-ignore>resolved thousand-separator preference. Read for display in the Preferences dialog; the formatter itself reads a plain module variable set at startup in each realm (see `setNumberGrouping`), because worker- built strings can't see a main-thread observable.</span> | [BaseSessionModel](../basesessionmodel#getter-numbergrouping) |
 | <span id="getter-snackbarmessageset">**snackbarMessageSet**</span><br><code>Map&lt;string, SnackbarMessage&gt;</code> |  | [SnackbarModel](../snackbarmodel#getter-snackbarmessageset) |
 | <span id="getter-visiblewidget">**visibleWidget**</span><br><code>any</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#getter-visiblewidget) |
 
