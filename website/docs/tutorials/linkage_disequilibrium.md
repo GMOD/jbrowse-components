@@ -40,18 +40,20 @@ outside it, marking the block's edges.
 
 ### Compute LD within one panel
 
-Pooling panels that carry different haplotypes at different frequencies averages
-the correlation away. Run the window above over the full 1000 Genomes callset
-instead of one panel and the block turns pink and fragmented, with no dip left in
-the recombination curve. Subset first:
+r² is a correlation across whatever samples you hand it, so pointing the display
+at a whole callset is the first thing to get wrong.
+
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it."/>
+
+Nothing about the display changed between those two lanes. Subset the VCF first:
 
 ```bash
 bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
 tabix -p vcf panel.vcf.gz
 ```
 
-The same applies to species. A panel mixing two species invents LD that neither
-species has.
+The same applies to species, and more sharply: a panel mixing two species invents
+LD that neither species has.
 
 ## An inversion is what the triangle is best at
 
@@ -68,10 +70,11 @@ can be checked against them by eye rather than described. The lower panel is a
 control rather than a second example: that population is effectively fixed for
 one arrangement, so it has no arrangement to correlate.
 
-It is not an empty track, though, and that is the useful part. Both panels show a
-block at the low-coordinate end of the arm, where the arrangement has nothing to
-do with it. A control tells you the display works and the region is genuinely
-uncorrelated; a blank track would only tell you something failed.
+It is not an empty track, though, and that is the useful part. Both panels carry
+a block at the low-coordinate end of the arm, near the voltage-gated sodium
+channel, which has nothing to do with the arrangement. A control that still shows
+signal elsewhere tells you the display works and the banded region is genuinely
+uncorrelated; a wholly blank track would only tell you something failed.
 
 ## Will your locus show up at all?
 

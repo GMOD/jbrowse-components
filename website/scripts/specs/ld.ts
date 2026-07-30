@@ -157,7 +157,87 @@ const TWO_LA_HIGHLIGHT = [
   { refName: 'chr2L', start: 20_524_058, end: 42_165_532, assemblyName: 'anoGam3' },
 ]
 
+// The per-population point, shown rather than asserted, WITHOUT making a figure
+// out of human population differences. Both lanes are the same locus, window,
+// MAF floor and settings; the only difference is which samples went in. Pooled
+// above (every panel in the release), one panel below.
+//
+// This is deliberately a contrast between two ANALYSIS CHOICES, not between two
+// groups: the takeaway a reader should leave with is "subset your VCF", which is
+// a mistake they will actually make when they point an LDDisplay at a whole
+// callset. Stacking two human population panels would teach the same statistics
+// while making the subject of the picture a comparison between peoples, which is
+// not what this page is for. The population-specific-sweep lesson is carried by
+// the Anopheles figure, where the populations are mosquitoes and presence or
+// absence of the arrangement is itself the result.
+const lctPanelTrack = (
+  trackId: string,
+  name: string,
+  file: string,
+) => ({
+  type: 'VariantTrack',
+  trackId,
+  name,
+  assemblyNames: ['hg19'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: `https://jbrowse.org/demos/popgen/${file}`,
+    fetchSizeLimit: 500_000_000,
+  },
+  displays: [
+    {
+      type: 'LDDisplay',
+      showLDTriangle: true,
+      showLegend: true,
+      // the recombination curve is half the evidence: its dip over the block
+      // exists in the panel lane and not in the pooled one
+      showRecombination: true,
+      minorAlleleFrequencyFilter: 0.35,
+      height: 330,
+    },
+  ],
+})
+
 export const ldSpecs: ScreenshotSpec[] = [
+  {
+    mode: 'url',
+    name: 'ld/lct_pooled_vs_panel',
+    url: `${HG19_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        lctPanelTrack(
+          'kgp_lct_pooled',
+          'All panels pooled (r²)',
+          'lct_1kg_chr2.vcf.gz',
+        ),
+        lctPanelTrack(
+          'kgp_lct_panel',
+          'One population panel (r²)',
+          'lct_1kg_chr2_eur.vcf.gz',
+        ),
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: LCT_LOC,
+          highlight: LCT_HIGHLIGHT,
+          tracks: [
+            { trackId: 'kgp_lct_pooled', type: 'LDDisplay' },
+            { trackId: 'kgp_lct_panel', type: 'LDDisplay' },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    // same real signal as the Anopheles figure: both LD panels finished, not a
+    // duration guess
+    readySelector:
+      'body:has([data-testid="ld-display-done"][data-display-phase="ready"]):not(:has([data-testid="ld-display"])):not(:has([data-display-phase="loading"]))',
+    readyTimeout: 240000,
+    // two LD tracks (330 triangle + 50 recombination zone each) + 2 headers +
+    // ruler/overview
+    viewportHeight: 900,
+    settleMs: 8000,
+  },
   {
     mode: 'url',
     name: 'ld/anopheles_2la',
@@ -193,10 +273,40 @@ export const ldSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
+    // Wait on the model's own state, not a duration. DisplayChrome publishes
+    // `data-display-phase` for exactly this; note the sibling `-done` testid is
+    // canvasDrawn (FIRST PAINT), which flips on an empty canvas while the fetch
+    // is still in flight, so it would happily screenshot a blank triangle.
+    // Both LD panels must reach `ready`.
+    // An LD panel is `ld-display` until first paint and `ld-display-done`
+    // after, so "no bare ld-display left" means both panels painted, and "no
+    // phase=loading left" means both finished fetching.
+    readySelector:
+      'body:has([data-testid="ld-display-done"][data-display-phase="ready"]):not(:has([data-testid="ld-display"])):not(:has([data-display-phase="loading"]))',
     readyTimeout: 180000,
     // two LD tracks(300 each) + 2 headers + ruler/overview
     viewportHeight: 770,
-    settleMs: 25000,
+    settleMs: 8000,
+    annotations: [
+      {
+        type: 'text',
+        // Names the band so the figure reads without its caption, which is what
+        // a gallery thumbnail needs. Anchored to the band's own locus in the
+        // upper track rather than positioned by hand, so it tracks the layout.
+        // chr2L, not 2L: the anchor locus is resolved against the assembly's
+        // canonical names (the .ld.gz's own 2L is the adapter's business), so a
+        // bare name here resolves to nothing and fails the spec outright
+        anchor: {
+          track: 'ag1000g_2l_cmgam',
+          locus: 'chr2L:20,524,058-42,165,532',
+          fracY: 0,
+          dy: 18,
+        },
+        text: '2La inversion',
+        fontSize: 18,
+        maxWidth: 200,
+      },
+    ],
   },
   {
     mode: 'url',
