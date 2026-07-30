@@ -4,6 +4,8 @@ import { alpha, useTheme } from '@mui/material'
 
 import type { RefObject } from 'react'
 
+// one <style> per highlight name, so two tables highlighting at once don't
+// overwrite each other's color rule
 const styleElements = new Map<string, HTMLStyleElement>()
 
 function setHighlightStyle(name: string, color: string) {
@@ -30,6 +32,25 @@ function getTextNodes(root: Element): Text[] {
   return nodes
 }
 
+// Pure DOM scan: every non-overlapping, case-insensitive match of queryLower
+// within root becomes a Range. queryLower is assumed already lowercased and
+// non-empty (an empty needle would match at every offset and never advance).
+function collectMatchRanges(root: Element, queryLower: string): Range[] {
+  const ranges: Range[] = []
+  for (const textNode of getTextNodes(root)) {
+    const textLower = textNode.textContent.toLowerCase()
+    let idx = textLower.indexOf(queryLower)
+    while (idx !== -1) {
+      const range = new Range()
+      range.setStart(textNode, idx)
+      range.setEnd(textNode, idx + queryLower.length)
+      ranges.push(range)
+      idx = textLower.indexOf(queryLower, idx + queryLower.length)
+    }
+  }
+  return ranges
+}
+
 export function useSearchHighlight(
   containerRef: RefObject<HTMLElement | null>,
   query: string,
@@ -38,33 +59,23 @@ export function useSearchHighlight(
   const theme = useTheme()
   const color = alpha(theme.palette.textHighlight.main, 0.45)
 
+  // No deps: must re-run after every render, because a Range detaches when its
+  // text node is removed — scrolling a virtualized table swaps the rendered
+  // rows, so the highlights have to be recollected against the new DOM
   useLayoutEffect(() => {
+    // absent in jest, and in browsers without the CSS custom highlight API
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof CSS === 'undefined' || !CSS.highlights) {
-      return
+      return undefined
     }
     setHighlightStyle(highlightName, color)
     const container = containerRef.current
-    if (container && query.trim()) {
-      const queryLower = query.toLowerCase().trim()
+    const queryLower = query.trim().toLowerCase()
+    if (container && queryLower) {
       const highlight = new Highlight()
-      for (const textNode of getTextNodes(container)) {
-        const text = textNode.textContent
-        const textLower = text.toLowerCase()
-        let offset = 0
-        while (offset < textLower.length) {
-          const idx = textLower.indexOf(queryLower, offset)
-          if (idx === -1) {
-            break
-          }
-          const range = new Range()
-          range.setStart(textNode, idx)
-          range.setEnd(textNode, idx + queryLower.length)
-          highlight.add(range)
-          offset = idx + queryLower.length
-        }
+      for (const range of collectMatchRanges(container, queryLower)) {
+        highlight.add(range)
       }
-
       CSS.highlights.set(highlightName, highlight)
     } else {
       CSS.highlights.delete(highlightName)
@@ -72,5 +83,5 @@ export function useSearchHighlight(
     return () => {
       CSS.highlights.delete(highlightName)
     }
-  }, [containerRef, query, highlightName, color])
+  })
 }

@@ -2,6 +2,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { MIN_PANEL_WIDTH } from '../facetedModel.ts'
 import FacetFilters from './FacetFilters.tsx'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
@@ -12,11 +13,6 @@ import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSele
 import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()({
-  cell: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
   resizeHandle: {
     marginLeft: 5,
     width: 5,
@@ -45,16 +41,15 @@ const FacetedSelector = observer(function FacetedSelector({
   const { classes } = useStyles()
   const { width, height } = useWindowSize()
   const { selection, shownTrackIds } = model
-  const { panelWidth, showFilters } = faceted
+  const { showFilters } = faceted
 
-  const columns = getFacetedColumns({
-    faceted,
-    model,
-    nameClassName: classes.cell,
-  })
+  const columns = getFacetedColumns({ faceted, model })
 
   const h = height * frac
   const w = width * frac
+  // a persisted panel width wider than the current window would leave the data
+  // pane with no room, so the saved value is clamped against the container
+  const panelWidth = Math.min(faceted.panelWidth, w - MIN_PANEL_WIDTH)
 
   return (
     <>
@@ -64,7 +59,7 @@ const FacetedSelector = observer(function FacetedSelector({
           className={classes.dataPane}
           style={{
             height: h,
-            width: Math.max(0, w - (showFilters ? panelWidth : 0)),
+            width: w - (showFilters ? panelWidth : 0),
           }}
         >
           <FacetedDataGrid

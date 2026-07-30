@@ -1,44 +1,27 @@
-import { useEffect, useState } from 'react'
-
 import { Dialog } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
-import { destroy } from '@jbrowse/mobx-state-tree'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { facetedStateTreeF } from '../facetedModel.ts'
+import { useFacetedModel } from '../useFacetedModel.ts'
 import FacetedSelector from './FacetedSelector.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel } from '../facetedModel.ts'
-
-function createFacetedModel(model: HierarchicalTrackSelectorModel) {
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
-    getSession(model),
-    model.assemblyNames,
-  )
-  return faceted
-}
 
 const FacetedTrackSelectorDialog = observer(
-  function FacetedTrackSelectorDialog(props: {
+  function FacetedTrackSelectorDialog({
+    handleClose,
+    model,
+  }: {
     handleClose: () => void
     model: HierarchicalTrackSelectorModel
   }) {
-    const { handleClose, model } = props
-    const [faceted] = useState<FacetedModel>(() => createFacetedModel(model))
-    useEffect(
-      () => () => {
-        destroy(faceted)
-      },
-      [faceted],
-    )
+    const faceted = useFacetedModel(model, () => model.allTrackConfigurations)
     return (
       <Dialog
         open
-        onClose={handleClose}
+        onClose={() => {
+          handleClose()
+        }}
         maxWidth="xl"
         title="Faceted track selector"
       >

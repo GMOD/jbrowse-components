@@ -28,6 +28,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
+// smallest useful width for either of the two panes, applied to the filter
+// panel when dragging its handle and to the data pane when laying out
+export const MIN_PANEL_WIDTH = 100
+
 // Hidden columns are config+assembly scoped: the metadata columns differ per
 // dataset, so hiding one shouldn't carry over to an unrelated config.
 function hiddenColumnsKey(assemblyNames: string[]) {
@@ -82,7 +86,7 @@ export function facetedStateTreeF() {
       /**
        * #property
        * Column names the user has hidden. Loaded from a config+assembly scoped
-       * localStorage entry in setTrackConfigurations (once assemblies are known).
+       * localStorage entry in setTrackSource (once assemblies are known).
        */
       hiddenColumns: types.optional(types.array(types.string), []),
     })
@@ -110,8 +114,12 @@ export function facetedStateTreeF() {
       sortAscending: true,
       /**
        * #volatile
+       * Supplier for the tracks the grid shows. Called from inside the row
+       * computeds so they track the live config tree: a track added or deleted
+       * while the selector is open flows through instead of leaving a stale row
+       * pointing at a destroyed config.
        */
-      trackConfigurations: [] as AnyConfigurationModel[],
+      getTracks: (() => []) as () => AnyConfigurationModel[],
       /**
        * #volatile
        */
@@ -121,12 +129,12 @@ export function facetedStateTreeF() {
       /**
        * #action
        */
-      setTrackConfigurations(
-        tracks: AnyConfigurationModel[],
+      setTrackSource(
+        getTracks: () => AnyConfigurationModel[],
         session: AbstractSessionModel,
         assemblyNames: string[],
       ) {
-        self.trackConfigurations = tracks
+        self.getTracks = getTracks
         self.session = session
         self.assemblyNames = assemblyNames
         self.hiddenColumns.replace(
@@ -156,8 +164,10 @@ export function facetedStateTreeF() {
        * #action
        */
       setPanelWidth(width: number) {
-        self.panelWidth = width
-        localStorageSetNumber('facet-panelWidth', width)
+        // a drag past the left edge would otherwise give the filter pane a
+        // negative width and make the data pane wider than its container
+        self.panelWidth = Math.max(MIN_PANEL_WIDTH, width)
+        localStorageSetNumber('facet-panelWidth', self.panelWidth)
       },
       /**
        * #action
@@ -203,12 +213,12 @@ export function facetedStateTreeF() {
       /**
        * #getter
        * Builds row objects from track configs. Cached and only recomputes when
-       * track configurations change, not on every filterText keystroke.
+       * the track list changes, not on every filterText keystroke.
        */
       get allRows() {
         const session = self.session
         return session
-          ? self.trackConfigurations.map(
+          ? self.getTracks().map(
               track =>
                 ({
                   id: track.trackId as string,
@@ -335,7 +345,11 @@ export function facetedStateTreeF() {
        * field (natural order when no field is selected).
        */
       get sortedRows() {
-        const { sortField, sortAscending, filteredRows } = self
+        const { sortAscending, filteredRows } = self
+        // a sort on a column that is no longer shown (hidden via Manage
+        // columns, or dropped out of the fields when showSparse turned off) has
+        // no header indicator, so fall back to natural order
+        const sortField = self.visible[self.sortField] ? self.sortField : ''
         if (!sortField) {
           return filteredRows
         }

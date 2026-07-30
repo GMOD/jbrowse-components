@@ -39,16 +39,16 @@ function ClearButton({ onClick }: { onClick: () => void }) {
 }
 
 function ExpandButton({
-  visible,
+  expanded,
   onClick,
 }: {
-  visible: boolean
+  expanded: boolean
   onClick: () => void
 }) {
   return (
     <Tooltip title="Minimize/expand this facet filter">
       <IconButton onClick={onClick} size="small">
-        {visible ? <MinimizeIcon /> : <AddIcon />}
+        {expanded ? <MinimizeIcon /> : <AddIcon />}
       </IconButton>
     </Tooltip>
   )
@@ -64,7 +64,7 @@ const FacetFilter = observer(function FacetFilter({
   faceted: FacetedModel
 }) {
   const { classes } = useStyles()
-  const [visible, setVisible] = useState(true)
+  const [expanded, setExpanded] = useState(true)
   const { filters, nonMetadataFieldSet } = faceted
   return (
     <FormControl className={classes.facet} fullWidth>
@@ -78,13 +78,13 @@ const FacetFilter = observer(function FacetFilter({
           }}
         />
         <ExpandButton
-          visible={visible}
+          expanded={expanded}
           onClick={() => {
-            setVisible(!visible)
+            setExpanded(!expanded)
           }}
         />
       </div>
-      {visible ? (
+      {expanded ? (
         <Select
           multiple
           native

@@ -56,8 +56,8 @@ function setup() {
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
@@ -68,7 +68,7 @@ function renderGrid(
   model: HierarchicalTrackSelectorModel,
   faceted: FacetedModel,
 ) {
-  const columns = getFacetedColumns({ faceted, model, nameClassName: 'name' })
+  const columns = getFacetedColumns({ faceted, model })
   // observer wrapper mirrors FacetedSelector: re-reads shownTrackIds/selection
   // from the live model so the grid sees updates after a toggle
   const Wrapper = observer(function Wrapper() {

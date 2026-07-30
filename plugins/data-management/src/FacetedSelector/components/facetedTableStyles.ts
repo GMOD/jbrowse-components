@@ -93,6 +93,11 @@ export const useFacetedTableStyles = makeStyles()(theme => {
       lineHeight: `${ROW_HEIGHT - 1}px`,
       boxSizing: 'border-box',
     },
+    nameCell: {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
     sortLabel: {
       cursor: 'pointer',
       userSelect: 'none',

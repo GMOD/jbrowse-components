@@ -1,13 +1,16 @@
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { autorun } from 'mobx'
 
-import { facetedStateTreeF } from './facetedModel.ts'
+import { MIN_PANEL_WIDTH, facetedStateTreeF } from './facetedModel.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 afterEach(() => {
   localStorage.clear()
 })
+
+const REFSEQ = 'Reference sequence (volMyt1)'
 
 function setup() {
   const session = createTestSession()
@@ -41,18 +44,23 @@ function setup() {
   })
   const model = view.activateTrackSelector()
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(
-    model.allTrackConfigurations,
+  faceted.setTrackSource(
+    () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
-  return faceted
+  // the reference sequence track only joins allTrackConfigurations once
+  // assemblyManager.get has resolved the assembly, so warm it here to keep row
+  // counts the same no matter how many times a test reads them
+  void model.allTrackConfigurations.length
+  return { session, model, faceted }
 }
 
 describe('sorting', () => {
   test('sortedRows preserves natural order with no sort field', () => {
-    const faceted = setup()
+    const { faceted } = setup()
     expect(faceted.sortedRows.map(r => r.name)).toEqual([
+      REFSEQ,
       'charlie',
       'alpha',
       'bravo',
@@ -60,19 +68,21 @@ describe('sorting', () => {
   })
 
   test('ascending name sort', () => {
-    const faceted = setup()
+    const { faceted } = setup()
     faceted.setSort('name', true)
     expect(faceted.sortedRows.map(r => r.name)).toEqual([
       'alpha',
       'bravo',
       'charlie',
+      REFSEQ,
     ])
   })
 
   test('descending name sort', () => {
-    const faceted = setup()
+    const { faceted } = setup()
     faceted.setSort('name', false)
     expect(faceted.sortedRows.map(r => r.name)).toEqual([
+      REFSEQ,
       'charlie',
       'bravo',
       'alpha',
@@ -80,9 +90,22 @@ describe('sorting', () => {
   })
 
   test('sorting does not mutate filteredRows order', () => {
-    const faceted = setup()
+    const { faceted } = setup()
     faceted.setSort('name', true)
     expect(faceted.filteredRows.map(r => r.name)).toEqual([
+      REFSEQ,
+      'charlie',
+      'alpha',
+      'bravo',
+    ])
+  })
+
+  test('a sort on a hidden column falls back to natural order', () => {
+    const { faceted } = setup()
+    faceted.setSort('name', true)
+    faceted.setColumnVisible('name', false)
+    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+      REFSEQ,
       'charlie',
       'alpha',
       'bravo',
@@ -90,9 +113,45 @@ describe('sorting', () => {
   })
 })
 
+describe('live track source', () => {
+  test('a track deleted while the selector is open drops out of the rows', () => {
+    const { session, faceted } = setup()
+    // observed, as in the app: an unobserved computed recomputes on every read
+    const dispose = autorun(() => faceted.rows.length)
+    expect(faceted.rows.map(r => r.name)).toContain('alpha')
+
+    session.deleteTrackConf(
+      session.sessionTracks.find(
+        (t: { trackId: string }) => t.trackId === 'alpha',
+      ),
+    )
+
+    expect(faceted.rows.map(r => r.name)).not.toContain('alpha')
+    dispose()
+  })
+
+  test('a track added while the selector is open appears in the rows', () => {
+    const { session, faceted } = setup()
+    const dispose = autorun(() => faceted.rows.length)
+    const before = faceted.rows.length
+
+    session.addTrackConf({
+      trackId: 'delta',
+      name: 'delta',
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+
+    expect(faceted.rows.map(r => r.name)).toContain('delta')
+    expect(faceted.rows.length).toBe(before + 1)
+    dispose()
+  })
+})
+
 describe('hidden columns', () => {
   test('persists under a config+assembly scoped key', () => {
-    const faceted = setup()
+    const { faceted } = setup()
     faceted.setShowSparse(true)
     faceted.setColumnVisible('adapter', false)
     const scopedKey = Object.keys(localStorage).find(k =>
@@ -105,10 +164,10 @@ describe('hidden columns', () => {
 
   test('restores from the scoped key on load', () => {
     const probe = setup()
-    probe.setShowSparse(true)
-    probe.setColumnVisible('adapter', false)
+    probe.faceted.setShowSparse(true)
+    probe.faceted.setColumnVisible('adapter', false)
     // a freshly created model for the same assemblies sees the hidden column
-    const faceted = setup()
+    const { faceted } = setup()
     faceted.setShowSparse(true)
     expect(faceted.visible.adapter).toBe(false)
   })
@@ -116,10 +175,18 @@ describe('hidden columns', () => {
 
 describe('clearFilters', () => {
   test('removes all active facet selections', () => {
-    const faceted = setup()
+    const { faceted } = setup()
     faceted.setFilter('name', ['alpha'])
     expect(faceted.filteredRows.map(r => r.name)).toEqual(['alpha'])
     faceted.clearFilters()
-    expect(faceted.filteredRows).toHaveLength(3)
+    expect(faceted.filteredRows).toHaveLength(4)
+  })
+})
+
+describe('panelWidth', () => {
+  test('a drag past the left edge cannot invert the filter pane', () => {
+    const { faceted } = setup()
+    faceted.setPanelWidth(-50)
+    expect(faceted.panelWidth).toBe(MIN_PANEL_WIDTH)
   })
 })
