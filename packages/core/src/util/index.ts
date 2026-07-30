@@ -162,6 +162,7 @@ export {
 export {
   avg,
   clamp,
+  getNumberGrouping,
   max,
   maxFinite,
   min,
@@ -169,6 +170,7 @@ export {
   polarToCartesian,
   radToDeg,
   reducePrecision,
+  setNumberGrouping,
   sum,
   toLocale,
 } from './numericUtils.ts'
@@ -558,6 +560,7 @@ export {
   UnknownRefNameError,
   assembleLocString,
   assembleLocStringFast,
+  assembleLocStringRaw,
   compareLocStrings,
   compareLocs,
   parseLocString,

@@ -1,5 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { SimpleFeature, assembleLocStringFast } from '@jbrowse/core/util'
+import { SimpleFeature, assembleLocStringRaw } from '@jbrowse/core/util'
 import {
   breakpointSplitViewId,
   launchBreakpointSplitView,
@@ -35,7 +35,7 @@ export default function FeatureMenu({
                 spreadsheetViewId,
                 assemblyName,
                 session,
-                locString: assembleLocStringFast(feature),
+                locString: assembleLocStringRaw(feature),
               })
             } catch (e) {
               console.error(e)

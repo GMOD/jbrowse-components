@@ -149,13 +149,35 @@ export function parseLocString(
  * ```
  */
 export function assembleLocString(region: ParsedLocString) {
-  return assembleLocStringFast(region, toLocale)
+  return assembleLocStringWith(region, toLocale)
 }
 
-// same as assembleLocString above, but does not perform toLocaleString which
-// can slow down the speed of block calculations which use assembleLocString
-// for block.key
+/**
+ * Same as {@link assembleLocString}, but with the coordinates left unformatted:
+ * no thousand separators, and never affected by the `numberGrouping` display
+ * preference. Use this wherever the result is compared, keyed on, or parsed
+ * rather than read — block keys, dedup buckets, locStrings handed back to
+ * `parseLocString` — both because it is faster (block calculations assemble a
+ * great many of these) and because a display convention shifting under an
+ * identity string is a correctness bug, not a cosmetic one.
+ */
+export function assembleLocStringRaw(region: ParsedLocString) {
+  return assembleLocStringWith(region)
+}
+
+/**
+ * @deprecated renamed to {@link assembleLocStringRaw}. "Fast" named the reason
+ * (skipping the formatter) rather than the contract (never display-formatted),
+ * which read as an invitation to use it anywhere hot.
+ */
 export function assembleLocStringFast(
+  region: ParsedLocString,
+  cb = (n: number): string | number => n,
+) {
+  return assembleLocStringWith(region, cb)
+}
+
+function assembleLocStringWith(
   region: ParsedLocString,
   cb = (n: number): string | number => n,
 ) {

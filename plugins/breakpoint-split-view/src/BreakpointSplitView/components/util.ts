@@ -3,7 +3,11 @@ import {
   pairDirection,
 } from '@jbrowse/alignments-core'
 import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
-import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  assembleLocStringRaw,
+  notEmpty,
+} from '@jbrowse/core/util'
 import { safeParseBreakend } from '@jbrowse/sv-core'
 
 import type { ChainSegment, LayoutMatch } from '../types.ts'
@@ -39,7 +43,7 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   for (const feature of features.values()) {
     const flags = feature.get('flags') as number
     const name = feature.get('name')!
-    const key = `${name}\t${assembleLocStringFast({
+    const key = `${name}\t${assembleLocStringRaw({
       refName: feature.get('refName'),
       start: feature.get('start'),
       end: feature.get('end'),
@@ -134,7 +138,7 @@ export function markHiddenSegments(
     const hidden = chain.filter(s => s.clip > prev && s.clip < cur)
     chunk[i]!.hiddenSegmentsBefore = hidden.length
       ? hidden.map(s =>
-          assembleLocStringFast({
+          assembleLocString({
             refName: s.refName,
             start: s.start,
             end: s.end,
@@ -257,12 +261,12 @@ export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
     if (!isPairedFeature(f) || !mate) {
       continue
     }
-    const self = assembleLocStringFast({
+    const self = assembleLocStringRaw({
       refName: f.get('refName'),
       start: f.get('start'),
       end: f.get('end'),
     })
-    bucket(candidates, [self, assembleLocStringFast(mate)].sort().join('\t'), f)
+    bucket(candidates, [self, assembleLocStringRaw(mate)].sort().join('\t'), f)
   }
   return multi(candidates)
 }

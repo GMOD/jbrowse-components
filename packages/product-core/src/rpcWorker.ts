@@ -1,5 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { setNumberGrouping } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 
@@ -16,6 +17,7 @@ declare global {
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
   windowHref: string
+  numberGrouping: boolean
 }
 
 // waits for a message from the main thread containing our configuration, which
@@ -42,6 +44,10 @@ async function getPluginManager(
 ) {
   // Load runtime plugins
   const config = await receiveConfiguration()
+  // this realm formats its own strings — a jexl `mouseover` slot renders a
+  // tooltip against the full feature here rather than shipping it back — so it
+  // needs the main thread's display preference before any RPC method runs
+  setNumberGrouping(config.numberGrouping)
   const pluginLoader = new PluginLoader(
     config.plugins,
     opts,

@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
@@ -249,7 +253,11 @@ function getCopySubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
     })
   }
   if (refName) {
-    const locString = `${refName}:${feat.get('start') + 1}-${feat.get('end')}`
+    const locString = assembleLocString({
+      refName,
+      start: feat.get('start'),
+      end: feat.get('end'),
+    })
     sub.push({
       label: 'Copy location',
       subLabel: 'e.g. to paste into the location search box',

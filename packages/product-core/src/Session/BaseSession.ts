@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { setNumberGrouping } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
@@ -287,8 +288,27 @@ export function BaseSessionModel<
       get scrollZoom(): boolean {
         return self.getPreference('scrollZoom') === true
       },
+      /**
+       * #getter
+       * resolved thousand-separator preference. Read for display in the
+       * Preferences dialog; the formatter itself reads a plain module variable
+       * set at startup in each realm (see `setNumberGrouping`), because worker-
+       * built strings can't see a main-thread observable.
+       */
+      get numberGrouping(): boolean {
+        return self.getPreference('numberGrouping') !== false
+      },
     }))
     .actions(self => ({
+      afterAttach() {
+        // push the admin/embedder default down to the formatter, which is a
+        // plain module variable rather than an observable (see
+        // `setNumberGrouping`). Embedded products stop here; web and desktop
+        // compose PreferencesSessionMixin, whose own afterAttach runs after
+        // this one and re-applies the value once the user's stored overrides
+        // are loaded, so a user override still wins over the config default.
+        setNumberGrouping(self.numberGrouping)
+      },
       /**
        * #action
        * set the global selection, i.e. the globally-selected object. can be a

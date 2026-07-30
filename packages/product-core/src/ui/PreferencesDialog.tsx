@@ -1,14 +1,12 @@
 import { Suspense, useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
-  Checkbox,
   DialogActions,
   DialogContent,
   Divider,
-  FormControlLabel,
   FormGroup,
   MenuItem,
   TextField,
@@ -47,6 +45,7 @@ export interface PreferencesDialogSession {
   setUseWorkspacesPreference: (useWorkspaces: boolean) => void
   resetUseWorkspaces: () => void
   animationMode: AnimationMode
+  numberGrouping: boolean
   setPreferenceOverride: (key: string, value: unknown) => void
   clearPreferenceOverride: (key: string) => void
   clearPreferenceOverrides: () => void
@@ -249,18 +248,25 @@ const PreferencesDialog = observer(function PreferencesDialog({
           </TextField>
         ))}
         <FormGroup>
-          <FormControlLabel
-            control={<Checkbox checked={session.stickyViewHeaders} />}
+          <LabeledCheckbox
+            checked={session.stickyViewHeaders}
             label="Keep view header visible"
-            onChange={(_, checked) => {
+            onChange={checked => {
               session.setStickyViewHeaders(checked)
             }}
           />
-          <FormControlLabel
-            control={<Checkbox checked={session.effectiveUseWorkspaces} />}
+          <LabeledCheckbox
+            checked={session.effectiveUseWorkspaces}
             label="Use workspaces (tabbed/tiled view layout)"
-            onChange={(_, checked) => {
+            onChange={checked => {
               session.setUseWorkspacesPreference(checked)
+            }}
+          />
+          <LabeledCheckbox
+            checked={session.numberGrouping}
+            label="Thousand separators in numbers, e.g. chr1:1,234,567 (reload to apply)"
+            onChange={checked => {
+              session.setPreferenceOverride('numberGrouping', checked)
             }}
           />
         </FormGroup>

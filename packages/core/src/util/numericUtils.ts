@@ -60,10 +60,33 @@ export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length
 }
 
+// Thousand separators are a display convention, not part of the number. They
+// make a coordinate readable, but they survive a copy-paste into tools that
+// then choke on them, so users who copy coordinates out of the app more than
+// they read them can turn them off (the `numberGrouping` preference).
+//
+// A plain variable rather than an observable, because every number the app
+// displays funnels through here — including strings built worker-side, where a
+// jexl `mouseover` slot formats a tooltip against the full feature. A
+// main-thread-only reactive value would leave those stale, so the app would sit
+// half-formatted until every track refetched. Instead each realm sets this once
+// at startup (the worker gets it in its boot configuration, see RpcManager) and
+// the preference asks for a reload, which buys uniformity for one page load.
+let numberGrouping = true
+
+export function setNumberGrouping(enabled: boolean) {
+  numberGrouping = enabled
+}
+
+// read when handing the setting to another realm; not a display path
+export function getNumberGrouping() {
+  return numberGrouping
+}
+
 // Fast number formatter with thousand separators.
 // Benchmarked at 5-67x faster than toLocaleString('en-US')
 export function toLocale(n: number) {
-  if (n > -1000 && n < 1000) {
+  if (!numberGrouping || (n > -1000 && n < 1000)) {
     return String(n)
   }
   const neg = n < 0

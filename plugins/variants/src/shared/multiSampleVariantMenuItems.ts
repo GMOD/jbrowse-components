@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { clusteringMenuItem } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -354,7 +354,11 @@ export function variantContextMenuItems(
           label: 'Copy to clipboard',
           icon: ContentCopyIcon,
           onClick: () => {
-            const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
+            const loc = assembleLocString({
+              refName: feat.get('refName'),
+              start: feat.get('start'),
+              end: feat.get('end'),
+            })
             // Only the VCF ID column; a feature with no ID ('.') copies as
             // bare location rather than feat.id(), an internal adapter string.
             const name = feat.get('name')

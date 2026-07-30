@@ -28,7 +28,7 @@ function makeDriver() {
       config: rpcConfigSchema.create({}),
       makeWorkerInstance: () => worker as unknown as Worker,
     },
-    { plugins: [], windowHref: 'http://localhost/' },
+    { plugins: [], windowHref: 'http://localhost/', numberGrouping: true },
   )
   return { worker, driver }
 }
@@ -41,7 +41,11 @@ describe('WebWorkerRpcDriver boot handshake', () => {
     worker.send('readyForConfig')
     expect(worker.posted[0]).toEqual({
       message: 'config',
-      config: { plugins: [], windowHref: 'http://localhost/' },
+      config: {
+        plugins: [],
+        windowHref: 'http://localhost/',
+        numberGrouping: true,
+      },
     })
 
     worker.send('ready')

@@ -11,6 +11,7 @@ import {
   getContainingView,
   getSession,
   openFeatureWidget,
+  toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -484,7 +485,7 @@ export function stateModelFactory(
             ...(self.hasLdData
               ? [
                   {
-                    label: `Color by LD to ${hit.refName}:${hit.start + 1}`,
+                    label: `Color by LD to ${hit.refName}:${toLocale(hit.start + 1)}`,
                     onClick: () => {
                       self.colorByLdToHit(hit)
                     },

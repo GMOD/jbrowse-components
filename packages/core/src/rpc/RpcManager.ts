@@ -1,4 +1,5 @@
 import { readConfObject } from '../configuration/index.ts'
+import { getNumberGrouping } from '../util/numericUtils.ts'
 import { isAppRootModel, isAuthNeededException } from '../util/types/index.ts'
 import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
@@ -74,6 +75,12 @@ export default class RpcManager {
         {
           plugins: pm.runtimePluginDefinitions,
           windowHref: typeof window !== 'undefined' ? window.location.href : '',
+          // workers format their own strings (a jexl `mouseover` slot runs
+          // against the full feature worker-side), so they need the display
+          // preference too. Read at driver construction — workers boot lazily
+          // and are not rebooted on a preference change, which is why the
+          // preference asks for a reload.
+          numberGrouping: getNumberGrouping(),
         },
       )
     })

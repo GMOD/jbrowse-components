@@ -1,4 +1,8 @@
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  localStorageGetItem,
+  localStorageSetItem,
+  setNumberGrouping,
+} from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -38,6 +42,12 @@ export function PreferencesSessionMixin(pluginManager: PluginManager) {
     .actions(self => ({
       afterAttach() {
         self.preferencesOverrides.replace(loadStoredPreferences())
+        // Applied once, here, rather than reactively: the same setting has to
+        // hold in the RPC workers (which format tooltip strings from jexl
+        // `mouseover` slots) and they only learn it at boot, so a live
+        // main-thread update would leave the app formatted two ways at once.
+        // The dialog says a reload is needed; this is where the reload lands.
+        setNumberGrouping(self.numberGrouping)
         addDisposer(
           self,
           autorun(

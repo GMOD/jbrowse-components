@@ -73,6 +73,7 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
     public workerBootConfiguration: {
       plugins: PluginDefinition[]
       windowHref: string
+      numberGrouping: boolean
     },
   ) {
     super(args)

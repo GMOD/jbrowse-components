@@ -2,6 +2,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
+import {
+  getNumberGrouping,
+  setNumberGrouping,
+  toLocale,
+} from '@jbrowse/core/util'
+
 import { createTestSession } from '../rootModel/index.ts'
 import sessionModelFactory from './index.ts'
 
@@ -305,6 +311,38 @@ describe('JBrowseWebSessionModel', () => {
       expect(
         reloaded.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
       ).toBe('compact')
+    })
+  })
+
+  describe('numberGrouping applies to the formatter', () => {
+    // BaseSession's afterAttach pushes the config default into the module-level
+    // formatter, PreferencesSessionMixin's re-applies it after loading stored
+    // overrides. MST composes lifecycle hooks rather than overriding them, and
+    // that ordering is what makes a user override beat the admin default —
+    // assert it rather than trusting the hook order.
+    beforeEach(() => {
+      localStorage.clear()
+      setNumberGrouping(true)
+    })
+    afterAll(() => {
+      setNumberGrouping(true)
+    })
+
+    it('defaults to grouped', () => {
+      createTestSession()
+      expect(getNumberGrouping()).toBe(true)
+      expect(toLocale(1234567)).toBe('1,234,567')
+    })
+
+    it("a stored user override wins over the config default on reload", () => {
+      const session = createTestSession()
+      session.setPreferenceOverride('numberGrouping', false)
+
+      // a fresh session (simulating the reload the preference asks for)
+      setNumberGrouping(true)
+      createTestSession()
+      expect(getNumberGrouping()).toBe(false)
+      expect(toLocale(1234567)).toBe('1234567')
     })
   })
 
