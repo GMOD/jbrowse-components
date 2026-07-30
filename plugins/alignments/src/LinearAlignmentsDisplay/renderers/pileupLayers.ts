@@ -41,7 +41,7 @@ export interface PileupLayer {
 // mechanics into shared data. See the renderer-local coverage pass plan /
 // `drawArcsPass`.
 export const PILEUP_LAYERS: PileupLayer[] = [
-  { id: 'connLine', enabled: s => s.linkedReads === 'normal' },
+  { id: 'connLine', enabled: s => s.chainMode },
   { id: 'linkedReadLine', enabled: s => s.showLinkedReadLines },
   { id: 'read', enabled: () => true },
   { id: 'overlap', enabled: s => shouldDrawOverlaps(s) },

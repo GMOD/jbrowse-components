@@ -46,7 +46,7 @@ function makeData(
 }
 
 const stats = { upper: 600, lower: 100 }
-const chainOpts = { linkedReads: 'normal' as const }
+const chainOpts = { chainMode: true }
 
 describe('readColorCategory', () => {
   test('strand scheme buckets by read strand', () => {
@@ -213,7 +213,7 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('revStrand')
-    // pileup (linkedReads off): no chain classification
+    // pileup (chain mode off): no chain classification
     expect(
       readColorCategory(
         0,
@@ -284,7 +284,7 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('revStrand')
-    // pileup (linkedReads off): no chain framing, plain strand applies
+    // pileup (chain mode off): no chain framing, plain strand applies
     expect(
       readColorCategory(
         0,

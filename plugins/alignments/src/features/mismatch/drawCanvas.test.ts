@@ -58,7 +58,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
       colorBaseA: [1, 0, 0],
       colorMutedSnpBase: [0.5, 0.5, 0.5],
     } as RenderState['colors'],
-    linkedReads: 'off',
+    chainMode: false,
     showLinkedReadLines: false,
     collapseGroupRows: false,
     flipStrandLongReadChains: false,

@@ -197,7 +197,7 @@ function fillFrameUniforms(
   // Chain layout drives read-coloring (supplementary colors, strand flipping,
   // mate-unmapped coloring, chevrons). The bezier connection overlay is
   // orthogonal and does not switch coloring into chain mode.
-  i[UI.chainMode] = state.linkedReads === 'normal' ? 1 : 0
+  i[UI.chainMode] = state.chainMode ? 1 : 0
   i[UI.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
   i[UI.flipStrandLongRead] = state.flipStrandLongReadChains ? 1 : 0
   i[UI.colorSuppChains] = state.colorSupplementaryChains ? 1 : 0

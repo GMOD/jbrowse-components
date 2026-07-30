@@ -51,7 +51,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     colors: {
       colorSoftclip: [1, 0, 0],
     } as RenderState['colors'],
-    linkedReads: 'off',
+    chainMode: false,
     showLinkedReadLines: false,
     collapseGroupRows: false,
     flipStrandLongReadChains: false,

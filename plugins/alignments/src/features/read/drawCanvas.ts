@@ -131,13 +131,13 @@ export function drawReads(
 ) {
   const fH = state.featureHeight
   const colorOpts = {
-    linkedReads: state.linkedReads,
+    chainMode: state.chainMode,
     flipStrandLongReadChains: state.flipStrandLongReadChains,
     colorSupplementaryChains: state.colorSupplementaryChains,
   }
   const chevronFrame: ChevronFrame = {
     pxPerBp: fullBlockWidth / bpLength,
-    chainMode: state.linkedReads === 'normal',
+    chainMode: state.chainMode,
     colorScheme: state.colorScheme,
     featureHeight: fH,
   }

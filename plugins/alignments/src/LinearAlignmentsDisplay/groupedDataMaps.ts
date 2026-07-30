@@ -6,7 +6,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { LinkedReadsMode, SashimiArcsMode } from './constants.ts'
+import type { SashimiArcsMode } from './constants.ts'
 
 // The one place the `rpcDataMap` → groups nested walk is spelled. Every scan
 // below (and the model's `.some`/max getters) iterates this generator instead of
@@ -180,10 +180,10 @@ export function orderedGroups(
 // different chains across calls — keying by index would merge unrelated chains.
 export function buildChainIdMap(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  linkedReads: LinkedReadsMode,
+  chainMode: boolean,
 ): Map<string, string[]> {
   const map = new Map<string, string[]>()
-  if (linkedReads !== 'off') {
+  if (chainMode) {
     for (const { data } of eachGroup(rpcDataMap)) {
       if (data.readChainIndices && data.chainNames) {
         for (let i = 0; i < data.readIds.length; i++) {

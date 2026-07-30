@@ -253,7 +253,7 @@ test('buildRawDataByGroup keeps the single ungrouped group under key ""', () => 
 test('buildChainIdMap is empty when linked-reads off', () => {
   const m = buildChainIdMap(
     new Map([[0, grouped([{ key: '', data: data(['a'], [0], ['chain0']) }])]]),
-    'off',
+    false,
   )
   expect(m.size).toBe(0)
 })
@@ -266,7 +266,7 @@ test('buildChainIdMap unions a chain by name across regions', () => {
       [0, grouped([{ key: '', data: data(['a', 'b'], [0, 1], ['c0', 'c1']) }])],
       [1, grouped([{ key: '', data: data(['c'], [0], ['c0']) }])],
     ]),
-    'normal',
+    true,
   )
   expect(m.get('c0')).toEqual(['a', 'c'])
   expect(m.get('c1')).toEqual(['b'])
@@ -286,7 +286,7 @@ test('buildChainIdMap keyed by name never collides across groups', () => {
         ]),
       ],
     ]),
-    'normal',
+    true,
   )
   expect(m.get('hp1chain')).toEqual(['a', 'b'])
   expect(m.get('hp2chain')).toEqual(['c', 'd'])

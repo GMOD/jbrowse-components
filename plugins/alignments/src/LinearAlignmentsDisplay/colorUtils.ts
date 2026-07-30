@@ -12,7 +12,6 @@ import { ColorScheme } from './constants.ts'
 import { IS_GRADIENT_SPAN_FRAC } from './shaders/slang/read.iface.generated.ts'
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { LinkedReadsMode } from './constants.ts'
 import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
 // Re-exports from core — kept for backwards-compat with call sites.
@@ -138,14 +137,14 @@ export function readColorCategory(
   data: ReadColorData,
   colorScheme: number,
   opts?: {
-    linkedReads?: LinkedReadsMode
+    chainMode?: boolean
     flipStrandLongReadChains?: boolean
     colorSupplementaryChains?: boolean
   },
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
-  const isChain = opts?.linkedReads !== undefined && opts.linkedReads !== 'off'
+  const isChain = opts?.chainMode === true
 
   const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_FILL_NO_SUPP
   const hasSupp = chainSupp !== CHAIN_FILL_NO_SUPP
@@ -373,7 +372,7 @@ export function getReadColor(
   colorScheme: number,
   palette: ColorPalette,
   opts?: {
-    linkedReads?: LinkedReadsMode
+    chainMode?: boolean
     flipStrandLongReadChains?: boolean
     colorSupplementaryChains?: boolean
   },

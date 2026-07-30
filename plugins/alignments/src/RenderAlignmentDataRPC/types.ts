@@ -85,7 +85,10 @@ export interface PileupDataResult {
   readYs: Uint16Array // pileup row (0-65535 sufficient)
   readFlags: Uint16Array // BAM flags are 16-bit
   readMapqs: Uint8Array // 0-255
-  readInsertSizes: Float32Array // keep float (can be large/negative)
+  // |TLEN|, never signed — buildBaseFeatureData abs's it, and 0 means unset
+  // (unpaired). Float because TLEN outgrows an int16 and the GPU reads it as
+  // f32. Consumers can classify it directly; no re-abs.
+  readInsertSizes: Float32Array
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
   readChainHasSupp?: Uint8Array // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion, 4=paired split deletion

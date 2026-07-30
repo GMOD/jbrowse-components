@@ -313,7 +313,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
       colorUnmappedMate: triple,
       colorInterchrom: triple,
     },
-    linkedReads: 'off',
+    chainMode: false,
     showLinkedReadLines: false,
     flipStrandLongReadChains: false,
     colorSupplementaryChains: false,
@@ -377,7 +377,7 @@ const CONFIGS: { name: string; overrides: Partial<RenderState> }[] = [
   {
     name: 'linked reads (adds overlaps + connecting/linked-read lines)',
     overrides: {
-      linkedReads: 'normal',
+      chainMode: true,
       showLinkedReadLines: true,
     },
   },

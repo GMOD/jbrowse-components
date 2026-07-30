@@ -710,7 +710,7 @@ export default function stateModelFactory(
          * that already covers normal pairs.
          */
         get showLinkedReadLines() {
-          return self.showBezierConnections && self.linkedReads === 'off'
+          return self.showBezierConnections && !this.isChainMode
         },
       }))
       // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
@@ -932,7 +932,7 @@ export default function stateModelFactory(
          * #getter
          */
         get chainIdMap() {
-          return buildChainIdMap(self.rpcDataMap, self.linkedReads)
+          return buildChainIdMap(self.rpcDataMap, self.isChainMode)
         },
 
         /**
@@ -1156,7 +1156,7 @@ export default function stateModelFactory(
           if (this.showLegend) {
             const colorScheme = colorSchemeIndexFor(this.colorBy.type)
             const opts = {
-              linkedReads: self.linkedReads,
+              chainMode: self.isChainMode,
               flipStrandLongReadChains: self.flipStrandLongReadChains,
               colorSupplementaryChains: self.colorSupplementaryChains,
             }
@@ -1990,7 +1990,7 @@ export default function stateModelFactory(
          * strongly to shade them) read, so the two can't drift.
          */
         get highlightChainIds() {
-          return self.linkedReads === 'normal' ? self.highlightedChainIds : []
+          return self.isChainMode ? self.highlightedChainIds : []
         },
 
         /**
@@ -2225,10 +2225,9 @@ export default function stateModelFactory(
             // mode check, so this is the one place the invariant must hold.
             // (Hover highlight lives in `highlightBoxes` / `HighlightOverlay`,
             // not here, so a hover never triggers a canvas repaint.)
-            selectedChainIds:
-              self.linkedReads === 'normal' ? self.selectedChainIds : [],
+            selectedChainIds: self.isChainMode ? self.selectedChainIds : [],
             colors: palette,
-            linkedReads: self.linkedReads,
+            chainMode: self.isChainMode,
             showLinkedReadLines: self.showLinkedReadLines,
             collapseGroupRows: self.collapseGroupRows,
             flipStrandLongReadChains: self.flipStrandLongReadChains,

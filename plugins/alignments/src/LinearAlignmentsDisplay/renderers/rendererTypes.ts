@@ -2,7 +2,7 @@ import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
+import type { ReadConnectionsMode } from '../constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -52,9 +52,12 @@ export interface RenderState {
   selectedChainIds: string[]
   // Color palette from theme
   colors: ColorPalette
-  linkedReads: LinkedReadsMode
+  // Chain (linked-reads) layout is active. The `linkedReads` enum stops at the
+  // model — renderers only ever ask the yes/no question, so they get the
+  // already-resolved `isChainMode` and the two spellings can't drift.
+  chainMode: boolean
   // Straight-line pass connecting normal read-pairs in pileup layout.
-  // True when bezier connections are on AND linkedReads === 'off' (pileup).
+  // True when bezier connections are on AND chain mode is off (pileup).
   // Chain layout has its own connecting-line pass, so this is never needed there.
   showLinkedReadLines: boolean
   // Each group drawn as one row, so features that would have stacked share it.
@@ -211,8 +214,7 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
 // below 3px row height where the tint is sub-pixel noise.
 export function shouldDrawOverlaps(state: RenderState) {
   return (
-    (state.linkedReads !== 'off' || state.collapseGroupRows) &&
-    state.featureHeight >= 3
+    (state.chainMode || state.collapseGroupRows) && state.featureHeight >= 3
   )
 }
 
