@@ -79,6 +79,27 @@ getter and alias `effectiveRowHeight` to it purely to satisfy this contract.
 Structural typing is what let the raw property through unnoticed, so keep the
 contract field named for the resolved value.
 
+## `SvgRowLabels` has two modes, and a sub-pixel row still draws
+
+Below `MIN_TEXT_ROW_HEIGHT` (6px) the text is illegible, so the row draws as an
+8px-wide `labelColor` swatch instead — it does **not** stop drawing. A clustered
+track can sit far below a pixel a row (1,987 canids in 640px is 0.32px) and the
+tint is the only thing left carrying row identity there, so it has to survive;
+this used to `return null` and take the row colors with it.
+
+Two properties of that mode are load-bearing:
+
+- **No `labelColor` means nothing is drawn.** A bare stripe of the default
+  background would appear on every track whose rows carry no color, which is
+  most of them.
+- **Consecutive same-color rows merge into one rect.** Visually identical (the
+  rects are contiguous and same-filled), but it keeps a 1,987-row track from
+  putting a DOM node per row into an overlay that re-renders on scroll — and
+  since clustering puts like rows adjacent, the runs are the blocks a reader is
+  meant to see. An uncolored row breaks a run rather than being bridged.
+
+This is still only `labelColor` — see the swatch-column warning below.
+
 ## SVG export: render the sidebar via `SvgTreeSidebar`, never `SvgRowLabels` alone
 
 A clusterable display's `renderSvg` must paint its left sidebar through
