@@ -19,7 +19,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     const { rootModel } = pluginManager
     if (isAbstractMenuManager(rootModel)) {
-      rootModel.appendToSubMenu(['Add'], {
+      rootModel.appendToMenu('Add', {
         label: 'Spreadsheet view',
         icon: ViewComfyIcon,
         onClick: (session: AbstractSessionModel) => {

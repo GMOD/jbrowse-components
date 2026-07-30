@@ -18,7 +18,7 @@ function run(base: MenuDefinition[], actions: MenuAction[]) {
 
 describe('menu structure', () => {
   it('appends a top-level menu', () => {
-    const menus = run([], [{ type: 'appendMenu', menuName: 'File' }])
+    const menus = run([], [{ type: 'addMenu', menuName: 'File' }])
     expect(menus.map(m => m.label)).toEqual(['File'])
     expect(menus[0]!.menuItems()).toEqual([])
   })
@@ -29,7 +29,7 @@ describe('menu structure', () => {
         { label: 'File', menuItems: [] },
         { label: 'Help', menuItems: [] },
       ],
-      [{ type: 'insertMenu', menuName: 'Edit', position: 1 }],
+      [{ type: 'addMenu', menuName: 'Edit', position: 1 }],
     )
     expect(menus.map(m => m.label)).toEqual(['File', 'Edit', 'Help'])
   })
@@ -40,7 +40,7 @@ describe('menu structure', () => {
         { label: 'File', menuItems: [] },
         { label: 'Help', menuItems: [] },
       ],
-      [{ type: 'insertMenu', menuName: 'Edit', position: -1 }],
+      [{ type: 'addMenu', menuName: 'Edit', position: -1 }],
     )
     expect(menus.map(m => m.label)).toEqual(['File', 'Edit', 'Help'])
   })
@@ -50,19 +50,35 @@ describe('menu structure', () => {
   it('creates a menu named by an item contribution alone', () => {
     const menus = run(
       [],
-      [{ type: 'appendToMenu', menuName: 'MyPlugin', menuItem: item('Go') }],
+      [{ type: 'addItem', menuPath: ['MyPlugin'], menuItem: item('Go') }],
     )
     expect(menus.map(m => m.label)).toEqual(['MyPlugin'])
     expect(labelsOf(menus[0]!)).toEqual(['Go'])
+  })
+
+  // labels key the React elements and name an item contribution's target, so
+  // two menus with one label is never what a caller wanted
+  it('does not duplicate a menu that already exists', () => {
+    const menus = run(
+      [{ label: 'File', menuItems: [item('Open')] }],
+      [
+        { type: 'addMenu', menuName: 'File' },
+        { type: 'addMenu', menuName: 'Help', position: 0 },
+        { type: 'addMenu', menuName: 'Help' },
+        { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
+      ],
+    )
+    expect(menus.map(m => m.label)).toEqual(['Help', 'File'])
+    expect(labelsOf(menus[1]!)).toEqual(['Open', 'added'])
   })
 
   it('setMenus replaces the bar wholesale', () => {
     const menus = run(
       [{ label: 'File', menuItems: [] }],
       [
-        { type: 'appendMenu', menuName: 'Tools' },
+        { type: 'addMenu', menuName: 'Tools' },
         { type: 'setMenus', newMenus: [{ label: 'Help', menuItems: [] }] },
-        { type: 'appendMenu', menuName: 'Edit' },
+        { type: 'addMenu', menuName: 'Edit' },
       ],
     )
     expect(menus.map(m => m.label)).toEqual(['Help', 'Edit'])
@@ -74,9 +90,9 @@ describe('menu structure', () => {
     const menus = run(
       [{ label: 'File', menuItems: [] }],
       [
-        { type: 'appendToMenu', menuName: 'File', menuItem: item('early') },
+        { type: 'addItem', menuPath: ['File'], menuItem: item('early') },
         { type: 'setMenus', newMenus: [{ label: 'File', menuItems: [] }] },
-        { type: 'appendToMenu', menuName: 'File', menuItem: item('late') },
+        { type: 'addItem', menuPath: ['File'], menuItem: item('late') },
       ],
     )
     expect(labelsOf(menus[0]!)).toEqual(['late'])
@@ -90,8 +106,8 @@ describe('item contributions', () => {
 
   it('appends in order', () => {
     const menus = run(base, [
-      { type: 'appendToMenu', menuName: 'File', menuItem: item('a') },
-      { type: 'appendToMenu', menuName: 'File', menuItem: item('b') },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('a') },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('b') },
     ])
     expect(labelsOf(menus[0]!)).toEqual(['Open', 'Close', 'a', 'b'])
   })
@@ -99,8 +115,8 @@ describe('item contributions', () => {
   it('inserts at a position', () => {
     const menus = run(base, [
       {
-        type: 'insertInMenu',
-        menuName: 'File',
+        type: 'addItem',
+        menuPath: ['File'],
         menuItem: item('Save'),
         position: 1,
       },
@@ -111,8 +127,8 @@ describe('item contributions', () => {
   it('inserts at a negative position', () => {
     const menus = run(base, [
       {
-        type: 'insertInMenu',
-        menuName: 'File',
+        type: 'addItem',
+        menuPath: ['File'],
         menuItem: item('Save'),
         position: -1,
       },
@@ -123,17 +139,17 @@ describe('item contributions', () => {
   it('creates and fills a sub-menu along a path', () => {
     const menus = run(base, [
       {
-        type: 'appendToSubMenu',
+        type: 'addItem',
         menuPath: ['File', 'Import'],
         menuItem: item('From File'),
       },
       {
-        type: 'appendToSubMenu',
+        type: 'addItem',
         menuPath: ['File', 'Import'],
         menuItem: item('From HTTPS'),
       },
       {
-        type: 'insertInSubMenu',
+        type: 'addItem',
         menuPath: ['File', 'Import'],
         menuItem: item('From URL'),
         position: 1,
@@ -151,26 +167,72 @@ describe('item contributions', () => {
     })
   })
 
+  it('nests sub-menus arbitrarily deep', () => {
+    const menus = run(base, [
+      {
+        type: 'addItem',
+        menuPath: ['File', 'Import', 'Remote'],
+        menuItem: item('From URL'),
+      },
+    ])
+    expect(menus[0]!.menuItems()).toContainEqual({
+      label: 'Import',
+      subMenu: [{ label: 'Remote', subMenu: [{ label: 'From URL' }] }],
+    })
+  })
+
+  // a single-segment path names the top-level menu itself, which is what
+  // appendToMenu records
+  it('treats a one-segment path as the top-level menu', () => {
+    const menus = run(base, [
+      { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
+    ])
+    expect(labelsOf(menus[0]!)).toEqual(['Open', 'Close', 'added'])
+  })
+
   // a plugin naming a path that isn't a sub-menu is a plugin bug, and it must
   // cost that plugin its menu item rather than cost the user their session
-  it('opens without the contributions when one of them throws', () => {
+  it('drops only the contribution that throws', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const menus = run(base, [
-      { type: 'appendToMenu', menuName: 'File', menuItem: item('added') },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
       {
-        type: 'appendToSubMenu',
+        type: 'addItem',
         menuPath: ['File', 'Open', 'Nested'],
         menuItem: item('x'),
       },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('also added') },
     ])
     // resolution is deferred to open, so the bar itself still renders
     expect(menus.map(m => m.label)).toEqual(['File'])
-    expect(labelsOf(menus[0]!)).toEqual(['Open', 'Close'])
+    expect(labelsOf(menus[0]!)).toEqual([
+      'Open',
+      'Close',
+      'added',
+      'also added',
+    ])
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringMatching(/is not a subMenu/),
       }),
     )
+    spy.mockRestore()
+  })
+
+  // the menu re-resolves on every open and, while open, on every observer
+  // re-render, so a broken contribution must not spam the console
+  it('reports a broken contribution once', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const menus = run(base, [
+      {
+        type: 'addItem',
+        menuPath: ['File', 'Close', 'Nested'],
+        menuItem: item('x'),
+      },
+    ])
+    menus[0]!.menuItems()
+    menus[0]!.menuItems()
+    expect(spy).toHaveBeenCalledTimes(1)
     spy.mockRestore()
   })
 
@@ -182,9 +244,9 @@ describe('item contributions', () => {
       { label: 'Add', menuItems: [{ label: 'Views', subMenu: [item('LGV')] }] },
     ]
     const menus = run(definitions, [
-      { type: 'appendToMenu', menuName: 'File', menuItem: item('added') },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
       {
-        type: 'appendToSubMenu',
+        type: 'addItem',
         menuPath: ['Add', 'Views'],
         menuItem: item('Dotplot'),
       },
@@ -196,13 +258,23 @@ describe('item contributions', () => {
     ])
   })
 
+  // a caller that edits what it got back must not be editing the root model's
+  // own array, whether or not the menu had contributions
+  it('hands out a fresh array even with no contributions', () => {
+    const definitions: MenuDefinition[] = [
+      { label: 'File', menuItems: [item('Open')] },
+    ]
+    const menus = run(definitions, [])
+    expect(menus[0]!.menuItems()).not.toBe(definitions[0]!.menuItems)
+  })
+
   // menus() replays the whole action log on every re-render, and a menu can be
   // opened any number of times; neither may accumulate
   it('is stable across replays and repeated opens', () => {
     const actions: MenuAction[] = [
-      { type: 'appendToMenu', menuName: 'File', menuItem: item('added') },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
       {
-        type: 'appendToSubMenu',
+        type: 'addItem',
         menuPath: ['File', 'Import'],
         menuItem: item('From URL'),
       },
@@ -229,8 +301,8 @@ describe('thunk-form definitions', () => {
       [{ label: 'File', menuItems: () => [item('New session')] }],
       [
         {
-          type: 'appendToMenu',
-          menuName: 'File',
+          type: 'addItem',
+          menuPath: ['File'],
           menuItem: item('Download desktop session'),
         },
       ],
@@ -255,7 +327,7 @@ describe('thunk-form definitions', () => {
           },
         },
       ],
-      [{ type: 'appendToMenu', menuName: 'File', menuItem: item('added') }],
+      [{ type: 'addItem', menuPath: ['File'], menuItem: item('added') }],
     )
     expect(opens).toBe(0)
     expect(labelsOf(menus[0]!)).toEqual(['session 1', 'added'])
@@ -276,7 +348,7 @@ describe('thunk-form definitions', () => {
           },
         },
       ],
-      [{ type: 'appendToMenu', menuName: 'File', menuItem: item('added') }],
+      [{ type: 'addItem', menuPath: ['File'], menuItem: item('added') }],
     )
     expect(called).toBe(0)
     expect(menus.map(m => m.label)).toEqual(['File'])
@@ -288,7 +360,7 @@ describe('thunk-form definitions', () => {
       [{ label: 'File', menuItems: () => [item('New session')] }],
       [
         {
-          type: 'appendToSubMenu',
+          type: 'addItem',
           menuPath: ['File', 'Import'],
           menuItem: item('From URL'),
         },
@@ -310,8 +382,8 @@ describe('resolveMenus', () => {
       ],
       [
         {
-          type: 'appendToMenu',
-          menuName: 'Add',
+          type: 'addItem',
+          menuPath: ['Add'],
           menuItem: item('Linear view'),
         },
       ],

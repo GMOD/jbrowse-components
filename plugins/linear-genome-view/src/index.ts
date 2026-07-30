@@ -59,7 +59,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['Add'], {
+      pluginManager.rootModel.appendToMenu('Add', {
         label: 'Linear genome view',
         icon: LineStyleIcon,
         onClick: (session: AbstractSessionModel) => {

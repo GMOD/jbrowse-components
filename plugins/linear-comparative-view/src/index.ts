@@ -42,7 +42,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['Add'], {
+      pluginManager.rootModel.appendToMenu('Add', {
         label: 'Linear synteny view',
         icon: CalendarIcon,
         onClick: (session: AbstractSessionModel) => {

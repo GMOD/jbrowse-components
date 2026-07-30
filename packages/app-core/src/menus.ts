@@ -1,54 +1,42 @@
-import type { MenuItem, MenuItemsGetter } from '@jbrowse/core/ui'
+import type { MenuItem, MenuItemsGetter, SubMenuItem } from '@jbrowse/core/ui'
 
-interface InsertInSubMenuAction {
-  type: 'insertInSubMenu'
+/**
+ * Ensure a top-level menu exists. `position` appends when omitted and counts
+ * from the end when negative. A menu whose label is already on the bar is left
+ * where it is — labels are the bar's identity (they key the React elements and
+ * they are how an item contribution names its target), so two of them is never
+ * what a caller wanted.
+ */
+interface AddMenuAction {
+  type: 'addMenu'
+  menuName: string
+  position?: number
+}
+
+/**
+ * Add one item at `menuPath` — the top-level menu, then any sub-menus, which
+ * are created as needed. `position` appends when omitted and counts from the
+ * end when negative.
+ */
+interface AddItemAction {
+  type: 'addItem'
   menuPath: string[]
   menuItem: MenuItem
-  position: number
+  position?: number
 }
-interface InsertInMenuAction {
-  type: 'insertInMenu'
-  menuName: string
-  menuItem: MenuItem
-  position: number
-}
-interface AppendToMenuAction {
-  type: 'appendToMenu'
-  menuName: string
-  menuItem: MenuItem
-}
-interface AppendToSubMenuAction {
-  type: 'appendToSubMenu'
-  menuPath: string[]
-  menuItem: MenuItem
-}
-interface AppendMenuAction {
-  type: 'appendMenu'
-  menuName: string
-}
-interface InsertMenuAction {
-  type: 'insertMenu'
-  menuName: string
-  position: number
-}
+
 interface SetMenusAction {
   type: 'setMenus'
   newMenus: MenuDefinition[]
 }
 
-// contributions that change which menus exist, so they have to resolve eagerly
-// — the app bar renders one button per menu before anything is opened
-type StructureAction = AppendMenuAction | InsertMenuAction | SetMenusAction
-
-// contributions that only change a menu's contents, so they resolve when that
-// menu opens, against whatever its items are at that moment
-type ItemAction =
-  | AppendToMenuAction
-  | AppendToSubMenuAction
-  | InsertInMenuAction
-  | InsertInSubMenuAction
-
-export type MenuAction = StructureAction | ItemAction
+/**
+ * `addMenu`/`setMenus` change which menus exist, so they resolve eagerly — the
+ * app bar renders one button per menu before anything is opened. `addItem` only
+ * changes a menu's contents, so it resolves when that menu opens, against
+ * whatever its items are at that moment.
+ */
+export type MenuAction = AddMenuAction | AddItemAction | SetMenusAction
 
 /**
  * A menu as a root model authors it. Items may be a plain array, or a thunk for
@@ -61,10 +49,10 @@ export interface MenuDefinition {
 }
 
 /**
- * A menu as the app bar consumes it. Always a thunk: a menu's items are
- * produced when it opens and never before, so no consumer has to care which
- * form the root model authored, and a plugin's contributions are merged in at
- * that point rather than spliced into the definition.
+ * A menu as the app bar consumes it. Always a thunk returning a fresh array: a
+ * menu's items are produced when it opens and never before, so no consumer has
+ * to care which form the root model authored, and a plugin's contributions are
+ * merged in at that point rather than spliced into the definition.
  */
 export interface Menu {
   label: string
@@ -75,8 +63,12 @@ export interface Menu {
 interface PendingMenu {
   label: string
   base: MenuItemsGetter
-  itemActions: ItemAction[]
+  itemActions: AddItemAction[]
 }
+
+// a contribution that threw is reported once rather than on every open — the
+// menu re-resolves on each open and, while open, on each observer re-render
+const reported = new WeakSet<AddItemAction>()
 
 // recursively copy the array spine so the item helpers never mutate a root
 // model's own literal or a thunk's internals; leaf items (with their
@@ -93,60 +85,50 @@ function materialize(menuItems: MenuItemsGetter) {
   return typeof menuItems === 'function' ? menuItems() : menuItems
 }
 
-function insertAt(items: MenuItem[], menuItem: MenuItem, position: number) {
-  items.splice(position < 0 ? items.length + position : position, 0, menuItem)
+function insertAt<T>(items: T[], item: T, position = items.length) {
+  items.splice(position < 0 ? items.length + position : position, 0, item)
 }
 
 /**
  * Walk `menuPath` past its first segment (the top-level menu, already
  * resolved), creating empty sub-menus as needed, and return the deepest
- * sub-menu's item array. Throws if a path segment exists but is not a sub-menu.
+ * sub-menu's item array. Throws if a path segment names an item that is not a
+ * sub-menu.
  */
 function resolveSubMenu(items: MenuItem[], menuPath: string[]) {
-  let subMenu = items
-  const pathSoFar = [menuPath[0]]
-  for (const menuName of menuPath.slice(1)) {
-    pathSoFar.push(menuName)
-    let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-    if (!sm) {
-      const idx = subMenu.push({ label: menuName, subMenu: [] })
-      sm = subMenu[idx - 1]!
+  let level = items
+  for (const [idx, menuName] of menuPath.slice(1).entries()) {
+    const found = level.find(
+      (mi): mi is SubMenuItem => 'subMenu' in mi && mi.label === menuName,
+    )
+    if (found) {
+      level = found.subMenu
+    } else {
+      if (level.some(mi => 'label' in mi && mi.label === menuName)) {
+        const pathSoFar = menuPath.slice(0, idx + 2).join(' > ')
+        throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
+      }
+      const created = { label: menuName, subMenu: [] as MenuItem[] }
+      level.push(created)
+      level = created.subMenu
     }
-    if (!('subMenu' in sm)) {
-      throw new Error(
-        `"${menuName}" in path "${pathSoFar.join(' > ')}" is not a subMenu`,
-      )
-    }
-    subMenu = sm.subMenu
   }
-  return subMenu
+  return level
 }
 
-function applyItemActions(items: MenuItem[], actions: ItemAction[]) {
+// each contribution is applied independently: a plugin that names a bad path
+// loses its own item rather than every other plugin's, and never the session —
+// this runs from the app bar's click handler, where a throw goes straight
+// through React
+function applyItemActions(items: MenuItem[], actions: AddItemAction[]) {
   for (const action of actions) {
-    switch (action.type) {
-      case 'appendToMenu': {
-        items.push(action.menuItem)
-        break
-      }
-      case 'insertInMenu': {
-        insertAt(items, action.menuItem, action.position)
-        break
-      }
-      case 'appendToSubMenu': {
-        resolveSubMenu(items, action.menuPath).push(action.menuItem)
-        break
-      }
-      case 'insertInSubMenu': {
-        insertAt(
-          resolveSubMenu(items, action.menuPath),
-          action.menuItem,
-          action.position,
-        )
-        break
-      }
-      default: {
-        action satisfies never
+    try {
+      const target = resolveSubMenu(items, action.menuPath)
+      insertAt(target, action.menuItem, action.position)
+    } catch (error) {
+      if (!reported.has(action)) {
+        reported.add(action)
+        console.error(error)
       }
     }
   }
@@ -156,34 +138,25 @@ function applyItemActions(items: MenuItem[], actions: ItemAction[]) {
 // first menu with this label, or a new empty one — an item action naming a menu
 // that doesn't exist creates it, so a plugin can populate its own menu without
 // declaring it first
-function findOrCreateMenu(pending: PendingMenu[], label: string) {
+function findOrCreateMenu(
+  pending: PendingMenu[],
+  label: string,
+  position?: number,
+) {
   const found = pending.find(m => m.label === label)
   if (found) {
     return found
   }
   const menu: PendingMenu = { label, base: [], itemActions: [] }
-  pending.push(menu)
+  insertAt(pending, menu, position)
   return menu
 }
 
 function toMenu({ label, base, itemActions }: PendingMenu): Menu {
   return {
     label,
-    menuItems: itemActions.length
-      ? () => {
-          const items = materialize(base)
-          // this runs from the app bar's click handler, so a contribution that
-          // throws — a menuPath naming something that isn't a sub-menu, say —
-          // would otherwise take the whole session down. A plugin's menu item
-          // is cosmetic; drop the contributions and open the menu without them
-          try {
-            return applyItemActions(cloneMenuItems(items), itemActions)
-          } catch (error) {
-            console.error(error)
-            return items
-          }
-        }
-      : () => materialize(base),
+    menuItems: () =>
+      applyItemActions(cloneMenuItems(materialize(base)), itemActions),
   }
 }
 
@@ -215,26 +188,11 @@ export function processMutableMenuActions(
         pending = action.newMenus.map(toPending)
         break
       }
-      case 'appendMenu': {
-        pending.push({ label: action.menuName, base: [], itemActions: [] })
+      case 'addMenu': {
+        findOrCreateMenu(pending, action.menuName, action.position)
         break
       }
-      case 'insertMenu': {
-        const { position } = action
-        pending.splice(position < 0 ? pending.length + position : position, 0, {
-          label: action.menuName,
-          base: [],
-          itemActions: [],
-        })
-        break
-      }
-      case 'appendToMenu':
-      case 'insertInMenu': {
-        findOrCreateMenu(pending, action.menuName).itemActions.push(action)
-        break
-      }
-      case 'appendToSubMenu':
-      case 'insertInSubMenu': {
+      case 'addItem': {
         findOrCreateMenu(pending, action.menuPath[0]!).itemActions.push(action)
         break
       }
