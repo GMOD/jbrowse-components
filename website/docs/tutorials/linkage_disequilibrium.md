@@ -1,6 +1,7 @@
 ---
 title: Linkage disequilibrium
-description: Read an LD triangle, and find out first whether your locus will show up in one
+description:
+  Read an LD triangle, and find out first whether your locus will show up in one
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
@@ -21,9 +22,9 @@ Nothing to install for the two figures below, which load hosted data. The
 
 A red cell means two variants are almost always inherited together and white
 means they are independent, so the triangle shows where a chunk of chromosome
-travels as a unit. The
-[`LDDisplay`](/docs/config/sharedlddisplay/) is per-population by
-construction: LD is a correlation across whatever samples you hand it.
+travels as a unit. The [`LDDisplay`](/docs/config/sharedlddisplay/) is
+per-population by construction: LD is a correlation across whatever samples you
+hand it.
 
 ## A selective sweep leaves a long haplotype
 
@@ -52,8 +53,8 @@ bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
 tabix -p vcf panel.vcf.gz
 ```
 
-The same applies to species, and more sharply: a panel mixing two species invents
-LD that neither species has.
+The same applies to species, and more sharply: a panel mixing two species
+invents LD that neither species has.
 
 ## An inversion is what the triangle is best at
 
@@ -65,16 +66,17 @@ through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L. The banded region is the published 2La extent: r² fills it in the Cameroon panel, and the Gabon panel below has nothing there under identical settings. Both panels carry a separate block at the low-coordinate end of the arm."/>
 
-The band is drawn from the published breakpoint coordinates, so the block's edges
-can be checked against them by eye rather than described. The lower panel is a
-control rather than a second example: that population is effectively fixed for
-one arrangement, so it has no arrangement to correlate.
+The band is drawn from the published breakpoint coordinates, so the block's
+edges can be checked against them by eye rather than described. The lower panel
+is a control rather than a second example: that population is effectively fixed
+for one arrangement, so it has no arrangement to correlate.
 
 It is not an empty track, though, and that is the useful part. Both panels carry
 a block at the low-coordinate end of the arm, near the voltage-gated sodium
-channel, which has nothing to do with the arrangement. A control that still shows
-signal elsewhere tells you the display works and the banded region is genuinely
-uncorrelated; a wholly blank track would only tell you something failed.
+channel, which has nothing to do with the arrangement. A control that still
+shows signal elsewhere tells you the display works and the banded region is
+genuinely uncorrelated; a wholly blank track would only tell you something
+failed.
 
 ## Will your locus show up at all?
 

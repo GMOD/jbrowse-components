@@ -246,6 +246,16 @@ fi
 in_cactus gfatools view -R "${REF}#1#chr:1000000-1300000" -r 1 \
   /data/ecoli_minigraph.rgfa > ecoli_rgfa_slice.gfa
 
+# The paa island, cut as its own file because a subgraph cut from the tabix
+# index cannot draw it. That cut expands one hop off the segments in the region,
+# and a link is indexed at its reference-side endpoint: CFT073 and IAI39 leave
+# the backbone at s501 and rejoin at s506, so the arms they leave through are in
+# range but the ~5.5 kb bodies behind them are one hop further out and never
+# arrive. gfatools walks the graph itself, so `-r 1` here closes all four
+# detours around K12's 21.8 kb s502.
+in_cactus gfatools view -R "${REF}#1#chr:1445000-1474500" -r 1 \
+  /data/ecoli_minigraph.rgfa > ecoli_paa_subgraph.gfa
+
 # Index the whole rGFA so the graph is browsable by locus instead of one cut
 # window at a time: the segments become a feature track on REF, and the graph
 # view launches from whatever is on screen. The same script the HPRC tutorial
@@ -548,5 +558,6 @@ echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
 echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
 echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz)."
-echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window) or"
-echo "ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on K12 coordinates)."
+echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window),"
+echo "ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on K12 coordinates),"
+echo "or ecoli_paa_subgraph.gfa (the paa island and the four paths around it)."

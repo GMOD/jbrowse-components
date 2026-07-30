@@ -45,6 +45,8 @@
 #
 # Requires: plink (1.9, NOT plink2 - see below), htslib (bgzip, tabix),
 #           samtools, curl, awk, python3.
+#           Debian/Ubuntu ship 1.9 as the `plink1.9` binary (the `plink`
+#           package is 1.07), so there: PLINK=plink1.9 bash scripts/...
 # Usage:    bash scripts/build_ag1000g_ld.sh [outdir]
 set -euo pipefail
 
@@ -68,11 +70,12 @@ PROBE_TO=42165532
 # The .ld column layout below is also what PlinkLDTabixAdapter parses.
 LD_FLAGS=(--r2 dprime --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0)
 
-for tool in plink bgzip tabix samtools curl python3; do
+PLINK="${PLINK:-plink}"
+for tool in "$PLINK" bgzip tabix samtools curl python3; do
   command -v "$tool" >/dev/null || { echo "missing required tool: $tool" >&2; exit 1; }
 done
-if plink --version 2>&1 | grep -q "PLINK v2"; then
-  echo "error: 'plink' resolves to plink2, which has no --r2. Need plink 1.9." >&2
+if "$PLINK" --version 2>&1 | grep -q "PLINK v2"; then
+  echo "error: '$PLINK' resolves to plink2, which has no --r2. Need plink 1.9." >&2
   exit 1
 fi
 
@@ -159,7 +162,7 @@ if [ ! -f common.bim ]; then
   echo "building common-variant grid over $CHROM (one pass, a few minutes)..."
   cols_for <(awk 'NR>2{print $1}' "samples.$CHROM.txt") > cols.all
   emit_vcf cols.all 1 300000000 4000 0.1 common.vcf
-  plink --vcf common.vcf --double-id --allow-extra-chr --keep-allele-order \
+  "$PLINK" --vcf common.vcf --double-id --allow-extra-chr --keep-allele-order \
     --make-bed --out common >/dev/null
   rm -f common.vcf
 fi
@@ -171,7 +174,7 @@ echo "grid: $(wc -l < common.bim) common sites on $CHROM"
 # Read the ratio AND the absolute background - a panel whose background is
 # already high is bottlenecked, and its whole arm will render red.
 probe() { # pop from to tag -> "meanDp n"
-  plink --bfile common --allow-extra-chr --keep "keep.$1.txt" --maf 0.2 \
+  "$PLINK" --bfile common --allow-extra-chr --keep "keep.$1.txt" --maf 0.2 \
     --chr $CHROM --from-bp "$2" --to-bp "$3" --thin-count 400 --seed 1 \
     "${LD_FLAGS[@]}" --out "probe.$1.$4" >/dev/null 2>&1 || { echo "na na 0"; return; }
   # the trailing newline matters: `read` returns non-zero on EOF without one,
@@ -209,11 +212,11 @@ done
 # by thinning to a grid rather than left to the callset's density. ~800 SNPs
 # across an arm is already at screen resolution; more only adds moire.
 build_track() { # pop minmaf grid tag
-  plink --bfile common --allow-extra-chr --keep "keep.$1.txt" --maf "$2" \
+  "$PLINK" --bfile common --allow-extra-chr --keep "keep.$1.txt" --maf "$2" \
     --chr $CHROM --write-snplist --out "sel.$4" >/dev/null 2>&1
   awk -v g="$3" -F'_' '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
     "sel.$4.snplist" > "grid.$4.snplist"
-  plink --bfile common --allow-extra-chr --keep "keep.$1.txt" \
+  "$PLINK" --bfile common --allow-extra-chr --keep "keep.$1.txt" \
     --extract "grid.$4.snplist" --keep-allele-order "${LD_FLAGS[@]}" \
     --out "$4" >/dev/null 2>&1
   # tabix needs the A-side sorted; the header row is kept and skipped with -S 1
