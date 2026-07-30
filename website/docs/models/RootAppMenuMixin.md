@@ -21,7 +21,7 @@ JBrowse core.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setmenus">**setMenus**</span><br><code>(newMenus: Menu[]) =&gt; void</code> |  |
+| <span id="action-setmenus">**setMenus**</span><br><code>(newMenus: MenuDefinition[]) =&gt; void</code> |  |
 | <span id="action-appendmenu">**appendMenu**</span><br><code>(menuName: string) =&gt; void</code> | Add a top-level menu |
 | <span id="action-insertmenu">**insertMenu**</span><br><code>(menuName: string, position: number) =&gt; void</code> | Insert a top-level menu |
 | <span id="action-appendtomenu">**appendToMenu**</span><br><code>(menuName: string, menuItem: MenuItem) =&gt; void</code> | Add a menu item to a top-level menu |

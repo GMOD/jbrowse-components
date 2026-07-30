@@ -85,14 +85,13 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 
 `-c` emits the base-level CIGAR the linear synteny view needs.
 
-`-X` is not optional here, and it does the opposite of what its name suggests.
-Each sequence's best hit is its own perfect diagonal, and that hit outranks
-every cross-strain alignment as a secondary, so without `-X` minimap2 reports
-one row per genome: a five-line PAF and an empty synteny view. `-X` skips those
-diagonals, and the reciprocal copy of each pair with them, leaving every
-cross-strain pair once. It does **not** remove paralogy: a match between two
-different loci in one genome is not a self-diagonal, so it survives, which is
-what lets the [one-vs-all](#one-strain-against-all-the-others) mode below draw a
+`-X` is required here. Each sequence's best hit is its own perfect diagonal, and
+that hit outranks every cross-strain alignment as a secondary, so without `-X`
+minimap2 reports one row per genome: a five-line PAF and an empty synteny view.
+`-X` skips those diagonals, and the reciprocal copy of each pair with them,
+leaving every cross-strain pair once. It does not remove paralogy, since a match
+between two different loci in one genome is not a self-diagonal. That is what
+lets the [one-vs-all](#one-strain-against-all-the-others) mode below draw a
 strain's own repeats (rRNA operons, IS elements) as its own lane.
 
 ## Set up the five assemblies
@@ -110,11 +109,11 @@ done
 ```
 
 Each assembly's reference sequence name is the plain `chr` from its FASTA,
-**not** the PanSN name. The PanSN prefix is how the adapter decides which strain
-a PAF record belongs to, and it strips that prefix before matching against the
-assembly, so `K12#1#chr` in the PAF resolves to `chr` in the `K12` assembly. An
-assembly whose refNames still carry the prefix matches nothing and draws an
-empty view. See the
+rather than the PanSN name. The PanSN prefix is how the adapter decides which
+strain a PAF record belongs to, and it strips that prefix before matching
+against the assembly, so `K12#1#chr` in the PAF resolves to `chr` in the `K12`
+assembly. An assembly whose refNames still carry the prefix matches nothing and
+draws an empty view. See the
 [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent JSON and other indexing options.
 
@@ -147,7 +146,7 @@ PanSN prefix is `K12`, use `{ "Ecoli_K12": "K12" }`).
 To add the track from the command line instead of editing the config by hand,
 spell the adapter out in `--config`. A `.paf` extension on its own is inferred
 as the pairwise `PAFAdapter`, which reads only the first two assembly names and
-drops every other strain's blocks. `--config` **replaces** the inferred adapter
+drops every other strain's blocks. `--config` replaces the inferred adapter
 rather than merging into it, so `uri` has to be restated alongside the type:
 
 ```bash
@@ -182,12 +181,12 @@ loads each haplotype as its own JBrowse assembly, and then an assembly maps to a
 }
 ```
 
-Both depths work and you choose per track. Map to `grape` and the sample is one
-assembly, with an alignment between its haplotypes reading as paralogy; map to
-`grape#1` and each haplotype gets its own row, so hap1 against hap2 becomes a
-synteny band in its own right. Mates are labelled at the most specific depth you
-listed, so a sample-level track still says `grape`. A prefix only matches at a
-`#` boundary, so `grape` cannot pick up `grapefruit#1#chr1`.
+Both depths work, and you choose per track. Mapping to `grape` makes the sample
+one assembly, with an alignment between its haplotypes reading as paralogy.
+Mapping to `grape#1` gives each haplotype its own row, so hap1 against hap2
+becomes a synteny band in its own right. Mates are labelled at the most specific
+depth you listed, so a sample-level track still says `grape`. A prefix only
+matches at a `#` boundary, so `grape` cannot pick up `grapefruit#1#chr1`.
 
 An alignment between two haplotypes of one sample is kept even where they are
 identical: only a true self-diagonal, the same PanSN sequence against itself at
@@ -308,18 +307,17 @@ to stack is a direct alignment rather than a transitive link.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all five, and the gaps are strain-specific islands. The bottom band is the one with structure: IAI39 is inverted against the others over much of its length, and each inverted segment draws as a crossing." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps in those ribbons are where the strains actually differ. Sakai's largest
-carry its prophage Shiga-toxin genes, CFT073's are its own pathogenicity
-islands.
+The gaps in those ribbons are where the strains differ. Sakai's largest carry
+its prophage Shiga-toxin genes, and CFT073's are its own pathogenicity islands.
 
 ## Add gene tracks
 
-A gap is just absence of a ribbon, so on its own it only tells you the strains
-differ, not what they differ by. The annotations downloaded alongside each
-genome answer that. They need the same two adjustments the FASTA got: the GFF's
-seqid is the chromosome accession, which has to become `chr` to match the
-assembly, and the plasmid features have to be dropped rather than renamed, since
-the assembly kept only the chromosome:
+A gap is an absence of ribbon, so it reports that the strains differ without
+saying what they differ by. The annotations downloaded alongside each genome
+answer that. They need the same two adjustments the FASTA got: the GFF's seqid
+is the chromosome accession, which has to become `chr` to match the assembly,
+and the plasmid features have to be dropped rather than renamed, since the
+assembly kept only the chromosome:
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
@@ -336,28 +334,25 @@ done
 ```
 
 Each track is added to one strain's assembly, so it rides along with that
-strain's row in the stacked view. Skipping the plasmid filter is the easy
-mistake here: Sakai's two plasmids contribute 183 features that would otherwise
+strain's row in the stacked view. Skipping the plasmid filter is a common
+mistake, since Sakai's two plasmids contribute features that would otherwise
 land on `chr` at coordinates that mean nothing.
 
 With genes loaded, the gaps become readable. Navigate Sakai's row to
 `chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B`, the Shiga-toxin
-subunits, sitting in a region where no alignment to K-12 exists at all. That
-absence is the point: these prophage-borne genes are carried by Sakai and not by
-K-12.
+subunits, sitting in a region where no alignment to K-12 exists. These
+prophage-borne genes are carried by Sakai and not by K-12.
 
 <Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary (Sakai 1,246,166); everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
-The row order matters less than the framing: the K-12 window is placed where
-that shared block ends, so the ribbon terminating mid-figure _is_ the island
-boundary.
+The K-12 window is placed where that shared block ends, so the ribbon
+terminating mid-figure marks the island boundary.
 
 ## One strain against all the others
 
-Stacking is not the only thing the file is good for. Put the same track in a
-plain linear genome view, where there is no second row and so no target
-assembly, and it draws the strain you are looking at against every other sample
-in the file at once.
+The same track also works in a plain linear genome view. With no second row and
+so no target assembly, it draws the strain you are looking at against every
+other sample in the file at once.
 
 This one-vs-all mode is looser about `assemblyNames` than the stacked view is. A
 mate the track does not list still draws, labelled by its bare PanSN prefix, so
@@ -379,10 +374,11 @@ synteny you are reading off the screen. Untick **Group by... > One row per
 group** to stack every lane instead, or expand one lane from its label.
 
 One of those lanes is the assembly you are viewing, and it can never hold a
-self-alignment: `minimap2 -X` skipped each genome's own diagonal, so all that
+self-alignment, since `minimap2 -X` skipped each genome's own diagonal. All that
 draws there is K-12's internal paralogy, the IS-element copies that hit a dozen
-loci apiece. It reads as missing data rather than as a result, so **Group
-by... > Hide self-alignment lane** drops it. The figures below have it ticked.
+loci apiece, which reads as missing data rather than as a result. **Group
+by... > Hide self-alignment lane** drops it, and the figures below have it
+ticked.
 
 A synteny track in a plain view renders through the same display as a read
 pileup, so the rest of that menu is the one you already know from alignments:
@@ -412,10 +408,9 @@ with a ribbon band in between. Selecting the paa operon window above gives the
 five-strain stack for that locus alone.
 
 The dialog lists the assemblies it found plus the one you selected in, top to
-bottom, and lets you reorder them before launching. That order is not cosmetic:
-ribbons are drawn between neighbouring rows only, so the pairs you put next to
-each other are the comparisons the view can show. It is the same reason IAI39
-sits directly below K-12 in the figure above.
+bottom, and lets you reorder them before launching. Ribbons are drawn between
+neighbouring rows only, so the order determines which comparisons the view can
+show. That is why IAI39 sits directly below K-12 in the figure above.
 
 Clicking a single alignment instead of selecting a region still offers **Launch
 synteny view for this position**, which opens the one pair that alignment
@@ -455,13 +450,13 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 
 ## Where to take it next
 
-**Open a dotplot.** The same track works in **Add → Dotplot view**, which shows
-whole-genome structure (inversions, translocations) that the stacked ribbons
-compress into crossings.
+The same track works in **Add → Dotplot view**, which shows whole-genome
+structure (inversions, translocations) that the stacked ribbons compress into
+crossings.
 
-**Scale it up.** Five strains fit in memory comfortably, but a real pangenome of
-hundreds does not. [Index it with `make-pif`](#large-files-index-with-make-pif)
-and switch to `AllVsAllIndexedPAFAdapter`, as above.
+Five strains fit in memory comfortably, but a real pangenome of hundreds does
+not. [Index it with `make-pif`](#large-files-index-with-make-pif) and switch to
+`AllVsAllIndexedPAFAdapter`, as above.
 
 ## See also
 

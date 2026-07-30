@@ -60,22 +60,39 @@ const currentSlug = segments.at(-1) ?? ''
     border-radius: 4px;
     margin: 0.5rem 0;
   }
+  .md :global(code:not(pre code)) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+  /* underlined in prose, so a link isn't color-only (matches the docs) */
+  .md :global(p a),
+  .md :global(li a),
+  .md :global(td a) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
   .md :global(table) {
     border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
   }
   .md :global(th),
   .md :global(td) {
-    border-bottom: 1px solid var(--color-border);
-    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    padding: 0.45rem 0.7rem;
     text-align: left;
+    vertical-align: top;
   }
   .md :global(th) {
-    border-bottom: 2px solid var(--color-border);
+    background: var(--color-table-header-bg);
     font-weight: 600;
   }
-  .md :global(tr:nth-child(even)) {
+  .md :global(tbody tr:nth-child(even)) {
     background: var(--color-table-stripe);
   }
   .md :global(hr) {

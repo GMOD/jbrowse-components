@@ -1,20 +1,34 @@
 ---
 title: Embedded components
 description:
-  Which npm package to use to put a JBrowse view in your own app, and working
-  bundler examples for each
+  Which React component to use to put a JBrowse view in your own app, and
+  working bundler examples for each
 ---
 
-Add a JBrowse view to your app as an npm package, or drop a single `<script>`
-tag into any page. No build step required.
+The embedded components are **React components** published on npm: render one
+JSX element and you have a genome browser inside your own page. They are the
+same views the full JBrowse app is built from, so a track config that works
+there works here.
+
+React 18 or newer is the only peer dependency. If your page isn't a React app,
+the components also ship as a browser bundle you can load with a single
+`<script>` tag, which pulls in the React it needs itself.
 
 ## Choosing a package
 
-| Goal                                              | Package                                                                                                                                                      |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| One linear genome view                            | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2), [examples](https://jbrowse.org/storybook/lgv/)     |
-| One circular genome view (e.g. SV chord diagrams) | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2), [examples](https://jbrowse.org/storybook/cgv/) |
-| Complete app (multiple view types, synteny, etc)  | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2), [examples](https://jbrowse.org/storybook/app/)                                   |
+| Goal                                              | Package                                                                                                                                                      | Component              |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| One linear genome view                            | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2), [examples](https://jbrowse.org/storybook/lgv/)     | `<LinearGenomeView>`   |
+| One circular genome view (e.g. SV chord diagrams) | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2), [examples](https://jbrowse.org/storybook/cgv/) | `<CircularGenomeView>` |
+| Complete app (multiple view types, synteny, etc)  | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2), [examples](https://jbrowse.org/storybook/app/)                                   | `<JBrowse>`            |
+
+The props are the config: the single-view components take `assembly`, `tracks`,
+and an `init` describing the view to open, and the app component takes
+`assemblies`, `tracks`, and a `views` list. Each builds its own view engine, so
+there is no imperative setup call to make, and each accepts a `ref` to that
+engine for control after launch (`navToLocString`, `showTrack`,
+`session.addView`). The storybook examples per package are copy-pasteable React
+code.
 
 For the `<script>` tag approach, see the
 [embedding tutorial](/docs/tutorials/embed_linear_genome_view).

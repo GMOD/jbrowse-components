@@ -219,8 +219,8 @@ const mdHref = isRealDoc
     text-decoration: underline dotted var(--color-text-muted);
     text-underline-offset: 3px;
   }
-  .docs-content :global(.cell-more-trigger:hover code) {
-    border-color: var(--color-accent);
+  .docs-content :global(.cell-more-trigger:hover) {
+    text-decoration-color: var(--color-accent);
   }
   .docs-content :global(.cell-dialog) {
     width: min(60rem, 92vw);
@@ -283,16 +283,11 @@ const mdHref = isRealDoc
     line-height: 1.5;
     margin: 1rem 0;
   }
+  /* Inline code is bare mono, no chip: prose like file_types.md is mostly
+     backticks, and a bordered box per token reads as noise. Inheriting the color
+     also means code inside a link looks like a link. */
   .docs-content :global(code:not(pre code)) {
-    background: var(--color-inline-code-bg);
-    border: 1px solid var(--color-inline-code-border);
-    padding: 0.1em 0.35em;
-    border-radius: 4px;
     font-size: 0.9em;
-    color: var(--color-inline-code-text);
-  }
-  .docs-content :global(a code) {
-    color: inherit;
   }
   .docs-content :global(img) {
     max-width: 100%;
@@ -322,25 +317,39 @@ const mdHref = isRealDoc
     font-style: normal;
     font-size: 0.85em;
   }
+  /* display:block is what makes a too-wide table (a config slot table with long
+     type signatures) scroll instead of blowing out the column; the table inside
+     that block sizes to its content, so hug it rather than leaving dead space to
+     the right of the border. */
   .docs-content :global(table) {
     border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
-    font-size: 0.9rem;
-    overflow-x: auto;
     display: block;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
   }
   .docs-content :global(th),
   .docs-content :global(td) {
-    border-bottom: 1px solid var(--color-border);
-    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    padding: 0.45rem 0.7rem;
     text-align: left;
+    vertical-align: top;
   }
   .docs-content :global(th) {
-    border-bottom: 2px solid var(--color-border);
+    background: var(--color-table-header-bg);
     font-weight: 600;
   }
-  .docs-content :global(tr:nth-child(even)) {
+  /* Auto table layout hands a column room for its longest unbreakable run, so
+     one long type signature in a config page's Slot column claimed 522 of 980px
+     and squeezed every description into a 268px ribbon. Letting code wrap where
+     it has to gives the descriptions the space (measured: 252/538, a quarter
+     shorter table) and leaves every other table's columns unchanged. */
+  .docs-content :global(td code) {
+    overflow-wrap: anywhere;
+  }
+  .docs-content :global(tbody tr:nth-child(even)) {
     background: var(--color-table-stripe);
   }
   .docs-content :global(blockquote) {
@@ -358,6 +367,16 @@ const mdHref = isRealDoc
   .docs-content :global(a:hover) {
     color: var(--color-accent-dark);
     text-decoration: underline;
+  }
+  /* Links in running prose carry an underline, so they don't rely on color
+     alone; chrome links (heading anchors, figure live links, recipe dialogs)
+     keep the hover-only treatment above. */
+  .docs-content :global(p a),
+  .docs-content :global(li a),
+  .docs-content :global(td a) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
   }
   .docs-content :global(ul),
   .docs-content :global(ol) {
