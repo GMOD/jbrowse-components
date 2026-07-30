@@ -162,8 +162,6 @@ function offeredGroupByTypes(isChainMode: boolean) {
 // passed on to GroupByDialog, so it has to be a superset.
 export type GroupByMenuModel = GroupByDialogModel & {
   isChainMode: boolean
-  collapseGroupRows: boolean
-  setCollapseGroupRows: (flag: boolean) => void
 }
 
 // Every offered dimension selects directly except `tag`, which needs a tag name
@@ -181,16 +179,6 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
     onNone: () => {
       model.setGroupBy(undefined)
     },
-    // Omitted in chain mode only: a chain row is a chain, which `collapsesRows`
-    // never collapses whatever the setting says.
-    collapseRows: model.isChainMode
-      ? undefined
-      : {
-          checked: model.collapseGroupRows,
-          onToggle: () => {
-            model.setCollapseGroupRows(!model.collapseGroupRows)
-          },
-        },
     extra: [
       {
         type: 'tag',

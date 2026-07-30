@@ -41,6 +41,7 @@ export {
 export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
 export {
   checkboxItem,
+  collapseGroupRowsItems,
   copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
@@ -51,6 +52,7 @@ export {
   groupByRadioMenuItem,
   withContextMenuFeature,
 } from './LinearAlignmentsDisplay/menus/index.ts'
+export type { CollapseGroupRowsModel } from './LinearAlignmentsDisplay/menus/index.ts'
 export {
   isRegisteredColorScheme,
   pickColorOptions,

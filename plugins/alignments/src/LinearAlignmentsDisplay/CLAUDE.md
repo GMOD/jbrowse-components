@@ -112,7 +112,7 @@ the set as the last argument to `eachGroup`/`eachGroupData`/`someGroupData`. The
 per-group regroupers keep every lane on purpose — consumers look them up by an
 already-filtered `groupOrder` key.
 
-### One row per group (`collapseGroupRows`)
+### Collapse groups to one row (`collapseGroupRows`)
 
 A fourth question, orthogonal to the three above: how tall is each group?
 `collapseGroupRows` draws every group as a single row (`collapsedLayout.ts` —
@@ -138,6 +138,13 @@ Two things hang off this and are easy to get wrong:
 
 Chain mode never collapses: its rows are chains, and one row would drop the
 connecting lines that are the point of the mode.
+
+The menu item lives in **"Show..."**, not in the Group-by radios — it is a
+group's drawn height, not a dimension — and `canCollapseGroupRows`
+(`prefersOffset && !isChainMode`) decides whether it appears at all. Omitted
+rather than disabled: outside that gate `collapseGroupRows` reads `false`
+whatever the slot holds, so a visible box sat unchecked on LGVSyntenyDisplay
+(which defaults the slot on) and clicking it did nothing.
 
 ## Read height vs track height: two axes, one crossover
 

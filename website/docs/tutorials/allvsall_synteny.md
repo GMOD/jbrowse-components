@@ -370,8 +370,8 @@ labelled lane per sample, and a gap becomes attributable to the strain that has
 it. Each lane is a single row. Where several alignments cover the same base, as
 an IS element that hits a dozen loci in the other strain does, the lane shades
 darker rather than growing a row per hit, so one repeat family cannot push the
-synteny you are reading off the screen. Untick **Group by... > One row per
-group** to stack every lane instead, or expand one lane from its label.
+synteny you are reading off the screen. Untick **Show... > Collapse groups to
+one row** to stack every lane instead, or expand one lane from its label.
 
 One of those lanes is the assembly you are viewing, and it can never hold a
 self-alignment, since `minimap2 -X` skipped each genome's own diagonal. All that

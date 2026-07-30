@@ -4,8 +4,10 @@ import { promotableToggleItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { collapseGroupRowsItems } from './groupByMenu.ts'
 import { checkboxItem } from './menuHelpers.ts'
 
+import type { CollapseGroupRowsModel } from './groupByMenu.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -33,7 +35,7 @@ export function getMaxHeightMenuItem(model: MaxHeightModel) {
   }
 }
 
-interface ReadsModel extends MaxHeightModel {
+interface ReadsModel extends MaxHeightModel, CollapseGroupRowsModel {
   showLegend: boolean
   setShowLegend: (show: boolean | undefined) => void
   showCoverage: boolean
@@ -75,6 +77,9 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show pileup', model.showPileup, () => {
         model.setShowPileup(!model.showPileup)
       }),
+      // Only while grouping is in effect, so it sits next to the pileup toggle
+      // it modifies rather than in the Group-by dimension list.
+      ...collapseGroupRowsItems(model),
       checkboxItem('Show mismatches', model.showMismatches, () => {
         model.setShowMismatches(!model.showMismatches)
       }),

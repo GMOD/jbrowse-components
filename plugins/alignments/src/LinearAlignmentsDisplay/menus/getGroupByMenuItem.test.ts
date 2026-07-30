@@ -3,31 +3,20 @@ import { getGroupByMenuItem } from './sortGroup.ts'
 import type { GroupByType } from '../../shared/types.ts'
 import type { GroupByMenuModel } from './sortGroup.ts'
 
-function makeModel(opts?: {
-  type?: GroupByType
-  isChainMode?: boolean
-  collapseGroupRows?: boolean
-}) {
+function makeModel(opts?: { type?: GroupByType; isChainMode?: boolean }) {
   const setGroupBy = jest.fn()
-  const setCollapseGroupRows = jest.fn()
   const model = {
     isChainMode: opts?.isChainMode ?? false,
     groupBy: opts?.type ? { type: opts.type } : undefined,
-    collapseGroupRows: opts?.collapseGroupRows ?? false,
     setGroupBy,
-    setCollapseGroupRows,
   }
-  return {
-    model: model as unknown as GroupByMenuModel,
-    setGroupBy,
-    setCollapseGroupRows,
-  }
+  return { model: model as unknown as GroupByMenuModel, setGroupBy }
 }
 
-// The dimension radios only — the trailing "One row per group" checkbox is a
-// layout toggle, not a dimension, and is asserted separately below.
+// Dimensions only — the submenu is radios end to end (the collapse toggle moved
+// to "Show...", see `collapseGroupRowsItems`), so nothing needs filtering out.
 function radios(model: GroupByMenuModel) {
-  return getGroupByMenuItem(model).subMenu.filter(i => i.type === 'radio')
+  return getGroupByMenuItem(model).subMenu
 }
 
 test('offers None, the per-read dimensions, then Tag... last', () => {
@@ -108,42 +97,4 @@ test('grouping by tag checks the Tag... radio', () => {
 // soon as one does, and none of these dimensions needs a sentence to explain it.
 test('the dimension radios need no help column', () => {
   expect(radios(makeModel().model).filter(i => i.helpText)).toEqual([])
-})
-
-function collapseItem(model: GroupByMenuModel) {
-  return getGroupByMenuItem(model)
-    .subMenu.filter(i => i.type === 'checkbox')
-    .find(i => i.label === 'One row per group')
-}
-
-// Ungrouped, `collapseGroupRows` reads false whatever the slot says, so clicking
-// only ever wrote `true` — on a track whose config already defaults it on
-// (LGVSyntenyDisplay) that is an unchecked box that can never be unchecked.
-test('the one-row-per-group toggle is disabled while ungrouped', () => {
-  const { model, setCollapseGroupRows } = makeModel()
-  const item = collapseItem(model)!
-  expect(item.disabled).toBe(true)
-  expect(item.disabledHelpText).toMatch(/Pick a dimension/)
-  expect(setCollapseGroupRows).not.toHaveBeenCalled()
-
-  expect(collapseItem(makeModel({ type: 'strand' }).model)!.disabled).toBe(
-    false,
-  )
-})
-
-test('the one-row-per-group toggle reflects and writes the setting', () => {
-  const { model, setCollapseGroupRows } = makeModel({
-    type: 'strand',
-    collapseGroupRows: true,
-  })
-  const item = collapseItem(model)!
-  expect(item.checked).toBe(true)
-  item.onClick()
-  expect(setCollapseGroupRows).toHaveBeenCalledWith(false)
-})
-
-// A chain row is a chain; collapsing it would drop the connecting lines the
-// mode exists for, so the layout refuses to collapse there (`collapsesRows`).
-test('chain mode omits the one-row-per-group toggle', () => {
-  expect(collapseItem(makeModel({ isChainMode: true }).model)).toBeUndefined()
 })

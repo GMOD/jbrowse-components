@@ -1,5 +1,6 @@
 import {
   checkboxItem,
+  collapseGroupRowsItems,
   getMaxHeightMenuItem,
   groupByRadioMenuItem,
   pickGroupByOptions,
@@ -7,13 +8,14 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { GroupByType } from '@jbrowse/plugin-alignments'
+import type {
+  CollapseGroupRowsModel,
+  GroupByType,
+} from '@jbrowse/plugin-alignments'
 
 interface GroupByModel {
   groupBy?: { type: GroupByType }
   setGroupBy: (groupBy?: { type: GroupByType }) => void
-  collapseGroupRows: boolean
-  setCollapseGroupRows: (flag: boolean) => void
   hideSelfAlignments: boolean
   setHideSelfAlignments: (flag: boolean) => void
 }
@@ -36,19 +38,15 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
     onNone: () => {
       model.setGroupBy(undefined)
     },
-    collapseRows: {
-      checked: model.collapseGroupRows,
-      onToggle: () => {
-        model.setCollapseGroupRows(!model.collapseGroupRows)
-      },
-    },
   })
-  // Appended after the shared builder's own "One row per group" toggle: this one
-  // is synteny-specific, since only an all-vs-all track has a self lane.
+  // Appended after the shared builder's dimension radios, behind a divider so a
+  // checkbox doesn't read as one of them. Synteny-specific: only an all-vs-all
+  // track has a self lane.
   return {
     ...item,
     subMenu: [
       ...item.subMenu,
+      { type: 'divider' as const },
       checkboxItem(
         'Hide self-alignment lane',
         model.hideSelfAlignments,
@@ -66,7 +64,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   }
 }
 
-interface ShowModel {
+interface ShowModel extends CollapseGroupRowsModel {
   showLegend: boolean
   setShowLegend: (show: boolean | undefined) => void
   showCoverage: boolean
@@ -120,6 +118,9 @@ export function getSyntenyShowMenuItem(model: ShowModel) {
             'the coverage histogram.',
         },
       ),
+      // Only while grouping is in effect — for an all-vs-all track grouped by
+      // mate assembly this is the default, one band per mate genome.
+      ...collapseGroupRowsItems(model),
       checkboxItem(
         'Show mismatches',
         model.showMismatches,

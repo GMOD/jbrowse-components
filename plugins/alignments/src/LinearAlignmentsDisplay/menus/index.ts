@@ -14,8 +14,8 @@ export {
   getFeatureHeightMenuItem,
 } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
-export { groupByRadioMenuItem } from './groupByMenu.ts'
-export type { GroupByRadioItem } from './groupByMenu.ts'
+export { collapseGroupRowsItems, groupByRadioMenuItem } from './groupByMenu.ts'
+export type { CollapseGroupRowsModel, GroupByRadioItem } from './groupByMenu.ts'
 export { checkboxItem } from './menuHelpers.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getMaxHeightMenuItem, getReadsMenuItem } from './reads.ts'

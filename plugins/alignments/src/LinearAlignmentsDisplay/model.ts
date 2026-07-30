@@ -1053,6 +1053,19 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Whether collapsing can take effect at all, and so whether the
+         * "Show..." menu offers the toggle: the grouping has to be honored, and
+         * chain mode never collapses (`collapsesRows`) because a chain row is a
+         * chain and one row would drop the connecting lines the mode exists for.
+         * The menu omits the row rather than showing it disabled, since a click
+         * would write a slot no getter reads.
+         */
+        get canCollapseGroupRows() {
+          return this.prefersOffset && !self.isChainMode
+        },
+
+        /**
          * #method
          * Whether a stacked group's pileup is collapsed to just its coverage.
          */

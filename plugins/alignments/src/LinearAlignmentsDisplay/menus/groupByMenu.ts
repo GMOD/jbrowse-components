@@ -37,31 +37,23 @@ function checkedType(
 // at a glance and a common dimension is one click away, no dialog round-trip.
 // `options` select directly via `onSelect`; `extra` radios (appended last) carry
 // their own handler, so the two displays can't drift in menu shape.
-// `collapseRows` appends the "One row per group" checkbox below the radios,
-// because it modifies them: it is how tall each group they produce is drawn, not
-// a dimension of its own.
 //
-// Its clarifier is a `subLabel`, not `helpText`: one helpText anywhere in a menu
-// makes every row reserve the "?" column (`getMenuColumnFlags`), and nothing else
-// in this submenu needs one. It also disables itself while "None" is ticked — the
-// display's `collapseGroupRows` getter is gated on the grouping being honored, so
-// ungrouped it reads `false` whatever the slot holds, and clicking the unchecked
-// box wrote `true` into an already-`true` slot (LGVSyntenyDisplay defaults it on)
-// for no visible change, forever.
+// Dimensions only. `collapseGroupRowsItems` below used to sit under these radios,
+// where a row reading "One row per group" looked like a description of grouping
+// rather than a separate toggle; it is a group's drawn height, so it lives in
+// "Show..." with the other layout toggles.
 export function groupByRadioMenuItem({
   current,
   options,
   onSelect,
   onNone,
   extra = [],
-  collapseRows,
 }: {
   current: GroupByType | undefined
   options: GroupByRadioOption[]
   onSelect: (type: GroupByType) => void
   onNone: () => void
   extra?: GroupByRadioItem[]
-  collapseRows?: { checked: boolean; onToggle: () => void }
 }) {
   const checked = checkedType(current, [...options, ...extra])
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
@@ -94,23 +86,44 @@ export function groupByRadioMenuItem({
         ),
       ),
       ...extra.map(e => radio(e, e.onClick)),
-      ...(collapseRows
-        ? [
-            { type: 'divider' as const },
-            checkboxItem(
-              'One row per group',
-              collapseRows.checked,
-              collapseRows.onToggle,
-              {
-                subLabel: 'Overlap shows as darker shading',
-                disabled: checked === undefined,
-                disabledHelpText:
-                  'Pick a dimension above first — with no grouping there is ' +
-                  'nothing to draw one row of.',
-              },
-            ),
-          ]
-        : []),
     ] satisfies MenuItem[],
   }
+}
+
+export interface CollapseGroupRowsModel {
+  canCollapseGroupRows: boolean
+  collapseGroupRows: boolean
+  setCollapseGroupRows: (flag: boolean) => void
+}
+
+// Spread into a display's "Show..." menu, next to the pileup toggle: collapsing
+// is how tall a group is drawn, so it belongs with the layout controls and not
+// among the dimension radios.
+//
+// Absent rather than disabled when it can't take effect (`canCollapseGroupRows`
+// — ungrouped, or chain mode, whose rows are chains). The display's
+// `collapseGroupRows` getter is gated on the same rule, so ungrouped it reads
+// `false` whatever the slot holds; a visible box then sat unchecked on a track
+// that defaults it on (LGVSyntenyDisplay) and clicking it changed nothing.
+export function collapseGroupRowsItems(model: CollapseGroupRowsModel) {
+  return (
+    model.canCollapseGroupRows
+      ? [
+          checkboxItem(
+            'Collapse groups to one row',
+            model.collapseGroupRows,
+            () => {
+              model.setCollapseGroupRows(!model.collapseGroupRows)
+            },
+            {
+              helpText:
+                'Draw each group as a single row instead of a stack, with ' +
+                'overlap depth shown as darker shading — the compact reading ' +
+                'for a track with many groups. Expanding one group from its ' +
+                'label chip opts that group back out to a true stack.',
+            },
+          ),
+        ]
+      : []
+  ) satisfies MenuItem[]
 }
