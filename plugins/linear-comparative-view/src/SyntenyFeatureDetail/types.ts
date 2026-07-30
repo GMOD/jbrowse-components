@@ -1,3 +1,5 @@
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export interface SyntenyFeatureDetailModel {
@@ -6,7 +8,8 @@ export interface SyntenyFeatureDetailModel {
   trackId?: string
   featureData?: SimpleFeatureSerialized
   level?: number
-  view: {
-    type: string
-  }
+  // A plain LGV when opened from an LGVSyntenyDisplay's own context menu, or
+  // the outer LinearSyntenyView itself when opened from a ribbon click (in
+  // which case `level` says which row-pair produced the feature).
+  view: LinearGenomeViewModel | LinearSyntenyViewModel
 }

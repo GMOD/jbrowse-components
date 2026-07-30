@@ -13,7 +13,6 @@ import { observer } from 'mobx-react'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
 import { getMate } from '../syntenyMate.ts'
 
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SyntenyFeatureDetailModel } from './types.ts'
 import type {
   AbstractSessionModel,
@@ -46,6 +45,18 @@ function findTrackAssemblyNames(
     : undefined
 }
 
+// The anchor panel opens on the view's own assembly — more dependable than the
+// feature's own `assemblyName` field, which not every adapter sets (the same
+// reasoning LGVSyntenyDisplay's context menu applies, see its comment). A
+// ribbon click hands this widget the outer LinearSyntenyView itself, with
+// `level` saying which row produced the feature; a track's own context menu
+// instead hands over the single LGV it lives in, which has no rows to index.
+export function findAnchorAssembly({ view, level }: SyntenyFeatureDetailModel) {
+  return level !== undefined && 'views' in view
+    ? view.views[level]?.assemblyNames[0]
+    : view.assemblyNames[0]
+}
+
 const LinkToSyntenyView = observer(function LinkToSyntenyView({
   model,
   feat,
@@ -57,20 +68,20 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   const session = getSession(model)
   const feature = new SimpleFeature(feat)
   const mate = getMate(feature)
-  const anchorAssembly = feature.get('assemblyName')
+  const anchorAssembly = findAnchorAssembly(model)
   const trackAssemblyNames = findTrackAssemblyNames(session, trackId)
   const canLaunch =
     trackId !== undefined &&
-    typeof anchorAssembly === 'string' &&
+    anchorAssembly !== undefined &&
     trackAssemblyNames !== undefined &&
     canLaunchSyntenyForMate(trackAssemblyNames, mate?.assemblyName)
   return (
     <ul>
-      {view.type === 'LinearSyntenyView' ? (
+      {'views' in view ? (
         <li>
           <ActionLink
             onClick={() => {
-              const { views } = view as LinearSyntenyViewModel
+              const { views } = view
               if (level !== undefined) {
                 // level is "pre-known", and stored in the SyntenyFeatureWidget
                 // model state e.g. when clicking on a feature from a

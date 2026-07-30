@@ -184,7 +184,7 @@ export default function LaunchSyntenyViewForRegionDialog({
       {!rows && !error ? <CircularProgress size={20} /> : null}
       {/* names the dataset rather than saying "this dataset": with the selector
        above, the fix is to try another one */}
-      {rows && rows.length === 1 ? (
+      {rows && !mates.length ? (
         <Typography variant="body2">
           Nothing in {track.name} aligns to this region
         </Typography>
