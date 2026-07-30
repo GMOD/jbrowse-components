@@ -9,7 +9,7 @@ import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type BamAdapter from './BamAdapter.ts'
-import type { MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback, PackedReference } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
@@ -17,10 +17,10 @@ export default class BamSlightlyLazyFeature
   implements MismatchFeature
 {
   public adapter!: BamAdapter
-  // shared region-wide reference string (covers many reads); refOffset locates
-  // this read's start within it, so no per-read substring is allocated.
+  // shared region-wide packed reference (covers many reads); refOffset locates
+  // this read's start within it, so no per-read slice is allocated.
   // Bind these with `withRegionRef`, never by assignment — see below.
-  public ref?: string
+  public ref?: PackedReference
   public refOffset = 0
 
   /**
@@ -37,7 +37,7 @@ export default class BamSlightlyLazyFeature
    * ranges normally produce different chunk keys, so the cache misses and each
    * fetch decodes its own copy. That is an accident of the key, not a guarantee.)
    */
-  withRegionRef(ref: string, refOffset: number): MismatchFeature {
+  withRegionRef(ref: PackedReference, refOffset: number): MismatchFeature {
     return new RegionBoundBamFeature(this, ref, refOffset)
   }
 
@@ -57,11 +57,11 @@ export default class BamSlightlyLazyFeature
   // processes its visible slice. Converted to read-relative roffset here.
   //
   // With no window, the walk still can't run past what `ref` covers: the shared
-  // region string spans only [-refOffset, ref.length - refOffset) in this read's
-  // reference-relative space, and a read overhanging the fetched region has no
-  // reference bases for its overhang — comparing against an out-of-range
-  // charCodeAt (NaN) would report every one of those bases as a mismatch. Reads
-  // carrying MD need no reference and walk in full.
+  // region reference spans only [-refOffset, ref.length - refOffset) in this
+  // read's reference-relative space, and a read overhanging the fetched region
+  // has no reference bases for its overhang — comparing against an out-of-range
+  // index would report every one of those bases as a mismatch. Reads carrying
+  // MD need no reference and walk in full.
   forEachMismatch(
     callback: MismatchCallback,
     windowStart?: number,
@@ -260,7 +260,7 @@ export default class BamSlightlyLazyFeature
 class RegionBoundBamFeature implements MismatchFeature {
   constructor(
     private base: BamSlightlyLazyFeature,
-    public readonly ref: string,
+    public readonly ref: PackedReference,
     public readonly refOffset: number,
   ) {}
 

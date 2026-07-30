@@ -1,4 +1,4 @@
-import { SEQRET, SEQRET_NUMERIC_DECODER } from './bamSeqDecoder.ts'
+import { SEQRET } from './bamSeqDecoder.ts'
 import {
   CIGAR_D,
   CIGAR_H,
@@ -16,8 +16,58 @@ import {
   SKIP_TYPE,
   SOFTCLIP_TYPE,
 } from './mismatchCallback.ts'
+import { CHAR_CODE_FROM_NIBBLE, referenceNibble } from './packedReference.ts'
 
 import type { MismatchCallback } from './mismatchCallback.ts'
+import type { PackedReference } from './packedReference.ts'
+
+// A clip has no bases to report — its length travels in `cliplen`, which is
+// what every consumer reads. The `S<len>`/`H<len>` string this used to build
+// was allocated per clipped read and then dropped on the floor.
+const NO_BASES = ''
+
+function reportRefMismatch(
+  callback: MismatchCallback,
+  pos: number,
+  seqNibble: number,
+  qual: number,
+  refNibble: number,
+) {
+  callback(
+    MISMATCH_TYPE,
+    pos,
+    1,
+    SEQRET[seqNibble]!,
+    qual,
+    CHAR_CODE_FROM_NIBBLE[refNibble],
+    0,
+  )
+}
+
+// One base compared on its own: the ends of a run whose length or alignment
+// leaves it without a partner in the same byte.
+function compareRefBase(
+  callback: MismatchCallback,
+  numericSeq: ArrayLike<number>,
+  qual: ArrayLike<number> | null | undefined,
+  ref: PackedReference,
+  seqIdx: number,
+  refIdx: number,
+  pos: number,
+) {
+  const seqNibble =
+    (numericSeq[seqIdx >> 1]! >> ((1 - (seqIdx & 1)) << 2)) & 0xf
+  const refNibble = referenceNibble(ref, refIdx)
+  if (seqNibble !== refNibble) {
+    reportRefMismatch(
+      callback,
+      pos,
+      seqNibble,
+      qual ? qual[seqIdx]! : -1,
+      refNibble,
+    )
+  }
+}
 
 /**
  * Core mismatch iteration logic for BAM records.
@@ -28,9 +78,9 @@ import type { MismatchCallback } from './mismatchCallback.ts'
  * @param seqLength - Length of sequence
  * @param md - MD tag as byte array (or undefined)
  * @param qual - Quality scores (or undefined)
- * @param ref - Reference sequence for comparison when no MD tag. May be a
- *   shared region-wide string covering many reads; `refOffset` locates this
- *   read's start within it (avoids slicing a substring per read).
+ * @param ref - Reference sequence for comparison when no MD tag, packed by
+ *   `packReference`. May be a shared region-wide reference covering many reads;
+ *   `refOffset` locates this read's start within it (avoids slicing per read).
  * @param callback - Called for each mismatch/indel/clip
  * @param refOffset - Index in `ref` of this read's first reference base
  * @param windowLo - Read-relative reference offset (roffset space) of the
@@ -45,7 +95,7 @@ export function forEachMismatchNumeric(
   seqLength: number,
   md: ArrayLike<number> | undefined,
   qual: ArrayLike<number> | null | undefined,
-  ref: string | undefined,
+  ref: PackedReference | undefined,
   callback: MismatchCallback,
   refOffset = 0,
   windowLo = Number.NEGATIVE_INFINITY,
@@ -80,11 +130,11 @@ export function forEachMismatchNumeric(
         roffset += len
       } else if (op === CIGAR_S) {
         if (roffset >= windowLo && roffset < windowHi) {
-          callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+          callback(SOFTCLIP_TYPE, roffset, 1, NO_BASES, -1, 0, len)
         }
       } else if (op === CIGAR_H) {
         if (roffset >= windowLo && roffset < windowHi) {
-          callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+          callback(HARDCLIP_TYPE, roffset, 1, NO_BASES, -1, 0, len)
         }
       }
     }
@@ -175,24 +225,67 @@ export function forEachMismatchNumeric(
         // cover the whole chromosome). windowLo/Hi are in roffset space.
         const jLo = windowLo > roffset ? windowLo - roffset : 0
         const jHi = windowHi < roffset + len ? windowHi - roffset : len
-        for (let j = jLo; j < jHi; j++) {
-          const seqIdx = soffset + j
-          const sb = numericSeq[seqIdx >> 1]!
-          const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-          const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
-          const refCharCode = ref.charCodeAt(refOffset + roffset + j)
-          // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
-          if (seqBaseCode !== (refCharCode | 0x20)) {
-            callback(
-              MISMATCH_TYPE,
-              roffset + j,
-              1,
-              SEQRET[nibble]!,
-              hasQual ? qual[seqIdx]! : -1,
-              refCharCode,
-              0,
-            )
+        let j = jLo
+        // A leading odd read index has no partner in its byte, so compare it
+        // alone and let the pair loop start on a byte boundary.
+        if (j < jHi && (soffset + j) & 1) {
+          compareRefBase(
+            callback,
+            numericSeq,
+            qual,
+            ref,
+            soffset + j,
+            refOffset + roffset + j,
+            roffset + j,
+          )
+          j++
+        }
+        // Two bases per byte load and compare. `even`/`odd` differ only in
+        // which reference parity they put on a byte boundary, so one of them
+        // always lines up with the read's packed sequence; the nibbles are
+        // unpacked only for the byte that actually differs.
+        const refStart = refOffset + roffset + j
+        const refPairs = refStart & 1 ? ref.odd : ref.even
+        let refByte = (refStart + (refStart & 1)) >> 1
+        let seqByte = (soffset + j) >> 1
+        for (; j + 1 < jHi; j += 2, refByte++, seqByte++) {
+          const seqPair = numericSeq[seqByte]!
+          const refPair = refPairs[refByte]!
+          if (seqPair !== refPair) {
+            const seqHi = (seqPair >> 4) & 0xf
+            const refHi = (refPair >> 4) & 0xf
+            if (seqHi !== refHi) {
+              reportRefMismatch(
+                callback,
+                roffset + j,
+                seqHi,
+                hasQual ? qual[soffset + j]! : -1,
+                refHi,
+              )
+            }
+            const seqLo = seqPair & 0xf
+            const refLo = refPair & 0xf
+            if (seqLo !== refLo) {
+              reportRefMismatch(
+                callback,
+                roffset + j + 1,
+                seqLo,
+                hasQual ? qual[soffset + j + 1]! : -1,
+                refLo,
+              )
+            }
           }
+        }
+        if (j < jHi) {
+          compareRefBase(
+            callback,
+            numericSeq,
+            qual,
+            ref,
+            soffset + j,
+            refOffset + roffset + j,
+            roffset + j,
+          )
         }
       }
       soffset += len
@@ -281,8 +374,11 @@ export function forEachMismatchNumeric(
             mdMatchRemaining--
           }
         } else if (ref) {
-          // No MD tag - get reference base from ref string
-          altbaseCode = ref.charCodeAt(refOffset + roffset + j)
+          // No MD tag - get reference base from the packed reference
+          altbaseCode =
+            CHAR_CODE_FROM_NIBBLE[
+              referenceNibble(ref, refOffset + roffset + j)
+            ]!
         }
 
         const pos = roffset + j
@@ -302,12 +398,12 @@ export function forEachMismatchNumeric(
       roffset += len
     } else if (op === CIGAR_S) {
       if (roffset >= windowLo && roffset < windowHi) {
-        callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+        callback(SOFTCLIP_TYPE, roffset, 1, NO_BASES, -1, 0, len)
       }
       soffset += len
     } else if (op === CIGAR_H) {
       if (roffset >= windowLo && roffset < windowHi) {
-        callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+        callback(HARDCLIP_TYPE, roffset, 1, NO_BASES, -1, 0, len)
       }
     }
   }

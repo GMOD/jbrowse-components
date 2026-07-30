@@ -12,6 +12,10 @@ import type { MismatchCallback } from '@jbrowse/cigar-utils'
 
 type ReadFeatures = CramRecord['readFeatures']
 
+// A clip has no bases to report — its length travels in `cliplen`, which is what
+// every consumer reads. Matches forEachMismatchNumeric.
+const NO_BASES = ''
+
 // Pure readFeatures→mismatch walk backing CramSlightlyLazyFeature.forEachMismatch
 // (extracted so it's unit-testable with plain fixtures, like
 // readFeaturesToNumericCIGAR). refPos is read-relative; windowStart/windowEnd are
@@ -83,11 +87,11 @@ export function readFeaturesToMismatches(
       } else if (code === 'S') {
         if (inWindow) {
           const dataLen = rf.data.length
-          callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+          callback(SOFTCLIP_TYPE, refPos, 1, NO_BASES, -1, 0, dataLen)
         }
       } else if (code === 'H') {
         if (inWindow) {
-          callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
+          callback(HARDCLIP_TYPE, refPos, 1, NO_BASES, -1, 0, rf.data)
         }
       } else if (code === 'D') {
         if (refPos < wHi && refPos + rf.data > wLo) {

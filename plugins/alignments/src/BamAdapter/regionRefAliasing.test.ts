@@ -8,13 +8,14 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { PackedReference } from '@jbrowse/cigar-utils'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 
 // The reference-binding fields under test — structural, so the assertions read
 // as "what a fetch handed back" rather than reaching into the record class.
 interface RegionView {
-  ref?: string
+  ref?: PackedReference
   refOffset: number
   id: () => string
   get: (field: string) => unknown
@@ -129,7 +130,7 @@ test('the same range twice gives each fetch its own binding', async () => {
 
   // identical range => identical binding, but not a shared mutable record
   expect(b[0]!.refOffset).toBe(a[0]!.refOffset)
-  expect(b[0]!.ref).toBe(a[0]!.ref)
+  expect(b[0]!.ref).toEqual(a[0]!.ref)
   expect(b[0]).not.toBe(a[0])
   expect(b[0]!.id()).toBe(a[0]!.id())
 })

@@ -1,3 +1,4 @@
+import { packReference } from '@jbrowse/cigar-utils'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -149,12 +150,16 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
               end: span.end,
             })
           : undefined
+      // Packed once for the whole fetch, not per read: the walk then compares
+      // two bases per byte against the read's own packed SEQ.
+      const packedRef =
+        regionSeq === undefined ? undefined : packReference(regionSeq)
       checkStopToken(stopToken)
 
       for (const record of records) {
         // A record carrying MD needs no reference and walks in full, so leave
         // its span unbounded (see BamSlightlyLazyFeature.forEachMismatch);
-        // otherwise emit a view bound to this region's shared reference string,
+        // otherwise emit a view bound to this region's shared packed reference,
         // with refOffset locating the read in it.
         //
         // A VIEW, not a write onto the record: unlike BAM's per-region records,
@@ -165,8 +170,8 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         // overlapping two of them then walked one region's mismatches against
         // the other's sequence.
         observer.next(
-          !record.NUMERIC_MD && regionSeq !== undefined && span
-            ? record.withRegionRef(regionSeq, record.start - span.start)
+          !record.NUMERIC_MD && packedRef !== undefined && span
+            ? record.withRegionRef(packedRef, record.start - span.start)
             : record,
         )
       }

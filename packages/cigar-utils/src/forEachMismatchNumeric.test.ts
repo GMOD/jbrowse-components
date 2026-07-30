@@ -8,6 +8,7 @@ import {
   SKIP_TYPE,
   SOFTCLIP_TYPE,
 } from './mismatchCallback.ts'
+import { packReference } from './packedReference.ts'
 
 import type { MismatchCallback } from './mismatchCallback.ts'
 
@@ -77,7 +78,7 @@ function collectMismatches(opts: {
     opts.seq.length,
     opts.md ? encodeMD(opts.md) : undefined,
     opts.qual ? new Uint8Array(opts.qual) : undefined,
-    opts.ref,
+    opts.ref === undefined ? undefined : packReference(opts.ref),
     callback,
   )
 
@@ -336,10 +337,13 @@ describe('forEachMismatchNumeric', () => {
       })
 
       expect(mismatches).toHaveLength(1)
+      // the clip's length rides in cliplen; `base` is empty because a clip has
+      // no bases to report
       expect(mismatches[0]).toMatchObject({
         type: SOFTCLIP_TYPE,
         start: 0,
-        base: 'S3',
+        cliplen: 3,
+        base: '',
       })
     })
 
@@ -352,11 +356,13 @@ describe('forEachMismatchNumeric', () => {
       expect(mismatches).toHaveLength(2)
       expect(mismatches[0]).toMatchObject({
         type: HARDCLIP_TYPE,
-        base: 'H5',
+        cliplen: 5,
+        base: '',
       })
       expect(mismatches[1]).toMatchObject({
         type: HARDCLIP_TYPE,
-        base: 'H5',
+        cliplen: 5,
+        base: '',
       })
     })
 
@@ -434,7 +440,7 @@ describe('forEachMismatchNumeric', () => {
         seq.length,
         undefined,
         undefined,
-        ref,
+        packReference(ref),
         (type, start, length) => {
           out.push({ type, start, length })
         },
@@ -480,6 +486,118 @@ describe('forEachMismatchNumeric', () => {
     test('window fully left/right of all events emits nothing', () => {
       expect(walk(-100, -50)).toEqual([])
       expect(walk(1000, 2000)).toEqual([])
+    })
+  })
+
+  // The reference comparison packs both the read's SEQ and the reference two
+  // bases to a byte and compares a byte at a time, so it has to line the two up
+  // itself: a read whose sequence offset and reference offset disagree in
+  // parity, an M op of odd length, or a window starting mid-byte all leave
+  // single bases at the ends of the paired run. This walks randomized
+  // CIGAR/seq/ref/refOffset combinations against a naive per-base oracle, which
+  // is where those alignment cases actually live.
+  describe('reference comparison vs naive per-base oracle', () => {
+    const BASES = 'ACGT'
+
+    // deterministic LCG so a failure is reproducible from its seed
+    function makeRandom(seed: number) {
+      let state = seed
+      return (n: number) => {
+        state = (state * 1103515245 + 12345) & 0x7fffffff
+        return state % n
+      }
+    }
+
+    function naiveMismatches(
+      cigar: { len: number; op: string }[],
+      seq: string,
+      ref: string,
+      refOffset: number,
+    ) {
+      const out: { start: number; base: string; altbase: number }[] = []
+      let roffset = 0
+      let soffset = 0
+      for (const { len, op } of cigar) {
+        if (op === 'M') {
+          for (let j = 0; j < len; j++) {
+            const readBase = seq[soffset + j]!
+            const refBase = ref[refOffset + roffset + j]!
+            if (readBase.toLowerCase() !== refBase.toLowerCase()) {
+              out.push({
+                start: roffset + j,
+                base: readBase,
+                altbase: refBase.toUpperCase().charCodeAt(0),
+              })
+            }
+          }
+          soffset += len
+          roffset += len
+        } else if (op === 'I') {
+          soffset += len
+        } else if (op === 'S') {
+          soffset += len
+        } else if (op === 'D') {
+          roffset += len
+        }
+      }
+      return out
+    }
+
+    test.each([1, 2, 3, 4, 5, 6, 7, 8])('seed %i', seed => {
+      const random = makeRandom(seed)
+      for (let trial = 0; trial < 40; trial++) {
+        // a CIGAR mixing odd/even run lengths and both offset-shifting ops
+        const ops: { len: number; op: string }[] = []
+        const opChoices = ['M', 'M', 'M', 'I', 'D', 'S']
+        for (let i = 0; i < 1 + random(5); i++) {
+          ops.push({
+            len: 1 + random(9),
+            op: i === 0 ? 'M' : opChoices[random(opChoices.length)]!,
+          })
+        }
+        const seqLen = ops
+          .filter(o => o.op === 'M' || o.op === 'I' || o.op === 'S')
+          .reduce((a, b) => a + b.len, 0)
+        const refLen = ops
+          .filter(o => o.op === 'M' || o.op === 'D')
+          .reduce((a, b) => a + b.len, 0)
+        const refOffset = random(4)
+        let seq = ''
+        for (let i = 0; i < seqLen; i++) {
+          seq += BASES[random(4)]!
+        }
+        let ref = ''
+        for (let i = 0; i < refOffset + refLen; i++) {
+          // mixed case, since the comparison is case-insensitive
+          const c = BASES[random(4)]!
+          ref += random(2) ? c : c.toLowerCase()
+        }
+
+        const cigarString = ops.map(o => `${o.len}${o.op}`).join('')
+        const actual: { start: number; base: string; altbase: number }[] = []
+        forEachMismatchNumeric(
+          encodeCigar(cigarString),
+          encodeSeq(seq),
+          seq.length,
+          undefined,
+          undefined,
+          packReference(ref),
+          (type, start, _length, base, _qual, altbase) => {
+            if (type === MISMATCH_TYPE) {
+              actual.push({ start, base, altbase: altbase! })
+            }
+          },
+          refOffset,
+        )
+
+        expect({ cigarString, seq, ref, refOffset, actual }).toEqual({
+          cigarString,
+          seq,
+          ref,
+          refOffset,
+          actual: naiveMismatches(ops, seq, ref, refOffset),
+        })
+      }
     })
   })
 })

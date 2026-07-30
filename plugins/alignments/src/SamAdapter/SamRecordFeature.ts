@@ -17,7 +17,7 @@ import { collectMismatches } from '../shared/collectMismatches.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { SamRecordData } from './parseSam.ts'
-import type { MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback, PackedReference } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // ASCII codes of an MD tag, the form forEachMismatchNumeric walks (it tests
@@ -57,13 +57,13 @@ export default class SamRecordFeature implements MismatchFeature {
     // Shared with every region view of this record; the adapter's cached
     // instance creates it and `withRegionRef` passes it along.
     private numeric: NumericCache = {},
-    // Region-wide reference string this view resolves its mismatches against,
+    // Region-wide packed reference this view resolves its mismatches against,
     // and this read's index into it. Immutable, and set only by
     // `withRegionRef`: because the adapter caches one record object for the
     // file's lifetime, every displayed region's fetch sees the SAME instance,
     // so writing the fetched region's reference onto it would relocate the read
     // for every other region in flight (all needed regions are fetched at once).
-    public readonly ref?: string,
+    public readonly ref?: PackedReference,
     public readonly refOffset = 0,
   ) {}
 
@@ -73,7 +73,7 @@ export default class SamRecordFeature implements MismatchFeature {
    * — ids must not depend on the queried region (the pileup's read lookups
    * compare them across regions).
    */
-  withRegionRef(ref: string, refOffset: number) {
+  withRegionRef(ref: PackedReference, refOffset: number) {
     return new SamRecordFeature(
       this.record,
       this.uniqueId,

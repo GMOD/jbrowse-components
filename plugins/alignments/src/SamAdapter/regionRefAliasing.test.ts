@@ -1,3 +1,4 @@
+import { CHAR_CODE_FROM_NIBBLE, referenceNibble } from '@jbrowse/cigar-utils'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -8,6 +9,7 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './SamAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { PackedReference } from '@jbrowse/cigar-utils'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -15,9 +17,19 @@ import type { Feature } from '@jbrowse/core/util'
 // SamRecordFeature class so the assertions read as "what a fetch handed back",
 // and so the test doesn't reach into the class's private state.
 interface RegionView {
-  ref?: string
+  ref?: PackedReference
   refOffset: number
   id: () => string
+}
+
+// the reference travels packed two bases to a byte; spell it back out so the
+// assertions read as the sequence slice the fetch resolved
+function unpack(ref: PackedReference | undefined) {
+  let out = ''
+  for (let i = 0; i < (ref?.length ?? 0); i++) {
+    out += String.fromCharCode(CHAR_CODE_FROM_NIBBLE[referenceNibble(ref!, i)]!)
+  }
+  return out
 }
 
 const CTGA = 'ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT'
@@ -100,9 +112,9 @@ test('parallel region fetches each get their own reference slice', async () => {
   // seqFetchSpan's one base of right slack, clamped to the region), and the read
   // (start 0) is located relative to that slice
   expect(left.refOffset).toBe(0)
-  expect(left.ref).toBe(CTGA.slice(0, 12))
+  expect(unpack(left.ref)).toBe(CTGA.slice(0, 12))
   expect(right.refOffset).toBe(-16)
-  expect(right.ref).toBe(CTGA.slice(16, 21))
+  expect(unpack(right.ref)).toBe(CTGA.slice(16, 21))
 
   // ids come from the record, not the fetch — read lookups compare them across
   // regions
@@ -120,8 +132,8 @@ test('a parallel fetch resolves the same reference as a serial one', async () =>
     fetchRegion(parallel, 16, 32),
   ])
 
-  expect(parallelLeft[0]!.ref).toBe(serialLeft.ref)
+  expect(unpack(parallelLeft[0]!.ref)).toBe(unpack(serialLeft.ref))
   expect(parallelLeft[0]!.refOffset).toBe(serialLeft.refOffset)
-  expect(parallelRight[0]!.ref).toBe(serialRight.ref)
+  expect(unpack(parallelRight[0]!.ref)).toBe(unpack(serialRight.ref))
   expect(parallelRight[0]!.refOffset).toBe(serialRight.refOffset)
 })

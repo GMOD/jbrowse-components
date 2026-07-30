@@ -38,27 +38,35 @@ accessor; don't reintroduce it into the render path.
 `BamAdapter.getFeatures` pre-fetches a single contiguous reference span covering
 all reads-without-MD in the region (`Math.min(start)`/`Math.max(end)` across
 reads, via `seqFetchSpan`). Each no-MD record is emitted as
-`record.withRegionRef(regionSeq, record.start - span.start)`, carrying the
-shared string plus its own offset into it; `forEachMismatchNumeric` indexes
-`ref.charCodeAt(refOffset + roffset + j)`. No per-read substring is copied. The
+`record.withRegionRef(packedRef, record.start - span.start)`, carrying the
+shared reference plus its own offset into it. No per-read slice is copied. The
 sequence adapter is also only loaded when `seqFetchSpan` returns non-null, so
 MD-tagged BAMs skip it entirely.
+
+The region string is run through `packReference` **once per fetch**, into BAM's
+own 4-bit alphabet. The M-op comparison then loads one byte of the read's
+`NUMERIC_SEQ` and one byte of the reference and compares them whole — two bases
+per compare, unpacking nibbles only for the byte that actually differs. That
+halves the mismatch walk (0.52x on 132k short reads, 0.67x on long reads, output
+byte-identical). `packReference` builds two packings, `even` and `odd`, because
+a read's sequence parity and its reference parity need not agree; don't
+"simplify" it to one.
 
 **`withRegionRef`, never `record.ref = …`.** These records are not per-fetch:
 `@gmod/bam` memoizes decoded records in a per-file chunk LRU keyed on the
 chunk's block positions, so two queries resolving to the same chunk span get the
 identical objects back. A display fetches all its needed regions at once, so
 assigning let the last fetch to resolve rebind the read for every other region
-still holding it — resolving one region's mismatches against another's
-sequence. Covered by `regionRefAliasing.test.ts` (BAM and SAM both).
+still holding it — resolving one region's mismatches against another's sequence.
+Covered by `regionRefAliasing.test.ts` (BAM and SAM both).
 
 Two different query ranges usually produce different chunk keys, so the cache
 misses and each fetch decodes its own copy; re-querying one range is what makes
 it actually hit. That is why this stayed latent — and why it stopped being
-latent. bam-js `bde84b1` ("keep every chunk a query parses cached", in **7.5.0**,
-the version we depend on) removed `evictOverlappingChunks`, which had been
-dropping any entry whose block range overlapped an incoming chunk and so kept
-roughly one entry per query. Panning got 25-1594x faster and record sharing
+latent. bam-js `bde84b1` ("keep every chunk a query parses cached", in
+**7.5.0**, the version we depend on) removed `evictOverlappingChunks`, which had
+been dropping any entry whose block range overlapped an incoming chunk and so
+kept roughly one entry per query. Panning got 25-1594x faster and record sharing
 across queries went from incidental to routine. Any future "just set a field on
 the record" shortcut is now much more likely to collide, not less.
 

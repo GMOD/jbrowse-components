@@ -18,6 +18,12 @@ export {
 } from './bamSeqDecoder.ts'
 export { encodeSeqNumeric } from './bamSeqEncoder.ts'
 export { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
+export {
+  CHAR_CODE_FROM_NIBBLE,
+  packReference,
+  referenceNibble,
+} from './packedReference.ts'
+export type { PackedReference } from './packedReference.ts'
 export { flipCigar, swapIndelCigar } from './cigarReorient.ts'
 export { csToCigar } from './csToCigar.ts'
 export { pafIdentity } from './pafIdentity.ts'
