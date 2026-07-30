@@ -23,13 +23,25 @@
 # either arrangement can never show a block, and r2 barely shows this one at
 # all (see the tutorial's "Pick the metric before you blame the data").
 #
-# Data: Ag1000G phase 2 AR1 (Ag1000G Consortium, Genome Research 2020), 1142
-# wild-caught mosquitoes, phased by the project. Downloads ~550 MB.
+# Data: Ag1000G phase 2 AR1, 1142 wild-caught mosquitoes phased by the project.
+# Downloads ~550 MB. Cite the release when you use it:
 #
-# NOTE ON RELEASES: the current release (Ag3) is documented as public but every
-# URL in its own download guide returns HTTP 403 to anonymous callers, as do
-# the sibling Af1/Amin buckets. Phase 2 is used because it is actually
-# reachable. If that is fixed, only the input file below changes.
+#   Anopheles gambiae 1000 Genomes Consortium. Genome variation and population
+#   structure among 1142 mosquitoes of the African malaria vector species
+#   Anopheles gambiae and Anopheles coluzzii. Genome Research 2020;30:1533-1548.
+#   Data: Ag1000G phase 2 AR1.  https://www.malariagen.net/project/ag1000g/
+#
+# WHY PHASE 2 AND NOT THE CURRENT RELEASE. Two independent reasons, the second
+# being the one that actually decides it:
+#
+#  - Ag3's own download guide lists URLs that return HTTP 403 to anonymous
+#    callers (as do the sibling Af1/Amin buckets), so it is not reachable
+#    without credentials.
+#  - Phase 1 and 2 terms of use were lifted in March 2022 and are fully open
+#    access, whereas phase 3 remains under terms that reserve the first global
+#    analyses to the Consortium. For public demo assets, phase 2 is the correct
+#    release rather than a fallback.
+#    https://www.malariagen.net/data/our-approach-sharing-data/ag1000g-terms-of-use/
 #
 # Requires: plink (1.9, NOT plink2 - see below), htslib (bgzip, tabix),
 #           samtools, curl, awk, python3.
