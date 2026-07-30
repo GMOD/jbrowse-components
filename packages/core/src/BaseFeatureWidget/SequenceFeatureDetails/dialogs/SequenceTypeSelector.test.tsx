@@ -1,5 +1,6 @@
 import { fireEvent, render, within } from '@testing-library/react'
 
+import { getDefaultMode } from '../featureTypeUtil.ts'
 import { SequenceFeatureDetailsF } from '../model.ts'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 
@@ -10,7 +11,9 @@ function openedOptions(feature: SimpleFeatureSerialized) {
     <SequenceTypeSelector
       model={SequenceFeatureDetailsF().create()}
       feature={feature}
-      mode="genomic"
+      // same source the panel initializes mode from, so the selected value is
+      // always one of the options this feature offers
+      mode={getDefaultMode(feature)}
       setMode={() => {}}
     />,
   )

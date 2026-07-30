@@ -26,129 +26,146 @@ import type {
 const SequenceBody = lazy(() => import('./SequenceBody.tsx'))
 const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog.tsx'))
 
-// Takes the sequence settings model, session and assembly directly rather than
-// a feature-detail widget, so anything holding a SequenceFeatureDetails model
-// (the widget, a track's right-click dialog) renders the same readout.
-const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
-  model,
-  session,
-  assemblyName,
-  feature,
-  hoverTarget,
-  showOpenInDialog = true,
-}: {
+interface SequenceFeatureDetailsProps {
   model: SequenceFeatureDetailsModel
   session: AbstractSessionModel
   assemblyName: string | undefined
   feature: SimpleFeatureSerialized
   hoverTarget?: SequenceHoverTarget
   showOpenInDialog?: boolean
-}) {
-  const { upDownBp } = model
-  const seqPanelRef = useRef<HTMLDivElement>(null)
+}
 
-  // A container feature (e.g. a gene) has no CDS/exon of its own — one of its
-  // transcript children does. Default to the longest-coding transcript so CDS
-  // and Protein sequence types work without an extra click into Subfeatures,
-  // with a selector to switch transcripts when the gene has more than one.
-  const transcripts = getTranscripts(feature)
-  const [transcriptIndex, setTranscriptIndex] = useState(() =>
-    pickDefaultTranscriptIndex(transcripts),
-  )
-  const effectiveFeature = transcripts[transcriptIndex] ?? feature
+const SequenceFeatureDetailsPanel = observer(
+  function SequenceFeatureDetailsPanel({
+    model,
+    session,
+    assemblyName,
+    feature,
+    hoverTarget,
+    showOpenInDialog = true,
+  }: SequenceFeatureDetailsProps) {
+    const { upDownBp } = model
+    const seqPanelRef = useRef<HTMLDivElement>(null)
 
-  // mode and revcomp are per-panel state, not on the shared model, so each
-  // subfeature panel (e.g. coding vs noncoding transcripts of one gene) picks
-  // its own sequence type and strand
-  const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
-  const [revcomp, setRevcomp] = useState(false)
-  const [openInDialog, setOpenInDialog] = useState(false)
-  const { sequence, error, assemblyGeneticCodeId, onForceLoad } =
-    useSequenceFetch({
-      session,
-      assemblyName,
-      feature: effectiveFeature,
-      upDownBp,
-    })
+    // A container feature (e.g. a gene) has no CDS/exon of its own — one of its
+    // transcript children does. Default to the longest-coding transcript so CDS
+    // and Protein sequence types work without an extra click into Subfeatures,
+    // with a selector to switch transcripts when the gene has more than one.
+    const transcripts = getTranscripts(feature)
+    const [transcriptIndex, setTranscriptIndex] = useState(() =>
+      pickDefaultTranscriptIndex(transcripts),
+    )
+    const effectiveFeature = transcripts[transcriptIndex] ?? feature
 
-  return (
-    <>
-      <div>
-        {transcripts.length > 1 ? (
-          <TranscriptSelector
-            transcripts={transcripts}
-            transcriptIndex={transcriptIndex}
-            setTranscriptIndex={index => {
-              setTranscriptIndex(index)
-              setMode(getDefaultMode(transcripts[index]!))
-            }}
-          />
-        ) : null}
-        <SequenceTypeSelector
-          model={model}
-          feature={effectiveFeature}
-          mode={mode}
-          setMode={setMode}
-        />
-        <SequenceFeatureMenu
-          ref={seqPanelRef}
-          model={model}
-          mode={mode}
-          revcomp={revcomp}
-          setRevcomp={setRevcomp}
-          extraItems={
-            showOpenInDialog
-              ? [
-                  {
-                    label: 'Open in dialog',
-                    onClick: () => {
-                      setOpenInDialog(true)
-                    },
-                  },
-                ]
-              : []
-          }
-        />
-      </div>
-      {openInDialog ? (
-        <Suspense fallback={<LoadingEllipses />}>
-          <SequenceDialog
-            sequenceFeatureDetails={model}
+    // mode and revcomp are per-panel state, not on the shared model, so each
+    // subfeature panel (e.g. coding vs noncoding transcripts of one gene) picks
+    // its own sequence type and strand
+    const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
+    const [revcomp, setRevcomp] = useState(false)
+    const [openInDialog, setOpenInDialog] = useState(false)
+    const { sequence, error, assemblyGeneticCodeId, onForceLoad } =
+      useSequenceFetch({
+        session,
+        assemblyName,
+        feature: effectiveFeature,
+        upDownBp,
+      })
+
+    return (
+      <>
+        <div>
+          {transcripts.length > 1 ? (
+            <TranscriptSelector
+              transcripts={transcripts}
+              transcriptIndex={transcriptIndex}
+              setTranscriptIndex={index => {
+                setTranscriptIndex(index)
+                setMode(getDefaultMode(transcripts[index]!))
+              }}
+            />
+          ) : null}
+          <SequenceTypeSelector
+            model={model}
             feature={effectiveFeature}
             mode={mode}
             setMode={setMode}
-            revcomp={revcomp}
-            setRevcomp={setRevcomp}
-            sequence={sequence}
-            error={error}
-            assemblyGeneticCodeId={assemblyGeneticCodeId}
-            assemblyName={assemblyName}
-            hoverTarget={hoverTarget}
-            onForceLoad={onForceLoad}
-            handleClose={() => {
-              setOpenInDialog(false)
-            }}
           />
-        </Suspense>
-      ) : (
-        <Suspense fallback={<LoadingEllipses />}>
-          <SequenceBody
-            error={error}
-            sequence={sequence}
-            feature={effectiveFeature}
-            seqPanelRef={seqPanelRef}
+          <SequenceFeatureMenu
+            ref={seqPanelRef}
             model={model}
             mode={mode}
             revcomp={revcomp}
-            assemblyGeneticCodeId={assemblyGeneticCodeId}
-            assemblyName={assemblyName}
-            hoverTarget={hoverTarget}
-            onForceLoad={onForceLoad}
+            setRevcomp={setRevcomp}
+            extraItems={
+              showOpenInDialog
+                ? [
+                    {
+                      label: 'Open in dialog',
+                      onClick: () => {
+                        setOpenInDialog(true)
+                      },
+                    },
+                  ]
+                : []
+            }
           />
-        </Suspense>
-      )}
-    </>
-  )
+        </div>
+        {openInDialog ? (
+          <Suspense fallback={<LoadingEllipses />}>
+            <SequenceDialog
+              sequenceFeatureDetails={model}
+              feature={effectiveFeature}
+              mode={mode}
+              setMode={setMode}
+              revcomp={revcomp}
+              setRevcomp={setRevcomp}
+              sequence={sequence}
+              error={error}
+              assemblyGeneticCodeId={assemblyGeneticCodeId}
+              assemblyName={assemblyName}
+              hoverTarget={hoverTarget}
+              onForceLoad={onForceLoad}
+              handleClose={() => {
+                setOpenInDialog(false)
+              }}
+            />
+          </Suspense>
+        ) : (
+          <Suspense fallback={<LoadingEllipses />}>
+            <SequenceBody
+              error={error}
+              sequence={sequence}
+              feature={effectiveFeature}
+              seqPanelRef={seqPanelRef}
+              model={model}
+              mode={mode}
+              revcomp={revcomp}
+              assemblyGeneticCodeId={assemblyGeneticCodeId}
+              assemblyName={assemblyName}
+              hoverTarget={hoverTarget}
+              onForceLoad={onForceLoad}
+            />
+          </Suspense>
+        )}
+      </>
+    )
+  },
+)
+
+// Takes the sequence settings model, session and assembly directly rather than
+// a feature-detail widget, so anything holding a SequenceFeatureDetails model
+// (the widget, a track's right-click dialog) renders the same readout.
+//
+// The panel's sequence type, transcript and revcomp are initialized from the
+// feature, and the widget is reused (not remounted) when the user clicks a
+// different feature — so key the panel on the feature to reinitialize them.
+// Otherwise a mode picked on a coding transcript ('cds') survives onto a
+// feature that doesn't offer it, which renders the wrong sequence and puts an
+// out-of-range value in the sequence type selector.
+const SequenceFeatureDetails = observer(function SequenceFeatureDetails(
+  props: SequenceFeatureDetailsProps,
+) {
+  return <SequenceFeatureDetailsPanel key={props.feature.uniqueId} {...props} />
 })
 
 export default SequenceFeatureDetails
