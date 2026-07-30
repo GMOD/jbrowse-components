@@ -1,7 +1,7 @@
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { pluralize } from '@jbrowse/core/util'
+import { capitalizeFirst, pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
@@ -18,7 +18,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
 
-// Single source for the "Feature height" radio options and their labels, so a
+// Single source for the size-preset radio options and their labels, so a
 // fourth mode can't drift between the menu and the label lookup.
 const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'normal', label: 'Normal' },
@@ -34,6 +34,7 @@ export const STRAND_COLOR_JEXL =
 // these builders, so it can't hand them its own inferred type. The model is
 // passed in at the call site, so a drifted field fails to typecheck there.
 interface ShowSubmenuSelf {
+  featureNoun: string
   showDescriptions: boolean
   // What the render actually does with showDescriptions: collapsed mode and the
   // auto-labels density gate both suppress them. Read here so the checkbox can
@@ -54,11 +55,13 @@ interface ColorMenuSelf {
 }
 
 interface FeatureHeightSelf extends IAnyStateTreeNode, HeightModeMenuModel {
+  featureNoun: string
   displayMode: DisplayMode
   setDisplayMode: (value: DisplayMode) => void
 }
 
 interface TrackMenuSelf {
+  featureNoun: string
   hiddenFeatureCount: number
   featureHighlightCount: number
   // the model's own answer (subclasses OR in their filters), not recomputed
@@ -127,7 +130,7 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
 // Rendered after the checkboxes; subclasses override to append.
 export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
   return inlineRadioGroup(
-    'Feature labels',
+    `${capitalizeFirst(self.featureNoun)} labels`,
     self.showLabelsMode,
     [
       { value: 'auto', label: 'Auto (hide when dense)' },
@@ -171,7 +174,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   ]
 }
 
-// One "Feature height" menu with two independent radio groups, mirroring the
+// One "<Noun> height" menu with two independent radio groups, mirroring the
 // alignments display: the size presets (how tall each feature is drawn) and,
 // under a "Track sizing" subheader, how the track responds when there are more
 // features than fit — scroll / expand / squeeze. The two axes are orthogonal, so
@@ -180,7 +183,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
 export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
   return [
     {
-      label: 'Feature height',
+      label: `${capitalizeFirst(self.featureNoun)} height`,
       icon: HeightIcon,
       subMenu: [
         // Each preset row carries its own pin (endAdornment): the radio
@@ -204,7 +207,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
           }),
         ),
         { type: 'subHeader' as const, label: 'Track sizing' },
-        ...heightModeMenuItems(self, 'feature'),
+        ...heightModeMenuItems(self, self.featureNoun),
       ],
     },
   ]

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { SubmitCancelActions } from '@jbrowse/core/ui'
-import { isPalindromic, parseMotifList } from '@jbrowse/core/util'
+import { isPalindromic, parseMotifList, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -107,7 +107,7 @@ const MotifListPanel = observer(function MotifListPanel({
           <Typography variant="body2" color="textSecondary">
             {motifs.length === 0
               ? 'Add at least one motif'
-              : `${motifs.length} motif${motifs.length === 1 ? '' : 's'}`}
+              : `${motifs.length} ${pluralize(motifs.length, 'motif')}`}
           </Typography>
         )}
         {hasStrandedMotif ? (

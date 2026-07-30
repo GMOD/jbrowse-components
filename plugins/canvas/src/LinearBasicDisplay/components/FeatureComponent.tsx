@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
 import { Menu, VerticalScrollbar } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -370,7 +370,7 @@ const FeatureBody = observer(function FeatureBody({
       <canvas
         id={canvasId}
         role="img"
-        aria-label="Feature track"
+        aria-label={`${capitalizeFirst(model.featureNoun)} track`}
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -408,8 +408,9 @@ const FeatureBody = observer(function FeatureBody({
 
       <BottomRightIndicators hasOverflow={model.hasOverflow}>
         <SoloSelectionChip
-          count={model.soloFeatureIdSet.size}
+          count={model.soloFeatureCount}
           applied={model.soloApplied}
+          featureNoun={model.featureNoun}
           onApply={() => {
             model.applySolo()
           }}
@@ -422,7 +423,7 @@ const FeatureBody = observer(function FeatureBody({
           heightMode={model.heightMode}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
-          noun="feature"
+          noun={model.featureNoun}
           truncatedCount={model.truncatedFeatureCount}
           onSetHeightMode={mode => {
             model.setHeightMode(mode)

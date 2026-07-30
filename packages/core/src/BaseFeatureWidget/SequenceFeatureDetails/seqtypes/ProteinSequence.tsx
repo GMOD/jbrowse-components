@@ -4,6 +4,7 @@ import {
   convertCodingSequenceToPeptides,
   translExceptProteinPositions,
 } from '../../../util/convertCodingSequenceToPeptides.ts'
+import { pluralize } from '../../../util/index.ts'
 import SequenceLegend from '../SequenceLegend.tsx'
 import { proteinColor, translExceptColor } from '../consts.ts'
 import { coordLabelWidth, splitString } from '../util.ts'
@@ -26,7 +27,7 @@ function translExceptNote(translExcept: TranslExcept[]): string | undefined {
   const parts = TRANSL_EXCEPT_LABELS.flatMap(({ aa, name }) => {
     const n = translExcept.filter(e => e.aa === aa).length
     return n > 0
-      ? [`${n} ${name}${n > 1 ? 's' : ''} (${aa}) from transl_except`]
+      ? [`${n} ${pluralize(n, name)} (${aa}) from transl_except`]
       : []
   })
   return parts.length > 0 ? parts.join('; ') : undefined

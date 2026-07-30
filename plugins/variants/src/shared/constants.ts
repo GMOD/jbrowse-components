@@ -70,7 +70,6 @@ export const INTERNAL_SOURCE_KEYS = new Set([
 
 // "population" -> "Population" for metadata-attribute menu/legend labels. Only
 // the first character is uppercased (single-word attribute keys), so it is not
-// a general title-caser.
-export function capitalizeFirst(s: string) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
-}
+// a general title-caser. Re-exported from core so the call sites in this plugin
+// keep their short local import.
+export { capitalizeFirst } from '@jbrowse/core/util'

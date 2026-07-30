@@ -68,6 +68,18 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * Renames the shared canvas vocabulary for this display: every menu row,
+       * chip and indicator that names what the track holds reads this, so a
+       * variant track says "Variant height", "Hide this variant", "Showing 3
+       * variants" instead of inheriting the gene-oriented "feature". The
+       * per-hit noun in the context menu still comes from the annotation's own
+       * type where it has one.
+       */
+      get featureNoun() {
+        return 'variant'
+      },
+      /**
+       * #getter
        */
       get featureWidgetType() {
         return VARIANT_FEATURE_WIDGET

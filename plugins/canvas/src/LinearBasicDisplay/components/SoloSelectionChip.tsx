@@ -12,23 +12,27 @@ import StatusChip from './StatusChip.tsx'
 export default function SoloSelectionChip({
   count,
   applied,
+  featureNoun,
   onApply,
   onClear,
 }: {
   count: number
   applied: boolean
+  // singular noun for what the track holds, so a variant track's chip says
+  // "Showing 3 variants" — see the canvas base's featureNoun getter
+  featureNoun: string
   onApply: () => void
   onClear: () => void
 }) {
   if (count === 0) {
     return null
   }
-  const noun = `${count} ${pluralize(count, 'feature')}`
+  const counted = `${count} ${pluralize(count, featureNoun)}`
   return applied ? (
     <StatusChip
       icon={<FilterAltIcon />}
-      label={`Showing ${noun}`}
-      tooltip="Clear the show-only list to show all features again"
+      label={`Showing ${counted}`}
+      tooltip={`Clear the show-only list to show all ${pluralize(2, featureNoun)} again`}
       onDelete={() => {
         onClear()
       }}
@@ -37,7 +41,7 @@ export default function SoloSelectionChip({
     <StatusChip
       icon={<FilterAltIcon />}
       label={`${count} selected`}
-      tooltip={`Show only these ${noun}`}
+      tooltip={`Show only these ${counted}`}
       onClick={() => {
         onApply()
       }}

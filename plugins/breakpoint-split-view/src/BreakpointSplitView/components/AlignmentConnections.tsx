@@ -1,5 +1,9 @@
 import { connectionEndpointBps } from '@jbrowse/cigar-utils'
-import { bezierConnectorPath, getStrokeProps } from '@jbrowse/core/util'
+import {
+  bezierConnectorPath,
+  getStrokeProps,
+  pluralize,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -111,7 +115,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
         dip: level1 === level2 && isAbnormal,
       })
       const hiddenNote = hiddenSegmentsBetween?.length
-        ? `hidden segment${hiddenSegmentsBetween.length > 1 ? 's' : ''} not in view: ${hiddenSegmentsBetween.join(', ')}`
+        ? `hidden ${pluralize(hiddenSegmentsBetween.length, 'segment')} not in view: ${hiddenSegmentsBetween.join(', ')}`
         : undefined
       return [
         {

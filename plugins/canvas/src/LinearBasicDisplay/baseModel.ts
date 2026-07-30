@@ -851,6 +851,22 @@ export default function baseStateModelFactory(
 
         /**
          * #getter
+         * Singular, lowercase noun for what this track holds. Every menu label,
+         * chip and indicator that names the thing reads it from here, so a
+         * subclass renames its whole vocabulary with one override rather than
+         * threading a noun through a dozen call sites — LinearVariantDisplay
+         * returns 'variant' and its menu stops saying "feature" at the user.
+         *
+         * Distinct from the per-hit noun the context menu derives from the
+         * clicked item's own `type` ("mRNA", "gene"); that names one annotation,
+         * this names the track's contents. The hit noun falls back to this.
+         */
+        get featureNoun() {
+          return 'feature'
+        },
+
+        /**
+         * #getter
          */
         get featureWidgetType() {
           return {

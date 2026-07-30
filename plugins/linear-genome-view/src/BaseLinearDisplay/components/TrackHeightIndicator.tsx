@@ -1,4 +1,5 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HeightIcon from '@mui/icons-material/Height'
 
@@ -65,7 +66,7 @@ export default function TrackHeightIndicator({
     // ' — ' is already this tooltip's segment separator, so keep the segment
     // itself free of one.
     truncatedCount > 0
-      ? `${truncatedCount.toLocaleString()} ${noun}${truncatedCount > 1 ? 's' : ''} not shown (past the layout row limit; filter or zoom in)`
+      ? `${truncatedCount.toLocaleString()} ${pluralize(truncatedCount, noun)} not shown (past the layout row limit; filter or zoom in)`
       : undefined,
     hasOverflow && scrollZoom ? 'shift+wheel to scroll' : undefined,
   ]

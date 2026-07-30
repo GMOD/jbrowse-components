@@ -410,6 +410,13 @@ export function pluralize(count: number, noun: string) {
   return count === 1 ? noun : `${noun}s`
 }
 
+// Sentence-case a noun that arrives lowercase because it also appears
+// mid-sentence — the display nouns ('feature', 'read', 'variant') that name
+// what a track holds are the case this exists for.
+export function capitalizeFirst(s: string) {
+  return `${s.charAt(0).toUpperCase()}${s.slice(1)}`
+}
+
 // heuristic measurement for a column of a @mui/x-data-grid, pass in
 // values from a column
 export function measureGridWidth(

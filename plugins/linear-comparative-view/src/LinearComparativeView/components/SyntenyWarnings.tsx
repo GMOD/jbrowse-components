@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { getSession, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ReportProblemIcon from '@mui/icons-material/ReportProblemOutlined'
 import { IconButton, Tooltip } from '@mui/material'
@@ -27,7 +27,7 @@ const SyntenyWarnings = observer(function SyntenyWarnings({
 
   return warnings.length ? (
     <Tooltip
-      title={`${warnings.length} synteny warning${warnings.length > 1 ? 's' : ''} — click for details`}
+      title={`${warnings.length} synteny ${pluralize(warnings.length, 'warning')} — click for details`}
     >
       <IconButton
         color="warning"

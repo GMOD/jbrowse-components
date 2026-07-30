@@ -1,7 +1,7 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { deepEqual } from '../util/deepEqual.ts'
-import { getSession, isViewContainer } from '../util/index.ts'
+import { getSession, isViewContainer, pluralize } from '../util/index.ts'
 import { setConf } from './getConf.ts'
 import { resolveSlot, storedSlotValue } from './promotableResolve.ts'
 import { promotableSlotNames, rawConfSnapshot } from './util.ts'
@@ -281,7 +281,7 @@ function applyDefaultToggle(
     const n = tracksDifferingFrom(self, entries).length
     if (n) {
       session.notify('Set as the default', 'info', {
-        name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
+        name: `Apply to ${n} open ${pluralize(n, 'track')}`,
         // re-derived on click, not captured: the snackbar outlives the click
         // that raised it, so a track closed (or newly opened) in between would
         // otherwise be reset as a dead node / silently skipped. `self` is the

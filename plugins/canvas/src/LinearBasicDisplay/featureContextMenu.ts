@@ -65,6 +65,10 @@ export interface FeatureContextMenuInfo {
 // LinearMultiRowFeatureDisplay/trackMenuItems.ts.
 export interface FeatureMenuSelf extends IAnyStateTreeNode {
   contextMenuInfo: FeatureContextMenuInfo | undefined
+  // what this track holds, singular and lowercase — see the canvas base's
+  // featureNoun getter. Every label below that names the clicked thing
+  // generically reads it, so a variant track says "variant".
+  featureNoun: string
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
   pinnedFeatureIdSet: ReadonlySet<string>
   highlightedFeatureIdSet: ReadonlySet<string>
@@ -98,6 +102,7 @@ export interface FeatureMenuSelf extends IAnyStateTreeNode {
 // menu (Show/hide submenu) and the track menu (Edit filters submenu). Empty
 // when nothing is hidden.
 export function showHiddenFeaturesMenuItems(self: {
+  featureNoun: string
   hiddenFeatureCount: number
   showAllHidden: () => void
 }): MenuItem[] {
@@ -105,7 +110,7 @@ export function showHiddenFeaturesMenuItems(self: {
   return n > 0
     ? [
         {
-          label: `Show ${n} hidden ${pluralize(n, 'feature')}`,
+          label: `Show ${n} hidden ${pluralize(n, self.featureNoun)}`,
           icon: VisibilityIcon,
           onClick: () => {
             self.showAllHidden()
@@ -124,8 +129,10 @@ interface MenuContext {
   // Name each scope by its own type rather than hardcoding
   // "transcript"/"gene": subfeatureInfos carries more than transcripts (a
   // transposon's LTR parts, mature-protein regions), so fixed wording would
-  // mislabel those.
-  featureNoun: string
+  // mislabel those. These name the ANNOTATION under the cursor ("mRNA",
+  // "gene"); `self.featureNoun` names what the track holds generally, and is
+  // what an untyped hit falls back to.
+  hitNoun: string
   subfeatureNoun: string
 }
 
@@ -139,7 +146,7 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
     const ctx: MenuContext = {
       self,
       info,
-      featureNoun: info.item.type ?? 'feature',
+      hitNoun: info.item.type ?? self.featureNoun,
       subfeatureNoun: info.subfeature?.type ?? 'subfeature',
     }
     return [
@@ -170,14 +177,14 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
   } = info
   return [
     {
-      label: 'Open feature details',
+      label: `Open ${self.featureNoun} details`,
       icon: MenuOpenIcon,
       onClick: () => {
         self.selectFeatureById(featureId, undefined, displayedRegionIndex)
       },
     },
     {
-      label: 'Zoom to feature',
+      label: `Zoom to ${self.featureNoun}`,
       icon: CenterFocusStrongIcon,
       onClick: () => {
         // resolved on click, not while building the menu: a refetch can swap
@@ -252,7 +259,7 @@ function highlightItem(
 // single scope, kept as a top-level entry so the common case stays one click
 // away.
 function highlightItems(ctx: MenuContext): MenuItem[] {
-  const { info, featureNoun, subfeatureNoun } = ctx
+  const { self, info, hitNoun, subfeatureNoun } = ctx
   const {
     item: { featureId, startBp, endBp, name },
     subfeature,
@@ -260,9 +267,9 @@ function highlightItems(ctx: MenuContext): MenuItem[] {
   const suffix = name ? ` (${name})` : ''
   const wholeItem = highlightItem(
     ctx,
-    subfeature ? `Whole ${featureNoun}${suffix}` : 'Highlight feature',
+    subfeature ? `Whole ${hitNoun}${suffix}` : `Highlight ${self.featureNoun}`,
     subfeature
-      ? `Remove whole ${featureNoun}${suffix} highlight`
+      ? `Remove whole ${hitNoun}${suffix} highlight`
       : 'Remove highlight',
     { startBp, endBp, name, featureId },
   )
@@ -319,7 +326,7 @@ function showHideItem({ self, info }: MenuContext): MenuItem {
       },
       ...soloItems(self, featureId),
       {
-        label: 'Hide this feature',
+        label: `Hide this ${self.featureNoun}`,
         icon: VisibilityOffIcon,
         onClick: () => {
           self.hideFeature(featureId)
@@ -350,22 +357,23 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
       self.toggleSoloFeature(featureId)
     },
   }
+  const allNoun = pluralize(2, self.featureNoun)
   return self.soloApplied
     ? [
         {
-          label: 'Show all features again',
+          label: `Show all ${allNoun} again`,
           icon: FilterAltOffIcon,
           onClick: () => {
             self.clearSolo()
           },
         },
-        // Removing the only remaining feature would empty the view, which
-        // "Show all features again" above already covers.
+        // Removing the only remaining one would empty the view, which
+        // "Show all ... again" above already covers.
         ...(inSoloList && self.soloFeatureCount > 1 ? [removeFromList] : []),
       ]
     : [
         {
-          label: 'Show only this feature',
+          label: `Show only this ${self.featureNoun}`,
           icon: FilterAltIcon,
           onClick: () => {
             self.soloFeature(featureId)
@@ -409,14 +417,14 @@ function copyItem(
 // subfeature or not — see FeatureMenuSelf) and descends when a subfeature is
 // targeted, the same route selectFeatureById uses.
 function copyJsonItem(
-  { self, info, featureNoun, subfeatureNoun }: MenuContext,
+  { self, info, hitNoun, subfeatureNoun }: MenuContext,
   subfeature: SubfeatureInfo | undefined,
 ): MenuItem {
   const {
     item: { featureId, name },
     displayedRegionIndex,
   } = info
-  const wholeScope = name ?? featureNoun
+  const wholeScope = name ?? hitNoun
   const scope = subfeature
     ? (subfeature.displayLabel ?? `this ${subfeatureNoun}`)
     : wholeScope
