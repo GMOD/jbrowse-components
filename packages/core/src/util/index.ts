@@ -347,15 +347,22 @@ export {
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
+// the window.requestIdleCallback branch is wrapped rather than referenced
+// bare: an unbound reference throws "Illegal invocation" as soon as a bundler
+// emits the call as a namespace member (`ns.rIC(cb)`), which sets `this` to the
+// module namespace object instead of `window`
 export const rIC =
   typeof jest === 'undefined'
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       typeof window !== 'undefined' && window.requestIdleCallback
-      ? window.requestIdleCallback
-      : (cb: () => void) =>
+      ? (cb: () => void) => {
+          window.requestIdleCallback(cb)
+        }
+      : (cb: () => void) => {
           setTimeout(() => {
             cb()
           }, 1)
+        }
     : (cb: () => void) => {
         cb()
       }

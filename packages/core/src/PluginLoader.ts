@@ -91,15 +91,21 @@ function hasImportScripts(
 
 async function loadScript(scriptUrl: string, integrity?: string) {
   const scope = globalThis
-  if (!isInWebWorker()) {
-    return promisifiedLoadScript(scriptUrl, integrity)
-  } else if (hasImportScripts(scope)) {
-    scope.importScripts(scriptUrl)
-    return
+  if (isInWebWorker()) {
+    // `'importScripts' in scope` is true in a module worker too — the function
+    // is present but throws on call — so the capability has to be probed by
+    // calling it, with dynamic import as the module-worker path.
+    if (hasImportScripts(scope)) {
+      try {
+        scope.importScripts(scriptUrl)
+      } catch {
+        await import(/* @vite-ignore */ /* webpackIgnore:true */ scriptUrl)
+      }
+    } else {
+      await import(/* @vite-ignore */ /* webpackIgnore:true */ scriptUrl)
+    }
   } else {
-    throw new Error(
-      'cannot figure out how to load external JS scripts in this environment',
-    )
+    await promisifiedLoadScript(scriptUrl, integrity)
   }
 }
 
