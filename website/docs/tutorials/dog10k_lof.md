@@ -158,47 +158,28 @@ two agree at r = 0.97 with no bias. That painting is in the config as
 dogs have CRAMs is an accident of what the share published, so the picture
 invites a question about those breeds that the data cannot answer.
 
-<Figure caption="Copy number over CYP1A2, one row per animal, each 5 kb window colored by its rounded copy number and the rows sorted by the copy number each animal carries over the gene. The collection is split into its two halves and drawn at the same height so the lanes are comparable: wild canids above, domestic dogs below. Over the gene the wild lane is mostly red where the dog lane is mostly pale. Grey is copy number two, so the expansion is the only ink and the flanks stay grey in both. The stripe in the top lane separates wolves (black) from the four coyotes (orange), which sit at the bottom of it." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2, each 5 kb window colored by its rounded call, grey being two copies. Above, named animals: four wolves and every Golden Retriever, Labrador Retriever and Boxer in the collection. Below, all 1,987 canids, sorted by what each carries over the gene. Every Golden is expanded, every Boxer stays grey, the Labradors split." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
-Sorting the rows rather than clustering them is what makes the figure readable.
-Clustering answers "how many distinct profiles are there", which needs a
-dendrogram a reader can follow — and at a third of a pixel a row there is no
-such thing. Sorting on the copy number each dog carries over the gene answers
-"how is copy number distributed across the collection" instead, and the answer
-is the picture: five bands with sharp edges rather than a gradient, so a dog's
-copy number here is closer to a genotype than to a continuous measurement. The
-sort is one click — right-click the column you want to sort on and pick **Sort
-rows by color here** — or the `sortRowsBy` field in the config; clustering is
-still on the track menu if the profile question is the one you want.
+The upper lane is whole groups, not picked animals: every Golden Retriever,
+Labrador Retriever and Boxer in the collection, plus the four wolves the figure
+above draws. Every Golden carries the expansion, every Boxer carries two copies,
+and the Labradors split one dog to the next: a genotype here is a breed-level
+fact in some breeds and segregating in others. Row labels come from the sample
+column, the order from `rowOrder`. The wolves rest on callset depth alone, since
+none of the dogs with published reads is a wolf.
 
-Splitting the collection into two lanes is what makes the comparison readable.
-Wild canids are a few dozen rows against nearly two thousand, so inside a single
-track they occupy a thirtieth of the height — findable, but not a pattern anyone
-can see, because "is this group redder than the rest" is a question about the
-proportion of each group that is red and no reader can judge that between bands
-of such different heights. Two lanes at the same pixel height ask both the same
-question. The two files partition the collection exactly, so neither lane
-contains the other and together they are still every canid.
+The lower lane is the same estimate over every canid, sorted by what each one
+carries over the gene. Right-click a column and pick **Sort rows by color
+here**, or set `sortRowsBy`. Sorted rather than clustered: a dendrogram needs
+rows a reader can follow and these are a third of a pixel each, where what
+survives is the distribution. It comes out as bands with sharp edges rather than
+a gradient.
 
-Row labels are impossible in the lower lane — a fraction of a pixel fits no text
-— so the sidebar carries a color stripe instead of names, set by `rowGroups`, a
-regex on the row name. In the upper lane there is room for it to do real work,
-separating the wolves from the coyotes. Mark the small group rather than the big
-one: each mark is floored to a pixel so it stays visible, which makes it taller
-than the row it points at, so a group holding a large share of the rows would
-paint most of the stripe.
-
-Treat the wolf result as suggestive rather than settled. It rests on the
-callset-depth estimate alone, because none of the dogs with published reads is a
-wolf, so it is the one claim here with no independent measurement behind it.
-
-One number does not reproduce here. This estimate puts 80% of the collection at
-three or more copies where the paper reports 49.7%, and the two independent
-depth sources agree with each other too closely for that to be measurement
-noise. The difference is which interval is being counted: the paper's copy
-number comes from QuicK-mer2 over an element whose extent was never published,
-while this one is measured over the windows the collection itself puts above
-two.
+One number does not reproduce: this estimate puts 80% of the collection at three
+or more copies where the paper reports 49.7%, and the two depth sources agree
+too closely for that to be noise. The difference is which interval is counted:
+QuicK-mer2 over an element whose extent was never published, against the windows
+the collection itself puts above two.
 
 ## Reproduce it end to end
 

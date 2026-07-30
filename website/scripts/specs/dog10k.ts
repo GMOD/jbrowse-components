@@ -648,25 +648,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // resolve into bands with sharp edges, and that the edges are sharp is itself
   // the finding (a genotype, not a continuous measurement).
   //
-  // The collection split into its two halves, one lane each, at the same pixel
-  // height. The comparison cannot be made inside a single lane: wild canids are
-  // a few dozen rows against nearly two thousand, so however they are marked or
-  // grouped there they occupy a thirtieth of the height, and "is this group
-  // redder than the rest" is a question about the proportion of each group that
-  // is red -- unjudgeable between bands of such different heights. Equal lanes
-  // ask both the same question, "how much of this lane is red", and the eye can
-  // answer it.
+  // Named animals above the collection, the paper's own pairing for the
+  // neighbouring SLC28A3 expansion (Fig 11): labelled rows thick enough to read,
+  // then the distribution over every sample.
   //
-  // Split rather than group-against-collection: the earlier version put the wild
-  // canids against the whole collection, which contains them, so the contrast
-  // was against a set that included the thing being contrasted. These two files
-  // partition the collection exactly (the build script asserts the row counts
-  // add up), so neither lane contains the other and together they are still
-  // every canid.
+  // The upper lane is whole groups -- every Golden Retriever, Labrador Retriever
+  // and Boxer in the collection, plus the four Greek wolves the nonsense-allele
+  // figure draws -- so "every animal of this group carries it" is a claim the
+  // panel can make. `rowOrder` runs the groups high to low.
   //
-  // The counts are in the track names because the lanes deliberately hold wildly
-  // different numbers of animals, and without them the scale difference reads as
-  // an accident.
+  // It replaced a wild-versus-domestic split (67 wild canids against 1,920 dogs,
+  // equal pixel heights), which was legible and showed nothing: half the dogs
+  // carry three or more copies too, so both lanes came out mostly red. The
+  // structure in this data is per-breed.
   {
     mode: 'url',
     name: 'dog10k-cyp1a2-cohort-copy-number',
@@ -680,19 +674,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 90,
         },
         {
-          // The wild canids at the same pixel height as the whole collection
-          // below, which is the only way the two are comparable: they are a few
-          // dozen rows against nearly two thousand, so inside one track they
-          // occupy a thirtieth of the height and "is this group redder" cannot
-          // be judged. Equal heights put the same question to both lanes as
-          // "how much of this lane is red", which is answerable by eye.
-          trackId: 'dog10k_cyp1a2_wild_cn',
+          // 21 rows over 380px, so each row is thick enough to carry its own
+          // label and the element's extent in one animal is readable -- the
+          // thing the collection lane below structurally cannot show.
+          trackId: 'dog10k_cyp1a2_breed_cn',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 300,
-          sortRowsBy: { refName: 'chr30', pos: 38_262_000 },
+          height: 380,
         },
         {
-          trackId: 'dog10k_cyp1a2_domestic_cn',
+          trackId: 'dog10k_cyp1a2_cohort_cn',
           type: 'LinearMultiRowFeatureDisplay',
           height: 300,
           // Sorted by the copy number each dog carries over the element rather
@@ -711,7 +701,54 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="multirow-row-labels"]',
     readyTimeout: 120000,
     settleMs: 8000,
-    // gene track plus the two 300px lanes, their headers, and the copy-number key
+    // gene track, the 380px panel and the 300px collection lane, their headers,
+    // and the copy-number key
+    viewportHeight: 1045,
+  },
+
+  // The same estimate at SLC28A3, which is Fig 11 of the same paper: a
+  // duplication over a gemcitabine transporter that every Grand Basset Griffon
+  // Vendeen carries and the basset hounds segregate for. Two lanes, as above.
+  //
+  // Where CYP1A2 is carried by most of the collection, this one is rare -- under
+  // 5% of canids -- so the collection lane below is a grey field with a red band
+  // at the top of the sort rather than a ramp, and the panel is what carries the
+  // finding. That contrast is the reason both loci are drawn.
+  {
+    mode: 'url',
+    name: 'dog10k-slc28a3-copy-number',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr1:75,540,000-75,760,000',
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 90,
+        },
+        {
+          // 14 rows over 300px: every animal of the three breeds, each row thick
+          // enough for its own label and for the element's edges in that animal.
+          trackId: 'dog10k_slc28a3_breed_cn',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 300,
+        },
+        {
+          trackId: 'dog10k_slc28a3_cohort_cn',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 300,
+          // Inside the duplication and clear of both its edges, so the sort
+          // separates carriers from the rest on one window rather than on where
+          // an animal's element happens to start.
+          sortRowsBy: { refName: 'chr1', pos: 75_660_000 },
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readySelector: '[data-testid="multirow-row-labels"]',
+    readyTimeout: 120000,
+    settleMs: 8000,
+    // gene track, two 300px lanes, their headers, and the copy-number key
     viewportHeight: 965,
   },
 ]

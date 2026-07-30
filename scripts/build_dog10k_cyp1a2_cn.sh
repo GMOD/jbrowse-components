@@ -452,37 +452,120 @@ PY
 bgzip -f dog10k_cyp1a2_cohort_cn.bed
 tabix -f -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 
-# ── The wild canids on their own ────────────────────────────────────────────
-# The same rows, restricted to Canis lupus (CLUP) and Canis latrans (CLAT).
+# ── A few named animals, whole groups at a time ─────────────────────────────
+# The paper's presentation of the neighbouring SLC28A3 expansion (Meadows et al.
+# 2023, Fig 11a) is the complement to the collection painting: nine named
+# animals, rows thick enough that the element's extent in one of them is
+# readable. This writes that panel out of the same file -- a subset of its rows
+# with the sample column rewritten to a label.
 #
-# This exists because the comparison cannot be made inside the collection track.
-# Wild canids are a few dozen rows against nearly two thousand, so however they
-# are marked or grouped there they occupy a thirtieth of the height, and "is
-# this group redder than the rest" is a question about the *proportion* of each
-# group that is red -- which a reader cannot judge between two bands whose
-# heights differ by that much. Given its own track at the same pixel height, the
-# small group is drawn at the same scale as the large one and the two are
-# directly comparable. No new measurement: it is a strict subset of the file
-# written above.
-# The split is exact and exhaustive -- every row of the collection lands in one
-# file or the other -- so the two together are the collection and neither
-# contains the other. Painted as two lanes of equal pixel height, "how much of
-# this lane is red" is then the same question asked of both.
-zcat dog10k_cyp1a2_cohort_cn.bed.gz \
-  | awk -F'\t' '$10 ~ /^(CLUP|CLAT)/' > dog10k_cyp1a2_wild_cn.bed
-zcat dog10k_cyp1a2_cohort_cn.bed.gz \
-  | awk -F'\t' '$10 !~ /^(CLUP|CLAT)/' > dog10k_cyp1a2_domestic_cn.bed
-for part in wild domestic; do
-  bgzip -f "dog10k_cyp1a2_${part}_cn.bed"
-  tabix -f -p bed "dog10k_cyp1a2_${part}_cn.bed.gz"
-  printf '%s %s rows across %s animals\n' \
-    "$(zcat "dog10k_cyp1a2_${part}_cn.bed.gz" | wc -l)" "$part" \
-    "$(zcat "dog10k_cyp1a2_${part}_cn.bed.gz" | cut -f10 | sort -u | wc -l)"
-done
+# Whole groups, not picked animals: every canid of that breed in the collection,
+# which is what makes "every one of these carries it" a statement the panel can
+# support. Which groups comes off the per-breed table this prints -- two where
+# the whole group is expanded, one that segregates, one at copy number two
+# throughout.
+#
+# Sample-id prefix, row label, and how many animals to take (0 = all), in the
+# order the panel stacks them. The wolves are capped to the four the SNV figure
+# draws, so both figures show the same wolves.
+PANEL_GROUPS="
+CLUPGR	Wolf	4
+GOLD	Golden Retriever	0
+LABR	Labrador Retriever	0
+BOXR	Boxer	0
+"
+
+PANEL_GROUPS="$PANEL_GROUPS" python3 - "$BIN" <<'PY'
+import collections, gzip, json, os, statistics, sys
+
+BIN = int(sys.argv[1])
+groups = [line.split('\t') for line in
+          os.environ['PANEL_GROUPS'].strip().split('\n')]
+
+# Windows rather than the merged segments the file carries, so a panel row can be
+# re-merged after the rows around it are dropped. The color travels with the copy
+# number instead of being recomputed, which is what keeps the panel and the
+# collection painting the same picture of the same animals.
+windows = collections.defaultdict(dict)
+for line in gzip.open('dog10k_cyp1a2_cohort_cn.bed.gz', 'rt'):
+    f = line.split('\t')
+    chrom = f[0]
+    for w in range(int(f[1]), int(f[2]), BIN):
+        windows[f[9]][w] = (int(f[10]), f[8])
+
+# The element is where the collection itself sits above two, the same definition
+# the collection painting reports its percentage over.
+median = {w: statistics.median([row[w][0] for row in windows.values()
+                                if w in row])
+          for w in sorted({w for row in windows.values() for w in row})}
+element = [w for w, m in median.items() if m >= 2.5]
+over = {s: max(cn for w, (cn, _) in row.items() if w in element)
+        for s, row in windows.items()}
+
+# Every breed and population with enough animals to say anything about, and what
+# each animal carries over the element. This is the evidence for which groups the
+# panel draws, so it is printed rather than left in a comment: a breed whose
+# animals are all expanded, or all at two, is a statement the panel can make, and
+# this is what says which breeds those are.
+breed = {}
+for i, line in enumerate(open('samples.txt')):
+    f = line.rstrip('\n').split('\t')
+    if i:
+        breed[f[0]] = f[1]
+by_breed = collections.defaultdict(list)
+for sample in windows:
+    by_breed[breed[sample]].append(over[sample])
+print()
+print('copy number over the element per breed or population (>= 5 animals):')
+for name, values in sorted(by_breed.items(),
+                           key=lambda kv: -statistics.mean(kv[1])):
+    if len(values) >= 5:
+        print('  %-34s n=%-4d %s' % (name, len(values), sorted(values)))
+
+rows = []
+order = []
+for prefix, label, limit in groups:
+    samples = sorted(s for s in windows if s.startswith(prefix))
+    samples = samples[:int(limit)] if int(limit) else samples
+    if not samples:
+        print('no samples matched %s' % prefix, file=sys.stderr)
+        sys.exit(1)
+    for i, sample in enumerate(samples, 1):
+        # Numbered within the group rather than carrying the Dog10K id, so the
+        # row labels read the same as the SNV figure's, where these breeds also
+        # appear. Gaps in the ids (there is no GOLD000006) close.
+        row_label = '%s %d' % (label, i)
+        order.append(row_label)
+        segment = None
+        for w in sorted(windows[sample]):
+            cn, color = windows[sample][w]
+            if segment and segment[1] == w and segment[3] == cn:
+                segment[1] = w + BIN
+            else:
+                if segment:
+                    rows.append(segment)
+                segment = [w, w + BIN, color, cn, row_label]
+        rows.append(segment)
+
+rows.sort(key=lambda r: r[0])
+with open('dog10k_cyp1a2_breed_cn.bed', 'w') as fh:
+    for start, end, color, cn, row_label in rows:
+        fh.write('\t'.join([chrom, str(start), str(end), 'CN %d' % cn, '0', '.',
+                            str(start), str(end), color, row_label,
+                            str(cn)]) + '\n')
+print()
+print('%d painted segments across the %d animals of the panel'
+      % (len(rows), len(order)))
+print('rowOrder slot for the panel display, paste into the track config:')
+print(json.dumps(order, indent=2))
+PY
+
+bgzip -f dog10k_cyp1a2_breed_cn.bed
+tabix -f -p bed dog10k_cyp1a2_breed_cn.bed.gz
 
 echo
 echo "Wrote $(pwd)/dog10k_cyp1a2_cn.bed.gz, one painted row per CRAM dog,"
 echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset,"
-echo "     $(pwd)/dog10k_cyp1a2_wild_cn.bed.gz, the wild canids of that file."
+echo "     $(pwd)/dog10k_cyp1a2_breed_cn.bed.gz, the named panel of that file."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
-echo "check its legend slot against the block printed above."
+echo "check its legend and rowOrder slots against the blocks printed above."

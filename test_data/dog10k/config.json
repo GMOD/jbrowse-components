@@ -160,6 +160,7 @@
           "displayId": "dog10k_cyp1a2_cohort_cn-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+          "showLegend": false,
           "legend": [
             {
               "label": "CN 0",
@@ -188,26 +189,6 @@
             {
               "label": "CN 6+",
               "color": "rgb(103,0,31)"
-            },
-            {
-              "label": "Wolf",
-              "color": "rgb(0,0,0)"
-            },
-            {
-              "label": "Coyote",
-              "color": "rgb(230,159,0)"
-            }
-          ],
-          "rowGroups": [
-            {
-              "match": "^CLUP",
-              "group": "Wolf",
-              "color": "rgb(0,0,0)"
-            },
-            {
-              "match": "^CLAT",
-              "group": "Coyote",
-              "color": "rgb(230,159,0)"
             }
           ]
         }
@@ -215,8 +196,8 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "dog10k_cyp1a2_wild_cn",
-      "name": "CYP1A2 copy number, wild canids (67 wolves and coyotes)",
+      "trackId": "dog10k_cyp1a2_breed_cn",
+      "name": "CYP1A2 copy number, named animals",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
@@ -234,32 +215,93 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_cyp1a2_wild_cn.bed.gz"
+        "uri": "dog10k_cyp1a2_breed_cn.bed.gz"
       },
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "dog10k_cyp1a2_wild_cn-LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_cyp1a2_breed_cn-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "showLegend": true,
-          "rowGroups": [
-            {
-              "match": "^CLUP",
-              "group": "Wolf",
-              "color": "rgb(0,0,0)"
-            },
-            {
-              "match": "^CLAT",
-              "group": "Coyote",
-              "color": "rgb(230,159,0)"
-            }
+          "rowOrder": [
+            "Wolf 1",
+            "Wolf 2",
+            "Wolf 3",
+            "Wolf 4",
+            "Golden Retriever 1",
+            "Golden Retriever 2",
+            "Golden Retriever 3",
+            "Golden Retriever 4",
+            "Golden Retriever 5",
+            "Golden Retriever 6",
+            "Labrador Retriever 1",
+            "Labrador Retriever 2",
+            "Labrador Retriever 3",
+            "Labrador Retriever 4",
+            "Labrador Retriever 5",
+            "Labrador Retriever 6",
+            "Boxer 1",
+            "Boxer 2",
+            "Boxer 3",
+            "Boxer 4",
+            "Boxer 5"
           ],
           "legend": [
             {
-              "label": "CN 0",
-              "color": "rgb(33,102,172)"
+              "label": "CN 2",
+              "color": "rgb(224,224,224)"
             },
+            {
+              "label": "CN 3",
+              "color": "rgb(244,165,130)"
+            },
+            {
+              "label": "CN 4",
+              "color": "rgb(214,96,77)"
+            },
+            {
+              "label": "CN 5",
+              "color": "rgb(178,24,43)"
+            },
+            {
+              "label": "CN 6+",
+              "color": "rgb(103,0,31)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_slc28a3_cohort_cn",
+      "name": "SLC28A3 copy number across the Dog10K collection (callset depth)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "copyNumber"
+        ],
+        "uri": "dog10k_slc28a3_cohort_cn.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_slc28a3_cohort_cn-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+          "showLegend": false,
+          "legend": [
             {
               "label": "CN 1",
               "color": "rgb(146,197,222)"
@@ -283,14 +325,6 @@
             {
               "label": "CN 6+",
               "color": "rgb(103,0,31)"
-            },
-            {
-              "label": "Wolf",
-              "color": "rgb(0,0,0)"
-            },
-            {
-              "label": "Coyote",
-              "color": "rgb(230,159,0)"
             }
           ]
         }
@@ -298,8 +332,8 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "dog10k_cyp1a2_domestic_cn",
-      "name": "CYP1A2 copy number, domestic dogs (1920)",
+      "trackId": "dog10k_slc28a3_breed_cn",
+      "name": "SLC28A3 copy number, named animals",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
@@ -317,15 +351,52 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_cyp1a2_domestic_cn.bed.gz"
+        "uri": "dog10k_slc28a3_breed_cn.bed.gz"
       },
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "dog10k_cyp1a2_domestic_cn-LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_slc28a3_breed_cn-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "showLegend": false
+          "rowOrder": [
+            "Grand Basset Griffon Vendeen 1",
+            "Grand Basset Griffon Vendeen 2",
+            "Grand Basset Griffon Vendeen 3",
+            "Grand Basset Griffon Vendeen 4",
+            "Grand Basset Griffon Vendeen 5",
+            "Basset Hound 1",
+            "Basset Hound 2",
+            "Basset Hound 3",
+            "Basset Hound 4",
+            "Basset Hound 5",
+            "Basset Hound 6",
+            "Basset Hound 7",
+            "German Shepherd Dog 1",
+            "German Shepherd Dog 2"
+          ],
+          "legend": [
+            {
+              "label": "CN 2",
+              "color": "rgb(224,224,224)"
+            },
+            {
+              "label": "CN 3",
+              "color": "rgb(244,165,130)"
+            },
+            {
+              "label": "CN 4",
+              "color": "rgb(214,96,77)"
+            },
+            {
+              "label": "CN 5",
+              "color": "rgb(178,24,43)"
+            },
+            {
+              "label": "CN 6+",
+              "color": "rgb(103,0,31)"
+            }
+          ]
         }
       ]
     },

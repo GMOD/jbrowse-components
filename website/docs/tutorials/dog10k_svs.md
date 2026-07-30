@@ -190,6 +190,26 @@ The shipped slice keeps only these two variants. The locus carries seven others,
 one of which overlaps the first SINE, but a per-sample panel of all of them is
 unreadable and adds nothing the two do not already show.
 
+## Copy number, at SLC28A3
+
+A duplication is the one kind of variant a genotype column reads badly: two
+copies and four copies are both "present". The Dog10K paper reports one over
+_SLC28A3_, the transporter that moves gemcitabine into cells, carried by every
+Grand Basset Griffon Vendéen it sequenced. Its copy-number estimates were never
+released, but the SNV callset carries a per-sample `DP` at every site, and the
+ratio of a dog's depth over the element to its depth over the flanks is a copy
+number for all 1,987 canids. [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof)
+builds that estimate and validates it against read depth.
+
+<Figure caption="Copy number over SLC28A3 from callset depth, each 5 kb window colored by its rounded call, grey being two copies. Above, every Grand Basset Griffon Vendéen, Basset Hound and German Shepherd in the collection. Below, all 1,987 canids sorted by copy number over the duplication. Every GBGV carries it, three of the seven Basset Hounds carry it, and the collection lane is grey apart from the band at the top." src="/img/dog10k-slc28a3-copy-number.png" />
+
+The element runs wider than the gene, and its edges land where the SV callset
+puts a duplication. Under 5% of the collection carry it, which is why the lower
+lane is a grey field: at this locus the named panel is the finding and the
+distribution is the context. The white column inside it is a window the whole
+collection reads below two copies, which is a property of the reference rather
+than of any dog, so it is dropped instead of painted.
+
 ## Where to go next
 
 The same recipe reaches every other variant in the callset. Schall and Kidd's
@@ -208,6 +228,12 @@ bash build_dog10k_nhej1_sv.sh   # writes ./dog10k_sv_build/
 It downloads the Dog10K sample table, derives the breed lists from it, slices
 the locus out of the Zenodo genotype VCF, and prints the deletion's genotypes so
 you can check the figure against the data before trusting either.
+
+[`build_dog10k_slc28a3_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_slc28a3_cn.sh)
+builds the copy-number tracks the same way, and prints each panel animal's copy
+number over the duplication. Its first route needs only `bcftools`; the second
+re-measures six of those animals from their SRA runs, which needs an aligner and
+about 35 GB of scratch.
 
 ## See also
 
