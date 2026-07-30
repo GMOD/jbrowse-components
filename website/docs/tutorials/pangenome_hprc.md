@@ -162,6 +162,29 @@ refName and has none, so no coloring will put those loops on a GRCh38 axis as
 segments. The ramp shows where each one attaches; the bubble lane and the
 [allele inventory](#the-allele-inventory) give their lengths.
 
+Two things control whether that picture is readable, and one of them is not
+obvious. **Bubble spread**, in the graph's settings menu, sets a floor on how
+long a node is drawn. The force engine comes from Bandage, whose graphs are
+assembled contigs of kilobases to megabases, so its own floor is tiny; a
+pangenome allele is a few bases, which clamps to a stub whose two arms land
+inside one node thickness of each other, and the whole window draws as a single
+thread. **Open bubbles** gives every allele a drawn length. The cost is that
+below the floor a node no longer draws proportional to its length, so read
+lengths off the anchored layout or the
+[allele inventory](#the-allele-inventory), not off this picture.
+
+Chromosome size does not enter into any of this. The amylase locus sits on chr1,
+the longest human chromosome, and the graph holds 464 haplotypes of it:
+
+<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The graph is cut from two tabix indexes, so 248 Mb of chromosome costs nothing: this window is 63 nodes. Bubble spread is on Open bubbles, which is what makes each alternative visible as a lens rather than a kink in the thread. Colors are reference position in both panels, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_amylase_graph.png" />
+
+The graph's own bubble index calls the bubble spanning AMY1A and AMY1B 95
+segments and inversion-flagged, with alleles from 27 kb to 317 kb against the
+121 kb of reference they replace. Copy number is not among those numbers, for
+the reason [above](#open-a-locus-as-a-graph): minigraph records the distinct
+sequence a bubble can hold, not how many times a haplotype repeats it. Length is
+the proxy, and the shape of the alternatives is what the graph adds.
+
 The **Layout** dropdown trades that picture for an **anchored** layout, which
 puts the x axis back on GRCh38:
 

@@ -351,6 +351,18 @@ const MHC_REGION = {
 // More nodes buys no density, only smaller features — at 3.5 Mb the loops that
 // carry the figure are 5 px specks. Density comes from the row layouts instead,
 // whose height grows with the data.
+// The amylase locus, framed on the inversion-flagged bubble the scan over
+// hprc-v2.0-mc-grch38.bubbles.bed.gz turns up at chr1:103,611,080-103,732,636,
+// with a little room either side so its flanks are on screen. 34 backbone
+// segments and 113 links here, pulling 101 distinct nodes.
+const AMY_WINDOW = 'chr1:103,600,000-103,745,000'
+const AMY_REGION = {
+  refName: 'chr1',
+  assemblyName: 'hg38',
+  start: 103600000,
+  end: 103745000,
+}
+
 const C4_WINDOW = 'chr6:31,980,000-32,050,000'
 const C4_REGION = {
   refName: 'chr6',
@@ -992,6 +1004,13 @@ export const graphSpecs: ScreenshotSpec[] = [
           // one coloring both panels can compute (referencePositionColor).
           layoutMode: 'force',
           colorScheme: 'reference-position',
+          // Without this the 30 nodes draw as one thread with the bubbles
+          // collapsed inside it: Bandage's own floor on a node's drawn length
+          // is 5 units, which suits kb-to-Mb assembly contigs, and a pangenome
+          // allele clamps to a stub whose two arms land inside one node
+          // thickness of each other. See the plugin's bubbleSpreads.ts for the
+          // measurement.
+          bubbleSpread: 'open',
         },
       ],
     }),
@@ -1008,6 +1027,72 @@ export const graphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
   },
 
+  // The amylase locus on chr1, which is the figure for "this scales to a whole
+  // chromosome". chr1 is 248 Mb and the graph holds 464 haplotypes of it; the
+  // view fetches this 145 kb window out of two tabix indexes and draws 101
+  // nodes, so nothing about the chromosome's size reaches the drawing. It is
+  // also the locus where the graph's own bubble index disagrees with the
+  // tutorial's prose: `hprc-v2.0-mc-grch38.bubbles.bed.gz` reports the bubble at
+  // chr1:103,611,080-103,732,636 as 95 segments, alleles from 26,889 to 316,616
+  // bp, **and inversion-flagged** — 246 of the graph's 130,510 bubbles carry
+  // that flag and this is one of the largest.
+  //
+  // Force-directed with the bubbles opened, which is the whole point of the
+  // pairing: AMY1 copy number is what the graph cannot state (minigraph records
+  // the distinct sequence a bubble can hold, not how many times a haplotype
+  // repeats it), so what is worth drawing here is the *shape* of the
+  // alternatives rather than an x axis. The bubbles lane above carries the
+  // length range that stands in for copy number.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_amylase_graph',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: AMY_WINDOW,
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            // No bubbles lane. Three bubbles land in this window and each label
+            // is two lines ending in a combinatorial path count (269,401 through
+            // the amylase bubble alone), so the right-hand two are cut off
+            // *horizontally* and the lane raises a scrollbar — the same reason
+            // hprc_mhc_anchored dropped it, and no height fixes it. A
+            // `labels.description` jexl on the display does not override the
+            // adapter's own second line, tried. The numbers are in the caption,
+            // where they are selectable text.
+            hprcSegmentsLane(AMY_REGION),
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: AMY_REGION,
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+          // 'open', not 'wide': at 63 nodes the wider floor grows the whole
+          // drawing faster than it separates the bubbles, so zoom-to-fit takes
+          // it to 8% and the lenses close again. 'wide' is for a window of a
+          // dozen.
+          bubbleSpread: 'open',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    viewportHeight: 1090,
+    hideTooltip: true,
+  },
   // The KIV-2 repeat in LPA, picked out of the bubble index rather than off a
   // locus list. Every record in hprc-v2.0-mc-grch38.bubbles.bed.gz, ranked for a
   // bubble that is deeply traversed and still few enough segments to follow:
