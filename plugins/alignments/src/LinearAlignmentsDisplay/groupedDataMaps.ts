@@ -91,17 +91,45 @@ export function anyGroupHasSashimiDownArcs(
   mode: SashimiArcsMode,
   hidden?: ReadonlySet<string>,
 ) {
-  return mode === 'up'
-    ? false
-    : mode === 'down'
-      ? anyGroupHasSashimi(rpcDataMap, minSashimiScore, hidden)
-      : anyGroupHasCrossingSashimi(rpcDataMap, minSashimiScore, hidden)
+  return (
+    groupsWithSashimiDownArcs(rpcDataMap, minSashimiScore, mode, hidden).size >
+    0
+  )
 }
 
-// 'auto' pools a group's junctions across its regions before assigning sides, so
-// the crossing scan pools the same way — a pair interleaving across two
-// collapsed-intron regions of one group still reserves the strip.
-function anyGroupHasCrossingSashimi(
+// Which group keys put a junction in the strip below coverage, i.e. which lanes
+// the strip is worth reserving for. The per-lane form of
+// `anyGroupHasSashimiDownArcs` above, so a grouping where only one lane has
+// junctions doesn't hand every other lane an empty strip (the arc band's
+// `hasArcs` does the same for read connections).
+export function groupsWithSashimiDownArcs(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  minSashimiScore: number,
+  mode: SashimiArcsMode,
+  hidden?: ReadonlySet<string>,
+) {
+  const out = new Set<string>()
+  if (mode !== 'up') {
+    for (const [key, spans] of sashimiSpansByGroup(
+      rpcDataMap,
+      minSashimiScore,
+      hidden,
+    )) {
+      // 'down' reserves for any surviving junction; 'auto' only for a lane whose
+      // junctions cross, since that's the only case it sends one downward.
+      if (mode === 'down' ? spans.length > 0 : hasCrossingSpans(spans)) {
+        out.add(key)
+      }
+    }
+  }
+  return out
+}
+
+// Each group's surviving junctions as screen-order spans. 'auto' pools a group's
+// junctions across its regions before assigning sides, so this pools the same
+// way — a pair interleaving across two collapsed-intron regions of one group
+// still reserves the strip.
+function sashimiSpansByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   minSashimiScore: number,
   hidden?: ReadonlySet<string>,
@@ -117,7 +145,7 @@ function anyGroupHasCrossingSashimi(
       }
     }
   }
-  return [...spansByGroup.values()].some(hasCrossingSpans)
+  return spansByGroup
 }
 
 // A group's stable identity: its sort key and human-readable label.

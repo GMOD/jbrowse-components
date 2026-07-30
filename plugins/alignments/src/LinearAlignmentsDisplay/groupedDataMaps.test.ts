@@ -4,6 +4,7 @@ import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   anyGroupHasSashimi,
   anyGroupHasSashimiDownArcs,
+  groupsWithSashimiDownArcs,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
@@ -400,4 +401,53 @@ test('anyGroupHasSashimiDownArcs: down reserves for any surviving junction, up n
   expect(anyGroupHasSashimiDownArcs(m, 0, 'down')).toBe(true)
   expect(anyGroupHasSashimiDownArcs(m, 4, 'down')).toBe(false)
   expect(anyGroupHasSashimiDownArcs(m, 0, 'up')).toBe(false)
+})
+
+// The per-lane form: a lane with no junction must be named as not needing the
+// strip, so `computeStackedSections` can drop it rather than leaving dead space.
+test('groupsWithSashimiDownArcs: names only the lanes needing the strip', () => {
+  const m = new Map([
+    [
+      0,
+      grouped([
+        { key: 'has', data: junctionData([[100, 700, 3]]) },
+        { key: 'none', data: junctionData([]) },
+        { key: 'filtered', data: junctionData([[200, 400, 1]]) },
+      ]),
+    ],
+  ])
+  expect([...groupsWithSashimiDownArcs(m, 2, 'down')]).toEqual(['has'])
+  expect([...groupsWithSashimiDownArcs(m, 0, 'down')]).toEqual([
+    'has',
+    'filtered',
+  ])
+  expect(groupsWithSashimiDownArcs(m, 0, 'up').size).toBe(0)
+})
+
+test('groupsWithSashimiDownArcs: auto names only the lane whose junctions cross', () => {
+  const m = new Map([
+    [
+      0,
+      grouped([
+        { key: 'crossing', data: junctionData(crossing) },
+        {
+          key: 'nested',
+          data: junctionData([
+            [100, 700, 9],
+            [200, 400, 9],
+          ]),
+        },
+      ]),
+    ],
+  ])
+  expect([...groupsWithSashimiDownArcs(m, 0, 'auto')]).toEqual(['crossing'])
+})
+
+test('groupsWithSashimiDownArcs: a hidden lane is never named', () => {
+  const m = new Map([
+    [0, grouped([{ key: 'self', data: junctionData([[100, 700, 9]]) }])],
+  ])
+  expect(groupsWithSashimiDownArcs(m, 0, 'down', new Set(['self'])).size).toBe(
+    0,
+  )
 })

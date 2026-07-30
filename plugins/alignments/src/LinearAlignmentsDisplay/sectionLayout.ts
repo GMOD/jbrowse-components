@@ -16,10 +16,18 @@ export interface Section {
   coverageHeight: number
   arcBandTop: number
   arcBandHeight: number
+  // Whether this section reserved a strip of its own for arcs (vs overlaying
+  // coverage, or having no arcs at all). Drives the arc-resize handle, which
+  // must not appear on a lane whose strip was dropped — it would land on the
+  // coverage handle's pixel.
+  hasArcsBand: boolean
   // Arcs point down (own band below coverage) vs up (overlay coverage). Carried
   // so the renderers anchor the arc Y-scale the same way per section.
   arcDown: boolean
   sashimiBandTop: number
+  // Whether this section reserved the sashimi strip. Same story as
+  // `hasArcsBand`: a lane with no down-bound junction has no strip to resize.
+  hasSashimiBand: boolean
   pileupTop: number
   pileupHeight: number
   // Laid-out row count for this group (== max rows across its visible regions).
@@ -36,6 +44,16 @@ export interface SectionGroupInput {
   key: string
   label: string
   maxY: number
+  // Whether this group's arc feed draws anything (`anyArcsDrawn`). A lane with
+  // no arcs reserves no arc band and gets no draw band, so its pileup sits right
+  // under its coverage rather than below an empty strip — the visible symptom
+  // when grouping splits reads into lanes only some of which have junctions.
+  hasArcs: boolean
+  // The same question for the sashimi strip: whether this group has a junction
+  // bound for it (`groupsWithSashimiDownArcs`). Both are the raw per-lane data
+  // signals — whether either strip is actually reserved also depends on the
+  // display settings, which `reservesArcsBand`/`reservesSashimiBand` resolve.
+  hasSashimiDownArcs: boolean
 }
 
 // Reserved vertical offsets for the bands stacked below a section's coverage,
@@ -96,11 +114,22 @@ export interface BelowCoverageBandsInput {
   hasSashimiDownArcs: boolean
 }
 
+// Whether the sashimi junctions reserve the strip below coverage: only with the
+// coverage band they hang off, and only when a junction is actually bound for it.
+// The single spelling of that rule, read by `belowCoverageBandsGeometry` (global
+// geometry, fit budget) and `computeStackedSections` (per-section stacking).
+export function reservesSashimiBand(s: {
+  showSashimiArcs: boolean
+  showCoverage: boolean
+  hasSashimiDownArcs: boolean
+}) {
+  return s.showSashimiArcs && s.showCoverage && s.hasSashimiDownArcs
+}
+
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const coverageBand = s.showCoverage ? s.coverageHeight : 0
   const hasArcsBand = reservesArcsBand(s)
-  const hasSashimiBand =
-    s.showSashimiArcs && s.showCoverage && s.hasSashimiDownArcs
+  const hasSashimiBand = reservesSashimiBand(s)
   const stack = computeBandStack({
     coverageHeight: coverageBand,
     hasArcsBand,
@@ -128,7 +157,7 @@ export interface SectionBandOpts {
   readConnections?: ReadConnectionsMode
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
-  hasSashimiBand?: boolean
+  showSashimiArcs?: boolean
   sashimiHeight?: number
   // Floor on the distance to the next section's top, so a section shorter than
   // its own label chip still leaves room for it (the chip is anchored at the
@@ -143,6 +172,10 @@ export interface SectionBandOpts {
 // the top, only the pileup scrolls), grouped coverage scrolls with its section,
 // so every band's top is just the running offset. The single-section (N==1)
 // case reproduces the prior ungrouped reserved layout exactly.
+//
+// Both below-coverage strips are reserved per section (`hasArcs` /
+// `hasSashimiDownArcs`), so a lane with nothing bound for a strip doesn't carry
+// it as dead space. The heights themselves stay display-global.
 export function computeStackedSections(
   groups: SectionGroupInput[],
   opts: SectionBandOpts,
@@ -158,22 +191,34 @@ export function computeStackedSections(
     readConnectionsDown: opts.readConnectionsDown,
     readConnectionsHeight: opts.readConnectionsHeight,
   })
-  // Band heights are display-global, so every section reserves the same stack.
-  // Hoisted out of the loop below, which only advances `coverageTop`.
-  const stack = computeBandStack({
-    coverageHeight: coverageBand,
-    hasArcsBand: reservesArcsBand({
-      readConnections,
-      readConnectionsDown: opts.readConnectionsDown,
-      showCoverage,
-    }),
-    arcsHeight: opts.readConnectionsHeight ?? 0,
-    hasSashimiBand: opts.hasSashimiBand ?? false,
-    sashimiHeight: opts.sashimiHeight ?? 0,
+  // The settings half of each strip's reserve rule, constant across sections;
+  // the data half (`g.hasArcs` / `g.hasSashimiDownArcs`) varies per lane.
+  const reservesArcs = reservesArcsBand({
+    readConnections,
+    readConnectionsDown: opts.readConnectionsDown,
+    showCoverage,
   })
+  const showSashimiArcs = opts.showSashimiArcs ?? false
 
   let top = 0
   const sections = groups.map(g => {
+    const hasArcsBand = reservesArcs && g.hasArcs
+    const hasSashimiBand = reservesSashimiBand({
+      showSashimiArcs,
+      showCoverage,
+      hasSashimiDownArcs: g.hasSashimiDownArcs,
+    })
+    const stack = computeBandStack({
+      coverageHeight: coverageBand,
+      hasArcsBand,
+      arcsHeight: opts.readConnectionsHeight ?? 0,
+      hasSashimiBand,
+      sashimiHeight: opts.sashimiHeight ?? 0,
+    })
+    // Up-mode arcs overlay coverage and reserve nothing, so an arc-less lane
+    // still drops its draw band — nothing paints there either way, and a zero
+    // height is what tells the renderers to skip the pass.
+    const band = g.hasArcs ? arcBand : undefined
     const coverageTop = top
     const pileupTop = coverageTop + stack.pileupTop
     const pileupHeight = g.maxY * opts.rowHeight
@@ -188,10 +233,12 @@ export function computeStackedSections(
       coverageHeight: coverageBand,
       // Draw band, relative to this section's coverage top — matches
       // computeArcBand so Stage 3 renderers reproduce the ungrouped band.
-      arcBandTop: coverageTop + (arcBand?.top ?? stack.arcsBandTop),
-      arcBandHeight: arcBand?.height ?? 0,
-      arcDown: arcBand?.down ?? false,
+      arcBandTop: coverageTop + (band?.top ?? stack.arcsBandTop),
+      arcBandHeight: band?.height ?? 0,
+      hasArcsBand,
+      arcDown: band?.down ?? false,
       sashimiBandTop: coverageTop + stack.sashimiBandTop,
+      hasSashimiBand,
       pileupTop,
       pileupHeight,
       maxY: g.maxY,

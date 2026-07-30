@@ -40,6 +40,7 @@ import {
   arcColorLegendCategory,
   computeArcsRegionMap,
 } from '../features/arcs/compute.ts'
+import { anyArcsDrawn } from '../features/arcs/types.ts'
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
@@ -89,6 +90,7 @@ import {
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
+  groupsWithSashimiDownArcs,
   hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
@@ -1652,21 +1654,43 @@ export default function stateModelFactory(
             !self.showPileup || self.isGroupCollapsed(key)
               ? 0
               : groupMaxY(self.groupLaidOutMap(key))
+          // Both below-coverage strips are reserved per lane: grouping routinely
+          // leaves lanes with nothing bound for one (the 'Not split' lane of a
+          // split-read grouping has no arc), and those carried an empty strip.
+          // `arcsByGroup` is empty when read-connections are off, so this costs
+          // nothing on that path.
+          const arcsByGroup = self.arcsByGroup
+          const sashimiLanes = groupsWithSashimiDownArcs(
+            self.rpcDataMap,
+            self.minSashimiScore,
+            self.sashimiArcsMode,
+            self.hiddenGroupKeys,
+          )
           const groups =
             order.length === 0
               ? // No data (or a grouped fetch over an empty region): the synthetic
                 // section exists only so downstream getters see one section. It has
                 // no laid-out rows by construction, hence maxY 0.
-                [{ key: '', label: '', maxY: 0 }]
+                [
+                  {
+                    key: '',
+                    label: '',
+                    maxY: 0,
+                    hasArcs: false,
+                    hasSashimiDownArcs: false,
+                  },
+                ]
               : order.map(({ key, label }) => ({
                   key,
                   label,
                   maxY: groupMaxYFor(key),
+                  hasArcs: anyArcsDrawn(arcsByGroup.get(key)),
+                  hasSashimiDownArcs: sashimiLanes.has(key),
                 }))
           return computeStackedSections(groups, {
             ...self.arcBandInput,
             rowHeight: self.rowHeight,
-            hasSashimiBand: self.belowCoverageBands.hasSashimiBand,
+            showSashimiArcs: self.showSashimiArcs,
             sashimiHeight: self.sashimiArcsHeight,
             // Only when the chips are actually drawn — an ungrouped display
             // reserves nothing, so its geometry is untouched. `hasNamedGroups`
@@ -1697,8 +1721,12 @@ export default function stateModelFactory(
             coverageTop: sec.coverageTop,
             coverageHeight: sec.coverageHeight,
             // Bottom of this section's arc band (== top of its sashimi band), so
-            // the arc-resize handle can anchor per group like coverage/pileup.
+            // the arc-resize handle can anchor per group like coverage/pileup —
+            // and whether this lane reserved that band at all, since a lane with
+            // no arcs has none to resize.
             sashimiBandTop: sec.sashimiBandTop,
+            hasArcsBand: sec.hasArcsBand,
+            hasSashimiBand: sec.hasSashimiBand,
             pileupHeight: sec.pileupHeight,
           }))
         },
@@ -2045,9 +2073,12 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Content-space Y of a group's pileup relative to the FIRST section's
-         * pileup top, i.e. how far a read's row shifts because its group is
-         * stacked below the others. 0 for the ungrouped/first section.
+         * Content-space Y of a group's pileup relative to the reserved
+         * below-coverage height, i.e. how far a read's row shifts because its
+         * group is stacked below the others. 0 for the ungrouped/first section,
+         * except when that lane drops its arc band (`hasArcs` false), where it
+         * goes slightly negative — callers add `coverageDisplayHeight` back, so
+         * the sum is the section's real `pileupTop` either way.
          */
         groupPileupOffset(groupKey: string) {
           const section = this.sections.sections.find(

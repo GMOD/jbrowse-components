@@ -277,6 +277,40 @@ paints earlier). Don't reintroduce a `covH > 0` gate or a separate up/down draw
 block — that re-couples arcs to coverage and resurrects the `arcTop === 0`
 anchor heuristic that mis-anchored down-mode arcs when coverage was hidden.
 
+### Both below-coverage strips are reserved PER SECTION
+
+The arc strip and the sashimi strip are reserved per lane, not display-wide.
+Grouping by split-read status puts every junction in one lane, so the others
+were each carrying an empty 40px strip — that dead space was the whole reason
+for the change. Each strip's rule is split in two halves, deliberately:
+
+- the **settings** half — `reservesArcsBand` / `reservesSashimiBand`, one
+  spelling each, shared by `belowCoverageBandsGeometry` (global geometry, fit
+  budget) and `computeStackedSections`;
+- the **data** half, per lane — `SectionGroupInput.hasArcs` (from
+  `anyArcsDrawn(arcsByGroup.get(key))`) and `hasSashimiDownArcs` (from
+  `groupsWithSashimiDownArcs`, the per-lane form of the older
+  `anyGroupHasSashimiDownArcs`).
+
+Consequences worth knowing:
+
+- Both **resize handles** gate on the section (`section.hasArcsBand` /
+  `hasSashimiBand`), never on `belowCoverageBands` — on a lane whose strip was
+  dropped the handle would land on the pixel of the handle above it.
+- `coverageDisplayHeight` stays the **reserved** (global) below-coverage height
+  and is deliberately NOT re-derived from `sections[0].pileupTop`: that getter
+  runs in an earlier `.views` block and `fittedFeatureHeight` reads it, so
+  making it depend on `sections` would route the fit-height volatile back
+  through the layout it feeds. The ungrouped viewport/content pair both use the
+  global value, so the difference cancels in `scrollableHeight`; and
+  `groupPileupOffset` composes correctly because every caller adds
+  `coverageDisplayHeight` back.
+- The **fit-height row budget stays global too**, for the same block-ordering
+  reason (`laidOutByGroup` runs before `arcsByGroup` exists), so it charges
+  every lane for every strip. That only ever over-reserves — a fit stack can end
+  up a strip or two short of filling the height, never overlapping. Don't "fix"
+  it by moving `arcsByGroup` earlier without checking the fit-volatile cycle.
+
 ### Two distinct "arc" concepts — keep them apart
 
 - **Paired-end coverage arcs** (`features/arcs`, `drawArcs`, `arcsRpcDataMap`)

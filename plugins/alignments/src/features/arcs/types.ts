@@ -17,6 +17,19 @@ export interface ArcsUploadData {
   numArcLines: number
 }
 
+// Whether a group's arc feed paints anything at all, across its regions. Drives
+// the per-section arc band: a lane whose reads yield no arc (and no connector
+// tick) reserves no band, so its pileup starts right under its coverage instead
+// of below an empty strip. `undefined` is a group key with no arc entry, which
+// is the same "nothing to draw" answer.
+export function anyArcsDrawn(
+  regionMap: ReadonlyMap<number, ArcsUploadData> | undefined,
+) {
+  return regionMap === undefined
+    ? false
+    : [...regionMap.values()].some(d => d.numArcs > 0 || d.numArcLines > 0)
+}
+
 export function emptyArcsUploadData(): ArcsUploadData {
   return {
     arcX1: new Uint32Array(0),

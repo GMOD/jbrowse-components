@@ -8,8 +8,18 @@ import {
 
 import type {
   BelowCoverageBandsInput,
+  SectionGroupInput,
   SectionsLayout,
 } from './sectionLayout.ts'
+
+// One stacked lane. Defaults to having arcs and no sashimi junction, so a test
+// only names the per-lane signal it is actually about; `label` falls back to the
+// key, which is what every test but the labelled-grouping ones wants.
+function lane(
+  o: Partial<SectionGroupInput> & { key: string; maxY: number },
+): SectionGroupInput {
+  return { label: o.key, hasArcs: true, hasSashimiDownArcs: false, ...o }
+}
 
 const baseBands: BelowCoverageBandsInput = {
   showCoverage: true,
@@ -116,10 +126,7 @@ test('computeBandStack: arc band then sashimi band stack below coverage', () => 
 
 test('down-mode arcs reserve a band per section, pushing pileups down', () => {
   const { sections, contentHeight } = computeStackedSections(
-    [
-      { key: 'a', label: 'a', maxY: 2 },
-      { key: 'b', label: 'b', maxY: 3 },
-    ],
+    [lane({ key: 'a', maxY: 2 }), lane({ key: 'b', maxY: 3 })],
     {
       coverageHeight: 40,
       rowHeight: 10,
@@ -139,12 +146,107 @@ test('down-mode arcs reserve a band per section, pushing pileups down', () => {
   expect(contentHeight).toBe(330)
 })
 
-test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top', () => {
+test('an arc-less lane reserves no arc band, so the ones with arcs shift up', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [
+      lane({ key: 'notsplit', label: 'Not split', maxY: 2, hasArcs: false }),
+      lane({ key: 'split', label: 'Split (SA)', maxY: 3 }),
+    ],
+    {
+      coverageHeight: 40,
+      rowHeight: 10,
+      readConnections: 'arc',
+      readConnectionsDown: true,
+      readConnectionsHeight: 100,
+    },
+  )
+  // Lane 1 has no arcs: pileup right under its coverage (40), bottom 60. Lane 2
+  // still reserves its 100px band, so 100px of dead strip is gone from the stack.
+  expect(sections.map(s => [s.coverageTop, s.pileupTop])).toEqual([
+    [0, 40],
+    [60, 200],
+  ])
+  expect(sections.map(s => s.arcBandHeight)).toEqual([0, 100])
+  expect(contentHeight).toBe(230)
+})
+
+test('an arc-less lane drops its up-mode draw band too', () => {
+  const { sections } = computeStackedSections(
+    [lane({ key: 'a', maxY: 2, hasArcs: false }), lane({ key: 'b', maxY: 2 })],
+    {
+      coverageHeight: 40,
+      rowHeight: 10,
+      coverageYOffset: 7,
+      readConnections: 'arc',
+      readConnectionsDown: false,
+      readConnectionsHeight: 100,
+    },
+  )
+  // Up mode reserves nothing either way, so only the draw band differs.
+  expect(sections.map(s => s.pileupTop)).toEqual([40, 100])
+  expect(sections.map(s => s.arcBandHeight)).toEqual([0, 33])
+})
+
+test('the sashimi strip is reserved per lane too', () => {
   const { sections } = computeStackedSections(
     [
-      { key: 'a', label: 'a', maxY: 2 },
-      { key: 'b', label: 'b', maxY: 2 },
+      lane({ key: 'a', maxY: 2, hasArcs: false }),
+      lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
     ],
+    {
+      coverageHeight: 40,
+      rowHeight: 10,
+      showSashimiArcs: true,
+      sashimiHeight: 30,
+    },
+  )
+  // Lane a: coverage 40, pileup 40..60. Lane b starts at 60 and is the only one
+  // paying the 30px strip, so its pileup starts at 60 + 40 + 30.
+  expect(sections.map(s => [s.pileupTop, s.hasSashimiBand])).toEqual([
+    [40, false],
+    [130, true],
+  ])
+})
+
+test('both strips stack for a lane that has arcs and sashimi', () => {
+  const { sections } = computeStackedSections(
+    [lane({ key: 'a', maxY: 2, hasSashimiDownArcs: true })],
+    {
+      coverageHeight: 40,
+      rowHeight: 10,
+      readConnections: 'arc',
+      readConnectionsDown: true,
+      readConnectionsHeight: 100,
+      showSashimiArcs: true,
+      sashimiHeight: 30,
+    },
+  )
+  expect(sections[0]).toMatchObject({
+    arcBandTop: 40,
+    sashimiBandTop: 140,
+    pileupTop: 170,
+    hasArcsBand: true,
+    hasSashimiBand: true,
+  })
+})
+
+test('the sashimi strip needs the coverage band it hangs off', () => {
+  const { sections } = computeStackedSections(
+    [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+    {
+      coverageHeight: 40,
+      showCoverage: false,
+      rowHeight: 10,
+      showSashimiArcs: true,
+      sashimiHeight: 30,
+    },
+  )
+  expect(sections[0]).toMatchObject({ pileupTop: 0, hasSashimiBand: false })
+})
+
+test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top', () => {
+  const { sections } = computeStackedSections(
+    [lane({ key: 'a', maxY: 2 }), lane({ key: 'b', maxY: 2 })],
     {
       coverageHeight: 40,
       rowHeight: 10,
@@ -166,7 +268,7 @@ test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top
 
 test('single section stacks coverage then pileup from the top', () => {
   const { sections, contentHeight } = computeStackedSections(
-    [{ key: '', label: '', maxY: 4 }],
+    [lane({ key: '', maxY: 4 })],
     { coverageHeight: 45, rowHeight: 10 },
   )
   expect(sections).toHaveLength(1)
@@ -182,8 +284,8 @@ test('single section stacks coverage then pileup from the top', () => {
 test('multiple sections stack with each coverage above its own pileup', () => {
   const { sections, contentHeight } = computeStackedSections(
     [
-      { key: '1', label: 'HP: 1', maxY: 3 },
-      { key: '2', label: 'HP: 2', maxY: 5 },
+      lane({ key: '1', label: 'HP: 1', maxY: 3 }),
+      lane({ key: '2', label: 'HP: 2', maxY: 5 }),
     ],
     { coverageHeight: 20, rowHeight: 10 },
   )
@@ -200,10 +302,7 @@ test('multiple sections stack with each coverage above its own pileup', () => {
 
 test('coverageHeight 0 (coverage hidden) collapses each section to its pileup', () => {
   const { sections } = computeStackedSections(
-    [
-      { key: 'a', label: 'a', maxY: 2 },
-      { key: 'b', label: 'b', maxY: 2 },
-    ],
+    [lane({ key: 'a', maxY: 2 }), lane({ key: 'b', maxY: 2 })],
     { coverageHeight: 0, rowHeight: 10 },
   )
   expect(sections[0]!.pileupTop).toBe(0)
@@ -212,14 +311,14 @@ test('coverageHeight 0 (coverage hidden) collapses each section to its pileup', 
 
 // One-section layout (groupKey '') with a coverage band of 45 and 4 pileup rows.
 const ungrouped: SectionsLayout = computeStackedSections(
-  [{ key: '', label: '', maxY: 4 }],
+  [lane({ key: '', maxY: 4 })],
   { coverageHeight: 45, rowHeight: 10 },
 )
 
 const grouped: SectionsLayout = computeStackedSections(
   [
-    { key: '1', label: 'HP: 1', maxY: 3 },
-    { key: '2', label: 'HP: 2', maxY: 5 },
+    lane({ key: '1', label: 'HP: 1', maxY: 3 }),
+    lane({ key: '2', label: 'HP: 2', maxY: 5 }),
   ],
   { coverageHeight: 20, rowHeight: 10 },
 )
@@ -278,7 +377,7 @@ test('buildSectionRenders: grouped pileupTopOffset is content-space (scroll via 
 
 // Down-mode arc layouts for the arcBand screen-geometry tests.
 const ungroupedArcs: SectionsLayout = computeStackedSections(
-  [{ key: '', label: '', maxY: 4 }],
+  [lane({ key: '', maxY: 4 })],
   {
     coverageHeight: 40,
     rowHeight: 10,
@@ -289,10 +388,7 @@ const ungroupedArcs: SectionsLayout = computeStackedSections(
 )
 
 const groupedArcs: SectionsLayout = computeStackedSections(
-  [
-    { key: 'a', label: 'a', maxY: 2 },
-    { key: 'b', label: 'b', maxY: 3 },
-  ],
+  [lane({ key: 'a', maxY: 2 }), lane({ key: 'b', maxY: 3 })],
   {
     coverageHeight: 40,
     rowHeight: 10,
@@ -336,9 +432,9 @@ test('buildSectionRenders: no arc band reserved => arcBand undefined', () => {
 test('minSectionHeight floors the advance to the next section, not the pileup', () => {
   const { sections, contentHeight } = computeStackedSections(
     [
-      { key: 'a', label: 'a', maxY: 1 },
-      { key: 'b', label: 'b', maxY: 1 },
-      { key: 'c', label: 'c', maxY: 1 },
+      lane({ key: 'a', maxY: 1 }),
+      lane({ key: 'b', maxY: 1 }),
+      lane({ key: 'c', maxY: 1 }),
     ],
     {
       coverageHeight: 0,
@@ -356,10 +452,7 @@ test('minSectionHeight floors the advance to the next section, not the pileup', 
 })
 
 test('minSectionHeight is inert once a section is taller than it', () => {
-  const tall = [
-    { key: 'a', label: 'a', maxY: 4 },
-    { key: 'b', label: 'b', maxY: 4 },
-  ]
+  const tall = [lane({ key: 'a', maxY: 4 }), lane({ key: 'b', maxY: 4 })]
   const opts = { coverageHeight: 0, showCoverage: false, rowHeight: 8 }
   expect(
     computeStackedSections(tall, { ...opts, minSectionHeight: 16 }),

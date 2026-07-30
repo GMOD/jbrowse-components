@@ -568,7 +568,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       readConnectionsHeight: {
         type: 'number',
-        defaultValue: 40,
+        // Arcs scale to whatever band they get, so this only buys apex
+        // separation between insert sizes; 40 dominated a grouped stack, where
+        // every lane pays it. Kept above the 20px drag floor (clampBandHeight).
+        defaultValue: 25,
         description: 'Height of the read-connection band in pixels',
       },
       /**

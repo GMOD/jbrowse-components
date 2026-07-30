@@ -236,19 +236,23 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
 // still gets an affordance at its own band bottom (arc band ends at the sashimi
 // band top; the sashimi band ends at the pileup top), scrolling with its
 // section and culled off-screen. Ungrouped is the single sticky section.
+//
+// Both handles are gated per section (`hasArcsBand` / `hasSashimiBand`), not on
+// the global geometry: a lane that reserves no strip has none to resize, and its
+// handle would land on the pixel of the handle above it.
 const ConnectionBandResizeHandles = observer(
   function ConnectionBandResizeHandles({
     model,
   }: {
     model: LinearAlignmentsDisplayModel
   }) {
-    const { belowCoverageBands: bands, height, scrollModel: scroll } = model
+    const { height, scrollModel: scroll } = model
     return (
       <>
         {model.renderSections.map(section => {
           return (
             <Fragment key={sectionKey(section.groupKey)}>
-              {bands.hasArcsBand ? (
+              {section.hasArcsBand ? (
                 <PileupResizeHandle
                   top={bandScreenTop(
                     section.sashimiBandTop - YSCALEBAR_LABEL_OFFSET,
@@ -264,7 +268,7 @@ const ConnectionBandResizeHandles = observer(
                 />
               ) : null}
 
-              {bands.hasSashimiBand ? (
+              {section.hasSashimiBand ? (
                 <PileupResizeHandle
                   top={bandScreenTop(
                     section.topOffset - YSCALEBAR_LABEL_OFFSET,
