@@ -273,10 +273,10 @@
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
-    "status": "bad",
-    "note": "the menu does not need to be open in the second view",
+    "status": "good",
+    "note": "DONE: the result frame closes the menu. A checkbox menu item stays open after it is ticked, so the second stage now presses Escape twice (submenu, then the track menu) before settling, and hideSelectors drops the MUI 'Track settings' tooltip the dismissal leaves under the cursor. The frame is the track with arcs on and nothing else. Stage 2 also takes its own viewportHeight 480 (the spec's 600 exists to hold the deep 'Read connections' submenu in frame 1), which removes 121px of blank the taller frame was padding with.",
     "reviewedAt": "2026-07-30T14:10:33.288Z",
-    "hash": "3bab1d24b5c7c3b42fb1738e75dd690da23ea7b5"
+    "hash": "1e59e0b9a1f30115d74a1caa5e729c81b7902996"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -1320,10 +1320,10 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "bad",
-    "note": "change to reduce arc height. ",
+    "status": "good",
+    "note": "DONE: readConnectionsHeight 130 -> 60. The band only ever holds one dome ~1.2 kb wide, so at 130 the arc was the tallest single thing in the frame and the reads it describes were pushed down to make room for it. Two measurements the regen reported while doing it: the display height was 800 but the 'Not split' section runs out of rows ~180px before the box ends, so that is now 620, and viewportHeight 1140 -> 960 to match. Nothing about the data changed - same window, same split/not-split grouping, same magenta junction arc.",
     "reviewedAt": "2026-07-30T14:02:25.341Z",
-    "hash": "37fb8309c1034057a6f8386c7765996573da993d"
+    "hash": "a580c8afa4a32902e3a524450ee26490df006645"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",

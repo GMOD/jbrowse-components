@@ -817,6 +817,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // whitespace while still leaving room for the deep "Read connections" submenu
     viewportHeight: 600,
     settleMs: 5000,
+    // dismissing the menu leaves the track-menu button hovered, so MUI paints
+    // its "Track settings" tooltip into the result frame
+    hideSelectors: ['.MuiTooltip-popper'],
     stages: [
       {
         actions: [
@@ -828,11 +831,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'Show read arcs' } }],
       },
       {
-        // tick the "Show read arcs" checkbox so the result frame shows arcs
+        // tick the "Show read arcs" checkbox so the result frame shows arcs,
+        // then dismiss the menu — the checkbox stays open after a tick, and the
+        // result frame is about the arcs, not about the menu that enabled them
         actions: [
           { type: 'click', text: 'Show read arcs' },
+          { type: 'press', key: 'Escape' },
+          { type: 'press', key: 'Escape' },
           { type: 'delay', ms: 3000 },
         ],
+        // no menu in this frame, so it only has to hold the track
+        viewportHeight: 480,
       },
     ],
   },

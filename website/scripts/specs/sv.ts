@@ -565,13 +565,16 @@ export const svSpecs: ScreenshotSpec[] = [
               // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
               // drawInter/drawLongRange OFF drop these reads' genuine
               // cross-chromosome (chr4/chrX/...) and far-flank supplementary
-              // connectors, leaving just the clean local inversion arc. A tall
-              // dedicated band gives the magenta split-read domes room to read
-              // as arcs.
+              // connectors, leaving just the clean local inversion arc. The band
+              // only has to hold one dome ~1.2 kb wide, so it is kept shallow —
+              // at 130 the arc was the tallest thing in the figure and the reads
+              // it describes were pushed down to make room for it.
               drawInter: false,
               drawLongRange: false,
-              readConnectionsHeight: 130,
-              height: 800,
+              readConnectionsHeight: 60,
+              // the "Not split" section runs out of rows well before the box
+              // does, so the last ~180px of an 800px track was empty
+              height: 620,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
               // The reads that cross the breakpoints, above the reads that
@@ -587,10 +590,10 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
-    // tall enough to clear the whole 800px track plus the second section's own
+    // tall enough to clear the whole 620px track plus the second section's own
     // coverage lane and divider, which grouping adds (the pileup used to run off
     // the bottom edge — reviewer: increase browser height)
-    viewportHeight: 1140,
+    viewportHeight: 960,
     settleMs: 40000,
   },
 
