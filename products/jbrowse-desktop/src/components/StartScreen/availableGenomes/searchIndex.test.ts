@@ -94,6 +94,44 @@ test('rebuilds the launchable config url for each group', () => {
   expect(genark?.jbrowseMinimalConfig).toBeUndefined()
 })
 
+test('a token starting a word outranks the same letters mid-word', () => {
+  // 'coli' begins a word in "Escherichia coli" but hides inside
+  // "Mycolicibacterium", which is also the newer assembly — relevance has to
+  // beat recency here, or a search for E. coli never finds E. coli
+  const eColi = [
+    'GCF_000005845.2',
+    'E. coli',
+    'Escherichia coli',
+    'ASM584v2',
+    'Complete Genome',
+    'bacteria',
+    562,
+    1,
+    2013,
+    0,
+    '',
+  ]
+  const lookalike = [
+    'GCF_049241375.1',
+    'Mycolicibacterium wolinskyi',
+    'Mycolicibacterium wolinskyi',
+    'Jessa_Mwolja_1.0',
+    'Complete Genome',
+    'bacteria',
+    209173,
+    0,
+    2025,
+    0,
+    '',
+  ]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hits = searchAllGroups([lookalike, eColi] as any, 'coli')
+  expect(hits.map(r => r.accession)).toEqual([
+    'GCF_000005845.2',
+    'GCF_049241375.1',
+  ])
+})
+
 test('leads with the assembly UCSC prefers, then the newest', () => {
   expect(search('Homo sapiens').map(r => r.accession)).toEqual([
     'hs1', // rank 1
