@@ -425,11 +425,19 @@ so SNPs are absent from the graph even though every one is in the VCF. Filter
 the callset to that same tier and the two describe the same events from opposite
 ends. The graph states an allele and its length but cannot say whose it is,
 since collapsing is what let it be found at all, while the callset never lost
-the samples. Putting both in sample rows makes the difference explicit: the
-graph names the haplotype an allele came from, and the callset names every
-haplotype that carries it.
+the samples.
 
-<Figure caption="One window, both products, restricted to the same 10 donors so the rows line up: the callset (top) is filtered to the same 50 bp tier the graph holds, both haplotypes of each donor labeled by name; the graph (bottom) rows only the haplotypes that donated sequence here, colored by where on the reference their alleles attach. The callset numbers a donor's haplotypes HP0/HP1, the graph .1/.2. A block in the matrix and a row in the graph answer different questions about the same bp." src="/img/pangenome/hprc_graph_vs_callset.png" />
+The two do not line up row by row, and it is worth being clear why. rGFA's `SN`
+tag names the assembly a segment was **first contributed by**, so a graph row is
+attribution; a genotype names every haplotype that **carries** an allele, so a
+matrix row is carriage. A donor can appear on one haplotype in the graph and
+carry the same event on the other in the callset. What does line up is the
+event: mark an interval in the linear view and it crosses the genes, the
+segments lane and the genotype matrix in one column, and the reference-position
+ramp gives the graph's alleles at that position the same hue as the segments
+above them.
+
+<Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it shows which of the ten donors' haplotypes carry it, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, where the marked event is a bubble rather than a row, in the same hue as the band." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 

@@ -434,6 +434,13 @@ const MHC_CLASSII_REGION = {
 // the callset display's `layout` (not `runClustering`) so the row SET matches
 // the graph's: both haplotypes of each donor, so a carrier row sits next to
 // its non-carrier sibling rather than the sibling being silently absent.
+// The one event pangenome/hprc_graph_vs_callset marks in both products: a
+// 14,596 bp deletion, the largest record in the window that more than one donor
+// carries. From the callset itself —
+// `tabix hprc-v2.0-mc-grch38.wave.vcf.gz chr6:32510000-32600000`, longest REF
+// among the records the SV filter keeps.
+const MHC_MARKED_DELETION = '6:32,514,842-32,529,438'
+
 const MHC_CALLSET_LAYOUT = [
   'HG00642',
   'HG00738',
@@ -1377,21 +1384,30 @@ export const graphSpecs: ScreenshotSpec[] = [
   // evenly across the width, which would break exactly the correspondence this
   // figure is for.
   //
-  // Review: "hard to see the way the SV track relates to the graph". Root
-  // cause wasn't color (the segments lane above the callset already carries
-  // hprcSegmentsLane's reference-position ramp) but SCALE: the callset held
-  // all 464 haplotypes while the graph's sample-rows layout draws only the
-  // donors that actually walk a non-reference path here, ~12 of them, so nine
-  // in ten callset rows had nothing to compare against and the 12 that
-  // mattered were lost in the stack. `MHC_CALLSET_LAYOUT` restricts the
-  // callset to that same 10-donor set (both haplotypes each, so a reference-
-  // only sibling row is visible next to a carrier row rather than silently
-  // dropped), pulled from the segments/links tabix over the identical
-  // MHC_CLASSII_REGION window (`tabix hprc-v2.0-mc-grch38.links.bed.gz
-  // 'GRCh38#0#chr6:32510000-32600000'`, every non-reference column). Fixed
-  // list rather than `runClustering`: a preset `layout` is what makes the row
-  // SET match the graph's, which clustering (free to reorder/include any of
-  // the 464) can't guarantee.
+  // THE CORRESPONDENCE IS AN EVENT, NOT A ROW, and two rounds of review went on
+  // trying to make it a row. The graph pane was in sample rows so its rows could
+  // be read against the callset's, and `MHC_CALLSET_LAYOUT` cut the callset to
+  // the ten donors the graph draws so the two lists would be the same length.
+  // They still cannot line up, and the data says why: rGFA's SN names the
+  // assembly that FIRST CONTRIBUTED a segment, while a genotype names every
+  // haplotype that CARRIES it. Checked at the marked deletion — the graph
+  // attributes HG04157's only contribution here to HG04157.2, and the callset
+  // has HG04157 carrying that deletion on its FIRST haplotype; HG01993 goes the
+  // other way. Relabelling the callset rows into PanSN would therefore have
+  // asserted a mapping that is not true, which is the trap avoided here.
+  //
+  // So the figure marks one EVENT instead: `highlight` puts a band on the 14,596
+  // bp deletion at chr6:32,514,842, which crosses the gene lane, the segments
+  // lane and the genotype matrix in one column — 6 of the 10 donors carry it,
+  // on 9 of their 20 haplotypes. The graph below is the force drawing (review:
+  // "consider using force directed bandage graph"), where the same event is a
+  // bubble rather than a row. What the pair says: the callset names who carries
+  // it, the graph names what the alternative sequence is.
+  //
+  // MHC_CALLSET_LAYOUT stays, for the reason it was added — 464 rows buries the
+  // ten donors this window has anything to say about. Fixed list rather than
+  // `runClustering`: clustering is free to reorder and to include any of the
+  // 464, so nothing would hold the row set still.
   {
     mode: 'url',
     name: 'pangenome/hprc_graph_vs_callset',
@@ -1401,6 +1417,7 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr6:32,510,000-32,600,000',
+          highlight: [MHC_MARKED_DELETION],
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
@@ -1423,23 +1440,22 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_CLASSII_REGION,
-          layoutMode: 'samplerows',
           colorScheme: 'reference-position',
         },
       ],
     }),
-    // two signals, ANDed: the graph's rows drawn, and the callset's own fetch
-    // finished (not just first paint). A bare comma list would be a CSS OR and
-    // fire on whichever landed first.
+    // two signals, ANDed: the graph drawn, and the callset's own fetch finished
+    // (not just first paint). A bare comma list would be a CSS OR and fire on
+    // whichever landed first.
     readySelector:
-      'body:has([data-testid="graph-row-label"]):has([data-testid="graph-layout-select"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
+      'body:has([data-testid="graph-perf-stats"]):has([data-testid="graph-layout-select"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,
-    // the gene lane, the segments lane, the 20-row callset, and the graph's
-    // rows under them (1336 before the row layouts capped their total height,
-    // which took 200 px off the graph pane)
-    viewportHeight: 1160,
+    // the gene lane, the segments lane, the 20-row callset, and the graph pane
+    // under them — the force drawing is about as tall as it is wide where the
+    // row stack was flat
+    viewportHeight: 1340,
     hideTooltip: true,
   },
   // The correspondence, which is the reason to open the two views together:
