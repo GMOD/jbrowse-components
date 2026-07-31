@@ -2036,10 +2036,10 @@
   },
   "pangenome/hprc_allele_inventory": {
     "name": "pangenome/hprc_allele_inventory",
-    "status": "good",
-    "note": "the new 'allele inventory\" track looks very weird. not sure i like it RETIRED per the note ('the new allele inventory track looks very weird. not sure i like it'). The hosted track and its section in pangenome_hprc.md stay, without a figure; the lane is also gone from hprc_mhc_bandage and hprc_graph_vs_callset.",
-    "reviewedAt": "2026-07-27T01:30:15.152Z",
-    "hash": "526dc811900c0bd1bfa7dc935ff3a03ed2a30394"
+    "status": "bad",
+    "note": "I am still not sure i like this figure. at a minimum, it is just too complex in this genome region. we need a simpler region with less diversity. in my ideal view, it would actually show sample names and plot their alignments in this alignments track style representation of the allele inventory, or at least some 'example sample names' so user can tell what is what. previous notes: the new 'allele inventory\" track looks very weird. not sure i like it RETIRED per the note ('the new allele inventory track looks very weird. not sure i like it'). The hosted track and its section in pangenome_hprc.md stay, without a figure; the lane is also gone from hprc_mhc_bandage and hprc_graph_vs_callset. SIMPLER REGION, done; sample rows not possible on this track. The figure moves off amylase to the CFH cluster (chr1:196,700,000-196,900,000): 16 alleles whose structure is one 84,683 bp deletion with small insertions around it, against amylase's 22 of which four were tens of kb at nearly the same coordinate, packed six deep. It is also the window hprc_cfhr_deletion draws, so the arc labelled 'skips 84.7 kb of reference' there is the -84,683 bar here. On sample names: this track cannot carry them, and the reason is in build_rgfa_alleles.sh at the field. The only per-sample column an rGFA yields is firstSeenIn, which is minigraph's build order -- an allele several haplotypes share is credited to whichever was added first (one rank absorbs 41 of 78 alleles in the MHC window) -- so rows keyed on it would read as a haplotype pileup while stating something else. Real per-haplotype carriage needs the assemblies re-mapped (build_minigraph_paths.sh) or the callset, and the callset is what hprc_graph_vs_callset already draws for 464 haplotypes. Rows here are the display packing overlapping alleles, and the caption now says that.",
+    "reviewedAt": "2026-07-31T14:29:33.654Z",
+    "hash": "8ee679606f3d4a16801113db4e1f0cb56b7b71af"
   },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
@@ -2176,10 +2176,10 @@
   },
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-30T14:05:59.823Z",
-    "hash": "970e69541a807584bd46b9a9cdcff7e56e9204cb"
+    "status": "bad",
+    "note": "this figure is in some ways just too chaotic. too many tiny segments. are we supposed to get anything meaningful out of it? if not we may want to delete. I know it shows the per sample rows but i just dont get it FIXED by rewindowing, not deleted. The chaos was the scale: pggb cuts a segment at every variant, so the kilobase this shared with pggb_locus_graph is 154 nodes at about six pixels each, and marks that thin cannot say what a strain carries. It now draws the 460 bp window local_subgraph uses, where the index returns 37 segments, the backbone's long ones are 59 and 158 bp and labelled with it, and the four strains differ at places a reader can point at: Sakai and IAI39 have marks at several positions, CFT073 and NCTC86 at one or two. Kept rather than deleted because the layout is documented in the user guide and the pggb figure is the one that can say a row means carriage -- on an rGFA a row is build-order attribution. pggb_locus_graph keeps its kilobase, since a hue sweep wants the wider window.",
+    "reviewedAt": "2026-07-31T14:31:08.945Z",
+    "hash": "bf8cffb0ec7aaea02c555dde340bb732e147cb24"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2330,16 +2330,30 @@
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
-    "status": "good",
-    "note": "DONE, both parts, in the plugin and published (5e1c0d4f42b5, pins bumped in the three test_data/graphgenomeview configs). WHAT 'SKIPS' REFERS TO: the reference, and the label now says so - 'skips 84.7 kb of reference'. Yes, it is something missing from the reference: a deletion contributes no node, only an edge from one backbone segment to another that is not its neighbour, so the arc's number is the reference span the haplotypes taking it do not carry. THE RED: measured, and the collision was real to within three points. The arc was rgb(214,39,40); the reference-position ramp is hue 0 to 300 at 70%/50%, so its hue-0 end is rgb(217,38,38) - at the start of any region the deletion arc and the backbone under it were the same red. Near-black now (rgb(24,24,28)), with the label recolored to match: nothing else in the drawing is near-black (nodes are ramp hues or the off-reference charcoal, plain links are mid grey), so weight and darkness carry the arc instead of a hue and hue keeps meaning reference position and only that. hprc_amylase_graph and hprc_lpa_kiv2 carry the same arcs and were regenerated with it; both had been kept behind the content-stable gate at 0.245% and 0.069%, which is the case the website CLAUDE.md says to --force and diff. Prose in pangenome_hprc.md updated off 'those edges are red'.",
-    "reviewedAt": "2026-07-30T14:09:42.273Z",
-    "hash": "b5fdaa5c28c342046e48cb72a99521f009a18d31"
+    "status": "bad",
+    "note": "in the most ideal world, we would have a linearsyntenyview showing this deletion along with the graph. previous notes: DONE, both parts, in the plugin and published (5e1c0d4f42b5, pins bumped in the three test_data/graphgenomeview configs). WHAT 'SKIPS' REFERS TO: the reference, and the label now says so - 'skips 84.7 kb of reference'. Yes, it is something missing from the reference: a deletion contributes no node, only an edge from one backbone segment to another that is not its neighbour, so the arc's number is the reference span the haplotypes taking it do not carry. THE RED: measured, and the collision was real to within three points. The arc was rgb(214,39,40); the reference-position ramp is hue 0 to 300 at 70%/50%, so its hue-0 end is rgb(217,38,38) - at the start of any region the deletion arc and the backbone under it were the same red. Near-black now (rgb(24,24,28)), with the label recolored to match: nothing else in the drawing is near-black (nodes are ramp hues or the off-reference charcoal, plain links are mid grey), so weight and darkness carry the arc instead of a hue and hue keeps meaning reference position and only that. hprc_amylase_graph and hprc_lpa_kiv2 carry the same arcs and were regenerated with it; both had been kept behind the content-stable gate at 0.245% and 0.069%, which is the case the website CLAUDE.md says to --force and diff. Prose in pangenome_hprc.md updated off 'those edges are red'.",
+    "reviewedAt": "2026-07-31T14:30:21.609Z",
+    "hash": "6f9be87a1a94b19431c024afad50712fa2e4186a"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
     "status": "bad",
-    "note": "make sure paper is cited",
+    "note": "make sure paper is cited ALREADY CITED, and now linked at first mention. Parker et al. 2009 (Science, doi 10.1126/science.1173275) is the source of the retrogene reading in the second section, Brown et al. 2017 (PNAS, doi 10.1073/pnas.1709082114) is the second retrocopy in 'What one record cannot tell you', and both plus Meadows et al. 2023 carry full entries with DOIs under ## References. What was missing is that the two in-prose mentions were bare text while the sibling tutorial links Sutter et al. inline, so both first mentions are now DOI links.",
     "reviewedAt": "2026-07-31T05:49:27.458Z",
     "hash": "713809d4eb5ae491899c5d48fc1ce2bc8f742b99"
+  },
+  "pangenome/graph_context": {
+    "name": "pangenome/graph_context",
+    "status": "bad",
+    "note": "I don't particularly understand the difference here. At the very least it needs a lineargenomeview, and ideally, red boxes and arrow and/or text annotation showing the correspondance between the lineargenomeview and the graph DONE, both parts of the note that are reachable. Each half now carries the linear view its cut was made from (K12 genes plus the segments lane over the same span), which is what the note asked for at a minimum, and both panels moved to reference-position color: the block above and the node below are the same hue at the same bp, and every off-reference node is one flat charcoal, so 'the added nodes are the off-reference ones' is visible rather than asserted. Two force drawings alone could only state the difference as a header node count, since FMMM relays the window once nodes are added. The correspondence the note wants as red boxes and arrows is carried by the shared hue plus one number that is already drawn in both panels: the island is the long green block in the lane and the green node labelled 21.8 kb in the graph (s502, 1,446,100-1,467,909 out of the segs index), and the caption says so. Callouts INTO the graph pane are the one thing not done: annotations must anchor through a track locus, a selector or on-screen text, and a graph node is canvas with none of those, so an arrow there would be hand-measured pixels against a layout nothing checks. I also tried the island as a view highlight and dropped it: at this window s502 is 21.8 kb of 29.5, so the band tints three quarters of the panel and reads as a background wash.",
+    "reviewedAt": "2026-07-31T14:27:29.668Z",
+    "hash": "669311ae96497758e39d07433d1e9499550f1210"
+  },
+  "dog10k-size-fst-scan": {
+    "name": "dog10k-size-fst-scan",
+    "status": "bad",
+    "note": "if possible create a two part figure with a zoom in also DONE, two parts. The figure is now a compose of dog10k-size-fst-scan-genome (the whole-genome scan, unchanged apart from the axis pin) over dog10k-size-fst-scan-igf1: two megabases of chr15 with the RefSeq lane above the score lane, the IGF1 peak window drawn as a view highlight off its own coordinates, and each 200 kb window at its real width instead of as a point. Both halves are pinned to the same 0-0.8 domain (FST_AXIS) so the peak in the zoom is the height of the point it comes from; 0.8 is what the genome half got from autoscale anyway. The zoom's window contains the 400 kb the tutorial slices next, so the two figures on that page join up, and the Figure carries a live link per half.",
+    "reviewedAt": "2026-07-31T14:31:31.807Z",
+    "hash": "cc27252d5c859731decc2153a76cfacdd646e2f3"
   }
 }
