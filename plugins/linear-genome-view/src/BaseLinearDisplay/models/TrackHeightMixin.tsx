@@ -28,6 +28,19 @@ export default function TrackHeightMixin<
        * #volatile
        */
       scrollTop: 0,
+      /**
+       * #volatile
+       * True for the duration of a height drag, set by the track container's
+       * resize handle. A display whose row geometry is a function of the track
+       * height restretches every row per animation frame, and can use this to
+       * sit an expensive per-frame layer out of the drag (MAF's dense per-base
+       * letter overlay is a Canvas2D pass that scales with rows x columns).
+       *
+       * Lives here rather than per display because the handle that knows the
+       * drag has started is the shared one next to `resizeHeight`. Displays
+       * with their own handles (MAF's band handles) set it directly.
+       */
+      resizing: false,
     }))
     .views(self => ({
       get height() {
@@ -40,6 +53,12 @@ export default function TrackHeightMixin<
        */
       setScrollTop(scrollTop: number) {
         self.scrollTop = scrollTop
+      },
+      /**
+       * #action
+       */
+      setResizing(arg: boolean) {
+        self.resizing = arg
       },
       /**
        * #action

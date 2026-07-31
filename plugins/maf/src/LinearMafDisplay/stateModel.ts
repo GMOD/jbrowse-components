@@ -236,18 +236,6 @@ export default function stateModelFactory(
          * `rpcProps`.
          */
         sampleSetGeneration: 0,
-        /**
-         * #volatile
-         * True during an active height drag. Gates the dense per-base letter
-         * overlay (a Canvas2D pass that re-scans every visible cell and redraws
-         * thousands of glyphs each frame) so the drag only restretches the cheap
-         * GPU cell canvas; letters snap back when the drag settles.
-         */
-        resizing: false,
-        // Debounce handle that clears `resizing` after the drag stops.
-        resizeSettleTimer: undefined as
-          | ReturnType<typeof setTimeout>
-          | undefined,
       }))
       .views(self => ({
         /**
@@ -371,12 +359,6 @@ export default function stateModelFactory(
          */
         setRowHeight(n: number) {
           setConf(self, 'rowHeight', n)
-        },
-        /**
-         * #action
-         */
-        setResizing(arg: boolean) {
-          self.resizing = arg
         },
         /**
          * #action
@@ -932,9 +914,10 @@ export default function stateModelFactory(
          * stretch). In fixed mode the pinned `rowHeight` scales proportionally
          * so dragging still resizes rows. Mirrors the variants display.
          *
-         * Flips `resizing` for the duration of the drag (cleared a beat after the
-         * last tick) so the dense letter overlay sits out the frame-by-frame
-         * restretch — see the `resizing` volatile.
+         * The `resizing` flag that sits the letter overlay out of the drag is
+         * set by the handle itself (TrackContainer / `MafBandResizeHandle`), not
+         * here — this action sees only individual deltas and can't tell the last
+         * one from the next, which is why it used to need a settle timer.
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height
@@ -964,13 +947,6 @@ export default function stateModelFactory(
               ),
             )
           }
-          self.resizing = true
-          clearTimeout(self.resizeSettleTimer)
-          self.resizeSettleTimer = setTimeout(() => {
-            if (isAlive(self)) {
-              self.setResizing(false)
-            }
-          }, 150)
           return newHeight - oldHeight
         },
       }))
@@ -1896,9 +1872,6 @@ export default function stateModelFactory(
           } catch (e) {
             console.error(e)
           }
-        },
-        beforeDestroy() {
-          clearTimeout(self.resizeSettleTimer)
         },
       }))
       .postProcessSnapshot(snap => {

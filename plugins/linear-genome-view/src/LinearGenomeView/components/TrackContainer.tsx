@@ -117,6 +117,15 @@ const TrackContainer = observer(function TrackContainer({
       <div ref={setOverlayEl} className={classes.trackOverlay} />
       <ResizeHandle
         onDrag={distance => display.resizeHeight(distance)}
+        // Bracket the drag so a display can sit an expensive per-frame layer
+        // out of it (see `resizing` on TrackHeightMixin). Causal rather than a
+        // per-display debounce: the handle owns both ends of the gesture.
+        onDragStart={() => {
+          display.setResizing(true)
+        }}
+        onDragEnd={() => {
+          display.setResizing(false)
+        }}
         className={classes.resizeHandle}
       />
     </Paper>
