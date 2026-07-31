@@ -264,7 +264,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
           />
           <LabeledCheckbox
             checked={session.numberGrouping}
-            label="Thousand separators in numbers, e.g. chr1:1,234,567 (reload to apply)"
+            label="Show thousand separators in numbers, e.g. chr1:1,234,567 vs chr1:1234567 (reload to apply)"
             onChange={checked => {
               session.setPreferenceOverride('numberGrouping', checked)
             }}
