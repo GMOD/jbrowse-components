@@ -1,3 +1,5 @@
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -154,7 +156,7 @@ describe('multi-wiggle track menu', () => {
     const { display } = makeDisplay({ renderingType: 'multirowxy' })
     const items = subMenuOf(display.trackMenuItems(), 'Show')
 
-    expect(items.every(i => 'keepMenuOpen' in i && i.keepMenuOpen)).toBe(true)
+    expect(items.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
   })
 
   it('offers only the summary modes density draws, checking the effective one', () => {

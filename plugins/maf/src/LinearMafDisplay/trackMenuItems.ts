@@ -27,8 +27,8 @@ const SetRowArrangementDialog = lazy(
 // Compact row for the plain show/hide toggles, which are otherwise a dozen
 // near-identical four-line literals. Reads the current value and hands the
 // negation to the setter explicitly, so no event argument can reach it.
-// `checkboxItem` supplies `keepMenuOpen` — users flip several of these in one
-// visit, and the menu is an observer, so the ticks move live.
+// A checkbox row keeps the menu open by its type — users flip several of these
+// in one visit, and the menu is an observer, so the ticks move live.
 function toggle(label: string, checked: boolean, set: (v: boolean) => void) {
   return checkboxItem(label, checked, () => {
     set(!checked)

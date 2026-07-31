@@ -1,5 +1,7 @@
 import { isValidElement } from 'react'
 
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
@@ -140,11 +142,11 @@ describe('color by menu', () => {
     expect(labels(model)).toEqual(['Tag (HP)...'])
   })
 
-  // promotableRadioItem defaults keepMenuOpen to true, which is right for every
-  // row that just writes a scheme — users try several, and the menu is an
-  // observer so the ticks move live. The tag row is the one exception: its click
-  // opens a dialog, so it has to opt out or the dialog appears behind a menu the
-  // user then has to dismiss.
+  // A radio row keeps the menu open by its type, which is right for every row
+  // that just writes a scheme — users try several, and the menu is an observer so
+  // the ticks move live. The tag row is the one exception: its click opens a
+  // dialog, so it opts out with keepMenuOpen: false, or the dialog appears behind
+  // a menu the user then has to dismiss.
   test('scheme rows stay open, the tag row (a dialog) dismisses', () => {
     const model = makeModel()
     const rows = allItems(model, { includeTagOption: true }).filter(
@@ -153,7 +155,7 @@ describe('color by menu', () => {
     expect(rows.length).toBeGreaterThan(1)
     for (const row of rows) {
       const label = 'label' in row ? String(row.label) : ''
-      expect([label, row.keepMenuOpen]).toEqual([
+      expect([label, staysOpenOnClick(row)]).toEqual([
         label,
         !label.startsWith('Tag'),
       ])

@@ -1,5 +1,7 @@
 import { isValidElement } from 'react'
 
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
@@ -202,5 +204,5 @@ test('every toggle keeps the menu open', () => {
   )
   const toggles = rows.filter(i => 'checked' in i)
   expect(toggles.length).toBeGreaterThan(0)
-  expect(toggles.every(i => i.keepMenuOpen)).toBe(true)
+  expect(toggles.every(i => staysOpenOnClick(i))).toBe(true)
 })

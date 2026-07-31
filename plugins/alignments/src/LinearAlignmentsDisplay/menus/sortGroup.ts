@@ -86,14 +86,14 @@ export function getSortByMenuItem(
   // rule `checkedType` applies to the group-by radios.
   const stored = getSortMode(model)
   const mode = modes.includes(stored) ? stored : 'position'
-  // Rows that only write an ordering keep the menu open; `tag` opens a dialog,
-  // so it dismisses — the one asymmetry in the group, and now the only thing
-  // spelled out per row.
+  // Rows that only write an ordering keep the menu open by their radio type;
+  // `tag` opens a dialog, so it passes false — the one asymmetry in the group,
+  // and the only thing spelled out per row.
   const radio = (
     m: SortMode,
     label: string,
     onClick: () => void,
-    keepMenuOpen = true,
+    keepMenuOpen?: boolean,
   ): RadioMenuItem => ({
     label,
     type: 'radio',

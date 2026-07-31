@@ -1,3 +1,5 @@
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type { MultiRowSource } from './sourcesLogic.ts'
@@ -115,13 +117,14 @@ describe('multi-row track menu', () => {
       ),
     ]
 
-    expect(toggles.every(i => 'keepMenuOpen' in i && i.keepMenuOpen)).toBe(true)
+    expect(toggles.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
     // the dialog opener is the one row that still dismisses
-    expect(
-      subMenuOf(items, 'Row height').find(
-        i => 'label' in i && i.label === 'Custom...',
-      ),
-    ).not.toHaveProperty('keepMenuOpen', true)
+    const custom = subMenuOf(items, 'Row height').find(
+      i => 'label' in i && i.label === 'Custom...',
+    )
+    expect(custom && 'onClick' in custom && staysOpenOnClick(custom)).toBe(
+      false,
+    )
   })
 
   it.each([
