@@ -53,7 +53,8 @@ showing, is remembered for the next consensus you run.
 - **Include insertions supported by the reads** - with this off, the output
   stays in the reference coordinate frame.
 - **Exclude secondary alignments** - on by default. Unmapped, QC-fail, and
-  duplicate reads are always excluded.
+  duplicate reads are always excluded, as are reads stored without a sequence,
+  which have no bases to vote with.
 
 ## Ambiguity codes
 
@@ -87,6 +88,13 @@ The variant output only contains definite calls. N positions are not variants,
 and with ambiguity codes on, positions that resolved to a code are omitted too,
 since a VCF alternate allele must be a definite sequence. A region can therefore
 produce fewer variants with ambiguity codes on than off.
+
+A deletion running from the very first position of the selection is also left
+out. A VCF deletion record is anchored on the reference base in front of it, and
+that base is outside the selection, so the deletion cannot be written without
+misstating which bases it covers. It is still reflected in the FASTA, which
+simply omits the deleted bases. Extend the selection to the left to get the
+record.
 
 ## Relationship to samtools
 
