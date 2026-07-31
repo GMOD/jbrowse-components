@@ -35,7 +35,7 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
       menuItems={() => {
         const session = getSession(model)
         const flatMenuItems =
-          session.getTrackListMenuItems?.(conf, model.view) ?? []
+          session.getTrackListMenuItems?.(conf, model.trackContainer) ?? []
         return [
           ...flatMenuItems,
           model.isFavorite(trackId)

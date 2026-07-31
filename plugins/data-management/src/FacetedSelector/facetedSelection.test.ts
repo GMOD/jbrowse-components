@@ -11,7 +11,7 @@ function nonCartModel() {
   const shown = new Set<string>()
   const recent: string[] = []
   const model = {
-    view: {
+    trackContainer: {
       showTrack: (id: string) => shown.add(id),
       hideTrack: (id: string) => shown.delete(id),
     },

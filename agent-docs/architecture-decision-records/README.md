@@ -58,4 +58,6 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [046](adr-046-resolveconf-names-the-cascade.md) | Accepted | Promotable-slot resolution is named at the call site (`resolveConf`); `getConf` never cascades |
 | [047](adr-047-undefined-is-the-only-inherit-sentinel.md) | Accepted | A promotable slot's inherit sentinel is always `undefined` (a `maybe*` type + `promotedBase`) — never an in-band `'inherit'` enum member or a doubled-up `defaultValue` |
 | [048](adr-048-pin-edits-the-stylesheet-not-the-elements.md) | Accepted | Setting a display-type default writes only the session-wide value; rewriting tracks is a separate, explicitly-labeled, opt-in action |
+| [049](adr-049-region-bound-wrapper-stays.md) | Accepted | Keep the per-read `RegionBoundBamFeature` wrapper — `recordClass` moved the wrapper from retained to transient, which is where the cost actually was; eliminating the transient one would change the adapter→extractor contract for ~1% |
+| [050](adr-050-track-containers-are-not-view-types.md) | Accepted | A track list that is not a view is addressed by id through its view (`trackContainerFor`), not registered as a hidden view type |
 <!-- END GENERATED ADR INDEX -->

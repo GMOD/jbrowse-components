@@ -72,7 +72,7 @@ const TrackCheckbox = observer(function TrackCheckbox({
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
-        if (model.view.toggleTrack(trackId)) {
+        if (model.trackContainer?.toggleTrack(trackId)) {
           model.addToRecentlyUsed(trackId)
         }
       }}

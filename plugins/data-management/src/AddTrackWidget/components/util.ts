@@ -20,15 +20,16 @@ export function categorizeAdapters(adaptersList: AdapterType[]) {
 }
 
 /**
- * Whether the view currently displays any of the track's assemblies, i.e. the
- * track can be shown here after adding it. Shared by the single-track and
- * paste-JSON submit paths so both decide "show vs. warn" the same way.
+ * Whether the target track list currently displays any of the track's
+ * assemblies, i.e. the track can be shown here after adding it. Shared by the
+ * single-track and paste-JSON submit paths so both decide "show vs. warn" the
+ * same way.
  */
-export function viewDisplaysAssembly(
-  view: { assemblyNames?: readonly string[] } | undefined,
+export function containerDisplaysAssembly(
+  container: { assemblyNames?: readonly string[] } | undefined,
   assemblyNames: readonly (string | undefined)[] | undefined,
 ) {
-  return !!view?.assemblyNames?.some(a => assemblyNames?.includes(a))
+  return !!container?.assemblyNames?.some(a => assemblyNames?.includes(a))
 }
 
 /**

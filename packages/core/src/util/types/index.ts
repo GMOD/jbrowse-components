@@ -3,7 +3,10 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { PluginDefinition } from '../../PluginLoader.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type assemblyManager from '../../assemblyManager/index.ts'
-import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type {
+  AnyConfigurationModel,
+  ResolvableDisplay,
+} from '../../configuration/index.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
 import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
@@ -438,6 +441,24 @@ export interface SessionWithFocusedViewAndDrawerWidgets extends SessionWithDrawe
   setFocusedViewId(id: string): void
 }
 
+/**
+ * the slice of a view that the track-selector and add-track widgets write into:
+ * a track list, the assemblies it may show tracks for, and the open/close
+ * actions. A plain view is its own track container; a view that owns several
+ * (the synteny view's per-level track lists) hands them out via
+ * `trackContainerFor`.
+ */
+export interface TrackContainer {
+  tracks: {
+    configuration: { trackId: string }
+    displays: ResolvableDisplay[]
+  }[]
+  assemblyNames?: string[]
+  showTrack: (trackId: string) => unknown
+  hideTrack: (trackId: string) => unknown
+  toggleTrack: (trackId: string) => unknown
+}
+
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
   id: string
@@ -450,6 +471,12 @@ export interface AbstractViewModel {
   setDisplayName: (arg: string) => void
   menuItems: () => MenuItem[]
   assemblyNames?: string[]
+  /**
+   * a track container owned by this view, by its id. Only views holding more
+   * than one track list implement it; for every other view the widget targets
+   * the view itself.
+   */
+  trackContainerFor?: (id: string) => TrackContainer | undefined
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

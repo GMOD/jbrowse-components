@@ -65,7 +65,11 @@ const HamburgerMenu = observer(function HamburgerMenu({
                 {
                   label: 'Add track...',
                   onClick: () => {
-                    showAddTrackWidget(session, model.view.id)
+                    showAddTrackWidget(
+                      session,
+                      model.view.id,
+                      model.trackContainerId,
+                    )
                   },
                 },
               ]

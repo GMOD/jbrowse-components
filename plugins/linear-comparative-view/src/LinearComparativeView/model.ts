@@ -8,11 +8,17 @@ import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
+import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { TrackContainer } from '@jbrowse/core/util'
+import type {
+  IAnyModelType,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
@@ -32,9 +38,13 @@ export interface SyntenyWarning {
  * #stateModel LinearComparativeView
  */
 function stateModelFactory(pluginManager: PluginManager) {
-  const LinearSyntenyViewHelper = pluginManager.getViewType(
-    'LinearSyntenyViewHelper',
-  ).stateModel
+  // Annotated rather than inferred to break a type cycle that is real but
+  // purely at the type level: this model -> level -> LinearSyntenyDisplay
+  // (which types its `view` getter as LinearSyntenyViewModel) -> this model.
+  // The runtime import is acyclic. This is what makes `levels[i]` untyped at
+  // use sites — not anything about how the level is registered.
+  const LinearSyntenyLevel: IAnyModelType =
+    linearSyntenyViewHelperModelFactory(pluginManager)
   return types
     .compose(
       'LinearComparativeView',
@@ -65,8 +75,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * One synteny band per adjacent pair of `views`. Each holds its own
+         * track list, which is why the track-selector and add-track widgets
+         * address them through `trackContainerFor` — a level is not a view and
+         * cannot be the target of their `view` reference.
          */
-        levels: types.array(LinearSyntenyViewHelper),
+        levels: types.array(LinearSyntenyLevel),
         /**
          * #property
          * N genome rows, with N-1 synteny `levels` between adjacent pairs. The
@@ -169,6 +183,18 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       isViewCompact(idx: number) {
         return self.views[idx]?.scalebarOnly ?? false
+      },
+      /**
+       * #method
+       * The level that owns a given track list. This view holds one track list
+       * per synteny band rather than one of its own, so the track-selector and
+       * add-track widgets target a level through here instead of referencing
+       * this view directly. By id, not index: reconcileLevels pops levels when
+       * a genome row is removed, and an index would silently retarget a
+       * different pair.
+       */
+      trackContainerFor(id: string): TrackContainer | undefined {
+        return self.levels.find(level => level.id === id)
       },
     }))
     .actions(self => ({
@@ -295,7 +321,8 @@ function stateModelFactory(pluginManager: PluginManager) {
             'HierarchicalTrackSelectorWidget',
             'hierarchicalTrackSelector',
             {
-              view: self.levels[level],
+              view: self.id,
+              trackContainerId: self.levels[level]?.id,
             },
           )
           session.showWidget(selector)

@@ -8,7 +8,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
-import { reaction } from 'mobx'
+import { autorun } from 'mobx'
 
 import {
   isBlockedHttpUrl,
@@ -17,6 +17,7 @@ import {
 } from './urlWarnings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { TrackContainer } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -67,8 +68,27 @@ export default function f(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      /**
+       * #property
+       * Which of the view's track containers the new track opens in, by id.
+       * Absent — the usual case — means the view itself. See the same property
+       * on HierarchicalTrackSelectorWidget, which is what sets this.
+       */
+      trackContainerId: types.maybe(types.string),
     })
     .volatile(() => createVolatileState())
+    .views(self => ({
+      /**
+       * #getter
+       * The track list a submitted track opens in.
+       */
+      get trackContainer(): TrackContainer | undefined {
+        const { view, trackContainerId } = self
+        return trackContainerId === undefined
+          ? view
+          : view?.trackContainerFor?.(trackContainerId)
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -135,29 +155,38 @@ export default function f(pluginManager: PluginManager) {
         Object.assign(self, createVolatileState())
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        // The widget instance is reused (reconciled) across opens because it
-        // is keyed by a fixed id in session.widgets. Reopening it for a
-        // different view updates self.view but leaves the previously entered
-        // form data — including altAssemblyName — in place, which would add
-        // the track to the wrong assembly. Reset the form when the target
-        // view changes.
-        //
-        // Intentionally a reaction, not an autorun: it must fire ONLY on a
-        // view change, never on mount. An autorun (or fireImmediately) would
-        // clearData() on first open and wipe legitimately-restored form state.
-        addDisposer(
-          self,
-          reaction(
-            () => self.view?.id,
-            () => {
-              self.clearData()
-            },
-          ),
-        )
-      },
-    }))
+    .actions(self => {
+      // where a submitted track would land: the view, and the track list within
+      // it. Two levels of one synteny view are different targets sharing a view
+      // id, so both halves matter.
+      function targetKey() {
+        return `${self.view?.id}-${self.trackContainerId}`
+      }
+      return {
+        afterAttach() {
+          // The widget instance is reused (reconciled) across opens because it
+          // is keyed by a fixed id in session.widgets. Reopening it for a
+          // different target leaves the previously entered form data —
+          // including altAssemblyName — in place, which would add the track to
+          // the wrong assembly.
+          //
+          // `lastTarget` seeds from the target the widget attached with, so the
+          // autorun's first pass is a no-op — clearing there would wipe form
+          // state legitimately restored from the session.
+          let lastTarget = targetKey()
+          addDisposer(
+            self,
+            autorun(() => {
+              const target = targetKey()
+              if (target !== lastTarget) {
+                lastTarget = target
+                self.clearData()
+              }
+            }),
+          )
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -223,7 +252,7 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get assembly() {
-        return self.altAssemblyName || self.view?.assemblyNames?.[0]
+        return self.altAssemblyName || self.trackContainer?.assemblyNames?.[0]
       },
 
       /**
@@ -250,7 +279,9 @@ export default function f(pluginManager: PluginManager) {
        */
       getTrackConfig(timestamp: number) {
         const session = getSession(self)
-        const assemblyInstance = session.assemblyManager.get(self.assembly)
+        const assemblyInstance = self.assembly
+          ? session.assemblyManager.get(self.assembly)
+          : undefined
 
         return assemblyInstance &&
           self.trackAdapter &&

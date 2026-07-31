@@ -8,10 +8,14 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 export function showAddTrackWidget(
   session: AbstractSessionModel,
   viewId: string,
+  trackContainerId?: string,
 ) {
   if (isSessionModelWithWidgets(session)) {
     session.showWidget(
-      session.addWidget('AddTrackWidget', 'addTrackWidget', { view: viewId }),
+      session.addWidget('AddTrackWidget', 'addTrackWidget', {
+        view: viewId,
+        trackContainerId,
+      }),
     )
   }
 }

@@ -38,7 +38,7 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
   'data-testid'?: string
 }) {
   const { classes } = useSmallBadgeStyles()
-  return model.view ? (
+  return model.trackContainer ? (
     <DropdownTrackSelector
       onClick={() => {
         onOpen()

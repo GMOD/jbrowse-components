@@ -32,6 +32,7 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackContainer } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const defaultItemHeight = 22
@@ -182,6 +183,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+
+      /**
+       * #property
+       * Which of the view's track containers this selector writes into, by id.
+       * Absent — the usual case — means the view itself. A view owning several
+       * track lists (the synteny view, one per level band) names one here; the
+       * container is resolved through `view.trackContainerFor` rather than
+       * referenced directly, because it isn't a view and so isn't a legal
+       * target for the `view` reference above.
+       */
+      trackContainerId: types.maybe(types.string),
     })
     .volatile(() => ({
       /**
@@ -233,13 +245,23 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * The track list this selector shows and writes into: the view itself,
+       * or one of its containers when `trackContainerId` names one.
+       */
+      get trackContainer(): TrackContainer | undefined {
+        const { view, trackContainerId } = self
+        return trackContainerId === undefined
+          ? view
+          : view?.trackContainerFor?.(trackContainerId)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        */
       get shownTrackIds() {
         return new Set<string>(
-          self.view?.tracks?.map(
-            (t: { configuration: { trackId: string } }) =>
-              t.configuration.trackId,
-          ),
+          self.trackContainer?.tracks.map(t => t.configuration.trackId),
         )
       },
       /**
@@ -264,7 +286,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames(): string[] {
-        return self.view?.assemblyNames ?? []
+        return self.trackContainer?.assemblyNames ?? []
       },
     }))
     .actions(self => ({
@@ -380,6 +402,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setView(view: unknown) {
         self.view = view
+      },
+      /**
+       * #action
+       */
+      setTrackContainerId(id: string | undefined) {
+        self.trackContainerId = id
       },
       /**
        * #action

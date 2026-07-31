@@ -70,8 +70,9 @@ export async function renderToSvg(
       })),
     ),
     Promise.all(
-      // linearSyntenyDisplays' getter return type widens to any through the
-      // view's Instance type (MST drops getter types), so annotate displays.
+      // `levels` is declared with an explicit IAnyModelType to break a type
+      // cycle (see LinearComparativeView's model), so everything read off a
+      // level is any — annotate displays.
       levels.map(async level => {
         const displays: LinearSyntenyDisplayModel[] =
           level.linearSyntenyDisplays

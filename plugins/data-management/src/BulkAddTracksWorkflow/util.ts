@@ -124,12 +124,13 @@ export function submitBulkTracks({
 }) {
   const session = getSession(model)
   if (isSessionWithAddTracks(session)) {
-    const showInView = model.view?.assemblyNames?.includes(assembly)
+    const { trackContainer } = model
+    const showInView = trackContainer?.assemblyNames?.includes(assembly)
     for (const { row, name } of named) {
       const conf = { ...row.conf, name }
       session.addTrackConf(conf)
       if (showInView) {
-        model.view?.showTrack(conf.trackId)
+        trackContainer?.showTrack(conf.trackId)
       }
     }
     if (!showInView) {

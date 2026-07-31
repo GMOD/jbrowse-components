@@ -2,7 +2,7 @@ import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
 import { parseTrackConfigs } from './parseTrackConfigs.ts'
-import { finishAddTrack, viewDisplaysAssembly } from './util.ts'
+import { finishAddTrack, containerDisplaysAssembly } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -28,7 +28,7 @@ export function doPasteConfigSubmit({
         `A track with trackId "${existing.trackId}" already exists; change the trackId or remove the existing track`,
       )
     }
-    const { view } = model
+    const { trackContainer } = model
     const notShown: string[] = []
     transaction(() => {
       for (const conf of confs) {
@@ -36,8 +36,8 @@ export function doPasteConfigSubmit({
         // already surfaced as an error snackbar; don't show or warn about a
         // track that wasn't added.
         if (session.addTrackConf(conf)) {
-          if (viewDisplaysAssembly(view, conf.assemblyNames)) {
-            view?.showTrack?.(conf.trackId)
+          if (containerDisplaysAssembly(trackContainer, conf.assemblyNames)) {
+            trackContainer?.showTrack(conf.trackId)
           } else {
             notShown.push(conf.name ?? conf.trackId)
           }

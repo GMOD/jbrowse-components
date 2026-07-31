@@ -32,10 +32,10 @@ export function setTracksSelected(
     transaction(() => {
       for (const id of ids) {
         if (selected) {
-          model.view.showTrack(id)
+          model.trackContainer?.showTrack(id)
           model.addToRecentlyUsed(id)
         } else {
-          model.view.hideTrack(id)
+          model.trackContainer?.hideTrack(id)
         }
       }
     })

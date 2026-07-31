@@ -25,6 +25,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel LinearSyntenyViewHelper
  * Holds one level of a linear synteny comparison: its track list, height and
  * level index, composed with the shared rendering-lifecycle state.
+ *
+ * Nested in LinearComparativeView.levels, never in session.views: it is a track
+ * container, not a view, and satisfies core's `TrackContainer` so the
+ * track-selector and add-track widgets can write into it via the parent view's
+ * `trackContainerFor`. The `LinearSyntenyViewHelper` name and `type` literal are
+ * kept only because saved sessions persist them.
  */
 export function linearSyntenyViewHelperModelFactory(
   pluginManager: PluginManager,
@@ -99,8 +105,8 @@ export function linearSyntenyViewHelperModelFactory(
     }))
     .views(self => ({
       // The LinearSyntenyView this level belongs to. getContainingView rather
-      // than a hop count: a level is registered as a view type but carries no
-      // width/setWidth, so isViewModel walks past it to the real view.
+      // than a hop count: a level has no width/setWidth, so isViewModel walks
+      // past it to the real view.
       get parentView() {
         return getContainingView(self) as unknown as ParentViewDuck
       },

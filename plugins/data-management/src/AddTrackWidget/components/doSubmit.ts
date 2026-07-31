@@ -9,7 +9,7 @@ import { getRoot } from '@jbrowse/mobx-state-tree'
 import {
   defaultIndexingConf,
   finishAddTrack,
-  viewDisplaysAssembly,
+  containerDisplaysAssembly,
 } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
@@ -48,7 +48,7 @@ function doTextIndexTrack({
 }
 
 export function doSubmit({ model }: { model: AddTrackModel }) {
-  const { textIndexTrack, trackAdapter, view } = model
+  const { textIndexTrack, trackAdapter, trackContainer } = model
   const session = getSession(model)
   const timestamp = Date.now()
   const trackConfig = model.getTrackConfig(timestamp)
@@ -58,8 +58,8 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
   } else if (trackConfig && trackAdapter) {
     const trackId = String(trackConfig.trackId)
     session.addTrackConf(trackConfig)
-    if (viewDisplaysAssembly(view, [model.assembly])) {
-      view?.showTrack?.(trackId)
+    if (containerDisplaysAssembly(trackContainer, [model.assembly])) {
+      trackContainer?.showTrack(trackId)
     } else {
       // The track was added to the session but can't be shown here because its
       // assembly isn't open in this view (common when the assembly dropdown is

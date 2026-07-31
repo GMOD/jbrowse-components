@@ -164,7 +164,7 @@ function categoryTrackMenuItems(
       label: 'Show all',
       onClick: () => {
         for (const node of trackNodes) {
-          model.view.showTrack(node.trackId)
+          model.trackContainer?.showTrack(node.trackId)
         }
       },
     },
@@ -172,7 +172,7 @@ function categoryTrackMenuItems(
       label: 'Hide all',
       onClick: () => {
         for (const node of trackNodes) {
-          model.view.hideTrack(node.trackId)
+          model.trackContainer?.hideTrack(node.trackId)
         }
       },
     },

@@ -61,7 +61,7 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
           checked: model.shownTrackIds.has(t.trackId),
           onClick: () => {
             guard(() => {
-              if (model.view.toggleTrack(t.trackId)) {
+              if (model.trackContainer?.toggleTrack(t.trackId)) {
                 model.addToRecentlyUsed(t.trackId)
               }
             })

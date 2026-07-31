@@ -16,7 +16,13 @@ import {
   storeFileHandle,
   verifyPermission,
 } from './fileHandleStore.ts'
-import { getEnv, getSession, objectHash } from './mstUtils.ts'
+import {
+  getContainingView,
+  getEnv,
+  getSession,
+  objectHash,
+} from './mstUtils.ts'
+import { isViewModel } from './types/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -686,7 +692,12 @@ export function showTrackGeneric(
       })
     }
 
-    const viewType = pluginManager.getViewType(self.type)
+    // A track container that isn't itself a view — a synteny level, which owns
+    // a track list but has no width and no registered view type — takes the
+    // display choice from the view it sits in, which is the same node
+    // getContainingView already resolves to for everything else beneath it.
+    const view = isViewModel(self) ? self : getContainingView(self)
+    const viewType = pluginManager.getViewType(view.type)
     const picked = pickDisplayForView({
       declaredDisplays: conf.displays ?? [],
       requestedType: displayInitialSnapshot.type,
@@ -696,7 +707,7 @@ export function showTrackGeneric(
 
     if (!picked) {
       throw new Error(
-        `Could not find a compatible display for view type ${self.type}`,
+        `Could not find a compatible display for view type ${view.type}`,
       )
     }
 

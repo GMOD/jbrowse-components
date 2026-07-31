@@ -25,9 +25,9 @@ export interface LevelDuck {
 // display -> displays[] -> track -> tracks[] -> level). A hop count silently
 // returns the wrong node if anything is ever inserted between the two, and the
 // symptom is an undefined `height`/`level` projecting as NaN somewhere far away;
-// findParentThatIs throws instead. Not `isViewModel`: the level IS registered as
-// a view type, but it carries no width/setWidth, which is exactly why
-// getContainingView walks past it to the LinearSyntenyView.
+// findParentThatIs throws instead. Matched on the `type` literal, which is also
+// what saved sessions persist — hence the stale 'ViewHelper' name for something
+// that is not, and no longer pretends to be, a view.
 export function isSyntenyLevel(thing: unknown): thing is LevelDuck {
   return (
     typeof thing === 'object' &&
