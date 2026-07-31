@@ -27,6 +27,7 @@ import { trackType } from './trackFields.ts'
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, Opts, Track } from './types.ts'
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
@@ -49,16 +50,24 @@ function createModel(data: Config) {
   })
   // The interactive app routes failures (a bad track config, an assembly that
   // won't load, an RPC error) to session.notifyError, which only pushes a
-  // snackbar — invisible in this headless tool. Echo error notifications to
-  // stderr so the real cause is reported. These same errors are made fatal via
-  // throwOnRenderError (see renderRegion / whenViewReady).
+  // snackbar — invisible in this headless tool. The FIRST error-level snackbar
+  // always becomes the thrown error (firstRenderError → throwOnRenderError, see
+  // renderRegion / whenViewReady) and so is reported by whoever catches it;
+  // echoing it here too printed every failure twice. Echo only the errors after
+  // it, which have nothing else to surface them.
   const { session } = model
   const reported = new Set<string>()
   addDisposer(
     session,
     autorun(() => {
-      for (const { message, level } of session.snackbarMessages) {
-        if (level === 'error' && !reported.has(message)) {
+      // session.snackbarMessages is a volatile observable array typed `any` at
+      // this boundary, so annotate the element rather than inherit the implicit
+      // any the destructuring below would silently accept
+      const errors = session.snackbarMessages.filter(
+        (m: SnackbarMessage) => m.level === 'error',
+      )
+      for (const { message } of errors.slice(1)) {
+        if (!reported.has(message)) {
           reported.add(message)
           console.error(`jb2export: ${message}`)
         }

@@ -1,3 +1,5 @@
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
 import {
@@ -218,14 +220,31 @@ export default abstract class RpcMethodType<
     return renameRegionsIfNeeded(rootModel!.session!.assemblyManager, args)
   }
 
+  /**
+   * The root model to resolve internet accounts against, but only while it is
+   * still attached to its tree. An RPC's promise can settle after the session it
+   * belongs to is gone — jbrowse-web loading a new session, or a headless
+   * renderer (jbrowse-img) destroying its model once the SVG is out — and
+   * reading `internetAccounts` off a destroyed node logs an MST dead-node
+   * warning for work whose result is already discarded. A torn-down root has no
+   * accounts to consult, so it reads as "none" rather than as an error.
+   */
+  private get authRootModel() {
+    const rootModel = this.pluginManager.rootModel
+    // a non-node root (an embedded host's duck-typed object, a test fake) can't
+    // be dead, so only real nodes get the liveness check
+    const alive = !isStateTreeNode(rootModel) || isAlive(rootModel)
+    return isAppRootModel(rootModel) && alive ? rootModel : undefined
+  }
+
   async serializeNewAuthArguments(
     loc: UriLocation,
     _rpcDriverClassName: string,
   ) {
-    const rootModel = this.pluginManager.rootModel
+    const rootModel = this.authRootModel
 
     // args dont need auth or already have auth
-    if (!isAppRootModel(rootModel) || loc.internetAccountPreAuthorization) {
+    if (!rootModel || loc.internetAccountPreAuthorization) {
       return loc
     }
 
@@ -270,10 +289,8 @@ export default abstract class RpcMethodType<
     thing: Record<string, unknown>,
     rpcDriverClassName: string,
   ) {
-    const rootModel = this.pluginManager.rootModel
     const needsFileHandles = hasFileHandlesInCache()
-    const needsUris =
-      isAppRootModel(rootModel) && rootModel.internetAccounts.length > 0
+    const needsUris = !!this.authRootModel?.internetAccounts.length
 
     // Common case (web users with no internet accounts and no desktop file
     // handles): nothing to do, skip the tree walk entirely.
