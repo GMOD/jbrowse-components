@@ -82,14 +82,14 @@ export default function LaunchSyntenyViewForRegionDialog({
   )
   const track = tracks.find(t => t.trackId === trackId)!
 
-  // Hand-rolled rather than useFetch because the point here is the cleanup: a
-  // selection can be a whole chromosome, and useFetch's fetcher takes the cache
-  // key, with no way to hand it a stop token, so dismissing the dialog left the
-  // RPC running. The token is created and stopped by the same effect, so its
-  // lifetime is the fetch's. `discoverMatesFor` is stable — queueDialog resolves
-  // the dialog's props once, at the point the menu item was clicked — so this
-  // re-runs on the dataset the user picks and nothing else, and the cleanup
-  // stops the discovery for the dataset they picked away from.
+  // Hand-rolled rather than useFetch because the result is seeded into state
+  // the user then owns: they reorder the rows and uncheck them, so this can't be
+  // re-derived from `data` every render. `discoverMatesFor` is stable —
+  // queueDialog resolves the dialog's props once, at the point the menu item was
+  // clicked — so this re-runs on the dataset the user picks and nothing else,
+  // and the cleanup stops the discovery for the dataset they picked away from.
+  // A selection can be a whole chromosome, so that cleanup matters: the token is
+  // created and stopped by the same effect, giving it the fetch's lifetime.
   useEffect(() => {
     const stopToken = createStopToken()
     let alive = true

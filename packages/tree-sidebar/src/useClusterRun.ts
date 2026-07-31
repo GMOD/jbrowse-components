@@ -11,8 +11,9 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 /**
  * Owns one cluster run's lifecycle for a "Run clustering" dialog: start it,
  * report its status, stop it, and abort it if the dialog goes away. Not
- * `useFetch` — that fires off a key and has no cancellation or status channel,
- * whereas this run is button-triggered and stoppable mid-flight.
+ * `useFetch` — that fires on a key changing and has no status channel, whereas
+ * this run is button-triggered, reports progress, and is stoppable mid-flight
+ * from a Cancel button rather than only when the component goes away.
  *
  * `run` does the display-specific RPC with the token and status sink it's
  * handed. It should **throw** for preconditions (an uninitialized view, too few

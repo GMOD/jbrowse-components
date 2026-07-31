@@ -252,14 +252,19 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
                 session.notify('This session cannot add tracks', 'warning')
                 return
               }
+              // the VCF covers every region, so a multi-region track is named
+              // for the count rather than for whichever one happened to be first
               const region = regions[0]!
               addAndShowTrack(
                 session,
                 {
                   type: 'VariantTrack',
                   trackId: `consensus-variants-${Date.now()}`,
-                  name: `Consensus variants ${region.refName}:${region.start + 1}-${region.end}`,
-                  assemblyNames: [region.assemblyName],
+                  name:
+                    regions.length === 1
+                      ? `Consensus variants ${region.refName}:${region.start + 1}-${region.end}`
+                      : `Consensus variants (${regions.length} regions)`,
+                  assemblyNames: [assemblyName],
                   adapter: {
                     type: 'VcfAdapter',
                     vcfLocation: {
