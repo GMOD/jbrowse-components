@@ -150,6 +150,12 @@ export interface ConfigSlotDefinition {
    * removed since the value was saved) degrades to "not usable" (falls back to
    * the base) instead of reaching a lookup that assumes every `.type` is
    * registered. Omit when the type-shape check alone is enough to trust the value.
+   *
+   * Runs at **schema build** too, over the slot's own `promotedBase` — the base
+   * is what every failing tier degrades to, so it has to clear the same bar.
+   * Keep the hook a function of module-level data (as `isRegisteredColorScheme`
+   * is of `COLOR_SCHEMES`); one that consults state its plugin registers later
+   * during `install()` would reject a base that is really fine.
    */
   validate?: (value: unknown) => boolean
 }

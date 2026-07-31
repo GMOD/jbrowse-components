@@ -1,7 +1,9 @@
 import { ThemeProvider } from '@mui/material'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
+import { observable, runInAction } from 'mobx'
 
 import CascadingMenu from './CascadingMenu.tsx'
+import { promotableRadioItem } from './promotableMenuItems.tsx'
 import { createJBrowseTheme } from './theme.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
@@ -64,6 +66,52 @@ describe('CascadingMenu endAdornment', () => {
     fireEvent.click(getByText('Alpha'))
     expect(onMenuItemClick).toHaveBeenCalled()
     expect(onClick).toHaveBeenCalled()
+  })
+
+  // The promotable pin's filled state, and a size row's "reset" enablement, are
+  // plain booleans captured when the items are BUILT — so the whole subsystem
+  // rests on the menu rebuilding while it stays open (every promotable row sets
+  // `keepMenuOpen`, and clicking a pin is expected to fill it in place). That
+  // works because `CascadingMenu` is an observer and calls a `menuItems` getter
+  // inside its own render, so whatever the build reads — here a promoted
+  // display-type default, in production the session's preference map — is
+  // tracked. Pin this, or a "cheap" memo of the items array silently freezes
+  // every pin until the menu is reopened.
+  it('re-runs a menuItems getter when an observable it read changes, so a pin fills in place', () => {
+    const promoted = observable.box('normal')
+    const { getByRole } = render(
+      <ThemeProvider theme={theme}>
+        <CascadingMenu
+          open
+          menuItems={() => [
+            promotableRadioItem({
+              label: 'Compact',
+              checked: false,
+              onClick: () => {},
+              displayTypeDefault: {
+                active: promoted.get() === 'compact',
+                toggle: () => {},
+              },
+            }),
+          ]}
+          onMenuItemClick={cb => {
+            cb()
+          }}
+          onClose={() => {}}
+        />
+      </ThemeProvider>,
+    )
+    const pin = () =>
+      getByRole('button', { name: 'make Compact the default for all tracks' })
+    expect(pin().getAttribute('aria-pressed')).toBe('false')
+
+    // the model moves with the menu still mounted — no reopen, no rerender call
+    act(() => {
+      runInAction(() => {
+        promoted.set('compact')
+      })
+    })
+    expect(pin().getAttribute('aria-pressed')).toBe('true')
   })
 
   it('an adornment that stops propagation does not fire the row click', () => {
