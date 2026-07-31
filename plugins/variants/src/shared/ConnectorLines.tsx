@@ -1,15 +1,17 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getStrokeProps } from '@jbrowse/core/util'
+import { getContainingView, getStrokeProps } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
 import { connectorLineAlpha } from './connectorLineAlpha.ts'
+
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One connector, in viewport pixels (0 = the view's left edge): `mx` is the
 // matrix-column center at the bottom of the zone, `gx` the genomic position on
@@ -22,6 +24,15 @@ export interface ConnectorCoord {
   mx: number
   gx: number
   label?: string
+}
+
+// Everything the overlay needs off a display, so the SVG-export paths can
+// declare it too rather than restating the fields.
+export interface ConnectorLinesModel {
+  height: number
+  lineZoneHeight: number
+  connectorLineCoords: ConnectorCoord[]
+  setLineZoneHeight: (arg: number) => void
 }
 
 const useStyles = makeStyles()({
@@ -57,80 +68,79 @@ const ConnectorLineField = observer(function ConnectorLineField({
   lineCoords,
   lineZoneHeight,
   strokeWidth,
+  exportSVG,
   onHover,
   children,
 }: {
   lineCoords: ConnectorCoord[]
   lineZoneHeight: number
   strokeWidth: number
+  exportSVG?: boolean
   onHover: (coord: ConnectorCoord | undefined) => void
   children?: React.ReactNode
 }) {
   const theme = useTheme()
-  const pathD = useMemo(
-    () =>
-      lineCoords
-        .map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`)
-        .join(''),
-    [lineCoords, lineZoneHeight],
-  )
 
-  // Every line lands in one <path>, so the stroke alpha is shared: derive it
-  // from how deep the lines stack across their own horizontal extent, else a
-  // high-column-count matrix paints the zone solid (see connectorLineAlpha).
-  const strokeAlpha = useMemo(() => {
-    // indexed min/max rather than Math.max(...xs): lineCoords runs to ~10^4
-    // entries on a pangenome VCF, past what a spread can safely pass as args
+  // One pass for both the geometry and its density: lineCoords runs to ~10^4
+  // entries on a pangenome VCF. (Indexed min/max rather than Math.max(...xs)
+  // for the same reason — that is past what a spread can pass as args.)
+  const { pathD, strokeAlpha } = useMemo(() => {
     let lo = Number.POSITIVE_INFINITY
     let hi = Number.NEGATIVE_INFINITY
+    let d = ''
     for (const { mx, gx } of lineCoords) {
       lo = Math.min(lo, mx, gx)
       hi = Math.max(hi, mx, gx)
+      d += `M${mx} ${lineZoneHeight}L${gx} 0`
     }
-    return connectorLineAlpha(lineCoords.length, hi - lo, strokeWidth)
-  }, [lineCoords, strokeWidth])
-
-  const onMouseMove = useCallback(
-    (event: React.MouseEvent<SVGElement>) => {
-      const pt = svgMousePoint(event)
-      if (!pt) {
-        onHover(undefined)
-      } else {
-        let minDist = 10
-        let found: ConnectorCoord | undefined
-        for (const coord of lineCoords) {
-          const dist = pointToSegmentDist(
-            pt.x,
-            pt.y,
-            coord.mx,
-            lineZoneHeight,
-            coord.gx,
-            0,
-          )
-          if (dist < minDist) {
-            minDist = dist
-            found = coord
-          }
-        }
-        onHover(found)
-      }
-    },
-    [lineCoords, lineZoneHeight, onHover],
-  )
+    return {
+      pathD: d,
+      // Every line lands in one <path>, so the stroke alpha is shared: derive
+      // it from how deep the lines stack across their own horizontal extent,
+      // else a high-column-count matrix paints the zone solid (see
+      // connectorLineAlpha).
+      strokeAlpha: connectorLineAlpha(lineCoords.length, hi - lo, strokeWidth),
+    }
+  }, [lineCoords, lineZoneHeight, strokeWidth])
 
   return (
     <>
-      <rect
-        x={0}
-        y={0}
-        width="100%"
-        height={lineZoneHeight}
-        fill="transparent"
-        onMouseMove={onMouseMove}
-        onMouseLeave={() => {
-          onHover(undefined)
-        }}
-      />
+      {exportSVG ? null : (
+        <rect
+          x={0}
+          y={0}
+          width="100%"
+          height={lineZoneHeight}
+          fill="transparent"
+          onMouseMove={event => {
+            const pt = svgMousePoint(event)
+            if (!pt) {
+              onHover(undefined)
+            } else {
+              let minDist = 10
+              let found: ConnectorCoord | undefined
+              for (const coord of lineCoords) {
+                const dist = pointToSegmentDist(
+                  pt.x,
+                  pt.y,
+                  coord.mx,
+                  lineZoneHeight,
+                  coord.gx,
+                  0,
+                )
+                if (dist < minDist) {
+                  minDist = dist
+                  found = coord
+                }
+              }
+              onHover(found)
+            }
+          }}
+          onMouseLeave={() => {
+            onHover(undefined)
+          }}
+        />
+      )}
       <path
         d={pathD}
         {...getStrokeProps(alpha(theme.palette.text.primary, strokeAlpha))}
@@ -183,59 +193,63 @@ export function ConnectorZone({
  * column), and the drag handle that resizes the zone.
  */
 export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
-  lineCoords,
-  lineZoneHeight,
-  height,
-  width,
+  model,
   strokeWidth,
   highlight,
   exportSVG,
-  onResize,
   children,
 }: {
-  lineCoords: ConnectorCoord[]
-  lineZoneHeight: number
-  height: number
-  width: number
+  model: ConnectorLinesModel
   strokeWidth: number
   highlight?: ConnectorCoord
   exportSVG?: boolean
-  onResize: (delta: number) => void
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
+  const { height, lineZoneHeight, connectorLineCoords: lineCoords } = model
+  const { width } = getContainingView(model) as LinearGenomeViewModel
   const [hovered, setHovered] = useState<ConnectorCoord>()
+  // The coords are rebuilt whenever the view moves, so a hovered entry missing
+  // from the current list is one left over from a zoom or a refetch that never
+  // got a mousemove to clear it — drawing it would put the red line and its
+  // tooltip on the position the column used to have.
+  const current = hovered && lineCoords.includes(hovered) ? hovered : undefined
   // a real hover wins over the crosshair column it necessarily sits on
-  const emphasized = hovered ? hovered : highlight
+  const emphasized = current ? current : highlight
 
-  return lineCoords.length === 0 ? null : (
+  return (
     <>
-      <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
-        <ConnectorLineField
-          lineCoords={lineCoords}
-          lineZoneHeight={lineZoneHeight}
-          strokeWidth={strokeWidth}
-          onHover={coord => {
-            setHovered(coord)
-          }}
-        >
-          {children}
-        </ConnectorLineField>
-        {emphasized ? (
-          <ConnectorLine
-            mx={emphasized.mx}
-            gx={emphasized.gx}
+      {lineCoords.length === 0 ? null : (
+        <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
+          <ConnectorLineField
+            lineCoords={lineCoords}
             lineZoneHeight={lineZoneHeight}
-          />
-        ) : null}
-        {hovered?.label ? <BaseTooltip>{hovered.label}</BaseTooltip> : null}
-      </ConnectorZone>
-      {exportSVG ? null : (
+            strokeWidth={strokeWidth}
+            exportSVG={exportSVG}
+            onHover={coord => {
+              setHovered(coord)
+            }}
+          >
+            {children}
+          </ConnectorLineField>
+          {emphasized ? (
+            <ConnectorLine
+              mx={emphasized.mx}
+              gx={emphasized.gx}
+              lineZoneHeight={lineZoneHeight}
+            />
+          ) : null}
+          {current?.label ? <BaseTooltip>{current.label}</BaseTooltip> : null}
+        </ConnectorZone>
+      )}
+      {/* Not gated on there being lines: the zone still takes up
+      `lineZoneHeight`, and a viewport with no variants in it is exactly when a
+      user wants to drag that space back. */}
+      {exportSVG || lineZoneHeight === 0 ? null : (
         <ResizeHandle
           style={{ position: 'absolute', top: lineZoneHeight - 4 }}
           onDrag={d => {
-            onResize(d)
-            return undefined
+            model.setLineZoneHeight(lineZoneHeight + d)
           }}
           className={classes.resizeHandle}
         />

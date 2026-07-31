@@ -226,6 +226,13 @@ keep the two from drifting:
 - Per-line alpha is an ink budget, so it takes the stroke width
   (`connectorLineAlpha`) — LD's 1px lines and the matrix's 0.5px lines must read
   as equally dark at equal density.
+- The hovered coord is React state but the list is a computed off the view, so
+  the overlay only draws a hover still present in the current list. A zoom fires
+  no mousemove, and identity alone left the red line and tooltip on the column's
+  old position (`ConnectorLines.test.tsx`).
+- The resize handle is gated on `lineZoneHeight`, never on there being lines: an
+  empty viewport still reserves the zone, and that is when a user most wants to
+  drag it shut.
 
 ## Allele counting: two implementations on purpose, count inline
 

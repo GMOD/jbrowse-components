@@ -8,14 +8,15 @@ import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRende
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
-import type { ConnectorLinesModel } from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import type { MatrixConnectorLinesModel } from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import type { MatrixRenderState } from './components/variantMatrixRenderingBackendTypes.ts'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 
-interface MatrixRenderSvgModel extends RenderSvgBaseModel, ConnectorLinesModel {
+interface MatrixRenderSvgModel
+  extends RenderSvgBaseModel, MatrixConnectorLinesModel {
   referenceDrawingMode: string
   renderState: MatrixRenderState
 }
