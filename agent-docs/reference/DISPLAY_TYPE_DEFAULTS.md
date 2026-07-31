@@ -173,6 +173,7 @@ interface SlotResolution {
   base: unknown       // the slot's promotedBase (CSS `initial`)
   promoted: unknown   // the raw session-wide promoted default, if any
   customized: boolean // track holds its own value rather than following the default
+  inherited: boolean  // value came from the session tier, and moves the track off `base`
   value: unknown      // final cascaded value (never the unset sentinel)
 }
 
@@ -196,9 +197,15 @@ function resolveSlot(self, slot): SlotResolution {
   const customized = isUsableValue(def, own)
   // a display that arrived in a received session skips the session-wide tier
   // entirely (see "Received sessions" below), collapsing to "own value, else base"
-  const inherited =
+  const inheritedValue =
     !self.ignorePromotedDefaults && isUsableValue(def, promoted) ? promoted : base
-  return { base, customized, promoted, value: customized ? own : inherited }
+  const value = customized ? own : inheritedValue
+  // "this display picked something up from the session" — a field, not a
+  // predicate re-spelled at each consumer, because either half is silent when
+  // dropped: without `customized` a customized track reads as inheriting,
+  // without the `base` compare a default that changes nothing gets reported
+  const inherited = !customized && !deepEqual(value, base)
+  return { base, customized, promoted, inherited, value }
 }
 ```
 

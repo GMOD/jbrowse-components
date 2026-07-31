@@ -1,3 +1,4 @@
+import { deepEqual } from '../util/deepEqual.ts'
 import { getSession } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getSlotDefinition } from './slotFacade.ts'
@@ -218,6 +219,16 @@ export interface SlotResolution {
   promoted: unknown
   /** track holds its own value rather than following the default */
   customized: boolean
+  /**
+   * the value came from the session-wide tier — the track follows the default
+   * *and* that default moves it off `base`. The "this display picked something
+   * up from the session" predicate, for the badge diff and the About dialog's
+   * copy-config note. A field rather than a `!customized && !deepEqual(value,
+   * base)` at each call site, because getting either half wrong is silent:
+   * dropping `customized` reports a customized track as inheriting, dropping
+   * the `base` compare flags a promoted default that changes nothing.
+   */
+  inherited: boolean
   /** the final cascaded value (never the `undefined` inherit sentinel) */
   value: unknown
 }
@@ -254,7 +265,7 @@ export function resolveSlotIn(
   // `promoted` stays the raw session-wide value regardless of this display's
   // opt-out: it's a session-wide fact, and `isPromotableDefault` (the pin's
   // filled/outline state) reports on the session, not on one display's view of
-  // it. The opt-out belongs to `inherited` below, which is the only tier of the
+  // it. The opt-out belongs to `inheritedValue` below, the only tier of the
   // cascade it may neutralize.
   const promoted = ctx.defaults.getDisplayTypeDefault(ctx.displayType, slot)
   // The track's own value, before any cascade — the raw stored read, not
@@ -273,9 +284,16 @@ export function resolveSlotIn(
   // baking the resolved values into the shared snapshot can't cover the case
   // where the sender saw the *base* value: nothing gets baked (it equals base),
   // so without the opt-out the recipient's own promoted default would repaint it.
-  const inherited =
+  const inheritedValue =
     !ctx.ignorePromotedDefaults && isUsableValue(def, promoted)
       ? promoted
       : base
-  return { base, customized, promoted, value: customized ? own : inherited }
+  const value = customized ? own : inheritedValue
+  return {
+    base,
+    customized,
+    promoted,
+    inherited: !customized && !deepEqual(value, base),
+    value,
+  }
 }

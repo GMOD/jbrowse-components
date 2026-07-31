@@ -124,31 +124,49 @@ export function getTrackConfigWithPromotables(
     for (const [i, displayConfig] of displayConfigs.entries()) {
       const snap: unknown = displaySnaps[i]
       if (isConfigurationModel(displayConfig) && isObject(snap)) {
-        const displayType = snap.type
-        if (typeof displayType === 'string') {
-          // identity, not displayId: the hydration cache makes a track's config
-          // node stable, so an open display's `configuration` IS this node
-          const open = openDisplays.find(d => d.configuration === displayConfig)
-          const ctx = open
-            ? cascadeContextFor(open)
-            : {
-                config: displayConfig,
-                displayType,
-                ignorePromotedDefaults: false,
-                defaults: session,
-              }
-          for (const slot of promotableSlotNames(displayConfig)) {
-            const res = resolveSlotIn(ctx, slot)
-            snap[slot] = res.value
-            if (!res.customized && !deepEqual(res.value, res.base)) {
-              fromDisplayTypeDefaults.push(`${displayType}.${slot}`)
-            }
-          }
-        }
+        fromDisplayTypeDefaults.push(
+          ...resolvePromotablesInto(session, openDisplays, displayConfig, snap),
+        )
       }
     }
   }
   return { config, fromDisplayTypeDefaults }
+}
+
+// One display's promotable slots resolved into its snapshot entry in place,
+// returning `<displayType>.<slot>` for each value that came from a promoted
+// default rather than from the config. The same loop as
+// `getConfigSnapshotWithPromotables`, over a context instead of a display state
+// node — an unopened track has none.
+function resolvePromotablesInto(
+  session: AbstractSessionModel,
+  openDisplays: PromotableDisplay[],
+  displayConfig: AnyConfigurationModel,
+  snap: Record<string, unknown>,
+): string[] {
+  const displayType = snap.type
+  const inherited: string[] = []
+  if (typeof displayType === 'string') {
+    // identity, not displayId: the hydration cache makes a track's config node
+    // stable, so an open display's `configuration` IS this node
+    const open = openDisplays.find(d => d.configuration === displayConfig)
+    const ctx = open
+      ? cascadeContextFor(open)
+      : {
+          config: displayConfig,
+          displayType,
+          ignorePromotedDefaults: false,
+          defaults: session,
+        }
+    for (const slot of promotableSlotNames(displayConfig)) {
+      const res = resolveSlotIn(ctx, slot)
+      snap[slot] = res.value
+      if (res.inherited) {
+        inherited.push(`${displayType}.${slot}`)
+      }
+    }
+  }
+  return inherited
 }
 
 /**
@@ -419,10 +437,8 @@ export function getDisplayTypeDefaultChanges(
 ): TrackConfigChange[] {
   const changes: TrackConfigChange[] = []
   for (const slot of promotableSlotNames(self.configuration)) {
-    // `customized` first: a customized slot inherits nothing, so it is not a
-    // difference this display picked up from the session
     const res = resolveSlot(self, slot)
-    if (!res.customized && !deepEqual(res.value, res.base)) {
+    if (res.inherited) {
       changes.push({
         path: [slot],
         // a cascade value is `unknown` here but JSON by contract — it has to
