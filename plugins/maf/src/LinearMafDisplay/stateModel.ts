@@ -87,7 +87,7 @@ import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
 } from './rowIdentityModes.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -113,7 +113,7 @@ export interface MafSource {
   /** assembly this row's genome is loaded as, when it is navigable */
   assemblyName?: string
   /** config to load that assembly from, when the session lacks it */
-  assemblyConfigUrl?: string
+  assemblyConfigLocation?: UriLocation
 }
 
 /**
@@ -452,8 +452,8 @@ export default function stateModelFactory(
             label: s.label,
             color: s.color,
             ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
-            ...(s.assemblyConfigUrl
-              ? { assemblyConfigUrl: s.assemblyConfigUrl }
+            ...(s.assemblyConfigLocation
+              ? { assemblyConfigLocation: s.assemblyConfigLocation }
               : {}),
           }))
           const next = samplesCanonical
@@ -726,8 +726,8 @@ export default function stateModelFactory(
             label: s.label ?? s.name,
             color: s.color,
             ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
-            ...(s.assemblyConfigUrl
-              ? { assemblyConfigUrl: s.assemblyConfigUrl }
+            ...(s.assemblyConfigLocation
+              ? { assemblyConfigLocation: s.assemblyConfigLocation }
               : {}),
           }))
         },
@@ -1222,7 +1222,7 @@ export default function stateModelFactory(
             ? {
                 ...span,
                 assemblyName: source.assemblyName,
-                assemblyConfigUrl: source.assemblyConfigUrl,
+                assemblyConfigLocation: source.assemblyConfigLocation,
                 sampleLabel: source.label ?? source.name,
               }
             : undefined

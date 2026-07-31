@@ -2,7 +2,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseNewick } from '@jbrowse/tree-sidebar'
 
 import type { MafAdapterOptions, Sample } from '../types.ts'
-import type { FileLocation } from '@jbrowse/core/util'
+import type { FileLocation, UriLocation } from '@jbrowse/core/util'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 /** Sample-id set shared by all three adapters to resolve tokens — see `matchSampleId`. */
@@ -17,7 +17,7 @@ interface SampleConfigEntry {
   label?: string
   color?: string
   assemblyName?: string
-  assemblyConfigUrl?: string
+  assemblyConfigLocation?: UriLocation
 }
 
 export type SampleConfig = string[] | SampleConfigEntry[]
@@ -34,8 +34,8 @@ export function normalizeSamples(r: SampleConfig): Sample[] {
         label: s.label ?? s.id,
         color: s.color,
         ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
-        ...(s.assemblyConfigUrl
-          ? { assemblyConfigUrl: s.assemblyConfigUrl }
+        ...(s.assemblyConfigLocation
+          ? { assemblyConfigLocation: s.assemblyConfigLocation }
           : {}),
       }))
 }

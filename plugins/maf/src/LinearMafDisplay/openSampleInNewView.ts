@@ -2,7 +2,7 @@ import { isSessionWithAddAssembly } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface SampleNavigationTarget {
@@ -12,7 +12,7 @@ export interface SampleNavigationTarget {
   end: number
   sampleLabel: string
   /** config to load the assembly from when the session doesn't have it */
-  assemblyConfigUrl?: string
+  assemblyConfigLocation?: UriLocation
 }
 
 /** `chr:start-end`, 1-based inclusive, from the half-open span. */
@@ -55,21 +55,20 @@ async function ensureAssembly(
   session: AbstractSessionModel,
   target: SampleNavigationTarget,
 ) {
-  const { assemblyConfigUrl, assemblyName } = target
-  if (assemblyConfigUrl && !session.assemblyManager.has(assemblyName)) {
+  const { assemblyConfigLocation, assemblyName } = target
+  if (assemblyConfigLocation && !session.assemblyManager.has(assemblyName)) {
+    const configUrl = new URL(
+      assemblyConfigLocation.uri,
+      assemblyConfigLocation.baseUri,
+    )
     const configJson: unknown = JSON.parse(
-      await openLocation({
-        uri: assemblyConfigUrl,
-        locationType: 'UriLocation',
-      }).readFile('utf8'),
+      await openLocation(assemblyConfigLocation).readFile('utf8'),
     )
     const assemblyConf = findAssemblyConf(configJson, assemblyName)
     if (!assemblyConf) {
-      throw new Error(
-        `Assembly ${assemblyName} not found in ${assemblyConfigUrl}`,
-      )
+      throw new Error(`Assembly ${assemblyName} not found in ${configUrl.href}`)
     }
-    addRelativeUris(assemblyConf, new URL(assemblyConfigUrl))
+    addRelativeUris(assemblyConf, configUrl)
     if (!isSessionWithAddAssembly(session)) {
       throw new Error(
         `This session cannot load ${assemblyName}; open a config that already has it`,

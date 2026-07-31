@@ -3,7 +3,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { Region, StatusCallback, UriLocation } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Observable } from 'rxjs'
 
@@ -192,7 +192,10 @@ export interface Sample {
   /**
    * Config to load `assemblyName` from when the session doesn't already have
    * it — a portal hosting many genomes keeps one config per genome, so the
-   * aligned species is normally absent from the config the user opened.
+   * aligned species is normally absent from the config the user opened. A
+   * `UriLocation` rather than a bare url so `addRelativeUris` stamps its
+   * `baseUri`, letting a hosted config point at a sibling config by relative
+   * path.
    */
-  assemblyConfigUrl?: string
+  assemblyConfigLocation?: UriLocation
 }

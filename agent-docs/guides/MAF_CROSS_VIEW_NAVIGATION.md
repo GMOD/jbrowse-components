@@ -48,7 +48,10 @@ samples: [
     id: 'SPRET_EiJ',
     label: 'SPRET/EiJ',
     assemblyName: 'SPRET_EiJ',
-    assemblyConfigUrl: 'https://jbrowse.org/hubs/genark/mouseStrains/SPRET_EiJ/config.json',
+    assemblyConfigLocation: {
+      uri: 'https://jbrowse.org/hubs/genark/mouseStrains/SPRET_EiJ/config.json',
+      locationType: 'UriLocation',
+    },
   },
 ]
 ```
@@ -69,7 +72,7 @@ samples: [
   `<displayId>_<assemblyName>` so following the same species repeatedly
   re-navigates one view. Same pattern as the spreadsheet view's location links.
 
-`assemblyConfigUrl` is what makes this work on a portal at all. A site hosting
+`assemblyConfigLocation` is what makes this work on a portal at all. A site hosting
 many genomes keeps one config per genome — genomes.jbrowse.org has ~50k — so an
 alignment's species are not, and cannot be, all present in the config the user
 opened. `ensureAssembly` fetches just the named assembly out of that config and
@@ -78,6 +81,14 @@ opened. `ensureAssembly` fetches just the named assembly out of that config and
 URIs resolve against the page). Omit it when the assembly is already in the
 config; a name the session can't resolve and can't fetch surfaces the view's own
 assembly-not-found error.
+
+It is a `UriLocation`, not a bare url string, so `addRelativeUris` stamps its
+`baseUri` along with every other location in the config — which is what lets a
+config point at a sibling config by relative path
+(`test_data/volvox/config_maf_navigation.json` does exactly that, and is the
+"MAF row → that species' own genome" entry on the no-config screen). A bare
+string is invisible to `addRelativeUris` and would have forced every config to
+spell out absolute urls.
 
 `ensureAssembly` asks whether the session already has the assembly with
 `assemblyManager.has()`, **not** `get()`. `get()` on an unknown name reports it
@@ -95,6 +106,16 @@ chr1:5880965-5881051` / `Open SPRET_EiJ chr1:3129040-3129126`, and clicking the
 SPRET_EiJ entry fetched that assembly and opened a second LGV on
 `SPRET_EiJ chr1:3,129,040..3,129,126`. Unit coverage is `findRowSpan.test.ts`
 and `sampleNavigationItems.test.ts`.
+
+**Reproduce it locally**, no portal needed: the no-config screen's "MAF row →
+that species' own genome" link opens `test_data/volvox/config_maf_navigation.json`,
+which covers all three row states in one track — `volvox` resolves to an
+assembly already in the config, `simvolvox`/`minivolvox` are absent and load
+from the sibling `config_maf_nav_targets.json` by relative uri, and the other
+seven samples have no `assemblyName` and are correctly not offered. The two
+target assemblies are `volvox.2bit` under a different name with a refName alias
+(`chrA`/`chr_a` → `ctgA`), so the jump also exercises alias resolution without
+adding any test data files.
 
 The stretch version — open a **synteny** view driven by the MAF blocks
 themselves, since the MAF carries both coordinate systems and the alignment, so

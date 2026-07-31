@@ -1,0 +1,58 @@
+{
+  "assemblies": [
+    {
+      "name": "simvolvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "simvolvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "simvolvox_aliases",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "simvolvox_aliases-1",
+              "aliases": ["chrA"]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "minivolvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "minivolvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "minivolvox_aliases",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "minivolvox_aliases-1",
+              "aliases": ["chr_a"]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

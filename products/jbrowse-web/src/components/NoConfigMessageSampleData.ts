@@ -131,6 +131,11 @@ export const recentConfigs: readonly SampleLink[] = [
     label: 'C. elegans MAF (26-way, conservation band)',
   },
   {
+    href: '?config=test_data/volvox/config_maf_navigation.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-2000","type":"LinearGenomeView","tracks":["volvox_maf_navigable"]}]}',
+    label:
+      'MAF row → that species’ own genome (drag-select a row, right-click)',
+  },
+  {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
     label: 'ChromHMM states (9 ENCODE cell types, β-globin)',
   },

@@ -60,7 +60,7 @@ const coord = {
 function target(sampleLabel: string, start: number) {
   return {
     assemblyName: 'mm10',
-    assemblyConfigUrl: undefined,
+    assemblyConfigLocation: undefined,
     chr: 'chr2',
     start,
     end: start + 20,
@@ -136,7 +136,10 @@ test('the have-we-got-it probe does not go through get()', async () => {
   } as unknown as AbstractSessionModel
   await openSampleInNewView(loadedSession, 'display1', {
     ...target('SPRET_EiJ', 1000),
-    assemblyConfigUrl: 'https://example.com/mm10/config.json',
+    assemblyConfigLocation: {
+      uri: 'https://example.com/mm10/config.json',
+      locationType: 'UriLocation' as const,
+    },
   })
   expect(calls).toEqual(['has:mm10'])
   expect(views).toHaveLength(1)

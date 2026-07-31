@@ -16,7 +16,7 @@ const configSchema = ConfigurationSchema(
     samples: {
       type: 'frozen',
       description:
-        'string[] or {id:string,label:string,color?:string,assemblyName?:string}[]; assemblyName makes rows for that sample navigable to its own genome',
+        'string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it',
       defaultValue: [],
     },
     /**
