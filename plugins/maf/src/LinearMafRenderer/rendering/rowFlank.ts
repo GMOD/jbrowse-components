@@ -13,6 +13,59 @@ function isAligned(byte: number | undefined) {
   return byte !== undefined && byte !== DASH && byte !== SPACE
 }
 
+// A neighbouring block resolves a run only when it abuts in reference
+// coordinates AND carries this row with sequence at the shared seam.
+function seamAligned(
+  neighbour: MafBlock | undefined,
+  abuts: boolean,
+  rowIndex: number,
+  seamByte: (alignmentBytes: Uint8Array) => number | undefined,
+) {
+  const row =
+    neighbour !== undefined && abuts
+      ? neighbour.rows.find(r => r.rowIndex === rowIndex)
+      : undefined
+  return row !== undefined && isAligned(seamByte(row.alignmentBytes))
+}
+
+const lastByte = (bytes: Uint8Array) => bytes[bytes.length - 1]
+const firstByte = (bytes: Uint8Array) => bytes[0]
+
+/**
+ * `makeRowFlank`'s answer for a single (block, row), read straight off the two
+ * abutting blocks instead of indexing every block's rows first.
+ *
+ * The hover hit-test needs exactly one flank per mousemove, and building the
+ * whole index for it was the entire cost: the fetched region is the *buffered*
+ * one, so on the UCSC ce11 26-way shape that is ~48k blocks x 26 rows of set
+ * inserts on every pointer move. The per-frame walks below still want the index
+ * — they ask for every (block, row) — so both live here and
+ * `rowFlank.test.ts` pins them to the same answer.
+ */
+export function rowFlankAt(
+  blocks: MafBlock[],
+  blockIndex: number,
+  rowIndex: number,
+): RowFlank {
+  const block = blocks[blockIndex]!
+  const prev = blocks[blockIndex - 1]
+  const next = blocks[blockIndex + 1]
+  return {
+    boundedLeft: seamAligned(
+      prev,
+      prev?.endBp === block.startBp,
+      rowIndex,
+      lastByte,
+    ),
+    boundedRight: seamAligned(
+      next,
+      next?.startBp === block.endBp,
+      rowIndex,
+      firstByte,
+    ),
+  }
+}
+
 /**
  * Resolves, per block and row, whether a gap run running off either end of that
  * row is closed by the neighbouring block — the input `resolvedExtent` needs to

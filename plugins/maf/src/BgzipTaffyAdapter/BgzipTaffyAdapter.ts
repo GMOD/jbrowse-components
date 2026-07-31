@@ -17,11 +17,7 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import {
-  nextChrStartBlock,
-  parseTaiIndex,
-  selectIndexEntries,
-} from './taiIndex.ts'
+import { parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
@@ -184,37 +180,22 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         const { index, runLengthEncodeBases } = await this.setup(opts)
         const sampleIds = buildSampleFilter(opts)
 
-        // Get byte range for this query
-        const records = index[query.refName]
-        if (!records || records.length === 0) {
-          observer.complete()
-          return
-        }
-
-        const { firstEntry, nextEntry, ranPastEnd } = selectIndexEntries(
-          records,
+        // Byte range for this query — the same span `getRegionByteSize`
+        // estimates from, so the gate can't disagree with the download.
+        const span = queryBlockSpan(
+          index,
+          query.refName,
           query.start,
           query.end,
         )
-
-        if (!firstEntry) {
+        if (!span) {
           observer.complete()
           return
         }
+        const { firstEntry, nextEntry, ranPastEnd, startBlock, endBlock } = span
 
         // Read and decompress the data
         const file = openLocation(this.getConf('tafGzLocation'))
-        const startBlock = firstEntry.virtualOffset.blockPosition
-        // When the query reaches a chromosome's last sparse index entry there is
-        // no cushion entry past it, and taffy doesn't place an entry near the
-        // chromosome end — so bound the read at the next chromosome's first block
-        // rather than the fallback entry, which would truncate a final bracket
-        // larger than one bgzf block. The last chromosome has no next block to
-        // bound against (and reading the file size needs a CORS-exposed
-        // Content-Range), so it keeps the one-block cushion below.
-        const endBlock = ranPastEnd
-          ? (nextChrStartBlock(index, query.refName) ?? startBlock)
-          : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
 
         const MIN_BLOCK_SIZE = 65536
         const readLength =
@@ -280,25 +261,20 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     )
   }
 
-  // Byte budget from the .tai index alone: the compressed span between the
-  // block bracketing the region start and the one after the region end. No
-  // block download.
+  // Byte budget from the .tai index alone: the compressed span `getFeatures`
+  // would read, via the same `queryBlockSpan`. No block download.
   async getRegionByteSize(regions: Region[]) {
     const { index } = await this.setup()
     let bytes = 0
     for (const region of regions) {
-      const entries = index[region.refName]
-      if (entries) {
-        const { firstEntry, nextEntry } = selectIndexEntries(
-          entries,
-          region.start,
-          region.end,
-        )
-        if (firstEntry && nextEntry) {
-          bytes +=
-            nextEntry.virtualOffset.blockPosition -
-            firstEntry.virtualOffset.blockPosition
-        }
+      const span = queryBlockSpan(
+        index,
+        region.refName,
+        region.start,
+        region.end,
+      )
+      if (span) {
+        bytes += Math.max(0, span.endBlock - span.startBlock)
       }
     }
     return bytes

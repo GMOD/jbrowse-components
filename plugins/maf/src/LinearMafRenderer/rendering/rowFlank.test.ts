@@ -1,4 +1,4 @@
-import { makeRowFlank } from './rowFlank.ts'
+import { makeRowFlank, rowFlankAt } from './rowFlank.ts'
 
 import type { MafBlock } from '../mafRenderingBackendTypes.ts'
 
@@ -90,4 +90,32 @@ test('rows are matched by rowIndex, not by position in the array', () => {
   const flank = makeRowFlank(blocks)
   expect(flank(0, 3).boundedRight).toBe(true)
   expect(flank(0, 0).boundedRight).toBe(false)
+})
+
+// The hover hit-test resolves one flank per mousemove via `rowFlankAt` while the
+// per-frame walks use the prebuilt index; a divergence would make a deletion
+// tooltip appear on a run the overlay suppressed (or vice versa).
+test('rowFlankAt matches the prebuilt index for every (block, row)', () => {
+  const blocks = [
+    block(100, 'AAAA', [
+      [0, 'aa--'],
+      [1, 'aaaa'],
+    ]),
+    block(104, 'AA-AA', [
+      [0, '--aaa'],
+      [1, 'aaaaa'],
+      [2, 'aaaaa'],
+    ]),
+    block(108, 'AAAA', [
+      [1, '--aa'],
+      [2, 'aaaa'],
+    ]),
+    block(200, 'AAAA', [[0, 'aaaa']]),
+  ]
+  const flank = makeRowFlank(blocks)
+  for (let i = 0; i < blocks.length; i++) {
+    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+      expect(rowFlankAt(blocks, i, rowIndex)).toEqual(flank(i, rowIndex))
+    }
+  }
 })

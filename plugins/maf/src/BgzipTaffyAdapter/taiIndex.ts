@@ -1,8 +1,28 @@
+import { parseAssemblyAndChr } from '../util/parseAssemblyName.ts'
+
 import type { ByteRange, IndexData } from './types.ts'
 
 // bgzf blocks are at most 64KiB of uncompressed data; a raw virtual offset
 // packs (block << 16) | dataPosition.
 const BGZF_BLOCK_SIZE = 65536
+
+/**
+ * The chromosome named by a `.tai` source token (`assembly.chr`, or
+ * `assembly.version.chr` for a haplotype genome like `Species1.1.chr3`), split
+ * by the same `parseAssemblyAndChr` the MAF-tabix and bigMaf paths use. A bare
+ * token with no assembly prefix is the chromosome itself.
+ *
+ * Taking the last dotted segment — which this replaces — mangled any chromosome
+ * whose own name contains a dot: `hg38.GL000009.2` keyed as `2`, so
+ * `getRefNames` advertised a name no region ever queries, and every dotted
+ * accession sharing a suffix collapsed into one key whose entries then
+ * interleave two chromosomes' offsets and break `selectIndexEntries`' ascending
+ * binary search.
+ */
+function chrFromSourceName(name: string) {
+  const { assemblyName, chr } = parseAssemblyAndChr(name)
+  return chr === '' ? assemblyName : chr
+}
 
 /**
  * Parse a `.tai` Taffy index into per-chromosome byte-range entries.
@@ -26,7 +46,7 @@ export function parseTaiIndex(text: string): IndexData {
   for (const line of lines) {
     const [chr, chrStart, virtualOffset] = line.split('\t')
     const isRelative = chr === '*'
-    const currChr = isRelative ? lastChr : chr!.split('.').at(-1)!
+    const currChr = isRelative ? lastChr : chrFromSourceName(chr!)
 
     const absVirtualOffset = isRelative
       ? lastRawVirtualOffset + +virtualOffset!
@@ -117,4 +137,56 @@ export function nextChrStartBlock(index: IndexData, refName: string) {
   const nextChr = chrs[chrs.indexOf(refName) + 1]
   return (nextChr ? index[nextChr] : undefined)?.[0]?.virtualOffset
     .blockPosition
+}
+
+/** The index entries and compressed block span one region query resolves to. */
+export interface QueryBlockSpan {
+  firstEntry: ByteRange
+  nextEntry: ByteRange | undefined
+  ranPastEnd: boolean
+  /** compressed byte offset of the bgzf block the read starts in */
+  startBlock: number
+  /** compressed byte offset the read is bounded at (== startBlock for a
+   * single-block read; the caller still adds the one-block cushion) */
+  endBlock: number
+}
+
+/**
+ * Resolve a `[queryStart, queryEnd)` region on `refName` to the bgzf block span
+ * a read of it covers. Undefined when the chromosome isn't in the index.
+ *
+ * The single source for both the read in `getFeatures` and the byte estimate in
+ * `getRegionByteSize`, which derived `endBlock` differently: the estimate
+ * measured to the fallback entry and skipped the past-the-end chromosome bound,
+ * so a query running past a chromosome's last sparse entry under-reported — 0
+ * bytes for a single-entry chromosome — while the read pulled everything up to
+ * the next chromosome. That is exactly the case the fetch gate exists to catch.
+ */
+export function queryBlockSpan(
+  index: IndexData,
+  refName: string,
+  queryStart: number,
+  queryEnd: number,
+): QueryBlockSpan | undefined {
+  const records = index[refName]
+  const selected = records?.length
+    ? selectIndexEntries(records, queryStart, queryEnd)
+    : undefined
+  const firstEntry = selected?.firstEntry
+  let span: QueryBlockSpan | undefined
+  if (selected !== undefined && firstEntry !== undefined) {
+    const { nextEntry, ranPastEnd } = selected
+    const startBlock = firstEntry.virtualOffset.blockPosition
+    // With no cushion entry past the query, taffy gives no guarantee the last
+    // index entry is near the chromosome's data end — so bound at the next
+    // chromosome's first block rather than that entry, which would truncate a
+    // final bracket larger than one bgzf block. The last chromosome has no next
+    // block to bound against (and reading the file size needs a CORS-exposed
+    // Content-Range), so it falls back to the caller's one-block cushion.
+    const endBlock = ranPastEnd
+      ? (nextChrStartBlock(index, refName) ?? startBlock)
+      : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
+    span = { firstEntry, nextEntry, ranPastEnd, startBlock, endBlock }
+  }
+  return span
 }

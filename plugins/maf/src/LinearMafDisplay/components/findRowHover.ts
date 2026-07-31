@@ -2,7 +2,7 @@ import { insertionBarWidth } from '@jbrowse/alignments-core'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
-import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
+import { rowFlankAt } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type {
@@ -208,7 +208,6 @@ export function findRowHoverAtBp(
   bpPerPx: number,
 ): RowHit | undefined {
   const targetBp = Math.floor(gposFrac)
-  const rowFlank = makeRowFlank(region.blocks)
   for (let i = 0; i < region.blocks.length; i++) {
     const block = region.blocks[i]!
     if (block.startBp > targetBp) {
@@ -220,7 +219,12 @@ export function findRowHoverAtBp(
         return (
           insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase) ??
           cellHitInRow(block, row, targetBp, showAsUpperCase) ??
-          deletionHitInRow(block, row, targetBp, rowFlank(i, rowIndex))
+          deletionHitInRow(
+            block,
+            row,
+            targetBp,
+            rowFlankAt(region.blocks, i, rowIndex),
+          )
         )
       }
       const empty = block.empties.find(e => e.rowIndex === rowIndex)

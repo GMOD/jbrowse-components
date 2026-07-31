@@ -2,6 +2,7 @@ import {
   lowerBound,
   nextChrStartBlock,
   parseTaiIndex,
+  queryBlockSpan,
   selectIndexEntries,
 } from './taiIndex.ts'
 
@@ -84,9 +85,27 @@ describe('parseTaiIndex', () => {
     expect(parseTaiIndex('')).toEqual({})
   })
 
-  test('takes the last dotted segment as the chromosome', () => {
+  test('a numeric middle segment is a genome version, not the chromosome', () => {
     const index = parseTaiIndex('hg38.1.chrX\t0\t0\n')
     expect(Object.keys(index)).toEqual(['chrX'])
+  })
+
+  test('keeps dots that belong to the chromosome name', () => {
+    // Dotted accessions used to key as their last segment, so these two
+    // scaffolds collapsed into one `2`/`1` bucket whose interleaved entries
+    // broke the ascending-chrStart search.
+    const index = parseTaiIndex(
+      'hg38.CM000663.2\t0\t0\nhg38.CM000664.2\t0\t5000\nmm10.chr1.random\t0\t9000\n',
+    )
+    expect(Object.keys(index)).toEqual([
+      'CM000663.2',
+      'CM000664.2',
+      'chr1.random',
+    ])
+  })
+
+  test('a token with no assembly prefix is the chromosome itself', () => {
+    expect(Object.keys(parseTaiIndex('chrI\t0\t0\n'))).toEqual(['chrI'])
   })
 })
 
@@ -185,5 +204,55 @@ describe('nextChrStartBlock', () => {
 
   test('single-chromosome index has no next block', () => {
     expect(nextChrStartBlock({ chr1: [at(0)] }, 'chr1')).toBeUndefined()
+  })
+})
+
+describe('queryBlockSpan', () => {
+  const entry = (chrStart: number, blockPosition: number): ByteRange => ({
+    chrStart,
+    virtualOffset: { blockPosition, dataPosition: 0 },
+  })
+
+  test('interior query spans to the cushion entry', () => {
+    const index: IndexData = {
+      chr1: [entry(0, 0), entry(100, 1000), entry(200, 2000), entry(300, 3000)],
+    }
+    const span = queryBlockSpan(index, 'chr1', 50, 120)!
+    expect(span.ranPastEnd).toBe(false)
+    expect(span.startBlock).toBe(0)
+    // first chrStart >= 120 is index 2; cushion index 3 -> block 3000
+    expect(span.endBlock).toBe(3000)
+  })
+
+  test('past the last sparse entry it bounds at the next chromosome', () => {
+    const index: IndexData = {
+      chr1: [entry(0, 0), entry(100, 1000)],
+      chr2: [entry(0, 90000)],
+    }
+    const span = queryBlockSpan(index, 'chr1', 50, 99999)!
+    expect(span.ranPastEnd).toBe(true)
+    // the whole of chr1's data, not the distance to its last entry (1000)
+    expect(span.endBlock - span.startBlock).toBe(90000)
+  })
+
+  // The estimate is what the fetch gate sees; measuring to the fallback entry
+  // reported 0 bytes here while the read pulled the entire chromosome.
+  test('a single-entry chromosome still measures its whole data span', () => {
+    const index: IndexData = { chr1: [entry(0, 0)], chr2: [entry(0, 40000)] }
+    const span = queryBlockSpan(index, 'chr1', 0, 99999)!
+    expect(span.endBlock - span.startBlock).toBe(40000)
+  })
+
+  test('the last chromosome has no next block to bound against', () => {
+    const index: IndexData = { chr1: [entry(0, 0), entry(100, 1000)] }
+    const span = queryBlockSpan(index, 'chr1', 50, 99999)!
+    expect(span.endBlock).toBe(span.startBlock)
+  })
+
+  test('a chromosome absent from the index has no span', () => {
+    expect(
+      queryBlockSpan({ chr1: [entry(0, 0)] }, 'chrZ', 0, 10),
+    ).toBeUndefined()
+    expect(queryBlockSpan({ chr1: [] }, 'chr1', 0, 10)).toBeUndefined()
   })
 })
