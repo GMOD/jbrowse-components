@@ -33,6 +33,7 @@ import { autorun, observable, toJS, untracked } from 'mobx'
 
 import {
   FEATURE_DEFAULT_COLOR,
+  STRAND_COLOR_JEXL,
   UTR_DEFAULT_COLOR,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
@@ -71,7 +72,6 @@ import {
   scaleLaidOutData,
 } from './layout.ts'
 import {
-  STRAND_COLOR_JEXL,
   canvasTrackMenuItems,
   colorBySubMenuItems,
   colorMenuItems,

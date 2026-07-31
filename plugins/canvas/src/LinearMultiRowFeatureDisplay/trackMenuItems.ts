@@ -78,7 +78,9 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
 }
 
 // The sidebar toggle shows row labels with or without a tree, so it lives here
-// rather than under "Clustering" (which opts out of its own tree toggle).
+// rather than under "Clustering" (which opts out of both its tree controls —
+// see the treeApplies: false below), and the branch-length toggle follows it so
+// the two tree controls sit together.
 function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   return [
     checkboxItem('Show sidebar with tree and labels', self.showTree, () => {
@@ -220,7 +222,10 @@ export function buildMultiRowTrackMenuItems(
           self.setRunClustering(true)
         },
       },
-      { showTreeToggle: false },
+      // Both tree controls (show the tree, branch lengths) live under
+      // "Show..." for this display, so Clustering contributes neither —
+      // showTreeToggle alone left "Tree branch lengths" in both submenus.
+      { treeApplies: false },
     ),
   ]
 }

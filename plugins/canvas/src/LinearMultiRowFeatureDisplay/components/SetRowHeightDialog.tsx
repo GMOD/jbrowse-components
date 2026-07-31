@@ -14,6 +14,11 @@ const SetRowHeightDialog = observer(function (props: {
     // height — submitting that would silently pin it.
     rowHeightSetting: number
     setRowHeight: (arg: number) => void
+    // 0 is the fit sentinel this dialog advertises, so submitting it takes the
+    // same route as the "Squeeze to fit view" radio rather than writing the
+    // sentinel raw: fit height comes from the `height` slot, which setRowHeight
+    // leaves at a stale earlier value, so the track jumped on submit.
+    setFitToHeight: () => void
   }
   handleClose: () => void
 }) {
@@ -28,7 +33,11 @@ const SetRowHeightDialog = observer(function (props: {
       submitDisabled={value === undefined}
       onSubmit={() => {
         if (value !== undefined) {
-          model.setRowHeight(value)
+          if (value === 0) {
+            model.setFitToHeight()
+          } else {
+            model.setRowHeight(value)
+          }
           handleClose()
         }
       }}

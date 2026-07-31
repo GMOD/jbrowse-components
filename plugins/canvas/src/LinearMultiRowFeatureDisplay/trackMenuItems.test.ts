@@ -50,6 +50,17 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
+// every label in the menu tree, submenus included
+function allLabels(items: MenuItem[]): string[] {
+  return items.flatMap(i =>
+    'subMenu' in i
+      ? allLabels(i.subMenu)
+      : 'label' in i
+        ? [String(i.label)]
+        : [],
+  )
+}
+
 function checkedLabel(items: MenuItem[]) {
   return items.flatMap(i => ('checked' in i && i.checked ? [i.label] : []))
 }
@@ -68,6 +79,22 @@ describe('multi-row track menu', () => {
     expect(labels(subMenuOf(items, 'Show...'))).toEqual([
       'Show sidebar with tree and labels',
       'Tree branch lengths',
+    ])
+  })
+
+  it('keeps the tree controls in one place, not one copy per submenu', () => {
+    const items = buildMultiRowTrackMenuItems(
+      makeSelf({ treeHasBranchLengths: true }),
+    )
+
+    // "Tree branch lengths" moved into "Show..." alongside the sidebar toggle;
+    // Clustering also emitted its own copy for as long as it only opted out of
+    // the tree toggle
+    expect(allLabels(items).filter(l => l === 'Tree branch lengths')).toEqual([
+      'Tree branch lengths',
+    ])
+    expect(labels(subMenuOf(items, 'Clustering'))).toEqual([
+      'Cluster rows by similarity',
     ])
   })
 

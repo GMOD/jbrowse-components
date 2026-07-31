@@ -56,6 +56,46 @@ describe('canvas track menu shape', () => {
     }
   })
 
+  // "Color by..." can't join the loop above: two of its three radios open a
+  // dialog, and those must dismiss. Asserted row by row instead.
+  it('keeps the menu open for the color radio that writes a setting, not the dialog openers', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const colorBy = subMenuOf(display.trackMenuItems(), 'Color by...')
+
+    expect(
+      colorBy.map(i => [labelOf(i), 'keepMenuOpen' in i && !!i.keepMenuOpen]),
+    ).toEqual([
+      ['Solid color...', false],
+      ['Strand', true],
+      ['Attribute...', false],
+    ])
+  })
+
+  // CascadingMenu sorts every level by priority, so this is the order the user
+  // sees — not the order the builders happen to append in.
+  it('sinks the recovery items below the settings a subclass appends', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureHighlights([{ refName: 'ctgA', name: 'gene1' }])
+
+    const items: MenuItem[] = display.trackMenuItems()
+    const rendered = items
+      .toSorted((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+      .map(labelOf)
+
+    // "Gene glyph" is appended by LinearBasicDisplay after the base's filter
+    // family, so without the priority it read: ..., Filter by..., Gene glyph
+    expect(rendered).toEqual([
+      'Show...',
+      'Feature height',
+      'Color by...',
+      'Gene glyph',
+      'Clear 1 highlight',
+      'Filter by...',
+    ])
+  })
+
   it('offers Filter by... at the top level until a recovery item joins it', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

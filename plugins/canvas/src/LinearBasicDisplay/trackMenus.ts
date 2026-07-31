@@ -9,6 +9,7 @@ import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { inlineRadioGroup } from './baseModelHelpers.ts'
 import { showHiddenFeaturesMenuItems } from './featureContextMenu.ts'
 
@@ -27,8 +28,13 @@ const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'collapsed', label: 'Collapsed' },
 ]
 
-export const STRAND_COLOR_JEXL =
-  "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+// What the two recovery groups (clear highlights, the filter family) carry so
+// they sort to the bottom of the track menu. Every menu level sorts by
+// `priority` (CascadingMenu) and the sort is stable, so this pins them below
+// whatever a subclass appends — LinearBasicDisplay's "Gene glyph" landed after
+// "Filter by..." otherwise — while staying above the track's own "Display
+// types" at -1000. Shared by both groups so they stay adjacent.
+const RECOVERY_PRIORITY = -100
 
 // Structural for the same reason as FeatureMenuSelf: the model factory calls
 // these builders, so it can't hand them its own inferred type. The model is
@@ -92,6 +98,7 @@ function clearHighlightsMenuItems(self: {
         {
           label: `Clear ${n} ${pluralize(n, 'highlight')}`,
           icon: Highlighter,
+          priority: RECOVERY_PRIORITY,
           onClick: () => {
             self.clearFeatureHighlights()
           },
@@ -159,6 +166,10 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       label: 'Strand',
       type: 'radio' as const,
       checked: self.colorByMode === 'strand',
+      // the one row here that only writes a setting, so it stays put like every
+      // other setting radio in this menu; its two siblings open a dialog and so
+      // dismiss (same split as the multi-row "Row height" group)
+      keepMenuOpen: true,
       onClick: () => {
         self.setFeatureColor(STRAND_COLOR_JEXL)
       },
@@ -260,15 +271,18 @@ function filterMenuItems(self: TrackMenuSelf): MenuItem[] {
         ]
       : []),
   ]
+  // the priority rides the top-level row, never `filterBy` itself — inside the
+  // submenu it would sort the dialog opener below the recovery rows it heads
   return recovery.length
     ? [
         {
           label: 'Edit filters',
           icon: FilterAltIcon,
+          priority: RECOVERY_PRIORITY,
           subMenu: [filterBy, ...recovery],
         },
       ]
-    : [filterBy]
+    : [{ ...filterBy, priority: RECOVERY_PRIORITY }]
 }
 
 // The color-related track-menu entry: a single "Color by..." whose "Solid

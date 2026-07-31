@@ -164,6 +164,9 @@ export default function stateModelFactory(
             label: 'Consequence impact',
             type: 'radio' as const,
             checked: this.colorsByConsequenceImpact,
+            // these two only write a setting, so they stay put like the base's
+            // "Strand"; the dialog openers around them still dismiss
+            keepMenuOpen: true,
             onClick: () => {
               self.setColorLegendDismissed(false)
               self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
@@ -173,6 +176,7 @@ export default function stateModelFactory(
             label: 'SV type',
             type: 'radio' as const,
             checked: this.colorsBySvType,
+            keepMenuOpen: true,
             onClick: () => {
               self.setColorLegendDismissed(false)
               self.setFeatureColor(SV_TYPE_COLOR_JEXL)
