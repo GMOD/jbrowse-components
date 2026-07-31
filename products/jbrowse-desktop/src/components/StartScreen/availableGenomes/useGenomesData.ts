@@ -39,14 +39,39 @@ function byOrderKey(a: Entry, b: Entry) {
 
 export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
 
+// Reads the accession rather than ncbiName because search-index rows carry no
+// ncbiName. The two agree on the GC[AF]_ prefix for every GenArk row; UCSC rows
+// have neither, and a db name like ailMel1 matches no prefix, so they stay out
+// of both halves exactly as before.
 function applyFilter(rows: Entry[], filterOption: FilterOption) {
   return filterOption === 'refseq'
-    ? rows.filter(r => r.ncbiName?.startsWith('GCF_'))
+    ? rows.filter(r => r.accession.startsWith('GCF_'))
     : filterOption === 'genbank'
-      ? rows.filter(r => r.ncbiName?.startsWith('GCA_'))
+      ? rows.filter(r => r.accession.startsWith('GCA_'))
       : filterOption === 'designatedReference'
         ? rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
         : rows
+}
+
+/**
+ * The status and favorites filters, which apply to a group's rows and to
+ * cross-group search hits alike. Search is not part of this: the group path
+ * searches here, but the global path has already searched the index.
+ */
+export function applyRowFilters({
+  rows,
+  filterOption,
+  showOnlyFavs,
+  favoriteIds,
+}: {
+  rows: Entry[]
+  filterOption: FilterOption
+  showOnlyFavs: boolean
+  favoriteIds: Set<string>
+}) {
+  return applyFilter(rows, filterOption).filter(
+    row => !showOnlyFavs || favoriteIds.has(row.accession),
+  )
 }
 
 /**
@@ -73,11 +98,12 @@ export function filterGenomes({
   favoriteIds: Set<string>
 }) {
   const tokens = searchTokens(searchQuery)
-  return applyFilter(rows, filterOption).filter(
-    row =>
-      matchesAllTokens(haystack(row), tokens) &&
-      (!showOnlyFavs || favoriteIds.has(row.accession)),
-  )
+  return applyRowFilters({
+    rows,
+    filterOption,
+    showOnlyFavs,
+    favoriteIds,
+  }).filter(row => matchesAllTokens(haystack(row), tokens))
 }
 
 export function useGenomesData({

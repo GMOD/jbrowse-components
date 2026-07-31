@@ -16,7 +16,7 @@ import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
 import { sortAndPaginate } from './sortAndPaginate.ts'
 import useCategories from './useCategories.ts'
-import { useGenomesData } from './useGenomesData.ts'
+import { applyRowFilters, useGenomesData } from './useGenomesData.ts'
 import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useGlobalSearch } from './useGlobalSearch.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
@@ -144,8 +144,17 @@ export default function GenomesDataTable({
   })
 
   // in global mode the selected group is not what is on screen, so the rows to
-  // paginate, to resolve a selection against, and to count all come from the index
-  const visibleRows = globalMode ? globalRows : data
+  // paginate, to resolve a selection against, and to count all come from the
+  // index. searchAllGroups only searches, so the status and favorites filters —
+  // which the menu still offers here — are applied to its hits separately.
+  const visibleRows = globalMode
+    ? applyRowFilters({
+        rows: globalRows,
+        filterOption,
+        showOnlyFavs,
+        favoriteIds: favs,
+      })
+    : data
   const selectableRows = globalMode ? globalRows : allData
   const { pageRows, currentPage, totalRows } = sortAndPaginate({
     data: visibleRows,

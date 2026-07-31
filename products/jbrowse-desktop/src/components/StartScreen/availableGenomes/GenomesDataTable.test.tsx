@@ -72,9 +72,7 @@ const bodyFor = (url: string) =>
     ? ucscRows
     : url === SEARCH_INDEX_URL
       ? searchIndex
-      : url.includes('categories')
-        ? categories
-        : { mammal: [9606, 10090] }
+      : categories
 
 beforeEach(() => {
   fetched = []
@@ -179,6 +177,38 @@ test('clearing the query returns to browsing the selected group', async () => {
   fireEvent.change(search, { target: { value: '' } })
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
   expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+})
+
+// searchAllGroups only searches, so the menu's filters have to be applied to
+// its hits separately — they used to be offered but silently ignored here
+test('the favorites filter applies to cross-group hits, not just the group', async () => {
+  setup([
+    {
+      id: 'GCF_000004335.4',
+      shortName: 'panda',
+      commonName: 'giant panda',
+      description: 'giant panda',
+      jbrowseConfig: 'https://example.com/panda/config.json',
+    },
+  ])
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'a' } })
+
+  const settings = await screen.findByRole('button', { name: 'Table settings' })
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Search all groups'))
+
+  // both index rows match 'a', and only one of them is a favorite
+  expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
+  expect(screen.getByText('Homo sapiens')).toBeTruthy()
+
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Show favorites only'))
+
+  await waitFor(() => {
+    expect(screen.queryByText('Homo sapiens')).toBeNull()
+  })
+  expect(screen.getByText('Ailuropoda melanoleuca')).toBeTruthy()
 })
 
 test('sort headers are buttons and expose their direction', async () => {

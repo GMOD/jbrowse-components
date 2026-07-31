@@ -72,6 +72,7 @@ export default function GenomesTableToolbar({
         />
       ) : null}
       <CascadingMenuButton
+        aria-label="Table settings"
         menuItems={() =>
           getTableMenuItems({
             state,

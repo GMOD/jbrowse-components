@@ -66,8 +66,10 @@ export function getTableMenuItems({
         setShowAllColumns(!showAllColumns)
       },
     },
-    // the NCBI status fields this filters on exist only on GenArk/NCBI rows
-    ...(typeOption === 'ucsc'
+    // the NCBI status fields this filters on exist only on GenArk/NCBI rows, so
+    // it is meaningless on the UCSC main genomes — unless the search spans every
+    // group, whose hits are mostly GenArk
+    ...(typeOption === 'ucsc' && !allGroups
       ? []
       : ([
           {

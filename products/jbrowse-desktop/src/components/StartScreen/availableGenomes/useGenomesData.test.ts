@@ -1,4 +1,4 @@
-import { filterGenomes, groupRows } from './useGenomesData.ts'
+import { applyRowFilters, filterGenomes, groupRows } from './useGenomesData.ts'
 
 import type { Entry } from './getColumnDefinitions.tsx'
 
@@ -120,7 +120,7 @@ test('search does not match the fields a group omits', () => {
   ).toEqual([])
 })
 
-test('NCBI status filters read ncbiName, which UCSC rows do not have', () => {
+test('NCBI status filters key on the accession, which UCSC db names never match', () => {
   const rows = [hg38, panda, genbankOnly]
   const withFilter = (
     filterOption: Parameters<typeof filterGenomes>[0]['filterOption'],
@@ -130,6 +130,39 @@ test('NCBI status filters read ncbiName, which UCSC rows do not have', () => {
   expect(withFilter('refseq')).toEqual(['GCF_000004335.4'])
   expect(withFilter('genbank')).toEqual(['GCA_000001.1'])
   expect(withFilter('designatedReference')).toEqual(['GCF_000004335.4'])
+})
+
+// search-index rows carry an accession and ncbiRefSeqCategory but no ncbiName,
+// so a status filter reading ncbiName would silently match nothing in the
+// cross-group results the index feeds
+test('status filters work on rows that have no ncbiName', () => {
+  const indexed = [
+    entry({ accession: 'GCF_000004335.4', ncbiRefSeqCategory: 'reference genome' }),
+    entry({ accession: 'GCA_000001.1' }),
+    entry({ accession: 'hg38' }),
+  ]
+  const withFilter = (filterOption: Parameters<typeof applyRowFilters>[0]['filterOption']) =>
+    applyRowFilters({
+      rows: indexed,
+      filterOption,
+      showOnlyFavs: false,
+      favoriteIds: new Set<string>(),
+    }).map(r => r.accession)
+
+  expect(withFilter('refseq')).toEqual(['GCF_000004335.4'])
+  expect(withFilter('genbank')).toEqual(['GCA_000001.1'])
+  expect(withFilter('designatedReference')).toEqual(['GCF_000004335.4'])
+})
+
+test('applyRowFilters applies favorites without searching', () => {
+  expect(
+    applyRowFilters({
+      rows: [hg38, panda],
+      filterOption: 'all',
+      showOnlyFavs: true,
+      favoriteIds: new Set(['hg38']),
+    }).map(r => r.accession),
+  ).toEqual(['hg38'])
 })
 
 test('favorites filter keys on accession', () => {
