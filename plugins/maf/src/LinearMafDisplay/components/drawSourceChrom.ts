@@ -3,7 +3,11 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { bpSpanPx, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  bpSpanPx,
+  rowBandGeometry,
+  visibleRowRange,
+} from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -114,6 +118,9 @@ interface DrawSourceChromState {
   /** display row count */
   nRows: number
   canvasWidth: number
+  /** the rows viewport (the canvas), which with `scrollTop` picks the rows drawn */
+  canvasHeight: number
+  scrollTop: number
   /**
    * `rowIndex -> (chr -> rank)` from the model's `sourceChromRanks` computed.
    * Passed in rather than derived here: the walk covers every block × row of
@@ -140,14 +147,29 @@ export function drawSourceChrom(
   regions: ReadonlyMap<number, MafRegionData>,
   state: DrawSourceChromState,
 ) {
-  const { rowHeight, rowProportion, nRows, canvasWidth, ranks } = state
+  const {
+    rowHeight,
+    rowProportion,
+    nRows,
+    canvasWidth,
+    canvasHeight,
+    scrollTop,
+    ranks,
+  } = state
   if (canvasWidth <= 0 || nRows <= 0) {
     return
   }
   const { h: bandH, offset: bandOffset } = rowBandGeometry(
     rowHeight,
     rowProportion,
+    scrollTop,
   )
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    canvasHeight,
+  )
+  const lastRow = Math.min(endRow, nRows)
 
   // Scissor to each block's own columns: the fetched region is the *buffered*
   // one, so its MAF blocks extend past the render block's screen span, and a
@@ -157,7 +179,7 @@ export function drawSourceChrom(
     ctx,
     blocks,
     canvasWidth,
-    rowHeight * nRows,
+    canvasHeight,
     block => regions.get(block.displayedRegionIndex),
     (region, block) => {
       const bpToX = makeBpMapper(block)
@@ -167,7 +189,7 @@ export function drawSourceChrom(
         // >=1px so a block narrower than a pixel still reads as present
         const w = Math.max(1, span.width)
         for (const row of mafBlock.rows) {
-          if (row.rowIndex < nRows && row.chr) {
+          if (row.rowIndex >= firstRow && row.rowIndex < lastRow && row.chr) {
             const rank = ranks.get(row.rowIndex)?.get(row.chr) ?? 0
             ctx.fillStyle = sourceChromRankColor(rank)
             ctx.fillRect(xLeft, bandOffset + rowHeight * row.rowIndex, w, bandH)

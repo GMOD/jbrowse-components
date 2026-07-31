@@ -2,6 +2,7 @@ import {
   bpSpanPx,
   eachVisibleRegion,
   rowBandGeometry,
+  visibleRowRange,
 } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -72,10 +73,15 @@ function consensusStrandByRowChr(
 export function computeVisibleInversions(
   params: ComputeVisibleInversionsParams,
 ): InversionMarker[] {
-  const { view, rpcDataMap, rowHeight, rowProportion } = params
+  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
   const consensus = consensusStrandByRowChr(rpcDataMap)
   const markers: InversionMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    params.viewportHeight,
+  )
 
   for (const { data: regionData, bpToPx } of eachVisibleRegion(
     view,
@@ -83,11 +89,12 @@ export function computeVisibleInversions(
   )) {
     for (const block of regionData.blocks) {
       for (const row of block.rows) {
+        const onScreen = row.rowIndex >= firstRow && row.rowIndex < endRow
         const inverted =
           row.strand !== undefined &&
           row.chr !== undefined &&
           row.strand !== consensus.get(rowChrKey(row.rowIndex, row.chr))
-        if (inverted) {
+        if (onScreen && inverted) {
           const { xLeft, width } = bpSpanPx(bpToPx, block.startBp, block.endBp)
           markers.push({
             xLeft,

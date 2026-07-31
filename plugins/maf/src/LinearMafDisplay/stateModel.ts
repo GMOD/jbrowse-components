@@ -11,9 +11,9 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
@@ -29,7 +29,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
-import { observable } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
@@ -78,6 +78,7 @@ import type {
   CodonMarker,
   LocatedCodon,
 } from './components/computeVisibleCodons.ts'
+import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type {
   LinearMafDisplayConfig,
   LinearMafDisplayConfigModel,
@@ -824,20 +825,44 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Per-row height in fit-to-height mode: the rows area (track height minus
-         * the fixed bands) split evenly across rows.
+         * Height of the per-sample rows *viewport* — the track height minus the
+         * stacked bands, which is exactly the rows canvas. Zero when alignments
+         * are hidden, collapsing the display to the coverage band.
+         *
+         * This is the viewport, not the content: with a pinned `rowHeight` the
+         * rows can add up to far more than this and the extra is reached by
+         * scrolling (`rowsContentHeight` / `scrollableHeight`), never by growing
+         * the canvas. Capped at `maxRowsHeight` so even a deliberate drag can't
+         * push the backing store past the browser/GPU canvas limit.
+         */
+        get rowsHeight() {
+          return self.showAlignments
+            ? Math.min(
+                Math.max(0, self.fitTargetHeight - self.rowsTopOffset),
+                self.maxRowsHeight,
+              )
+            : 0
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Per-row height in fit-to-height mode: the rows viewport split evenly
+         * across rows, so the content always fits exactly and the display never
+         * scrolls in this mode.
          *
          * Deliberately NOT floored at 1px. A sub-pixel row is the legitimate
          * answer for more species than the track has pixels, and flooring it
          * made the rows area taller than the height it was asked to fit inside
          * — which defeated `fitTargetHeight`'s own ceiling past ~555 species
-         * (2000 species floored to 1px re-grew the track to 2045px). The
-         * non-positive guard belongs in `effectiveRowHeight`, which is the
-         * resolved value consumers divide by. Same rule, and same regression,
-         * as the multi-sample variant display's `autoRowHeight`.
+         * (2000 species floored to 1px re-grew the track to 2045px) and would
+         * now make fit mode report a phantom scroll. The non-positive guard
+         * belongs in `effectiveRowHeight`, which is the resolved value consumers
+         * divide by. Same rule, and same regression, as the multi-sample variant
+         * display's `autoRowHeight`.
          */
         get autoRowHeight() {
-          return (self.fitTargetHeight - self.rowsTopOffset) / self.nrow
+          return self.rowsHeight / self.nrow
         },
       }))
       .views(self => ({
@@ -848,12 +873,12 @@ export default function stateModelFactory(
          * height. Every consumer reads this getter, never the raw `rowHeight`
          * property.
          *
-         * Capped so the rows canvas backing store (`rowsHeight × dpr`) can never
-         * exceed the browser/GPU max canvas size: a fixed px height across
-         * hundreds of species would otherwise throw `Canvas exceeds max size`.
-         * The cap shrinks rows to fit instead of crashing (or clipping); fit mode
-         * already stays small so it never engages there. Bands have their own
-         * small canvases, so the rows-only ceiling is the whole limit.
+         * A pinned height is used as-is however many species there are: the rows
+         * canvas is the viewport (`rowsHeight`), so hundreds of tall rows cost
+         * scroll extent, not backing store. The canvas-size ceiling that used to
+         * be applied here — shrinking every row so the whole stack could be one
+         * canvas — now lives on `rowsHeight` itself, where the canvas actually
+         * is.
          *
          * Floored only when non-positive — a resolved getter must never hand
          * back 0 (consumers divide by it: `rowAtY`, the renderers). A genuine
@@ -861,29 +886,23 @@ export default function stateModelFactory(
          */
         get effectiveRowHeight() {
           const raw = self.rowHeight === 0 ? self.autoRowHeight : self.rowHeight
-          const capped = Math.min(raw, self.maxRowsHeight / self.nrow)
-          return capped > 0 ? capped : 1
+          return raw > 0 ? raw : 1
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * Height of the per-sample rows area (excludes the coverage band). Zero
-         * when alignments are hidden, collapsing the display to the coverage band.
+         * Height the per-sample rows add up to — the scrolled content behind the
+         * `rowsHeight` viewport. Equal to it in fit-to-height mode (which is what
+         * makes that mode never scroll); larger whenever a pinned `rowHeight`
+         * asks for more rows than the track shows.
          */
-        get rowsHeight() {
-          if (!self.showAlignments) {
-            return 0
-          }
-          return self.sources
-            ? self.sources.length * self.effectiveRowHeight
-            : 1
+        get rowsContentHeight() {
+          return self.showAlignments ? self.nrow * self.effectiveRowHeight : 0
         },
-      }))
-      .views(self => ({
         /**
          * #getter
-         * Full display height = rows area + stacked bands.
+         * Full display height = rows viewport + stacked bands.
          */
         get totalHeight() {
           return self.rowsHeight + self.rowsTopOffset
@@ -892,8 +911,20 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Max valid `scrollTop`: how far the rows scroll before the last one
+         * reaches the viewport floor. Zero when they fit, so this doubles as the
+         * "does this display scroll" answer (the scrollbar and the wheel handler
+         * both read it). Fit-to-height always fits.
+         */
+        get scrollableHeight() {
+          return Math.max(0, self.rowsContentHeight - self.rowsHeight)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Override BaseLinearDisplay.height so the track container matches the
-         * rendering canvas height exactly (coverage band + rows × rowHeight).
+         * rendering canvases exactly (stacked bands + rows viewport).
          */
         get height() {
           return self.totalHeight
@@ -901,14 +932,16 @@ export default function stateModelFactory(
         /**
          * #getter
          * Positioned tree hierarchy. Coordinates are computed against
-         * `(rowsHeight, treeAreaWidth)` so leaf rows align with row tops; the
-         * coverage band is offset separately by the React layer.
+         * `(rowsContentHeight, treeAreaWidth)` so leaf rows align with row tops
+         * even where the rows scroll past the viewport — the tree canvas and the
+         * SVG labels shift the whole thing by `scrollTop`, exactly as the rows
+         * do. The coverage band is offset separately by the React layer.
          */
         get hierarchy() {
           return computeClusterHierarchy(
             self.root,
             self.sources?.length ?? 0,
-            self.rowsHeight,
+            self.rowsContentHeight,
             self.treeAreaWidth,
             self.showBranchLength,
           )
@@ -931,9 +964,12 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Drag-resize. In fit mode the new height drives `autoRowHeight` (rows
-         * stretch). In fixed mode the pinned `rowHeight` scales proportionally
-         * so dragging still resizes rows. Mirrors the variants display.
+         * Drag-resize the track. In fit-to-height mode the new height flows
+         * straight into `autoRowHeight`, so the rows stretch with the drag. With
+         * a pinned `rowHeight` the rows keep the size the user pinned and the
+         * drag reveals more of them — the pinned height used to be scaled by the
+         * same ratio, which kept content and viewport locked together and made
+         * dragging a track taller unable to show a single extra species.
          *
          * The `resizing` flag that sits the letter overlay out of the drag is
          * set by the handle itself (TrackContainer / `MafBandResizeHandle`), not
@@ -944,31 +980,16 @@ export default function stateModelFactory(
           const oldHeight = self.height
           const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
           setConf(self, 'height', newHeight)
-          // Only the rows area scales on a drag; the stacked coverage/conservation
-          // bands (`rowsTopOffset`) are a fixed inset that doesn't move. Scale the
-          // pinned rowHeight by the *rows-area* ratio, not the full-height ratio —
-          // otherwise the fixed bands make the dragged edge lag the cursor by
-          // rowsTopOffset/height (~20% with the coverage band on). Mirrors the
-          // variants display's available-height scaling.
-          //
-          // Scale `effectiveRowHeight`, never the raw slot: `oldHeight` reflects
-          // the `maxRowsHeight` cap, so ratioing the (larger) uncapped slot
-          // against it drifts the slot while the rows stay pinned — a dead
-          // handle on species counts that reach the cap. Re-seeding from the
-          // resolved height mirrors the fit-mode path.
-          const oldRows = oldHeight - self.rowsTopOffset
-          if (self.rowHeight > 0 && oldRows > 0) {
-            setConf(
-              self,
-              'rowHeight',
-              Math.max(
-                1,
-                (self.effectiveRowHeight * (newHeight - self.rowsTopOffset)) /
-                  oldRows,
-              ),
-            )
-          }
           return newHeight - oldHeight
+        },
+        /**
+         * #action
+         * Scroll the rows area, clamped to the content. Nothing self-corrects a
+         * stranded offset here: the rows are a fixed-size canvas painted at
+         * `-scrollTop`, not a DOM overflow container.
+         */
+        setScrollTop(scrollTop: number) {
+          self.scrollTop = clamp(scrollTop, 0, self.scrollableHeight)
         },
       }))
       .views(self => ({
@@ -1034,10 +1055,27 @@ export default function stateModelFactory(
             canvasHeight: self.rowsHeight,
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
+            scrollTop: self.scrollTop,
             showAllLetters: self.showAllLetters,
             mismatchRendering: self.mismatchRendering,
             palette: self.colorPalette,
             binBp: self.encodeBinBp,
+          }
+        },
+        /**
+         * #method
+         * Where the rows sit on screen: the resolved row height, plus the scroll
+         * offset and viewport that every rows layer places and culls against.
+         * One source for all of them — a layer spelling out its own geometry
+         * could quietly read the raw `rowHeight` sentinel, or forget the scroll
+         * and hang its markers a scroll-distance below the cells they annotate.
+         */
+        rowGeometry(): MafRowGeometryParams {
+          return {
+            rowHeight: self.effectiveRowHeight,
+            rowProportion: self.rowProportion,
+            scrollTop: self.scrollTop,
+            viewportHeight: self.rowsHeight,
           }
         },
         /**
@@ -1324,15 +1362,11 @@ export default function stateModelFactory(
         },
       }))
       .views(self => {
-        // The block-overlay helpers all take this same bundle. Centralizing it
-        // keeps every overlay on the *resolved* row height — a new overlay that
-        // spelled out its own params could quietly read the raw `rowHeight`
-        // sentinel and mis-place its markers in fit-to-height mode.
+        // The block-overlay helpers all take this same bundle.
         const overlayParams = () => ({
           view: self.lgv,
           rpcDataMap: self.rpcDataMap,
-          rowHeight: self.effectiveRowHeight,
-          rowProportion: self.rowProportion,
+          ...self.rowGeometry(),
         })
         // Every rows overlay is a full per-cell scan of the visible blocks, and
         // with `showAlignments` off the rows area is 0 px tall — so gate them all
@@ -1488,8 +1522,7 @@ export default function stateModelFactory(
           return computeVisibleLabels({
             view,
             rpcDataMap: self.rpcDataMap,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
+            ...self.rowGeometry(),
             showAllLetters: self.showAllLetters,
             showAsUpperCase: self.showAsUpperCase,
           })
@@ -1510,8 +1543,7 @@ export default function stateModelFactory(
             view,
             summaryDataMap: self.summaryDataMap,
             rowIndexBySrc: self.rowIndexBySrc,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
+            ...self.rowGeometry(),
           })
         },
         /**
@@ -1535,8 +1567,7 @@ export default function stateModelFactory(
             view,
             framesDataMap: self.framesDataMap,
             rowIndexBySrc: self.rowIndexBySrc,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
+            ...self.rowGeometry(),
           })
         },
         /**
@@ -1624,10 +1655,7 @@ export default function stateModelFactory(
          */
         get visibleCodons(): CodonMarker[] {
           return self.codonCellsActive
-            ? computeVisibleCodons(self.locatedCodons, {
-                rowHeight: self.effectiveRowHeight,
-                rowProportion: self.rowProportion,
-              })
+            ? computeVisibleCodons(self.locatedCodons, self.rowGeometry())
             : []
         },
         /**
@@ -1884,6 +1912,20 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
         // the mixin's fetch autoruns.
         async afterAttach() {
+          // Keep scrollTop inside the content by construction. Anything that
+          // shrinks the scroll extent — a shorter track, a smaller row height,
+          // a subtree filter, hiding the alignments — would otherwise strand it
+          // past the last row, and a virtual-scrolled canvas has no overflow
+          // container to self-correct. One autorun instead of asking every
+          // geometry-changing action to remember.
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.scrollTop > self.scrollableHeight) {
+                self.setScrollTop(self.scrollableHeight)
+              }
+            }),
+          )
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')

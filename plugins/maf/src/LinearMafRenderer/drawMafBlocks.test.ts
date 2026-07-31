@@ -80,6 +80,7 @@ function state(binBp = 1): MafGPURenderState {
     canvasHeight: 100,
     rowHeight: 10,
     rowProportion: 1,
+    scrollTop: 0,
     // showAllLetters so a matching base still paints a cell (resolveCellColor
     // returns undefined for matches in mismatch-only mode, painting nothing).
     showAllLetters: true,

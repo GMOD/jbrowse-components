@@ -181,7 +181,12 @@ function locate(
   })
 }
 
-const GEOM = { rowHeight: 15, rowProportion: 0.8 }
+const GEOM = {
+  rowHeight: 15,
+  rowProportion: 0.8,
+  scrollTop: 0,
+  viewportHeight: 1000,
+}
 
 test('classifies each species codon vs the reference', () => {
   // ref:  ATG AAA TAA  → M K *

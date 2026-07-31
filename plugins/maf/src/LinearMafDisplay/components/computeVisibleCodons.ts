@@ -5,6 +5,7 @@ import {
   bpSpanPx,
   eachVisibleRegion,
   rowBandGeometry,
+  visibleRowRange,
 } from './visibleRegionGeometry.ts'
 
 import type {
@@ -12,7 +13,11 @@ import type {
   MafRegionData,
 } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord } from '../../types.ts'
-import type { BpToPx, VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type {
+  BpToPx,
+  MafRowGeometryParams,
+  VisibleRegionsView,
+} from './visibleRegionGeometry.ts'
 
 /**
  * How a species' codon compares to the reference (anchor) codon:
@@ -523,11 +528,16 @@ function widestCell(cells: CodonCell[]): number {
  */
 export function computeVisibleCodons(
   codons: readonly LocatedCodon[],
-  geometry: { rowHeight: number; rowProportion: number },
+  geometry: MafRowGeometryParams,
 ): CodonMarker[] {
-  const { rowHeight, rowProportion } = geometry
+  const { rowHeight, rowProportion, scrollTop, viewportHeight } = geometry
   const markers: CodonMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    viewportHeight,
+  )
   const hp2 = h / 2
 
   for (const located of codons) {
@@ -542,6 +552,9 @@ export function computeVisibleCodons(
     const cells = codonCells(codon.positions, bpToPx)
     const glyphIdx = widestCell(cells)
     for (const { rowIndex, bytes } of rows()) {
+      if (rowIndex < firstRow || rowIndex >= endRow) {
+        continue
+      }
       const rowCodon = orientedTriplet(...bytes, codon.strand)
       if (rowCodon === undefined) {
         continue

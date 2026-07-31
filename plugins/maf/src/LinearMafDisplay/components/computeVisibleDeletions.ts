@@ -7,6 +7,7 @@ import {
   bpSpanPx,
   eachVisibleRegion,
   rowBandGeometry,
+  visibleRowRange,
 } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -50,9 +51,14 @@ export interface DeletionMarker {
 export function computeVisibleDeletions(
   params: MafOverlayParams,
 ): DeletionMarker[] {
-  const { view, rpcDataMap, rowHeight, rowProportion } = params
+  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
   const markers: DeletionMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    params.viewportHeight,
+  )
 
   if (h >= MIN_HEIGHT_FOR_TEXT) {
     for (const { data: regionData, bpToPx } of eachVisibleRegion(
@@ -63,19 +69,21 @@ export function computeVisibleDeletions(
       for (let i = 0; i < regionData.blocks.length; i++) {
         const block = regionData.blocks[i]!
         for (const row of block.rows) {
-          const rowTop = offset + rowHeight * row.rowIndex
-          forEachDeletion(
-            block.refSeqBytes,
-            row.alignmentBytes,
-            block.startBp,
-            rowFlank(i, row.rowIndex),
-            (start, length) => {
-              const { xLeft, width } = bpSpanPx(bpToPx, start, start + length)
-              if (width >= MIN_LABEL_WIDTH) {
-                markers.push({ xLeft, width, rowTop, h, length })
-              }
-            },
-          )
+          if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
+            const rowTop = offset + rowHeight * row.rowIndex
+            forEachDeletion(
+              block.refSeqBytes,
+              row.alignmentBytes,
+              block.startBp,
+              rowFlank(i, row.rowIndex),
+              (start, length) => {
+                const { xLeft, width } = bpSpanPx(bpToPx, start, start + length)
+                if (width >= MIN_LABEL_WIDTH) {
+                  markers.push({ xLeft, width, rowTop, h, length })
+                }
+              },
+            )
+          }
         }
       }
     }

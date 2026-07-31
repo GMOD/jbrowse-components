@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
@@ -31,6 +32,7 @@ import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
+import { useMafVirtualScroll } from './useMafVirtualScroll.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
@@ -84,6 +86,7 @@ const MafBody = observer(function MafBody({
   const {
     height,
     rowsHeight,
+    rowsContentHeight,
     rowsTopOffset,
     scrollTop,
     effectiveRowHeight,
@@ -94,6 +97,12 @@ const MafBody = observer(function MafBody({
     samples,
     colorPalette,
   } = model
+  const canvasId = useId()
+  // The rows container, not the canvas: it is the same rectangle but also
+  // covers the tree sidebar, so a wheel over the species names scrolls the rows
+  // it labels rather than falling through to the view.
+  const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
+  useMafVirtualScroll(rowsEl, model)
   const [coverageResizeActive, setCoverageResizeActive] = useState(false)
   const [conservationResizeActive, setConservationResizeActive] =
     useState(false)
@@ -145,6 +154,7 @@ const MafBody = observer(function MafBody({
       />
       <MafBandLabels model={model} />
       <div
+        ref={setRowsEl}
         style={{
           position: 'absolute',
           top: rowsTopOffset,
@@ -155,6 +165,7 @@ const MafBody = observer(function MafBody({
         }}
       >
         <canvas
+          id={canvasId}
           ref={canvasRef}
           style={{
             position: 'absolute',
@@ -236,6 +247,18 @@ const MafBody = observer(function MafBody({
         ) : null}
         <TreeSidebar model={model} />
       </div>
+      {/* Offset below the stacked bands, which are pinned: only the rows
+          scroll. Renders nothing while the rows fit. */}
+      <VerticalScrollbar
+        scrollTop={scrollTop}
+        setScrollTop={n => {
+          model.setScrollTop(n)
+        }}
+        viewportHeight={rowsHeight}
+        contentHeight={rowsContentHeight}
+        controlsId={canvasId}
+        top={rowsTopOffset}
+      />
       <MsaHighlightOverlay model={model} view={view} height={height} />
       {pointer && samples && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>

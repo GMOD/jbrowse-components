@@ -41,7 +41,12 @@ const view = {
   bpPerPx: 1,
 }
 
-const opts = { rowHeight: 10, rowProportion: 1 }
+const opts = {
+  rowHeight: 10,
+  rowProportion: 1,
+  scrollTop: 0,
+  viewportHeight: 1000,
+}
 
 test('flags the block that bucks its scaffold consensus, not the majority', () => {
   // row 0: two + blocks on chrA, one − block on chrA → the − block is inverted

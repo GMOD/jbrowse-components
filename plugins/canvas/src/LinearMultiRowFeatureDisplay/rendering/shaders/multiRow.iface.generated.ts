@@ -5,7 +5,7 @@ import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 32
+export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -15,6 +15,7 @@ export const UNIFORM_OFFSET_F32 = {
   zero: 5,
   rowHeight: 6,
   rowProportion: 7,
+  scrollTop: 8,
 } as const
 
 
@@ -25,6 +26,7 @@ export interface Uniforms {
   zero: number
   rowHeight: number
   rowProportion: number
+  scrollTop: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -37,6 +39,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[5] = uniforms.zero
   f32[6] = uniforms.rowHeight
   f32[7] = uniforms.rowProportion
+  f32[8] = uniforms.scrollTop
 }
 
 export const INSTANCE_STRIDE_BYTES = 16

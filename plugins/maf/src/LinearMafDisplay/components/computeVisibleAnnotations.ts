@@ -2,10 +2,12 @@ import {
   bpSpanPx,
   eachVisibleRegion,
   rowBandGeometry,
+  visibleRowRange,
 } from './visibleRegionGeometry.ts'
 
 import type { MafFrameRecord } from '../../types.ts'
 import type {
+  MafRowGeometryParams,
   RegionDataMap,
   VisibleRegionsView,
 } from './visibleRegionGeometry.ts'
@@ -25,7 +27,7 @@ export interface FrameMarker {
   frameIndex: number
 }
 
-interface ComputeVisibleAnnotationsParams {
+interface ComputeVisibleAnnotationsParams extends MafRowGeometryParams {
   view: VisibleRegionsView
   framesDataMap: RegionDataMap<MafFrameRecord[]>
   /**
@@ -34,8 +36,6 @@ interface ComputeVisibleAnnotationsParams {
    * carry species the track doesn't list (mirrors the summary-bar mapping).
    */
   rowIndexBySrc: Map<string, number>
-  rowHeight: number
-  rowProportion: number
 }
 
 /**
@@ -67,10 +67,22 @@ export function findFrameAt(
 export function computeVisibleAnnotations(
   params: ComputeVisibleAnnotationsParams,
 ): FrameMarker[] {
-  const { view, framesDataMap, rowIndexBySrc, rowHeight, rowProportion } =
-    params
+  const {
+    view,
+    framesDataMap,
+    rowIndexBySrc,
+    rowHeight,
+    rowProportion,
+    scrollTop,
+    viewportHeight,
+  } = params
   const markers: FrameMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    viewportHeight,
+  )
   // Thin CDS strip pinned to the bottom of the row band.
   const stripH = Math.max(2, Math.round(h * 0.25))
   const stripOffset = offset + h - stripH
@@ -81,7 +93,7 @@ export function computeVisibleAnnotations(
   )) {
     for (const r of records) {
       const rowIndex = rowIndexBySrc.get(r.src)
-      if (rowIndex !== undefined) {
+      if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
         const base = (r.frame % 3) + 1
         markers.push({

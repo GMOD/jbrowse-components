@@ -8,9 +8,12 @@ export type MafRenderBlock = RenderBlock
 
 export interface MafGPURenderState {
   canvasWidth: number
+  /** the rows *viewport*: rows past it are scrolled to, not grown into */
   canvasHeight: number
   rowHeight: number
   rowProportion: number
+  /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
+  scrollTop: number
   showAllLetters: boolean
   mismatchRendering: boolean
   /**

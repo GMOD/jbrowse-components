@@ -77,6 +77,10 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     this.uniformF32[U.zero] = 0
     this.uniformF32[U.rowHeight] = state.rowHeight
     this.uniformF32[U.rowProportion] = state.rowProportion
+    // The canvas is the rows viewport, not the rows content: rows past it are
+    // scrolled to, not grown into. Every other MAF layer (Canvas2D fallback,
+    // overlays, tree, hit-test) shifts by the same model.scrollTop.
+    this.uniformF32[U.scrollTop] = state.scrollTop
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)

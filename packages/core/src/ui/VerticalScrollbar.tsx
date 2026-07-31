@@ -152,6 +152,12 @@ export default function VerticalScrollbar({
     <div
       ref={setTrackEl}
       data-testid="vertical-scrollbar"
+      // Claim the press so gesture ancestors (the view's click-drag pan, MAF's
+      // drag-selection) don't also start on it. The stopPropagation below can't
+      // do that job: this drags on pointer events and they listen on mouse
+      // events, so there is no shared event to stop — see ResizeHandle, which
+      // stamps the same marker for the same reason.
+      data-gesture-owner="true"
       className={classes.track}
       style={{ top, height: viewportHeight }}
       role="scrollbar"

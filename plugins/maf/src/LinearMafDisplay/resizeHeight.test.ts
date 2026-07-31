@@ -22,9 +22,9 @@ import stateModelFactory from './stateModel.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Headless harness (mirrors derivedRegionTooLarge.test.ts) for exercising the
-// real drag-resize actions — resizeHeight against a large sample set, where the
-// maxRowsHeight canvas cap governs effectiveRowHeight, and the coverage /
-// conservation band resizes against the shared band-height floor.
+// real drag-resize actions — resizeHeight and the scroll extent it leaves
+// against a large sample set, and the coverage / conservation band resizes
+// against the shared band-height floor.
 function createTestEnvironment() {
   console.warn = jest.fn()
   console.error = jest.fn()
@@ -163,29 +163,7 @@ function setup(nSamples: number, rowHeight: number) {
   return display
 }
 
-// 1000 species at dpr 1: the cap is 8192/1000 = 8.192px per row, so
-// effectiveRowHeight (8.192) is well below the raw slot (15).
-test('capped: shrink drag moves the rows by the dragged distance', () => {
-  const display = setup(1000, 15)
-  expect(display.effectiveRowHeight).toBeCloseTo(8.192)
-  expect(display.rowHeight).toBe(15)
-
-  const before = display.height
-  display.resizeHeight(-100)
-  expect(display.height - before).toBeCloseTo(-100)
-})
-
-test('capped: grow drag stays clamped at the canvas ceiling', () => {
-  const display = setup(1000, 15)
-  const before = display.height
-  display.resizeHeight(+100)
-  // Rows are already at maxRowsHeight; growing past it would blow the canvas
-  // backing store, so the height legitimately does not move.
-  expect(display.height).toBe(before)
-})
-
-// Uncapped: 10 species * 15px = 150px of rows, far under the 8192 ceiling.
-test('uncapped: drag still tracks the cursor in both directions', () => {
+test('drag tracks the cursor in both directions', () => {
   const display = setup(10, 15)
   expect(display.effectiveRowHeight).toBe(15)
 
@@ -196,6 +174,64 @@ test('uncapped: drag still tracks the cursor in both directions', () => {
   const mid = display.height
   display.resizeHeight(-60)
   expect(display.height - mid).toBeCloseTo(-60)
+})
+
+// A pinned row height is the size the user asked to read at, so it survives
+// however many species there are: the rows canvas is the viewport, and the rows
+// that don't fit are scrolled to rather than shrunk or grown into.
+describe('a pinned row height scrolls rather than resizing the canvas', () => {
+  // 1000 species at 15px = 15000px of rows behind a 600px default track.
+  const deep = () => setup(1000, 15)
+
+  it('honors the pinned height and scrolls the overflow', () => {
+    const display = deep()
+    expect(display.effectiveRowHeight).toBe(15)
+    expect(display.height).toBe(DEFAULTS.maxAutoFitHeight)
+    expect(display.rowsContentHeight).toBe(15000)
+    expect(display.scrollableHeight).toBe(15000 - display.rowsHeight)
+  })
+
+  it('a taller track reveals more rows instead of enlarging them', () => {
+    const display = deep()
+    const scrollable = display.scrollableHeight
+    display.resizeHeight(+100)
+    expect(display.height).toBe(DEFAULTS.maxAutoFitHeight + 100)
+    expect(display.effectiveRowHeight).toBe(15)
+    expect(display.scrollableHeight).toBeCloseTo(scrollable - 100)
+  })
+
+  it('clamps a scroll past the last row', () => {
+    const display = deep()
+    display.setScrollTop(1e6)
+    expect(display.scrollTop).toBe(display.scrollableHeight)
+    display.setScrollTop(-10)
+    expect(display.scrollTop).toBe(0)
+  })
+
+  it('re-clamps a stranded scroll when the content shrinks', () => {
+    const display = deep()
+    display.setScrollTop(display.scrollableHeight)
+    expect(display.scrollTop).toBe(14445)
+    // shorter rows leave far less to scroll through, and the offset was sitting
+    // at the old bottom — nothing but the clamp autorun brings it back
+    display.setRowHeight(2)
+    expect(display.scrollTop).toBe(display.scrollableHeight)
+    expect(display.scrollTop).toBeLessThan(14445)
+  })
+
+  // The canvas-size guard that used to shrink every row now sits on the rows
+  // viewport, which is the thing with a backing store.
+  it('keeps the rows canvas under the backing-store ceiling on a huge drag', () => {
+    const display = deep()
+    display.resizeHeight(+100_000)
+    expect(display.rowsHeight).toBe(display.maxRowsHeight)
+  })
+})
+
+test('fit-to-display-height never scrolls', () => {
+  const display = setup(447, 0)
+  expect(display.rowsContentHeight).toBeCloseTo(display.rowsHeight)
+  expect(display.scrollableHeight).toBe(0)
 })
 
 // A freshly loaded track sizes itself from the species count, which without a

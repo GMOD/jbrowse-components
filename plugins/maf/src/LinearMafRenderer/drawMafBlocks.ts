@@ -3,7 +3,10 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { rowBandGeometry } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
+import {
+  rowBandGeometry,
+  visibleRowRange,
+} from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
 import { buildColumnForGenomicOffset } from './binning.ts'
 import { renderBases } from './rendering/bases.ts'
 import { makeRowFlank } from './rendering/rowFlank.ts'
@@ -34,12 +37,21 @@ export function drawMafBlocks(
     canvasHeight,
     rowHeight,
     rowProportion,
+    scrollTop,
     showAllLetters,
     mismatchRendering,
     palette,
     binBp,
   } = state
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  // Rows scrolled off the canvas cost nothing: skipping them here is what keeps
+  // a pinned row height affordable on an alignment hundreds of species deep,
+  // where the per-base walk below is the expensive part.
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    canvasHeight,
+  )
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
 
   forEachClippedBlock(
@@ -66,16 +78,17 @@ export function drawMafBlocks(
         // walk back that stepping by `binBp` exists to remove.
         const columns = buildColumnForGenomicOffset(refSeqBytes)
         for (const row of mafBlock.rows) {
-          const rowTop = offset + rowHeight * row.rowIndex
-          renderBases(
-            renderingContext,
-            row.alignmentBytes,
-            refSeqBytes,
-            columns,
-            blockStartBp,
-            rowTop,
-            rowFlank(i, row.rowIndex),
-          )
+          if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
+            renderBases(
+              renderingContext,
+              row.alignmentBytes,
+              refSeqBytes,
+              columns,
+              blockStartBp,
+              offset + rowHeight * row.rowIndex,
+              rowFlank(i, row.rowIndex),
+            )
+          }
         }
       }
     },

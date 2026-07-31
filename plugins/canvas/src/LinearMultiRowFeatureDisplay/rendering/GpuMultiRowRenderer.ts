@@ -67,6 +67,9 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
     this.uniformF32[U.zero] = 0
     this.uniformF32[U.rowHeight] = state.rowHeight
     this.uniformF32[U.rowProportion] = state.rowProportion
+    // This display sizes its canvas to the whole row stack and never scrolls;
+    // the shared rowRect scroll offset is MAF's.
+    this.uniformF32[U.scrollTop] = 0
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)

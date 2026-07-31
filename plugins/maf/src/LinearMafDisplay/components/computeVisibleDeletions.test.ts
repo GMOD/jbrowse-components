@@ -49,6 +49,8 @@ function run(
     ]),
     rowHeight,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
 }
 
@@ -127,6 +129,8 @@ test('multiple rows each contribute their own markers', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   // row 1 is ungapped, so only rows 0 and 2 mark
   expect(markers.map(m => m.rowTop)).toEqual([1.5, 31.5])

@@ -39,6 +39,8 @@ test('positions a summary bar on its species row across the block extent', () =>
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   // row 2: h=12, offset=1.5, rowTop = 1.5 + 15*2 = 31.5; x spans bp100..110
   expect(bars).toEqual([
@@ -61,6 +63,8 @@ test('drops rows whose src is not in the current source set', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   expect(bars).toHaveLength(0)
 })
@@ -72,6 +76,8 @@ test('clamps sub-pixel blocks to a minimum 1px width', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   expect(bars[0]!.width).toBe(1)
 })
@@ -94,6 +100,8 @@ test('mirrors x for reversed regions', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   // reversed: bp100..110 → px100..90, left=90 width=10
   expect(bars[0]).toMatchObject({ x: 90, width: 10 })
@@ -106,6 +114,8 @@ test('emits nothing when a region has no fetched summary', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   expect(bars).toHaveLength(0)
 })

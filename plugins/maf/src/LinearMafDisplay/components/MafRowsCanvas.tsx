@@ -26,6 +26,7 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
     rowsHeight,
     effectiveRowHeight,
     rowProportion,
+    scrollTop,
     sources,
   } = model
   const mode =
@@ -45,6 +46,8 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
           rowProportion,
           nRows,
           canvasWidth: model.lgv.width,
+          canvasHeight: rowsHeight,
+          scrollTop,
         }
         if (mode === 'sourceChrom') {
           drawSourceChrom(ctx, model.renderBlocks, model.rpcDataMap, {

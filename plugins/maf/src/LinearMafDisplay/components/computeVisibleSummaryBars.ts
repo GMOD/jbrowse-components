@@ -2,10 +2,12 @@ import {
   bpSpanPx,
   eachVisibleRegion,
   rowBandGeometry,
+  visibleRowRange,
 } from './visibleRegionGeometry.ts'
 
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
 import type {
+  MafRowGeometryParams,
   RegionDataMap,
   VisibleRegionsView,
 } from './visibleRegionGeometry.ts'
@@ -20,7 +22,7 @@ export interface SummaryBar {
   rightStatus?: MafStatus
 }
 
-interface ComputeVisibleSummaryBarsParams {
+interface ComputeVisibleSummaryBarsParams extends MafRowGeometryParams {
   view: VisibleRegionsView
   summaryDataMap: RegionDataMap<MafSummaryRecord[]>
   /**
@@ -29,8 +31,6 @@ interface ComputeVisibleSummaryBarsParams {
    * file can carry species the track config doesn't list.
    */
   rowIndexBySrc: Map<string, number>
-  rowHeight: number
-  rowProportion: number
 }
 
 /**
@@ -45,10 +45,22 @@ interface ComputeVisibleSummaryBarsParams {
 export function computeVisibleSummaryBars(
   params: ComputeVisibleSummaryBarsParams,
 ): SummaryBar[] {
-  const { view, summaryDataMap, rowIndexBySrc, rowHeight, rowProportion } =
-    params
+  const {
+    view,
+    summaryDataMap,
+    rowIndexBySrc,
+    rowHeight,
+    rowProportion,
+    scrollTop,
+    viewportHeight,
+  } = params
   const bars: SummaryBar[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    viewportHeight,
+  )
 
   for (const { data: records, bpToPx } of eachVisibleRegion(
     view,
@@ -56,7 +68,7 @@ export function computeVisibleSummaryBars(
   )) {
     for (const r of records) {
       const rowIndex = rowIndexBySrc.get(r.src)
-      if (rowIndex !== undefined) {
+      if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
         bars.push({
           x: xLeft,

@@ -82,6 +82,7 @@ function MafSvgBody({
     conservationHeight,
     activeRowRendering,
     rowProportion,
+    scrollTop,
   } = model
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // SVG export builds its palette from the user-selected export theme, not
@@ -153,6 +154,8 @@ function MafSvgBody({
                   rowProportion,
                   nRows: sources.length,
                   canvasWidth: width,
+                  canvasHeight: rowsHeight,
+                  scrollTop,
                   ranks: model.sourceChromRanks.ranks,
                 })
               }
@@ -163,6 +166,8 @@ function MafSvgBody({
                   rowProportion,
                   nRows: sources.length,
                   canvasWidth: width,
+                  canvasHeight: rowsHeight,
+                  scrollTop,
                   mode: activeRowRendering,
                 })
               }
@@ -202,6 +207,8 @@ function MafSvgBody({
           rowHeight={effectiveRowHeight}
           treeAreaWidth={treeAreaWidth}
           showLabels={!!sources?.length}
+          scrollTop={scrollTop}
+          availableHeight={rowsHeight}
         />
       </g>
       {showCoverage && coverageTicks ? (

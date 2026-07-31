@@ -36,6 +36,11 @@ public struct RowRectUniforms {
   public float  zero;          // always 0.0 — prevents hp-split collapse
   public float  rowHeight;     // CSS px per row
   public float  rowProportion; // rect height = rowHeight * rowProportion
+  // Rows-area scroll offset in CSS px. The canvas is the viewport, not the
+  // content: a caller whose rows overflow it paints row i at
+  // `rowHeight*i - scrollTop` and lets the off-screen rows clip. Callers that
+  // size their canvas to the content (the multi-row painter) write 0.
+  public float  scrollTop;
 };
 
 public struct RowRectVsOut {
@@ -71,7 +76,7 @@ public RowRectVsOut rowRectVertex(
 
   RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
   float h      = band.height;
-  float rowY   = band.offset + u.rowHeight * float(inst.rowIndex);
+  float rowY   = band.offset + u.rowHeight * float(inst.rowIndex) - u.scrollTop;
 
   float sx1 = hpToClipX(hpSplitUint(inst.startBp), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(inst.endBp), u.bpRangeX, u.zero);

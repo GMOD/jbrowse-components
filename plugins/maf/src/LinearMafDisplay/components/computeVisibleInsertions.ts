@@ -1,5 +1,9 @@
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+import {
+  eachVisibleRegion,
+  rowBandGeometry,
+  visibleRowRange,
+} from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
@@ -64,9 +68,14 @@ function mergeByPixelColumn(markers: InsertionMarker[]): InsertionMarker[] {
 export function computeVisibleInsertions(
   params: MafOverlayParams,
 ): InsertionMarker[] {
-  const { view, rpcDataMap, rowHeight, rowProportion } = params
+  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
   const markers: InsertionMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    params.viewportHeight,
+  )
 
   for (const { data: regionData, bpToPx } of eachVisibleRegion(
     view,
@@ -74,15 +83,17 @@ export function computeVisibleInsertions(
   )) {
     for (const block of regionData.blocks) {
       for (const row of block.rows) {
-        const rowTop = offset + rowHeight * row.rowIndex
-        forEachInsertion(
-          block.refSeqBytes,
-          row.alignmentBytes,
-          block.startBp,
-          (anchorBp, length) => {
-            markers.push({ xCenter: bpToPx(anchorBp), rowTop, h, length })
-          },
-        )
+        if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
+          const rowTop = offset + rowHeight * row.rowIndex
+          forEachInsertion(
+            block.refSeqBytes,
+            row.alignmentBytes,
+            block.startBp,
+            (anchorBp, length) => {
+              markers.push({ xCenter: bpToPx(anchorBp), rowTop, h, length })
+            },
+          )
+        }
       }
     }
   }

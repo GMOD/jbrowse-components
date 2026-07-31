@@ -44,6 +44,8 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   // h=12, offset=1.5, stripH=3, stripOffset=1.5+12-3=10.5
   // row 2: rowTop = 10.5 + 15*2 = 40.5; + strand frame 1 → index 2
@@ -65,6 +67,8 @@ test('mirrors the frame index for minus-strand CDS', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   // frame 2 → base 3, minus strand → -3
   expect(markers[0]!.frameIndex).toBe(-3)
@@ -77,6 +81,8 @@ test('drops rows whose src is not in the current source set', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   expect(markers).toHaveLength(0)
 })
@@ -99,6 +105,8 @@ test('mirrors x for reversed regions', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   // reversed: bp100..110 → px100..90, left=90 width=10
   expect(markers[0]).toMatchObject({ xLeft: 90, width: 10 })
@@ -111,6 +119,8 @@ test('emits nothing when a region has no fetched frames', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
   expect(markers).toHaveLength(0)
 })

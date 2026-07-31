@@ -43,6 +43,8 @@ test('mismatched bases produce labels', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
     showAllLetters: false,
     showAsUpperCase: false,
   })
@@ -64,6 +66,8 @@ test('reversed region mirrors label x positions through the region end', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
     showAllLetters: false,
     showAsUpperCase: false,
   })
@@ -85,6 +89,8 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
     showAllLetters: true,
     showAsUpperCase: false,
   })
@@ -102,6 +108,8 @@ test('dashes in alignment are treated as gaps', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
     showAllLetters: true,
     showAsUpperCase: false,
   })

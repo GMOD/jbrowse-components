@@ -87,6 +87,8 @@ test('real bigMafSummary records render to positioned bars on their species rows
     rowIndexBySrc,
     rowHeight,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
 
   // One bar per record whose species is in the chosen subset (src-filtering).

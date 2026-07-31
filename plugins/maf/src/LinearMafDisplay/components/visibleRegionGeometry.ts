@@ -33,26 +33,72 @@ export interface RegionDataMap<T> {
 }
 
 /**
- * What every block-overlay helper takes. Declared once because the model
- * assembles it once (`overlayParams`), and because `rowHeight` here is always
- * the *resolved* height — a helper that re-declared its own params could
- * quietly be handed the raw `rowHeight` sentinel and mis-place every marker in
- * fit-to-height mode. Helpers needing more (the label pass) extend it.
+ * Where the rows sit on screen. Its own interface because three overlay helpers
+ * take a bespoke data map rather than `rpcDataMap` and so can't extend
+ * `MafOverlayParams` — but every one of them places rows the same way, and a
+ * helper that grew its own copy of these four fields could quietly be handed
+ * the raw `rowHeight` sentinel or no scroll offset and mis-place every marker.
  */
-export interface MafOverlayParams {
-  view: VisibleRegionsView
-  rpcDataMap: RegionDataMap<MafRegionData>
+export interface MafRowGeometryParams {
+  /** always the *resolved* per-row height, never the `rowHeight` sentinel */
   rowHeight: number
   rowProportion: number
+  /**
+   * Rows-area scroll offset. Markers come back in *screen* coordinates, so a
+   * helper that ignored it would place every marker a scroll-distance below the
+   * cell it annotates.
+   */
+  scrollTop: number
+  /**
+   * Height of the rows viewport, for culling rows scrolled off it. A deep
+   * alignment then costs what it shows rather than what it holds.
+   */
+  viewportHeight: number
+}
+
+/**
+ * What every block-overlay helper takes: the row geometry plus the visible
+ * regions and their per-region data.
+ */
+export interface MafOverlayParams extends MafRowGeometryParams {
+  view: VisibleRegionsView
+  rpcDataMap: RegionDataMap<MafRegionData>
 }
 
 /**
  * Per-row vertical band geometry: `h` is the drawn band height
- * (rowHeight × proportion), `offset` centers it within the row.
+ * (rowHeight × proportion), `offset` places the band of row 0 on screen —
+ * centered within its row, then shifted up by the scroll offset. Every caller
+ * spells its row top `offset + rowHeight * rowIndex`, so applying the scroll
+ * here is what keeps every overlay locked to the cells the canvas paints.
  */
-export function rowBandGeometry(rowHeight: number, rowProportion: number) {
+export function rowBandGeometry(
+  rowHeight: number,
+  rowProportion: number,
+  scrollTop: number,
+) {
   const h = rowHeight * rowProportion
-  return { h, offset: (rowHeight - h) / 2 }
+  return { h, offset: (rowHeight - h) / 2 - scrollTop }
+}
+
+/**
+ * Half-open `[firstRow, endRow)` range of row indices the viewport shows. The
+ * per-row overlay walks skip anything outside it: with a pinned row height the
+ * rows can add up to many screens, and only the ones on screen are worth
+ * positioning.
+ *
+ * Widened by one row at each edge (via floor/ceil on the band, which is inset
+ * within its row) so a partially-scrolled row still draws.
+ */
+export function visibleRowRange(
+  rowHeight: number,
+  scrollTop: number,
+  viewportHeight: number,
+) {
+  return {
+    firstRow: Math.max(0, Math.floor(scrollTop / rowHeight)),
+    endRow: Math.ceil((scrollTop + viewportHeight) / rowHeight),
+  }
 }
 
 /**

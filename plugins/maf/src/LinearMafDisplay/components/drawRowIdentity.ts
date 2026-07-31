@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../../util/asciiBytes.ts'
-import { rowBandGeometry } from './visibleRegionGeometry.ts'
+import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowIdentityMode } from '../rowIdentityModes.ts'
@@ -14,9 +14,12 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 interface DrawRowIdentityState {
   rowHeight: number
   rowProportion: number
-  /** display row count (sizes the per-row accumulators) */
+  /** display row count */
   nRows: number
   canvasWidth: number
+  /** the rows viewport (the canvas), which with `scrollTop` picks the rows drawn */
+  canvasHeight: number
+  scrollTop: number
   /** `heatmap` shades each cell on a ramp; `xyplot` draws an identity wiggle */
   mode: RowIdentityMode
 }
@@ -206,16 +209,33 @@ export function drawRowIdentity(
   regions: ReadonlyMap<number, MafRegionData>,
   state: DrawRowIdentityState,
 ) {
-  const { rowHeight, rowProportion, nRows, canvasWidth, mode } = state
+  const {
+    rowHeight,
+    rowProportion,
+    nRows,
+    canvasWidth,
+    canvasHeight,
+    scrollTop,
+    mode,
+  } = state
   const width = Math.ceil(canvasWidth)
   if (width <= 0 || nRows <= 0) {
     return
   }
-  // Per-row × per-pixel accumulators, flattened (row r occupies [r*width,
-  // (r+1)*width)). One pass over the visible blocks fills them; a single fill
-  // pass below colors each row band.
-  const matchSum = new Float32Array(nRows * width)
-  const classCount = new Float32Array(nRows * width)
+  // Only the rows on screen are accumulated and drawn — the rest are scrolled
+  // past, and with a pinned row height there can be many screens of them.
+  const { firstRow, endRow } = visibleRowRange(
+    rowHeight,
+    scrollTop,
+    canvasHeight,
+  )
+  const lastRow = Math.min(endRow, nRows)
+  // Per-*visible*-row × per-pixel accumulators, flattened (visible row r
+  // occupies [(r-firstRow)*width, (r-firstRow+1)*width)). One pass over the
+  // visible blocks fills them; a single fill pass below colors each row band.
+  const drawnRows = Math.max(0, lastRow - firstRow)
+  const matchSum = new Float32Array(drawnRows * width)
+  const classCount = new Float32Array(drawnRows * width)
   // One set of column buffers for the whole pass, rebuilt per block.
   const columns = new IdentityColumns()
   for (const block of blocks) {
@@ -232,11 +252,11 @@ export function drawRowIdentity(
           clip.scissorX + clip.scissorW,
         )
         for (const row of mafBlock.rows) {
-          if (row.rowIndex < nRows) {
+          if (row.rowIndex >= firstRow && row.rowIndex < lastRow) {
             columns.accumulate(
               matchSum,
               classCount,
-              row.rowIndex * width,
+              (row.rowIndex - firstRow) * width,
               row.alignmentBytes,
             )
           }
@@ -248,12 +268,13 @@ export function drawRowIdentity(
   const { h: bandH, offset: bandOffset } = rowBandGeometry(
     rowHeight,
     rowProportion,
+    scrollTop,
   )
   if (mode === 'xyplot') {
     ctx.fillStyle = IDENTITY_RAMP[100]!
-    for (let row = 0; row < nRows; row++) {
+    for (let row = firstRow; row < lastRow; row++) {
       const rowBottom = bandOffset + rowHeight * row + bandH
-      const base = row * width
+      const base = (row - firstRow) * width
       for (let x = 0; x < width; x++) {
         const c = classCount[base + x]!
         if (c > 0) {
@@ -263,9 +284,9 @@ export function drawRowIdentity(
       }
     }
   } else {
-    for (let row = 0; row < nRows; row++) {
+    for (let row = firstRow; row < lastRow; row++) {
       const rowTop = bandOffset + rowHeight * row
-      const base = row * width
+      const base = (row - firstRow) * width
       for (let x = 0; x < width; x++) {
         const c = classCount[base + x]!
         if (c > 0) {

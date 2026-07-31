@@ -46,12 +46,14 @@ export default function configSchemaF(pluginManager: PluginManager) {
        * Per-row height in px, or `0` for "fit to display height" mode where rows
        * stretch to fill the track height. The resolved value is the model's
        * `effectiveRowHeight` getter. Defaults to fit-to-height so large
-       * alignments stay bounded by the track height.
+       * alignments stay bounded by the track height; a pinned height is honored
+       * whatever the species count, with the rows that don't fit scrolled to.
        */
       rowHeight: {
         type: 'number',
         defaultValue: 0,
-        description: 'per-row height in px; 0 fits rows to the display height',
+        description:
+          'per-row height in px, scrolling the rows that do not fit; 0 fits rows to the display height instead',
       },
       /**
        * #slot

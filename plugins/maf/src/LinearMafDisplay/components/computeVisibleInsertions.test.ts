@@ -47,6 +47,8 @@ function run(
     ]),
     rowHeight,
     rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
   })
 }
 
