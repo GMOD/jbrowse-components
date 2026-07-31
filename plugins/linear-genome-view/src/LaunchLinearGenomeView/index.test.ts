@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import LaunchLinearGenomeViewF from './index.ts'
 
+import type { LaunchLinearGenomeViewArgs } from './index.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // the real extension point on a real plugin manager, against a session stubbed
@@ -61,7 +62,10 @@ test('a typo warns rather than vanishing into a dropped snapshot key', async () 
 
   await pluginManager.evaluateAsyncExtensionPointStrict(
     'LaunchView-LinearGenomeView',
-    { session, assembly: 'volvox', tracksList: true },
+    // the args reaching this point come from a session spec URL, which can
+    // carry any key, so the typo under test is one TypeScript would reject at
+    // a typed call site and only the runtime guard can catch
+    { session, assembly: 'volvox', tracksList: true } as LaunchLinearGenomeViewArgs,
   )
 
   expect(warn).toHaveBeenCalledWith(

@@ -162,10 +162,14 @@ type WidgetModel = FeatureWidgetModel & {
 
 // props passed to Core-extraFeaturePanel components (and threaded as the second
 // arg to each accumulating callback)
+// #region featurePanelProps
 export interface FeaturePanelProps {
+  /** has `trackId` and `trackType` */
   model: FeatureWidgetModel
+  /** snapshot of the feature being shown */
   feature: SimpleFeatureSerialized
 }
+// #endregion
 
 // props passed to Core-replaceWidget components
 // #region replaceWidgetProps
@@ -228,14 +232,22 @@ export type ExtensionPointPropsArgs<N extends ExtensionPointName> =
 
 /**
  * A point name that is *not* in the registry, which is what the loose evaluate
- * overloads accept. Resolving a registered name to `never` keeps it out of
- * them: they otherwise match whenever the typed overload doesn't, so a call
+ * overloads accept. Keeping a registered name out of them is what makes the
+ * typed overload binding: they otherwise match whenever it doesn't, so a call
  * that omitted a required `props` or passed the wrong `extendee` fell through
  * and compiled. Plugin-defined points, and any name that isn't a literal, are
  * unaffected.
+ *
+ * A registered name resolves to a message-shaped type rather than `never`
+ * because this overload is the last one tried, so its error is the one TS
+ * reports: `not assignable to never` says nothing about what to fix.
  */
 export type UnregisteredPointName<S extends string> =
-  S extends ExtensionPointName ? never : S
+  S extends ExtensionPointName
+    ? {
+        ERROR: 'this extension point is in ExtensionPointRegistry; check the extendee type, and pass props if it declares them'
+      }
+    : S
 
 /**
  * metadata related to the instance of this plugin. `isCore` is set when the

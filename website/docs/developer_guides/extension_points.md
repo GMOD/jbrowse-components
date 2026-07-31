@@ -336,10 +336,12 @@ pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) => {
 
 type: synchronous
 
-Provide a different component for a given widget, drawer, or modal. Singular
-(one widget renders): return your own component to replace/wrap the default, or
-return the default unchanged to opt out. Contrast `Core-extraFeaturePanel`,
-which accumulates additive panels.
+Provide a different component for a given widget, drawer, or modal. This is a
+`single` point, since one widget renders: a callback returns its own component
+to take the slot, or the accumulated one to opt out. Contrast
+[`Core-extraFeaturePanel`](#core-extrafeaturepanel), which accumulates additive
+panels and is the right point when you want to _add_ to a feature details widget
+rather than take it over.
 
 - `args` - a `ReactComponent`
 - `props` - an object of the type below
@@ -379,16 +381,27 @@ addReplaceWidget(pluginManager, {
 `select` accepts any combination of the fields below, and all of the ones you
 give must match. Omitting `select` entirely matches every widget.
 
-<!-- include: packages/core/src/ui/addReplaceWidget.tsx#selector -->
+Two fields are shared with `addFeaturePanel`:
+
+<!-- include: packages/core/src/ui/extensionSelectors.ts#fields -->
 
 ```typescript
-export interface WidgetSelector {
-  /** widget model type, e.g. `'AlignmentsFeatureWidget'` */
-  widgetType?: string | string[]
+export interface TrackSelectorFields {
   /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
   trackType?: string | string[]
   /** track id; a plain string also matches the user's copies of that track */
   trackId?: string | RegExp | (string | RegExp)[]
+}
+```
+
+and a widget selector adds two more:
+
+<!-- include: packages/core/src/ui/addReplaceWidget.tsx#selector -->
+
+```typescript
+export interface WidgetSelector extends TrackSelectorFields {
+  /** widget model type, e.g. `'AlignmentsFeatureWidget'` */
+  widgetType?: string | string[]
   /** escape hatch for anything the fields above cannot express */
   where?: (props: ReplaceWidgetProps) => boolean
 }
@@ -455,62 +468,78 @@ position, any text typed into it, and any panel the user had expanded.
 
 type: synchronous
 
-Adds extra panels to the feature details widget. **Accumulates an array of React
-components**: each callback appends its own panel and returns the array, so
-panels from multiple plugins compose instead of overwriting one another. Each
-component renders its own card chrome (use `BaseCard` for a titled section) and
-is rendered after the built-in Attributes/Sequence sections. Defaults to an
-empty array.
+Adds panels to the feature details widget, below the built-in Attributes and
+Sequence sections. This is a `list` point: every plugin's panel is kept, in
+registration order, so panels compose rather than overwrite.
 
-- `args` - `React.ComponentType<FeaturePanelProps>[]` - the accumulated panels,
-  empty by default. Append yours and return the array.
-- `props` - the feature-detail props below, also passed to each component
+Register with `addFeaturePanel`, which scopes the panel with the same selector
+`addReplaceWidget` uses:
+
+```tsx
+import { addFeaturePanel } from '@jbrowse/core/ui'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+
+addFeaturePanel(pluginManager, {
+  select: { trackType: 'VariantTrack' },
+  panel: ({ model, feature }) => (
+    <BaseCard title="Extra info">{/* your content */}</BaseCard>
+  ),
+})
+```
+
+Your panel renders its own card chrome, so use `BaseCard` for a titled section.
+
+- `select` - a `FeaturePanelSelector`, below. Omit it to add the panel to every
+  track's feature details.
+- `panel` - a `React.ComponentType<FeaturePanelProps>`.
+
+<!-- include: packages/core/src/ui/addFeaturePanel.ts#selector -->
 
 ```typescript
-import type { FeaturePanelProps } from '@jbrowse/core/PluginManager'
-// FeaturePanelProps:
-interface props {
-  model: FeatureWidgetModel // has model.trackId / model.trackType
-  feature: SimpleFeatureSerialized // snapshot of the feature object
+export interface FeaturePanelSelector extends TrackSelectorFields {
+  /** escape hatch; also has the `feature` being shown */
+  where?: (props: FeaturePanelProps) => boolean
 }
 ```
 
-`model` has `trackId`, `trackType`, and `track` (which may be undefined if the
-user closed the track; trackId/trackType remain defined either way). Derive the
-session with `getSession(model)` if needed.
+There is no `widgetType` here, unlike `WidgetSelector`: a feature detail
+widget's type varies by track type, so `trackType` is the field that means "my
+kind of track". `trackId` and `trackType` are documented under
+[`Core-replaceWidget`](#core-replacewidget); a plain-string `trackId` matches
+the user's copies of that track too.
 
-A panel can decide for itself whether it applies by returning `null`:
-
-```tsx
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-
-pluginManager.addToExtensionPoint(
-  'Core-extraFeaturePanel',
-  (panels, { model }) => [
-    ...panels,
-    function ExtraFeaturePanel({ model, feature }) {
-      return model.trackType === 'VariantTrack' ? (
-        <BaseCard title="Extra info">{/* your content */}</BaseCard>
-      ) : null
-    },
-  ],
-)
-```
-
-Or scope at registration so you only append when the track matches, using
-`matchTrackId` (see `Core-replaceWidget` above):
+`where` additionally receives the `feature` being shown, which the declarative
+fields can't reach:
 
 ```tsx
-import { matchTrackId } from '@jbrowse/core/util'
-
-pluginManager.addToExtensionPoint(
-  'Core-extraFeaturePanel',
-  (panels, { model }) =>
-    matchTrackId(model.trackId, [/^volvox_filtered_vcf/])
-      ? [...panels, MyVariantPanel]
-      : panels,
-)
+addFeaturePanel(pluginManager, {
+  select: { where: ({ feature }) => feature.type === 'gene' },
+  panel: MyGenePanel,
+})
 ```
+
+Your panel receives the point's props:
+
+<!-- include: packages/core/src/PluginManager.ts#featurePanelProps -->
+
+```typescript
+export interface FeaturePanelProps {
+  /** has `trackId` and `trackType` */
+  model: FeatureWidgetModel
+  /** snapshot of the feature being shown */
+  feature: SimpleFeatureSerialized
+}
+```
+
+`model` also has `track`, which is undefined if the user closed the track while
+the widget was open; `trackId` and `trackType` stay defined either way. Derive
+the session with `getSession(model)` if you need it.
+
+If you fire this point yourself, or need a panel that decides per render, the
+underlying contract is an accumulating array: `args` is
+`React.ComponentType<FeaturePanelProps>[]`, empty by default, and each callback
+appends to it and returns it. Dropping the spread removes every other plugin's
+panel, which is the main reason to prefer the helper.
 
 ### Core-preProcessTrackConfig
 

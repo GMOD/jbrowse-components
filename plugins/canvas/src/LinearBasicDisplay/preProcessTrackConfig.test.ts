@@ -3,7 +3,7 @@ import { addDisplayConfigMigration } from '@jbrowse/core/pluggableElementTypes/m
 
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 
-interface DisplaySnapshot {
+type DisplaySnapshot = {
   type?: string
   geneGlyphMode?: string
   showLabels?: unknown
@@ -15,7 +15,7 @@ interface DisplaySnapshot {
   heightMode?: string
   renderer?: Record<string, unknown>
 }
-interface TrackConfigSnapshot {
+type TrackConfigSnapshot = {
   type?: string
   displays?: DisplaySnapshot[]
 }

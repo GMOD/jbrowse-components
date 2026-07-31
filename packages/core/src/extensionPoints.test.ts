@@ -1,5 +1,7 @@
 import PluginManager from './PluginManager.ts'
 
+import type { ReplaceWidgetProps } from './PluginManager.ts'
+
 // an unregistered name hits the loose overloads, which is what a plugin-defined
 // point looks like before anyone types it
 const POINT = 'Test-point'
@@ -66,7 +68,7 @@ test('a point that declares props requires them at the fire site', () => {
   expect(
     pm.evaluateExtensionPoint('Core-replaceWidget', Widget, {
       model: { type: 'W' },
-      session: {},
+      session: {} as ReplaceWidgetProps['session'],
     }),
   ).toBe(Widget)
 })

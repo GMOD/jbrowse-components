@@ -89,7 +89,7 @@ const stale: string[] = []
 //
 // Only TS/JS fences count: a `json` config sample or a `bash` command has no
 // compiled source to point an include at.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '110')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '109')
 const INCLUDABLE = new Set([
   'ts',
   'tsx',

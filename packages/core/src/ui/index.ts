@@ -100,12 +100,15 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export { addExtensionElement } from './addExtensionElement.tsx'
 export type { ElementExtensionPointName } from './addExtensionElement.tsx'
+export { addFeaturePanel } from './addFeaturePanel.ts'
+export type { FeaturePanelSelector } from './addFeaturePanel.ts'
 export {
   addReplaceWidget,
   addWidgetWrapper,
   widgetSelectorMatches,
 } from './addReplaceWidget.tsx'
 export type { WidgetSelector, WidgetWrapperProps } from './addReplaceWidget.tsx'
+export type { TrackSelectorFields } from './extensionSelectors.ts'
 export type {
   BaseMenuItem,
   CheckboxMenuItem,

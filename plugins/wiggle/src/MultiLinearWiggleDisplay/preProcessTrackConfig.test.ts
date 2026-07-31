@@ -2,11 +2,11 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import MigrateMultiWiggleConfigF from './preProcessTrackConfig.ts'
 
-interface DisplaySnapshot {
+type DisplaySnapshot = {
   type?: string
   defaultRendering?: string
 }
-interface TrackConfigSnapshot {
+type TrackConfigSnapshot = {
   type?: string
   trackId?: string
   displays?: DisplaySnapshot[]

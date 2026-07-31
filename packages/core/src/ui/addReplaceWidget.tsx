@@ -1,69 +1,34 @@
 import { wrappedComponent } from '../PluginManager.ts'
-import { matchTrackId } from '../util/matchTrackId.ts'
+import { selectorMatchesModel } from './extensionSelectors.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { ReplaceWidgetProps } from '../PluginManager.ts'
+import type { TrackSelectorFields } from './extensionSelectors.ts'
 import type { ComponentType } from 'react'
 
 /**
  * Which widgets a `Core-replaceWidget` contribution applies to. Every field
- * given must match, and an empty selector matches every widget — the point
- * fires for all of them, so a contribution with no selector really does take
- * over the drawer, the modal, and every feature detail panel.
+ * given must match, and an empty selector matches every widget: the point fires
+ * for all of them, so a contribution with no selector really does take over the
+ * drawer, the modal, and every feature detail panel.
  */
 // #region selector
-export interface WidgetSelector {
+export interface WidgetSelector extends TrackSelectorFields {
   /** widget model type, e.g. `'AlignmentsFeatureWidget'` */
   widgetType?: string | string[]
-  /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
-  trackType?: string | string[]
-  /** track id; a plain string also matches the user's copies of that track */
-  trackId?: string | RegExp | (string | RegExp)[]
   /** escape hatch for anything the fields above cannot express */
   where?: (props: ReplaceWidgetProps) => boolean
 }
 // #endregion
-
-// "Copy track" appends `-${Date.now()}` to the trackId (copyTrackSnapshot), and
-// copying a copy appends again, so a bare id in a selector means "this track,
-// including the user's copies of it". Doing this in the framework is the point:
-// scoping by `trackId ===` is the documented recipe and it silently stops
-// applying the moment a user copies the track.
-function matchesTrackId(
-  trackId: string | undefined,
-  pattern: string | RegExp,
-): boolean {
-  return typeof pattern === 'string'
-    ? trackId === pattern ||
-        (trackId?.startsWith(`${pattern}-`) === true &&
-          trackId
-            .slice(pattern.length + 1)
-            .split('-')
-            .every(part => /^\d+$/.test(part)))
-    : matchTrackId(trackId, [pattern])
-}
-
-function matchesOneOf(value: string | undefined, expected: string | string[]) {
-  return typeof expected === 'string'
-    ? value === expected
-    : expected.includes(value ?? '')
-}
 
 /** Whether `props` satisfies every field of `select`. */
 export function widgetSelectorMatches(
   select: WidgetSelector | undefined,
   props: ReplaceWidgetProps,
 ) {
-  const { widgetType, trackType, trackId, where } = select ?? {}
-  const { model } = props
   return (
-    (widgetType === undefined || matchesOneOf(model.type, widgetType)) &&
-    (trackType === undefined || matchesOneOf(model.trackType, trackType)) &&
-    (trackId === undefined ||
-      (Array.isArray(trackId) ? trackId : [trackId]).some(pattern =>
-        matchesTrackId(model.trackId, pattern),
-      )) &&
-    (where === undefined || where(props))
+    selectorMatchesModel(select, props.model) &&
+    (select?.where === undefined || select.where(props))
   )
 }
 
