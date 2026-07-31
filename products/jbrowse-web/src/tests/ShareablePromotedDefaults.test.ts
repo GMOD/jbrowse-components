@@ -261,6 +261,56 @@ test('an opened connection track bakes into its persisted config, not a dead del
   ).toBeUndefined()
 })
 
+test('a connection track config with no displays array gets the baked display added', () => {
+  // a hub-provided config need not carry `displays` at all (the stubs are
+  // injected at hydration), so the bake has to add the display rather than
+  // assume a row to merge into
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession & {
+    connectionTrackConfigs: Record<
+      string,
+      { connectionId: string; config: Record<string, unknown> }
+    >
+    setConnectionTrackConfig: (
+      trackId: string,
+      connectionId: string,
+      config: Record<string, unknown>,
+    ) => void
+  }
+  const view = session.views[0]!
+
+  view.showTrack(TRACK_ID)
+  const base = getSnapshot(
+    view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
+  ) as Record<string, unknown> & { trackId: string }
+  const { displays: _displays, ...noDisplays } = structuredClone(base)
+  noDisplays.trackId += '-conn-bare'
+  session.setConnectionTrackConfig(
+    noDisplays.trackId,
+    'testConnection',
+    noDisplays,
+  )
+  view.showTrack(noDisplays.trackId)
+
+  session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
+
+  const snap = bakePromotedDefaultsIntoSnapshot(
+    session as never,
+    getSnapshot(rootModel.session),
+  )
+
+  const entry = (
+    snap.connectionTrackConfigs as Record<
+      string,
+      { config: { displays?: Record<string, unknown>[] } }
+    >
+  )[noDisplays.trackId]!
+  const baked = entry.config.displays!.find(d => d.type === DISPLAY_TYPE)!
+  expect(baked[SLOT]).toBe(PROMOTED)
+  // the added display carries its identity, or it merges over nothing on load
+  expect(typeof baked.displayId).toBe('string')
+})
+
 test('a promoted default merges into an existing delta without clobbering a prior edit', () => {
   const { rootModel, session, display } = openVcfDisplay()
   const s = session as unknown as TestSession & {

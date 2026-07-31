@@ -83,6 +83,42 @@ describe('OverrideBadge session-default awareness', () => {
     // clicking queues the changes dialog (rendered by the app-level dialog host)
     expect(session.DialogComponent).toBe(TrackSettingsChangesDialog)
   })
+
+  it('clears only the session defaults the dialog listed', async () => {
+    const { session, model } = openTrackSelector()
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'subfeatureLabels',
+      'below',
+    )
+    // promoted to the slot's own promotedBase, so it moves this track off
+    // nothing and shows up in no row — but it still governs sibling tracks, so
+    // clearing it from a dialog that never named it would change tracks other
+    // than this one
+    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'normal')
+
+    const { findByTestId } = render(
+      theme(<HierarchicalTrackSelector model={model} toolbarHeight={20} />),
+    )
+    fireEvent.click(await findByTestId('track_session_default_badge'))
+
+    const { displayTypeDefaults, onClearDefaults } =
+      session.DialogProps as unknown as {
+        displayTypeDefaults: { path: string[] }[]
+        onClearDefaults: () => void
+      }
+    expect(displayTypeDefaults.map(c => c.path[0])).toEqual([
+      'subfeatureLabels',
+    ])
+
+    onClearDefaults()
+    expect(
+      session.getDisplayTypeDefault('LinearBasicDisplay', 'subfeatureLabels'),
+    ).toBeUndefined()
+    expect(
+      session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+    ).toBe('normal')
+  })
 })
 
 describe('TrackSettingsChangesDialog session-default section', () => {

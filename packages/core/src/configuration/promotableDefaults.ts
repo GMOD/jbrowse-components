@@ -114,6 +114,16 @@ function resolvePromotablesInto(
  * session's `ignorePromotedDefaults` is honored), and from the display config
  * alone when it isn't — an unopened track has no display state, but "what would
  * this render as" still has an answer.
+ *
+ * **Writes every promotable slot, including the ones sitting at `promotedBase`,
+ * and that is the decision — don't "align" it with the share bake.** The bake
+ * writes only genuinely-inherited values because a shared session carries
+ * `ignorePromotedDefaults` to pin the rest; a pasted `config.json` has no such
+ * flag, so writing only the inherited ones would leave every other slot free to
+ * pick up whatever the reader has promoted. What a user copying a config wants
+ * is the values they are looking at. The cost is that the pasted track is
+ * customized on those slots and no longer follows a later promoted default,
+ * which is what a config file means.
  */
 export interface TrackConfigWithPromotables {
   config: Record<string, unknown>
@@ -199,10 +209,21 @@ export interface DisplayTypeDefaultControl {
 // A view whose open tracks we can enumerate. The generic view interface doesn't
 // surface `tracks`, so narrow structurally — the declared display shape is the
 // same PromotableDisplay the cascade already operates on.
+//
+// Checks the elements, not just that `tracks` is an array: this narrowing is
+// what every consumer downstream trusts, and an element without `displays`
+// would put `undefined` in the walk and throw at the first `display.type` —
+// inside a share/export bake, i.e. as far from the cause as it gets. Every
+// `tracks`-bearing view today holds real track models, so this only ever
+// confirms what is already true.
 function hasOpenTracks<T extends object>(
   view: T,
 ): view is T & { tracks: { displays: PromotableDisplay[] }[] } {
-  return 'tracks' in view && Array.isArray(view.tracks)
+  return (
+    'tracks' in view &&
+    Array.isArray(view.tracks) &&
+    view.tracks.every(t => isObject(t) && Array.isArray(t.displays))
+  )
 }
 
 // A composite view holding child views in a `views` array: breakpoint-split and
@@ -443,12 +464,24 @@ export function getDisplayTypeDefaultChanges(
 
 /**
  * #api core/configuration
- * Clear every promoted default for this display type, so sibling tracks revert
- * to their own config values. Backs the badge's "clear default" action.
+ * Clear promoted defaults for this display type, so every track following one
+ * reverts to its own config value. Backs the badge's "clear session default"
+ * action, which passes the slots it actually listed
+ * (`getDisplayTypeDefaultChanges`).
+ *
+ * Pass `slots` whenever the UI named what it was clearing. The all-slots default
+ * reaches further than any such list: a promoted default the track *customized*
+ * over, or one promoted to a value equal to `promotedBase`, is invisible in the
+ * badge dialog (neither is `inherited`) yet still governs sibling tracks — so
+ * clearing it from a dialog that never showed it changes tracks other than the
+ * one whose badge was clicked.
  */
-export function clearPromotedDefaults(self: ResolvableDisplay): void {
+export function clearPromotedDefaults(
+  self: ResolvableDisplay,
+  slots: Iterable<string> = promotableSlotNames(self.configuration),
+): void {
   const session = getSession(self)
-  for (const slot of promotableSlotNames(self.configuration)) {
+  for (const slot of slots) {
     session.setDisplayTypeDefault(self.type, slot, undefined)
   }
 }

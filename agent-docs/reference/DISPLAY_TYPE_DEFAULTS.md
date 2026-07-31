@@ -286,7 +286,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
 | `makeCurrentValueDisplayTypeDefaultControl(self, slot)` | same, over the track's *current* resolved value | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
-| `clearPromotedDefaults(self)` | clears every promoted default for this display's type | badge "clear default" |
+| `clearPromotedDefaults(self, slots?)` | clears the named promoted defaults for this display's type (every promotable slot when `slots` is omitted) | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 
 `DisplayTypeDefaultControl` is `{ active: boolean; toggle: () => void }`.
@@ -532,8 +532,12 @@ opening.
 **Badge** (`OverrideBadge.tsx`, track selector): the same pencil that marks a
 per-track config edit also shows when `getDisplayTypeDefaultChanges(display)` is
 non-empty — one badge, two reasons, with the tooltip and the dialog naming the
-actual source; click opens `TrackSettingsChangesDialog` with a "clear default"
-action wired to `clearPromotedDefaults(display)`.
+actual source; click opens `TrackSettingsChangesDialog` with a "clear session
+default" action wired to `clearPromotedDefaults(display, listedSlots)`. It
+passes the slots the dialog **listed**, so the button clears exactly what the
+user is looking at: a promoted default this track customized over, or one
+promoted to a value equal to `promotedBase`, is `inherited: false` and appears
+in no row, yet clearing it would move every *sibling* track.
 
 The badge calls those two core functions **directly on the display**, not through
 per-display MST hooks. Both are total — a schema with no promotable slot yields no

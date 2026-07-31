@@ -23,16 +23,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// The open displays of `trackId` in the view this selector is attached to.
-// Session-default effects are read from live display models (not track config)
-// so the resolution can't drift; a closed track has no display and so no badge.
-interface OpenTrack {
-  configuration: { trackId: string }
-  displays: ResolvableDisplay[]
-}
+// The open displays of `trackId` in the track list this selector is attached
+// to. Session-default effects are read from live display models (not track
+// config) so the resolution can't drift; a closed track has no display and so
+// no badge.
 function openDisplays(model: HierarchicalTrackSelectorModel, trackId: string) {
-  const view: { tracks?: OpenTrack[] } | undefined = model.view
-  const track = view?.tracks?.find(t => t.configuration.trackId === trackId)
+  const track = model.trackContainer?.tracks.find(
+    t => t.configuration.trackId === trackId,
+  )
   return track?.displays ?? []
 }
 
@@ -66,12 +64,21 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
   // both functions are total (a schema with no promotable slot yields no changes
   // and clears nothing), so there is nothing to dispatch on and no display needs
   // to opt in
-  const displayTypeDefaults = displays.flatMap(d =>
-    getDisplayTypeDefaultChanges(d),
-  )
+  const perDisplay = displays.map(display => ({
+    display,
+    changes: getDisplayTypeDefaultChanges(display),
+  }))
+  const displayTypeDefaults = perDisplay.flatMap(d => d.changes)
+  // clear exactly the slots the dialog listed, keeping the button's blast radius
+  // equal to what the user is looking at — a promoted default this track
+  // customized over, or one equal to the base, appears in no row yet still
+  // governs sibling tracks
   const onClearDefaults = () => {
-    for (const d of displays) {
-      clearPromotedDefaults(d)
+    for (const { display, changes } of perDisplay) {
+      clearPromotedDefaults(
+        display,
+        changes.map(c => c.path[0]!),
+      )
     }
   }
 
