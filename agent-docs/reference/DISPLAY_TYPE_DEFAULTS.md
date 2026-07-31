@@ -138,11 +138,9 @@ one form and nothing to choose:
 - `maybeFrozen` — the object-valued case: `colorBy`, resolving to
   `{ type: 'normal' }`.
 
-`ConfigSlot` rejects the mirror mistake too: `promotedBase` on a slot that never
-says `promotable` builds a slot the resolver refuses on every `resolveConf` read
-while the resolved read type still drops the sentinel — it type-checks and
-throws. Only an *unstated* `promotable` is the mistake; an explicit
-`promotable: false` is how a subclass turns an inherited promotable slot off.
+`ConfigSlot` also rejects the mirror mistake, `promotedBase` without
+`promotable`. An explicit `promotable: false` is how a subclass turns an
+inherited promotable slot off.
 
 It costs nothing at the read site: `resolveConf` resolves `undefined` to
 `promotedBase` and the getter never surfaces it (and `SlotValueResolvedFromDef`
@@ -150,7 +148,7 @@ drops `undefined` from the read type, so the getter's own annotation stays
 clean).
 
 **Why the sentinel is mandatory, why it isn't a spare `'inherit'` enum member,
-and why `defaultValue` may not double as it:**
+why `defaultValue` may not double as it, and why the mirror mistake throws:**
 [ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md).
 
 ## The resolver
@@ -170,24 +168,13 @@ interface SlotResolution {
 ```
 
 `resolveSlotIn` in `promotableResolve.ts` is the whole of it — about fifteen
-lines, commented in place. **Read it there rather than a copy here.** This
-section used to carry a transcription of the function body; it silently drifted
-from the real one (wrong `storedSlotValue` signature, and it predated the
-`resolveSlot` / `resolveSlotIn` split over a `CascadeContext`), which is exactly
-the failure a second copy invites.
-
-What the file won't tell you at a glance:
-
-- `promoted` stays the **raw** session-wide value even for an opted-out display.
-  It is a session-wide fact, and the pin's filled/outline state reports on the
-  session, not on one display's view of it. `ignorePromotedDefaults` may
-  neutralize only the inherited-value tier.
-- `customized` runs a track's **own** value through the same `isUsableValue` gate
-  as a promoted default, so a malformed or stale own value (a saved `colorBy`
-  naming a since-removed scheme) reads as not-customized and degrades in lockstep
-  rather than reaching a consumer that trusts every value it sees.
-- There is deliberately **no callback case** — see
-  [No callbacks](#no-callbacks-jexl).
+lines. **Read it there rather than a copy here**: this section used to carry a
+transcription of the function body and had silently drifted from it, which is the
+failure a second copy invites. Its three non-obvious invariants are commented at
+the lines that implement them — `promoted` stays raw even for an opted-out
+display, a track's own value passes the same `isUsableValue` gate as a promoted
+default, and there is deliberately no callback case
+([No callbacks](#no-callbacks-jexl)).
 
 ### What a display has to be
 
@@ -213,16 +200,13 @@ that's the mixin not seeing props the concrete display declares, and the cast
 target names exactly what the cascade reads.
 
 `isUsableValue` is the single gate **both** tiers pass a candidate through — a
-promoted default and a track's own saved value. It composes four independent
-checks: the value is set at all (`undefined` IS the inherit sentinel), it isn't a
-raw `jexl:` string (see [No callbacks](#no-callbacks-jexl) — this is the only
-place the subsystem handles them, and it handles them by refusing them), its JS
-shape fits the slot (a `SHAPE_CHECKS` entry for
-the slot `type` — a `maybeStringEnum` choice, a *finite* `maybeNumber` — else
-`promotedBase`'s object/array kind or `typeof`), and it passes the slot's
-optional semantic `validate` hook. A value
-failing any check is dropped so the getter, the pin, and the badge all fall back
-in lockstep — no consumer guards on its own. `colorBy` uses `validate` so a
+promoted default and a track's own saved value — composing four checks: set at
+all, not a raw `jexl:` string ([No callbacks](#no-callbacks-jexl)), JS shape fits
+the slot (`SHAPE_CHECKS`: a `maybeStringEnum` choice, a *finite* `maybeNumber`,
+else `promotedBase`'s object/array kind or `typeof`), and the slot's optional
+semantic `validate` hook. A value failing any check is dropped so the getter, the
+pin, and the badge all fall back in lockstep — no consumer guards on its own.
+`colorBy` uses `validate` so a
 `.type` naming a since-removed color scheme — customized or promoted — degrades
 to the base instead of reaching the total `COLOR_SCHEMES` lookups that throw on
 an unregistered type.
@@ -291,28 +275,18 @@ clears it. There is no disabled state — a pin always has a value to promote (s
 [No callbacks](#no-callbacks-jexl)).
 
 **`toggle` writes the session default and nothing else.** No track's own value is
-ever touched — the pin edits the stylesheet, never the elements. Following
-tracks pick the new value up via `resolveConf`; customized tracks keep theirs. It
-raises a snackbar `"Set as the default"` carrying an **"Apply to N open
-tracks"** action
-for any open track (across all views) not already showing this value, and *that*
-action — the one explicit gesture — resets their own value so they follow. On
-**clear**, `"Cleared the default"`.
+ever touched — the pin edits the stylesheet, never the elements. Following tracks
+pick the new value up via `resolveConf`; customized tracks keep theirs. It raises
+a snackbar `"Set as the default"` carrying an **"Override N customized tracks"**
+action for any open track (across all views) not already showing this value, and
+*that* action — the one explicit gesture — clears their own value so they follow.
+On **clear**, `"Cleared the default"`.
 
-The snackbar outlives the click that raised it, so its action re-derives
-everything on click rather than closing over it: the track set (a track closed
-in between is a dead MST node), the clicked display itself (`isAlive`), and the
-promoted default. If that default is gone by then — the user unpinned, or pinned
-a sibling value on the same slot — the action does nothing, because clearing
-those tracks' own values would discard customizations to strand them on whatever
-replaced it.
-
-Toggling on used to *also* reset the display the pin was clicked from, so its own
-track updated with one click. That silently discarded the display's value:
-pin-then-unpin stranded it on `promotedBase` rather than what it held before, a
-two-click non-undoable loss from a control that reads as a toggle. Symmetry is
-worth the one extra click on a customized track; that track is now just counted
-in "Apply to N open tracks" like any other.
+That the pin stays symmetric, that the action is named for the bulk discard it
+performs, and that it re-derives its whole target set inside `onClick` rather
+than capturing it, are all
+[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md).
+Read it before making the pin do more.
 
 The low-level primitives behind the builders —
 `isPromotableDefault(self, slot, value)`,
@@ -353,9 +327,9 @@ without that mixin resolve admin-only. Both are **required** methods on
 (`setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`):
 `BaseSessionModel` declares them, so every product session has them, and each
 product's `AssertSessionModel<…>` turns a member drifting out of that set into a
-build error. So the resolver and the control builders call them plainly — the
-`?.` they used to carry only ever protected hand-rolled test session shims,
-which now declare `getDisplayTypeDefault` themselves. `preferencesOverrides` is
+build error. So the resolver and the control builders call them plainly, with no
+`?.` (what dropping it exposed:
+[Historical note](#historical-note)). `preferencesOverrides` is
 `.volatile()`, so it's **kept off the session snapshot** deliberately — it's a
 local, per-browser UI preference, not shared-session state. (Admin-baked shared
 defaults ship separately via `configuration.preferences`.)
@@ -519,7 +493,8 @@ The three **slider** rows (wiggle point size, wiggle/arc line width) do have one
 because a slider has no "untouched" position to leave alone: the reset button is
 enabled off `isSlotCustomized` and writes `undefined`. When a value-group track
 *is* customized and the user wants it back on the cascade, the paths are the
-snackbar's "Apply to N open tracks" (offered whenever a default is set) and the
+snackbar's "Override N customized tracks" (offered whenever a default is set) and
+the
 track-selector badge's "Reset to default", which drops the whole
 `trackConfigDeltas` entry.
 
@@ -616,10 +591,12 @@ An earlier design layered admin/user type-default configs via extra
 tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
 choice wins / display-type granularity" decisions; dropped the machinery.
 
-Every pass since has removed machinery, never added it. The two that carry a
-standing "don't reintroduce this" are ADRs —
+Every pass since has removed machinery, never added it. Three of those removals
+carry a standing "don't reintroduce this", and each is an ADR —
+[ADR-046](../architecture-decision-records/adr-046-resolveconf-names-the-cascade.md)
+(cascading inside `getConf`),
 [ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)
-(the `'inherit'` enum member and the `defaultValue`-as-sentinel form) and
+(the `'inherit'` enum member and the `defaultValue`-as-sentinel form), and
 [ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md)
 (the pin resetting the clicking display). The rest were straightforward
 deletions, listed here only so a reader doesn't go looking for them:

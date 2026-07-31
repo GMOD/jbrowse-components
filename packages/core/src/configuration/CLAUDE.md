@@ -8,54 +8,43 @@ it** — one named call, at the ~15 display getters that own a promotable slot.
 `getConf` does NOT: it stays exactly
 `readConfObject(model.configuration, path)`.
 
-That split is deliberate and was re-made after building the other way and
-reverting it —
-[ADR-046](../../../../agent-docs/architecture-decision-records/adr-046-resolveconf-names-the-cascade.md).
-Resolution is not free and not universal, so it is named where it happens.
+That split was re-made after building the other way and reverting it —
+[ADR-046](../../../../agent-docs/architecture-decision-records/adr-046-resolveconf-names-the-cascade.md),
+which also covers why forgetting to resolve is a **compile error** rather than
+something auto-detection has to prevent. (Never paper that error over with
+`?? someDefault` — it silences the check and bypasses the cascade.)
 
-The forgotten-resolution failure mode is caught by the **type system** instead
-of by magic: a promotable slot is always a `maybe*` type, so a raw `getConf`
-read is `T | undefined` while `resolveConf` is `T`. Hand the raw one to a
-consumer expecting a real value and tsc points at the call. (Don't paper over it
-with `?? someDefault` — that silently bypasses the cascade.)
-
-**The inherit sentinel is always `undefined`**
+**Authoring a promotable slot:** it must be a `maybe*` type
+(`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/`maybeFrozen`),
+must leave `defaultValue` undefined, and must declare `promotedBase`.
+`ConfigSlot` throws otherwise, so `undefined` is the only inherit sentinel and
+`isUsableValue`'s first check is a bare `value !== undefined`
 ([ADR-047](../../../../agent-docs/architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)).
-A promotable slot must be a
-`maybe*` type (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/
-`maybeFrozen`), must leave `defaultValue` undefined, and must declare
-`promotedBase` — `ConfigSlot` throws otherwise, so the resolver has exactly one
-path and `isUsableValue`'s first check is a bare `value !== undefined`. A
-subclass schema **overriding** an inherited promotable slot states only the
+A subclass **overriding** an inherited promotable slot states only the
 difference — slot definitions merge over the base's (see "Slot overrides
 merge"), so `promotable`/`promotedBase` survive an override that doesn't mention
-them. Enums do _not_ spend a spare `'inherit'` member on it: `maybeStringEnum`
-takes the plain vocabulary as its `model` and ConfigSlot adds the nullability,
-so no enumeration, menu, or config-editor dropdown ever shows the cascade's
-plumbing.
+them.
 
 The promoted default lives in a personal, un-shared store, so **every boundary
 that serializes a display's config for elsewhere must flatten** — the worker via
 `getConfigSnapshotWithPromotables`, a shared/exported session via
 `getShareableSessionSnapshot`. Both are enforced rather than remembered: the raw
-walker (`fullConfSnapshot`) is **off the barrel entirely**, so
-`getConfigSnapshotWithPromotables(display)` is the only snapshot a plugin can
-import and the obvious wrong spelling in a new `rpcProps()` doesn't resolve; and
+walker (`fullConfSnapshot`) is **off the barrel entirely**, so the obvious wrong
+spelling in a new `rpcProps()` doesn't resolve, and
 `getShareableSessionSnapshot` fuses the snapshot and the bake so the pair can't
 be split. A resolved value is handed out **by reference** from that store, so it
 must stay structured-cloneable: `preferencesOverrides` is a `deep: false`
 `observable.map` because a MobX Proxy makes `worker.postMessage` throw
-`DataCloneError` (`promotedValueCloneable.test.ts`). Layering: `util.ts`
-(`promotableSlotNames`, the type-cached per-schema slot list, shared by the
-enumerating callers and by `fullConfSnapshot`'s nested-schema guard) ←
-`promotableResolve.ts` (resolver) ← `getConf.ts` (reader) ←
-`promotableDefaults.ts` (control builders + share/worker helpers +
-`openPromotableDisplays`, the one open-display walk). `resolveConf` and every
-control builder take a **`ResolvableDisplay`** (`type` + `configuration` +
-`ignorePromotedDefaults`) — the display node, not a bare `{ configuration }` —
-which is what keeps them cast-free; the wider `PromotableDisplay` adds
-`setIgnorePromotedDefaults` and is needed only by `resetSlotToInherit` and the
-walk that feeds it. Full model + the `ignorePromotedDefaults` opt-out:
+`DataCloneError` (`promotedValueCloneable.test.ts`).
+
+Layering: `util.ts` (`promotableSlotNames`, the type-cached per-schema slot
+list, shared by the enumerating callers and by `fullConfSnapshot`'s
+nested-schema guard) ← `promotableResolve.ts` (resolver) ← `getConf.ts` (reader)
+← `promotableDefaults.ts` (control builders + share/worker helpers +
+`openPromotableDisplays`, the one open-display walk). Every public entry point
+takes a **`ResolvableDisplay`** — the display node, not a bare
+`{ configuration }`, which is what keeps them cast-free. Full model + the
+`ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## Slot overrides merge over `baseConfiguration`

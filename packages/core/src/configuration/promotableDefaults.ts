@@ -1,3 +1,10 @@
+/**
+ * @module
+ * Session-wide "promoted defaults" for display-type config slots — the UI /
+ * control layer over the read-time cascade in `promotableResolve.ts`, whose
+ * `SlotResolution` every function here reads a field off. The session store
+ * (`get/setDisplayTypeDefault`) holds the promoted value.
+ */
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 
 import { deepEqual } from '../util/deepEqual.ts'
@@ -28,16 +35,6 @@ import type {
   ResolvableDisplay,
 } from './promotableResolve.ts'
 import type { AnyConfigurationModel } from './types.ts'
-
-/**
- * Session-wide "promoted defaults" for display-type config slots — the UI /
- * control layer over the read-time cascade in `promotableResolve.ts`. A
- * `promotable` slot resolves through three tiers (track's own customized value
- * -> session-wide default for this display type -> base); a display reads the
- * resolved value with `resolveConf` (a thin reader over `resolveSlot`), and the
- * session store (`get/setDisplayTypeDefault`) holds the
- * promoted value. Everything here reads a field off `resolveSlot`.
- */
 
 /**
  * #api core/configuration
@@ -319,15 +316,11 @@ export function tracksDifferingFrom(
 
 /**
  * Set (or clear) a value as the display type's default for `slot`. **Purely a
- * write to the session-wide default — no track's own value is ever touched.**
- * Tracks that follow the default pick the new value up immediately via
- * `resolveConf`; tracks the user has customized keep theirs. If any open track isn't
- * already showing this value, the snackbar offers an "Override N customized tracks"
- * action, which is the one explicit gesture that rewrites tracks. Clearing just
- * notifies.
- *
- * The pin edits the stylesheet, never the elements — it stays symmetric, so
- * pin-then-unpin can't discard a track's own value. ADR-048.
+ * write to the session-wide default — no track's own value is ever touched**, so
+ * the pin stays symmetric and pin-then-unpin can't discard one (ADR-048: the pin
+ * edits the stylesheet, never the elements). Followers pick the new value up on
+ * their next `resolveConf` read; customized tracks keep theirs, and the snackbar
+ * action is the one gesture in the subsystem that rewrites them.
  */
 function applyDefaultToggle(
   self: ResolvableDisplay,
@@ -336,14 +329,9 @@ function applyDefaultToggle(
   on: boolean,
 ): void {
   const session = getSession(self)
-  // the whole write: set (or clear) the session-wide default for the slot.
-  // Non-destructive — no track's own value is touched, so a following track
-  // picks it up on its next `resolveConf` read and a customized one keeps theirs
   session.setDisplayTypeDefault(self.type, slot, on ? value : undefined)
   if (on) {
-    // open tracks not already showing this value — those the "apply to open
-    // tracks" action would visibly change by making them follow the new default.
-    // Includes the display the pin was clicked from when it holds its own value.
+    // includes the display the pin was clicked from, when it holds its own value
     const n = tracksDifferingFrom(self, slot, value).length
     if (n) {
       session.notify('Set as the default', 'info', {
