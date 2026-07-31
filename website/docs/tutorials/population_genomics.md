@@ -50,8 +50,8 @@ compute-then-view loop in Python and is available as a Colab notebook.
 Everything below is a reproducible pipeline: each command runs against publicly
 hosted _Drosophila melanogaster_ data on the dm6 assembly and produces bigWig
 tracks you can load. Along the way it reproduces two signals from the
-[Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/) (DGRP), a
-panel of 205 inbred lines from a single Raleigh, North Carolina population
+[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), a panel
+of 205 inbred lines
 ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
 
 - Fst across the `In(2L)t` inversion: lines carrying the cosmopolitan `In(2L)t`
@@ -74,7 +74,8 @@ populations or your own VCF and the JBrowse side is identical.
 
 Two downloads, both on stable HTTPS hosts. The genotypes are the DGRP freeze-2
 calls lifted to dm6 ([aertslab](https://resources.aertslab.org/DGRP2/)). The
-inversion karyotypes come from [DGRPool](https://dgrpool.epfl.ch/)
+inversion karyotypes come from
+[DGRPool's In(2L)t phenotype record](https://dgrpool.epfl.ch/phenotypes/1520)
 ([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), which harmonizes
 the `In(2L)t` typing of
 [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554):

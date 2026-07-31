@@ -62,7 +62,7 @@ numbers a donor HP0/HP1 where the graph uses PanSN `.1`/`.2`.
 **Reference-position ("rainbow") colors on the E. coli correspondence figures**
 — `rgfa_subgraph_launch`, `rgfa_sample_rows`, and `rgfa_hover_sync` (the last
 shares `ecoliSampleRowsSession`). Two open review verdicts asked for this, and
-`pangenome_graph_view.md` already argues for it in "Colors that mean the same
+`graph_genome_view.md` already argues for it in "Colors that mean the same
 thing in both panels" while illustrating itself with rank colors. The linear
 segments lane in both sessions now carries the matching `referencePositionColor`
 over the graph's own `loadedRegion` (`PATHS_REGION`, `ECOLI_REGION` — named
@@ -73,27 +73,24 @@ linear view uses reference-position, a graph shown alone or whose subject is
 rank keeps stable-rank.** `rgfa_segment_neighbourhood` (rank-1/rank-2 alleles
 are its caption), `rgfa_launch_out_menu` and `rgfa_strain_launch` stay on rank.
 
+`graph_genome_view.md`'s prose (top-of-page caption, rank paragraph) was fixed
+to describe the reference-position ramp in `54a955cfff` ("docs(pangenome): fix
+the graph figures that lied, and picture the two settings").
+
+**Bubble path counts — decided, no change.** `MinigraphBubbleAdapter` labels
+each bubble `<segments>, up to <paths> paths`, and the count is combinatorial
+(one class II bubble reports 510,105,601; 406 of release 2's bubbles saturate
+int32). The absurd ones only appeared on `hprc_mhc_anchored`, whose bubbles lane
+is now gone; C4 and LPA show 98 and 584, which are informative. If it ever needs
+suppressing, it can be done **from the spec** with no plugin publish — the
+drawn second line is `labels.description` on the canvas display, and the feature
+carries `segmentCount`/`longestAlleleLength`, so
+`labels: { description: "jexl:get(feature,'segmentCount') + ' segments'" }`
+drops the count from the label while leaving it in the details popup.
+
 ## Not done — pick up here
 
-**1. `pangenome_graph_view.md` prose still describes rank colors.** The three
-figures above are regenerated but the page was not updated. Required edits:
-
-- the top-of-page caption (line ~16) still says "the blue blocks above are the
-  blue rank-0 backbone below… The orange, red and purple alleles have no K12
-  coordinates". Under the ramp this becomes stronger, not weaker: both panels
-  run the same red→magenta ramp, a block and its node share a hue at the same
-  bp, and off-reference alleles are the *paler* tint of the backbone they attach
-  to.
-- the rank paragraph (line ~152) ends "…why the figure at the top of this page
-  has blue blocks above and colored alleles only below" — no longer true of that
-  figure.
-- the "Colors that mean the same thing in both panels" section is otherwise
-  correct and needs no rewrite; it is what justifies the change.
-
-**This is the one blocking loose end — the page currently describes colors its
-figures no longer use.**
-
-**2. The lines question on `rgfa_segment_neighbourhood`** (open `bad`: "I don't
+**The lines question on `rgfa_segment_neighbourhood`** (open `bad`: "I don't
 understand the lines drawn to the backbone. Some only have 1 line and some have
 3. How should users interpret these?"). Answered from the data, not yet written
 into the docs. Counted out of `ecoli_minigraph.links.bed.gz` over that window
@@ -115,24 +112,13 @@ figure. The reviewer also floated a back-to-back anchored/force comparison of
 the same locus — **declined**: the HPRC tutorial already pictures both layouts,
 and the standing instruction on this set is to pare figures down, not add.
 
-**3. Bubble path counts — decided, no change.** `MinigraphBubbleAdapter` labels
-each bubble `<segments>, up to <paths> paths`, and the count is combinatorial
-(one class II bubble reports 510,105,601; 406 of release 2's bubbles saturate
-int32). The absurd ones only appeared on `hprc_mhc_anchored`, whose bubbles lane
-is now gone; C4 and LPA show 98 and 584, which are informative. If it ever needs
-suppressing, it can be done **from the spec** with no plugin publish — the
-drawn second line is `labels.description` on the canvas display, and the feature
-carries `segmentCount`/`longestAlleleLength`, so
-`labels: { description: "jexl:get(feature,'segmentCount') + ' segments'" }`
-drops the count from the label while leaving it in the details popup.
-
-**4. Unverified observation:** the regenerated `rgfa_hover_sync` shows the hover
+**Unverified observation:** the regenerated `rgfa_hover_sync` shows the hover
 tooltip at the bottom-left of the graph pane in both frames, overlapping the
 `Sakai` row label. Not obviously caused by the color change (it is a hover
 figure and the spec sets `hideTooltip`), but it was not compared against the
 pre-change image. Worth one look before committing.
 
-**5. Also still open from earlier passes**, untouched here: the long crossed
+**Also still open from earlier passes**, untouched here: the long crossed
 edges visible in `rgfa_subgraph_launch` and `rgfa_sample_rows` are the known
 `computeEdgeCurves` reverse-complement endpoint bug in
 `jbrowse-plugin-graphgenomeview` (see that repo's `layout/bubbleCrossing.test.ts`
