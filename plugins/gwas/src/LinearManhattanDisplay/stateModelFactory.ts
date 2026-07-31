@@ -276,12 +276,22 @@ export function stateModelFactory(
          * highest-scoring loaded SNP as a `chr:bp` (1-based) string — the default
          * LD index SNP. Derived from loaded data (not a fetch input), so it's
          * applied via the auto-pick autorun rather than read into rpcProps.
+         *
+         * Regions are scanned in ascending index order, not rpcDataMap insertion
+         * order, so ties break the same way every load. Exact ties at the top are
+         * routine — `negLog10` clamps every underflowed p=0 to the same ~323.3 —
+         * and rpcDataMap is cleared and refilled in RPC-resolution order on each
+         * recolor. Adopting whichever tied SNP happened to land first would make
+         * topSnp flip between them, and since adopting it refetches, the display
+         * would livelock and never paint (see ldAutoIndex.test.ts).
          */
         get topSnp(): string | undefined {
           let bestScore = -Infinity
           let bestPos = 0
           let bestIdx = -1
-          for (const [idx, d] of self.rpcDataMap) {
+          const indexes = [...self.rpcDataMap.keys()].sort((a, b) => a - b)
+          for (const idx of indexes) {
+            const d = self.rpcDataMap.get(idx)!
             for (let i = 0; i < d.numFeatures; i++) {
               const s = d.scores[i]!
               if (s > bestScore) {

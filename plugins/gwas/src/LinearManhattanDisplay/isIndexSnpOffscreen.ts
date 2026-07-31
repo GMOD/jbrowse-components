@@ -17,11 +17,12 @@ export function isIndexSnpOffscreen(
   visibleRegions: VisibleSpan[],
 ) {
   const parsed = indexSnp ? parseChrBp(indexSnp) : undefined
-  const pos = parsed ? parsed.bp - 1 : 0
-  return (
-    parsed !== undefined &&
-    !visibleRegions.some(
-      r => r.refName === parsed.refName && pos >= r.start && pos < r.end,
-    )
-  )
+  return parsed === undefined
+    ? false
+    : !visibleRegions.some(
+        r =>
+          r.refName === parsed.refName &&
+          parsed.bp - 1 >= r.start &&
+          parsed.bp - 1 < r.end,
+      )
 }

@@ -1,6 +1,6 @@
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
-import { GLYPH_INDEX, GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
+import { GLYPH_INDEX, defaultGlyph } from './rpcTypes.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -21,7 +21,6 @@ export function makeLdEvaluator(
 ) {
   let lastFeature: Feature | undefined
   let isIndex = false
-  let isInsertion = false
   let r2 = Number.NaN
   function compute(feature: Feature) {
     if (feature !== lastFeature) {
@@ -29,7 +28,6 @@ export function makeLdEvaluator(
       const name = feature.get('name')
       const key = posKey(refName, feature.get('start'))
       isIndex = matchesIndexSnp(name, key, indexSnp)
-      isInsertion = feature.get('svtype') === 'INS'
       r2 = isIndex ? 1 : (lookupR2(ld, name, key) ?? Number.NaN)
     }
   }
@@ -42,12 +40,11 @@ export function makeLdEvaluator(
       compute(feature)
       return r2
     },
-    // Index SNP renders as the diamond glyph (GLYPH_INDEX) instead of a disc.
-    // Non-index insertions keep their triangle so switching to LD coloring
-    // doesn't silently flatten insertion SVs into plain discs.
+    // Index SNP renders as the diamond glyph (GLYPH_INDEX) instead of a disc;
+    // everything else keeps the glyph it would have in normal coloring.
     evalGlyph(feature: Feature) {
       compute(feature)
-      return isIndex ? GLYPH_INDEX : isInsertion ? GLYPH_INSERTION : GLYPH_POINT
+      return isIndex ? GLYPH_INDEX : defaultGlyph(feature)
     },
   }
 }

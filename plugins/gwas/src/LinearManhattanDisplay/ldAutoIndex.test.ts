@@ -241,4 +241,33 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     await settle(5)
     expect(mockRpcCall).toHaveBeenCalledTimes(4)
   })
+
+  // Exact ties at the top are routine (negLog10 clamps every underflowed p=0 to
+  // the same ~323.3), and adopting the index refetches, which clears rpcDataMap
+  // and refills it in RPC-resolution order. If topSnp broke ties by arrival
+  // order it would flip between the tied SNPs and never converge — the same
+  // livelock as above, reached a different way.
+  it('breaks a score tie by region index, not by which region landed first', () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation(
+      (_sessionId: string, _method: string, args: { region: Region }) =>
+        Promise.resolve(makeResult(args.region)),
+    )
+    const tied = (pos: number): ManhattanRpcResult => ({
+      ...makeResult({ refName: 'ctgA', start: 0, end: 1, assemblyName: 'v' }),
+      positions: new Uint32Array([pos]),
+      ends: new Uint32Array([pos + 1]),
+      scores: new Float32Array([9]),
+    })
+
+    const first = createDisplay().display
+    first.setRpcData(0, tied(100))
+    first.setRpcData(1, tied(500))
+    expect(first.topSnp).toBe('ctgA:101')
+
+    const second = createDisplay().display
+    second.setRpcData(1, tied(500))
+    second.setRpcData(0, tied(100))
+    expect(second.topSnp).toBe('ctgA:101')
+  })
 })

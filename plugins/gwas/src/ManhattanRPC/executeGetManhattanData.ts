@@ -12,21 +12,38 @@ import { isLDRecordSource } from '@jbrowse/ld-core'
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
-import { GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
+import { defaultGlyph } from './rpcTypes.ts'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature, ProgressReporter } from '@jbrowse/core/util'
+import type {
+  Feature,
+  ProgressReporter,
+  StatusCallback,
+} from '@jbrowse/core/util'
+import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
+
+// The per-feature derivations the reducer needs, built once per request by
+// makeEvaluators. `evalR2` is present only in LD mode — its absence is what
+// drops the r² array from the payload.
+export interface ManhattanEvaluators {
+  evalColor: (f: Feature) => number
+  evalGlyph?: (f: Feature) => number
+  evalR2?: (f: Feature) => number
+}
 
 // Pure reducer: features → ManhattanRpcResult. Extracted so it can be unit-
 // tested without the RPC/adapter/jexl plumbing.
-export function buildManhattanResult(
-  features: Feature[],
-  evalColor: (f: Feature) => number,
-  evalR2?: (f: Feature) => number,
-  report?: ProgressReporter,
-  evalGlyph?: (f: Feature) => number,
-): ManhattanRpcResult {
+export function buildManhattanResult({
+  features,
+  evalColor,
+  evalGlyph = defaultGlyph,
+  evalR2,
+  report,
+}: ManhattanEvaluators & {
+  features: Feature[]
+  report?: ProgressReporter
+}): ManhattanRpcResult {
   const n = features.length
   const positions = new Uint32Array(n)
   const ends = new Uint32Array(n)
@@ -53,11 +70,7 @@ export function buildManhattanResult(
       // T2T-scale cumulative coordinates.
       positions[count] = f.get('start')
       ends[count] = f.get('end')
-      glyphs[count] = evalGlyph
-        ? evalGlyph(f)
-        : f.get('svtype') === 'INS'
-          ? GLYPH_INSERTION
-          : GLYPH_POINT
+      glyphs[count] = evalGlyph(f)
       scores[count] = score
       if (score < scoreMin) {
         scoreMin = score
@@ -102,6 +115,52 @@ export function buildManhattanResult(
   }
 }
 
+// Per-feature evaluators for one request, plus whether the LD scan found the
+// index SNP. LD coloring needs a mode, an index and an adapter to read r² from;
+// with any of the three missing the worker falls back to the flat `color`
+// config, which is also the whole of normal coloring mode.
+async function makeEvaluators({
+  pluginManager,
+  sessionId,
+  region,
+  color,
+  colorBy,
+  indexSnp,
+  ldAdapterConfig,
+  statusCallback,
+  stopTokenCheck,
+}: Pick<
+  GetManhattanDataArgs,
+  'sessionId' | 'region' | 'color' | 'colorBy' | 'indexSnp' | 'ldAdapterConfig'
+> & {
+  pluginManager: PluginManager
+  statusCallback: StatusCallback
+  stopTokenCheck: StopTokenChecker
+}): Promise<ManhattanEvaluators & { indexFound?: boolean }> {
+  if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
+    const { dataAdapter: ldAdapter } = await getAdapter(
+      pluginManager,
+      sessionId,
+      ldAdapterConfig,
+    )
+    if (!isLDRecordSource(ldAdapter)) {
+      throw new Error(
+        `Adapter type "${ldAdapterConfig.type}" cannot supply LD records for coloring`,
+      )
+    }
+    const ld = await updateStatus('Downloading LD data', statusCallback, () =>
+      buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
+    )
+    checkStopToken2(stopTokenCheck)
+    return {
+      ...makeLdEvaluator(ld, indexSnp, region.refName),
+      indexFound: ld.indexFound,
+    }
+  } else {
+    return { evalColor: makeColorEvaluator(color, pluginManager.jexl) }
+  }
+}
+
 // GWAS data is 1:1 features → points and is conventionally pre-transformed
 // (e.g. neg_log_pvalue). Per-feature jexl color eval happens here on the
 // worker because we need Feature objects in scope.
@@ -140,60 +199,40 @@ export async function executeGetManhattanData({
 
   checkStopToken2(stopTokenCheck)
 
-  let evalColor: (f: Feature) => number
-  let evalR2: ((f: Feature) => number) | undefined
-  let evalGlyph: ((f: Feature) => number) | undefined
-  let indexFound: boolean | undefined
-  if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
-    const { dataAdapter: ldAdapter } = await getAdapter(
-      pluginManager,
-      sessionId,
-      ldAdapterConfig,
-    )
-    if (!isLDRecordSource(ldAdapter)) {
-      throw new Error(
-        `Adapter type "${ldAdapterConfig.type}" cannot supply LD records for coloring`,
-      )
-    }
-    const ld = await updateStatus('Downloading LD data', statusCallback, () =>
-      buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
-    )
-    checkStopToken2(stopTokenCheck)
-    const ldEval = makeLdEvaluator(ld, indexSnp, region.refName)
-    evalColor = ldEval.evalColor
-    evalR2 = ldEval.evalR2
-    evalGlyph = ldEval.evalGlyph
-    indexFound = ld.indexFound
-  } else {
-    evalColor = makeColorEvaluator(color, pluginManager.jexl)
-  }
+  const { indexFound, ...evaluators } = await makeEvaluators({
+    pluginManager,
+    sessionId,
+    region,
+    color,
+    colorBy,
+    indexSnp,
+    ldAdapterConfig,
+    statusCallback,
+    stopTokenCheck,
+  })
 
-  const result = buildManhattanResult(
+  const result = buildManhattanResult({
     features,
-    evalColor,
-    evalR2,
-    createProgressReporter({
+    ...evaluators,
+    report: createProgressReporter({
       label: 'Processing GWAS features',
       total: features.length,
       statusCallback,
       stopTokenCheck,
     }),
-    evalGlyph,
-  )
+  })
   result.indexFound = indexFound
 
-  const transferables: Transferable[] = [
+  // Each array owns its own buffer (they're independent allocations, not views
+  // onto one), so no dedupe is needed before postMessage.
+  const transferables = [
     result.positions.buffer,
     result.ends.buffer,
     result.glyphs.buffer,
     result.scores.buffer,
     result.colors.buffer,
-  ]
-  if (result.r2s) {
-    transferables.push(result.r2s.buffer)
-  }
-  if (result.flatbushData) {
-    transferables.push(result.flatbushData)
-  }
+    result.r2s?.buffer,
+    result.flatbushData,
+  ].filter(buffer => buffer !== undefined)
   return rpcResult(result, transferables) as unknown as ManhattanRpcResult
 }

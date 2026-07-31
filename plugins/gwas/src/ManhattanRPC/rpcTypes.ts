@@ -1,4 +1,4 @@
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // Per-feature glyph classes — shared numeric contract between the RPC
@@ -7,6 +7,13 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 export const GLYPH_POINT = 0
 export const GLYPH_INSERTION = 1
 export const GLYPH_INDEX = 2
+
+// Glyph for a feature outside LD mode. The LD evaluator falls back to this for
+// every non-index SNP, so switching coloring modes can't silently flatten
+// insertion SVs into plain discs — one definition, both paths.
+export function defaultGlyph(feature: Feature) {
+  return feature.get('svtype') === 'INS' ? GLYPH_INSERTION : GLYPH_POINT
+}
 
 // Default Manhattan point color. Single source of truth for the `color` config
 // slot default (configSchemaFactory) and the worker's fallback for a jexl
