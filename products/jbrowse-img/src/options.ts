@@ -1,7 +1,7 @@
 import { modeDescriptors, viewModes } from './modes.ts'
 
 import type { ViewMode } from './modes.ts'
-import type { AssertNever } from './types.ts'
+import type { AssertTrue } from './types.ts'
 import type { defaultThemes } from '@jbrowse/core/ui/theme'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
@@ -83,20 +83,25 @@ export const themeNames = [
   'darkMinimal',
 ] as const satisfies readonly ThemeName[]
 
-// A value the upstream union has but the list above lacks makes the Exclude
-// non-never and fails the build. Collected into one alias, and exported, because
-// a type alias referenced nowhere is a lint error — the same reason
-// AssertSnapshotKeysExist is exported from applyTrackOpts.ts.
-type AssertCovers<
-  Upstream extends string,
-  List extends readonly string[],
-> = AssertNever<Exclude<Upstream, List[number]>>
+// A value the upstream union has but the list above lacks resolves to that
+// value instead of `true`, so AssertTrue below fails the build and names it.
+// The Exclude can't go straight into an `extends never` type parameter here:
+// inside a generic alias it is checked against Upstream's own constraint
+// (`string`), which is never empty, so the assertion failed for every list.
+type Covers<Upstream extends string, List extends readonly string[]> = [
+  Exclude<Upstream, List[number]>,
+] extends [never]
+  ? true
+  : Exclude<Upstream, List[number]>
 
+// Collected into one alias, and exported, because a type alias referenced
+// nowhere is a lint error — the same reason AssertSnapshotKeysExist is exported
+// from applyTrackOpts.ts.
 export type AssertEnumListsCoverUpstream = [
-  AssertCovers<TrackLabelMode, typeof trackLabelModes>,
-  AssertCovers<CigarMode, typeof cigarModes>,
-  AssertCovers<SyntenyColorBy, typeof syntenyColorByModes>,
-  AssertCovers<ThemeName, typeof themeNames>,
+  AssertTrue<Covers<TrackLabelMode, typeof trackLabelModes>>,
+  AssertTrue<Covers<CigarMode, typeof cigarModes>>,
+  AssertTrue<Covers<SyntenyColorBy, typeof syntenyColorByModes>>,
+  AssertTrue<Covers<ThemeName, typeof themeNames>>,
 ]
 
 export const optionDefs: OptionDef[] = [

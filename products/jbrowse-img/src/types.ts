@@ -10,6 +10,12 @@ import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 // there makes the Exclude non-never and fails the build.
 export type AssertNever<T extends never> = T
 
+// Compile-time assertion that a check resolved to `true`. Use this instead of
+// AssertNever when the checked type is computed inside a generic alias, where an
+// `extends never` parameter is checked against the type parameter's constraint
+// rather than the instantiated type.
+export type AssertTrue<T extends true> = T
+
 export interface Opts {
   noRasterize?: boolean
   loc?: string
