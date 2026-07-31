@@ -120,8 +120,10 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       interface AnchorableView {
         id: string
         views?: AnchorableView[]
+        assemblyNames?: string[]
         trackRefs?: Record<string, Element | undefined>
         getHighlightCoords?: (region: {
+          assemblyName?: string
           refName: string
           start: number
           end: number
@@ -165,7 +167,13 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
         if (!anchor.region) {
           return { left: r.left, width: r.width, ...band }
         }
-        const coords = view.getHighlightCoords?.(anchor.region)
+        // the view's own assembly, so getHighlightCoords resolves the locus's
+        // refName through it: without a name it cannot, and a 'chr1' authored
+        // against an assembly whose canonical refName is '1' resolves to nothing
+        const coords = view.getHighlightCoords?.({
+          ...anchor.region,
+          assemblyName: view.assemblyNames?.[0],
+        })
         if (!coords) {
           return undefined
         }

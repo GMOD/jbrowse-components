@@ -454,12 +454,43 @@ const MHC_REGION = {
 // The complement factor H cluster. CFH, CFHR3, CFHR1 and CFHR4 all fall in this
 // 200 kb, and the graph holds three deletions across it.
 const CFHR_WINDOW = 'chr1:196,700,000-196,900,000'
+
+// The two haplotypes hprc_cfhr_deletion draws against hg38: HG01109 hap 1, which
+// is homozygous for the 84.7 kb deletion, and HG00099 hap 1, which is homozygous
+// reference. Their alignments to GRCh38 come out of HPRC's own
+// impg/pafs/hprc465vsgrch38.aln.paf.gz, sliced to this window by
+// scripts/build_hprc_cfhr_synteny.sh -- one record for the non-carrier running
+// straight through, two for the carrier with the deleted span between them.
+//
+// The per-row windows are the reference window carried across each haplotype's
+// own record by offset, which is the arithmetic the PAF's four coordinate columns
+// state directly. Indels inside the alignment make that approximate at the scale
+// of hundreds of bp over half a megabase, which nothing here can see: the rows
+// are 200 kb and 125 kb wide, and the synteny view draws the ribbons from the
+// alignment itself rather than from these numbers.
+const CFHR_CARRIER = 'HG01109.1'
+const CFHR_CARRIER_TRACK = 'hprc_cfhr_synteny_HG01109_1'
+const CFHR_CARRIER_GENES = 'hprc_cfhr_genes_HG01109_1'
+const CFHR_CARRIER_WINDOW = 'JAHEPA020000055.1:49,360,000-49,485,000'
+const CFHR_NONCARRIER = 'HG00099.1'
+const CFHR_NONCARRIER_TRACK = 'hprc_cfhr_synteny_HG00099_1'
+const CFHR_NONCARRIER_GENES = 'hprc_cfhr_genes_HG00099_1'
+const CFHR_NONCARRIER_WINDOW = 'JBHDWO010000059.1:61,620,000-61,822,000'
 const CFHR_REGION = {
   refName: 'chr1',
   assemblyName: 'hg38',
   start: 196700000,
   end: 196900000,
 }
+// The deleted span, from the allele inventory's own row (-84,683 at this
+// position), used both as the in-app highlight and as the box that names what is
+// inside it, so the two cannot part company.
+const CFHR_DELETED = { refName: 'chr1', start: 196753088, end: 196837771 }
+const CFHR_DELETED_LOCUS = `chr1:${CFHR_DELETED.start + 1}-${CFHR_DELETED.end}`
+
+// The left edge of a window, as a point locus: what a row label anchors to, so
+// the callout sits at the start of the row it names instead of at a measured x.
+const windowStart = (loc: string) => loc.split('-')[0]!
 
 const AMY_WINDOW = 'chr1:103,600,000-103,745,000'
 const AMY_REGION = {
@@ -592,6 +623,20 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
     showLabels: 'off',
     heightMode: 'grow',
     color: referencePositionColor(domain),
+  }
+}
+
+// A haplotype row's own genes: HPRC's CAT annotation of that assembly, sliced to
+// the window by scripts/build_hprc_cfhr_synteny.sh. Same glyph settings as the
+// hg38 lane between them, so the three rows are read the same way and the
+// missing genes are missing rather than differently drawn.
+function cfhrGeneLane(trackId: string) {
+  return {
+    trackId,
+    type: 'LinearBasicDisplay',
+    geneGlyphMode: 'longestCoding',
+    displayMode: 'compact',
+    height: 70,
   }
 }
 
@@ -1539,24 +1584,67 @@ export const graphSpecs: ScreenshotSpec[] = [
   // CFHR1, with the reference the deletion skips running underneath.
   //
   // 41 nodes, so the force layout has room to open every bubble.
+  //
+  // The linear panel is a synteny view of two real haplotypes rather than the
+  // reference alone (review: "in the most ideal world, we would have a
+  // linearsyntenyview showing this deletion along with the graph"). The graph
+  // states the deletion as an arc, which is the graph's own vocabulary; the
+  // synteny rows state it as one haplotype's alignment simply stopping and
+  // resuming past CFHR1 while another's runs straight through. Two readings of
+  // the same event, which is what the pairing is for.
+  //
+  // Carriers are picked from the callset, not by eye: at the wave VCF's
+  // chr1:196,753,075 record the 1 bp ALT is the 84.7 kb deletion and 139 of the
+  // 464 haplotypes carry it. HG01109 is homozygous for it and HG00099
+  // homozygous reference (scripts/build_hprc_cfhr_synteny.sh prints both
+  // counts), so the pair is a carrier and a non-carrier of the same event.
   {
     mode: 'url',
     name: 'pangenome/hprc_cfhr_deletion',
     url: sessionSpec(HPRC_CONFIG, {
       views: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: CFHR_WINDOW,
-          tracks: [
+          type: 'LinearSyntenyView',
+          // carrier above the reference and non-carrier below it, because
+          // ribbons are drawn between neighbouring rows only: both bands are
+          // then against hg38, which is the comparison.
+          tracks: [[CFHR_CARRIER_TRACK], [CFHR_NONCARRIER_TRACK]],
+          drawCurves: true,
+          levelHeights: [110, 110],
+          collapseEmptyRows: true,
+          views: [
             {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
+              assembly: CFHR_CARRIER,
+              loc: CFHR_CARRIER_WINDOW,
+              tracks: [cfhrGeneLane(CFHR_CARRIER_GENES)],
             },
-            hprcSegmentsLane(CFHR_REGION),
+            {
+              assembly: 'hg38',
+              loc: CFHR_WINDOW,
+              // The deleted span itself, from the allele inventory's own row, so
+              // the band is drawn from the data rather than measured off the
+              // picture. The carrier's ribbon is absent over it and the
+              // non-carrier's runs through it, which is the figure in one look.
+              // The ribbon gap is a little narrower than the band: the two
+              // alignment records overlap by a few kb of breakpoint homology,
+              // which is where the ribbons cross.
+              highlight: [{ ...CFHR_DELETED, color: 'rgba(60,65,72,0.10)' }],
+              tracks: [
+                {
+                  trackId: 'hg38_ncbiRefSeq_ucsc',
+                  type: 'LinearBasicDisplay',
+                  geneGlyphMode: 'longestCoding',
+                  displayMode: 'compact',
+                  height: 70,
+                },
+                hprcSegmentsLane(CFHR_REGION),
+              ],
+            },
+            {
+              assembly: CFHR_NONCARRIER,
+              loc: CFHR_NONCARRIER_WINDOW,
+              tracks: [cfhrGeneLane(CFHR_NONCARRIER_GENES)],
+            },
           ],
         },
         {
@@ -1574,8 +1662,51 @@ export const graphSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
     settleMs: 8000,
     viewportWidth: 1000,
-    viewportHeight: 1055,
+    viewportHeight: 1580,
     hideTooltip: true,
+    // What the reader is looking at, named on the rows themselves (review: "can
+    // red boxes and text annotation be added"). The box wraps the two genes the
+    // deletion takes, on the reference lane where they are annotated; each
+    // haplotype label sits at the left edge of its own gene lane, anchored to the
+    // row's window start rather than to a measured x.
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          view: [0, 1],
+          track: 'hg38_ncbiRefSeq_ucsc',
+          locus: CFHR_DELETED_LOCUS,
+        },
+      },
+      {
+        type: 'text',
+        fontSize: 17,
+        maxWidth: 480,
+        anchor: {
+          view: [0, 0],
+          track: CFHR_CARRIER_GENES,
+          locus: windowStart(CFHR_CARRIER_WINDOW),
+          fracY: 1,
+          dx: 14,
+          dy: -24,
+        },
+        text: 'HG01109 hap1: no CFHR3, no CFHR1',
+      },
+      {
+        type: 'text',
+        fontSize: 17,
+        maxWidth: 480,
+        anchor: {
+          view: [0, 2],
+          track: CFHR_NONCARRIER_GENES,
+          locus: windowStart(CFHR_NONCARRIER_WINDOW),
+          fracY: 1,
+          dx: 14,
+          dy: -24,
+        },
+        text: 'HG00099 hap1: both present',
+      },
+    ],
   },
   // The amylase locus on chr1, which is the figure for "this scales to a whole
   // chromosome". chr1 is 248 Mb and the graph holds 464 haplotypes of it; the

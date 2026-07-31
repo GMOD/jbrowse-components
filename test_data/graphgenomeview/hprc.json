@@ -13,6 +13,28 @@
       "refNameAliases": {
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
       }
+    },
+    {
+      "name": "HG01109.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG01109.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "hprc_cfhr_HG01109.1.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "HG00099.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00099.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "hprc_cfhr_HG00099.1.chrom.sizes"
+        }
+      }
     }
   ],
   "tracks": [
@@ -35,7 +57,9 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
-        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38"
+        }
       },
       "displayDefaults": {
         "color": "rgb(130,130,130)"
@@ -76,10 +100,56 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
-        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38"
+        }
       },
       "displayDefaults": {
         "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG01109_1",
+      "name": "HG01109.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG01109.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG01109.1.paf",
+        "queryAssembly": "HG01109.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG00099_1",
+      "name": "HG00099.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG00099.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG00099.1.paf",
+        "queryAssembly": "HG00099.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01109_1",
+      "name": "HG01109.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01109.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01109.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00099_1",
+      "name": "HG00099.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00099.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00099.1.genes.gff3.gz"
       }
     }
   ]

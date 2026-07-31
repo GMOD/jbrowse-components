@@ -231,12 +231,19 @@ reference they skip, so a deletion is a route around the backbone rather than a
 line at a joint. They are deliberately not on the color ramp: hue there means
 reference position, and an arc has no position of its own.
 
-<Figure caption="The complement factor H cluster on chr1 as a force-directed graph, under the RefSeq genes for the same window. The large dark loop labelled with what it skips is a deletion: it leaves the backbone before CFHR3 and rejoins after CFHR1, so the haplotypes taking it carry neither gene. Two smaller dark loops are the other deletions the graph holds here, and every node says how much sequence it carries. Node colors are reference position, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1 as a force-directed graph, under two HPRC haplotypes aligned to GRCh38. Each row carries that assembly's own CAT gene annotation: the boxed CFHR3 and CFHR1 are on the reference and on HG00099, and absent from HG01109, whose alignment stops and resumes across the same span. The large dark loop in the graph is that deletion, labelled with the reference it skips; two smaller loops are the other deletions here, and node colors are reference position, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering one of these edges gives the interval and the bp it removes. This is
 the event a linear view is worst at, because a deletion has nothing to draw at
 the position it occurs, and the one a graph is best at, because the alternative
 route is a real part of the structure.
+
+Release 2 annotates every assembly with CAT, on the assembly's own contigs, so a
+haplotype row can carry its own gene models instead of borrowing the
+reference's. The index
+([`cat_genes_hprc_r2_v1.3.index.csv`](https://github.com/human-pangenomics/hprc_intermediate_assembly/blob/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv))
+gives one GFF3 per haplotype; load a slice of one as an ordinary `FeatureTrack`
+on that haplotype's assembly.
 
 Chromosome size does not enter into any of this. The amylase locus sits on chr1,
 the longest human chromosome, and the graph holds 464 haplotypes of it:
