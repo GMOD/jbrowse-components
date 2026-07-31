@@ -51,8 +51,7 @@ Everything below is a reproducible pipeline: each command runs against publicly
 hosted _Drosophila melanogaster_ data on the dm6 assembly and produces bigWig
 tracks you can load. Along the way it reproduces two signals from the
 [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), a panel
-of 205 inbred lines
-([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
+of 205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
 
 - Fst across the `In(2L)t` inversion: lines carrying the cosmopolitan `In(2L)t`
   inversion are strongly differentiated from standard-arrangement lines across

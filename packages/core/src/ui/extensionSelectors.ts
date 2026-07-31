@@ -49,7 +49,9 @@ function matchesOneOf(value: string | undefined, expected: string | string[]) {
  * receives.
  */
 export function selectorMatchesModel(
-  select: (TrackSelectorFields & { widgetType?: string | string[] }) | undefined,
+  select:
+    | (TrackSelectorFields & { widgetType?: string | string[] })
+    | undefined,
   model: SelectableModel,
 ) {
   const { widgetType, trackType, trackId } = select ?? {}

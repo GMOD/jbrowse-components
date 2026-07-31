@@ -13,9 +13,9 @@ import type { ComponentType, ReactNode } from 'react'
  * `ReactNode`, so they do not match.
  */
 export type ElementExtensionPointName = {
-  [
-    N in ExtensionPointName
-  ]: ExtensionPointRegistry[N]['args'] extends ReactNode[] ? N : never
+  [N in ExtensionPointName]: ExtensionPointRegistry[N]['args'] extends ReactNode[]
+    ? N
+    : never
 }[ExtensionPointName]
 
 /**

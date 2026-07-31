@@ -137,11 +137,16 @@ test('NCBI status filters key on the accession, which UCSC db names never match'
 // cross-group results the index feeds
 test('status filters work on rows that have no ncbiName', () => {
   const indexed = [
-    entry({ accession: 'GCF_000004335.4', ncbiRefSeqCategory: 'reference genome' }),
+    entry({
+      accession: 'GCF_000004335.4',
+      ncbiRefSeqCategory: 'reference genome',
+    }),
     entry({ accession: 'GCA_000001.1' }),
     entry({ accession: 'hg38' }),
   ]
-  const withFilter = (filterOption: Parameters<typeof applyRowFilters>[0]['filterOption']) =>
+  const withFilter = (
+    filterOption: Parameters<typeof applyRowFilters>[0]['filterOption'],
+  ) =>
     applyRowFilters({
       rows: indexed,
       filterOption,

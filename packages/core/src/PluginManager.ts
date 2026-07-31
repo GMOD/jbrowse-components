@@ -351,7 +351,9 @@ export default class PluginManager {
 
   constructor(
     initialPlugins: (
-      Plugin | PluginLoadRecord | RuntimePluginLoadRecord
+      | Plugin
+      | PluginLoadRecord
+      | RuntimePluginLoadRecord
     )[] = [],
   ) {
     // add the core plugin

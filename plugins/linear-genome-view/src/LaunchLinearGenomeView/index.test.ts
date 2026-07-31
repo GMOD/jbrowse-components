@@ -65,7 +65,11 @@ test('a typo warns rather than vanishing into a dropped snapshot key', async () 
     // the args reaching this point come from a session spec URL, which can
     // carry any key, so the typo under test is one TypeScript would reject at
     // a typed call site and only the runtime guard can catch
-    { session, assembly: 'volvox', tracksList: true } as LaunchLinearGenomeViewArgs,
+    {
+      session,
+      assembly: 'volvox',
+      tracksList: true,
+    } as LaunchLinearGenomeViewArgs,
   )
 
   expect(warn).toHaveBeenCalledWith(
