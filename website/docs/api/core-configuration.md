@@ -9,12 +9,21 @@ to import these from a plugin.
 
 ## clearPromotedDefaults
 
-Clear every promoted default for this display type, so sibling tracks revert to
-their own config values. Backs the badge's "clear default" action.
+Clear promoted defaults for this display type, so every track following one
+reverts to its own config value. Backs the badge's "clear session default"
+action, which passes the slots it actually listed
+(`getDisplayTypeDefaultChanges`).
+
+Pass `slots` whenever the UI named what it was clearing. The all-slots default
+reaches further than any such list: a promoted default the track _customized_
+over, or one promoted to a value equal to `promotedBase`, is invisible in the
+badge dialog (neither is `inherited`) yet still governs sibling tracks — so
+clearing it from a dialog that never showed it changes tracks other than the one
+whose badge was clicked.
 
 ```js
 // type signature
-(self: ResolvableDisplay) => void
+(self: ResolvableDisplay, slots?: Iterable<string>) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -101,18 +110,11 @@ See TrackConfigWithPromotables.
 
 ## isSlotCustomized
 
-Session-wide "promoted defaults" for display-type config slots — the UI /
-control layer over the read-time cascade in `promotableResolve.ts`. A
-`promotable` slot resolves through three tiers (track's own customized value ->
-session-wide default for this display type -> base); a display reads the
-resolved value with `resolveConf` (a thin reader over `resolveSlot`), and the
-session store (`get/setDisplayTypeDefault`) holds the promoted value. Everything
-here reads a field off `resolveSlot`. Whether this track has customized the slot
-(holds a non-default value of its own) rather than following the display type's
-default. The correct "reset to default" predicate for a promotable slot:
-comparing the resolved value to the base instead reads as at-default for a track
-merely _following_ a non-base promoted default, so the reset control lights up
-on a no-op.
+Whether this track has customized the slot (holds a non-default value of its
+own) rather than following the display type's default. The correct "reset to
+default" predicate for a promotable slot: comparing the resolved value to the
+base instead reads as at-default for a track merely _following_ a non-base
+promoted default, so the reset control lights up on a no-op.
 
 ```js
 // type signature
@@ -155,23 +157,21 @@ Every display on an open track, across all open views — the reach of anything
 that acts on "the tracks the user is looking at": the cascade's own "apply to
 open tracks", and the share/export bake. One walk so those can't drift apart.
 
-Recurses into composite views, because a display nested in one resolves the
-cascade at read time like any other but was invisible to both callers: "apply to
-N open tracks" undercounted it, and — the real bug — the share/export bake
-neither baked its inherited values nor flagged it `ignorePromotedDefaults`, so a
-shared session containing a breakpoint-split or synteny view rendered
-differently for the recipient. `LGVSyntenyDisplay` (a promotable adopter) is
-only ever reached through this branch. See `hasChildViews` for the one composite
-shape the recursion does not cover.
+Recurses into composite views. A display nested in one resolves the cascade like
+any other but was invisible to both callers, so the share/export bake didn't
+bake its inherited values and a shared session containing a breakpoint-split or
+synteny view rendered differently for the recipient. `LGVSyntenyDisplay` is only
+ever reached through this branch, so don't flatten the recursion away.
+`hasChildViews` names the one composite shape it does not cover.
 
-Views that show no tracks at all (e.g. dotplot) drop out via the structural
-guards. In practice a track has one display (`replaceDisplay` swaps in place,
-`activeDisplay` is `displays[0]`), so the inner flatMap just collects each
-track's display without relying on multiple-per-track.
+A view holding neither (e.g. spreadsheet) drops out via the structural guards. A
+view whose displays declare no promotable slot (e.g. dotplot, which does hold
+tracks) is walked and contributes nothing — harmless, and cheaper than asking
+each display whether it has anything to promote.
 
 ```js
 // type signature
-(session: AbstractSessionModel) => PromotableDisplay[]
+(session: AbstractSessionModel) => ResolvableDisplay[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -273,9 +273,19 @@ track it was copied from. This is `getComputedStyle` at that boundary, and
 `fromDisplayTypeDefaults` is what lets the UI say so rather than silently
 materializing a session preference into a track config.
 
-Resolves through the open display when the track is open (so a received
-session's `ignorePromotedDefaults` is honored), and from the display config
-alone when it isn't — an unopened track has no display state, but "what would
-this render as" still has an answer.
+Resolves through the open display when the track is open, and from the display
+config alone when it isn't — an unopened track has no display state, but "what
+would this render as" still has an answer.
+
+**Writes every promotable slot, including the ones sitting at `promotedBase`,
+and that is the decision — don't "align" it with the share bake.** The bake
+writes only genuinely-inherited values, because a baked value reads as
+customized on the recipient's side and an at-base slot needs nothing. A pasted
+`config.json` is read by a _different mechanism_ — there is no cascade there at
+all — so writing only the inherited ones would leave every other slot to pick up
+whatever the reader has promoted in their own browser. What a user copying a
+config wants is the values they are looking at. The cost is that the pasted
+track is customized on those slots and no longer follows a later promoted
+default, which is what a config file means.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
