@@ -1,7 +1,7 @@
 ---
 title: SV visualization
 description: Interpreting SV signals across display types
-guide_category: Views
+guide_category: Analysis
 ---
 
 **TL;DR:** Triage structural variant (SV) candidates in the

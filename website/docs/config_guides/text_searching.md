@@ -1,7 +1,7 @@
 ---
 title: Text searching
 description: Per-track and aggregate full-text search indexes
-guide_category: Other features
+guide_category: Core configuration
 ---
 
 **TL;DR:** text searching comes in two forms, both built with

@@ -3,7 +3,7 @@ title: Deploying JBrowse Web
 description:
   Serving JBrowse Web as a static site, and scripting its config in a CI/CD
   pipeline
-guide_category: Getting started
+guide_category: Deployment
 ---
 
 **TL;DR:** JBrowse Web is a static site (HTML/JS/CSS plus `config.json`), served

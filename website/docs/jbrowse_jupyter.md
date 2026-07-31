@@ -1,6 +1,6 @@
 ---
 title: JBrowse in a Jupyter notebook
-sidebar_label: Jupyter notebooks
+sidebar_label: Embedding in Jupyter
 description:
   Run a JBrowse 2 genome view in Jupyter, Colab, VS Code, or marimo as an
   anywidget, with two-way sync between Python and the view

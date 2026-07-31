@@ -1,7 +1,7 @@
 ---
 title: Default session
 description: Setting an initial session state loaded for all users
-guide_category: Other features
+guide_category: Appearance
 ---
 
 **TL;DR:** a `defaultSession` in `config.json` sets the initial state loaded for

@@ -12,6 +12,7 @@ import {
   TUTORIAL_FALLBACK,
   TUTORIAL_ORDER,
   USER_CATEGORIES,
+  guideRank,
 } from '../src/lib/guide-categories.ts'
 import { checkOrWrite } from './check-utils.ts'
 
@@ -108,7 +109,11 @@ function buildTocSection(
   }
   const lines: string[] = []
   for (const cat of categoryOrder) {
-    const entries = allEntries.get(cat)
+    const entries = allEntries.get(cat)?.sort(
+      // Same curated lead pages the sidebar lifts, so a category's first entry
+      // is the same on both surfaces. The rest keep readdir order.
+      (a, b) => guideRank(a.dir, a.slug) - guideRank(b.dir, b.slug),
+    )
     if (!entries?.length) {
       continue
     }

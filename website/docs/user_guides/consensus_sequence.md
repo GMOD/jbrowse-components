@@ -2,7 +2,7 @@
 title: Consensus sequence
 description:
   Call a consensus sequence from aligned reads, and export it as FASTA or VCF
-guide_category: Other features
+guide_category: Sequence tools
 ---
 
 **TL;DR:** The consensus sequence panel calls a per-position consensus from the

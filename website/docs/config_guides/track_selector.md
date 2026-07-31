@@ -1,7 +1,7 @@
 ---
 title: Hierarchical track selector
 description: Track grouping and display options for the hierarchical selector
-guide_category: Other features
+guide_category: Appearance
 ---
 
 **TL;DR:** control track grouping, sorting, and collapse with `hierarchical`

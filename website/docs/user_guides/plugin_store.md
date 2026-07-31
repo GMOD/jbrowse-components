@@ -1,7 +1,7 @@
 ---
 title: Plugin store
 description: Installing community plugins
-guide_category: Other features
+guide_category: General usage
 ---
 
 **TL;DR:** The in-app plugin store lets you browse, search, and install

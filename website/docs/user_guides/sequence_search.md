@@ -2,7 +2,7 @@
 title: Sequence search
 description:
   Search the reference sequence for a pattern, CRISPR guide, or named motif list
-guide_category: Other features
+guide_category: Sequence tools
 ---
 
 **TL;DR:** The linear genome view's **Sequence search** menu item searches the

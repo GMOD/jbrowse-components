@@ -1,7 +1,7 @@
 ---
 title: Feature sequence panel
 description: Sequence extraction for selected features
-guide_category: Track types
+guide_category: Sequence tools
 ---
 
 **TL;DR:** The feature details panel can extract and display the sequence

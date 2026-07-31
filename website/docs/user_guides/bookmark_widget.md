@@ -1,7 +1,7 @@
 ---
 title: Bookmark widget
 description: Saving and sharing genomic locations
-guide_category: Other features
+guide_category: General usage
 ---
 
 **TL;DR:** The bookmark widget stores genomic regions for quick navigation. Each

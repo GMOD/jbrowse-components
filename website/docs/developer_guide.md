@@ -66,19 +66,9 @@ own via pull request.
 
 ### Getting started
 
+- [](/docs/developer_guides/simple_plugin)
 - [](/docs/developer_guides/no_build_plugin)
 - [](/docs/developer_guides/pluggable_elements)
-- [](/docs/developer_guides/simple_plugin)
-- [](/docs/developer_guides/theming)
-
-### Core concepts
-
-- [](/docs/developer_guides/configuration_schema)
-- [](/docs/developer_guides/data_fetching)
-- [](/docs/developer_guides/extension_points)
-- [](/docs/developer_guides/imports_and_reexports)
-- [](/docs/developer_guides/mst_patterns)
-- [](/docs/developer_guides/rpc_workers)
 
 ### Pluggable elements
 
@@ -95,8 +85,18 @@ own via pull request.
 - [](/docs/developer_guides/plotting_features)
 - [](/docs/developer_guides/svg_export)
 
+### Core concepts
+
+- [](/docs/developer_guides/configuration_schema)
+- [](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/extension_points)
+- [](/docs/developer_guides/imports_and_reexports)
+- [](/docs/developer_guides/mst_patterns)
+- [](/docs/developer_guides/rpc_workers)
+
 ### Advanced topics
 
 - [](/docs/developer_guides/pif_format)
 - [](/docs/developer_guides/refname_aliasing)
 - [](/docs/developer_guides/testing_plugins)
+- [](/docs/developer_guides/theming)

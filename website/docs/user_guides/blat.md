@@ -2,7 +2,7 @@
 title: BLAT and in-silico PCR
 description:
   Map a sequence to genome coordinates, and find where primers amplify
-guide_category: Other features
+guide_category: Sequence tools
 ---
 
 **TL;DR:** The `blat` plugin adds two **Tools** menu items that answer "where is

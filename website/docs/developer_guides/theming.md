@@ -1,7 +1,7 @@
 ---
 title: Theming
 description: Customizing JBrowse colors and theme via config
-guide_category: Getting started
+guide_category: Advanced topics
 ---
 
 **TL;DR:** JBrowse extends

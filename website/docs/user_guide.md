@@ -13,14 +13,15 @@ How to drive JBrowse once it is running. New here? Start with the
 ## General usage
 
 - [](/docs/user_guides/basic_usage)
+- [](/docs/user_guides/bookmark_widget)
 - [](/docs/user_guides/connections)
 - [](/docs/user_guides/display_defaults)
 - [](/docs/user_guides/hub_url)
+- [](/docs/user_guides/plugin_store)
 
 ## Track types
 
 - [](/docs/user_guides/alignments_track)
-- [](/docs/user_guides/feature_sequence)
 - [](/docs/user_guides/gc_content_track)
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/gwas_track)
@@ -41,16 +42,18 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/spreadsheet_view)
 - [](/docs/user_guides/sv_inspector_view)
-- [](/docs/user_guides/sv_visualization)
 
-## Other features
+## Sequence tools
 
 - [](/docs/user_guides/blat)
-- [](/docs/user_guides/bookmark_widget)
-- [](/docs/user_guides/clustering)
 - [](/docs/user_guides/consensus_sequence)
-- [](/docs/user_guides/plugin_store)
+- [](/docs/user_guides/feature_sequence)
 - [](/docs/user_guides/sequence_search)
+
+## Analysis
+
+- [](/docs/user_guides/clustering)
+- [](/docs/user_guides/sv_visualization)
 
 ## Tutorials
 

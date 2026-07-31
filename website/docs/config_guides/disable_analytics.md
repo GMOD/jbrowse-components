@@ -1,7 +1,7 @@
 ---
 title: Disabling analytics
 description: Opt out of usage analytics
-guide_category: Other features
+guide_category: Deployment
 ---
 
 jbrowse-web and jbrowse-desktop collect anonymous usage data, sent to Google

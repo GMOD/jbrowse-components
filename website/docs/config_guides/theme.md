@@ -1,7 +1,7 @@
 ---
 title: Coloring/theming
 description: Customizing the application color theme
-guide_category: Other features
+guide_category: Appearance
 ---
 
 **TL;DR:** set colors and sizing under a top-level `theme` in the

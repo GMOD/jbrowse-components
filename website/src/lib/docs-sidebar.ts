@@ -1,4 +1,4 @@
-import { GUIDE_CATEGORY_ORDER } from './guide-categories.ts'
+import { GUIDE_CATEGORY_ORDER, guideRank } from './guide-categories.ts'
 import sidebarsJson from '../../sidebars.json'
 
 export interface SidebarLink {
@@ -85,6 +85,7 @@ function prefixByCategory(links: SidebarLink[]): SidebarLink[] {
 // by position. Categories not in `categoryOrder` (a stray value) fall to the
 // end alphabetically rather than vanishing.
 function prefixByGuideCategory(
+  dirName: string,
   docs: DocEntry[],
   links: SidebarLink[],
   categoryOrder: string[],
@@ -99,6 +100,14 @@ function prefixByGuideCategory(
       ...links[i]!,
       label: `${category}: ${links[i]!.label}`,
     })
+  }
+
+  // `links` arrives alphabetical by label, so a stable sort on the curated rank
+  // alone lifts the lead pages and leaves everything else as it was.
+  for (const inCategory of byCategory.values()) {
+    inCategory.sort(
+      (a, b) => guideRank(dirName, a.slug) - guideRank(dirName, b.slug),
+    )
   }
 
   const ordered = categoryOrder.filter(c => byCategory.has(c))
@@ -137,7 +146,7 @@ function getAutoItems(
   return dirName === 'config' || dirName === 'models'
     ? prefixByCategory(links)
     : categoryOrder
-      ? prefixByGuideCategory(docs, links, categoryOrder)
+      ? prefixByGuideCategory(dirName, docs, links, categoryOrder)
       : links
 }
 
@@ -330,9 +339,9 @@ const TOP_LEVEL_CATEGORY_BUCKETS: Record<string, SearchCategory> = {
   'Autogen docs: State models': 'autogen',
   'Autogen docs: Exported functions': 'autogen',
 }
-// "Embedding & scripting" and the loose cli/faq links are intentionally
-// unmapped: they fall through to the always-shown 'other' bucket so no search
-// filter can hide them.
+// "Embedding", "Command line tools" and the loose introduction/faq links are
+// intentionally unmapped: they fall through to the always-shown 'other' bucket
+// so no search filter can hide them.
 
 // Pages whose search-filter bucket is deliberately not their sidebar category
 // (e.g. admin-server setup reads as an ops/developer topic even though it's

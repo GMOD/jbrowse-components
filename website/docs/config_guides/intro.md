@@ -1,7 +1,7 @@
 ---
 title: config.json format
 description: Overall structure and key fields of the config.json file
-guide_category: Getting started
+guide_category: Core configuration
 ---
 
 **TL;DR:** you rarely write `config.json` by hand. The

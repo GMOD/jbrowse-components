@@ -1,6 +1,6 @@
 ---
 title: JBrowseR
-sidebar_label: R / Shiny
+sidebar_label: Embedding in R / Shiny
 description:
   Embed a GPU-accelerated JBrowse 2 linear genome view (or a synteny/dotplot
   comparison) in R Markdown, Shiny, or the R console with the JBrowseR

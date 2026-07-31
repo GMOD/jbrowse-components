@@ -3,7 +3,7 @@ title: Clustering rows
 description:
   Reorder a multi-row track's rows by similarity, read the dendrogram, and
   filter to a clade
-guide_category: Other features
+guide_category: Analysis
 ---
 
 **TL;DR:** Several track types stack one row per sample, and each can reorder
