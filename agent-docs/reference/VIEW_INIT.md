@@ -171,6 +171,30 @@ twice and the banner is the one that persists. Post-materialization is the
 inverse: `setError` would discard rows that loaded fine, since `showImportForm`
 keys off `error` alone. Clearing `init` there is also what disarms the re-fire.
 
+### Mid-apply waits, and why there is no timeout
+
+`apply` gets a second argument, `{ superseded }` — true once the node is gone or
+a newer `setInit` has replaced this init. Any wait inside `apply` that can park
+indefinitely **must** fold it in:
+
+```ts
+await when(() => superseded() || cond() || !!self.assemblyErrors)
+```
+
+Dotplot used to race these against a 30s ceiling. A fixed timeout can only
+guess: too short and it expires on a slow-but-healthy remote assembly, silently
+dropping the navigation the init asked for; long enough not to, and in the one
+case it uniquely covers — a fetch that hangs without ever erroring — it changes
+nothing the spinner isn't already saying. What it was actually buying is
+liveness for the *drain*: a parked `apply` holds `draining` true, so the init
+that replaced it is stranded until the wait ends. `superseded` provides that
+exactly instead of eventually, so the ceiling is gone.
+
+The corollary is that every exit from such a wait is caused by something that
+reports itself (an assembly failure lands in `error` and the import form's
+banner; a supersede is the next init taking over), so the caller re-checks its
+own precondition and skips quietly rather than notifying.
+
 `apply` therefore never clears `init` and never catches for reporting — it
 catches only the failures it wants to keep going through (a bad locstring in one
 row), and everything it lets escape is fatal-as-of-that-point. Per view:

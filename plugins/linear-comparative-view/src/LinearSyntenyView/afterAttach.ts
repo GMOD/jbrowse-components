@@ -12,6 +12,7 @@ import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from './model.ts'
 import type { LinearSyntenyViewInit } from './types.ts'
+import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One genome row per init.views entry, each opened on its assembly's whole
@@ -21,6 +22,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 async function buildViews(
   self: LinearSyntenyViewModel,
   init: LinearSyntenyViewInit,
+  superseded: () => boolean,
 ) {
   const { assemblyManager } = getSession(self)
   const assemblies = await Promise.all(
@@ -52,7 +54,10 @@ async function buildViews(
         : {}),
     })),
   )
-  await Promise.all(self.views.map(view => when(() => view.initialized)))
+  // a row only initializes once it has been laid out, so this parks
+  // indefinitely if the view is never given a width — which would hold the
+  // drain open and strand the newer init that replaced this one
+  await when(() => superseded() || self.views.every(view => view.initialized))
 }
 
 // Navigate one genome row, reporting a bad `loc` as that row's problem. Without
@@ -144,6 +149,7 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
 async function applyInit(
   self: LinearSyntenyViewModel,
   init: LinearSyntenyViewInit,
+  { superseded }: InitApplyContext,
 ) {
   // flag the pending reorder before any track render can paint, so `settled`
   // (→ synteny_canvas_done) can't fire on the pre-diagonalize hairball during
@@ -152,7 +158,7 @@ async function applyInit(
   if (init.autoDiagonalize) {
     self.setAutoDiagonalizeRequested(true)
   }
-  await buildViews(self, init)
+  await buildViews(self, init, superseded)
   await applyInitViewLocsAndTracks(self, init)
   applyInitSyntenyTracks(self, init)
   // split the band budget across however many levels this view has, so a
@@ -181,6 +187,6 @@ export function doAfterAttach(self: LinearSyntenyViewModel) {
     // screen and keeps `init` for a reload retry, while anything after is one
     // sub-step's problem and must not discard the rows that loaded fine.
     materialized: () => self.views.length > 0,
-    apply: init => applyInit(self, init),
+    apply: (init, ctx) => applyInit(self, init, ctx),
   })
 }

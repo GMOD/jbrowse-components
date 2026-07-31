@@ -17,6 +17,7 @@ import type { DotplotViewModel } from './model.ts'
 import type { DotplotViewInit } from './types.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 
 type AssemblyManager = ReturnType<typeof getSession>['assemblyManager']
 
@@ -88,20 +89,27 @@ export function navAxisToLoc(
   }
 }
 
-// Ceiling on each bounded init wait. Long enough that a slow remote assembly
-// still lands; the point is only that a display/region which never becomes
-// ready can't deadlock the rest of init.
-const INIT_WAIT_MS = 30_000
-
-// Bounded wait: resolves when cond() turns true or after INIT_WAIT_MS,
-// whichever comes first.
-async function waitFor(cond: () => boolean) {
-  await Promise.race([
-    when(cond),
-    new Promise(resolve => {
-      setTimeout(resolve, INIT_WAIT_MS)
-    }),
-  ])
+// Wait for `cond`, giving up on the two things that mean it will never come:
+// the assemblies errored, or a newer init superseded this one. Every exit is
+// caused by something that reports itself — an assembly failure lands in
+// `error` and the import form's banner, a supersede is the next init taking
+// over — so the caller re-checks its own precondition and skips quietly.
+//
+// This replaced a 30s ceiling. A fixed timeout can only guess: too short and it
+// expires on a slow-but-healthy remote assembly, silently dropping the
+// navigation the init asked for; long enough not to, and in the one case it
+// uniquely covers (a fetch that hangs without ever erroring) it changes nothing
+// the spinner doesn't already say. What it was really buying was liveness for
+// the drain — which `superseded` now provides exactly rather than eventually.
+async function waitForInit(
+  self: DotplotViewModel,
+  cond: () => boolean,
+  superseded: () => boolean,
+) {
+  await when(
+    () =>
+      superseded() || cond() || !!self.volatileError || !!self.assemblyErrors,
+  )
 }
 
 function applyInitTracks(self: DotplotViewModel, init: DotplotViewInit) {
@@ -149,7 +157,10 @@ function applyInitHighlights(self: DotplotViewModel, init: DotplotViewInit) {
   }
 }
 
-async function runAutoDiagonalize(self: DotplotViewModel) {
+async function runAutoDiagonalize(
+  self: DotplotViewModel,
+  superseded: () => boolean,
+) {
   // runDotplotDiagonalize reads the axes' displayedRegions and fetches the
   // alignments it needs in its own RPC, so the only precondition is that the
   // view's regions are populated (assemblies loaded) — not the display's render
@@ -160,10 +171,8 @@ async function runAutoDiagonalize(self: DotplotViewModel) {
   await withDiagonalizeProgress(self, async opts => {
     const { runDotplotDiagonalize } =
       await import('./util/runDotplotDiagonalize.ts')
-    await when(
-      () => self.initialized || !!self.volatileError || !!self.assemblyErrors,
-    )
-    if (self.initialized && isAlive(self)) {
+    await waitForInit(self, () => self.initialized, superseded)
+    if (self.initialized && isAlive(self) && !superseded()) {
       await runDotplotDiagonalize(self, opts)
       // only now is the plot truly diagonalized — release the `settled` gate.
       // if runDotplotDiagonalize threw, withDiagonalizeProgress catches it and
@@ -237,7 +246,11 @@ function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
 // The ordered init steps. Recoverable failures (unresolvable track, bad
 // highlight, bad loc) are caught at their own step, so anything escaping here
 // is unexpected — installInitAutorun's backstop reports it.
-async function applyInit(self: DotplotViewModel, init: DotplotViewInit) {
+async function applyInit(
+  self: DotplotViewModel,
+  init: DotplotViewInit,
+  { superseded }: InitApplyContext,
+) {
   // a dotplot needs two axes. LaunchDotplotView enforces this, but a
   // hand-authored init (set via addView, bypassing the launcher) could be
   // malformed — fail loudly instead of silently producing a
@@ -263,13 +276,16 @@ async function applyInit(self: DotplotViewModel, init: DotplotViewInit) {
     // the axes currently display, so restricting afterwards would diagonalize
     // the full assembly and then throw most of it away
     if (init.views.some(v => v.displayedRegionNames?.length)) {
-      await waitFor(() => self.initialized)
-      if (isAlive(self)) {
+      await waitForInit(self, () => self.initialized, superseded)
+      // re-check rather than assume: the wait also returns on an assembly
+      // failure, and restricting regions on an uninitialized view would write
+      // over the empty axes initializeDisplayedRegions has yet to populate
+      if (isAlive(self) && self.initialized) {
         applyInitDisplayedRegions(self, init)
       }
     }
     if (init.autoDiagonalize) {
-      await runAutoDiagonalize(self)
+      await runAutoDiagonalize(self, superseded)
     }
     // highlights call isValidRefName, which throws until the assembly loads, so
     // they need assembliesInitialized. loc-nav additionally needs displayed
@@ -278,8 +294,10 @@ async function applyInit(self: DotplotViewModel, init: DotplotViewInit) {
     const hasHighlight = !!init.highlight?.length
     const hasLoc = init.views.some(v => v.loc)
     if (hasHighlight || hasLoc) {
-      await waitFor(() =>
-        hasLoc ? self.initialized : self.assembliesInitialized,
+      await waitForInit(
+        self,
+        () => (hasLoc ? self.initialized : self.assembliesInitialized),
+        superseded,
       )
       if (isAlive(self)) {
         if (hasHighlight && self.assembliesInitialized) {
@@ -301,7 +319,7 @@ function setupInitAutorun(self: DotplotViewModel) {
     // are no axes, and postProcessSnapshot keys off the same thing to decide
     // whether `init` is still worth persisting
     materialized: () => self.assemblyNames.length > 0,
-    apply: init => applyInit(self, init),
+    apply: (init, ctx) => applyInit(self, init, ctx),
   })
 }
 

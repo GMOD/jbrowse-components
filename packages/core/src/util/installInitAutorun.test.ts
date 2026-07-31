@@ -7,7 +7,9 @@ interface Init {
   tag: string
 }
 
-function setup(apply: (init: Init) => Promise<void>) {
+function setup(
+  apply: (init: Init, ctx: { superseded: () => boolean }) => Promise<void>,
+) {
   const notified: string[] = []
 
   const View = types
@@ -131,6 +133,30 @@ test('ready churn mid-apply does not run a second apply', async () => {
   inFlight!()
   await when(() => view.init === undefined)
   expect(calls).toBe(1)
+})
+
+// The liveness guarantee a wait ceiling used to provide by guessing. An apply
+// parked on state that never arrives holds the drain open, so without this the
+// init that replaced it is stranded for as long as the wait lasts — forever,
+// once the timer is gone.
+test('a mid-apply wait can unpark on being superseded', async () => {
+  const applied: Init[] = []
+  const { view } = setup(async (init, { superseded }) => {
+    if (init.tag === 'first') {
+      // the shape every long init wait uses: the condition it wants, or the
+      // reasons it will never come
+      await when(() => superseded())
+    }
+    applied.push(init)
+  })
+
+  view.setReady(true)
+  await settle()
+  expect(applied).toHaveLength(0)
+
+  view.setInit({ tag: 'second' })
+  await when(() => view.init === undefined)
+  expect(applied.map(i => i.tag)).toEqual(['first', 'second'])
 })
 
 test('a failure after materialization clears init and notifies', async () => {

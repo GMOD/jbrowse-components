@@ -11,6 +11,19 @@ interface InitAutorunHost<T> extends IAnyStateTreeNode {
   setError: (error: unknown) => void
 }
 
+export interface InitApplyContext {
+  /**
+   * True once this init can no longer be the one being applied: the node is
+   * gone, or a newer `setInit` has replaced it. Any mid-apply wait that can
+   * park indefinitely must fold this into its condition — an unbounded wait on
+   * state that never arrives holds the drain open, and the newer init that
+   * would have superseded it is exactly what gets stranded. This is the causal
+   * form of the wait ceiling; a fixed timeout bounds the same hazard only by
+   * guessing, and pays for it by expiring on slow-but-healthy loads.
+   */
+  superseded: () => boolean
+}
+
 interface InitAutorunOptions<T> {
   /** autorun name, for the MobX devtools/spy stream */
   name: string
@@ -27,7 +40,7 @@ interface InitAutorunOptions<T> {
    */
   materialized: () => boolean
   /** Apply one init blob. Owns the ordered steps; never clears `init`. */
-  apply: (init: T) => Promise<void>
+  apply: (init: T, ctx: InitApplyContext) => Promise<void>
 }
 
 // Clear only when `init` is still the exact object we applied. A setInit that
@@ -46,7 +59,9 @@ async function applyInitOnce<T>(
   { apply, materialized }: InitAutorunOptions<T>,
 ) {
   try {
-    await apply(init)
+    await apply(init, {
+      superseded: () => !isAlive(self) || self.init !== init,
+    })
     clearIfUnchanged(self, init)
   } catch (e) {
     // the autorun body is async, so anything escaping here becomes an
