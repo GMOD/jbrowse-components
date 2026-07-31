@@ -34,16 +34,33 @@ function escapeXml(s: string) {
   return s.replaceAll(/[&<>"]/g, c => XML_ESCAPES[c]!)
 }
 
-// Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
-// into SVG-compatible font-size and font-family attributes. The default
-// sans-serif family is left off so feature labels match the raw-JSX <text>
-// elements (ruler, scalebar, etc.), which set no family either; an
-// explicitly-set family (e.g. monospace) is still emitted.
+// CSS font shorthand is [style] [variant] [weight] [stretch] <size>[/line-height]
+// <family>, so the tokens before the size have to be captured too: dropping them
+// rendered every `bold Npx ...` label (MAF codons, alignment read labels) at
+// regular weight in an SVG export while the canvas drew it bold.
+const fontShorthandRe = /^(.*?)(\d+(?:\.\d+)?)px(?:\/\S+)?\s+(.+)$/
+const fontWeightTokens = new Set(['bold', 'bolder', 'lighter'])
+const fontStyleTokens = new Set(['italic', 'oblique'])
+
+// Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace" into
+// SVG-compatible attributes. The default sans-serif family is left off so
+// feature labels match the raw-JSX <text> elements (ruler, scalebar, etc.),
+// which set no family either; an explicitly-set family is still emitted.
 function fontAttrs(font: string) {
-  const m = /(\d+(?:\.\d+)?)px\s+(.+)/.exec(font)
+  const m = fontShorthandRe.exec(font)
   if (m) {
-    const family = m[2] === 'sans-serif' ? '' : ` font-family="${m[2]}"`
-    return ` font-size="${m[1]}"${family}`
+    const [, prefix = '', size, family = ''] = m
+    const tokens = prefix.split(/\s+/).filter(Boolean)
+    const weight = tokens.find(
+      t => fontWeightTokens.has(t) || /^\d{1,4}$/.test(t),
+    )
+    const style = tokens.find(t => fontStyleTokens.has(t))
+    return [
+      ` font-size="${size}"`,
+      family === 'sans-serif' ? '' : ` font-family="${family}"`,
+      weight ? ` font-weight="${weight}"` : '',
+      style ? ` font-style="${style}"` : '',
+    ].join('')
   }
   return ` font-size="${Number.parseFloat(font) || 10}"`
 }

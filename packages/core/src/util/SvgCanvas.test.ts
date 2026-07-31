@@ -242,3 +242,32 @@ describe('text baseline', () => {
     expect(ctx.getSerializedSvg()).toContain('dominant-baseline="auto"')
   })
 })
+
+describe('font shorthand', () => {
+  // Regression: the size/family regex matched mid-string, so the weight and
+  // style tokens ahead of the size were dropped and every `bold Npx ...` label
+  // (MAF codons, alignment read labels) exported at regular weight.
+  test.each([
+    ['10px sans-serif', ' font-size="10"'],
+    ['bold 12px sans-serif', ' font-size="12" font-weight="bold"'],
+    [
+      'bold 10px Courier New,monospace',
+      ' font-size="10" font-family="Courier New,monospace" font-weight="bold"',
+    ],
+    [
+      'italic 12px serif',
+      ' font-size="12" font-family="serif" font-style="italic"',
+    ],
+    [
+      'italic 600 12px serif',
+      ' font-size="12" font-family="serif" font-weight="600" font-style="italic"',
+    ],
+    ['12px/1.5 sans-serif', ' font-size="12"'],
+  ])('%p emits %p', (font, expected) => {
+    const ctx = new SvgCanvas()
+    ctx.font = font
+    ctx.fillText('A', 0, 0)
+    const emitted = ctx.getSerializedSvg().match(/font-\w+="[^"]*"/g)
+    expect(emitted?.join(' ')).toBe(expected.trim())
+  })
+})
