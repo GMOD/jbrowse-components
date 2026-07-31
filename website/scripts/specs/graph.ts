@@ -870,11 +870,13 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
-        type: 'box',
-        anchor: { view: 1, graphNode },
-        strokeWidth: 3,
-      })),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
+        (graphNode): Annotation => ({
+          type: 'box',
+          anchor: { view: 1, graphNode },
+          strokeWidth: 3,
+        }),
+      ),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
@@ -1580,10 +1582,49 @@ export const graphSpecs: ScreenshotSpec[] = [
   // Counted off the hosted link index, this window holds three of them, the
   // largest 84,683 bp -- CFHR3 and CFHR1 together, which is one of the
   // best-known common deletions in the human genome. The graph draws it as what
-  // it is: a red edge that leaves the backbone before CFHR3 and rejoins it after
+  // it is: an edge that leaves the backbone before CFHR3 and rejoins it after
   // CFHR1, with the reference the deletion skips running underneath.
   //
-  // 41 nodes, so the force layout has room to open every bubble.
+  // ANCHORED, NOT FORCE, and that is the whole answer to "does the bandage graph
+  // intuitively show the deletion" (review). It did not, and the reason is
+  // structural rather than a matter of taste: FMMM has no reference axis, so the
+  // arc's two endpoints are wherever the simulation put them and its size is the
+  // only thing left to carry the event. Two consequences were visible in the
+  // force capture. The arc bowed out by the drawn length of the backbone it
+  // bypasses (DELETION_BULGE_FRACTION), but that backbone was scattered across
+  // the drawing, so the loop enclosed nothing; and the label rides an apex
+  // computed from the *bypassed* nodes (graphLabels.ts deletionApex) while the
+  // curve is drawn between the *edge's* endpoints, which in a force layout are
+  // different places -- "skips 84.7 kb of reference" sat at the top right on the
+  // magenta chain with the arc sweeping the opposite corner.
+  //
+  // Cross-referenced against ~/src/vendor, since the review asked: every tool
+  // that shows a deletion legibly puts the reference on an axis first. VRPG
+  // (lh3's rGFA viewer) projects the graph onto reference coordinates and sits it
+  // beside a linear annotation panel, which is this pairing. sequenceTubeMap
+  // orders nodes monotonically along x and gives each a width from its length, so
+  // a path that skips nodes is drawn over the nodes it skips (drawDeletion in
+  // tubemap.js is a grey line across exactly that span). odgi does not use a
+  // node-link drawing for this at all: `odgi pav` / `odgi viz` reduce
+  // presence/absence to a path-by-position matrix, where a deletion is a gap in
+  // one row. Bandage itself has no reference concept, so a deletion there is a
+  // bare link at a joint with nothing to state -- our bulge was already an
+  // improvement on that, and it is as far as a force layout can go. PangyPlot is
+  // the one force-directed pangenome viewer that does solve it, and it does the
+  // inverse of what we do: the deletion link stays a straight chord with an x
+  // drawn at its midpoint, and a dedicated force (delLinkForce in
+  // layout-forces.js) pushes the bypassed nodes perpendicularly off it, so the
+  // layout itself closes the bubble instead of the edge bowing to fake one.
+  //
+  // On this window the anchored layout costs nothing and pays twice: the arc
+  // spans exactly the bp it removes, and it spans them under the hg38 row of the
+  // synteny view above, so the boxed CFHR3/CFHR1, the carrier's missing ribbon
+  // and the arc all line up on the same coordinates. What it loses is the labels
+  // on the other two deletions (2.2 kb and 9.3 kb): MIN_DELETION_LABEL_PX gates
+  // on the arc's bulge in screen px, and at 0.4% zoom theirs is ~13 px, where in
+  // FMMM units the same two cleared it. They are still drawn, as the short thick
+  // arcs off the backbone, and the caption says so rather than naming a number
+  // the figure cannot show.
   //
   // The linear panel is a synteny view of two real haplotypes rather than the
   // reference alone (review: "in the most ideal world, we would have a
@@ -1592,6 +1633,12 @@ export const graphSpecs: ScreenshotSpec[] = [
   // synteny rows state it as one haplotype's alignment simply stopping and
   // resuming past CFHR1 while another's runs straight through. Two readings of
   // the same event, which is what the pairing is for.
+  //
+  // 41 nodes over 11 stable ranks, so the anchored layout is 11 rows deep. The
+  // rank numbers here run to 458 and mean nothing to a reader on their own
+  // (rank is minigraph's build order over the whole graph, not this window), but
+  // rows are the ranks actually present, in order, so the depth is the number of
+  // distinct alternatives and not the graph's rank ceiling.
   //
   // Carriers are picked from the callset, not by eye: at the wave VCF's
   // chr1:196,753,075 record the 1 bp ALT is the 84.7 kb deletion and 139 of the
@@ -1651,9 +1698,16 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: CFHR_REGION,
-          layoutMode: 'force',
+          layoutMode: 'auto',
+          // Redundant with x now that x is a coordinate, kept because the
+          // segments lane in the panel above is on the same ramp: a node and the
+          // segment it came from share a color as well as a position.
           colorScheme: 'reference-position',
-          bubbleSpread: 'open',
+          // No bubbleSpread. It is a floor on a node's drawn length in FMMM
+          // units, passed to the remote engine only (bandageAutoScale in
+          // model.ts), so under a layout that runs locally from coordinates it
+          // is dead, and leaving it in the session puts a click-path in the
+          // figure's recipe that changes nothing.
         },
       ],
     }),
@@ -1662,7 +1716,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
     settleMs: 8000,
     viewportWidth: 1000,
-    viewportHeight: 1580,
+    // 1580 while the graph half was FMMM, whose drawing is squarer than 11 rows
+    // of backbone: the anchored pane came out 238 px shorter
+    viewportHeight: 1342,
     hideTooltip: true,
     // What the reader is looking at, named on the rows themselves (review: "can
     // red boxes and text annotation be added"). The box wraps the two genes the

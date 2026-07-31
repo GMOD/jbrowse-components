@@ -226,12 +226,18 @@ they name is large enough on screen to hold one and disappear as you zoom out.
 Extra sequence is a node in the graph, so it draws as a tube. Missing sequence
 is an **edge**: a link from one backbone segment to another that is not its
 neighbour, taken by the haplotypes that do not carry what lies between them.
-Those edges are drawn thick and near-black, bowed out into an arc sized by the
-reference they skip, so a deletion is a route around the backbone rather than a
-line at a joint. They are deliberately not on the color ramp: hue there means
-reference position, and an arc has no position of its own.
+Those edges are drawn thick and near-black rather than on the color ramp, where
+hue means reference position and an arc covers a range of it rather than sitting
+at one point.
 
-<Figure caption="The complement factor H cluster on chr1 as a force-directed graph, under two HPRC haplotypes aligned to GRCh38. Each row carries that assembly's own CAT gene annotation: the boxed CFHR3 and CFHR1 are on the reference and on HG00099, and absent from HG01109, whose alignment stops and resumes across the same span. The large dark loop in the graph is that deletion, labelled with the reference it skips; two smaller loops are the other deletions here, and node colors are reference position, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_cfhr_deletion.png" />
+Read a deletion on the [anchored layout](#the-layout-dropdown), which is what
+the figure below uses: x there is GRCh38 bp, so the arc spans exactly the
+sequence it removes, over the reference that carries it and under the same
+coordinates in the linear panel. The force layout bows the same edge out by the
+length of the backbone it bypasses, which states a size but not a position,
+because FMMM leaves the arc's two ends wherever the simulation puts them.
+
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries that assembly's own CAT gene annotation, so the boxed CFHR3 and CFHR1 are on the reference and on HG00099 and absent from HG01109, whose alignment stops and resumes across the same span. In the graph the reference is the top row, colored by position, and the thick dark arc under it spans the 84.7 kb those two genes sit in. The shorter thick arcs are the other two deletions in the window, and the thin stalks are alternate alleles, one row per stable rank." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering one of these edges gives the interval and the bp it removes. This is
 the event a linear view is worst at, because a deletion has nothing to draw at
@@ -269,8 +275,12 @@ Copy number is not among those numbers: minigraph records the distinct sequence
 a bubble can hold, not how many times a haplotype repeats it. Length is the
 proxy, and the shape of the alternatives is what the graph adds.
 
-The **Layout** dropdown trades that picture for an **anchored** layout, which
-puts the x axis back on GRCh38:
+### The Layout dropdown
+
+**Force-directed** draws the graph's own shape, with no axis. **Anchored**, the
+mode the deletion figure above uses, puts x back on GRCh38 and stacks the
+alternate alleles below the backbone by rank. The same MHC class II window drawn
+both ways:
 
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing about it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs below the position it attaches to, stacked by rank. Reference-position colors are on in both, so the segment above and the node below share a color either way, and in the anchored half an x as well." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
