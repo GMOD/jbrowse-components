@@ -7,14 +7,12 @@ import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  coerceColorBy,
   createStopTokenRotation,
   detectDisplayAssembliesSwapped,
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
-import { createDotplotColorFunction } from './dotplotColors.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
@@ -235,7 +233,10 @@ export function doAfterAttach(
           return
         }
         const view = getContainingView(self) as DotplotViewModel
-        const { rpcData, alpha, colorBy, minAlignmentLength } = self
+        // colorBy/alpha are deliberately absent: colors are a separate
+        // main-thread pass over instanceFeatureIdx (the `computedColors`
+        // getter), so a palette change never re-walks the CIGARs here.
+        const { rpcData, minAlignmentLength } = self
         if (!rpcData) {
           return
         }
@@ -248,10 +249,9 @@ export function doAfterAttach(
           baseH: hview.offsetPx * hview.bpPerPx,
           baseV: vview.offsetPx * vview.bpPerPx,
         }))
-        self.setGeometry(
+        self.setInstanceData(
           buildLineSegments(
             rpcData,
-            createDotplotColorFunction(coerceColorBy(colorBy), alpha, rpcData),
             drawCigar,
             minAlignmentLength,
             hview.bpPerPx,

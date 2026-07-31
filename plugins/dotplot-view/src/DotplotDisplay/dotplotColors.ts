@@ -10,6 +10,7 @@ import {
   hashString,
 } from '@jbrowse/synteny-core'
 
+import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -129,4 +130,29 @@ export function createDotplotColorFunction(
     case 'default':
       return constantColorFn(packCss(colorSchemes.default.pointColor, alpha))
   }
+}
+
+// Pure function: one packed-ABGR color per line segment, from the segment ->
+// feature map the geometry builder emitted plus the current palette. This is the
+// gpuProps half of the rpcProps/gpuProps split — a colorBy or alpha change
+// reruns only this, leaving the positions (and the CIGAR walk that produced
+// them) untouched.
+export function computeDotplotColors({
+  instanceData,
+  rpcData,
+  colorBy,
+  alpha,
+}: {
+  instanceData: DotplotInstanceData
+  rpcData: DotplotRpcData
+  colorBy: SyntenyColorBy
+  alpha: number
+}) {
+  const { instanceFeatureIdx, instanceCount } = instanceData
+  const colorFn = createDotplotColorFunction(colorBy, alpha, rpcData)
+  const out = new Uint32Array(instanceCount)
+  for (let i = 0; i < instanceCount; i++) {
+    out[i] = colorFn(rpcData, instanceFeatureIdx[i]!)
+  }
+  return out
 }

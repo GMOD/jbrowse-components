@@ -32,7 +32,7 @@ describe('buildLineSegments cumBp precision', () => {
   test('feature at Gbp scale round-trips precisely (Float64)', () => {
     // Float32(8e8) alone loses ~64 bp of precision; Float64 preserves it.
     const data = makeRpcData(1_000, 1_100, 8e8, 8e8 + 100)
-    const segs = buildLineSegments(data, () => 0xff0000ff, false, 0, 1, 1, 0, 0)
+    const segs = buildLineSegments(data, false, 0, 1, 1, 0, 0)
     expect(segs.instanceCount).toBe(1)
     expect(segs.x1[0]).toBe(1_000)
     expect(segs.x2[0]).toBe(1_100)
@@ -43,20 +43,20 @@ describe('buildLineSegments cumBp precision', () => {
   test('geometry is zoom-invariant: same cumBp at different bpPerPx', () => {
     const a = makeRpcData(1_000, 1_100, 8e8, 8e8 + 100)
     const b = makeRpcData(1_000, 1_100, 8e8, 8e8 + 100)
-    const segA = buildLineSegments(a, () => 0, false, 0, 1, 1, 0, 0)
-    const segB = buildLineSegments(b, () => 0, false, 0, 10, 1, 0, 0)
+    const segA = buildLineSegments(a, false, 0, 1, 1, 0, 0)
+    const segB = buildLineSegments(b, false, 0, 10, 1, 0, 0)
     expect(segA.y1[0]).toBe(segB.y1[0])
   })
 
   test('minAlignmentLength filters short features', () => {
     const data = makeRpcData(0, 100, 0, 100)
-    const segs = buildLineSegments(data, () => 0, false, 200, 1, 1, 0, 0)
+    const segs = buildLineSegments(data, false, 200, 1, 1, 0, 0)
     expect(segs.instanceCount).toBe(0)
   })
 
   test('carries the per-axis base through to the geometry', () => {
     const data = makeRpcData(1_000, 1_100, 8e8, 8e8 + 100)
-    const segs = buildLineSegments(data, () => 0, false, 0, 1, 1, 5e8, 7e8)
+    const segs = buildLineSegments(data, false, 0, 1, 1, 5e8, 7e8)
     expect(segs.baseH).toBe(5e8)
     expect(segs.baseV).toBe(7e8)
   })
@@ -86,7 +86,7 @@ describe('buildLineSegments cumBp precision', () => {
       totalFeatureCount: 1,
       skippedFeatureCount: 0,
     }
-    const segs = buildLineSegments(data, () => 0, true, 0, 1, 1, 0, 0)
+    const segs = buildLineSegments(data, true, 0, 1, 1, 0, 0)
     const last = segs.instanceCount - 1
     // final sub-segment lands exactly on the feature's (x2,y2) endpoint
     expect(segs.x2[last]).toBeCloseTo(1_250)

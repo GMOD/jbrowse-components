@@ -21,6 +21,7 @@ function makeGeometry(
     x2: new Float64Array([150]),
     y2: new Float64Array([250]),
     colors: new Uint32Array([0xff0000ff]),
+    instanceFeatureIdx: new Uint32Array([0]),
     instanceCount: 1,
     baseH: 0,
     baseV: 0,

@@ -2,12 +2,11 @@ import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
 import { MIN_CIGAR_PX_WIDTH } from './dotplotCigarDetail.ts'
 
-import type { DotplotColorFn } from './dotplotColors.ts'
-import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
+import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 
 type GeometryBuffers = Omit<
-  DotplotGeometryData,
+  DotplotInstanceData,
   'instanceCount' | 'baseH' | 'baseV'
 >
 
@@ -17,7 +16,7 @@ function allocBuffers(capacity: number): GeometryBuffers {
     y1: new Float64Array(capacity),
     x2: new Float64Array(capacity),
     y2: new Float64Array(capacity),
-    colors: new Uint32Array(capacity),
+    instanceFeatureIdx: new Uint32Array(capacity),
   }
 }
 
@@ -28,13 +27,13 @@ function writeSegment(
   y1: number,
   x2: number,
   y2: number,
-  color: number,
+  featureIdx: number,
 ) {
   b.x1[n] = x1
   b.y1[n] = y1
   b.x2[n] = x2
   b.y2[n] = y2
-  b.colors[n] = color
+  b.instanceFeatureIdx[n] = featureIdx
 }
 
 function trimToCount(
@@ -42,13 +41,13 @@ function trimToCount(
   n: number,
   baseH: number,
   baseV: number,
-): DotplotGeometryData {
+): DotplotInstanceData {
   return {
     x1: b.x1.subarray(0, n),
     y1: b.y1.subarray(0, n),
     x2: b.x2.subarray(0, n),
     y2: b.y2.subarray(0, n),
-    colors: b.colors.subarray(0, n),
+    instanceFeatureIdx: b.instanceFeatureIdx.subarray(0, n),
     instanceCount: n,
     baseH,
     baseV,
@@ -57,14 +56,13 @@ function trimToCount(
 
 export function buildLineSegments(
   data: DotplotRpcData,
-  colorFn: DotplotColorFn,
   drawCigar: boolean,
   minAlignmentLength: number,
   bpPerPxH: number,
   bpPerPxV: number,
   baseH: number,
   baseV: number,
-): DotplotGeometryData {
+): DotplotInstanceData {
   const { p11, p12, p21, p22, starts, ends, cigarData, cigarOffsets } = data
   const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
@@ -94,8 +92,6 @@ export function buildLineSegments(
       Math.abs(x2 - x1) * bpPerPxHInv,
       Math.abs(y2 - y1) * bpPerPxVInv,
     )
-    const color = colorFn(data, i)
-
     // Strand is already baked into the endpoints upstream (the worker swaps the
     // H-axis start/end for reverse-strand features), so the walk direction is
     // fully determined by endpoint order — no separate strand factor needed. This
@@ -119,12 +115,12 @@ export function buildLineSegments(
         rev1,
         rev2,
         (_op, seg1Start, seg1End, seg2Start, seg2End) => {
-          writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, color)
+          writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i)
           n++
         },
       )
     } else {
-      writeSegment(buf, n, x1, y1, x2, y2, color)
+      writeSegment(buf, n, x1, y1, x2, y2, i)
       n++
     }
   }

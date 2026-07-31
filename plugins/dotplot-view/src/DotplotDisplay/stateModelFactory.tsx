@@ -5,6 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   SyntenyFetchStateMixin,
+  coerceColorBy,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
   resolveLodTier,
@@ -12,6 +13,7 @@ import {
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
+import { computeDotplotColors } from './dotplotColors.ts'
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
 
@@ -19,7 +21,7 @@ import type {
   DotplotViewModel,
   ExportSvgOptions,
 } from '../DotplotView/model.ts'
-import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
+import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -69,12 +71,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           rpcData: undefined as DotplotRpcData | undefined,
           /**
            * #volatile
-           * GPU-instance geometry produced from featPositions, self-
-           * describing via embedded bpPerPx. The containing DotplotView
-           * aggregates one of these per display and uploads them to the
-           * shared backend keyed by track index.
+           * GPU-instance positions produced from rpcData, self-describing via
+           * embedded bpPerPx, with no colors in them. Rebuilt only when the
+           * data or the zoom changes; the palette is joined on top by the
+           * `geometry` getter.
            */
-          geometry: undefined as DotplotGeometryData | undefined,
+          instanceData: undefined as DotplotInstanceData | undefined,
           fetchWarnings: [] as { message: string; effect: string }[],
         })),
     )
@@ -87,6 +89,34 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get ready() {
         return self.rpcData !== undefined
+      },
+      /**
+       * #getter
+       * Main-thread-computed per-segment colors — the gpuProps half of the
+       * rpcProps/gpuProps split. A colorBy or alpha change recomputes this
+       * alone, without re-walking a single CIGAR.
+       */
+      get computedColors() {
+        const { instanceData, rpcData, colorBy, alpha } = self
+        return instanceData && rpcData
+          ? computeDotplotColors({
+              instanceData,
+              rpcData,
+              colorBy: coerceColorBy(colorBy),
+              alpha,
+            })
+          : undefined
+      },
+      /**
+       * #getter
+       * Instance positions joined with the computed colors: what the backends
+       * upload and what SVG export draws. The view's upload autorun reads this,
+       * so a palette change re-uploads without rebuilding geometry.
+       */
+      get geometry() {
+        const { instanceData } = self
+        const colors = this.computedColors
+        return instanceData && colors ? { ...instanceData, colors } : undefined
       },
       /**
        * #getter
@@ -212,7 +242,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             regionTooLarge: false,
             extraTerminal: false,
           },
-          () => !!self.geometry && this.dataCurrent,
+          // instanceData, not geometry: this getter is read outside any
+          // reactive context (the export await polls it), where reading the
+          // `geometry` computed would recompute every segment's color per poll
+          () => !!self.instanceData && this.dataCurrent,
         )
       },
     }))
@@ -245,8 +278,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setWarnings(w: { message: string; effect: string }[]) {
         self.fetchWarnings = w
       },
-      setGeometry(data: DotplotGeometryData | undefined) {
-        self.geometry = data
+      setInstanceData(data: DotplotInstanceData | undefined) {
+        self.instanceData = data
       },
       /**
        * #action

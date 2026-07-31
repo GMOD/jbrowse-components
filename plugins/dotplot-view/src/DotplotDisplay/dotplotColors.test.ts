@@ -1,6 +1,10 @@
 import { colorSchemes } from '@jbrowse/synteny-core'
 
-import { createDotplotColorFunction } from './dotplotColors.ts'
+import {
+  computeDotplotColors,
+  createDotplotColorFunction,
+} from './dotplotColors.ts'
+import { buildLineSegments } from './dotplotGeometry.ts'
 
 import type { DotplotRpcData } from './types.ts'
 
@@ -105,5 +109,86 @@ describe('createDotplotColorFunction', () => {
     const fn = createDotplotColorFunction('query', 1, data)
     // Same name → same color; different name → may differ.
     expect(fn(data, 0)).toBe(fn(data, 1))
+  })
+})
+
+// The colors pass is the gpuProps half of the split: it runs against the
+// segment -> feature map alone, so it has to agree segment-for-segment with
+// what the (now color-free) geometry builder emitted — including across the
+// CIGAR expansion, where one feature owns many segments.
+describe('computeDotplotColors', () => {
+  const M = (len: number) => (len << 4) | 0
+
+  function twoFeatures(): DotplotRpcData {
+    return fakeRpcData({
+      p11: new Float64Array([0, 10_000]),
+      p12: new Float64Array([300, 10_300]),
+      p21: new Float64Array([0, 10_000]),
+      p22: new Float64Array([300, 10_300]),
+      strands: new Int8Array([1, -1]),
+      starts: new Uint32Array([0, 0]),
+      ends: new Uint32Array([300, 300]),
+      identities: new Float32Array([0.5, 0.5]),
+      meanIdentities: new Float32Array([0.5, 0.5]),
+      mappingQuals: new Float32Array([30, 30]),
+      refNames: ['chr1', 'chr2'],
+      mateRefNames: ['ctg1', 'ctg2'],
+      cigarData: new Uint32Array([M(100), M(100), M(100), M(300)]),
+      cigarOffsets: new Uint32Array([0, 3, 4]),
+      totalFeatureCount: 2,
+      skippedFeatureCount: 0,
+    })
+  }
+
+  test("every cigar segment carries its own feature's color", () => {
+    const rpcData = twoFeatures()
+    const instanceData = buildLineSegments(rpcData, true, 0, 1, 1, 0, 0)
+    const colors = computeDotplotColors({
+      instanceData,
+      rpcData,
+      colorBy: 'strand',
+      alpha: 1,
+    })
+    // feature 0 walks 3 cigar ops, feature 1 walks 1
+    expect([...instanceData.instanceFeatureIdx]).toEqual([0, 0, 0, 1])
+    const fn = createDotplotColorFunction('strand', 1, rpcData)
+    expect([...colors]).toEqual([
+      fn(rpcData, 0),
+      fn(rpcData, 0),
+      fn(rpcData, 0),
+      fn(rpcData, 1),
+    ])
+  })
+
+  test('filtered-out features do not shift the color mapping', () => {
+    const rpcData = fakeRpcData({
+      p11: new Float64Array([0, 10_000]),
+      p12: new Float64Array([50, 10_300]),
+      p21: new Float64Array([0, 10_000]),
+      p22: new Float64Array([50, 10_300]),
+      strands: new Int8Array([1, -1]),
+      starts: new Uint32Array([0, 0]),
+      ends: new Uint32Array([50, 300]),
+      identities: new Float32Array([0.5, 0.5]),
+      meanIdentities: new Float32Array([0.5, 0.5]),
+      mappingQuals: new Float32Array([30, 30]),
+      refNames: ['chr1', 'chr2'],
+      mateRefNames: ['ctg1', 'ctg2'],
+      cigarOffsets: new Uint32Array([0, 0, 0]),
+      totalFeatureCount: 2,
+      skippedFeatureCount: 0,
+    })
+    // minAlignmentLength drops feature 0, so the only segment is feature 1's
+    const instanceData = buildLineSegments(rpcData, false, 100, 1, 1, 0, 0)
+    expect([...instanceData.instanceFeatureIdx]).toEqual([1])
+    const colors = computeDotplotColors({
+      instanceData,
+      rpcData,
+      colorBy: 'strand',
+      alpha: 1,
+    })
+    expect(colors[0]).toBe(
+      createDotplotColorFunction('strand', 1, rpcData)(rpcData, 1),
+    )
   })
 })

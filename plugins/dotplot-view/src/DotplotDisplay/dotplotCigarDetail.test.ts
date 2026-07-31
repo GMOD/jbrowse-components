@@ -61,16 +61,7 @@ describe('buildLineSegments over flat cigar buffers', () => {
   }
 
   it('walks each feature only over its own slice', () => {
-    const segs = buildLineSegments(
-      makeData(),
-      () => 0xff0000ff,
-      true,
-      0,
-      1,
-      1,
-      0,
-      0,
-    )
+    const segs = buildLineSegments(makeData(), true, 0, 1, 1, 0, 0)
     // 3 ops + 1 flat (no cigar) + 2 ops
     expect(segs.instanceCount).toBe(6)
     // feature 0's walk stays inside its own span
@@ -85,16 +76,7 @@ describe('buildLineSegments over flat cigar buffers', () => {
   })
 
   it('emits one flat segment per feature when drawCigar is off', () => {
-    const segs = buildLineSegments(
-      makeData(),
-      () => 0xff0000ff,
-      false,
-      0,
-      1,
-      1,
-      0,
-      0,
-    )
+    const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
     expect(segs.instanceCount).toBe(3)
   })
 })

@@ -40,6 +40,7 @@ function geometry(
     x2: new Float64Array(segments.map(s => s[2])),
     y2: new Float64Array(segments.map(s => s[3])),
     colors: new Uint32Array(segments.map(() => 0xff_00_00_ff)),
+    instanceFeatureIdx: new Uint32Array(segments.map((_s, i) => i)),
     instanceCount: segments.length,
     baseH: 0,
     baseV: 0,
