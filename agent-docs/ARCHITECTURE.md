@@ -138,7 +138,11 @@ carte — the mixin holds `fetching` / `loadedFetchKey` / `assembliesSwapped`,
 `createStopTokenRotation` (core) does latest-wins token rotation plus the
 `isCurrent()` guard every post-await write is gated on, and the debounce is
 `leadingEdgeDebounce`, the same scheduler `installGlobalFetchAutorun` uses.
-They also answer the
+`installComparativeFetchAutorun` (`@jbrowse/synteny-core`) welds those two
+together with the loading/error flags and the refName rename into one skeleton
+both displays install, so each supplies only a `prepare` gate (the tracked
+reads), a `run` (every await), and a synchronous `commit` the skeleton calls
+only while the fetch is still current. They also answer the
 shared `dataCurrent` freshness question and run the shared `computeSvgReady`
 policy, just via a signature compare (`isDataCurrent` over `dotplotFetchKey` /
 synteny's `currentFetchKey`) rather than spatial coverage — which is where the
@@ -146,9 +150,7 @@ stale-capture bugs lived
 ([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) §"On-screen capture gate").
 Both autoruns track exactly one signature computed (`currentFetchKey`) plus
 `adapterConfig`, and read every value behind it `untracked`, so a pan inside the
-buffered window can't refire the fetch. The remaining duplication is the fetch
-state machine itself — `begin()` / `prime()` / try / catch / finally — not
-freshness.
+buffered window can't refire the fetch.
 Both scope their fetch through the shared `syntenyFetchRegions`
 (`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and
 snapped to a buffer-sized grid, so a pan inside the buffer neither refetches nor

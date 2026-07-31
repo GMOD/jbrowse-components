@@ -1,71 +1,40 @@
-import {
-  getContainingView,
-  getSession,
-  isAbortException,
-} from '@jbrowse/core/util'
-import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  createStopTokenRotation,
   detectDisplayAssembliesSwapped,
-  renameRegionsForAdapter,
+  installComparativeFetchAutorun,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
-import type { Region } from '@jbrowse/core/util'
 
 const RPC_DEBOUNCE_MS = 500
 
-// The stop-token rotation + staleness guard come from
-// `createStopTokenRotation` (shared with dotplot-view's fetch); only the
-// synteny-specific guards, tracked deps, RPC args, and result handling live
-// here.
+// The fetch skeleton — token rotation, leading-edge debounce, loading/error
+// flags, refName reconciliation and the latest-wins staleness discipline — is
+// `installComparativeFetchAutorun` (shared with dotplot-view's fetch); only the
+// synteny-specific gate, tracked deps, RPC args and result handling live here.
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
-  const fetch = createStopTokenRotation(self)
-
-  // Leading-edge on the first fetch, debounced after, matching dotplot and
-  // `installGlobalFetchAutorun`. MobX's `{ delay }` schedules even the initial
-  // run, so opening a synteny view waited a full RPC_DEBOUNCE_MS before the RPC
-  // started with nothing to coalesce. Priming after the fetch begins keeps the
-  // runs that bail on the minimized/connectedViews guards on the leading edge.
-  const debounce = leadingEdgeDebounce(RPC_DEBOUNCE_MS)
-
-  addDisposer(
-    self,
-    autorun(
-      async function syntenyFetchAutorun() {
-        // Teardown guard, as on the swap check below: removeView mutates
-        // observables this body reads before the disposers run, and
-        // getContainingView on a detached node warns then throws — here into an
-        // unawaited promise.
-        if (!isAlive(self) || self.isMinimized) {
-          return
-        }
-        // A synteny level draws between two adjacent genome views; this display
-        // only depends on those two, not the whole stack. connectedViews is the
-        // shared gate (same one renderParams uses).
-        const connected = self.connectedViews
-        if (!connected) {
-          return
-        }
+  installComparativeFetchAutorun(self, {
+    name: 'SyntenyFetch',
+    delay: RPC_DEBOUNCE_MS,
+    prepare: () => {
+      // A synteny level draws between two adjacent genome views; this display
+      // only depends on those two, not the whole stack. connectedViews is the
+      // shared gate (same one renderParams uses).
+      const connected = self.isMinimized ? undefined : self.connectedViews
+      if (connected) {
         const { v0, v1 } = connected
-
-        // The only other tracked deps. `currentFetchKey` folds every input this
+        // The only other tracked dep. `currentFetchKey` folds every input this
         // fetch depends on — both views' region sets, the snapped fetch window,
         // the log2 zoom bucket, the CIGAR/marker draw options and the resolved
         // LOD tier — into one computed, so the autorun refires exactly when a
-        // refetch is needed. A pan inside the buffered window recomputes it to
-        // the same string and doesn't refire; that same string tags the
-        // resulting data, so it can't drift from what was fetched even if the
-        // view moves again mid-RPC. Tracking the underlying observables
-        // individually (as this once did) is strictly noisier: a
-        // setDisplayedRegions that yields an identical region signature would
-        // refetch data that is still valid. Same shape as dotplot's fetch.
+        // refetch is needed. Tracking the underlying observables individually
+        // (as this once did) is strictly noisier: a setDisplayedRegions that
+        // yields an identical region signature would refetch data that is still
+        // valid. Same shape as dotplot's fetch.
         const fetchKey = self.currentFetchKey
-        const adapterConfig = self.adapterConfig
         // Untracked: the values behind that key, and the raw geometry the
         // worker culls with. Reading them here rather than as deps keeps
         // offsetPx/width changes from refiring the fetch, while the worker
@@ -74,105 +43,74 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Query axis (v0) drives the scoped single-axis fetch, so it alone
         // carries the visible window + pan buffer and the cull width; the
         // target axis (v1) only supplies its cumBp index + cull geometry.
-        const {
-          drawCIGAR,
-          drawCIGARMatchesOnly,
-          drawLocationMarkers,
-          lodTier,
-        } = untracked(() => {
+        return untracked(() => {
           const view = getContainingView(self) as LinearSyntenyViewModel
           return {
+            fetchKey,
             drawCIGAR: view.drawCIGAR,
             drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
             drawLocationMarkers: view.drawLocationMarkers,
             lodTier: self.lodTier,
+            rawQuery: {
+              bpPerPx: v0.bpPerPx,
+              offsetPx: v0.offsetPx,
+              displayedRegions: v0.displayedRegions,
+              width: v0.width,
+              fetchRegions: self.fetchRegions,
+            },
+            rawTarget: {
+              bpPerPx: v1.bpPerPx,
+              offsetPx: v1.offsetPx,
+              displayedRegions: v1.displayedRegions,
+            },
           }
         })
-        const rawQuery = untracked(() => ({
-          bpPerPx: v0.bpPerPx,
-          offsetPx: v0.offsetPx,
-          displayedRegions: v0.displayedRegions,
-          width: v0.width,
-          fetchRegions: self.fetchRegions,
-        }))
-        const rawTarget = untracked(() => ({
-          bpPerPx: v1.bpPerPx,
-          offsetPx: v1.offsetPx,
-          displayedRegions: v1.displayedRegions,
-        }))
-
-        const { stopToken, isCurrent, statusCallback } = fetch.begin()
-        // Clear any prior error as the new fetch begins, so a stale banner
-        // never lingers over freshly-loaded data (mirrors dotplot setLoading).
-        self.setError(undefined)
-        self.setFetching(true)
-        debounce.prime()
-
-        try {
-          const sessionId = getRpcSessionId(self)
-          // RefName reconciliation (canonical <-> adapter aliases, e.g.
-          // "1" <-> "NC_012119.1") happens here on the main thread because the
-          // RPC worker has no assemblyManager to resolve aliases.
-          // renameRegionsIfNeeded rewrites each region's refName into the
-          // synteny adapter's namespace, so the worker's getFeatures query, its
-          // cumBp index, and the feature refNames it reads back all line up.
-          const { assemblyManager } = getSession(self)
-          const renameRegions = (regions: Region[]) =>
-            renameRegionsForAdapter({
-              assemblyManager,
-              sessionId,
-              adapterConfig,
-              regions,
-            })
-          // Query axis renames both its displayed regions and its scoped fetch
-          // window; the target axis has no fetch window (single-axis fetch), so
-          // only its displayed regions are renamed.
-          const queryView = {
-            ...rawQuery,
-            displayedRegions: await renameRegions(rawQuery.displayedRegions),
-            fetchRegions: await renameRegions(rawQuery.fetchRegions),
-          }
-          const targetView = {
-            ...rawTarget,
-            displayedRegions: await renameRegions(rawTarget.displayedRegions),
-          }
-          const result = await getSession(self).rpcManager.call(
-            sessionId,
-            'SyntenyGetFeaturesAndPositions',
-            {
-              adapterConfig,
-              queryView,
-              targetView,
-              stopToken,
-              drawCIGAR,
-              drawCIGARMatchesOnly,
-              drawLocationMarkers,
-              lodMode: lodTier,
-              statusCallback,
-            },
-          )
-          if (!isCurrent()) {
-            return
-          }
-          const { instanceData, ...featureData } = result
-          self.setRpcData(featureData, instanceData, fetchKey)
-        } catch (e) {
-          if (isCurrent() && !isAbortException(e)) {
-            console.error(e)
-            self.setError(e)
-          }
-        } finally {
-          // Only the current fetch clears these — a superseded fetch resolving
-          // late must not unset the flags the newer fetch just set.
-          if (isCurrent()) {
-            self.setStatusMessage(undefined)
-            self.setFetching(false)
-          }
-        }
+      }
+      return undefined
+    },
+    run: async (
+      {
+        rawQuery,
+        rawTarget,
+        drawCIGAR,
+        drawCIGARMatchesOnly,
+        drawLocationMarkers,
+        lodTier,
       },
-      { name: 'SyntenyFetch', scheduler: debounce.scheduler },
-    ),
-  )
+      { adapterConfig, sessionId, stopToken, statusCallback, rename },
+    ) => {
+      // Query axis renames both its displayed regions and its scoped fetch
+      // window; the target axis has no fetch window (single-axis fetch), so
+      // only its displayed regions are renamed.
+      const queryView = {
+        ...rawQuery,
+        displayedRegions: await rename(rawQuery.displayedRegions),
+        fetchRegions: await rename(rawQuery.fetchRegions),
+      }
+      const targetView = {
+        ...rawTarget,
+        displayedRegions: await rename(rawTarget.displayedRegions),
+      }
+      return getSession(self).rpcManager.call(
+        sessionId,
+        'SyntenyGetFeaturesAndPositions',
+        {
+          adapterConfig,
+          queryView,
+          targetView,
+          stopToken,
+          drawCIGAR,
+          drawCIGARMatchesOnly,
+          drawLocationMarkers,
+          lodMode: lodTier,
+          statusCallback,
+        },
+      )
+    },
+    commit: ({ instanceData, ...featureData }, { fetchKey }) => {
+      self.setRpcData(featureData, instanceData, fetchKey)
+    },
+  })
 
   // One-shot at view load: compare the adapter's reported refNames per row
   // against each assembly's full refNames to flag a reversed row order. Runs
@@ -201,8 +139,4 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       { name: 'SyntenyAssemblySwapCheck' },
     ),
   )
-
-  addDisposer(self, () => {
-    fetch.dispose()
-  })
 }

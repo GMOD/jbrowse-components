@@ -1,15 +1,8 @@
-import {
-  getContainingView,
-  getSession,
-  isAbortException,
-} from '@jbrowse/core/util'
-import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  createStopTokenRotation,
   detectDisplayAssembliesSwapped,
-  renameRegionsForAdapter,
+  installComparativeFetchAutorun,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
@@ -18,7 +11,7 @@ import { buildLineSegments } from './dotplotGeometry.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
-import type { Region } from '@jbrowse/core/util'
+import type { AssemblyManager, Region } from '@jbrowse/core/util'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 const RPC_DEBOUNCE_MS = 1000
@@ -43,7 +36,7 @@ async function hasUnknownRefNames({
   rename,
   axes,
 }: {
-  assemblyManager: ReturnType<typeof getSession>['assemblyManager']
+  assemblyManager: AssemblyManager
   rename: (regions: Region[]) => Promise<Region[]>
   axes: { assemblyName?: string; skipped: string[] }[]
 }) {
@@ -66,51 +59,30 @@ async function hasUnknownRefNames({
   return false
 }
 
-// The stop-token rotation + staleness guard come from
-// `createStopTokenRotation` (shared with linear-comparative-view's synteny
-// fetch); only the dotplot-specific guards, RPC args, and result handling live
-// here.
+// The fetch skeleton — token rotation, leading-edge debounce, loading/error
+// flags, refName reconciliation and the latest-wins staleness discipline — is
+// `installComparativeFetchAutorun` (shared with linear-comparative-view's
+// synteny fetch); only the dotplot-specific gate, RPC args and result handling
+// live here.
 export function doAfterAttach(
   self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
-  const fetch = createStopTokenRotation(self)
-
-  // Leading-edge on the first fetch, debounced after — otherwise opening a
-  // dotplot spends a full RPC_DEBOUNCE_MS before the RPC even starts, with
-  // nothing to coalesce. Priming after the fetch begins keeps the pre-init runs
-  // (view not initialized yet) on the leading edge, so the first real fetch is
-  // immediate while zoom/pan refetches debounce as before.
-  const debounce = leadingEdgeDebounce(RPC_DEBOUNCE_MS)
-
-  addDisposer(
-    self,
-    autorun(
-      async function dotplotFetchAutorun() {
-        // Same guard as the two autoruns below: teardown mutates observables
-        // this body reads (removeView -> removeTemporaryAssembly invalidates
-        // view.initialized) before the disposers run, and getContainingView on a
-        // detached node warns then throws — here into an unawaited promise.
-        if (!isAlive(self)) {
-          return
-        }
-        const view = getContainingView(self) as DotplotViewModel
-        if (!view.initialized) {
-          return
-        }
-        const { adapterConfig } = self
+  installComparativeFetchAutorun(self, {
+    name: 'DotplotFetch',
+    delay: RPC_DEBOUNCE_MS,
+    prepare: () => {
+      const view = getContainingView(self) as DotplotViewModel
+      if (view.initialized) {
         // The only tracked view dep. `currentFetchKey` folds every input this
         // fetch depends on — LOD tier, both axes' zoom and displayed-region
         // order, and the snapped h-axis fetch window — into one computed, so
-        // the autorun refires exactly when a refetch is actually needed. A pan
-        // that stays inside the buffered window recomputes it to the same
-        // string and doesn't refire; that same string is what tags the
-        // resulting rpcData, so it can't drift from what was fetched even if
-        // the view moves again mid-RPC.
+        // the autorun refires exactly when a refetch is actually needed.
         const fetchKey = self.currentFetchKey
         // Untracked: the values behind that key. Reading them here rather than
         // as deps keeps raw offsetPx/width changes from refiring the fetch,
         // while the worker still sees the current axes.
-        const { lodTier, hViewSnap, vViewSnap, regions } = untracked(() => ({
+        return untracked(() => ({
+          fetchKey,
           // the resolved tier, which is what `currentFetchKey` above carries —
           // `view.lodMode` stays 'auto' while the tier flips under it
           lodTier: self.lodTier,
@@ -118,108 +90,81 @@ export function doAfterAttach(
           vViewSnap: makeViewSnap(view.vview),
           regions: self.fetchRegions,
         }))
-
-        const { stopToken, isCurrent, statusCallback } = fetch.begin()
-        self.setLoading()
-        debounce.prime()
-
-        try {
-          const sessionId = getRpcSessionId(self)
-          // RefName reconciliation (canonical <-> adapter aliases) happens here
-          // on the main thread because the RPC worker has no assemblyManager to
-          // resolve aliases. Rewrite every region the worker sees into the
-          // adapter's namespace so its getFeatures query and cumBp index line up
-          // with the feature refNames it reads back. Both the query regions and
-          // the h-axis index snap use the h-axis assembly; the v-axis index snap
-          // uses the v-axis assembly. renameRegionsForAdapter keys per-region by
-          // assemblyName, so one shared call shape covers all three.
-          const { assemblyManager } = getSession(self)
-          const rename = (rs: Region[]) =>
-            renameRegionsForAdapter({
-              assemblyManager,
-              sessionId,
-              adapterConfig,
-              regions: rs,
-            })
-          const result = await getSession(self).rpcManager.call(
-            sessionId,
-            'DotplotGetFeaturesAndPositions',
-            {
-              adapterConfig,
-              regions: await rename(regions),
-              hViewSnap: {
-                ...hViewSnap,
-                displayedRegions: await rename(hViewSnap.displayedRegions),
-              },
-              vViewSnap: {
-                ...vViewSnap,
-                displayedRegions: await rename(vViewSnap.displayedRegions),
-              },
-              stopToken,
-              lodMode: lodTier,
-              statusCallback,
-            },
-          )
-          if (!isCurrent()) {
-            return
-          }
-          self.setRpcData(result, fetchKey)
-          // Skipped features are only worth warning about when the refName is
-          // genuinely absent from the assembly. An axis restricted to a subset
-          // of its assembly (per-axis `displayedRegionNames` — e.g. one
-          // haplotype of a haplotype-resolved assembly) skips every alignment
-          // to the regions it isn't showing, which is exactly what was asked
-          // for; warning there fires on every such plot and tells the user to
-          // go fix a name mismatch that doesn't exist. Resolving the names
-          // needs the assemblyManager, so it happens here rather than in the
-          // worker — and only when something was skipped, so the extra rename
-          // stays off the normal fetch path.
-          const mismatched =
-            result.skippedFeatureCount > 0 &&
-            (await hasUnknownRefNames({
-              assemblyManager,
-              rename,
-              axes: [
-                {
-                  assemblyName: hViewSnap.displayedRegions[0]?.assemblyName,
-                  skipped: result.skippedHRefNames,
-                },
-                {
-                  assemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
-                  skipped: result.skippedVRefNames,
-                },
-              ],
-            }))
-          self.setWarnings(
-            mismatched
-              ? [
-                  {
-                    message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
-                    effect:
-                      'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
-                  },
-                ]
-              : [],
-          )
-        } catch (e) {
-          if (isCurrent() && !isAbortException(e)) {
-            self.setError(e)
-          }
-        } finally {
-          // Only the current fetch clears these — a superseded one resolving
-          // late must not unset what the newer fetch just set (same guard as
-          // synteny's fetch). `setRpcData`/`setError` cover the two ordinary
-          // exits; this covers the one they miss, an abort raised while still
-          // current, which otherwise strands `fetching` true forever.
-          if (isCurrent()) {
-            self.setFetching(false)
-            self.setStatusMessage(undefined)
-          }
-        }
+      }
+      return undefined
+    },
+    run: async (
+      { lodTier, hViewSnap, vViewSnap, regions },
+      {
+        adapterConfig,
+        sessionId,
+        stopToken,
+        statusCallback,
+        rename,
+        assemblyManager,
       },
-      { name: 'DotplotFetch', scheduler: debounce.scheduler },
-    ),
-  )
+    ) => {
+      const result = await getSession(self).rpcManager.call(
+        sessionId,
+        'DotplotGetFeaturesAndPositions',
+        {
+          adapterConfig,
+          regions: await rename(regions),
+          hViewSnap: {
+            ...hViewSnap,
+            displayedRegions: await rename(hViewSnap.displayedRegions),
+          },
+          vViewSnap: {
+            ...vViewSnap,
+            displayedRegions: await rename(vViewSnap.displayedRegions),
+          },
+          stopToken,
+          lodMode: lodTier,
+          statusCallback,
+        },
+      )
+      // Skipped features are only worth warning about when the refName is
+      // genuinely absent from the assembly. An axis restricted to a subset of
+      // its assembly (per-axis `displayedRegionNames` — e.g. one haplotype of a
+      // haplotype-resolved assembly) skips every alignment to the regions it
+      // isn't showing, which is exactly what was asked for; warning there fires
+      // on every such plot and tells the user to go fix a name mismatch that
+      // doesn't exist. Resolving the names needs the assemblyManager, so it
+      // happens here rather than in the worker — and only when something was
+      // skipped, so the extra rename stays off the normal fetch path.
+      const mismatched =
+        result.skippedFeatureCount > 0 &&
+        (await hasUnknownRefNames({
+          assemblyManager,
+          rename,
+          axes: [
+            {
+              assemblyName: hViewSnap.displayedRegions[0]?.assemblyName,
+              skipped: result.skippedHRefNames,
+            },
+            {
+              assemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
+              skipped: result.skippedVRefNames,
+            },
+          ],
+        }))
+      return { result, mismatched }
+    },
+    commit: ({ result, mismatched }, { fetchKey }) => {
+      self.setRpcData(result, fetchKey)
+      self.setWarnings(
+        mismatched
+          ? [
+              {
+                message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
+                effect:
+                  'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
+              },
+            ]
+          : [],
+      )
+    },
+  })
 
   addDisposer(
     self,
@@ -288,8 +233,4 @@ export function doAfterAttach(
       { name: 'DotplotAssemblySwapCheck' },
     ),
   )
-
-  addDisposer(self, () => {
-    fetch.dispose()
-  })
 }

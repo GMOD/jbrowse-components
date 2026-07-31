@@ -5,14 +5,16 @@ description: Action items to build or fix, the current backlog. Read when pickin
 
 ## Fold the non-LGV fetches onto `FetchMixin`
 
-`LinearSyntenyDisplay` and `DotplotDisplay` hand-roll the fetch state machine in
-~490 lines of `afterAttach.ts` plus per-model volatiles: a raw token volatile
-each (only `createStopTokenRotation` is shared), their own `loading`/`refetching`
-derivations, no `fetchCanceled`/`cancelFetchByUser`, no `reload()`.
+`LinearSyntenyDisplay` and `DotplotDisplay` fetch outside `FetchMixin`: their own
+`loading`/`refetching` derivations, no `fetchCanceled`/`cancelFetchByUser`, no
+`reload()`. The autorun skeleton itself is no longer duplicated — both install
+`installComparativeFetchAutorun` (`@jbrowse/synteny-core`), which owns the token
+rotation, debounce, loading/error flags and staleness discipline.
 
 The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
-overridable `currentFetchKey` + `dataCurrent`, plus an
-`installSignatureFetchAutorun` skeleton modeled on `installGlobalFetchAutorun`.
+overridable `currentFetchKey` + `dataCurrent`, with
+`installComparativeFetchAutorun` folded onto it the way
+`installGlobalFetchAutorun` sits on `GlobalFetchMixin`.
 That makes the display-stacks table in
 [ARCHITECTURE.md](ARCHITECTURE.md#display-stacks) three rows that all compose
 `FetchMixin`, instead of two rows and a footnote.

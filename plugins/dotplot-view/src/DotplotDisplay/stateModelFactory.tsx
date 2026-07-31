@@ -261,13 +261,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading() {
-        self.fetching = true
-        self.error = undefined
-      },
-      /**
-       * #action
-       */
       setRpcData(data: DotplotRpcData, fetchKey: string) {
         self.rpcData = data
         self.loadedFetchKey = fetchKey

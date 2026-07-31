@@ -42,8 +42,9 @@ export interface ActiveFetch {
  *
  * Owns ONLY the token mechanics; the caller keeps its own loading/error/commit
  * side-effects in its autorun. Used by any bare-autorun fetch not composing the
- * LGV fetch mixins: the comparative-view displays (dotplot, synteny) and the
- * multi-sample-variant sources fetch.
+ * LGV fetch mixins: the comparative-view displays (dotplot, synteny, through
+ * `installComparativeFetchAutorun`, which wraps this with their shared
+ * debounce/flags/commit skeleton) and the multi-sample-variant sources fetch.
  */
 export function createStopTokenRotation(
   self: IAnyStateTreeNode & StatusReporter,

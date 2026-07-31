@@ -83,7 +83,6 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setloading">**setLoading**</span><br><code>() =&gt; void</code> |  | DotplotDisplay |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(data: DotplotRpcData, fetchKey: string) =&gt; void</code> |  | DotplotDisplay |
 | <span id="action-setwarnings">**setWarnings**</span><br><code>(w: { message: string; effect: string; }[]) =&gt; void</code> |  | DotplotDisplay |
 | <span id="action-setinstancedata">**setInstanceData**</span><br><code>(data: DotplotInstanceData &#124; undefined) =&gt; void</code> |  | DotplotDisplay |

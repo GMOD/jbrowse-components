@@ -31,6 +31,8 @@ export {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
+export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
+export type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
 export { executeDiagonalize } from './executeDiagonalize.ts'
 export type {
   DiagonalizeAdapterSpec,
