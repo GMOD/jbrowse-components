@@ -21,6 +21,15 @@ function isObjectLike(value: unknown): value is Record<string, unknown> {
  * that has to survive `postMessage` anyway — so the recursion is over small JSON
  * and costs nothing per read. Cyclic input terminates: each object is frozen
  * before its children are visited.
+ *
+ * **Unconditional, deliberately unlike MST's own `deepFreeze`** (whose body this
+ * otherwise mirrors), which is gated on `devMode()`. MST gates because it freezes
+ * on every snapshot read and can't pay for that in production; these callers pay
+ * once per slot and per write, so the cost that justifies the gate doesn't exist
+ * here — and inheriting the gate would leave only its downside. A dev-only freeze
+ * means a mutation throws where it is cheap to find and silently corrupts every
+ * other track where it isn't: the user-visible bug would exist *only* in
+ * production. Don't add the gate.
  */
 export function freezeDeep<T>(value: T): T {
   if (isObjectLike(value) && !Object.isFrozen(value)) {

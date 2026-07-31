@@ -256,6 +256,19 @@ author who lands on a behavior change can find the sentence that explains it.
   the five members (a `getDisplayTypeDefault` returning `undefined` is a valid
   "this session promotes nothing").
 
+- **A `promotable` slot's `promotedBase` is frozen at schema build**
+  (`freezeDeep` from `configuration/configurationSlot.ts`), as is any value put
+  into the session preference store. The resolver hands both out *by reference* —
+  `promotedBase` is the schema's own literal, shared by every track sitting at
+  base — so mutating a value read with `resolveConf` used to silently repaint
+  every other track of that display type, and for `promotedBase` every later
+  session too. It now throws. Two ways a plugin can meet this: a display that
+  edits a resolved value in place must copy instead (`{...colorBy, type}`), and a
+  schema whose `promotedBase` points at an object the plugin mutates elsewhere
+  must declare its own literal. **Opt-out: none** — the value is genuinely shared,
+  and this is the same convention MST already applies to every snapshot it hands
+  out (there gated to dev mode; here unconditional, see `freezeDeep`).
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably
