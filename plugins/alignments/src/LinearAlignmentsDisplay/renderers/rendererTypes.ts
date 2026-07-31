@@ -23,6 +23,22 @@ export function buildReadIdToIndex(ids: string[], n: number) {
   return m
 }
 
+// Its only consumers are the chain/selection overlay bounds, which do nothing
+// unless a read is hovered or selected — so on a cold render the map is built
+// over every fetched read and never read. At ultra-deep coverage that made it
+// the single largest main-thread cost (~104ms of 660ms busy). Deferring to the
+// first lookup keeps it off the initial-render path; `model.readIdIndexMap` is
+// gated the same way one layer up.
+export function lazyReadIdToIndex(ids: string[]) {
+  let map: Map<string, number> | undefined
+  return () => {
+    if (map === undefined) {
+      map = buildReadIdToIndex(ids, ids.length)
+    }
+    return map
+  }
+}
+
 export interface RenderState {
   scrollTop: number
   colorScheme: number

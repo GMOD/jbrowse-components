@@ -11,34 +11,37 @@ export interface ClipRect {
 // (extends ReadRegionFields) and the GPU renderer's LocalRegion satisfy this
 // structurally — getChainBounds is the only consumer.
 export interface ChainBoundsRegion {
-  readIdToIndex: Map<string, number>
+  readIdToIndex: () => Map<string, number>
   readPositions: Uint32Array
   readYs: Uint16Array
 }
 
 export function getChainBounds(ids: string[], region: ChainBoundsRegion) {
-  const { readIdToIndex, readPositions, readYs } = region
+  const { readPositions, readYs } = region
   let startBp = Infinity
   let endBp = -Infinity
   // All reads in a chain share one row (computeChainLayout), so any read's row
   // is the chain's row.
   let yRow = 0
-  for (const id of ids) {
-    const idx = readIdToIndex.get(id)
-    if (idx === undefined) {
-      continue
-    }
-    const s = readPositions[idx * 2]
-    const e = readPositions[idx * 2 + 1]
-    const row = readYs[idx]
-    if (s !== undefined && s < startBp) {
-      startBp = s
-    }
-    if (e !== undefined && e > endBp) {
-      endBp = e
-    }
-    if (row !== undefined) {
-      yRow = row
+  // Guarded so an empty chain doesn't force the deferred id→index build.
+  if (ids.length > 0) {
+    const readIdToIndex = region.readIdToIndex()
+    for (const id of ids) {
+      const idx = readIdToIndex.get(id)
+      if (idx !== undefined) {
+        const s = readPositions[idx * 2]
+        const e = readPositions[idx * 2 + 1]
+        const row = readYs[idx]
+        if (s !== undefined && s < startBp) {
+          startBp = s
+        }
+        if (e !== undefined && e > endBp) {
+          endBp = e
+        }
+        if (row !== undefined) {
+          yRow = row
+        }
+      }
     }
   }
   return startBp < Infinity ? { startBp, endBp, yRow } : undefined
@@ -57,7 +60,7 @@ export function getSelectionBounds(
   if (state.selectedChainIds.length > 0) {
     result = getChainBounds(state.selectedChainIds, region)
   } else if (state.selectedFeatureId) {
-    const idx = region.readIdToIndex.get(state.selectedFeatureId)
+    const idx = region.readIdToIndex().get(state.selectedFeatureId)
     if (idx !== undefined && idx < region.readYs.length) {
       result = {
         startBp: region.readPositions[idx * 2]!,

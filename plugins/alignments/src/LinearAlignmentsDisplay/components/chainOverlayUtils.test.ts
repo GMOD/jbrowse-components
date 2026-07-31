@@ -3,6 +3,7 @@ import {
   computeArcBand,
   ensureRegion,
   interbaseRangeEnds,
+  lazyReadIdToIndex,
 } from '../renderers/rendererTypes.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 
@@ -114,7 +115,7 @@ describe('getChainBounds', () => {
       readYs[i] = ys[i]!
     }
     return {
-      readIdToIndex: buildReadIdToIndex(ids, ids.length),
+      readIdToIndex: lazyReadIdToIndex(ids),
       readPositions,
       readYs,
     }

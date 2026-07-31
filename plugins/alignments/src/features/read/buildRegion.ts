@@ -1,4 +1,4 @@
-import { buildReadIdToIndex } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { lazyReadIdToIndex } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -9,7 +9,7 @@ import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 // concern.
 
 export interface ReadRegionFields {
-  readIdToIndex: Map<string, number>
+  readIdToIndex: () => Map<string, number>
   readPositions: Uint32Array
   readYs: Uint16Array
   readFlags: Uint16Array
@@ -32,7 +32,7 @@ export interface ReadRegionFields {
 
 export function buildReadFields(data: PileupDataResult): ReadRegionFields {
   return {
-    readIdToIndex: buildReadIdToIndex(data.readIds, data.readIds.length),
+    readIdToIndex: lazyReadIdToIndex(data.readIds),
     readPositions: data.readPositions,
     readYs: data.readYs,
     readFlags: data.readFlags,
@@ -56,7 +56,7 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
 // cause DataCloneError on the second RPC reply.
 export function emptyReadFields(): ReadRegionFields {
   return {
-    readIdToIndex: new Map(),
+    readIdToIndex: lazyReadIdToIndex([]),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
     readFlags: new Uint16Array(0),

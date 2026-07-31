@@ -102,8 +102,8 @@ import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
-  buildReadIdToIndex,
   ensureRegion,
+  lazyReadIdToIndex,
   sectionRegionKey,
   sectionRenderState,
 } from './rendererTypes.ts'
@@ -349,7 +349,7 @@ export { UNIFORMS_SIZE_BYTES }
 // read/coverage uploads later overwrite.
 function emptyRegion(): LocalRegion {
   return {
-    readIdToIndex: new Map(),
+    readIdToIndex: lazyReadIdToIndex([]),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
     maxDepth: 0,
@@ -662,7 +662,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
     r.readYs = data.readYs
-    r.readIdToIndex = buildReadIdToIndex(data.readIds, data.readIds.length)
+    r.readIdToIndex = lazyReadIdToIndex(data.readIds)
     this.regions.set(displayedRegionIndex, r)
     uploadReadSegments(this.hal, displayedRegionIndex, data)
   }
