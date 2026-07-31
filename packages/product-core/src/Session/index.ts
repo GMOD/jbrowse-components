@@ -37,12 +37,7 @@ export type {
   SessionWithMultipleViewsType,
 } from './MultipleViews.ts'
 export { PreferencesSessionMixin } from './Preferences.ts'
-export {
-  BaseSessionModel,
-  DISPLAY_TYPE_DEFAULTS_PATH_HEAD,
-  isBaseSession,
-  isSession,
-} from './BaseSession.ts'
+export { BaseSessionModel, isBaseSession, isSession } from './BaseSession.ts'
 export type { BaseSession, BaseSessionType } from './BaseSession.ts'
 export {
   SessionTracksManagerSessionMixin,

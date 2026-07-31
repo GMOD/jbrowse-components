@@ -421,4 +421,61 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.getPreferenceChanges()).toEqual([])
     })
   })
+
+  // The Preferences dialog's per-row revert hands a row's `path` straight back,
+  // so each shape getPreferenceChanges emits has to round-trip. A promoted
+  // default is the one that can silently no-op: its path is a readable label
+  // over a flat composite storage key, not the key itself.
+  describe('resetPreferenceChange (per-row revert)', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    it('reverts a promoted per-display-type default by its row path', () => {
+      const session = createTestSession()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      const [change] = session.getPreferenceChanges()
+      session.resetPreferenceChange(change!.path)
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBeUndefined()
+      expect(session.getPreferenceChanges()).toEqual([])
+    })
+
+    it('leaves a sibling display type alone', () => {
+      const session = createTestSession()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      session.setDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'featureHeight',
+        3,
+      )
+      session.resetPreferenceChange([
+        'displayTypeDefaults',
+        'LinearBasicDisplay',
+        'displayMode',
+      ])
+      expect(
+        session.getDisplayTypeDefault(
+          'LinearAlignmentsDisplay',
+          'featureHeight',
+        ),
+      ).toBe(3)
+    })
+
+    it('reverts a scalar override, whose path is its own key', () => {
+      const session = createTestSession()
+      session.setScrollZoom(true)
+      session.resetPreferenceChange(['scrollZoom'])
+      expect(session.getPreferenceChanges()).toEqual([])
+    })
+  })
 })

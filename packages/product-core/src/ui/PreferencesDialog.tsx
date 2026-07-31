@@ -14,7 +14,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { DISPLAY_TYPE_DEFAULTS_PATH_HEAD } from '../Session/BaseSession.ts'
 import PreferencesResetDialog from './PreferencesResetDialog.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -47,14 +46,9 @@ export interface PreferencesDialogSession {
   animationMode: AnimationMode
   numberGrouping: boolean
   setPreferenceOverride: (key: string, value: unknown) => void
-  clearPreferenceOverride: (key: string) => void
   clearPreferenceOverrides: () => void
-  setDisplayTypeDefault: (
-    displayType: string,
-    slot: string,
-    value: unknown,
-  ) => void
   getPreferenceChanges: () => TrackConfigChange[]
+  resetPreferenceChange: (path: string[]) => void
 }
 
 // The preference subsystems whose reset doesn't reduce to dropping a key from
@@ -130,23 +124,20 @@ function resetAllPreferences(session: PreferencesDialogSession) {
   }
 }
 
-// Revert a single change row (see `collectPreferenceChanges`) to its default,
-// routing to the subsystem that owns it: a non-map subsystem by matching `head`,
-// a promoted per-display-type default through `setDisplayTypeDefault(...
-// undefined)`, and every other row as a scalar override dropped from the map by
-// key.
+// Revert a single change row (see `collectPreferenceChanges`) to its default:
+// a non-map subsystem by matching `head`, everything else back through the
+// session that produced the row. The override map's own path shapes are the
+// session's business — it owns the composite-key layout a promoted
+// display-type default is stored under, so it also owns undoing one.
 function resetPreferenceChange(
   session: PreferencesDialogSession,
   change: TrackConfigChange,
 ) {
-  const [head, displayType, slot] = change.path
-  const subsystem = PREFERENCE_SUBSYSTEMS.find(p => p.head === head)
+  const subsystem = PREFERENCE_SUBSYSTEMS.find(p => p.head === change.path[0])
   if (subsystem) {
     subsystem.reset(session)
-  } else if (head === DISPLAY_TYPE_DEFAULTS_PATH_HEAD && displayType && slot) {
-    session.setDisplayTypeDefault(displayType, slot, undefined)
-  } else if (head) {
-    session.clearPreferenceOverride(head)
+  } else {
+    session.resetPreferenceChange(change.path)
   }
 }
 

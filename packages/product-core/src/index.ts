@@ -28,7 +28,6 @@ export type {
 export {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
-  DISPLAY_TYPE_DEFAULTS_PATH_HEAD,
   DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   PreferencesSessionMixin,

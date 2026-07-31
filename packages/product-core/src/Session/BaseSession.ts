@@ -50,15 +50,17 @@ function parseDisplayTypeDefaultKey(key: string) {
 }
 
 // Head of the display path a promoted default takes in a `getPreferenceChanges`
-// row: `[DISPLAY_TYPE_DEFAULTS_PATH_HEAD, displayType, slot]`. Purely a UI
-// display + reset-routing tag, deliberately distinct from the flat
-// `DISPLAY_TYPE_DEFAULT_PREFIX` storage key above — the Preferences reset dialog
-// matches on it to route a row back to `setDisplayTypeDefault(type, slot,
-// undefined)`. Shared from here so the producer (`getPreferenceChanges`) and
-// consumer (`resetPreferenceChange`) read one literal and can't drift; a rename
-// on one side alone would otherwise make reset silently no-op. The string is
-// just a readable row label; the underlying store is flat composite keys.
-export const DISPLAY_TYPE_DEFAULTS_PATH_HEAD = 'displayTypeDefaults'
+// row: `[DISPLAY_TYPE_DEFAULTS_PATH_HEAD, displayType, slot]`. Purely a
+// readable row label, deliberately distinct from the flat
+// `DISPLAY_TYPE_DEFAULT_PREFIX` storage key above.
+//
+// Module-private, like the storage key: both the producer
+// (`getPreferenceChanges`) and the consumer (`resetPreferenceChange`) are
+// methods on this model, so the two path shapes this file emits are the only
+// ones it has to undo. It used to be exported for the Preferences dialog to
+// match on and re-route back through `setDisplayTypeDefault`, which meant a
+// rename on one side alone would silently no-op that dialog's per-row reset.
+const DISPLAY_TYPE_DEFAULTS_PATH_HEAD = 'displayTypeDefaults'
 
 /**
  * #stateModel BaseSessionModel
@@ -384,6 +386,26 @@ export function BaseSessionModel<
        */
       clearPreferenceOverride(key: string) {
         self.preferencesOverrides.delete(key)
+      },
+      /**
+       * #action
+       * revert one row emitted by `getPreferenceChanges`, addressed by its
+       * display `path`. Backs the per-entry reset in the Preferences dialog's
+       * "Reset to defaults" confirmation.
+       *
+       * Lives here rather than in that dialog because this model owns both path
+       * shapes it has to undo: a promoted per-display-type default, whose row
+       * path is a readable label over a flat composite storage key, and every
+       * other override, whose path *is* its key. The dialog used to re-derive
+       * the first case from an exported path-head constant.
+       */
+      resetPreferenceChange(path: string[]) {
+        const [head, displayType, slot] = path
+        if (head === DISPLAY_TYPE_DEFAULTS_PATH_HEAD && displayType && slot) {
+          this.setDisplayTypeDefault(displayType, slot, undefined)
+        } else if (head) {
+          this.clearPreferenceOverride(head)
+        }
       },
       /**
        * #action
