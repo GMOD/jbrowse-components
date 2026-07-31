@@ -94,9 +94,22 @@ segment mean copy number:
 
 ```json
 {
-  "type": "LinearMultiRowFeatureDisplay",
-  "partitionField": "sample",
-  "color": "jexl:get(feature,'segmean')<-1?'#2166ac':get(feature,'segmean')<-0.3?'#92c5de':get(feature,'segmean')<0.3?'#f7f7f7':get(feature,'segmean')<1?'#f4a582':'#b2182b'"
+  "type": "FeatureTrack",
+  "trackId": "tcga_brca_cnv",
+  "name": "TCGA-BRCA copy number",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
+      "partitionField": "sample",
+      "color": "jexl:feature.segmean<-1?'#2166ac':feature.segmean<-0.3?'#92c5de':feature.segmean<0.3?'#f7f7f7':feature.segmean<1?'#f4a582':'#b2182b'"
+    }
+  ]
 }
 ```
 

@@ -40,6 +40,22 @@ const ALLOWED = new Map([
     'config_guides/from_config.md#inline_assembly',
     'an inline sequence adapter has no add-assembly equivalent',
   ],
+  [
+    'cookbook.md#grape_peach_synteny',
+    'queryAssembly/targetAssembly are extra adapter slots, so not CLI-clean',
+  ],
+  [
+    'cookbook.md#multiwig',
+    'MultiWiggleAdapter subadapters have no single-file uri; the page shows the --multiwig call instead',
+  ],
+  [
+    'user_guides/multirow_feature_track.md#chromhmm',
+    'selects a non-default display, so it is not CLI-clean',
+  ],
+  [
+    'user_guides/multirow_feature_track.md#tcga_brca_cnv',
+    'selects a non-default display, so it is not CLI-clean',
+  ],
 ])
 
 const parser = unified().use(remarkParse).use(remarkGfm)

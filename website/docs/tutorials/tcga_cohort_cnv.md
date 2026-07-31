@@ -78,7 +78,7 @@ because the display config is the interesting part:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
-      "color": "jexl:get(feature,'segmean')<-1?'#2166ac':get(feature,'segmean')<-0.3?'#92c5de':get(feature,'segmean')<0.3?'#f7f7f7':get(feature,'segmean')<1?'#f4a582':'#b2182b'",
+      "color": "jexl:feature.segmean<-1?'#2166ac':feature.segmean<-0.3?'#92c5de':feature.segmean<0.3?'#f7f7f7':feature.segmean<1?'#f4a582':'#b2182b'",
       "legend": [
         { "label": "Deep loss (log2 < -1)", "color": "#2166ac" },
         { "label": "Loss", "color": "#92c5de" },

@@ -42,7 +42,7 @@ optional. Use it with any feature track type, such as a `FeatureTrack`:
 ## FromConfigSequenceAdapter
 
 Like `FromConfigAdapter`, but optimized for sequence features (used by reference
-sequence tracks, see [configuring assemblies](/docs/config_guides/assemblies)).
+sequence tracks; see [configuring assemblies](/docs/config_guides/assemblies)).
 Each feature's `seq` holds the bases for its region:
 
 ```json

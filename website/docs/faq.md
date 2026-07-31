@@ -398,8 +398,8 @@ after a reload and cannot travel in a share link.
 
 ### Can I load a UCSC track hub
 
-Yes. Add the hub's `hub.txt` URL as a connection, and its assemblies and tracks
-become available, see [connections](/docs/user_guides/connections). To hand
+Yes. Add the hub's `hub.txt` URL as a connection and its assemblies and tracks
+become available. See [connections](/docs/user_guides/connections). To hand
 someone a link that opens a hub with no setup at all, use
 [`&hubURL=`](/docs/user_guides/hub_url).
 

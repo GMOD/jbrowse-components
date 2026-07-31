@@ -6,15 +6,39 @@ description:
 ---
 
 Short, copy-paste recipes for the `config.json` settings people reach for most.
-Examples use the `volvox` sample data
+Every example uses the `volvox` sample data JBrowse ships
 ([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox)).
 For the full reference, see the [config guide](/docs/config_guide).
 
+## The smallest config
+
+A `config.json` needs two things: an assembly to supply the reference sequence,
+and a track to draw on it.
+
+```json
+{
+  "assemblies": [{ "name": "volvox", "uri": "volvox.2bit" }],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "genes",
+      "name": "Genes",
+      "assemblyNames": ["volvox"],
+      "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" }
+    }
+  ]
+}
+```
+
+That is a complete, working file. Everything else on this page is optional.
+
 ## A complete config
 
-One assembly, one track of each common type, an opening view, and a theme, in
-the shortest form JBrowse accepts — though one assembly and one track is already
-valid. Every recipe below varies one of these tracks.
+Here is the same file with the settings people usually reach for: a track of
+each common type, display settings on each, a view to open on load, and a theme.
+Two more top-level keys join `assemblies` and `tracks`: `defaultSession` says
+what to open on load, and `configuration` holds instance-wide settings like the
+theme. Every recipe below changes one piece of it.
 
 ```json
 {
@@ -114,14 +138,14 @@ JBrowse expands these at load time, so you write only what matters:
   (`.bam` → `.bam.bai`, `.cram` → `.cram.crai`, bgzip+tabix → `.tbi`). For a
   `.csi` or non-sibling index, write the
   [full form](/docs/config_guides/file_types#the-uri-shorthand).
-- **`{ name, uri }` is a whole assembly**: adapter from the extension, index
-  siblings, and the `ReferenceSequenceTrack`, see
-  [`BaseAssembly`](/docs/config/baseassembly).
+- **`{ name, uri }` is a whole assembly.** JBrowse picks the adapter from the
+  extension, finds the index siblings, and adds the `ReferenceSequenceTrack`.
+  See [`BaseAssembly`](/docs/config/baseassembly).
 - **`displayDefaults`** routes each setting to the display that defines it, so
-  you never name a display or write a `displays` array. A key nothing defines
-  warns in the console. Write `displays` only to pick a non-default display type
-  (like the [arc display](#draw-features-as-arcs)).
-- **A `jexl:` prefix** makes any slot a per-feature callback, see
+  you never name a display or write a `displays` array. If you use a key that no
+  display defines, JBrowse warns in the console. Write `displays` only to pick a
+  non-default display type (like the [arc display](#draw-features-as-arcs)).
+- **A `jexl:` prefix** turns any slot into a per-feature callback. See
   [using jexl callbacks](/docs/config_guides/jexl).
 
 The same objects work in `config.json`, in a `session=spec-…` URL, and in an
@@ -130,12 +154,12 @@ config** on a track, or **File ▸ Export session** for the whole view.
 
 ## Applying a recipe from the CLI
 
-The CLI is a convenience, not a requirement: `config.json` is plain JSON, and
-past a handful of similar tracks, emitting the `tracks` array from your
-samplesheet beats one CLI call per file.
+The CLI is a convenience, not a requirement. `config.json` is plain JSON, so
+once you have more than a handful of similar tracks, generating the `tracks`
+array from your samplesheet is easier than one CLI call per file.
 
 The [web quickstart](/docs/quickstart_web) covers `create`, `add-assembly`, and
-`add-track`. Four `add-track` flags reach every recipe on this page:
+`add-track`. Four `add-track` flags cover every recipe on this page:
 
 | To set                                                        | Flag                         |
 | ------------------------------------------------------------- | ---------------------------- |
@@ -155,8 +179,9 @@ the command with `--force` to change a track you already added. See the
 
 ## Assemblies
 
-`{ name, uri }` picks the adapter off the extension, so you rarely name one.
-What each extension resolves to, and the index siblings it expects:
+`{ name, uri }` picks the adapter off the extension, so you rarely have to name
+one yourself. Here is what each extension resolves to, and the index files it
+expects alongside:
 
 | `uri`          | Adapter               | Expects                    |
 | -------------- | --------------------- | -------------------------- |
@@ -167,10 +192,10 @@ What each extension resolves to, and the index siblings it expects:
 `BgzipFastaAdapter` (`bgzip genome.fa` + `samtools faidx genome.fa.gz`) is
 recommended for large genomes.
 
-**Refname aliases** (chr1 vs 1 vs NC_000001) line up tracks that name
-chromosomes differently. Point at a two-column chromAliases file:
+**Refname aliases** line up tracks that name the same chromosome differently
+(chr1 vs 1 vs NC_000001). Point at a two-column chromAliases file:
 
-```json
+```json addassembly
 {
   "name": "volvox",
   "uri": "volvox.2bit",
@@ -183,8 +208,8 @@ See [assemblies](/docs/config_guides/assemblies) for the inline
 
 ## Colors
 
-A track's color is `color` in `displayDefaults`: a plain CSS color, or a `jexl:`
-expression run per feature.
+A track's color is the `color` key in `displayDefaults`. Give it a plain CSS
+color, or a `jexl:` expression that runs once per feature.
 
 ```json addtrack
 {
@@ -201,12 +226,12 @@ expression run per feature.
 
 ### What you can color by
 
-The expression sees the feature as `feature`, any attribute a plain property:
-`feature.type`, `feature.strand` (`1`/`-1`/`0`), `feature.score`,
-`feature.name`, `feature.start`/`end`, `feature.refName`, `feature.parent`,
-`feature.INFO.SVTYPE[0]` (VCF `INFO` fields parse as arrays, so index them), and
-`getTag(feature, 'HP')` for BAM/CRAM tags. Full list in
-[using jexl callbacks](/docs/config_guides/jexl).
+The expression sees the feature as `feature`, and every attribute is a plain
+property on it: `feature.type`, `feature.strand` (`1`/`-1`/`0`),
+`feature.score`, `feature.name`, `feature.start`/`end`, `feature.refName`, and
+`feature.parent`. VCF `INFO` fields parse as arrays, so index them
+(`feature.INFO.SVTYPE[0]`), and BAM/CRAM tags come from `getTag(feature, 'HP')`.
+The full list is in [using jexl callbacks](/docs/config_guides/jexl).
 
 ### More ways to set `color`
 
@@ -219,39 +244,39 @@ Drop any of these into the same `displayDefaults`:
 | By a numeric threshold            | `{ "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }`                                 | a hard cutoff, not a gradient                    |
 | Continuous gradient from a number | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                     | maps `feature.score` onto an HSL hue             |
 | Auto color per category           | `{ "color": "jexl:randomColor(feature.type)" }`                                               | same string always gets the same color           |
-| BED file's own colors             | leave `color` unset                                                                           | automatic — see below                            |
+| BED file's own colors             | leave `color` unset                                                                           | automatic, see below                             |
 | BAM/CRAM tag (`AlignmentsTrack`)  | `{ "colorBy": { "type": "tag", "tag": "HP" } }`                                               | built-in, reads the tag and picks colors         |
 | SNPs vs indels (`VariantTrack`)   | `{ "color": "jexl:feature.type=='SNV'?'green':'purple'" }`                                    | branch on `feature.type` or any VCF `INFO` field |
 
 `randomColor`, `alpha`, `hsl`, `colorString`, and `interpolate` are the built-in
 [color helpers](/docs/config_guides/jexl).
 
-A BED or bigBed that carries its own colors needs no callback: an unset `color`
-paints each feature from its color column, whichever name that column lands
-under (`itemRgb` on a BED12, `reserved` on a bigBed, `field8` on a BED9). Write
-a callback only to override those.
+A BED or bigBed that carries its own colors needs no callback. Leave `color`
+unset and each feature is painted from its color column, whatever that column
+ends up being called (`itemRgb` on a BED12, `reserved` on a bigBed, `field8` on
+a BED9). Write a callback only when you want to override those.
 [](/docs/config_guides/customizing_feature_colors) covers BED column naming and
 moving an outgrown callback into a plugin.
 
-The lookup table keys on any field the track exposes. UCSC RepeatMasker carries
-a `repClass` column:
+The lookup table can key on any field the track exposes. UCSC RepeatMasker, for
+instance, carries a `repClass` column:
 
 ```json
 {
-  "color": "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[get(feature,'repClass')] || 'gray'"
+  "color": "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[feature.repClass] || 'gray'"
 }
 ```
 
 <Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray." src="/img/cookbook_color_by_type.png"/>
 
-Wrap a callback in `log(...)` to print what it returns per feature to the
+Wrap a callback in `log(...)` to print what it returns for each feature to the
 browser console.
 
 ## Labels, tooltips & details {#labels-tooltips-details}
 
-Labels route through `displayDefaults` like `color`.
-[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) is
-`auto`/`on`/`off`, not a boolean:
+Labels go in `displayDefaults` the same way `color` does. Note that
+[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) takes
+`auto`, `on`, or `off`, not a boolean:
 
 ```json
 "displayDefaults": {
@@ -264,8 +289,8 @@ Labels route through `displayDefaults` like `color`.
 }
 ```
 
-`mouseover` returns the hover text, rendered as HTML so `<b>`, `<br/>`, and
-links work:
+`mouseover` returns the hover text. It is rendered as HTML, so `<b>`, `<br/>`,
+and links all work:
 
 ```json
 "displayDefaults": {
@@ -276,8 +301,9 @@ links work:
 ### Customizing the feature details panel
 
 `formatDetails` sits at the top level of the track, not in `displayDefaults`.
-Its `feature` callback returns an object merged into what's shown: name a field
-to rewrite it, add one for an extra row, or set it to `undefined` to hide it.
+Its `feature` callback returns an object that gets merged into what's shown.
+Name an existing field to rewrite it, add a new one for an extra row, or set a
+field to `undefined` to hide it.
 
 ```json
 "formatDetails": {
@@ -290,7 +316,8 @@ to rewrite it, add one for an extra row, or set it to `undefined` to hide it.
 
 ## Feature tracks
 
-Genes from GFF3, BED, or bigBed are the same track with a different adapter:
+Genes from GFF3, BED, or bigBed are all the same track type. Only the adapter
+changes:
 
 | `uri`                 | Adapter            |
 | --------------------- | ------------------ |
@@ -298,15 +325,15 @@ Genes from GFF3, BED, or bigBed are the same track with a different adapter:
 | `volvox-bed12.bed.gz` | `BedTabixAdapter`  |
 | `volvox.bb`           | `BigBedAdapter`    |
 
-For a **small, unindexed** file use the plaintext adapter (`Gff3Adapter`,
+For a **small, unindexed** file, use the plaintext adapter (`Gff3Adapter`,
 `BedAdapter`, `VcfAdapter`), which reads the whole file into memory.
 [](/docs/config_guides/file_types) has the full extension-to-adapter table.
 
 ### Track height
 
-`height` sets the box the track lives in,
-[`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) what
-happens when more features arrive than fit in it:
+`height` sets the box the track lives in.
+[`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) decides
+what happens when more features arrive than fit in that box:
 
 ```json
 "displayDefaults": { "height": 200, "heightMode": "fit" }
@@ -316,14 +343,15 @@ happens when more features arrive than fit in it:
 - `grow` expands the track downward until every feature shows, no scrollbar
 - `fit` shrinks the features so the whole stack fits the current height
 
-`fit` gets a full pileup or a dense annotation into a screenshot without a
-scrollbar cutting it off. It's the "Track sizing" menu on any track.
+Use `fit` to get a full pileup or a dense annotation into a screenshot without a
+scrollbar cutting it off. All three are on the "Track sizing" menu of any track.
 
 ### Pack features onto fewer rows
 
 [`displayMode`](/docs/config/linearcanvasbasedisplay/#slot-displaymode) sets the
-vertical room each feature gets, independent of height. `collapsed` drops
-everything onto one row with labels off, for a repeat or mappability stripe:
+vertical room each feature gets, independent of height. `collapsed` puts
+everything on one row and turns labels off, which suits a repeat or mappability
+stripe:
 
 ```json
 "displayDefaults": { "displayMode": "collapsed" }
@@ -333,8 +361,8 @@ everything onto one row with labels off, for a repeat or mappability stripe:
 
 ### Draw features as arcs
 
-For interactions, breakpoints, or paired features. The arc display isn't a
-`FeatureTrack`'s default, so select it with a `displays` array:
+Arcs suit interactions, breakpoints, and paired features. The arc display isn't
+a `FeatureTrack`'s default, so you select it with a `displays` array:
 
 ```json
 "displays": [
@@ -351,8 +379,8 @@ can encode span or score. See
 
 ### Showing only some features (filtering)
 
-`jexlFilters` draws only features passing every expression. Unlike `color`,
-filter expressions **leave off the `jexl:` prefix**:
+`jexlFilters` draws only the features that pass every expression in the list.
+Unlike `color`, these expressions **leave off the `jexl:` prefix**:
 
 ```json
 "displayDefaults": {
@@ -389,10 +417,10 @@ The same slot works on variant and alignments tracks.
 
 ### Filter reads by SAM flag or tag
 
-`flagExclude` hides reads with any of those bits set, `flagInclude` keeps only
-reads with all of them (default 1540 = unmapped, vendor-failed, duplicate; 3844
-also hides secondary and supplementary). `tagFilters` restricts by tag value.
-Every filter has to pass:
+`flagExclude` hides reads with any of its bits set, and `flagInclude` keeps only
+reads with all of its bits set. The 1540 below hides unmapped, vendor-failed,
+and duplicate reads; 3844 also hides secondary and supplementary. `tagFilters`
+restricts by tag value. A read has to pass every filter to be drawn:
 
 ```json
 "displayDefaults": {
@@ -417,15 +445,17 @@ fetched. See [alignments tracks](/docs/config_guides/alignments_track).
 }
 ```
 
-A bare `color` is single-color mode. Left alone a wiggle is **bicolor**: scores
-above `bicolorPivot` draw in `posColor` growing upward, below it in `negColor`
-growing downward. Write `color` or `posColor`/`negColor`, never both. A wiggle
-colors per signal, not per feature, so the color expressions above don't apply.
+Setting `color` puts the track in single-color mode. Left alone, a wiggle is
+**bicolor**: scores above `bicolorPivot` draw upward in `posColor`, and scores
+below it draw downward in `negColor`. Set `color` or `posColor`/`negColor`,
+never both. A wiggle colors per signal rather than per feature, so the color
+callbacks above don't apply here.
 
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks the plot: `xyplot`, `line`, `scatter` (good for BAF or CN points), or
-`density`. Its page lists every value, as does
-[`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) for the scale slots.
+`density`. Its page lists every value, and
+[`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) covers the scale
+slots.
 
 ### Multiple signals on one track, each its own color
 
@@ -464,24 +494,25 @@ overlay them in one plot; its page lists all nine.
 jbrowse add-track --multiwig v1.bw,v2.bw --load copy --name Grains
 ```
 
-`--multiwig` also takes a `.json` sources file of the `name`/`color` rows above.
-`subadapters` is just a list, so past a handful of samples, generate it from
-your samplesheet. Past a few hundred, one file per sample stops being the right
-shape at all: see
-[population copy number](/docs/tutorials/population_cnv#scaling-past-one-population),
-which serves the same display from a single Zarr store instead.
+`--multiwig` also takes a `.json` sources file holding the `name`/`color` rows
+above. `subadapters` is just a list, so once you have more than a handful of
+samples, generate it from your samplesheet. Beyond a few hundred, one file per
+sample stops being the right shape at all, and
+[population copy number](/docs/tutorials/population_cnv#scaling-past-one-population)
+serves the same display from a single Zarr store instead.
 
-A quantity with an absolute meaning wants `minScore`/`maxScore` written on the
-display. Autoscale is per row, so an individual whose signal never leaves the
-baseline gets the same full-height plot as one with a real amplification, and
+If the quantity has an absolute meaning, set `minScore`/`maxScore` on the
+display. Autoscale runs per row, so a sample whose signal never leaves the
+baseline is drawn at the same full height as one with a real amplification, and
 the rows stop being comparable.
 
 <Figure caption="An eight-sample MultiQuantitativeTrack over the AMY1 cluster (multirowline), each 1000 Genomes individual its own color on a shared 0 to 5 copy-number scale: the rows step between copy-number levels at different places." src="/img/cookbook_multiwig.png"/>
 
 ## Variant tracks
 
-`color` and `jexlFilters` work as they do on a feature track, with VCF `INFO`
-fields the usual thing to branch on; they parse as arrays, so index them:
+`color` and `jexlFilters` work just as they do on a feature track. VCF `INFO`
+fields are the usual thing to branch on, and they parse as arrays, so index
+them:
 
 ```json
 "displayDefaults": {
@@ -505,9 +536,9 @@ A `SyntenyTrack` lines up two assemblies and feeds both the dotplot and
 linear-synteny views. Pick the adapter matching your aligner: `PAFAdapter` for
 minimap2/wfmash, `DeltaAdapter` for MUMmer, `ChainAdapter` for liftOver/lastz.
 
-Everyone trips on which assembly is which. minimap2 takes its inputs **target
-first** (`minimap2 grape.fa peach.fa` makes grape the target), so name them
-outright rather than tracking the order yourself:
+Getting the two assemblies backwards is the most common mistake here. minimap2
+takes its inputs **target first** (`minimap2 grape.fa peach.fa` makes grape the
+target), so name them explicitly instead of tracking the order yourself:
 
 ```json
 {
@@ -524,17 +555,19 @@ outright rather than tracking the order yourself:
 }
 ```
 
-The query draws on the dotplot's horizontal axis (top row in linear synteny),
-the target on the vertical (bottom row). Both must already exist in
-`assemblies`. **Track loads blank?** Almost always swapped assemblies: flip
-`queryAssembly` and `targetAssembly`. See the
+The query draws on the dotplot's horizontal axis, and on the top row in linear
+synteny. The target draws on the vertical axis and the bottom row. Both
+assemblies must already exist in `assemblies`. **If the track loads blank**, it
+is almost always because the two are swapped: flip `queryAssembly` and
+`targetAssembly`. See the
 [synteny track guide](/docs/config_guides/synteny_track) and the
 [synteny visualization tutorial](/docs/tutorials/synteny_visualization).
 
 ### Large alignments {#synteny-large-alignments}
 
-Every synteny adapter reads the whole file into memory except the two indexed
-(PIF) ones, which do a tabix range lookup instead. Index a big PAF once:
+Every synteny adapter reads the whole file into memory, except the two indexed
+(PIF) ones, which do a tabix range lookup instead. Index a big PAF once and
+reuse it:
 
 ```bash
 jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
@@ -556,7 +589,7 @@ jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
 
 `MCScanAnchorsAdapter` links orthologous genes rather than sequence alignments,
 and needs the MCScan workflow's per-assembly BED files. MCScan adapters take
-only `assemblyNames`, query first:
+only `assemblyNames`, with the query first:
 
 ```json
 "adapter": {
@@ -573,11 +606,11 @@ covers `MCScanBlocksAdapter` for a `.blocks` table.
 
 ### Stacking more than two genomes {#synteny-stacking}
 
-One all-vs-all PAF backs every band, so it needs one track. Its sequence names
-must be PanSN-prefixed (`sample#haplotype#contig`), and `assemblyNames` lists
-every assembly the file covers:
+A single all-vs-all PAF backs every band, so you only need one track. Its
+sequence names must be PanSN-prefixed (`sample#haplotype#contig`), and
+`assemblyNames` lists every assembly the file covers:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "ecoli_ava",
@@ -591,8 +624,8 @@ every assembly the file covers:
 }
 ```
 
-A `LinearSyntenyView` then takes N assembly rows and one track entry per band
-(three rows, two bands):
+A `LinearSyntenyView` then takes one assembly row per genome and one track entry
+per band, so three rows means two bands:
 
 ```json
 "defaultSession": {
@@ -609,10 +642,10 @@ A `LinearSyntenyView` then takes N assembly rows and one track entry per band
 }
 ```
 
-`minAlignmentLength` hides the short alignments that would bury the shared
-backbone. Walkthroughs: [all-vs-all synteny](/docs/tutorials/allvsall_synteny)
-from one PAF, [ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi
-`.blocks` file.
+`minAlignmentLength` hides the short alignments that would otherwise bury the
+shared backbone. For full walkthroughs, see
+[all-vs-all synteny](/docs/tutorials/allvsall_synteny) from one PAF and
+[ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi `.blocks` file.
 
 ### Related views {#synteny-related}
 
@@ -626,27 +659,27 @@ from one PAF, [ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi
 
 ## Instance-wide settings
 
-**Track folders**, set on the track. Nested arrays nest folders in the
-[hierarchical track selector](/docs/config_guides/track_selector):
+**Track folders** are set on the track itself. Nested arrays make nested folders
+in the [hierarchical track selector](/docs/config_guides/track_selector):
 
 ```json
 "category": ["RNA-seq", "Brain"]
 ```
 
-**Metadata** shown in the track details:
+**Metadata** shows up in the track details:
 
 ```json
 "metadata": { "description": "150bp paired-end reads", "source": "See <a href='https://example.com'>the paper</a>" }
 ```
 
 **Text searching.** `jbrowse text-index` builds the index and writes the
-matching `aggregateTextSearchAdapters` entry into your config, after which the
+matching `aggregateTextSearchAdapters` entry into your config. After that, the
 search box jumps to genes by name. See
 [text searching](/docs/config_guides/text_searching) to hand-write or relocate
 one.
 
-**Theming.** `primary` and `secondary` drive the toolbars and highlights,
-`tertiary`/`quaternary` the accents. See
+**Theming.** `primary` and `secondary` drive the toolbars and highlights, while
+`tertiary` and `quaternary` drive the accents. See
 [coloring/theming](/docs/config_guides/theme) for logos, fonts, and dark mode:
 
 ```json
@@ -660,20 +693,20 @@ one.
 }
 ```
 
-**Plugins.** `esmLoc` for a file next to your config, `esmUrl` for one hosted
-elsewhere, see [plugins](/docs/config_guides/plugins):
+**Plugins.** Use `esmLoc` for a file sitting next to your config, or `esmUrl`
+for one hosted elsewhere. See [plugins](/docs/config_guides/plugins):
 
 ```json
 "plugins": [{ "name": "MyPlugin", "esmLoc": { "uri": "myplugin.js" } }]
 ```
 
-**Opening to a specific view** is the `defaultSession` from
-[the config above](#a-complete-config). See
+**Opening to a specific view** is what the `defaultSession` in
+[the config above](#a-complete-config) does. See
 [default session](/docs/config_guides/default_session).
 
 ## From config to a URL
 
-A link names what `config.json` already defines:
+A URL can name things `config.json` already defines:
 
 ```
 https://host/jbrowse2/?config=config.json&assembly=volvox&loc=ctgA:1-50000&tracks=genes,coverage
@@ -685,27 +718,27 @@ https://host/jbrowse2/?config=config.json&assembly=volvox&loc=ctgA:1-50000&track
 - `loc` is a region, or a gene name if you've run `jbrowse text-index`
 - `tracks` is a comma-separated list of `trackId`s to turn on
 
-Such a link starts a **fresh** view, ignoring any `defaultSession`;
-`&extendSession=true` keeps the session and changes only the location.
+A link like this starts a **fresh** view and ignores any `defaultSession`. Add
+`&extendSession=true` to keep the existing session and change only the location.
 
-To set how a track _looks_, give it a `displaySnapshot`, taking the same
+To set how a track _looks_, give it a `displaySnapshot`, which takes the same
 settings as `displayDefaults`:
 
 ```
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-50000","tracks":[{"trackId":"genes","displaySnapshot":{"color":"green"}}]}]}
 ```
 
-`&sessionTracks=` adds a track the config has never heard of, taking the same
-objects as its `tracks` array. A `FromConfigAdapter` carries features inline, so
-a region of interest travels in the link:
+`&sessionTracks=` adds a track the config has never heard of, using the same
+objects as its `tracks` array. A `FromConfigAdapter` carries its features
+inline, so a region of interest can travel in the link itself:
 
 ```
 &sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"1","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
 ```
 
-See the [](/docs/urlparams) for the full list, multi-view layouts, and the
-encoded links the "Share" button produces, and
-[](/docs/config_guides/from_config) for inline features in a config.
+See [](/docs/urlparams) for the full list, multi-view layouts, and the encoded
+links the "Share" button produces. [](/docs/config_guides/from_config) covers
+inline features in a config.
 
 ## Where to go next
 

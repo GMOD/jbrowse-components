@@ -251,13 +251,12 @@ default session. Use a full [session spec](#session-spec) for that.
 ### Linear genome view
 
 A "session spec" encodes a session as JSON in the URL. Each view object lists
-the keys that view launches with, flat as below — a spec is arguments to a
-view's launcher, so nothing is nested. A `defaultSession` in a config writes the
-same settings under an `init` block instead, because there the view is a saved
-state snapshot (see
-[Config / session files](/docs/automating#config--session-files)); moving a view
-between the two means reshaping it, and pasting an `init` block into a spec is
-reported rather than silently ignored. The embedded
+the keys that view launches with, flat as below. A spec is arguments to a view's
+launcher, so nothing is nested. A `defaultSession` in a config writes the same
+settings under an `init` block instead, because there the view is a saved state
+snapshot (see [Config / session files](/docs/automating#config--session-files));
+moving a view between the two means reshaping it, and pasting an `init` block
+into a spec is reported rather than silently ignored. The embedded
 `@jbrowse/react-linear-genome-view2` component takes the `init` form via
 `defaultSession.view.init` (it does not parse URLs itself).
 
