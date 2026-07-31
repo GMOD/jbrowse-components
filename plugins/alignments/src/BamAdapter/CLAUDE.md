@@ -74,3 +74,11 @@ the record" shortcut is now much more likely to collide, not less.
 **Not** `Object.create(record)` — that gives every view its own hidden class and
 measured ~200x worse on property reads; see the numbers in that class's doc
 comment.
+
+It allocates one object per no-MD read per fetch, so it looks like a target. It
+isn't — **ADR-049** has the measurements: `recordClass` moved the wrapper from
+_retained_ to _transient_, worth 33 bytes/read (1.23x) of steady-state worker
+footprint, and the transient one that remains costs ~1%. Deleting it would mean
+threading the region ref through the adapter's `ObservableCreate<Feature>`
+return, since the feature is the only thing crossing to the extractor. Reopen it
+for the class's three documented delegation traps if at all, not for speed.
