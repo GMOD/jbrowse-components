@@ -39,6 +39,7 @@ gesture.
 | `PileupComponent.tsx` | pileup vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched). → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
 | `useScrollSync.ts` (canvas basic) | overflow vertical scroll | skip if `!hasOverflow || ctrl || meta`. `shift` → scroll inner (latched). else `scrollZoom` → preventDefault. → **only `shift` scrolls inner.** |
 | `useVariantVirtualScroll.ts` | matrix vertical scroll + row height | `shift` → **change row height**. else if `!scrollZoom && !ctrl && !meta && overflow` → scroll inner (latched). |
+| `useMafVirtualScroll.ts` | MAF rows vertical scroll + row height | same rule as the variant displays, and deliberately so: same sample-row shape, same coupled row-height axis. Added when MAF moved off grow-to-fit onto virtual scroll. |
 
 ## The real inconsistency (not resolved here — it's a product call)
 
@@ -46,7 +47,7 @@ gesture.
 
 - pileup → scroll the inner panel (while in zoom mode)
 - canvas basic display → scroll the inner panel (always)
-- variants matrix → **change row height**
+- variants matrix and MAF → **change row height**
 
 and plain wheel scrolls the pileup/variants panels but **not** the canvas basic
 display (which needs `shift`). A user who learns the gesture on one track is

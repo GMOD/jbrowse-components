@@ -1,7 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { applyRowResizeWheel } from '@jbrowse/core/util/applyRowResizeWheel'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
-
-import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

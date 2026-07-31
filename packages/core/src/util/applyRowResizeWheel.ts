@@ -1,10 +1,11 @@
 // shift+wheel resizes the sample rows (a vertical-zoom gesture) rather than
 // scrolling, keeping the row under the cursor pinned in place as the height
-// changes. Shared by the matrix (virtual scrollbar) and plain (native overflow)
-// variant displays so the gesture stays identical. setScrollTop clamps to the
-// new scrollableHeight, so the raw target is passed through unclamped.
+// changes. Shared by every row-stack display — both variant displays and MAF —
+// so the gesture stays identical wherever rows have a resolved height and a
+// scroll offset. setScrollTop clamps to the new scrollableHeight, so the raw
+// target is passed through unclamped.
 
-import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+import { normalizeWheelDelta } from './wheelZoom.ts'
 
 const MAX_ROW_HEIGHT = 20
 

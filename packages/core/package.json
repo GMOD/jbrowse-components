@@ -112,6 +112,7 @@
     "./util/aborting": "./src/util/aborting.ts",
     "./util/addRelativeUris": "./src/util/addRelativeUris.ts",
     "./util/analytics": "./src/util/analytics.ts",
+    "./util/applyRowResizeWheel": "./src/util/applyRowResizeWheel.ts",
     "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
     "./util/bandHeight": "./src/util/bandHeight.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
@@ -584,6 +585,10 @@
       "./util/analytics": {
         "types": "./esm/util/analytics.d.ts",
         "import": "./esm/util/analytics.js"
+      },
+      "./util/applyRowResizeWheel": {
+        "types": "./esm/util/applyRowResizeWheel.d.ts",
+        "import": "./esm/util/applyRowResizeWheel.js"
       },
       "./util/assemblyConfigUtils": {
         "types": "./esm/util/assemblyConfigUtils.d.ts",
@@ -1087,6 +1092,9 @@
         ],
         "util/analytics": [
           "esm/util/analytics.d.ts"
+        ],
+        "util/applyRowResizeWheel": [
+          "esm/util/applyRowResizeWheel.d.ts"
         ],
         "util/assemblyConfigUtils": [
           "esm/util/assemblyConfigUtils.d.ts"
