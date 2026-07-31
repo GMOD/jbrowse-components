@@ -70,7 +70,7 @@ own via pull request.
 - [](/docs/developer_guides/no_build_plugin)
 - [](/docs/developer_guides/pluggable_elements)
 
-### Pluggable elements
+### Plugins
 
 - [](/docs/developer_guides/creating_addtrack_workflow)
 - [](/docs/developer_guides/creating_adapter)

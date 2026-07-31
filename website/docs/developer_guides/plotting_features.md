@@ -3,7 +3,7 @@ title: Plotting features in a custom display
 description:
   Build a plugin that fetches features in a worker and plots them on the main
   thread with Canvas2D, no shaders required
-guide_category: Pluggable elements
+guide_category: Plugins
 sidebar_label: Plotting features
 ---
 

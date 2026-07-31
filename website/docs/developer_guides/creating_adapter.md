@@ -2,7 +2,7 @@
 title: Custom adapters
 description:
   Read data from custom file formats with feature, regions, or sequence adapters
-guide_category: Pluggable elements
+guide_category: Plugins
 ---
 
 ## What is an adapter

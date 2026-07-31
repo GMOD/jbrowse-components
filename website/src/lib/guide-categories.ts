@@ -35,13 +35,13 @@ export const CONFIG_CATEGORIES = [
   'Deployment',
 ]
 
-// 'Pluggable elements' follows 'Getting started' so that the overview page of
-// that name (developer_guides/pluggable_elements.md, tagged 'Getting started')
-// lands directly above the twelve pages it introduces. With 'Core concepts'
-// between them, six unrelated entries separated the index from its own section.
+// 'Plugins' follows 'Getting started' so that the overview page of that name
+// (developer_guides/pluggable_elements.md, tagged 'Getting started') lands
+// directly above the twelve pages it introduces. With 'Core concepts' between
+// them, six unrelated entries separated the index from its own section.
 export const DEVELOPER_CATEGORIES = [
   'Getting started',
-  'Pluggable elements',
+  'Plugins',
   'Core concepts',
   'Advanced topics',
 ]
@@ -108,7 +108,7 @@ export const TUTORIAL_ORDER = [
 export const GUIDE_ORDER: Record<string, string[]> = {
   config_guides: ['intro', 'assemblies', 'tracks'],
   // pluggable_elements last of Getting started: it is the index for the
-  // 'Pluggable elements' category, which DEVELOPER_CATEGORIES puts next.
+  // 'Plugins' category, which DEVELOPER_CATEGORIES puts next.
   developer_guides: ['simple_plugin', 'no_build_plugin', 'pluggable_elements'],
 }
 

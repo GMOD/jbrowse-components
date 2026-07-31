@@ -3,7 +3,7 @@ title: Custom connections
 description:
   Add many tracks at once, or dynamically query a remote resource, with a
   connection type
-guide_category: Pluggable elements
+guide_category: Plugins
 ---
 
 **TL;DR:** A connection adds data to a JBrowse session in bulk. At its simplest

@@ -1,7 +1,7 @@
 ---
 title: Text search adapters
 description: Implement a custom backend for the search box
-guide_category: Pluggable elements
+guide_category: Plugins
 ---
 
 The search box queries one or more **text search adapters**. Each adapter

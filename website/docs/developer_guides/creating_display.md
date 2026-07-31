@@ -3,7 +3,7 @@ title: Custom track and display types
 description:
   Define track types (high-level identity) and display types (how a track
   renders in a given view)
-guide_category: Pluggable elements
+guide_category: Plugins
 sidebar_label: Tracks and displays
 ---
 
