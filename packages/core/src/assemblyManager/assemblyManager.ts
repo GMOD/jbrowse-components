@@ -76,13 +76,17 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
       /**
        * #method
+       * The assembly `asmName` names, or undefined. Reports a name it doesn't
+       * know to `Core-handleUnrecognizedAssembly` so a plugin can go supply it,
+       * which is a side effect: a caller only asking *whether* the session has
+       * the assembly wants {@link has} instead.
        */
       get(asmName: string) {
         if (asmName) {
           const assembly = self.assemblyNameMap[asmName]
           if (assembly) {
             return assembly
-          } else if (!this.assemblyNamesList.includes(asmName)) {
+          } else if (!this.has(asmName)) {
             // Extension point for loading unrecognized assemblies. Allows
             // plugins to provide custom logic for assembly resolution
             //
@@ -107,16 +111,27 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #method
-       * whether the session already knows this assembly, by alias or by a
-       * config whose model is not built yet. Existence probes must use this,
-       * not get(): get() reports an unknown name to
-       * Core-handleUnrecognizedAssembly, so a caller that is itself about to
-       * supply the assembly would kick off a redundant resolution (on
-       * genomes.jbrowse.org, a connection to a config that does not exist).
+       * Whether the session knows this assembly. Use this, not `get`, to ask
+       * only whether the assembly is present: `!has(name)` is exactly the
+       * condition under which `get` reports `name` to
+       * `Core-handleUnrecognizedAssembly`, so probing with `get` tells every
+       * installed plugin to go resolve a name that a caller supplying the
+       * assembly itself (a hub connection, MAF row navigation) is about to
+       * create.
        */
-      // annotated because assemblyNameMap is a Record, so its index read is
-      // never undefined to the compiler and `!!` on it infers the literal
-      // `true` — which would make `!has(name)` unusable at call sites
+      // `get` calls this to decide whether to report, so the two can't drift.
+      //
+      // Both lookups are load-bearing and they miss in opposite directions, so
+      // neither alone is a correct probe: assemblyNameMap is keyed by
+      // allAliases ([name, ...aliases]), so only it answers for an alias (`vvx`
+      // for `volvox`); assemblyNamesList reads canonical names off the configs,
+      // so only it answers in the window where a config exists but the
+      // afterAttach autorun hasn't built its model. A wrong "no" either way
+      // means the caller re-adds an assembly the session already has.
+      //
+      // Return type annotated because assemblyNameMap is a Record: its index
+      // read is never undefined to the compiler, so `!!` on it infers the
+      // literal `true` and `!has(name)` would be dead code at every call site.
       has(asmName: string): boolean {
         return (
           !!self.assemblyNameMap[asmName] ||
