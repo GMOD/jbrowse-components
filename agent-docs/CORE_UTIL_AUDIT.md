@@ -1,0 +1,261 @@
+# packages/core/src/util audit — findings and next steps
+
+Audit of `packages/core/src/util/` (2026-07-31), six parallel read-only passes
+over disjoint subsets. Everything below was verified by reading the code and
+grepping call sites; each item says whether it is reachable today. Items marked
+**FIXED** landed in this pass, the rest are open.
+
+## Fixed in this pass
+
+- `numericUtils.ts toLocale` grouped separators from the end of the whole
+  string, so any non-integer >= 1000 was corrupted (`2345.67` -> `"2,345,.67"`,
+  `1e21` -> `"1e,+21"`, `Infinity` -> `"In,fin,ity"`). Reached through
+  `bpUtils.getTickDisplayStr`, which feeds it `parseFloat(x.toFixed(2))`, so a
+  >1 Gbp chromosome rendered scalebar and dotplot-axis ticks as `3,088,.27M`.
+  The integer hot path is unchanged and benchmarked identical (still ~2x
+  `toLocaleString`); only a `Number.isInteger` branch was added.
+- `bpUtils.getBpDisplayStr` chose its unit before rounding, so 999,500-999,999
+  rendered `1,000Kbp` instead of `1Mbp`.
+- `copyToClipboard.ts` / `copyText.ts` reported success unconditionally: the
+  secure-context path was `void navigator.clipboard.writeText(...)` returning
+  `true` without awaiting, and `copyText` discarded the `execCommand` boolean.
+  Now `copyToClipboard` is async and signals failure one way (throw).
+  `copyTextWithSession` was split out for callers holding a session rather than
+  a model. The dynamic import was dropped — it bought ~1.5KB, and the module is
+  not reachable from the util barrel, so a separate chunk was a net loss.
+- `TimeTraveller.initialize()` was not idempotent but re-runs on every
+  `setSession` (`HistoryManagement` autorun reads `asRoot(self).session`). It
+  overwrote `snapshotDisposer` without disposing, and skipped its baseline once
+  `history` was non-empty — and `history` is volatile while `undoIdx` is a
+  persisted prop, so Ctrl+Z after a session switch applied the *previous*
+  session's snapshot to the new one.
+- `SvgCanvas.fontAttrs` matched size/family mid-string and dropped the weight and
+  style tokens ahead of them, so every `bold Npx ...` label (MAF codons via
+  `FONT_CONFIG`, alignment read labels) exported at regular weight.
+- `color-bits/format.ts rgbToHSL` selected its saturation formula on the max
+  channel instead of on lightness, understating saturation whenever max > 0.5
+  and lightness < 0.5 (`#0a0ac8` came out `63.3%` vs. the true `90.5%`).
+  Reachable through the documented jexl `hsl()`.
+- `color/makeContrasting` grew its coefficient without bound while MUI's
+  lighten/darken clamp it at 1, so a background whose luminance makes 3:1
+  unreachable froze the render thread. Measured against `defaultRefNameColors`:
+  38/40 hang on a `#b0b0b0` paper, 39/40 on `#a0a0a0`; best reachable ratio
+  there is ~2.2. Latent only because default MUI papers are `#fff`/`#121212`,
+  and `Ruler.tsx`'s `try/catch` cannot catch a spin.
+
+## Entangled with another agent's uncommitted work — resolve before committing
+
+A concurrent refactor extracting `packages/core/src/ui/useCopyToClipboard.ts`
+(untracked) was already in the worktree. These files hold both that refactor and
+my clipboard change, so they were deliberately left uncommitted:
+
+- `packages/core/src/ui/useCopyToClipboard.ts` (untracked) — `copy` made async;
+  the "copied" label now flashes only after the write lands.
+- `packages/core/src/ui/CopyToClipboardButton.tsx`,
+  `packages/core/src/BaseFeatureWidget/BaseFeatureDetail/Formatter.tsx` — `void`
+  added to the now-async `copy(...)` call.
+- `packages/core/src/ui/index.ts`, `CopyToClipboardButton.test.tsx` — not mine.
+
+## Open: reachable bugs
+
+- `assemblyConfigUtils.ts:266 getFilename` inspects only `uri`/`localPath`, so it
+  returns `''` for BlobLocation and FileHandleLocation. On jbrowse-web every
+  dropped file therefore lands in `unrecognized` and the warning reads
+  `Couldn't place: , ,`. `tracks.ts:391 getFileName` already handles all four
+  location types (and Windows backslashes) — delete this copy and use it. There
+  are four copies total (`LocalFileChooser.tsx:58`, `plugins/wiggle/util.ts:282`).
+  Its extension table has also drifted: `/\.(fa|fasta|fna)\.gz$/` vs. the
+  canonical `/\.(fa|fasta|fas|fna|mfa)(\.b?gz)?$/i`, so `.fas`, `.mfa`, `.FA` and
+  `.fa.bgz` all fail in the add-genome pane while loading fine everywhere else.
+  Same drift in `getAssemblyNameFromFilename`, `detectAdapterType`,
+  `classifyFilename`.
+- `addAndShowTrack.ts:17` calls `view?.showTrack(conf.trackId)` even when
+  `addTrackConf` returned `undefined` after notifying, producing a second
+  `Could not resolve identifier` snackbar. Needs `if (added)`. 7 call sites.
+- `rxjs.ts:14` — `ObservableCreate`'s `_stopToken` is discarded while its
+  docstring advertises "aborting support", and ~17 adapters pass `opts.stopToken`
+  into it, so cancellation looks wired at all of them and is not. Either delete
+  the parameter and the 17 call-site arguments, or make it unsubscribe.
+- `fetchAndMaybeUnzip.ts:14` — `statusCallback = () => {}` defeats
+  `downloadStatusReporter`'s no-progress fast path (pinned by
+  `progress.test.ts:315`), forcing every caller onto generic-filehandle2's manual
+  `getReader()` copy loop instead of `res.arrayBuffer()`. Pass
+  `opts.statusCallback` through instead. Same file: `opts.stopToken` is never
+  bridged to a signal, so a cancelled multi-GB GFF3/VCF/PAF whole-file load
+  downloads to completion (every indexed adapter does bridge it).
+- `color-bits/parse.ts:46 parseHex` never validates, so `parseCssColor`'s
+  magenta invalid-color sentinel is unreachable for anything starting with `#`:
+  `#zzzzzz` -> a plausible dark grey, `#ff` -> opaque black. A `>255` nibble
+  intermediate also overflows into the neighbouring channel.
+- `tabix.ts:52 extractType` — `line.slice(t2 + 1, t3)` with `t3 === -1` returns
+  the line minus its last character (`'ctgA\tsrc\tgene'` -> `'gen'`), which then
+  feeds redispatch classification in the GFF3/GTF tabix adapters.
+- `parseLineByLine.ts:33` — `line.slice(0, line.indexOf('\t'))` on a tab-free
+  line yields the line minus its last character as a phantom refName key.
+- `useFetch.ts:83` seeds `isLoading: false`, so the empty/resolved state paints
+  for one frame before the spinner; `RefNameInfoDialog.tsx:95` and
+  `GetSequenceDialog.tsx:82` already carry workarounds, `FileInfoPanel.tsx:47`
+  shows an empty attribute table. Seed from
+  `serializeKey(key) !== null && fetcher !== null`. Also `mutate` returns a
+  `Promise<void>` that resolves before any refetch, and
+  `RecentSessionsPanel.tsx:175` awaits it expecting revalidation.
+- `jexl.ts:145` — `alpha`/`hsl`/`colorString` are typed `(color: Colord)` but a
+  config `jexl:` string can only pass a string, so the published catalog example
+  `alpha('green', 0.5)` throws. Accept `string | Colord` and wrap in `colord()`.
+
+## Open: latent / typing / contract
+
+- `renameRegions.ts:81` — `Object.fromEntries` over a non-tuple array selects the
+  `any` overload, so `refNameMap` and `getSeqAdapterRefName` are unchecked
+  (verified with a standalone strict repro). Use `as const` on the pair or a
+  `Map`. `:18` also returns a dead MST node typed as a live `Region`.
+- `types/index.ts:704 isAuthNeededException` returns true for any error carrying
+  a `url` property, routing ordinary fetch errors into `RpcManager`'s auth-retry
+  path (spurious login prompt). The `name === 'AuthNeededError'` check alone
+  already covers the cross-realm case.
+- `color/cssColorsLevel4.ts:154` — bare-object indexing:
+  `namedColorToHex('constructor')` returns a function typed `string`, and
+  `isNamedColor('toString')` is true. Use `Object.hasOwn` or a `Map`.
+- `intervals.ts:22` — the merge window is `2w`, so `gatherOverlaps`' documented
+  5kb default merges within 10kb. Three callers take the default. Halve the
+  constant or rename the parameter to say it is a per-side pad.
+- `Base1DUtils.ts:294,337` drop the `displayedRegionIndex` the ContentBlock
+  already carries, so duplicate/overlapping regions point the overview rect at
+  the wrong copy.
+- `io/RemoteFileWithRangeCache.ts:85` — `clearCache()` does `queue.length = 0`,
+  stranding queued reads with no resolve *or* reject (a plausible source of test
+  teardown hangs above 20 in-flight reads). `stat()` also bypasses
+  `limitConcurrency`; the sizeCache comment at `:216` contradicts the `if
+  (!sizeCache.has(url))` below it; `joinChunk`'s comment promises one duplicate
+  fetch where the retry issues one per joined chunk.
+- `renderToStaticMarkup.ts:26` strips alpha from every `rgba()` with no
+  explanation and no test; `CrossHatches.tsx:26` and
+  `MultiWiggleOverlayLines.tsx:49` both carry workaround comments for it.
+- `fileHandleStore.ts:30` caches a rejected `openDB` promise permanently, and
+  there is no delete path so handles accumulate forever.
+- `tracks.ts:44 getTrackAssemblyNames` WeakMap is permanent and non-reactive but
+  read inside reactive getters, so editing `assemblyNames` in the config editor
+  does not invalidate it.
+- `tracks.ts:678` runs `Core-preProcessTrackConfig` three times per `showTrack`
+  and discards the result (line 720 uses `inlineConf ?? trackId`); skip the
+  throwaway `configSchema.create` validation when `isStateTreeNode(rawConf)`.
+- `progress.ts:15,310` and `parseLineByLine.ts:133` leave the last status label
+  on the channel when `fn` throws — no `try/finally`.
+- `stopToken.ts:111` — `stoppedIds.set` on an existing key does not reorder the
+  Map, so the TTL sweep's `break` at the first in-window entry can be
+  permanently short-circuited. `delete` before `set`.
+- `pluginStore.ts:60 resolvePlugin` throws for a v2 entry with only per-version
+  urls when no range matches, taking out the whole plugin-store list instead of
+  rendering the `compatible === false` message. `definition` is unused when
+  incompatible, so make it lazy.
+- `springAnimate.ts:42` — `let animationFrameId: number` is never initialized, so
+  the returned canceller can call `cancelAnimationFrame(undefined)`
+  (`LinearGenomeView/model.ts:1473`). `:72` also skips elapsed time where its
+  comment says it jumps to the end, and `eps = precision || ...` makes an
+  explicit `precision: 0` unusable.
+- `ResizeHandle.tsx:49` hand-rolls rAF coalescing with no unmount cleanup,
+  duplicating `useRafCommit` from the same directory.
+- `hooks.ts:9` — the comment says the document listener survives a child's
+  `stopPropagation`, but it is registered bubble-phase so it does not;
+  `ResizeHandle.tsx:85` states the opposite (correctly). `CascadingMenu.tsx:130`,
+  `ErrorBar.tsx:36`, `BlockMsg.tsx:38` all suppress focus-on-interaction as a
+  result. Either add `{ capture: true }` or drop the comment.
+- Two value cycles through the util barrel (rollup TDZ shape):
+  `offscreenCanvasPonyfill.ts:5` and `openFeatureWidget.ts:1` both import values
+  from `./index.ts`, which re-exports them. `io/index.ts:3` imports
+  `isElectron, isNode` from `../index.ts`, dragging the whole barrel into
+  anything importing `@jbrowse/core/util/io`. Moving `isElectron`/`isNode`/`rIC`
+  into a small `environment.ts` next to `isWebWorker.ts` breaks all three.
+
+## Open: dead code (user has approved deletion)
+
+Largest first. All confirmed by repo-wide grep excluding tests and the barrels.
+
+- `layouts/` — only `GranularRectLayout.addRect` has a caller anywhere
+  (`plugins/canvas/src/LinearBasicDisplay/layout.ts:1135`, on a layout built
+  fresh per pack). Dead: `MultiLayout.ts`, `PrecomputedLayout.ts`,
+  `intervalUtils.isRangeClear` (its live twin is hand-inlined at
+  `GranularRectLayout.ts:283`), `BaseLayout` as an implemented interface,
+  `serializeRegion`/`toJSON`/`discardRange`/`getByCoord`/`getByID`/
+  `getDataByID`/`getRectangles`/`getTotalHeight`/`maxHeightReached`/public
+  `addRectToBitmap`, the `Rectangle<T>` generic and both data fields, and the
+  unreachable `hardRowLimit` throw. Roughly 400 of 700 lines.
+- `flatqueue/` plus `Flatbush.neighbors()` / `upperBound` / the `_queue` field —
+  `neighbors` has zero callers and is FlatQueue's only consumer. ~155 lines and a
+  vendored dependency.
+- `compositeMap.ts` — entirely dead; not re-exported from the barrel, absent from
+  the package exports map, referenced only by its own test.
+- `aborting.ts` — `checkAbortSignal`, `abortBreakPoint`, `observeAbortSignal` have
+  no callers; `observeAbortSignal(undefined)` returns an Observable that never
+  emits *or* completes. Superseded by `stopToken.ts`; only `makeAbortError` and
+  `isAbortException` still have callers.
+- `transferables.ts:33` — `collectTransferables`/`isDetachedBuffer` dead, and
+  `isArrayBufferLike` would accept TypedArrays (`DataCloneError`) if wired up.
+  The keys it looks for appear on no RPC result (gwas emits `flatbushData`; MAF
+  has `collectMafTransferables`).
+- `offscreenCanvasPonyfill.ts:26-66` — `createCanvas`, `createImageBitmap`,
+  `isImageBitmap` dead, and their `isNode` branches reference undeclared
+  identifiers behind `@ts-expect-error`. Only `drawImageOntoCanvasContext` is
+  used.
+- `wheelZoom.ts` — nine exports are internal to `createWheelZoomController` yet
+  sit in the public barrel (`util/index.ts:151-162`); only `normalizeWheelDelta`
+  has another consumer. `createScrollLatch` likewise.
+- `nanoid.ts` — `urlAlphabet`, `customAlphabet`, `customRandom` unused (~half the
+  file). `color-bits`/`colorBits` — ~15 unused exports incl. `formatHWBA`/
+  `toHWBA` (which are also wrong: hue left as a turn fraction, emits `hsla(...)`
+  for an HWB triple). `color/index.ts` — `contrastingTextColor`, `isNamedColor`.
+  `seqUtils.defaultStops`. `geneticCodes.ncbiGeneticCodes`.
+- Single dead exports: `Base1DUtils.offsetBpToPx`, `blockTypes.blockToRegion`,
+  `blockTypes.makeDisplayedRegionKey` (its key format also diverges from the
+  block keys built inline in `calculate{Static,Dynamic}Blocks`), all of
+  `bpUtils`'s span helpers (`bpToPx`/`bpSpanPx`/`featureSpanPx`/`MinimalRegion`),
+  `locString.assembleLocStringFast`, `range.isContainedWithin`, `index.iterMap`,
+  `index.getLayoutId`, `index.getUriLink` (used only in-file),
+  `blobToDataURL.ts`, `sessionSharing.shareSessionToDynamo`, three
+  `mst-reflection` exports, `stopToken.checkStopToken2`, `when.ts` (a one-line
+  re-export of mobx's `when`, two consumers).
+
+Note `index.ts:180` exports the **dead** `bpUtils.bpToPx` under the same name as
+the live `Base1DUtils.bpToPx` — a public-surface collision where the exported one
+is unused. Removing dead exports also shrinks the generated
+`packages/core/package.json` exports map, so run `pnpm autogen` after.
+
+## Open: structural
+
+- `util/index.ts` is a 657-line grab-bag. `reorder` + `ReorderDirection` already
+  have their own `reorder.test.ts`; `pluralize`/`capitalizeFirst` belong in
+  `stringUtils.ts`; `measureGridWidth`/`resolveSelectedIds`/`getStr` are MUI
+  DataGrid helpers that drag an `@mui/x-data-grid` import into the barrel;
+  `stringify` belongs next to `assembleLocString` in `locString.ts`;
+  `isElectron`/`isNode`/`rIC` belong in `environment.ts` (see the cycle item).
+- Duplication to collapse: two standard codon tables — all 27
+  `ncbiGeneticCodes` entries were spot-checked against NCBI `gc.prt` and are
+  correct, so `seqUtils.defaultCodonTable`/`codonTable` can be defined as
+  `getGeneticCode(1).codonTable`, deleting a 65-line literal (keep the
+  `codonTable` name, 11 non-test consumers). Four `getFileName` copies. Three
+  unrelated `shorten()`s. Five re-parsing `cssColorTo*` wrappers.
+- `getRed/getGreen/getBlue/getAlpha` (0xRRGGBBAA) and
+  `abgrRed/abgrGreen/abgrBlue/abgrAlpha` (ABGR u32) are both
+  `(c: number) => number` exported from one barrel; every current call site is
+  correct, but the wrong pair silently swaps R and B with no type error. A
+  branded type or an `rgbaRed…` rename removes the footgun.
+- `products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts` is a
+  separate guesser table that has drifted: no bedGraph, `BlastTabularAdapter`,
+  `GWASAdapter`, `Ldmat`/`PlinkLD*`, `MCScanBlocksAdapter`,
+  `StarFusionAdapter`, `AllVsAll*PAFAdapter`, and it routes `.gtf.gz` to
+  `GtfAdapter` where the browser uses `GtfTabixAdapter`.
+
+## Verified clean (do not re-investigate)
+
+- `crypto.ts` pure-JS fallback matches Node byte-for-byte: MD5, SHA-256
+  (including the 55/56/119-byte padding boundaries), AES-256-CBC at
+  0/5/16/30/31-byte plaintexts, and the full OpenSSL `Salted__` round-trip. Only
+  nit is `getRandomBytes` silently degrading to `Math.random()`.
+- `linkify.ts` is not an XSS hole — the URL class excludes `'`, the scheme is
+  restricted, and `SanitizedHTML.tsx:109` runs it before DOMPurify.
+- `color/cssColorsLevel4.ts` table itself is complete and correct (148 names,
+  exact match against the CSS Color 4 list).
+- MST swallows exceptions thrown from `beforeDestroy`, so
+  `TimeTraveller.beforeDestroy` calling an undefined disposer was a silently
+  swallowed `TypeError`, not the aborted destroy chain it first looked like.
+  Measured, not assumed.
