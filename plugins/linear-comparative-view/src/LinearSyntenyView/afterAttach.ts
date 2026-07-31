@@ -1,11 +1,12 @@
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   normalizeTrackInit,
   SearchResultsNotFoundError,
 } from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
-import { autorun, when } from 'mobx'
+import { when } from 'mobx'
 
 import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
@@ -140,83 +141,46 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
   })
 }
 
+async function applyInit(
+  self: LinearSyntenyViewModel,
+  init: LinearSyntenyViewInit,
+) {
+  // flag the pending reorder before any track render can paint, so `settled`
+  // (→ synteny_canvas_done) can't fire on the pre-diagonalize hairball during
+  // the view-building await window below (before awaitingAutoDiagonalize flips
+  // the canvas off)
+  if (init.autoDiagonalize) {
+    self.setAutoDiagonalizeRequested(true)
+  }
+  await buildViews(self, init)
+  await applyInitViewLocsAndTracks(self, init)
+  applyInitSyntenyTracks(self, init)
+  // split the band budget across however many levels this view has, so a
+  // multi-way stack doesn't spend the whole viewport on ribbons. A no-op at two
+  // levels (a pairwise view keeps the 100px default), and applyInitSettings
+  // runs after, so an explicit init.levelHeights wins.
+  self.autoScaleLevelHeights()
+  applyInitSettings(self, init)
+  if (init.autoDiagonalize) {
+    await runAutoDiagonalize(self)
+  }
+}
+
 export function doAfterAttach(self: LinearSyntenyViewModel) {
-  // Serialize concurrent firings: dockview mount + React Strict Mode
-  // double-invoke cause width to settle in multiple steps. Each width change
-  // re-fires this autorun, and without the guard a second run's setViews()
-  // detaches the first run's view models — the first's
-  // `when(() => view.initialized)` then throws on the dead node and the catch
-  // reports a teardown as a view error.
-  let running = false
-  addDisposer(
-    self,
-    autorun(
-      async function initAutorun() {
-        const { init, width } = self
-        if (!width || !init || running) {
-          return
-        }
-        running = true
-        try {
-          // flag the pending reorder before any track render can paint, so
-          // `settled` (→ synteny_canvas_done) can't fire on the pre-diagonalize
-          // hairball during the view-building await window below (before
-          // awaitingAutoDiagonalize flips the canvas off)
-          if (init.autoDiagonalize) {
-            self.setAutoDiagonalizeRequested(true)
-          }
-          await buildViews(self, init)
-          await applyInitViewLocsAndTracks(self, init)
-          applyInitSyntenyTracks(self, init)
-          // split the band budget across however many levels this view has, so
-          // a multi-way stack doesn't spend the whole viewport on ribbons. A no-op
-          // at two levels (a pairwise view keeps the 100px default), and
-          // applyInitSettings runs after, so an explicit init.levelHeights wins.
-          self.autoScaleLevelHeights()
-          applyInitSettings(self, init)
-          if (init.autoDiagonalize) {
-            await runAutoDiagonalize(self)
-          }
-          // the view may have been removed while the assemblies/tracks resolved,
-          // and writing to a detached node throws, which would land in the
-          // catch below and report a teardown as a view error
-          if (isAlive(self)) {
-            self.setInit(undefined)
-          }
-        } catch (e) {
-          console.error(e)
-          // Failure policy keys off whether the view has materialized, the same
-          // line postProcessSnapshot already draws for persistence.
-          //
-          // Rows not built yet (buildViews threw: assembly missing, network
-          // blip) — nothing is on screen and `init` is still persisted, so keep
-          // it for a reload retry and record the error. setError is the whole
-          // report: it flips showImportForm, and the form renders model.error in
-          // its own banner, so a snackbar would state the same failure twice
-          // (and the banner persists). The error is volatile and doesn't survive
-          // the reload; in this session it flips the view off the loading
-          // spinner onto the form, the only way out until then.
-          //
-          // Rows built — the view works, so a later failure is one sub-step's
-          // problem and must not take the view down with it. setError would,
-          // since showImportForm keys off `error` alone and would discard rows
-          // that loaded fine. Clearing `init` is also what disarms the re-fire:
-          // `width` is a dependency of this autorun, so leaving it set lets any
-          // resize re-run buildViews, whose setViews rebuilds the rows and
-          // throws away wherever the user had navigated.
-          if (isAlive(self)) {
-            if (self.views.length) {
-              self.setInit(undefined)
-              getSession(self).notifyError(`${e}`, e)
-            } else {
-              self.setError(e)
-            }
-          }
-        } finally {
-          running = false
-        }
-      },
-      { name: 'LinearSyntenyViewInit' },
-    ),
-  )
+  // Serializing the firings is what makes this safe under dockview mount +
+  // React Strict Mode double-invoke, which settle width in multiple steps:
+  // without it a second run's setViews() detaches the first run's view models,
+  // and the first's `when(() => view.initialized)` then throws on the dead node
+  // and gets reported as a view error.
+  installInitAutorun(self, {
+    name: 'LinearSyntenyViewInit',
+    ready: () => !!self.width,
+    // buildViews awaits every assembly before it calls setViews, so rows exist
+    // only once the view is genuinely up. That makes it the fatal step: a
+    // failure before it (assembly missing, network blip) leaves nothing on
+    // screen and keeps `init` for a reload retry, while anything after is one
+    // sub-step's problem and must not discard the rows that loaded fine.
+    materialized: () => self.views.length > 0,
+    apply: init => applyInit(self, init),
+  })
 }

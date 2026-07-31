@@ -134,6 +134,7 @@
     "./util/getRelativeX": "./src/util/getRelativeX.ts",
     "./util/highlights": "./src/util/highlights.ts",
     "./util/hooks": "./src/util/hooks.ts",
+    "./util/installInitAutorun": "./src/util/installInitAutorun.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexl": "./src/util/jexl.ts",
@@ -672,6 +673,10 @@
         "types": "./esm/util/hooks.d.ts",
         "import": "./esm/util/hooks.js"
       },
+      "./util/installInitAutorun": {
+        "types": "./esm/util/installInitAutorun.d.ts",
+        "import": "./esm/util/installInitAutorun.js"
+      },
       "./util/io": {
         "types": "./esm/util/io/index.d.ts",
         "import": "./esm/util/io/index.js"
@@ -1148,6 +1153,9 @@
         ],
         "util/hooks": [
           "esm/util/hooks.d.ts"
+        ],
+        "util/installInitAutorun": [
+          "esm/util/installInitAutorun.d.ts"
         ],
         "util/io": [
           "esm/util/io/index.d.ts"

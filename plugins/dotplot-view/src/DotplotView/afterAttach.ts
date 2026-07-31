@@ -5,6 +5,7 @@ import {
   selectNamedRegions,
 } from '@jbrowse/core/util'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
+import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
@@ -233,104 +234,75 @@ function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
   }
 }
 
+// The ordered init steps. Recoverable failures (unresolvable track, bad
+// highlight, bad loc) are caught at their own step, so anything escaping here
+// is unexpected — installInitAutorun's backstop reports it.
+async function applyInit(self: DotplotViewModel, init: DotplotViewInit) {
+  // a dotplot needs two axes. LaunchDotplotView enforces this, but a
+  // hand-authored init (set via addView, bypassing the launcher) could be
+  // malformed — fail loudly instead of silently producing a
+  // [assembly, undefined] axis pair. Notified rather than thrown: a
+  // structurally bad init can never succeed on retry, so it should be consumed
+  // the way a successful one is instead of being kept and re-notified on every
+  // reload.
+  if (init.views.length < 2) {
+    getSession(self).notifyError(
+      `DotplotView init requires 2 views, got ${init.views.length}`,
+    )
+  } else {
+    const [target, query] = init.views.map(v => v.assembly)
+    // flag the pending reorder before any track render can paint, so `settled`
+    // (→ dotplot_webgl_canvas_done) can't fire on the pre-diagonalize plot
+    if (init.autoDiagonalize) {
+      self.setAutoDiagonalizeRequested(true)
+    }
+    self.setAssemblyNames(target!, query!)
+    applyInitTracks(self, init)
+    applyInitDisplaySettings(self, init)
+    // must land before autoDiagonalize: the reorder is computed over whatever
+    // the axes currently display, so restricting afterwards would diagonalize
+    // the full assembly and then throw most of it away
+    if (init.views.some(v => v.displayedRegionNames?.length)) {
+      await waitFor(() => self.initialized)
+      if (isAlive(self)) {
+        applyInitDisplayedRegions(self, init)
+      }
+    }
+    if (init.autoDiagonalize) {
+      await runAutoDiagonalize(self)
+    }
+    // highlights call isValidRefName, which throws until the assembly loads, so
+    // they need assembliesInitialized. loc-nav additionally needs displayed
+    // regions (initialized). Wait for the stronger of the two that are actually
+    // requested, then apply each once its own precondition holds.
+    const hasHighlight = !!init.highlight?.length
+    const hasLoc = init.views.some(v => v.loc)
+    if (hasHighlight || hasLoc) {
+      await waitFor(() =>
+        hasLoc ? self.initialized : self.assembliesInitialized,
+      )
+      if (isAlive(self)) {
+        if (hasHighlight && self.assembliesInitialized) {
+          applyInitHighlights(self, init)
+        }
+        if (hasLoc && self.initialized) {
+          navigateInitLocs(self, init)
+        }
+      }
+    }
+  }
+}
+
 function setupInitAutorun(self: DotplotViewModel) {
-  // hand-rolled re-entry guard: the autorun is async, and observables it reads
-  // (volatileWidth) can change mid-await and retrigger it before it finishes
-  let initRunning = false
-  addDisposer(
-    self,
-    autorun(
-      async function dotplotInitAutorun() {
-        const { init, volatileWidth } = self
-        if (!volatileWidth || !init || initRunning) {
-          return
-        }
-        initRunning = true
-        try {
-          // a dotplot needs two axes. LaunchDotplotView enforces this, but a
-          // hand-authored init (set via addView, bypassing the launcher) could
-          // be malformed — fail loudly instead of silently producing a
-          // [assembly, undefined] axis pair
-          if (init.views.length < 2) {
-            getSession(self).notifyError(
-              `DotplotView init requires 2 views, got ${init.views.length}`,
-            )
-          } else {
-            const [target, query] = init.views.map(v => v.assembly)
-            // flag the pending reorder before any track render can paint, so
-            // `settled` (→ dotplot_webgl_canvas_done) can't fire on the
-            // pre-diagonalize plot
-            if (init.autoDiagonalize) {
-              self.setAutoDiagonalizeRequested(true)
-            }
-            self.setAssemblyNames(target!, query!)
-            applyInitTracks(self, init)
-            applyInitDisplaySettings(self, init)
-            // must land before autoDiagonalize: the reorder is computed over
-            // whatever the axes currently display, so restricting afterwards
-            // would diagonalize the full assembly and then throw most of it away
-            if (init.views.some(v => v.displayedRegionNames?.length)) {
-              await waitFor(() => self.initialized)
-              if (isAlive(self)) {
-                applyInitDisplayedRegions(self, init)
-              }
-            }
-            if (init.autoDiagonalize) {
-              await runAutoDiagonalize(self)
-            }
-            // highlights call isValidRefName, which throws until the assembly
-            // loads, so they need assembliesInitialized. loc-nav additionally
-            // needs displayed regions (initialized). Wait for the stronger of
-            // the two that are actually requested, then apply each once its own
-            // precondition holds.
-            const hasHighlight = !!init.highlight?.length
-            const hasLoc = init.views.some(v => v.loc)
-            if (hasHighlight || hasLoc) {
-              await waitFor(() =>
-                hasLoc ? self.initialized : self.assembliesInitialized,
-              )
-              if (isAlive(self)) {
-                if (hasHighlight && self.assembliesInitialized) {
-                  applyInitHighlights(self, init)
-                }
-                if (hasLoc && self.initialized) {
-                  navigateInitLocs(self, init)
-                }
-              }
-            }
-          }
-          // Unconditional, unlike the catch below: the malformed-init branch
-          // lands here too, and a structurally bad init can never succeed on
-          // retry — keeping it would just re-notify on every reload
-          if (isAlive(self)) {
-            self.setInit(undefined)
-          }
-        } catch (e) {
-          // Backstop only — the recoverable failures (unresolvable track, bad
-          // highlight, bad loc) are each caught at their own step now, so
-          // anything landing here is unexpected.
-          //
-          // Failure policy keys off whether the view has materialized, the same
-          // line postProcessSnapshot already draws for persistence. Before
-          // setAssemblyNames lands there are no axes and `init` is still
-          // persisted, so keep it for a reload retry. After, the plot is usable
-          // and `init` has already been consumed: clear it, both so the autorun
-          // can't retry-loop and so a later width change can't re-fire this over
-          // a half-applied init.
-          console.error(e)
-          if (isAlive(self)) {
-            getSession(self).notifyError(`${e}`, e)
-            if (self.assemblyNames.length) {
-              self.setInit(undefined)
-            }
-          }
-        } finally {
-          initRunning = false
-        }
-      },
-      { name: 'DotplotInit' },
-    ),
-  )
+  installInitAutorun(self, {
+    name: 'DotplotInit',
+    ready: () => !!self.volatileWidth,
+    // setAssemblyNames is the first materializing step: before it lands there
+    // are no axes, and postProcessSnapshot keys off the same thing to decide
+    // whether `init` is still worth persisting
+    materialized: () => self.assemblyNames.length > 0,
+    apply: init => applyInit(self, init),
+  })
 }
 
 function setupLocalStorageAutorun(self: DotplotViewModel) {

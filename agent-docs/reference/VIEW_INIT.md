@@ -136,11 +136,54 @@ afterAttach.ts setupInitAutorun (autorun "LGVInit"):
   → setInit(undefined)   // clear; one-shot
 ```
 
-Every step is failure-isolated: `applyInitOnce` catches and notifies, because the
-autorun body is async, so an escaping throw is an unhandled rejection with no
+Every step is failure-isolated: `installInitAutorun` catches and reports, because
+the autorun body is async, so an escaping throw is an unhandled rejection with no
 snackbar that leaves the view half-initialized. A bare string where an array
 belongs (`tracks: 'genes'`) is treated as one entry — a string is iterable, so
 looping it directly walked its characters.
+
+## The shared state machine (`packages/core/src/util/installInitAutorun.ts`)
+
+LGV, dotplot and synteny each hand-rolled the same machine — re-entry guard,
+readiness gate, ordered apply, `setInit(undefined)`, catch — and drifted on the
+error policy. They now share `installInitAutorun(self, { name, ready,
+materialized, apply })`, which owns:
+
+- the non-observable `draining` flag. `ready` folds in the measured width, which
+  flips true→false→true on a StrictMode remount or a dockview re-mount, so the
+  autorun re-fires mid-apply whether it is an `autorun` or a `reaction`.
+  Overlapping applies duplicated LGV's `init.highlight`, and in synteny the
+  second run's `setViews` detached the models the first was still awaiting.
+- the serialized drain, so an init set mid-apply is applied rather than
+  stranded, and the identity-checked clear (`self.init === init`), so that
+  pending init isn't silently dropped by a blind `setInit(undefined)`.
+- one failure policy, keyed off `materialized` — the same line each view's
+  `postProcessSnapshot` draws for persistence:
+
+| | `init` | report |
+| --- | --- | --- |
+| before materialization | kept, for a reload retry | `setError` → import form banner |
+| after materialization | cleared | `notifyError` → snackbar |
+
+Pre-materialization is `setError` and not a snackbar because the import form
+renders `model.error` in its own banner; a snackbar would state the same failure
+twice and the banner is the one that persists. Post-materialization is the
+inverse: `setError` would discard rows that loaded fine, since `showImportForm`
+keys off `error` alone. Clearing `init` there is also what disarms the re-fire.
+
+`apply` therefore never clears `init` and never catches for reporting — it
+catches only the failures it wants to keep going through (a bad locstring in one
+row), and everything it lets escape is fatal-as-of-that-point. Per view:
+
+| view | `ready` | `materialized` |
+| --- | --- | --- |
+| LGV | `initialized` | always true — one row, and `error` already derives a failed `init.assembly` |
+| dotplot | `volatileWidth` | `assemblyNames.length` (set by the first apply step) |
+| synteny | `width` | `views.length` (`buildViews` awaits every assembly before `setViews`) |
+
+Tests: `packages/core/src/util/installInitAutorun.test.ts` for the machine,
+`LinearSyntenyView/initFailure.integration.test.ts` for the two policy branches
+end to end.
 
 ## The loading state machine (`model.ts` getters)
 
@@ -161,7 +204,13 @@ So: fresh view, no init, no regions → import form. With `init` set →
 
 Every view type has its own `init` + `LaunchView-<Type>` extension point +
 afterAttach autorun that clears it (dotplot, synteny, circular, spreadsheet,
-breakpoint, sv-inspector). Same lifecycle, per-view `InitState` shape. Beware:
+breakpoint, sv-inspector). Same lifecycle, per-view `InitState` shape. The three
+with an async multi-step apply (LGV, dotplot, synteny) share the machine above.
+Circular, breakpoint and sv-inspector apply synchronously inside the autorun, so
+there is no await window to guard. SpreadsheetView is async but deliberately
+different — a `reaction` on `init` alone, cleared synchronously up front, so
+re-entrancy is excluded by the dependency graph instead of a flag; it can do
+that because `init` is not what keeps its loading state up. Beware:
 `session.setInit(...)` (app-core / jbrowse-web `loadSessionSpec`) is a **different
 `init`** — the workspace dockview layout — not this view-launch spec.
 

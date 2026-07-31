@@ -5,6 +5,7 @@ import {
   selectNamedRegions,
 } from '@jbrowse/core/util'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
+import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
@@ -212,82 +213,25 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
   }
 }
 
-// Apply one init blob, then clear it — but ONLY when self.init is still the
-// exact object we just applied. A setInit that lands while applyInit is
-// awaiting (React StrictMode remounts, a programmatic re-launch) swaps in a new
-// object; clearing unconditionally would silently drop that pending init (a
-// subtle clobber). Leaving it lets drainInit apply it on the next iteration.
-// isAlive-guarded since the apply may have detached the view.
-async function applyInitOnce(self: LinearGenomeViewModel, init: InitState) {
-  try {
-    await applyInit(self, init)
-  } catch (e) {
-    // the autorun body is async, so anything escaping here becomes an unhandled
-    // rejection: no snackbar, and the drain stops with the view half-initialized.
-    // Report it instead; the finally still clears init, so the loop below can't
-    // spin on the same failure
-    console.error(e)
-    if (isAlive(self)) {
-      getSession(self).notifyError(`${e}`, e)
-    }
-  } finally {
-    if (isAlive(self) && self.init === init) {
-      self.setInit(undefined)
-    }
-  }
-}
-
-// Apply pending inits one at a time until none remain. Serializing (rather than
-// letting the autorun run applyInit concurrently) is what keeps re-entrant width
-// churn safe: overlapping applies duplicated init.highlight — most visible under
-// React StrictMode's double mount, which churns volatileWidth and re-triggers
-// the autorun. Looping also guarantees an init set mid-apply is eventually
-// applied instead of stranded.
-async function drainInit(self: LinearGenomeViewModel) {
-  while (isAlive(self) && self.initialized && self.init) {
-    await applyInitOnce(self, self.init)
-  }
-}
-
 /**
  * Autorun that handles the init state - navigating to initial location,
  * showing tracks, etc.
  */
 export function setupInitAutorun(self: LinearGenomeViewModel) {
-  // `draining` is a plain closure flag, intentionally NOT observable so it stays
-  // out of the dependency graph, ensuring only one drain runs at a time. The
-  // autorun observes init/initialized (read synchronously before any await) so
-  // it re-fires when either changes, but a re-entrant pass while a drain is
-  // in-flight is a no-op — drainInit already consumes whatever init is current.
-  //
-  // The flag is load-bearing, not incidental: `initialized` flips
-  // true→false→true when volatileWidth resets (StrictMode remount, dockview
-  // re-mount), which re-fires this whether it is an autorun or a reaction. The
-  // other way out (clearing `init` up front, the way SpreadsheetView does) is
-  // not available here, because `init` is what makes hasSomethingToShow /
-  // initPending report "loading" until navigation populates displayedRegions, so
-  // clearing it early flashes the import form mid-load.
-  let draining = false
-  addDisposer(
-    self,
-    autorun(
-      async function initAutorun() {
-        const { init, initialized } = self
-        if (!initialized || !init || draining) {
-          return
-        }
-        draining = true
-        try {
-          await drainInit(self)
-        } finally {
-          draining = false
-        }
-      },
-      {
-        name: 'LGVInit',
-      },
-    ),
-  )
+  installInitAutorun(self, {
+    name: 'LGVInit',
+    // `init` is what makes hasSomethingToShow / initPending report "loading"
+    // until navigation populates displayedRegions, so the alternative gate
+    // (clearing `init` up front, the way SpreadsheetView does) would flash the
+    // import form mid-load.
+    ready: () => self.initialized,
+    // No pre-materialization phase to protect: the view is its own single row,
+    // and `error` already derives a failed init assembly declaratively (via
+    // initAssembly), so anything thrown out of applyInit is a failure of a
+    // step, not of the view coming up.
+    materialized: () => true,
+    apply: init => applyInit(self, init),
+  })
 }
 
 /**
