@@ -1,3 +1,4 @@
+import { getEnv } from '@jbrowse/core/util'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
@@ -20,10 +21,12 @@ import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
+import { pairSyntenyTrackIds, syntenyTrackLevels } from './syntenyTracks.ts'
+import { trackType } from './trackFields.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
-import type { Config, Opts } from './types.ts'
+import type { Config, Opts, Track } from './types.ts'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
@@ -176,8 +179,8 @@ function throwOnRenderError(session: RenderErrorSources) {
 // its error caught by the fetch layer and stored on the display — the render
 // still returns with that track blank. Read it back so a headless export fails
 // loudly instead of writing a broken image.
-function throwOnDisplayError(displays: { error?: unknown }[]) {
-  for (const { error } of displays) {
+function throwOnDisplayError(tracks: { displays: { error?: unknown }[] }[]) {
+  for (const { error } of tracks.flatMap(t => t.displays)) {
     if (error) {
       throw toError(error)
     }
@@ -322,7 +325,7 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     showGridlines,
     trackLabels,
   })
-  throwOnDisplayError(view.tracks.flatMap(t => t.displays))
+  throwOnDisplayError(view.tracks)
   return svg
 }
 
@@ -346,34 +349,12 @@ function comparativeViews({ data }: ModeContext) {
   )
 }
 
-// Group synteny track ids by level. Level i sits between assembly i and i+1, so
-// a track is placed at the level whose adjacent assembly pair matches its
-// assemblyNames. Returns one entry per level (assemblies - 1); tracks with no
-// matching pair fall back to level 0.
-function syntenyTrackLevels(data: Config) {
-  const order = data.assemblies.map(asm => asm.name)
-  const levels: string[][] = order.slice(1).map(() => [])
-  for (const track of data.tracks) {
-    if (track.type === 'SyntenyTrack') {
-      const names = track.assemblyNames ?? []
-      const level = order.findIndex(
-        (name, i) =>
-          i < order.length - 1 &&
-          names.includes(name) &&
-          names.includes(order[i + 1]!),
-      )
-      levels[level === -1 ? 0 : level]!.push(track.trackId)
-    }
-  }
-  return levels
-}
-
 const renderDotplot: ModeRenderer = async ctx => {
   // Dotplot is pairwise (x vs y), so it takes only the first two assemblies even
-  // if a config supplies more. init.tracks is a flat list of comparison ids.
-  const tracks = ctx.data.tracks
-    .filter(track => track.type === 'SyntenyTrack')
-    .map(track => track.trackId)
+  // if a config supplies more — and only the comparisons between those two.
+  // init.tracks is a flat list of comparison ids.
+  const [x, y] = ctx.data.assemblies
+  const tracks = x && y ? pairSyntenyTrackIds(ctx.data, x.name, y.name) : []
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
     : {
@@ -384,7 +365,7 @@ const renderDotplot: ModeRenderer = async ctx => {
       }
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
   const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
-  throwOnDisplayError(view.tracks.flatMap(t => t.displays))
+  throwOnDisplayError(view.tracks)
   return svg
 }
 
@@ -433,22 +414,47 @@ const renderSynteny: ModeRenderer = async ctx => {
     showGridlines: ctx.opts.showGridlines,
   })
   // synteny keeps its tracks per level, unlike the flat `tracks` of the others
-  throwOnDisplayError(
-    view.levels.flatMap(l => l.tracks).flatMap(t => t.displays),
-  )
+  throwOnDisplayError(view.levels.flatMap(l => l.tracks))
   return svg
+}
+
+// Which of the config's tracks a CircularView can actually open: it renders
+// chord displays only, so a track type with none (a --bigwig passed alongside
+// the SVs, or the whole track set of a --hub/--config) made showTrack throw
+// "Could not find a compatible display for view type CircularView" and abort the
+// entire render. Ask the question showTrackGeneric asks — does this track type
+// declare a display this view supports — and skip the ones it would reject, so
+// the chords still render. Warns per skipped track so the omission is visible.
+function circularTrackIds(model: Model, tracks: Track[]) {
+  const { pluginManager } = getEnv(model)
+  const supported = new Set(
+    pluginManager.getViewType('CircularView')?.displayTypes.map(d => d.name),
+  )
+  const compatible = tracks.filter(track => {
+    const displays = pluginManager.getTrackType(trackType(track))?.displayTypes
+    const ok = !!displays?.some(d => supported.has(d.name))
+    if (!ok) {
+      console.warn(
+        `Warning: skipping track "${track.trackId}" (${trackType(track)}) — it has no display the circular view can render`,
+      )
+    }
+    return ok
+  })
+  return compatible.map(track => track.trackId)
 }
 
 // Circular renders one assembly's chord tracks (e.g. a VCF of structural
 // variants). The view picks each track's chord display automatically.
 const renderCircular: ModeRenderer = async ctx => {
-  const trackIds = ctx.data.tracks.map(track => track.trackId)
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
-    : { assembly: ctx.data.assembly.name, tracks: trackIds }
+    : {
+        assembly: ctx.data.assembly.name,
+        tracks: circularTrackIds(ctx.model, ctx.data.tracks),
+      }
   const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
   const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
-  throwOnDisplayError(view.tracks.flatMap(t => t.displays))
+  throwOnDisplayError(view.tracks)
   return svg
 }
 

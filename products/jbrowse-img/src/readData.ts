@@ -180,12 +180,12 @@ export function readData(
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
     const index = modifierValue(rest, 'index')
+    const name = modifierValue(rest, 'name')
     if (syntenyTrackTypes.includes(type)) {
       continue
     } else if (!file) {
       throw new Error('no file specified')
     } else if (type === 'multiwig') {
-      const name = modifierValue(rest, 'name')
       configData.tracks.push(
         makeMultiWiggleTrackConfig(
           readMultiWiggleSources(file),
@@ -200,6 +200,7 @@ export function readData(
         file,
         index,
         configData.assembly,
+        name,
       )
       if (trackConfig) {
         configData.tracks.push(trackConfig)

@@ -1,5 +1,5 @@
 import { resolveConfigObject } from './resolveHub.ts'
-import { trackName, trackType } from './trackFields.ts'
+import { trackMatches, trackName, trackType } from './trackFields.ts'
 
 import type { Track } from './types.ts'
 
@@ -36,13 +36,7 @@ export function formatAssemblies(genomes: Record<string, UcscGenome>) {
 
 export function formatTracks(hub: string, tracks: Track[], filter?: string) {
   const needle = filter?.toLowerCase()
-  const matched = needle
-    ? tracks.filter(
-        t =>
-          t.trackId.toLowerCase().includes(needle) ||
-          trackName(t).toLowerCase().includes(needle),
-      )
-    : tracks
+  const matched = needle ? tracks.filter(t => trackMatches(t, needle)) : tracks
   const pad = Math.min(60, Math.max(0, ...matched.map(t => t.trackId.length)))
   const lines = matched.map(
     t =>

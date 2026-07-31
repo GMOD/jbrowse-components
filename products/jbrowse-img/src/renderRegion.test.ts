@@ -100,6 +100,19 @@ describe('makeTrackConfig', () => {
     })
   })
 
+  // `name:` used to be honored only by --multiwig, so `--bam reads.bam
+  // name:"My reads"` silently kept the filename as the track label.
+  test('an explicit name overrides the filename label', () => {
+    const config = makeTrackConfig(
+      'bam',
+      'reads.bam',
+      undefined,
+      fakeAssembly,
+      'My reads',
+    )
+    expect(config).toMatchObject({ trackId: 'reads.bam', name: 'My reads' })
+  })
+
   test('bam track with explicit CSI index', () => {
     const config = makeTrackConfig(
       'bam',

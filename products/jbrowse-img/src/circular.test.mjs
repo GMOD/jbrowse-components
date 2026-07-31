@@ -27,6 +27,23 @@ test('circular renders structural variant chords from a VCF', async () => {
   )
 })
 
+// A CircularView renders chord displays only. Passing every config track to it
+// made showTrack throw "Could not find a compatible display for view type
+// CircularView" for the first track without one, aborting the whole render.
+test('a track with no chord display is skipped, not fatal', async () => {
+  const bigwig = path.join(dataDir, 'volvox-sorted.bam.coverage.bw')
+  const svg = await renderRegion({
+    mode: 'circular',
+    fasta: volvoxFasta,
+    trackList: [
+      ['vcfgz', [sv]],
+      ['bigwig', [bigwig]],
+    ],
+  })
+  const paths = svg.match(/<path/g) ?? []
+  assert.ok(paths.length > 2, `expected variant chords, got ${paths.length}`)
+})
+
 // CircularView reads assemblyManager.get() without awaiting, so a failed
 // assembly load never reaches the session and its init never completes — which
 // would hang headlessly. The assembly error is detected directly so it fails

@@ -193,8 +193,10 @@ describe('wiggle / score modifiers', () => {
       displayCrossHatches: true,
       resolution: 100,
       color: 'purple',
-      useBicolor: false,
     })
+    // a bare `color` is left for the wiggle display config's own
+    // colorImpliesSolid preProcessSnapshot to turn bicolor off
+    expect(snap.useBicolor).toBeUndefined()
   })
 
   test('score settings are ignored on a non-score (alignments) track', () => {

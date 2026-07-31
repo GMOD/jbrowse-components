@@ -1,7 +1,7 @@
 import path from 'node:path'
 
 import { getBooleanValue } from './options.ts'
-import { trackName } from './trackFields.ts'
+import { trackMatches, trackName } from './trackFields.ts'
 
 import type { Entry } from './parseArgv.ts'
 import type { Track } from './types.ts'
@@ -108,11 +108,7 @@ export function resolveTrackId(
       )
     }
     const suggestions = tracks
-      .filter(
-        t =>
-          t.trackId.toLowerCase().includes(target) ||
-          trackName(t).toLowerCase().includes(target),
-      )
+      .filter(t => trackMatches(t, target))
       .slice(0, 8)
       .map(t => t.trackId)
     throw new Error(
@@ -303,9 +299,11 @@ function applyModifier(
         snap.colorBy = { type: val1, tag: val2 }
       } else if (isScore) {
         // Wiggle: render in one solid color. The bicolor default routes through
-        // pos/negColor and ignores `color`, so turn it off to honor the request.
+        // pos/negColor and ignores `color`; the display config's own
+        // `colorImpliesSolid` preProcessSnapshot turns bicolor off for a bare
+        // `color`, so don't restate it here — that would also override an
+        // explicit `useBicolor` from the JSON escape hatch.
         snap.color = val1
-        snap.useBicolor = false
       }
       break
     }

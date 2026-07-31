@@ -10,20 +10,6 @@ export function makeLocation(file: string) {
     : { localPath: file }
 }
 
-const trackTypeMap: Record<string, string> = {
-  bam: 'AlignmentsTrack',
-  cram: 'AlignmentsTrack',
-  bigwig: 'QuantitativeTrack',
-  multiwig: 'MultiQuantitativeTrack',
-  vcfgz: 'VariantTrack',
-  gffgz: 'FeatureTrack',
-  hic: 'HicTrack',
-  bigbed: 'FeatureTrack',
-  bedgz: 'FeatureTrack',
-}
-
-export const trackTypes = Object.keys(trackTypeMap)
-
 function makeTabixIndex(file: string, index: string | undefined) {
   return {
     location: makeLocation(index || `${file}.tbi`),
@@ -31,14 +17,24 @@ function makeTabixIndex(file: string, index: string | undefined) {
   }
 }
 
-function makeAdapter(
-  type: string,
-  file: string,
-  index: string | undefined,
-  sequenceAdapter: unknown,
-) {
-  if (type === 'bam') {
-    return {
+// Every CLI track-type flag: the JBrowse track type it opens and the adapter it
+// builds. One entry per flag (rather than a type map plus a parallel adapter
+// switch) so `--multiwig`'s absence from the adapter side — it builds its
+// subadapter list separately in makeMultiWiggleTrackConfig — is stated once, and
+// so adding a file type is a single edit.
+interface FileType {
+  trackType: string
+  adapter?: (
+    file: string,
+    index: string | undefined,
+    sequenceAdapter: unknown,
+  ) => Record<string, unknown>
+}
+
+const fileTypes: Record<string, FileType> = {
+  bam: {
+    trackType: 'AlignmentsTrack',
+    adapter: (file, index, sequenceAdapter) => ({
       type: 'BamAdapter',
       bamLocation: makeLocation(file),
       index: {
@@ -46,48 +42,63 @@ function makeAdapter(
         indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
       },
       sequenceAdapter,
-    }
-  }
-  if (type === 'cram') {
-    return {
+    }),
+  },
+  cram: {
+    trackType: 'AlignmentsTrack',
+    adapter: (file, index, sequenceAdapter) => ({
       type: 'CramAdapter',
       cramLocation: makeLocation(file),
       craiLocation: makeLocation(index || `${file}.crai`),
       sequenceAdapter,
-    }
-  }
-  if (type === 'bigwig') {
-    return { type: 'BigWigAdapter', bigWigLocation: makeLocation(file) }
-  }
-  if (type === 'vcfgz') {
-    return {
+    }),
+  },
+  bigwig: {
+    trackType: 'QuantitativeTrack',
+    adapter: file => ({
+      type: 'BigWigAdapter',
+      bigWigLocation: makeLocation(file),
+    }),
+  },
+  multiwig: { trackType: 'MultiQuantitativeTrack' },
+  vcfgz: {
+    trackType: 'VariantTrack',
+    adapter: (file, index) => ({
       type: 'VcfTabixAdapter',
       vcfGzLocation: makeLocation(file),
       index: makeTabixIndex(file, index),
-    }
-  }
-  if (type === 'gffgz') {
-    return {
+    }),
+  },
+  gffgz: {
+    trackType: 'FeatureTrack',
+    adapter: (file, index) => ({
       type: 'Gff3TabixAdapter',
       gffGzLocation: makeLocation(file),
       index: makeTabixIndex(file, index),
-    }
-  }
-  if (type === 'hic') {
-    return { type: 'HicAdapter', hicLocation: makeLocation(file) }
-  }
-  if (type === 'bigbed') {
-    return { type: 'BigBedAdapter', bigBedLocation: makeLocation(file) }
-  }
-  if (type === 'bedgz') {
-    return {
+    }),
+  },
+  hic: {
+    trackType: 'HicTrack',
+    adapter: file => ({ type: 'HicAdapter', hicLocation: makeLocation(file) }),
+  },
+  bigbed: {
+    trackType: 'FeatureTrack',
+    adapter: file => ({
+      type: 'BigBedAdapter',
+      bigBedLocation: makeLocation(file),
+    }),
+  },
+  bedgz: {
+    trackType: 'FeatureTrack',
+    adapter: (file, index) => ({
       type: 'BedTabixAdapter',
       bedGzLocation: makeLocation(file),
       index: makeTabixIndex(file, index),
-    }
-  }
-  return undefined
+    }),
+  },
 }
+
+export const trackTypes = Object.keys(fileTypes)
 
 // Comparison/synteny adapters. Each maps a CLI file type to its adapter type,
 // the fileLocation slot that adapter reads from, and which of the two stacked
@@ -279,17 +290,17 @@ export function makeTrackConfig(
   file: string,
   index: string | undefined,
   assembly: Assembly,
+  name?: string,
 ): Track | undefined {
-  const trackType = trackTypeMap[type]
-  const adapter = makeAdapter(type, file, index, assembly.sequence.adapter)
-  if (!trackType || !adapter) {
-    return undefined
-  }
-  return {
-    type: trackType,
-    trackId: path.basename(file),
-    name: path.basename(file),
-    assemblyNames: [assembly.name],
-    adapter,
-  }
+  const fileType = fileTypes[type]
+  const adapter = fileType?.adapter?.(file, index, assembly.sequence.adapter)
+  return fileType && adapter
+    ? {
+        type: fileType.trackType,
+        trackId: path.basename(file),
+        name: name ?? path.basename(file),
+        assemblyNames: [assembly.name],
+        adapter,
+      }
+    : undefined
 }
