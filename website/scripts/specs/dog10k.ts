@@ -1126,6 +1126,23 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 90,
         },
         {
+          // Directly above the paintings because it explains the widest hole in
+          // them. Both lanes drop a window whose median across the collection is
+          // not two, on the grounds that it is measuring the reference rather
+          // than any dog, and a dropped window paints nothing -- so the white
+          // stripe through every row at chr30:38,289,000-38,293,000 reads as a
+          // rendering glitch until you can see the 1.4 kb CpG island sitting
+          // under it (81% and 76% GC over its two central kilobases, which is
+          // depth dropout in every canid). With the island on screen the hole is
+          // legible as data. See the note beside MINUNIQUE in
+          // scripts/build_dog10k_cyp1a2_cn.sh for why it is four blocks wide and
+          // for the check that rules out the repeat mask.
+          trackId: 'dog10k_cyp1a2_cpg',
+          type: 'LinearBasicDisplay',
+          // two rows: the labels collide before the islands do
+          height: 62,
+        },
+        {
           // 21 rows over 380px, so each row is thick enough to carry its own
           // label and the element's extent in one animal is readable -- the
           // thing the collection lane below structurally cannot show.
@@ -1167,9 +1184,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       'body:has([data-testid="tree_sidebar_dendrogram"]) [data-testid="multirow-row-labels"]',
     readyTimeout: 180000,
     settleMs: 8000,
-    // gene track, the 380px panel and the 300px collection lane, their headers,
-    // and the copy-number key
-    viewportHeight: 1045,
+    // gene track, the CpG lane, the 380px panel and the 300px collection lane,
+    // their headers, and the copy-number key
+    viewportHeight: 1140,
   },
 
   // The same estimate at SLC28A3, which is Fig 11 of the same paper: a

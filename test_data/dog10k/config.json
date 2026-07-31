@@ -323,6 +323,31 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "dog10k_cyp1a2_cpg",
+      "name": "CpG islands (UCSC cpgIslandExt)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "percentGC",
+          "obsExpCpG",
+          "length"
+        ],
+        "uri": "dog10k_cyp1a2_cpg.bed.gz"
+      },
+      "displayDefaults": {
+        "color": "#2e7d32"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "dog10k_cyp1a2_breed_cn",
       "name": "CYP1A2 copy number, named animals",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],

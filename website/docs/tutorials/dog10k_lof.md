@@ -177,7 +177,7 @@ two agree at r = 0.92 with no bias. That painting is in the config as
 dogs have CRAMs is an accident of what the share published, so the picture
 invites a question about those breeds that the data cannot answer.
 
-<Figure caption="Copy number over CYP1A2 and 185 kb around it, each window colored by its rounded call, grey being two copies. Above, named animals: four wolves and every Golden Retriever, Labrador Retriever and Boxer in the collection. Below, all 1,987 canids, clustered on their profiles. Every Golden is expanded, every Boxer stays grey, the Labradors split; the blue blocks to the right are deletions a few percent of the collection carries." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2 and 185 kb around it, each window colored by its rounded call, grey being two copies. Above, named animals: four wolves and every Golden Retriever, Labrador Retriever and Boxer in the collection. Below, all 1,987 canids, clustered on their profiles. Every Golden is expanded, every Boxer stays grey, the Labradors split; the blue blocks to the right are deletions a few percent of the collection carries. CpG islands are drawn above: the white stripe through both lanes is a window dropped as unmeasurable, over the island beneath it." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane is whole groups, not picked animals: every Golden Retriever,
 Labrador Retriever and Boxer in the collection, plus the four wolves the figure
@@ -186,6 +186,14 @@ and the Labradors split one dog to the next: a genotype here is a breed-level
 fact in some breeds and segregating in others. Row labels come from the sample
 column, the order from `rowOrder`. The wolves rest on callset depth alone, since
 none of the dogs with published reads is a wolf.
+
+The white stripes through both lanes are windows with no call, not gaps in the
+rendering. A window whose median across the whole collection is not two is
+measuring the reference rather than any dog, so the build script drops it from
+every row instead of painting it grey, which would claim a copy number that was
+never measured. The widest one has its cause on the CpG island lane: high GC
+means low read depth in every canid, and a 5 kb window carries that over the
+blocks around it.
 
 The lower lane is the same estimate over every canid, clustered on the profile
 each one carries across the window rather than sorted on one column: **Cluster

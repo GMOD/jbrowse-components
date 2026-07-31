@@ -102,6 +102,35 @@ NORM_RIGHT_END=38340000
 # dip.
 MINUNIQUE=1000
 
+# ── Why the painting has holes in it ────────────────────────────────────────
+# A window the estimate cannot make paints NOTHING. Copy number two is grey and
+# the display has no background of its own, so a run of dropped windows reads as
+# a white stripe through every row of the figure, which looks exactly like a
+# rendering glitch and has been reported as one. It is not: filling those
+# windows grey would assert a measurement that was not made, over the one part
+# of the flank where the depth is known to be untrustworthy.
+#
+# Three filters drop a window, and it is worth knowing which one owns which
+# hole, because only the first two are about the reference:
+#
+#   - MINUNIQUE, above: too little sequence RepeatMasker left alone.
+#   - MINSITES, in the callset pass: no dog had enough called sites in it.
+#   - FLANK_TOLERANCE, in both paintings: a flank window whose median across the
+#     whole collection is not two is measuring the reference rather than any
+#     dog. This one is the widest hole in the figure.
+#
+# The stripe at chr30:38,289,000-38,293,000 is FLANK_TOLERANCE. Under it is a
+# 1.4 kb CpG island, chr30:38,290,164-38,291,553, which the cpgIslandExt track
+# written at the end of this script draws: its two central kilobases are 81% and
+# 76% GC, which is Illumina depth dropout in every canid. A 5 kb estimate
+# stepped by 1 kb carries those two kilobases into four painted blocks, which is
+# the width of the stripe.
+#
+# The alternative was checked rather than assumed. Recomputing unique bp per
+# sliding window over the whole region puts only the blocks at 38,224,000 and
+# 38,266,000 under MINUNIQUE, and those are exactly the two other gaps in the
+# CRAM painting. Nothing near 38,289,000 is repeat-limited.
+
 # The published CRAMs, in the order the figure stacks them: the breed with no
 # expansion first, then the breeds that carry one. Paths are relative to
 # cram-share/, which sorts them into dated release directories.
@@ -267,7 +296,8 @@ flank_left_end, flank_right_start = int(sys.argv[1]), int(sys.argv[2])
 norm_left_start, norm_right_end = int(sys.argv[3]), int(sys.argv[4])
 # How far a flank window's median may sit from two before it is read as an
 # artifact: well inside rounding's half copy, well outside the 7-10% spread a
-# single window carries.
+# single window carries. What this drops is drawn as a hole, not as two -- see
+# the note beside MINUNIQUE.
 FLANK_TOLERANCE = 0.2
 
 # ColorBrewer RdBu diverging about copy number two: blue for loss, a light grey
@@ -369,6 +399,7 @@ chrom, STEP, WIDTH = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 flank_left_end, flank_right_start = int(sys.argv[4]), int(sys.argv[5])
 norm_left_start, norm_right_end = int(sys.argv[6]), int(sys.argv[7])
 SPAN = WIDTH // STEP
+# see the note beside MINUNIQUE for what this drops and how it reads
 FLANK_TOLERANCE = 0.2
 # A window needs this many called sites in a dog before its median depth is a
 # measurement rather than a coincidence.
@@ -650,9 +681,34 @@ PY
 bgzip -f dog10k_cyp1a2_breed_cn.bed
 tabix -f -p bed dog10k_cyp1a2_breed_cn.bed.gz
 
+# ── CpG islands ─────────────────────────────────────────────────────────────
+# Drawn beside the paintings so the widest hole in them has its cause on screen
+# rather than in this comment: see the note beside MINUNIQUE. Same UCSC API the
+# repeat mask comes from, so this still downloads no genome.
+curl -fsSL "$UCSC_API/getData/track?genome=canFam4;track=cpgIslandExt;chrom=$CHROM;start=$START;end=$END" \
+  > cpg.json
+python3 - <<'PY'
+import json
+
+items = sorted(json.load(open('cpg.json'))['cpgIslandExt'],
+               key=lambda i: i['chromStart'])
+with open('dog10k_cyp1a2_cpg.bed', 'w') as fh:
+    for it in items:
+        fh.write('\t'.join([it['chrom'], str(it['chromStart']),
+                            str(it['chromEnd']), it['name'], '0', '.',
+                            '%.1f' % it['perGc'], '%.2f' % it['obsExp'],
+                            str(it['length'])]) + '\n')
+print()
+print('%d CpG islands over the window' % len(items))
+PY
+
+bgzip -f dog10k_cyp1a2_cpg.bed
+tabix -f -p bed dog10k_cyp1a2_cpg.bed.gz
+
 echo
 echo "Wrote $(pwd)/dog10k_cyp1a2_cn.bed.gz, one painted row per CRAM dog,"
 echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset,"
-echo "     $(pwd)/dog10k_cyp1a2_breed_cn.bed.gz, the named panel of that file."
+echo "     $(pwd)/dog10k_cyp1a2_breed_cn.bed.gz, the named panel of that file,"
+echo "     $(pwd)/dog10k_cyp1a2_cpg.bed.gz, the CpG islands under the window."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
 echo "check its legend and rowOrder slots against the blocks printed above."
