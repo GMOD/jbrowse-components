@@ -108,9 +108,9 @@ self-alignment lane) is filtered out of `groupOrder`, so the lane never draws �
 but it must also be filtered out of the **cross-group derivations** that walk
 `rpcDataMap` directly (`coverageStats`, `colorLegendCategories`, the sashimi
 down-strip), or a hidden lane still sizes the axis the visible ones share. Pass
-the set as the last argument to `eachGroup`/`eachGroupData`/`someGroupData`. The
-per-group regroupers keep every lane on purpose — consumers look them up by an
-already-filtered `groupOrder` key.
+the set as the last argument to `eachGroup`, the one generator every such scan
+walks. The per-group regroupers keep every lane on purpose — consumers look them
+up by an already-filtered `groupOrder` key.
 
 Arcs take the set the same way (last argument to `computeArcsByGroup`) rather
 than being pre-filtered by the caller, because the drop has to happen **before**

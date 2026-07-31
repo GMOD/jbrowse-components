@@ -22,7 +22,7 @@ function makeData(counts: number[]): PileupDataResult {
     sashimiX1,
     sashimiX2,
     sashimiCounts: new Uint32Array(counts),
-    sashimiColorTypes: new Uint8Array(n),
+    sashimiStrands: new Int8Array(n),
   } as unknown as PileupDataResult
 }
 
@@ -65,7 +65,7 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
     sashimiX1: new Uint32Array([100, 100, 100]),
     sashimiX2: new Uint32Array([150, 300, 1100]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiColorTypes: new Uint8Array([0, 0, 0]),
+    sashimiStrands: new Int8Array([0, 0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   // up-mode: a taller arc rises further, so its apex labelY is smaller.
@@ -78,7 +78,7 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
     sashimiX1: new Uint32Array([100, 100]),
     sashimiX2: new Uint32Array([105, 400]),
     sashimiCounts: new Uint32Array([5, 5]),
-    sashimiColorTypes: new Uint8Array([0, 0]),
+    sashimiStrands: new Int8Array([0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.showLabel).toBe(false)
@@ -92,7 +92,7 @@ test('suppresses the count label when the digits, not the span, overflow', () =>
     sashimiX1: new Uint32Array([100, 500]),
     sashimiX2: new Uint32Array([130, 530]),
     sashimiCounts: new Uint32Array([5, 12345]),
-    sashimiColorTypes: new Uint8Array([0, 0]),
+    sashimiStrands: new Int8Array([0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const showByStart = new Map(arcs.map(a => [a.start, a.showLabel]))
@@ -109,7 +109,7 @@ test('auto splits crossing junctions in a reversed displayed region', () => {
     sashimiX1: new Uint32Array([100, 200]),
     sashimiX2: new Uint32Array([300, 400]),
     sashimiCounts: new Uint32Array([5, 5]),
-    sashimiColorTypes: new Uint8Array([0, 0]),
+    sashimiStrands: new Int8Array([0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({
     ...baseOpts(data, 0),
@@ -121,13 +121,13 @@ test('auto splits crossing junctions in a reversed displayed region', () => {
 })
 
 test('tints arcs with the read-alignment strand colors', () => {
-  // colorType 0/1/2 -> strand fwd/rev/unknown; each arc reuses the matching
-  // read strand color so a junction reads the same hue as its supporting reads.
+  // Each arc reuses the matching read strand color, so a junction reads the same
+  // hue as the reads supporting it; 0 (no read carried a strand tag) is neutral.
   const data = {
     sashimiX1: new Uint32Array([100, 300, 500]),
     sashimiX2: new Uint32Array([200, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiColorTypes: new Uint8Array([0, 1, 2]),
+    sashimiStrands: new Int8Array([1, -1, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const strokeByStart = new Map(arcs.map(a => [a.start, a.stroke]))
@@ -151,7 +151,7 @@ test('auto splits crossing junctions onto opposite sides', () => {
     sashimiX1: new Uint32Array([100, 200, 500]),
     sashimiX2: new Uint32Array([300, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiColorTypes: new Uint8Array([0, 0, 0]),
+    sashimiStrands: new Int8Array([0, 0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
   const byStart = new Map(arcs.map(a => [a.start, a.side]))
@@ -170,13 +170,13 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([1100]),
     sashimiCounts: new Uint32Array([5]),
-    sashimiColorTypes: new Uint8Array([0]),
+    sashimiStrands: new Int8Array([0]),
   } as unknown as PileupDataResult
   const region1 = {
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([1100]),
     sashimiCounts: new Uint32Array([8]),
-    sashimiColorTypes: new Uint8Array([0]),
+    sashimiStrands: new Int8Array([0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({
     rpcDataMap: new Map([
@@ -197,6 +197,52 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
   expect(arcs[0]!.score).toBe(8)
 })
 
+test('a shared junction whose copies disagree on strand still renders once', () => {
+  // Same collapsed-intron duplication as above, but the two regions resolved
+  // different dominant strands. Keying the merge on the strand as well left two
+  // arcs with a byte-identical path `d` stacked on the same pixels — the very
+  // per-strand duplication `computeSashimiJunctions` collapses within a region.
+  // The heavier copy wins the tint along with the count.
+  const region = (count: number, strand: number) =>
+    ({
+      sashimiX1: new Uint32Array([100]),
+      sashimiX2: new Uint32Array([1100]),
+      sashimiCounts: new Uint32Array([count]),
+      sashimiStrands: new Int8Array([strand]),
+    }) as unknown as PileupDataResult
+  const arcs = computeSashimiArcs({
+    rpcDataMap: new Map([
+      [0, region(5, -1)],
+      [1, region(8, 1)],
+    ]),
+    visibleRegions: [
+      { refName: 'chr1', displayedRegionIndex: 0 },
+      { refName: 'chr1', displayedRegionIndex: 1 },
+    ],
+    bpToScreenX: (_refName: string, bp: number) => bp,
+    coverageHeight: 100,
+    sashimiArcsHeight: 40,
+    mode: 'up',
+    minSashimiScore: 0,
+  })
+  expect(arcs).toHaveLength(1)
+  expect(arcs[0]!.score).toBe(8)
+  expect(arcs[0]!.stroke).toBe(colorFwdStrand)
+})
+
+test('a coverage band too short for its scalebar margins flattens, never inverts', () => {
+  // clampBandHeight's 20px drag floor does not bind a config-declared height, so
+  // coverageHeight can be under 2*YSCALEBAR_LABEL_OFFSET. The subtraction went
+  // negative and flipped the arc direction, curving every 'up' arc down through
+  // the pileup.
+  const arcs = computeSashimiArcs({
+    ...baseOpts(makeData([5]), 0),
+    coverageHeight: 4,
+  })
+  expect(arcs[0]!.labelY).toBe(0)
+  expect(arcs[0]!.d).toBe('M 100 0 C 100 0, 200 0, 200 0')
+})
+
 test('auto keeps shared-start (nested) junctions on the same side', () => {
   // Same donor, two acceptors (100-300, 100-500) — common in alternative
   // splicing. These nest concentrically rather than interleave, so auto must
@@ -205,7 +251,7 @@ test('auto keeps shared-start (nested) junctions on the same side', () => {
     sashimiX1: new Uint32Array([100, 100]),
     sashimiX2: new Uint32Array([300, 500]),
     sashimiCounts: new Uint32Array([5, 5]),
-    sashimiColorTypes: new Uint8Array([0, 0]),
+    sashimiStrands: new Int8Array([0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
   expect(arcs.every(a => a.side === 'up')).toBe(true)
@@ -217,7 +263,7 @@ test('auto puts the heavier of two crossing junctions on the upper band', () => 
     sashimiX1: new Uint32Array([100, 200]),
     sashimiX2: new Uint32Array([300, 400]),
     sashimiCounts: new Uint32Array([5, 50]),
-    sashimiColorTypes: new Uint8Array([0, 0]),
+    sashimiStrands: new Int8Array([0, 0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
   const byStart = new Map(arcs.map(a => [a.start, a.side]))

@@ -1,34 +1,20 @@
 import type { CoverageGap } from '@jbrowse/alignments-core'
 
-// colorType encoding for a sashimi arc, shared with `computeOverlay.ts`: the
-// worker packs these into the `sashimiColorTypes` Uint8Array and the overlay
-// decodes them via `colorTypeToStrand`. Keeping both ends on these constants
-// stops the producer/consumer mapping from drifting across the worker boundary.
-export const SASHIMI_FORWARD = 0
-export const SASHIMI_REVERSE = 1
-export const SASHIMI_UNKNOWN = 2
-
-export function colorTypeToStrand(colorType: number) {
-  return colorType === SASHIMI_FORWARD
-    ? 1
-    : colorType === SASHIMI_REVERSE
-      ? -1
-      : 0
-}
-
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
 // `unknown` is "no strand tag", i.e. an abstention, not a third competing
 // strand — 3 forward-tagged + 3 untagged reads is a forward junction, not an
 // ambiguous one. A junction with no votes at all (fwd === rev === 0) is
-// untagged and stays "unknown" rather than defaulting to reverse; contradictory
-// votes (fwd === rev > 0, e.g. overlapping antisense genes) are genuinely
-// ambiguous and get the same neutral color.
-function dominantColorType(fwd: number, rev: number) {
-  return fwd > rev
-    ? SASHIMI_FORWARD
-    : rev > fwd
-      ? SASHIMI_REVERSE
-      : SASHIMI_UNKNOWN
+// untagged and stays 0 rather than defaulting to reverse; contradictory votes
+// (fwd === rev > 0, e.g. overlapping antisense genes) are genuinely ambiguous
+// and get the same neutral color.
+//
+// The result is a plain +1/-1/0 strand — the same vocabulary as
+// `getEffectiveStrand`, `SashimiArc.strand`, the tooltip, and the detail widget
+// — so it crosses the worker boundary as-is. It used to be packed into a
+// separate 0=fwd/1=rev/2=unknown `colorType` enum that the overlay decoded
+// straight back, an encoding no renderer ever consumed.
+function dominantStrand(fwd: number, rev: number) {
+  return fwd > rev ? 1 : rev > fwd ? -1 : 0
 }
 
 // Bucket skip-gaps by (start,end) and emit one arc per junction, counting every
@@ -80,14 +66,14 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
   const n = junctions.size
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
-  const sashimiColorTypes = new Uint8Array(n)
+  const sashimiStrands = new Int8Array(n)
   const sashimiCounts = new Uint32Array(n)
 
   let i = 0
   for (const j of junctions.values()) {
     sashimiX1[i] = j.start
     sashimiX2[i] = j.end
-    sashimiColorTypes[i] = dominantColorType(j.fwd, j.rev)
+    sashimiStrands[i] = dominantStrand(j.fwd, j.rev)
     sashimiCounts[i] = j.total
     i++
   }
@@ -95,7 +81,7 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
   return {
     sashimiX1,
     sashimiX2,
-    sashimiColorTypes,
+    sashimiStrands,
     sashimiCounts,
   }
 }

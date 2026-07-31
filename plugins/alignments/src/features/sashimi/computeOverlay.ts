@@ -6,8 +6,6 @@ import {
 } from '@jbrowse/core/ui/theme'
 import { measureText } from '@jbrowse/core/util'
 
-import { colorTypeToStrand } from './compute.ts'
-
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Sashimi placement, owned by the compute layer (the display imports it via
@@ -73,7 +71,7 @@ function getArcColor(strand: number) {
 }
 
 // Type size of the arc's count label. Owned here rather than by
-// `SashimiArcLabel` (which imports it) because `labelSpanPx` below has to know
+// `SashimiArcLabels` (which imports it) because `labelSpanPx` below has to know
 // how wide the text renders in order to suppress it — a font size the component
 // picked on its own would silently desync the two.
 export const SASHIMI_LABEL_FONT_SIZE = 9
@@ -118,7 +116,8 @@ const SPAN_REF_MAX_BP = 100_000
 // (both interior controls share one y), so drawing was never affected — but
 // `crosses` compares left edges to decide interleaving, and fed a flipped pair
 // it read the arc as spanning the wrong interval and mis-assigned sides in
-// 'auto'. Normalizing once here keeps every downstream consumer on screen order.
+// 'auto'. Building these three fields only through `screenSpan` keeps every
+// downstream consumer on screen order by construction.
 interface RawArc {
   left: number
   right: number
@@ -130,11 +129,70 @@ interface RawArc {
   refName: string
 }
 
+// The one place a projected (start, end) pair becomes screen order. Returning
+// all three fields together is what makes `left <= right` and
+// `spanPx === right - left` true by construction rather than by three
+// separately-written Math.min/max/abs calls agreeing.
+function screenSpan(x1: number, x2: number) {
+  const [left, right] = x1 <= x2 ? [x1, x2] : [x2, x1]
+  return { left, right, spanPx: right - left }
+}
+
 // Stroke width scales with the log of supporting-read count (so a junction with
 // 10x the reads isn't drawn 10x as thick). Floored at 1px because a sub-pixel
 // stroke is both invisible and impossible to hover/click for its tooltip.
 function strokeWidthForCount(count: number) {
   return Math.max(1, Math.log(count + 1))
+}
+
+// Fraction of its band this junction's arc rises, from its genomic span on the
+// fixed log scale above. Self-contained (the log reference points don't leak
+// into the caller as loop-hoisted locals) and clamped to
+// [MIN_ARC_FRAC, MAX_ARC_FRAC] for any span, including the degenerate
+// zero-length one.
+function arcHeightFraction(genomicSpan: number) {
+  const logRefMin = Math.log(SPAN_REF_MIN_BP)
+  const logRefRange = Math.log(SPAN_REF_MAX_BP) - logRefMin
+  const norm = Math.min(
+    1,
+    Math.max(0, (Math.log(Math.max(1, genomicSpan)) - logRefMin) / logRefRange),
+  )
+  return MIN_ARC_FRAC + (MAX_ARC_FRAC - MIN_ARC_FRAC) * norm
+}
+
+// Where one side draws, in its own band-local coordinates: up arcs hang off the
+// coverage histogram's zero baseline and rise, down arcs hang off the strip's
+// top edge and drop. One function rather than three parallel `isDown ?`
+// ternaries, which had to agree on the same predicate to stay coherent.
+function bandGeometry(
+  side: SashimiSide,
+  heights: { effectiveHeight: number; sashimiArcsHeight: number },
+) {
+  return side === 'down'
+    ? { band: heights.sashimiArcsHeight, baseline: 0, dir: 1 }
+    : {
+        band: heights.effectiveHeight,
+        baseline: heights.effectiveHeight,
+        dir: -1,
+      }
+}
+
+// The arc itself: a symmetric cubic from (left, baseline) to (right, baseline)
+// with both interior controls at `ctrl`. The count label rides the curve's
+// midpoint, which for that control layout is exactly 75% of the way from
+// baseline to `ctrl` — derived from the same two numbers the path string uses,
+// so the label cannot drift off the curve it annotates.
+function arcCubic(
+  span: { left: number; right: number },
+  baseline: number,
+  ctrl: number,
+) {
+  const { left, right } = span
+  return {
+    d: `M ${left} ${baseline} C ${left} ${ctrl}, ${right} ${ctrl}, ${right} ${baseline}`,
+    labelX: (left + right) / 2,
+    labelY: baseline + 0.75 * (ctrl - baseline),
+  }
 }
 
 // The interleaving test's whole input: any left<=right ordered pair. RawArc
@@ -156,33 +214,47 @@ function crosses(a: Span, b: Span) {
   return x.left < y.left && y.left < x.right && x.right < y.right
 }
 
+// How many already-placed arcs on one side this arc would interleave with.
+function countCrossings(placed: RawArc[], a: RawArc) {
+  return placed.reduce((n, o) => n + (crosses(a, o) ? 1 : 0), 0)
+}
+
 // Greedy 2-coloring for 'auto': place each junction on the side it crosses
 // least, so interleaving junctions separate above/below the coverage. Processed
 // heaviest-first (ties broken left-to-right) so when a crossing forces a split
 // the higher-count junction claims the upper band and the lighter one drops.
 // O(n²) is fine — sashimi arc counts are low by design.
-function assignSides(raw: RawArc[]): SashimiSide[] {
-  const sides = new Array<SashimiSide>(raw.length)
+//
+// The greedy pass visits the arcs in a different order than it reports them, so
+// it keys sides by the arc object and re-reads them in input order. The lookup
+// is total by construction: the loop below visits every element of `raw`.
+function autoSides(raw: RawArc[]) {
   const up: RawArc[] = []
   const down: RawArc[] = []
-  const heaviestFirst = raw
-    .map((a, i) => ({ a, i }))
-    .sort((p, q) => q.a.count - p.a.count || p.a.left - q.a.left)
-  for (const { a, i } of heaviestFirst) {
-    const upCross = up.filter(o => crosses(a, o)).length
-    const downCross = down.filter(o => crosses(a, o)).length
-    if (upCross <= downCross) {
-      sides[i] = 'up'
-      up.push(a)
-    } else {
-      sides[i] = 'down'
-      down.push(a)
-    }
+  const sides = new Map<RawArc, SashimiSide>()
+  const heaviestFirst = [...raw].sort(
+    (p, q) => q.count - p.count || p.left - q.left,
+  )
+  for (const a of heaviestFirst) {
+    const side: SashimiSide =
+      countCrossings(up, a) <= countCrossings(down, a) ? 'up' : 'down'
+    sides.set(a, side)
+    ;(side === 'up' ? up : down).push(a)
   }
-  return sides
+  return raw.map(arc => ({ arc, side: sides.get(arc)! }))
 }
 
-// Exactly the condition under which `assignSides` puts at least one arc 'down',
+// Each junction paired with the side it draws on. 'up'/'down' force every arc
+// one way — and since SashimiSide is exactly SashimiArcsMode minus 'auto', that
+// branch needs no mapping table. Pairs rather than a `sides[]` parallel to
+// `raw[]`, so no caller carries an index alignment it cannot see.
+function resolveSides(raw: RawArc[], mode: SashimiArcsMode) {
+  return mode === 'auto'
+    ? autoSides(raw)
+    : raw.map(arc => ({ arc, side: mode }))
+}
+
+// Exactly the condition under which `autoSides` puts at least one arc 'down',
 // so the layout can reserve the below-coverage strip only when 'auto' will
 // actually fill it (a score filter that removes every crossing junction lets the
 // survivors reclaim that space). No crossings => every arc sees
@@ -191,12 +263,15 @@ function assignSides(raw: RawArc[]): SashimiSide[] {
 // upCross >= 1, so b only stays 'up' when some earlier arc is 'down'. Either way
 // the band is used.
 //
-// O(n²) like `assignSides`, on the same low arc counts.
+// O(n²) like `autoSides`, but unlike it this runs over every junction in every
+// LOADED region (not just the visible ones), so the pair walk is an index
+// comparison rather than a `spans.slice(i + 1)` per element — the slices copied
+// O(n²) elements on top of the O(n²) comparisons.
 export function hasCrossingSpans(spans: Span[]) {
-  return spans.some((a, i) => spans.slice(i + 1).some(b => crosses(a, b)))
+  return spans.some((a, i) => spans.some((b, j) => j > i && crosses(a, b)))
 }
 
-export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
+export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
   const {
     rpcDataMap,
     visibleRegions,
@@ -212,17 +287,35 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
   // SVG down to the histogram top, so the drawable height down to that baseline
   // is coverageHeight - 2*offset. (Subtracting the offset only once anchored the
   // feet at the coverage *band* bottom, one offset below the histogram baseline.)
-  const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
+  //
+  // Floored at 0: the 20px drag floor does not bind a config-declared
+  // `coverageHeight` (see clampBandHeight), and a band under 2*offset made this
+  // negative, which flipped `dir * arcHeight` and curved every 'up' arc downward
+  // through the pileup instead of collapsing it flat.
+  const effectiveHeight = Math.max(
+    0,
+    coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET,
+  )
 
   // Collapsed introns split one refName into many displayedRegions, and the
   // per-region worker (rpcDataMap keyed by displayedRegionIndex) re-emits a
-  // junction spanning two of them in each region's data: a read with the skip
-  // gap overlaps both exons, so both regions' fetches return it. The fetch is
-  // uncapped (the pileup maxRows cap is a separate main-thread layout concern
-  // that never touches the worker's gap/coverage scan), so the two copies carry
-  // identical counts. Bucket by junction identity so a shared junction renders
-  // once instead of as arcs with a colliding refName:start:end:strand React key;
-  // max is a deterministic tiebreak.
+  // junction in EVERY region its supporting reads reach: an overlap query
+  // matches a read's full reference span, which by definition covers the skip
+  // gap, so an exon-skipping junction turns up in the exons it jumps over too.
+  // Bucket by junction identity so a shared junction renders once instead of as
+  // copies stacked on a byte-identical path `d`.
+  //
+  // The counts are NOT guaranteed equal, so the merge keeps the max rather than
+  // the first: a region spanning the junction sees every read carrying it, but
+  // one merely abutting an end sees only the reads whose alignment reaches into
+  // it — a strict subset. Every region's count is a lower bound, so the largest
+  // is the best available estimate.
+  //
+  // The key is refName:start:end WITHOUT the strand. Geometry derives purely
+  // from start/end, so two copies that disagreed on the dominant strand drew the
+  // identical path twice — exactly the per-strand duplication `compute.ts`
+  // collapses inside one region, reintroduced across regions. The heavier copy
+  // therefore wins the tint as well as the count.
   const rawByJunction = new Map<string, RawArc>()
   for (const region of visibleRegions) {
     const rpcData = rpcDataMap.get(region.displayedRegionIndex)
@@ -230,7 +323,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       continue
     }
     const { refName } = region
-    const { sashimiX1, sashimiX2, sashimiCounts, sashimiColorTypes } = rpcData
+    const { sashimiX1, sashimiX2, sashimiCounts, sashimiStrands } = rpcData
     const numSashimiArcs = sashimiX1.length
 
     for (let i = 0; i < numSashimiArcs; i++) {
@@ -246,18 +339,18 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       ) {
         continue
       }
-      const strand = colorTypeToStrand(sashimiColorTypes[i]!)
-      const junctionKey = `${refName}:${startBp}:${endBp}:${strand}`
+      const junctionKey = `${refName}:${startBp}:${endBp}`
       const existing = rawByJunction.get(junctionKey)
       if (existing) {
-        existing.count = Math.max(existing.count, count)
+        if (count > existing.count) {
+          existing.count = count
+          existing.strand = sashimiStrands[i]!
+        }
       } else {
         rawByJunction.set(junctionKey, {
-          left: Math.min(left, right),
-          right: Math.max(left, right),
-          spanPx: Math.abs(right - left),
+          ...screenSpan(left, right),
           count,
-          strand,
+          strand: sashimiStrands[i]!,
           start: startBp,
           end: endBp,
           refName,
@@ -267,36 +360,17 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
   }
   const raw = [...rawByJunction.values()]
 
-  const sides: SashimiSide[] =
-    mode === 'auto'
-      ? assignSides(raw)
-      : raw.map(() => (mode === 'down' ? 'down' : 'up'))
-
-  const logRefMin = Math.log(SPAN_REF_MIN_BP)
-  const logRefRange = Math.log(SPAN_REF_MAX_BP) - logRefMin
-
-  const arcs: SashimiArc[] = []
-  for (let i = 0; i < raw.length; i++) {
-    const a = raw[i]!
-    const side = sides[i]!
-    const isDown = side === 'down'
-    // Each side draws in its own band-local coordinates: up arcs hang off the
-    // coverage histogram baseline and rise; down arcs hang off the strip top and
-    // drop. The overlay/export place each in the matching SVG. MAX_ARC_FRAC
-    // leaves the top margin so the tallest arc clears the y-scalebar label.
-    const band = isDown ? sashimiArcsHeight : effectiveHeight
-    const baseline = isDown ? 0 : effectiveHeight
-    const dir = isDown ? 1 : -1
-    const genomicSpan = Math.max(1, Math.abs(a.end - a.start))
-    const norm = Math.min(
-      1,
-      Math.max(0, (Math.log(genomicSpan) - logRefMin) / logRefRange),
-    )
-    const arcHeight =
-      band * (MIN_ARC_FRAC + (MAX_ARC_FRAC - MIN_ARC_FRAC) * norm)
-    const ctrl = baseline + dir * arcHeight
-    arcs.push({
-      d: `M ${a.left} ${baseline} C ${a.left} ${ctrl}, ${a.right} ${ctrl}, ${a.right} ${baseline}`,
+  // The overlay/export place each side in the matching SVG, so `d` is
+  // band-local. MAX_ARC_FRAC leaves the top margin that keeps the tallest arc
+  // clear of the y-scalebar label.
+  return resolveSides(raw, mode).map(({ arc: a, side }) => {
+    const { band, baseline, dir } = bandGeometry(side, {
+      effectiveHeight,
+      sashimiArcsHeight,
+    })
+    const arcHeight = band * arcHeightFraction(Math.abs(a.end - a.start))
+    return {
+      ...arcCubic(a, baseline, baseline + dir * arcHeight),
       stroke: getArcColor(a.strand),
       strokeWidth: strokeWidthForCount(a.count),
       start: a.start,
@@ -305,11 +379,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       score: a.count,
       strand: a.strand,
       side,
-      labelX: (a.left + a.right) / 2,
-      // Cubic midpoint with both interior controls at `ctrl`: baseline + 0.75·Δ.
-      labelY: baseline + dir * arcHeight * 0.75,
       showLabel: a.spanPx >= labelSpanPx(a.count),
-    })
-  }
-  return arcs
+    }
+  })
 }

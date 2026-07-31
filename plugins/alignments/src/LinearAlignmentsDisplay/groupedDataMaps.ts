@@ -33,47 +33,6 @@ export function* eachGroup(
 
 const NOTHING_HIDDEN: ReadonlySet<string> = new Set()
 
-// Just the per-region data, for scans that don't care about region/group
-// identity (coverage/insert-size maxima, color legend categories).
-export function* eachGroupData(
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  hidden?: ReadonlySet<string>,
-) {
-  for (const { data } of eachGroup(rpcDataMap, hidden)) {
-    yield data
-  }
-}
-
-// Short-circuiting `.some` over every group's data — stops at the first match
-// without materializing the generator into an array (`[...eachGroupData()]`).
-export function someGroupData(
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  predicate: (data: PileupDataResult) => boolean,
-  hidden?: ReadonlySet<string>,
-) {
-  for (const data of eachGroupData(rpcDataMap, hidden)) {
-    if (predicate(data)) {
-      return true
-    }
-  }
-  return false
-}
-
-// True when any loaded region/group has a sashimi junction passing
-// `minSashimiScore`. The 'down' arm of `anyGroupHasSashimiDownArcs` below;
-// exported for its own unit tests.
-export function anyGroupHasSashimi(
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  minSashimiScore: number,
-  hidden?: ReadonlySet<string>,
-) {
-  return someGroupData(
-    rpcDataMap,
-    d => d.sashimiCounts.some(c => c >= minSashimiScore),
-    hidden,
-  )
-}
-
 // True when some junction will actually be drawn in the strip below coverage —
 // i.e. whether that strip is worth reserving. 'up' never uses it; 'down' uses it
 // for any surviving junction; 'auto' only splits an arc down when junctions

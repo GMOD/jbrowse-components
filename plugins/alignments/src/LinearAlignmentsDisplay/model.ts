@@ -134,6 +134,7 @@ import type {
   SortedBy,
 } from '../shared/types'
 import type { ReadColorCategory } from './colorUtils.ts'
+import type { SashimiArcSection } from './components/sashimiArcs.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
@@ -1858,7 +1859,7 @@ export default function stateModelFactory(
          * in the overlay's render instead re-ran the O(n^2) 'auto' side
          * assignment for every section on every scroll frame.
          */
-        get sashimiArcSections() {
+        get sashimiArcSections(): SashimiArcSection[] {
           const view = getContainingView(self) as LGV
           if (
             !self.showSashimiArcs ||
@@ -2449,13 +2450,23 @@ export default function stateModelFactory(
             self.highlightedChainIds = []
           }
         }
+        // Sashimi only renders over the coverage band, so the two settings are
+        // tied in both directions. Kept here, not in the menu handlers, so the
+        // invariant holds for every caller.
         function setShowSashimiArcs(show: boolean) {
           setConf(self, 'showSashimiArcs', show)
-          // Sashimi only renders over the coverage band, so making it visible
-          // requires coverage. Keep this invariant here, not in the menu
-          // handler, so it holds for every caller.
           if (show) {
             setConf(self, 'showCoverage', true)
+          }
+        }
+        // The other half. Without it, hiding coverage left "Show sashimi arcs"
+        // ticked over a display drawing none — and the worker skips the junction
+        // scan entirely when the band is off (`runCoveragePipeline`), so the
+        // arcs the checkbox advertised had no data behind them either.
+        function setShowCoverage(show: boolean) {
+          setConf(self, 'showCoverage', show)
+          if (!show) {
+            setConf(self, 'showSashimiArcs', false)
           }
         }
         return {
@@ -2885,6 +2896,8 @@ export default function stateModelFactory(
            */
           setShowSashimiArcs,
 
+          setShowCoverage,
+
           /**
            * #action
            */
@@ -2900,13 +2913,6 @@ export default function stateModelFactory(
           // per-feature direction to keep in sync.
           setReadConnectionsDown(down: boolean) {
             setConf(self, 'readConnectionsDown', down)
-          },
-
-          /**
-           * #action
-           */
-          setShowCoverage(show: boolean) {
-            setConf(self, 'showCoverage', show)
           },
 
           /**

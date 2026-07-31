@@ -144,6 +144,23 @@ describe('alignments display cross-feature coupling', () => {
     expect(display.showSashimiArcs).toBe(false)
   })
 
+  // The other direction of the same invariant. Hiding coverage used to leave
+  // "Show sashimi arcs" ticked over a display drawing none — and the worker
+  // skips the junction scan when the band is off, so there was no data behind
+  // the ticked box either.
+  test('setShowCoverage(false) turns sashimi off', () => {
+    const display = createDisplay()
+    display.setShowSashimiArcs(true)
+    expect(display.showCoverage).toBe(true)
+
+    display.setShowCoverage(false)
+    expect(display.showSashimiArcs).toBe(false)
+
+    // and turning coverage back on does not resurrect it — sashimi is opt-in
+    display.setShowCoverage(true)
+    expect(display.showSashimiArcs).toBe(false)
+  })
+
   // Direction is a single shared field (readConnectionsDown); sashimi stores
   // no direction of its own, so there is nothing to keep in sync and
   // setReadConnectionsDown can't disturb sashimi visibility.
@@ -562,7 +579,7 @@ describe('sashimi score filter releases the reserved band', () => {
             ...makeEmptyPileupData(),
             sashimiX1: new Uint32Array([100, 300]),
             sashimiX2: new Uint32Array([500, 700]),
-            sashimiColorTypes: new Uint8Array([0, 0]),
+            sashimiStrands: new Int8Array([0, 0]),
             sashimiCounts: new Uint32Array([20, 2]),
           },
         },

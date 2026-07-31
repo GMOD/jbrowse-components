@@ -261,7 +261,7 @@ export interface PileupDataResult {
   // parallel across all four arrays.
   sashimiX1: Uint32Array // absolute genomic bp (junction start)
   sashimiX2: Uint32Array // absolute genomic bp (junction end)
-  sashimiColorTypes: Uint8Array // dominant strand: 0=forward, 1=reverse, 2=unknown
+  sashimiStrands: Int8Array // dominant strand: +1 forward, -1 reverse, 0 unknown
   sashimiCounts: Uint32Array // supporting reads per junction, all strands
 
   // Layout info

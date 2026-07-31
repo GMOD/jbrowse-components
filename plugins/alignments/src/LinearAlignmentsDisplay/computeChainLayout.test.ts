@@ -144,7 +144,7 @@ function makeChainData(opts: {
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),
-    sashimiColorTypes: new Uint8Array(0),
+    sashimiStrands: new Int8Array(0),
     sashimiCounts: new Uint32Array(0),
     numInsertions: 0,
     numSoftclips: 0,

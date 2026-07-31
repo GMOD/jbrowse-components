@@ -2,7 +2,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
-  anyGroupHasSashimi,
   anyGroupHasSashimiDownArcs,
   groupsWithSashimiDownArcs,
   buildChainIdMap,
@@ -293,46 +292,6 @@ test('buildChainIdMap keyed by name never collides across groups', () => {
   expect(m.get('hp2chain')).toEqual(['c', 'd'])
 })
 
-function sashimiData(sashimiCounts: number[]): PileupDataResult {
-  return { sashimiCounts } as unknown as PileupDataResult
-}
-
-test('anyGroupHasSashimi: true when any group has a junction at/above threshold', () => {
-  const m = new Map([
-    [
-      0,
-      grouped([
-        { key: '+', data: sashimiData([1, 2]) },
-        { key: '-', data: sashimiData([0, 5]) },
-      ]),
-    ],
-  ])
-  expect(anyGroupHasSashimi(m, 5)).toBe(true)
-  expect(anyGroupHasSashimi(m, 6)).toBe(false)
-})
-
-// A lane the display hides (LGVSyntenyDisplay's self-alignment lane) must not
-// drive the derivations shared across the visible lanes — it was still sizing
-// the coverage axis and reserving the sashimi strip.
-test('anyGroupHasSashimi: a hidden group does not count', () => {
-  const m = new Map([
-    [
-      0,
-      grouped([
-        { key: 'self', data: sashimiData([9]) },
-        { key: 'other', data: sashimiData([1]) },
-      ]),
-    ],
-  ])
-  expect(anyGroupHasSashimi(m, 5)).toBe(true)
-  expect(anyGroupHasSashimi(m, 5, new Set(['self']))).toBe(false)
-})
-
-test('anyGroupHasSashimi: false when no group has any junction', () => {
-  const m = new Map([[0, grouped([{ key: '', data: sashimiData([]) }])]])
-  expect(anyGroupHasSashimi(m, 0)).toBe(false)
-})
-
 // [start, end, count] per junction.
 function junctionData(junctions: [number, number, number][]): PileupDataResult {
   return {
@@ -392,6 +351,25 @@ test('anyGroupHasSashimiDownArcs: auto pools a group across regions, but not acr
     ],
   ])
   expect(anyGroupHasSashimiDownArcs(perGroup, 0, 'auto')).toBe(false)
+})
+
+// A lane the display hides (LGVSyntenyDisplay's self-alignment lane) must not
+// drive the derivations shared across the visible lanes — it was still
+// reserving the sashimi strip for every other lane.
+test('anyGroupHasSashimiDownArcs: a hidden group does not reserve the strip', () => {
+  const m = new Map([
+    [
+      0,
+      grouped([
+        { key: 'self', data: junctionData([[100, 700, 9]]) },
+        { key: 'other', data: junctionData([]) },
+      ]),
+    ],
+  ])
+  expect(anyGroupHasSashimiDownArcs(m, 5, 'down')).toBe(true)
+  expect(anyGroupHasSashimiDownArcs(m, 5, 'down', new Set(['self']))).toBe(
+    false,
+  )
 })
 
 test('anyGroupHasSashimiDownArcs: down reserves for any surviving junction, up never does', () => {

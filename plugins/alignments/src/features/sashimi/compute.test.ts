@@ -1,9 +1,4 @@
-import {
-  SASHIMI_FORWARD,
-  SASHIMI_REVERSE,
-  SASHIMI_UNKNOWN,
-  computeSashimiJunctions,
-} from './compute.ts'
+import { computeSashimiJunctions } from './compute.ts'
 
 import type { CoverageGap } from '@jbrowse/alignments-core'
 
@@ -25,7 +20,7 @@ test('emits one arc per junction, counting reads on every strand', () => {
   // A junction whose reads disagree used to become three arcs (fwd/rev/unknown)
   // with a byte-identical path — stacked on the same pixels with their count
   // labels piled on one point, the visible one advertising 20 of 25 reads.
-  const { sashimiX1, sashimiX2, sashimiCounts, sashimiColorTypes } =
+  const { sashimiX1, sashimiX2, sashimiCounts, sashimiStrands } =
     computeSashimiJunctions(
       skips([
         ...rep(20, 100, 1100, 1),
@@ -36,7 +31,7 @@ test('emits one arc per junction, counting reads on every strand', () => {
   expect([...sashimiX1]).toEqual([100])
   expect([...sashimiX2]).toEqual([1100])
   expect([...sashimiCounts]).toEqual([25])
-  expect([...sashimiColorTypes]).toEqual([SASHIMI_FORWARD])
+  expect([...sashimiStrands]).toEqual([1])
 })
 
 test('keeps distinct junctions apart', () => {
@@ -58,34 +53,34 @@ test('ignores deletion gaps', () => {
 test('an untagged junction is unknown, not reverse', () => {
   // No read carries a strand tag (e.g. default STAR output without
   // --outSAMstrandField), so there is no vote either way.
-  const { sashimiColorTypes } = computeSashimiJunctions(
+  const { sashimiStrands } = computeSashimiJunctions(
     skips(rep(5, 100, 1100, 0)),
   )
-  expect([...sashimiColorTypes]).toEqual([SASHIMI_UNKNOWN])
+  expect([...sashimiStrands]).toEqual([0])
 })
 
 test('untagged reads abstain rather than outvoting a tagged strand', () => {
   // 3 forward-tagged + 3 untagged is a forward junction: "no tag" is a missing
   // vote, not a third competing strand.
-  const { sashimiColorTypes, sashimiCounts } = computeSashimiJunctions(
+  const { sashimiStrands, sashimiCounts } = computeSashimiJunctions(
     skips([...rep(3, 100, 1100, 1), ...rep(3, 100, 1100, 0)]),
   )
-  expect([...sashimiColorTypes]).toEqual([SASHIMI_FORWARD])
+  expect([...sashimiStrands]).toEqual([1])
   expect([...sashimiCounts]).toEqual([6])
 })
 
 test('contradictory strand tags tint the junction as ambiguous', () => {
   // Equal forward/reverse support (overlapping antisense genes) genuinely can't
   // be called, so it gets the neutral color rather than an arbitrary winner.
-  const { sashimiColorTypes } = computeSashimiJunctions(
+  const { sashimiStrands } = computeSashimiJunctions(
     skips([...rep(4, 100, 1100, 1), ...rep(4, 100, 1100, -1)]),
   )
-  expect([...sashimiColorTypes]).toEqual([SASHIMI_UNKNOWN])
+  expect([...sashimiStrands]).toEqual([0])
 })
 
 test('the dominant strand tints a junction whose reads mostly agree', () => {
-  const { sashimiColorTypes } = computeSashimiJunctions(
+  const { sashimiStrands } = computeSashimiJunctions(
     skips([...rep(2, 100, 1100, 1), ...rep(9, 100, 1100, -1)]),
   )
-  expect([...sashimiColorTypes]).toEqual([SASHIMI_REVERSE])
+  expect([...sashimiStrands]).toEqual([-1])
 })
