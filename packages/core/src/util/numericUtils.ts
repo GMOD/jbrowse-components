@@ -86,24 +86,33 @@ export function getNumberGrouping() {
 // Fast number formatter with thousand separators.
 // Benchmarked at 5-67x faster than toLocaleString('en-US')
 export function toLocale(n: number) {
-  if (!numberGrouping || (n > -1000 && n < 1000)) {
+  const abs = n < 0 ? -n : n
+  // `!(abs >= 1000)` also covers NaN, which has no digits to group, and
+  // String() switches to exponential form at 1e21 and for Infinity, where a
+  // thousands separator is meaningless
+  if (!numberGrouping || !(abs >= 1000) || abs >= 1e21) {
     return String(n)
   }
-  const neg = n < 0
-  const str = String(neg ? -n : n)
-  const len = str.length
-  let result = neg ? '-' : ''
-  for (let i = 0; i < len; i++) {
-    if (i > 0 && (len - i) % 3 === 0) {
+  const str = String(abs)
+  // separators count from the decimal point, not the end of the string
+  const intLen = Number.isInteger(abs) ? str.length : str.indexOf('.')
+  let result = n < 0 ? '-' : ''
+  for (let i = 0; i < intLen; i++) {
+    if (i > 0 && (intLen - i) % 3 === 0) {
       result += ','
     }
     result += str[i]
   }
-  return result
+  return intLen === str.length ? result : result + str.slice(intLen)
+}
+
+// numeric significant-figure rounding; reducePrecision is the formatted form
+export function toPrecision(s: number, n = 3) {
+  return Number.parseFloat(s.toPrecision(n))
 }
 
 export function reducePrecision(s: number, n = 3) {
-  return toLocale(Number.parseFloat(s.toPrecision(n)))
+  return toLocale(toPrecision(s, n))
 }
 
 const oneEightyOverPi = 180 / Math.PI

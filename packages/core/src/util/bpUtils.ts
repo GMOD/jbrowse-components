@@ -1,4 +1,4 @@
-import { reducePrecision, sum, toLocale } from './numericUtils.ts'
+import { reducePrecision, sum, toLocale, toPrecision } from './numericUtils.ts'
 
 import type { Region } from './types/index.ts'
 
@@ -44,13 +44,14 @@ export function featureSpanPx(
 }
 
 export function getBpDisplayStr(total: number) {
-  if (Math.floor(total / 1_000_000) > 0) {
-    return `${reducePrecision(total / 1_000_000)}Mbp`
-  } else if (Math.floor(total / 1_000) > 0) {
-    return `${reducePrecision(total / 1_000)}Kbp`
-  } else {
-    return `${Math.floor(total)}bp`
-  }
+  // the unit comes from the rounded value, not the raw one: 3-significant-digit
+  // rounding of 999,500bp reaches 1000, which reads as "1Mbp" not "1,000Kbp"
+  const mb = toPrecision(total / 1_000_000)
+  return mb >= 1
+    ? `${toLocale(mb)}Mbp`
+    : total >= 1000
+      ? `${reducePrecision(total / 1_000)}Kbp`
+      : `${Math.floor(total)}bp`
 }
 
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
