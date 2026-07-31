@@ -216,14 +216,17 @@ describe('createWheelZoomController', () => {
     views,
     scrollZoom,
     swallowUnhandled = false,
+    releaseOnPointerLeave = false,
   }: {
     views: ReturnType<typeof makeView>[]
     scrollZoom: boolean
     swallowUnhandled?: boolean
+    releaseOnPointerLeave?: boolean
   }) {
     dispose = createWheelZoomController({
       element,
       swallowUnhandled,
+      releaseOnPointerLeave,
       resolveTarget: () => ({
         views,
         scrollZoom,
@@ -359,9 +362,21 @@ describe('createWheelZoomController', () => {
     expect(globalThis.requestAnimationFrame).not.toHaveBeenCalled()
   })
 
-  test('stops handling once the pointer leaves the element', () => {
+  test('follows a latched gesture off the element by default', () => {
     const view = makeView()
     setup({ views: [view], scrollZoom: true })
+    // a zoom slides a small target out from under a stationary cursor, so a
+    // mouseleave mid-gesture must not abandon it
+    element.dispatchEvent(new MouseEvent('mouseleave'))
+    wheel({ deltaY: -20 })
+    runFrame(1000)
+
+    expect(view.zoomTo).toHaveBeenCalledTimes(1)
+  })
+
+  test('releaseOnPointerLeave stops handling once the pointer leaves', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true, releaseOnPointerLeave: true })
     element.dispatchEvent(new MouseEvent('mouseleave'))
     const event = wheel({ deltaY: -20 })
 

@@ -136,6 +136,16 @@ export interface WheelZoomControllerOptions {
   // preventDefault even on a gesture we take no action on, so the page can never
   // scroll out from under this element
   swallowUnhandled?: boolean
+  /**
+   * Abandon the gesture once the pointer leaves `element`, rather than following
+   * the wheel events the browser keeps latching here (see trackPointerPresence).
+   *
+   * Only for an element large and stationary enough that "the pointer left" is a
+   * real exit. On a small or moving target it isn't: a zoom slides a thin svg
+   * ribbon out from under a stationary cursor, the browser fires mouseleave, and
+   * the gesture would die halfway through. So this is opt-in, not the default.
+   */
+  releaseOnPointerLeave?: boolean
   // observe every event this element receives, before any gate
   onEvent?: (event: WheelEvent) => void
 }
@@ -171,6 +181,7 @@ export function createWheelZoomController({
   element,
   resolveTarget,
   swallowUnhandled = false,
+  releaseOnPointerLeave = false,
   onEvent,
 }: WheelZoomControllerOptions) {
   const s: WheelState = {
@@ -185,14 +196,15 @@ export function createWheelZoomController({
     warnedNonCancelable: false,
   }
 
-  // Once the pointer leaves, drop any in-flight accumulation and stop consuming
-  // the wheel events the browser keeps latching here (see trackPointerPresence)
-  // so a continued gesture pans/zooms nothing and chains to the page instead of
-  // staying stuck to this element.
-  const presence = trackPointerPresence(element, () => {
-    s.scrollDelta = 0
-    s.zoomAccum = 0
-  })
+  // see releaseOnPointerLeave: drop any in-flight accumulation and stop consuming
+  // latched wheel events, so a continued gesture pans/zooms nothing and chains to
+  // the page instead of staying stuck to this element
+  const presence = releaseOnPointerLeave
+    ? trackPointerPresence(element, () => {
+        s.scrollDelta = 0
+        s.zoomAccum = 0
+      })
+    : undefined
 
   function flush(now: number) {
     const elapsed = wheelFrameElapsedMs(now, s.lastRafTime)
@@ -224,7 +236,8 @@ export function createWheelZoomController({
 
   function onWheel(event: WheelEvent) {
     onEvent?.(event)
-    const target = presence.isOver ? resolveTarget(event) : undefined
+    const gated = presence !== undefined && !presence.isOver
+    const target = gated ? undefined : resolveTarget(event)
     if (target && !(event.shiftKey && target.scrollZoom)) {
       // a gap longer than the frame-elapsed clamp means this event starts a new
       // gesture, so the previous frame time is meaningless — including when it
@@ -292,7 +305,7 @@ export function createWheelZoomController({
   element.addEventListener('wheel', onWheel, { passive: false })
   return () => {
     element.removeEventListener('wheel', onWheel)
-    presence.dispose()
+    presence?.dispose()
     // cancel any pending frame so a flush can't fire against a detached view
     if (s.rafId !== null) {
       cancelAnimationFrame(s.rafId)

@@ -18,6 +18,9 @@ export function useWheelScroll(
     return curr
       ? createWheelZoomController({
           element: curr,
+          // the view fills its own area and doesn't move under the cursor, so a
+          // mouseleave here really means the gesture belongs to the page now
+          releaseOnPointerLeave: true,
           resolveTarget: () => ({
             views: [model],
             scrollZoom: !!model.scrollZoom,
