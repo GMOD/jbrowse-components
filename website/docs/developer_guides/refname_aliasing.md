@@ -57,9 +57,11 @@ FASTA/sequence adapter; the other columns become aliases. The primary column is
 the first by default; use `refNameColumn` (below) to pick a different one.
 
 ```json
-{
-  "type": "RefNameAliasAdapter",
-  "uri": "aliases.txt"
+"refNameAliases": {
+  "adapter": {
+    "type": "RefNameAliasAdapter",
+    "uri": "aliases.txt"
+  }
 }
 ```
 
@@ -81,10 +83,12 @@ chr1	1	NC_000001.11
 ```
 
 ```json
-{
-  "type": "RefNameAliasAdapter",
-  "uri": "aliases.txt",
-  "refNameColumnHeaderName": "name"
+"refNameAliases": {
+  "adapter": {
+    "type": "RefNameAliasAdapter",
+    "uri": "aliases.txt",
+    "refNameColumnHeaderName": "name"
+  }
 }
 ```
 
@@ -96,9 +100,11 @@ accessions, UCSC-style names, and sequence names all at once. Get them from the
 assembly, or the `datasets` CLI.
 
 ```json
-{
-  "type": "NcbiSequenceReportAliasAdapter",
-  "uri": "sequence_report.tsv"
+"refNameAliases": {
+  "adapter": {
+    "type": "NcbiSequenceReportAliasAdapter",
+    "uri": "sequence_report.tsv"
+  }
 }
 ```
 

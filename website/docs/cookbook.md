@@ -380,7 +380,8 @@ can encode span or score. See
 ### Showing only some features (filtering)
 
 `jexlFilters` draws only the features that pass every expression in the list.
-Unlike `color`, these expressions **leave off the `jexl:` prefix**:
+Every entry is an expression already, so unlike `color`, the `jexl:` prefix is
+optional here:
 
 ```json
 "displayDefaults": {

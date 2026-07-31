@@ -134,7 +134,7 @@ Then load it with an
 [`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter). The PanSN
 `sample#` prefix on every record is how the adapter maps a record to its strain:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "ecoli_cactus_ava",

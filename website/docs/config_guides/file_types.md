@@ -23,7 +23,7 @@ adapter auto-resolves the companion index by appending the standard suffix
 tabix `.gz`, and so on).
 
 ```json
-{
+"adapter": {
   "type": "BamAdapter",
   "uri": "https://example.com/sample.bam"
 }
@@ -37,7 +37,7 @@ genomes exceed it; CRAM's `.crai` has no such limit). BAM and the tabix-indexed
 adapters (VCF, GFF3, BED, BEDGRAPH, MAF, PAF) accept a `csi: true` shorthand:
 
 ```json
-{
+"adapter": {
   "type": "VcfTabixAdapter",
   "uri": "https://example.com/variants.vcf.gz",
   "csi": true
@@ -66,7 +66,7 @@ definition, not a track.
 <!-- FILE_TYPES sequence END -->
 
 ```json
-{
+"adapter": {
   "type": "IndexedFastaAdapter",
   "uri": "https://example.com/genome.fa"
 }
@@ -157,7 +157,7 @@ slot. If your file keys genes on a different attribute (e.g. `gene_id`), set
 `aggregateField` accordingly:
 
 ```json
-{
+"adapter": {
   "type": "GtfTabixAdapter",
   "uri": "https://example.com/genes.gtf.gz",
   "aggregateField": "gene_id"

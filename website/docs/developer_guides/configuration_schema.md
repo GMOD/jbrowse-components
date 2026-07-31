@@ -168,7 +168,10 @@ ConfigurationSchema(
 This allows minimal configs in `config.json`:
 
 ```json
-{ "type": "MyAdapter", "uri": "tracks/data.bin" }
+"adapter": {
+  "type": "MyAdapter",
+  "uri": "tracks/data.bin"
+}
 ```
 
 `preProcessSnapshot` also runs on track configs to inject missing display stubs
@@ -270,11 +273,13 @@ Callbacks are written in [jexl](https://github.com/TomFrost/Jexl). For example,
 a `VariantTrack` display can color SNVs green and everything else purple:
 
 ```json
-{
-  "type": "LinearVariantDisplay",
-  "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-  "color": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-}
+"displays": [
+  {
+    "type": "LinearVariantDisplay",
+    "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+    "color": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+  }
+]
 ```
 
 Any slot with a `contextVariable` can take a jexl callback as its default value,

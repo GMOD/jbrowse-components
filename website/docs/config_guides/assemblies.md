@@ -41,7 +41,7 @@ config's location.
 To name the adapter or set a slot on it, write only `sequence.adapter`;
 `sequence.type`/`sequence.trackId` stay boilerplate and can be omitted:
 
-```json
+```json addassembly
 {
   "name": "hg38",
   "sequence": { "adapter": { "uri": "hg38.fa.gz" } }
@@ -111,7 +111,7 @@ plastids/bacteria often use table 11; full list on the
   the assembly's [`geneticCodes`](/docs/config/baseassembly/#slot-geneticcodes)
   map, keyed by refName:
 
-```json
+```json addassembly
 {
   "name": "hg38",
   "sequence": { "adapter": { "uri": "hg38.fa.gz" } },
@@ -166,7 +166,7 @@ samtools faidx sequence.fa.gz  # -> sequence.fa.gz.fai
 `cytobands` supplies chromosome banding data for views that draw ideograms,
 fetched via a `CytobandAdapter` pointing at a UCSC-style `cytoBand.txt`:
 
-```json
+```json addassembly
 {
   "name": "hg38",
   "sequence": { "adapter": { "uri": "hg38.fa.gz" } },

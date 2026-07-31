@@ -125,7 +125,7 @@ every band of the stacked view. List every assembly the file covers in
 draws, and the adapter keeps only the records whose PanSN prefixes match that
 pair:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "ecoli_ava",
@@ -168,7 +168,7 @@ loads each haplotype as its own JBrowse assembly, and then an assembly maps to a
 `sample#haplotype` prefix rather than to a sample:
 
 ```json
-{
+"adapter": {
   "type": "AllVsAllPAFAdapter",
   "uri": "all_vs_all.paf",
   "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
@@ -217,7 +217,7 @@ Everything else about the track is unchanged, only the `adapter` block differs
 from the un-indexed version above:
 
 ```json
-{
+"adapter": {
   "type": "AllVsAllIndexedPAFAdapter",
   "uri": "all_vs_all.pif.gz",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]

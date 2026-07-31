@@ -169,7 +169,7 @@ of them:
 
 A gene-level MCScan track, showing the BED files and the two-assembly pairing:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach",

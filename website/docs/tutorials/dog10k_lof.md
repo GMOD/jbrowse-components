@@ -86,7 +86,7 @@ The multi-sample variant display draws one row per sample. As in the other
 Dog10K tutorials, the VCF keeps its own sample IDs and the display's `layout`
 supplies the reading labels and a per-group swatch:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "dog10k_cyp1a2_snvs",
@@ -118,8 +118,21 @@ Two neighbours sit inside the same 101 bp, and the display filters them out:
 
 ```json
 {
-  "type": "LinearMultiSampleVariantDisplay",
-  "jexlFilters": ["jexl:get(feature,'start') == 38261634"]
+  "type": "VariantTrack",
+  "trackId": "dog10k_cyp1a2_snvs",
+  "name": "Dog10K SNVs at CYP1A2",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "dog10k_cyp1a2_snvs.vcf.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "displayId": "dog10k_cyp1a2_snvs-LinearMultiSampleVariantDisplay",
+      "jexlFilters": ["feature.start == 38261634"]
+    }
+  ]
 }
 ```
 
@@ -212,7 +225,8 @@ against the numbers that produced them.
 ## See also
 
 - [Structural variants (Dog10K)](/docs/tutorials/dog10k_svs),
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection),
+  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene) and
   [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other Dog10K
   tutorials, on the same assembly
 - [](/docs/user_guides/multivariant_track)

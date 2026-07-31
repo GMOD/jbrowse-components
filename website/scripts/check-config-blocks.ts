@@ -3,7 +3,13 @@
 //
 //   * a complete track config is tagged ```json addtrack, and a complete
 //     assembly config ```json addassembly, so each renders the Config/CLI tab
-//     pair (scripts/check-config-cli.ts then proves the derived command runs);
+//     pair (scripts/check-config-cli.ts then proves the derived command runs).
+//     Only configs the CLI can actually express are flagged: the tag exists to
+//     render that tab, so a config `deriveAddTrack`/`deriveAddAssembly` returns
+//     null for (a synteny adapter's query/target slots, MultiWiggleAdapter
+//     subadapters, any custom `displays`) has no tab to render and nothing to
+//     fix. Flagging those would leave the author no remedy but an ALLOWED
+//     entry, which records nothing a reader or a later change can use;
 //   * no block presents a bare adapter or display object at the top level. Such
 //     a blob reads as a track config — it even has a `type` — but pasting it
 //     into `tracks` loads nothing. Nest it in the track/assembly it belongs to,
@@ -24,6 +30,8 @@ import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
+import { deriveAddAssembly } from '../src/lib/derive-add-assembly.ts'
+import { deriveAddTrack } from '../src/lib/derive-add-track.ts'
 import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
 import { reportProblems, walkFiles } from './check-utils.ts'
 
@@ -35,26 +43,6 @@ const ALLOWED = new Map([
   [
     'tutorials/cli_desktop.md#sample',
     'shows what the CLI already wrote, not a track to add',
-  ],
-  [
-    'config_guides/from_config.md#inline_assembly',
-    'an inline sequence adapter has no add-assembly equivalent',
-  ],
-  [
-    'cookbook.md#grape_peach_synteny',
-    'queryAssembly/targetAssembly are extra adapter slots, so not CLI-clean',
-  ],
-  [
-    'cookbook.md#multiwig',
-    'MultiWiggleAdapter subadapters have no single-file uri; the page shows the --multiwig call instead',
-  ],
-  [
-    'user_guides/multirow_feature_track.md#chromhmm',
-    'selects a non-default display, so it is not CLI-clean',
-  ],
-  [
-    'user_guides/multirow_feature_track.md#tcga_brca_cnv',
-    'selects a non-default display, so it is not CLI-clean',
   ],
 ])
 
@@ -112,7 +100,11 @@ for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
         `      Show the whole track/assembly it belongs to, or prefix the parent key.\n`,
       )
     } else if ((kind === 'track' || kind === 'assembly') && !tagged) {
-      if (!ALLOWED.has(`${rel}#${String(id)}`)) {
+      const derivable =
+        kind === 'track'
+          ? deriveAddTrack(parsed) !== null
+          : deriveAddAssembly(parsed) !== null
+      if (derivable && !ALLOWED.has(`${rel}#${String(id)}`)) {
         problems.push(
           `  ${where}`,
           `    → complete ${kind} config with no \`addtrack\`/\`addassembly\` tag,`,

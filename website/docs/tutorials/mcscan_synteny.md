@@ -102,7 +102,7 @@ working directory. The adapters read anchors and BED files plain or gzipped.
 Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists
 the genomes in the order the anchor columns are in (column 1's genome first):
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors",
@@ -121,7 +121,7 @@ the genomes in the order the anchor columns are in (column 1's genome first):
 The simple-anchors track is the same shape with the adapter type and file
 swapped:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors_simple",
@@ -161,9 +161,24 @@ type, or declaratively:
 
 ```json
 {
+  "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors_simple",
-  "type": "LGVSyntenyDisplay",
-  "height": 60
+  "name": "Grape peach synteny (MCScan, simple anchors)",
+  "assemblyNames": ["grape", "peach"],
+  "adapter": {
+    "type": "MCScanSimpleAnchorsAdapter",
+    "uri": "grape.peach.anchors.simple.gz",
+    "bed1": "grape.bed.gz",
+    "bed2": "peach.bed.gz",
+    "assemblyNames": ["grape", "peach"]
+  },
+  "displays": [
+    {
+      "type": "LGVSyntenyDisplay",
+      "displayId": "grape_peach_anchors_simple-LGVSyntenyDisplay",
+      "height": 60
+    }
+  ]
 }
 ```
 

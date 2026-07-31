@@ -16,7 +16,7 @@ unique `uniqueId` are required. `type`, `name`, and any other attributes are
 optional. Use it with any feature track type, such as a `FeatureTrack`:
 
 ```json
-{
+"adapter": {
   "type": "FromConfigAdapter",
   "features": [
     {
@@ -46,7 +46,7 @@ sequence tracks; see [configuring assemblies](/docs/config_guides/assemblies)).
 Each feature's `seq` holds the bases for its region:
 
 ```json
-{
+"adapter": {
   "type": "FromConfigSequenceAdapter",
   "features": [
     {

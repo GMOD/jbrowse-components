@@ -71,7 +71,7 @@ multi-sample variant display, which draws one row per sample across the
 variant's real genomic span, so a 7.8 kb deletion is a 7.8 kb block rather than
 a tick.
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "dog10k_nhej1_svs",
@@ -90,10 +90,23 @@ gives each group a swatch, without touching the VCF:
 
 ```json
 {
-  "type": "LinearMultiSampleVariantDisplay",
-  "layout": [
-    { "name": "COLL000001", "label": "Collie 1", "color": "#0072B2" },
-    { "name": "CLUPGR000001", "label": "Wolf 1", "color": "#E69F00" }
+  "type": "VariantTrack",
+  "trackId": "dog10k_nhej1_svs",
+  "name": "Dog10K structural variants at NHEJ1",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "dog10k_nhej1_svs.vcf.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "displayId": "dog10k_nhej1_svs-LinearMultiSampleVariantDisplay",
+      "layout": [
+        { "name": "COLL000001", "label": "Collie 1", "color": "#0072B2" },
+        { "name": "CLUPGR000001", "label": "Wolf 1", "color": "#E69F00" }
+      ]
+    }
   ]
 }
 ```
@@ -117,8 +130,21 @@ The window holds nine SV records, and the figure filters to this one:
 
 ```json
 {
-  "type": "LinearMultiSampleVariantDisplay",
-  "jexlFilters": ["jexl:get(feature,'start') == 25574004"]
+  "type": "VariantTrack",
+  "trackId": "dog10k_nhej1_svs",
+  "name": "Dog10K structural variants at NHEJ1",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "dog10k_nhej1_svs.vcf.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "displayId": "dog10k_nhej1_svs-LinearMultiSampleVariantDisplay",
+      "jexlFilters": ["feature.start == 25574004"]
+    }
+  ]
 }
 ```
 
@@ -238,7 +264,8 @@ about 35 GB of scratch.
 ## See also
 
 - [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection),
+  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene) and
   [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other Dog10K
   tutorials, on the same assembly
 - [](/docs/user_guides/multivariant_track)

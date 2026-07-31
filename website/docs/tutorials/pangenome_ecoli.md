@@ -107,7 +107,7 @@ cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
 jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 ```
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "ecoli_pggb_ava",
