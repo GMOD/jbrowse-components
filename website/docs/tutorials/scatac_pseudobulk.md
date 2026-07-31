@@ -282,8 +282,8 @@ Other useful controls:
   [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
   slot) for how each bin's summary is drawn when zoomed out.
 - The "Cluster rows by score..." clustering action in the track menu (see
-  [Clustering rows](/docs/user_guides/clustering)) sorts cell types with similar
-  accessibility profiles next to each other at the locus in view.
+  [](/docs/user_guides/clustering)) sorts cell types with similar accessibility
+  profiles next to each other at the locus in view.
 
 Example display config that starts taller and in density mode:
 

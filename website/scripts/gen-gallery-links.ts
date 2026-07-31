@@ -56,5 +56,5 @@ checkOrWrite({
   path: outFile,
   content: body,
   label: 'src/lib/galleryLinks.generated.ts',
-  staleHint: 'run `pnpm gen:gallery-links`',
+  staleHint: 'run `pnpm autogen`',
 })

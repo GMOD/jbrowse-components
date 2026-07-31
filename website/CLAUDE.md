@@ -360,7 +360,7 @@ figure item sets `spec:` (a `screenshot-specs.ts` name); both its card image
 (`<spec>.png`) and its "open live" link come from that one spec, so the figure
 and the link can't drift. `src/lib/galleryLinks.generated.ts` maps spec name →
 session query; regenerate it with `pnpm gen:gallery-links` after editing
-`screenshot-specs.ts` (`gen:gallery-links-check` fails CI if it's stale).
+`screenshot-specs.ts` (`pnpm autogen --check` fails CI if it's stale).
 gallery.ts can't import `screenshot-specs.ts` directly — that module's
 `@jbrowse/browser-test-utils` barrel pulls in puppeteer. Use a `session:`
 override only when the spec's base capture isn't the state to open live (e.g.

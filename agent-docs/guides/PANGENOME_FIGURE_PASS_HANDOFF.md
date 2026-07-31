@@ -20,9 +20,8 @@ website/static/img/pangenome/rgfa_{subgraph_launch,sample_rows,hover_sync}.png
 website/static/img/tutorial-thumbs/pangenome_hprc.webp
 ```
 
-Checks run clean: `astro check` (0 errors), prettier, `check-spec-recipes
---check`, `gen:tutorial-thumbs-check`, `gen:gallery-links-check`,
-`gen:home-images-check`.
+Checks run clean: `astro check` (0 errors), prettier, `pnpm check-docs`, and
+`pnpm autogen --check`.
 
 ## Done
 

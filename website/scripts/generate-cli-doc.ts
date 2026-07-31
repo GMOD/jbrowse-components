@@ -76,5 +76,5 @@ checkOrWrite({
   path: outPath,
   content: await generate(),
   label: 'cli.md',
-  staleHint: 'run `pnpm autogen` to regenerate.',
+  staleHint: 'run `pnpm autogen`',
 })

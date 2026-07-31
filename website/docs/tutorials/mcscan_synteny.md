@@ -222,8 +222,8 @@ whatever the GFF3 carried.
 
 ## See also
 
-- [Synteny visualization (pairwise minimap2)](/docs/tutorials/synteny_visualization)
-- [Synteny visualization (ortholog tables)](/docs/tutorials/multiway_synteny)
+- [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/multiway_synteny)
 - [](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [MCScanAnchorsAdapter config](/docs/config/mcscananchorsadapter)

@@ -113,10 +113,9 @@ leaves three settings to write:
 ## Read it
 
 Open the track at whole-genome zoom, then run "Clustering > Cluster rows by
-similarity" action in the track menu (see
-[Clustering rows](/docs/user_guides/clustering) for the mechanic). Here,
-clustering turns a noisy stack of 1104 tumors into blocks of shared copy-number
-profile.
+similarity" action in the track menu (see [](/docs/user_guides/clustering) for
+the mechanic). Here, clustering turns a noisy stack of 1104 tumors into blocks
+of shared copy-number profile.
 
 - **A vertical stripe** is one locus called the same way across many rows: blue
   for recurrent loss, red for recurrent gain.

@@ -234,9 +234,9 @@ picture, so review them by eye after a regen. Three things they taught:
   `tabix ecoli_minigraph.links.bed.gz K12#1#chr:4050000-4100000` names the
   segments with alleles hanging off them.
 - **Target the feature's rendered label, not a viewport coordinate.**
-  `[data-testid="feature-name-<id>"]` is emitted by
-  `plugins/canvas/src/LinearBasicDisplay/components/useOverlayElements.tsx` and
-  carries the feature id the display's delegated handler resolves, so a
+  `[data-testid="feature-name-<label text>"]` is emitted by
+  `plugins/canvas/src/LinearBasicDisplay/components/overlayElements.tsx`
+  alongside a `data-feature-id` the display's delegated handler resolves, so a
   right-click spec needs no hand-measured pixels.
 - **A graph canvas is too sparse for the content-stable diff gate.** It is mostly
   white with thin strokes, so switching `pangenome/hprc_c4_subgraph` from the

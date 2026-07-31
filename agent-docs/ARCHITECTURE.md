@@ -100,7 +100,7 @@ The hand-written walkthroughs in `website/docs/developer_guides/` —
 [data_fetching.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/data_fetching.md)
 — turn the sections below into step-by-step tutorials and link back to them. When
 the lifecycle, mixins, or upload patterns here change, update those guides in
-the same pass. `pnpm lint-docs-check` (which runs
+the same pass. `pnpm check-docs` (which runs
 `website/scripts/check-doc-imports.ts`) validates the cross-links both ways but
 not the prose.
 

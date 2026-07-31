@@ -55,18 +55,18 @@ jobs:
             jest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'babel.config.cjs', 'jest.config.js') }}-
             jest-${{ runner.os }}-
       - name: Test codebase
-        id: tests
         run: pnpm test-ci
-        continue-on-error: true
+      # `if: failure()` rather than the old continue-on-error + `exit 1` pair:
+      # the job fails on the test step itself, and these still run.
       - name: Configure AWS credentials
-        if: steps.tests.outcome == 'failure'
+        if: failure()
         uses: aws-actions/configure-aws-credentials@517a711dbcd0e402f90c77e7e2f81e849156e31d # v6.2.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Upload jest image snapshot diffs to S3
-        if: steps.tests.outcome == 'failure'
+        if: failure()
         run: |
           SNAPSHOTS_DIR="products/jbrowse-web/src/tests/__image_snapshots__/__diff_output__"
           S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
@@ -87,9 +87,6 @@ jobs:
           else
             echo "No jest snapshot diff files found"
           fi
-      - name: Fail if tests failed
-        if: steps.tests.outcome == 'failure'
-        run: exit 1
       - name: Upload coverage
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
 
@@ -104,143 +101,108 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Typecheck codebase
         run: pnpm typecheck
-      - name: Check tsconfig project references are in sync with package.json
-        run: pnpm gen-tsconfig-refs --check
 
   lint:
     name: Lint
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev glslang-tools
-      - name: Install naga (WGSL validator)
-        # glslang-tools validates the GLSL-ES fallback; naga validates the
-        # primary WebGPU (WGSL) output. build-shaders.ts probes for `naga` and
-        # runs it when present, so installing it here turns WGSL validation on
-        # in CI. cargo is preinstalled on the ubuntu runner. If a new naga
-        # release ever churns CI, pin a version here (`naga-cli@<ver>`).
-        run: cargo install naga-cli --locked
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Fast lint (oxlint) — fail fast before slower checks
         run: pnpm lint:fast
-      - name: Check @jbrowse/core exports are up-to-date
+      - name: Type-aware lint (oxlint + tsgolint)
+        run: pnpm lint
+      - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
+        run: pnpm lint:eslint
+
+  # Every artifact that is generated and committed, behind one driver. Adding a
+  # generator to scripts/autogen.ts is all it takes to gate it here.
+  #
+  # This is its own job rather than steps inside `lint` for two reasons. These
+  # checks are the single most common CI failure, and as serial steps behind
+  # lint they reported only the first stale artifact per run (fix, push,
+  # discover the next) — autogen.ts runs all of them and reports every one.
+  # And they needed none of lint's toolchain, so a 0-second gallery-links check
+  # sat behind two minutes of apt/cargo setup.
+  generated:
+    name: Generated files up to date
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Check generated artifacts are up to date
+        run: pnpm autogen --check
+      # The fix for every failure above is `pnpm autogen`, so run it and hand the
+      # result over as a patch — `git apply` beats reproducing a sharp toolchain
+      # locally just to regenerate a thumbnail. --binary because several of the
+      # generated artifacts are images, which a plain diff renders as an
+      # unappliable "Binary files differ".
+      - name: Upload the regeneration as a patch
+        if: failure()
         run: |
-          node packages/core/scripts/generateExports.mjs
-          if ! git diff --quiet packages/core/package.json; then
-            echo "Error: @jbrowse/core exports are out of date!"
-            echo "Run 'node packages/core/scripts/generateExports.mjs' and commit the changes."
-            git diff packages/core/package.json
-            exit 1
-          fi
-      # Only component_tests/*/packed/ is uploaded to the component-test job,
-      # which runs off a fresh checkout — so it installs from the *committed*
-      # manifests and pack.ts's rewrite never reaches it. Without this, a new
-      # cross-package dependency edge falls through to the npm registry for an
-      # unpublished version and only surfaces when that job fails, one missing
-      # name per run.
-      - name: Check component-test pins cover the dependency closure
-        run: pnpm gen-component-test-pins --check
-      - name: Check guide indexes are up to date
-        run: node website/scripts/generate-guide-indexes.ts --check
-      - name: Check README-derived docs are up to date
-        run:
-          node website/scripts/generate-img-doc.ts --check && node
-          website/scripts/generate-cli-doc.ts --check
-      - name: Check gallery links are up to date
-        run: node website/scripts/gen-gallery-links.ts --check
-      # Tutorial cards are cropped from the figures the tutorials embed, and
-      # nothing regenerates them on a figure change. Four had drifted from
-      # figures recommitted days later before this gate existed.
-      - name: Check tutorial card thumbnails are up to date
-        run: node website/scripts/gen-tutorial-thumbs.ts --check
-      # Round-trips every figure's jbrowse:// link through Desktop's
-      # parseProtocolUrl and app-core's parseSessionSpecUrl — three modules only
-      # unit-tested apart — and checks the committed list of spec fields with no
-      # recipe click-path. Neither half ran anywhere before: the script is not
-      # part of `astro build`, so a broken "Open in Desktop" link could ship.
-      - name: Check figure recipes round-trip and their field list is current
-        run: node website/scripts/check-spec-recipes.ts --check
-      # A figure's live link loads its config out of the hosted build's own
-      # test_data, so a spec naming an untracked config renders fine here and
-      # hands every reader a config-not-found page. Offline half only; the
-      # published half is `--network`, which needs jbrowse.org.
-      - name: Check figure live links name a config that ships
-        run: node website/scripts/check-live-configs.ts
-      - name: Check homepage images are up to date
-        run: node website/scripts/gen-home-images.ts --check
-      - name: Check doc code/path references resolve
-        run: node website/scripts/check-doc-imports.ts
-      # Fences carrying an `<!-- include: -->` marker must match the real source
-      # file they name. check-doc-imports only validates import *specifiers*, so
-      # without this a guide can teach an undefined type or a renamed API while
-      # every other check stays green.
-      - name: Check doc snippets match their source
-        run: node website/scripts/sync-doc-snippets.ts --check
-      - name: Check every doc is reachable from the sidebar
-        run: node website/scripts/check-sidebar.ts
-      - name: Check no link duplicates its target's title
-        run: node website/scripts/check-wiki-titles.ts
-      # Round-trips every `json addtrack`/`json addassembly` doc block through
-      # the real `jbrowse add-track`/`add-assembly`, so a Config/CLI tab whose
-      # derived command drifts from the shown config fails the build. Needs the
-      # CLI's built dist.
-      - name: Check addtrack config/CLI blocks round-trip
-        run: |
-          pnpm --filter @jbrowse/cli build
-          node website/scripts/check-config-cli.ts
-      # And that every complete track/assembly config in the docs is tagged for
-      # that tab in the first place, rather than shipping as an untagged block
-      # or a bare adapter/display blob that reads as a config but isn't one.
-      - name: Check docs JSON config blocks follow the convention
-        run: node website/scripts/check-config-blocks.ts
-      - name: Check tutorial build scripts are valid
-        run: python3 scripts/check-build-scripts.py
-      - name: Check color tables are up to date
-        run: node website/scripts/api-docs/generateColorDocs.ts --check
-      - name: Check jexl catalog is up to date
-        run: node website/scripts/api-docs/generateJexlDocs.ts --check
-      - name: Check extension point index is up to date
-        run: node website/scripts/api-docs/generateExtensionPointDocs.ts --check
-      - name: Check file type tables are up to date
-        run: node website/scripts/api-docs/generateFileTypeDocs.ts --check
-      - name: Check display foundations table is up to date
-        run:
-          node website/scripts/api-docs/generateDisplayFoundationDocs.ts --check
-      - name: Check config/model/api docs are up to date
-        # config_guides and user_guides are included because gendocs also
-        # rewrites the marker blocks embedded in the hand-written guides
-        # (DISPLAY_TYPES, which needs the whole-repo DisplayType scan generate.ts
-        # does, FILE_TYPES, and PROMOTABLE_SLOTS in display_defaults.md).
-        #
-        # api-docs/example-gaps.txt is the #example coverage list. It rides this
-        # same diff so a type documented without a usable example shows up as a
-        # `+ Name` line in the PR rather than as a console.warn nothing reads.
-        #
-        # The `*/README.md` globs cover writeApiReadmes, which mirrors each
-        # package's `#api` exports into its README between API_DOCS markers. CI
-        # regenerated those and then never looked at them, so a stale mirrored
-        # API block shipped green.
-        run: |
-          pnpm gendocs
-          DOCS="website/docs/config website/docs/models website/docs/api website/docs/config_guides website/docs/user_guides website/scripts/api-docs/example-gaps.txt packages/*/README.md plugins/*/README.md products/*/README.md"
-          if ! git diff --quiet $DOCS; then
-            echo "Error: generated docs are out of date!"
-            echo "Run 'pnpm autogen' and commit the changes."
-            git diff --stat $DOCS
-            exit 1
-          fi
+          pnpm autogen || true
+          git diff --binary HEAD > autogen.patch
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: autogen-patch
+          path: autogen.patch
+          retention-days: 3
+
+  # The docs validators with no fix mode — link/reference/round-trip checks
+  # where a failure needs a human. Same collect-all-failures driver shape as
+  # `generated`, for the same reason.
+  docs:
+    name: Validate docs
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Validate docs
+        run: pnpm check-docs
+
+  # slangc is auto-fetched + version-pinned by the build script, so the
+  # generated output is deterministic; naga validates the WGSL (WebGPU) output
+  # and glslang-tools the GLSL-ES fallback. A stale *.generated.ts (hand-edited,
+  # or a .slang changed without running gen:shaders) fails the diff.
+  shaders:
+    name: Shaders
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    env:
+      # build-shaders.ts probes for `naga` and validates when it is present.
+      # Pinned so a naga release can't redden CI on an unchanged shader, and so
+      # the cache key below means one exact binary.
+      NAGA_VERSION: '30.0.0'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Install glslang
+        run: sudo apt-get update && sudo apt-get -y install glslang-tools
+      # Was `cargo install naga-cli` unconditionally: a from-source build on
+      # every run of every branch, ~53s, for a binary that only changes when the
+      # pin above does.
+      - name: Restore naga
+        id: naga
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo/bin/naga
+          key: naga-cli-${{ runner.os }}-${{ env.NAGA_VERSION }}
+      - name: Install naga (WGSL validator)
+        if: steps.naga.outputs.cache-hit != 'true'
+        run: cargo install naga-cli --locked --version "${NAGA_VERSION}"
       - name: Check generated shaders are up to date
-        # slangc is auto-fetched + version-pinned by the build script, so the
-        # generated output is deterministic; naga validates the WGSL (WebGPU)
-        # and glslang-tools the GLSL-ES fallback (both installed above). A stale
-        # *.generated.ts (hand-edited, or a .slang changed without running
-        # gen:shaders) fails the diff.
         run: |
           pnpm gen:shaders
           if ! git diff --quiet -- '**/*.generated.ts'; then
@@ -249,10 +211,6 @@ jobs:
             git diff --stat -- '**/*.generated.ts'
             exit 1
           fi
-      - name: Type-aware lint (oxlint + tsgolint)
-        run: pnpm lint
-      - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
-        run: pnpm lint:eslint
 
   format:
     name: Format
@@ -626,7 +584,10 @@ jobs:
 
   windows_electron_e2e:
     name: Windows Electron E2E Tests
-    needs: [test, typecheck, lint, format]
+    # Gated on the jobs that would make an Electron run meaningless, not on the
+    # whole board — a stale doc index or an unformatted file used to hold the
+    # only Windows coverage main gets.
+    needs: [test, typecheck]
     if:
       ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
       github.ref == 'refs/heads/main' }}

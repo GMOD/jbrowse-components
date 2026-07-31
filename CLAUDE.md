@@ -66,6 +66,11 @@ stale a MobX read (memoizes on stable identity); avoid it, or add
 ## Tooling
 
 - Run `pnpm test <directory>`, not the full suite.
+- **`pnpm autogen` rewrites every generated-and-committed artifact** (docs,
+  guide indexes, gallery links, thumbnails, core exports, tsconfig refs). CI
+  runs `pnpm autogen --check` off the same list in `scripts/autogen.ts`, so
+  there is one answer to any "X is out of date" failure. `pnpm check-docs` is
+  the read-only counterpart for validators with no fix mode.
 - Two TypeScript versions on purpose: `typescript` stays on 6.x (lint needs it),
   `pnpm typecheck` uses the aliased `typescript7`. Don't unify them —
   `agent-docs/guides/TOOLCHAIN.md`.

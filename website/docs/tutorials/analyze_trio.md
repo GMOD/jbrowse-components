@@ -262,7 +262,7 @@ serving anything.
 
 ## See also
 
-- [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry)
+- [](/docs/tutorials/local_ancestry)
 - [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [](/docs/user_guides/multivariant_track)

@@ -85,7 +85,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is
 generated from each ADR's `status` / `summary` frontmatter: add or re-status an
-ADR, then run `pnpm gen-adr-index` (CI checks it).
+ADR, then run `pnpm autogen` (CI checks it).
 
 Non-obvious code locations: shader codegen is
 `packages/shader-tools/src/build-shaders.ts` (`pnpm gen:shaders`), shared Slang

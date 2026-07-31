@@ -159,8 +159,19 @@ if (!packageJson.publishConfig) {
 packageJson.publishConfig.exports = publishExports
 packageJson.publishConfig.typesVersions = typesVersions
 
-// Write back
-writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+const next = `${JSON.stringify(packageJson, null, 2)}\n`
+
+if (process.argv.includes('--check')) {
+  if (readFileSync(packageJsonPath, 'utf8') !== next) {
+    console.error(
+      '@jbrowse/core exports are out of date — run: node packages/core/scripts/generateExports.mjs',
+    )
+    process.exit(1)
+  }
+  console.log('@jbrowse/core exports are up to date')
+} else {
+  writeFileSync(packageJsonPath, next)
+}
 
 console.log(`Generated ${Object.keys(devExports).length} dev export entries`)
 console.log(

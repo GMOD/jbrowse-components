@@ -200,7 +200,7 @@ function buildConfigGuide(): string {
     '---',
     '',
     'How to configure the `config.json` that drives a session. For copy-paste',
-    'recipes, see the [Cookbook](/docs/cookbook).',
+    'recipes, see the [](/docs/cookbook).',
     '',
     ...buildTocSection(CONFIG_CATEGORIES, [
       { dir: join(docsDir, 'config_guides'), urlDir: 'config_guides' },
@@ -363,7 +363,7 @@ function assertScalarContinuations(content: string, label: string) {
   }
 }
 
-const staleHint = 'run: pnpm lint-docs'
+const staleHint = 'run `pnpm autogen`'
 const guides = [
   { file: 'user_guide.md', content: buildUserGuide() },
   { file: 'config_guide.md', content: buildConfigGuide() },

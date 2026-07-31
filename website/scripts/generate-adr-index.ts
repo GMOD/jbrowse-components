@@ -133,5 +133,5 @@ checkOrWrite({
   path: indexPath,
   content: buildIndex(),
   label: 'ADR index',
-  staleHint: 'run `pnpm gen-adr-index`',
+  staleHint: 'run `pnpm autogen`',
 })

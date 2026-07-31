@@ -17,14 +17,15 @@ the source instead.
 | the track/display table between `<!-- DISPLAY_TYPES … -->`        | `pnpm autogen` (repo root)   | `new DisplayType({name, trackType})` registrations (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                      |
 | gotcha callouts between `<!-- GOTCHA … -->`                       | `pnpm autogen` (repo root)   | `#gotcha`-tagged `#config` blocks in source (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                             |
 | the pinnable-settings table between `<!-- PROMOTABLE_SLOTS … -->` | `pnpm autogen` (repo root)   | `promotable: true` config slots, per registered display type (`writePromotableSlotDocs` in `website/scripts/api-docs/generateConfigDocs.ts`) |
-| `user_guide.md`, `config_guide.md`, `developer_guide.md`          | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                                          |
+| `user_guide.md`, `config_guide.md`, `developer_guide.md`          | `pnpm autogen` (repo root)   | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                                          |
 | `jbrowse-img.md` (@jbrowse/img static-export tool)                | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                                                                     |
 | `cli.md` (@jbrowse/cli command reference)                         | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                                                                     |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
-  `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
-  alone — `gendocs` skips prettier and leaves ~200 files of formatting churn.
-  Never hand-edit anything in these three directories.
+  `pnpm autogen`, which drives every generator listed in `scripts/autogen.ts`.
+  CI runs `pnpm autogen --check` off that same list, so it can't gate a
+  different set than the command regenerates. Never hand-edit anything in these
+  three directories.
 
 - **Color swatch tables**: hand-written guides can embed an auto-generated
   swatch table by dropping a marker pair
@@ -80,7 +81,7 @@ the source instead.
   frontmatter in `user_guides/`, `config_guides/`, and `developer_guides/`. To
   add a page to an index, give it those frontmatter fields — it appears
   automatically. To change the surrounding prose/headings, edit the generator.
-  `pnpm lint-docs-check` runs in CI (`push.yml`) and fails if these three files
+  `pnpm autogen --check` runs in CI (`push.yml`) and fails if these three files
   are out of date — so always regenerate, never hand-edit them.
 - **`cli.md`**: fully generated from `products/jbrowse-cli/README.md` by
   `website/scripts/generate-cli-doc.ts` (runs in `pnpm autogen`). That README is
@@ -101,10 +102,8 @@ the source instead.
   renders without a GitHub-raw dependency (e.g. offline/staging builds), and
   converts the markdown images to `<Figure>` components (the alt text becomes
   the caption). Edit the README, not `jbrowse-img.md`.
-- Both README-derived docs are guarded in CI by the "Check README-derived docs
-  are up to date" step in `push.yml` (`gen-img-doc --check` +
-  `gen-cli-doc --check`), which fails on any drift between a README and its
-  generated doc.
+- Both README-derived docs are guarded in CI by `pnpm autogen --check`, which
+  fails on any drift between a README and its generated doc.
 
 Everything else under `docs/` (the quickstarts, `user_guides/*`,
 `config_guides/*`, `developer_guides/*`, `tutorials/*`, `faq.md`,

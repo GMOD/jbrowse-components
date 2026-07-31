@@ -88,9 +88,8 @@ Example tracks:
 
 A _display_ is a method for showing a track in a particular view, letting one
 track entry work across view types; a track may own several, one per view type
-it supports. See
-[Custom track and display types](/docs/developer_guides/creating_display) for
-how tracks and displays relate and when to add a new one.
+it supports. See [](/docs/developer_guides/creating_display) for how tracks and
+displays relate and when to add a new one.
 
 ## Rendering
 

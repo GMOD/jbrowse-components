@@ -53,7 +53,7 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   `crypto.createHash('sha1').update(fs.readFileSync(path)).digest('hex')`.
 - Housekeeping after structural edits:
   - Changed a **gallery** spec's URL, or added/removed/renamed a spec →
-    `pnpm gen:gallery-links` (CI gate: `pnpm gen:gallery-links-check`).
+    `pnpm gen:gallery-links` (CI gate: `pnpm autogen --check`).
   - Added/removed a spec or a doc `<Figure>` → `pnpm audit-figures`.
   - `npx eslint --cache --fix scripts/specs/*.ts` — eslint reflows the whole
     file, which churns lines you didn't touch (inflates the diff, entangles with
