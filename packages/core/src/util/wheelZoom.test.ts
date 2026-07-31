@@ -1,4 +1,5 @@
 import {
+  createWheelZoomController,
   SCROLL_ZOOM_FACTOR_DIVISOR,
   ZOOM_ACTIVE_WINDOW_MS,
   applyZoomAccum,
@@ -154,5 +155,249 @@ describe('zoomAccum coalescing', () => {
 
   test('order does not affect accumulated result', () => {
     expect(simulateAccum([1, 10])).toBeCloseTo(simulateAccum([10, 1]))
+  })
+})
+
+describe('createWheelZoomController', () => {
+  let frames: FrameRequestCallback[] = []
+  let element: HTMLDivElement
+  let dispose: (() => void) | undefined
+
+  function runFrame(now: number) {
+    const pending = frames
+    frames = []
+    for (const frame of pending) {
+      frame(now)
+    }
+  }
+
+  // jsdom sets timeStamp from a clock we can't advance, so shadow it — the
+  // mid-zoom suppression window is defined in event-timeStamp terms
+  function wheel(
+    init: WheelEventInit & { timeStamp?: number },
+    target: EventTarget = element,
+  ) {
+    const event = new WheelEvent('wheel', {
+      cancelable: true,
+      bubbles: true,
+      ...init,
+    })
+    Object.defineProperty(event, 'timeStamp', { value: init.timeStamp ?? 1000 })
+    target.dispatchEvent(event)
+    return event
+  }
+
+  function makeView(bpPerPx = 10) {
+    return {
+      bpPerPx,
+      zoomTo: jest.fn(),
+      horizontalScroll: jest.fn(),
+    }
+  }
+
+  beforeEach(() => {
+    frames = []
+    jest
+      .spyOn(globalThis, 'requestAnimationFrame')
+      .mockImplementation(callback => frames.push(callback))
+    jest.spyOn(globalThis, 'cancelAnimationFrame').mockImplementation(() => {})
+    element = document.createElement('div')
+    document.body.append(element)
+  })
+
+  afterEach(() => {
+    dispose?.()
+    dispose = undefined
+    element.remove()
+    jest.restoreAllMocks()
+  })
+
+  function setup({
+    views,
+    scrollZoom,
+    swallowUnhandled = false,
+  }: {
+    views: ReturnType<typeof makeView>[]
+    scrollZoom: boolean
+    swallowUnhandled?: boolean
+  }) {
+    dispose = createWheelZoomController({
+      element,
+      swallowUnhandled,
+      resolveTarget: () => ({
+        views,
+        scrollZoom,
+        originElement: () => element,
+      }),
+    })
+  }
+
+  test('ctrl+wheel zooms even with scrollZoom off', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: false })
+    const event = wheel({ deltaY: 100, ctrlKey: true, clientX: 400 })
+    expect(event.defaultPrevented).toBe(true)
+    expect(view.zoomTo).not.toHaveBeenCalled()
+
+    runFrame(1000)
+    expect(view.zoomTo).toHaveBeenCalledTimes(1)
+    // jsdom reports a zero rect, so the anchor offset is clientX itself
+    expect(view.zoomTo.mock.calls[0]![1]).toBe(400)
+    // zooming out: deltaY > 0 raises bpPerPx
+    expect(view.zoomTo.mock.calls[0]![0]).toBeGreaterThan(view.bpPerPx)
+  })
+
+  test('a burst of events collapses to one update per frame', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    for (let i = 0; i < 12; i++) {
+      wheel({ deltaY: -20, clientX: 100 })
+    }
+    expect(globalThis.requestAnimationFrame).toHaveBeenCalledTimes(1)
+
+    runFrame(1000)
+    expect(view.zoomTo).toHaveBeenCalledTimes(1)
+    // zooming in: accumulated negative deltaY lowers bpPerPx
+    expect(view.zoomTo.mock.calls[0]![0]).toBeLessThan(view.bpPerPx)
+  })
+
+  test('drives every view in the target from one gesture', () => {
+    const views = [makeView(10), makeView(20)]
+    setup({ views, scrollZoom: true })
+    wheel({ deltaY: -20, clientX: 100 })
+    runFrame(1000)
+
+    for (const view of views) {
+      expect(view.zoomTo).toHaveBeenCalledTimes(1)
+      expect(view.zoomTo.mock.calls[0]![0]).toBeLessThan(view.bpPerPx)
+    }
+  })
+
+  test('scrollZoom treats a dominant deltaX as a pan, not a zoom', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    wheel({ deltaX: 30, deltaY: 5 })
+    runFrame(1000)
+
+    expect(view.zoomTo).not.toHaveBeenCalled()
+    expect(view.horizontalScroll).toHaveBeenCalledWith(30)
+  })
+
+  test('a plain vertical wheel with scrollZoom off is left to the page', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: false })
+    const event = wheel({ deltaY: 100 })
+    runFrame(1000)
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(view.zoomTo).not.toHaveBeenCalled()
+    expect(view.horizontalScroll).not.toHaveBeenCalled()
+  })
+
+  test('swallowUnhandled consumes a gesture it takes no action on', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: false, swallowUnhandled: true })
+    const event = wheel({ deltaY: 100 })
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(view.zoomTo).not.toHaveBeenCalled()
+  })
+
+  test('shift+wheel escapes to native scroll while scrollZoom is on', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    const event = wheel({ deltaY: 100, shiftKey: true })
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(globalThis.requestAnimationFrame).not.toHaveBeenCalled()
+  })
+
+  test('a stray deltaX arriving mid-zoom is swallowed, not panned', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    wheel({ deltaY: -20, timeStamp: 1000 })
+    const stray = wheel({
+      deltaX: 40,
+      timeStamp: 1000 + ZOOM_ACTIVE_WINDOW_MS - 1,
+    })
+    runFrame(1000)
+
+    expect(stray.defaultPrevented).toBe(true)
+    expect(view.horizontalScroll).not.toHaveBeenCalled()
+  })
+
+  test('a deltaX after the zoom window closes pans again', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    wheel({ deltaY: -20, timeStamp: 1000 })
+    runFrame(1000)
+    wheel({ deltaX: 40, timeStamp: 1000 + ZOOM_ACTIVE_WINDOW_MS })
+    runFrame(1100)
+
+    expect(view.horizontalScroll).toHaveBeenCalledWith(40)
+  })
+
+  test('a zoom drops side-scroll accumulated earlier in the same frame', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    wheel({ deltaX: 40, timeStamp: 1000 })
+    wheel({ deltaY: -20, timeStamp: 1001 })
+    runFrame(1000)
+
+    expect(view.zoomTo).toHaveBeenCalledTimes(1)
+    expect(view.horizontalScroll).not.toHaveBeenCalled()
+  })
+
+  test('an undefined target leaves the event alone', () => {
+    dispose = createWheelZoomController({
+      element,
+      resolveTarget: () => undefined,
+    })
+    const event = wheel({ deltaY: 100, ctrlKey: true })
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(globalThis.requestAnimationFrame).not.toHaveBeenCalled()
+  })
+
+  test('stops handling once the pointer leaves the element', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    element.dispatchEvent(new MouseEvent('mouseleave'))
+    const event = wheel({ deltaY: -20 })
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(view.zoomTo).not.toHaveBeenCalled()
+
+    element.dispatchEvent(new MouseEvent('mouseenter'))
+    wheel({ deltaY: -20 })
+    runFrame(1000)
+    expect(view.zoomTo).toHaveBeenCalledTimes(1)
+  })
+
+  test('dispose detaches the listener', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    dispose?.()
+    dispose = undefined
+    const event = wheel({ deltaY: -20 })
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(view.zoomTo).not.toHaveBeenCalled()
+  })
+
+  test('the rate limit scales with the frame gap, not the event count', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: true })
+    // a single huge delta, so the accumulator is well past any frame's ceiling
+    wheel({ deltaY: 5000, timeStamp: 1000 })
+    runFrame(1000)
+    const shortFrame = view.zoomTo.mock.calls[0]![0]
+
+    view.zoomTo.mockClear()
+    wheel({ deltaY: 5000, timeStamp: 1010 })
+    runFrame(1060)
+    const longFrame = view.zoomTo.mock.calls[0]![0]
+
+    expect(longFrame).toBeGreaterThan(shortFrame)
   })
 })

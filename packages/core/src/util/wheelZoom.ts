@@ -1,7 +1,12 @@
-// Shared wheel-zoom math for linear genome views. Both the LGV wheel handler
-// (useWheelScroll) and the breakpoint-split overlay (useOverlayWheelZoom) zoom
-// on ctrl/scroll-zoom wheel gestures and must behave identically — keeping the
-// normalizer and rate-limit here is the single source of truth.
+// Shared wheel-zoom math and event handling for linear genome views. The LGV
+// wheel handler, the breakpoint-split overlay and the synteny canvas all zoom on
+// ctrl/scroll-zoom wheel gestures and must behave identically, so the normalizer,
+// the rate limit and the whole gesture decision matrix live here —
+// createWheelZoomController below is what each of those three actually runs.
+
+import { transaction } from 'mobx'
+
+import { trackPointerPresence } from './pointerPresence.ts'
 
 // max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
 export const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
@@ -102,4 +107,195 @@ export function applyZoomAccum(
   const max = MAX_ZOOM_RATE_PER_MS * elapsedMs
   const d = Math.max(-max, Math.min(max, zoomAccum))
   return d > 0 ? bpPerPx * (1 + d) : bpPerPx / (1 - d)
+}
+
+export interface WheelZoomView {
+  bpPerPx: number
+  zoomTo: (bpPerPx: number, offset?: number) => void
+  horizontalScroll: (delta: number) => void
+}
+
+export interface WheelZoomTarget {
+  // every view the gesture drives, each zoomed about the same cursor pixel — one
+  // entry for a plain LGV, all stacked views for the synteny canvas
+  views: WheelZoomView[]
+  scrollZoom: boolean
+  // The element the cursor pixel is measured from. Resolved inside the rAF, not
+  // in the wheel handler: getBoundingClientRect() there forces a synchronous
+  // reflow on every event of a burst and trips "[Violation] 'wheel' handler took
+  // Nms". event.offsetX would be simpler but is unreliable, since wheel events
+  // bubble up from child elements.
+  originElement: () => HTMLElement | undefined
+}
+
+export interface WheelZoomControllerOptions {
+  element: HTMLElement
+  // Which views this event drives, or undefined to ignore the event entirely
+  // (and leave it to the page). Called per event, so it must not read layout.
+  resolveTarget: (event: WheelEvent) => WheelZoomTarget | undefined
+  // preventDefault even on a gesture we take no action on, so the page can never
+  // scroll out from under this element
+  swallowUnhandled?: boolean
+  // observe every event this element receives, before any gate
+  onEvent?: (event: WheelEvent) => void
+}
+
+interface WheelState {
+  scrollDelta: number
+  zoomAccum: number
+  target: WheelZoomTarget | undefined
+  lastClientX: number
+  rafId: number | null
+  lastRafTime: number | null
+  lastZoomTime: number | null
+  lastEventTime: number | null
+  warnedNonCancelable: boolean
+}
+
+/**
+ * The one wheel gesture handler for linear views. Its decision matrix:
+ *
+ *   - ctrl/meta+wheel, or (scrollZoom && |dy| >= |dx|)  → zoom about the cursor
+ *   - shift+wheel while scrollZoom is on                → native scroll, we pass
+ *   - a horizontal delta, unless one arrives mid-zoom   → pan by dx
+ *
+ * The listener is non-passive so it can preventDefault to suppress native scroll
+ * during a zoom. To pay for that it only accumulates deltas: every model write
+ * happens in one requestAnimationFrame, so a burst of events (fast trackpad,
+ * inertial scroll) collapses to a single update per frame instead of thrashing
+ * the views once per event.
+ *
+ * Returns its disposer.
+ */
+export function createWheelZoomController({
+  element,
+  resolveTarget,
+  swallowUnhandled = false,
+  onEvent,
+}: WheelZoomControllerOptions) {
+  const s: WheelState = {
+    scrollDelta: 0,
+    zoomAccum: 0,
+    target: undefined,
+    lastClientX: 0,
+    rafId: null,
+    lastRafTime: null,
+    lastZoomTime: null,
+    lastEventTime: null,
+    warnedNonCancelable: false,
+  }
+
+  // Once the pointer leaves, drop any in-flight accumulation and stop consuming
+  // the wheel events the browser keeps latching here (see trackPointerPresence)
+  // so a continued gesture pans/zooms nothing and chains to the page instead of
+  // staying stuck to this element.
+  const presence = trackPointerPresence(element, () => {
+    s.scrollDelta = 0
+    s.zoomAccum = 0
+  })
+
+  function flush(now: number) {
+    const elapsed = wheelFrameElapsedMs(now, s.lastRafTime)
+    s.lastRafTime = now
+    s.rafId = null
+    const { target } = s
+    if (target) {
+      const origin = target.originElement()
+      transaction(() => {
+        if (s.zoomAccum !== 0 && origin) {
+          const offset = s.lastClientX - origin.getBoundingClientRect().left
+          for (const view of target.views) {
+            view.zoomTo(
+              applyZoomAccum(view.bpPerPx, s.zoomAccum, elapsed),
+              offset,
+            )
+          }
+        }
+        if (s.scrollDelta !== 0) {
+          for (const view of target.views) {
+            view.horizontalScroll(s.scrollDelta)
+          }
+        }
+      })
+    }
+    s.zoomAccum = 0
+    s.scrollDelta = 0
+  }
+
+  function onWheel(event: WheelEvent) {
+    onEvent?.(event)
+    const target = presence.isOver ? resolveTarget(event) : undefined
+    if (target && !(event.shiftKey && target.scrollZoom)) {
+      // a gap longer than the frame-elapsed clamp means this event starts a new
+      // gesture, so the previous frame time is meaningless — including when it
+      // predates a spell in a backgrounded tab, where a huge elapsed would
+      // otherwise lift the zoom rate limit on the first frame back
+      if (!isActivelyZooming(event.timeStamp, s.lastEventTime)) {
+        s.lastRafTime = null
+      }
+      s.lastEventTime = event.timeStamp
+      s.target = target
+
+      const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
+      const isCtrlZoom = event.ctrlKey || event.metaKey
+      const isZoom =
+        isCtrlZoom ||
+        (target.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
+
+      if (isZoom) {
+        // warn once per latched run, not once per event — a non-cancelable
+        // sequence fires ~100 events/sec and console.warn is not free
+        if (event.cancelable) {
+          s.warnedNonCancelable = false
+        } else if (!s.warnedNonCancelable) {
+          s.warnedNonCancelable = true
+          console.warn(
+            '[wheelZoom] wheel event not cancelable — scroll sequence already in progress',
+          )
+        }
+        event.preventDefault()
+        s.zoomAccum += wheelZoomAccum(deltaY, isCtrlZoom)
+        s.lastClientX = event.clientX
+        s.lastZoomTime = event.timeStamp
+        // drop any side-scroll accumulated earlier this frame — we're zooming,
+        // and a deltaX that arrived just before the zoom is part of the same
+        // noisy gesture
+        s.scrollDelta = 0
+      } else if (isActivelyZooming(event.timeStamp, s.lastZoomTime)) {
+        // ignore stray horizontal deltas that arrive mid-zoom — trackpads emit
+        // an unintentional side-scroll during a pinch/scroll-zoom gesture that
+        // would otherwise pan the view away from where the user is zooming.
+        // preventDefault anyway so the page itself doesn't scroll instead.
+        event.preventDefault()
+      } else {
+        // With scrollZoom on, swallow the gesture even though it fell outside
+        // the zoom threshold: without this, a diagonal trackpad gesture whose
+        // |deltaX| slightly exceeds |deltaY| slips through and scrolls the page
+        // (shift+wheel above is the deliberate escape hatch). With scrollZoom
+        // off, only swallow what we are about to pan with, so a plain vertical
+        // wheel isn't silently eaten.
+        if (
+          swallowUnhandled ||
+          target.scrollZoom ||
+          Math.abs(deltaX) > Math.abs(2 * deltaY)
+        ) {
+          event.preventDefault()
+        }
+        s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
+      }
+
+      s.rafId ??= requestAnimationFrame(flush)
+    }
+  }
+
+  element.addEventListener('wheel', onWheel, { passive: false })
+  return () => {
+    element.removeEventListener('wheel', onWheel)
+    presence.dispose()
+    // cancel any pending frame so a flush can't fire against a detached view
+    if (s.rafId !== null) {
+      cancelAnimationFrame(s.rafId)
+    }
+  }
 }

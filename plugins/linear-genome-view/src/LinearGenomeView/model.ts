@@ -26,7 +26,6 @@ import {
   getContentBlocksPxSpan,
   getLayoutHighlightCoords,
   moveTo,
-  offsetBpToPx,
   pxToBp,
 } from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
@@ -141,6 +140,14 @@ const MAX_OFFSET_PADDING_PX = 10
 // px of the leftmost content kept on-screen at max scroll-left, mirroring
 // MAX_OFFSET_PADDING_PX at the other end
 const MIN_OFFSET_PADDING_PX = 30
+
+// whether two BlockSets cover the same blocks, by key and in order
+function sameBlockKeys(a: BlockSet, b: BlockSet) {
+  return (
+    a.blocks.length === b.blocks.length &&
+    a.blocks.every((block, i) => block.key === b.blocks[i]!.key)
+  )
+}
 
 /**
  * Resolve a NavLocation's refName to the assembly's canonical name, falling
@@ -1052,34 +1059,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       zoomTo(bpPerPx: number, offset = self.width / 2) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         const oldBpPerPx = self.bpPerPx
-        if (Math.abs(oldBpPerPx - newBpPerPx) < BP_PER_PX_EPSILON) {
-          return oldBpPerPx
-        }
-        if (!self.displayedRegions.length) {
+        if (Math.abs(oldBpPerPx - newBpPerPx) >= BP_PER_PX_EPSILON) {
+          // Anchor the bp under the cursor. offsetPx is pure bp/bpPerPx space
+          // (displayedRegionsTotalPx is totalBp/bpPerPx — no inter-region
+          // padding contributes pixels), so the cursor's bp is exactly
+          // (offsetPx + offset) * oldBpPerPx and its new pixel is that over
+          // newBpPerPx. Don't round: rounding offsetPx every frame loses up to
+          // 0.5 px per step, which at high bpPerPx becomes 0.5 * bpPerPx of
+          // cursor bp drift and compounds across a scroll-zoom burst.
+          // Fractional offsetPx is harmless — block math handles it.
+          const targetPx = ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
           self.bpPerPx = newBpPerPx
-          return newBpPerPx
+          if (self.displayedRegions.length) {
+            this.scrollTo(targetPx - offset)
+          }
         }
-
-        // Anchor on the cursor's raw within-region bp offset (float,
-        // padding-aware). Round-tripping through bpToPx using pxToBp's `coord`
-        // loses up to 1 bp per call because regionCoord floors+1 (1-based)
-        // while bpToPx treats coord-r.start as a 0-based offset — visible as
-        // ~5 px judder during rapid scroll-zoom at small bpPerPx. The legacy
-        // (offsetPx + cursor_x) * bpPerPx is also unstable in multi-region
-        // because inter-region padding contributes paddingWidth * bpPerPx of
-        // virtual-bp that scales with bpPerPx. Fall back to the legacy formula
-        // when the cursor is over empty space (oob).
-        const anchor = pxToBp(self, offset)
-        self.bpPerPx = newBpPerPx
-        const targetPx = anchor.oob
-          ? ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
-          : offsetBpToPx(self, anchor.index, anchor.offset)
-        // Don't round here: rounding offsetPx every frame loses up to 0.5 px
-        // per step, which (at high bpPerPx) becomes 0.5 * bpPerPx of cursor
-        // bp drift and compounds frame-to-frame during a scroll-zoom burst.
-        // Fractional offsetPx is harmless — downstream block math handles it.
-        this.scrollTo(targetPx - offset)
-        return newBpPerPx
+        return self.bpPerPx
       },
 
       /**
@@ -1608,7 +1603,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
-      let currentBlockKeys: string | undefined
       let coverageLeftPx = 0
       let coverageRightPx = 0
       let prevBpPerPx: number | undefined
@@ -1651,19 +1645,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
 
           const newBlocks = calculateStaticBlocks(self)
-          const newKeys = newBlocks.blocks.map(b => b.key).join(',')
-          // minimumBlockWidth is part of the guard because block keys don't
-          // encode ContentBlock-vs-ElidedBlock, so a region can flip type with
-          // an unchanged key; without this the recompute would be discarded.
+          // Hand back the previous BlockSet when the recompute produced the same
+          // blocks, so a sideways scroll past the coverage edge doesn't re-render
+          // every track. minimumBlockWidth is part of the guard because block
+          // keys don't encode ContentBlock-vs-ElidedBlock, so a region can flip
+          // type with an unchanged key. Geometry is compared first: on a zoom it
+          // always differs, which skips the key walk entirely — the whole-genome
+          // view has one block per refName, so joining those keys into a string
+          // (as this used to) allocated an array and a string per zoom frame.
           if (
             currentlyCalculatedStaticBlocks === undefined ||
-            currentBlockKeys !== newKeys ||
             bpPerPx !== prevBpPerPx ||
             width !== prevWidth ||
-            minimumBlockWidth !== prevMinimumBlockWidth
+            minimumBlockWidth !== prevMinimumBlockWidth ||
+            !sameBlockKeys(currentlyCalculatedStaticBlocks, newBlocks)
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
-            currentBlockKeys = newKeys
           }
 
           // Update coverage range from content block extent only.

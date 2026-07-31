@@ -29,6 +29,11 @@ export default function calculateDynamicBlocks(
     displayedRegionIndex < displayedRegions.length;
     displayedRegionIndex++
   ) {
+    // see calculateStaticBlocks: regions are laid out left to right, so nothing
+    // past the window's right edge can intersect it
+    if (displayedRegionLeftPx > windowRightPx) {
+      break
+    }
     const {
       assemblyName,
       refName,

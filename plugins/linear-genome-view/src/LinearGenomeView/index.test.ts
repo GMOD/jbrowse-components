@@ -206,10 +206,11 @@ function initialize() {
   return { Session, LinearGenomeModel, Assembly }
 }
 
-// Multi-region zoom: inter-region padding contributes paddingWidth * bpPerPx
-// of virtual-bp per gutter, so the naive (offsetPx + cursor_x) * bpPerPx zoom
-// anchor drifts ~numPaddings * paddingWidth * Δ(bpPerPx) bp per zoom step.
-// Bug isn't flipped-specific — flipping just makes it visible.
+// Multi-region zoom: regions are laid out back to back in a single bp space, so
+// the cursor's bp is (offsetPx + cursor_x) * bpPerPx no matter which region it
+// lands in and the anchor must survive a run of zoom steps without drifting.
+// Guards against reintroducing a per-region round-trip that loses a bp per call.
+// Not flipped-specific — flipping just makes drift visible.
 describe.each([
   { name: 'unflipped', reversed: false },
   { name: 'flipped', reversed: true },

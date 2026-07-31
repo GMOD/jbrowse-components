@@ -40,6 +40,15 @@ export default function calculateStaticBlocks(
     displayedRegionIndex < displayedRegions.length;
     displayedRegionIndex++
   ) {
+    // Regions are laid out left to right, so once the cursor passes the window's
+    // right edge nothing further can contribute a block — and the trailing
+    // padding block needs the last region to be in view anyway. A whole-genome
+    // view holds one region per refName, so without this the loop (and its five
+    // MST observable reads per region) runs thousands of times per zoom frame to
+    // emit a handful of blocks.
+    if (regionBpOffset > windowRightBp) {
+      break
+    }
     const {
       assemblyName,
       refName,
