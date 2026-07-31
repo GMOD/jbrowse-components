@@ -5,11 +5,15 @@
 #
 # The Dog10K paper reports that half the collection carries three or more copies
 # of CYP1A2 (Meadows et al. 2023, Fig 10a). Those QuicK-mer2 estimates were
-# never released, and QuicK-mer2 itself needs a genome-wide k-mer index and
-# every read of a sample (see scripts/build_dog10k_quickmer2_cn.sh). Read depth
-# over one locus gets to the same place for a fraction of the cost, because the
-# Dog10K share publishes 15 CRAMs with their indexes: only the reads over this
-# gene have to be fetched.
+# never released. Checked again, because the obvious question is whether the
+# lab's own copy-number calls can just be read instead: the Dog10K share
+# (kiddlabshare.med.umich.edu/dog10K) publishes SNVs/indels, Manta SVs, the
+# imputation panel, CRAMs, callability masks and sample tables, and no copy
+# number at all, while public-data/QuicK-mer/ holds fastCN and QuicK-mer
+# REFERENCE bundles (canFam3.1) rather than results. So running either tool
+# means every read of every sample. Read depth over one locus gets to the same
+# place for a fraction of the cost, because the share publishes 15 CRAMs with
+# their indexes: only the reads over this gene have to be fetched.
 #
 # Three things decide whether the result reads as copy number rather than as
 # noise, and all three are measured rather than assumed:
@@ -19,6 +23,18 @@
 #     looks like wobble rather than an integer), 2 kb at 13%, 5 kb at 7-10%. At
 #     5 kb every window of a copy-number-two dog rounds to 2, which is what
 #     lets the output be an integer copy number rather than a trace.
+#
+#     Review asked for finer detail than 5 kb, so the same measurement was run
+#     on the callset estimate over the collection's own flanks, where the answer
+#     is copy number two by construction: the fraction of baseline windows that
+#     round off two is 3.8% at 5 kb, 12.1% at 2.5 kb, 13.7% at 2 kb and 21.4% at
+#     1 kb. Halving the window triples the speckle in a lane whose whole content
+#     is a flat baseline, so the window is still 5 kb. What changed is that it
+#     SLIDES: the estimate is taken over WIDTH but stepped by STEP, and each
+#     block painted is the middle STEP of its window. Resolution is STEP, noise
+#     is WIDTH's, and an element edge lands within a kilobase of where it is
+#     instead of snapping to a 5 kb grid. WIDTH/STEP must be odd so there is a
+#     middle.
 #   - Repeat positions. Depth is counted only over positions RepeatMasker did
 #     not call, the same restriction QuicK-mer2's unique k-mers make.
 #   - The denominator. Normalizing against the sample table's mean autosomal
@@ -60,15 +76,30 @@ UCSC_API=https://api.genome.ucsc.edu
 # window is wide enough that the copy-number element's edges and 30 kb of
 # copy-number-two flanking sequence are both in frame.
 CHROM=chr30
-START=38220000
-END=38300000
-BIN=5000
-# Everything outside these is flanking sequence, which is where each sample's
-# own normalization comes from.
+START=38205000
+END=38400000
+# Estimate over WIDTH, paint the middle STEP of it. See the window-size note
+# above; WIDTH/STEP is odd on purpose.
+WIDTH=5000
+STEP=1000
+# Everything outside these is flanking sequence.
 FLANK_LEFT_END=38245000
 FLANK_RIGHT_START=38275000
-# A window with less unique sequence than this says more about the repeat
-# annotation than about the dog, so it is dropped rather than drawn as a dip.
+# ...but only the flank within these bands is the DENOMINATOR. The drawn window
+# is wide enough now to hold other copy-number-variable loci, and a dog whose
+# own normalization came from one of them would have every window over this gene
+# scaled by an unrelated event. The bands are the sequence either side of the
+# element, which is what the region used to be in its entirety.
+#
+# The region's left edge is where it is because the estimate degrades below it:
+# over 38,160,000-38,205,000 (tried) 3-6% of dogs call copy number one in every
+# window, against 0.1% on the right, and the windows there are the ones
+# MINUNIQUE drops. That is the reference, not the dogs.
+NORM_LEFT_START=38210000
+NORM_RIGHT_END=38340000
+# A window with less unique sequence than this (of WIDTH) says more about the
+# repeat annotation than about the dog, so it is dropped rather than drawn as a
+# dip.
 MINUNIQUE=1000
 
 # The published CRAMs, in the order the figure stacks them: the breed with no
@@ -140,28 +171,40 @@ while IFS=$'\t' read -r SAMPLE PATH_ LABEL; do
   BREED=$(awk -F'\t' -v s="$SAMPLE" 'NR>1 && $1==s {print $2}' samples.txt)
 
   samtools depth -a -r "$CHROM:$START-$END" "$CRAMS/$PATH_" \
-    | awk -v chrom="$CHROM" -v start="$START" -v end="$END" -v bin="$BIN" \
-          -v minuniq="$MINUNIQUE" -v flankl="$FLANK_LEFT_END" \
-          -v flankr="$FLANK_RIGHT_START" '
+    | awk -v chrom="$CHROM" -v start="$START" -v end="$END" -v step="$STEP" \
+          -v width="$WIDTH" -v minuniq="$MINUNIQUE" -v flankl="$FLANK_LEFT_END" \
+          -v flankr="$FLANK_RIGHT_START" -v norml="$NORM_LEFT_START" \
+          -v normr="$NORM_RIGHT_END" '
       BEGIN { getline mask < "mask.txt" }
-      # depth only over positions RepeatMasker left alone
+      # depth only over positions RepeatMasker left alone, summed per STEP; a
+      # window is then STEPS of them, so the same pass serves any width
       substr(mask, $2 - start + 1, 1) == "1" {
-        b = int(($2 - start) / bin)
+        b = int(($2 - start) / step)
         sum[b] += $3
         uniq[b]++
       }
       END {
+        span = int(width / step)
+        nsub = int((end - start) / step)
         nb = 0
-        for (b = 0; b * bin < end - start; b++) {
-          if (uniq[b] >= minuniq) {
-            pos[nb] = start + b * bin
-            rate[nb] = sum[b] / uniq[b]
+        for (b = 0; b + span <= nsub; b++) {
+          ws = 0
+          wu = 0
+          for (k = 0; k < span; k++) {
+            ws += sum[b + k]
+            wu += uniq[b + k]
+          }
+          if (wu >= minuniq) {
+            # the middle STEP of the window is what this estimate paints
+            pos[nb] = start + (b + int(span / 2)) * step
+            rate[nb] = ws / wu
             nb++
           }
         }
         nf = 0
         for (i = 0; i < nb; i++) {
-          if (pos[i] < flankl || pos[i] >= flankr) {
+          if ((pos[i] < flankl && pos[i] >= norml) ||
+              (pos[i] >= flankr && pos[i] < normr)) {
             flank[nf++] = rate[i]
           }
         }
@@ -179,7 +222,7 @@ while IFS=$'\t' read -r SAMPLE PATH_ LABEL; do
         }
         mid = nf % 2 ? flank[int(nf / 2)] : (flank[nf / 2 - 1] + flank[nf / 2]) / 2
         for (i = 0; i < nb; i++) {
-          printf "%s\t%d\t%d\t%.3f\n", chrom, pos[i], pos[i] + bin,
+          printf "%s\t%d\t%d\t%.3f\n", chrom, pos[i], pos[i] + step,
             2 * rate[i] / mid
         }
       }' > "cn.$SAMPLE.bedGraph"
@@ -193,9 +236,10 @@ while IFS=$'\t' read -r SAMPLE PATH_ LABEL; do
 
   # The element's copy number, and the spread of the flanks around two, which is
   # this estimate's own noise floor: any step smaller than it is not a call.
-  awk -v s="$SAMPLE" -v b="$BREED" -v l="$FLANK_LEFT_END" -v r="$FLANK_RIGHT_START" '
+  awk -v s="$SAMPLE" -v b="$BREED" -v l="$FLANK_LEFT_END" -v r="$FLANK_RIGHT_START" \
+      -v nl="$NORM_LEFT_START" -v nr="$NORM_RIGHT_END" '
     $2 >= 38250000 && $3 <= 38272000 { e += $4; en++ }
-    $3 <= l || $2 >= r { f += $4; ff += $4 * $4; fn++ }
+    ($3 <= l && $2 >= nl) || ($2 >= r && $3 <= nr) { f += $4; ff += $4 * $4; fn++ }
     END {
       m = f / fn
       printf "%s\t%s\t%.1f\t%.2f\n", s, b, e / en, sqrt(ff / fn - m * m)
@@ -216,10 +260,11 @@ done <<< "$(printf '%s\n' "$CRAM_PATHS" | grep -v '^$')"
 # from every row. Over this locus it catches one, which sits 15% low in all
 # fifteen dogs: rounding absorbs that in fourteen of them and turns it into a
 # copy-number-one call in the fifteenth.
-python3 - "$FLANK_LEFT_END" "$FLANK_RIGHT_START" <<'PY'
+python3 - "$FLANK_LEFT_END" "$FLANK_RIGHT_START" "$NORM_LEFT_START" "$NORM_RIGHT_END" <<'PY'
 import glob, os, statistics, sys
 
 flank_left_end, flank_right_start = int(sys.argv[1]), int(sys.argv[2])
+norm_left_start, norm_right_end = int(sys.argv[3]), int(sys.argv[4])
 # How far a flank window's median may sit from two before it is read as an
 # artifact: well inside rounding's half copy, well outside the 7-10% spread a
 # single window carries.
@@ -266,8 +311,9 @@ dropped = set()
 for window, values in sorted(cohort.items()):
     chrom, start, end = window
     median = statistics.median(values)
-    if (end <= flank_left_end or start >= flank_right_start) \
-            and abs(median - 2) > FLANK_TOLERANCE:
+    normalizing = ((end <= flank_left_end and start >= norm_left_start)
+                   or (start >= flank_right_start and end <= norm_right_end))
+    if normalizing and abs(median - 2) > FLANK_TOLERANCE:
         dropped.add(window)
         print('dropped %s:%d-%d: median %.2f across the collection, not two'
               % (chrom, start, end, median), file=sys.stderr)
@@ -315,11 +361,14 @@ tabix -f -p bed dog10k_cyp1a2_cn.bed.gz
 bcftools query -l dp.vcf.gz > cohort.samples
 bcftools query -f '%POS[\t%DP]\n' dp.vcf.gz > cohort.dp
 
-python3 - "$CHROM" "$BIN" "$FLANK_LEFT_END" "$FLANK_RIGHT_START" <<'PY'
-import glob, json, os, statistics, sys
+python3 - "$CHROM" "$STEP" "$WIDTH" "$FLANK_LEFT_END" "$FLANK_RIGHT_START" \
+        "$NORM_LEFT_START" "$NORM_RIGHT_END" <<'PY'
+import collections, glob, json, os, statistics, sys
 
-chrom, BIN = sys.argv[1], int(sys.argv[2])
-flank_left_end, flank_right_start = int(sys.argv[3]), int(sys.argv[4])
+chrom, STEP, WIDTH = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+flank_left_end, flank_right_start = int(sys.argv[4]), int(sys.argv[5])
+norm_left_start, norm_right_end = int(sys.argv[6]), int(sys.argv[7])
+SPAN = WIDTH // STEP
 FLANK_TOLERANCE = 0.2
 # A window needs this many called sites in a dog before its median depth is a
 # measurement rather than a coincidence.
@@ -356,34 +405,72 @@ def cn_label(cn):
     return 'CN %d+' % CN_CAP if cn >= CN_CAP else 'CN %d' % cn
 
 samples = [line.strip() for line in open('cohort.samples')]
-depths = [{} for _ in samples]
+
+# Sites bucketed by STEP, so a sliding window is SPAN consecutive buckets. The
+# whole matrix is 1,987 dogs by every called site in a quarter megabase, which
+# does not want to be a Python list of lists; buckets are held one at a time and
+# the denominator is accumulated as a per-dog depth histogram, which gives the
+# same exact median as pooling every flank site would.
+def is_flank(window):
+    return window + STEP <= flank_left_end or window >= flank_right_start
+
+def is_normalizing(window):
+    return ((window + STEP <= flank_left_end and window >= norm_left_start)
+            or (window >= flank_right_start and window + STEP <= norm_right_end))
+
+buckets = collections.defaultdict(list)
+flank_hist = [collections.Counter() for _ in samples]
 for line in open('cohort.dp'):
     fields = line.rstrip('\n').split('\t')
-    window = int(fields[0]) // BIN * BIN
-    for i, value in enumerate(fields[1:]):
-        if value != '.':
-            depths[i].setdefault(window, []).append(int(value))
+    window = int(fields[0]) // STEP * STEP
+    row = [-1 if value == '.' else int(value) for value in fields[1:]]
+    buckets[window].append(row)
+    if is_normalizing(window):
+        for i, value in enumerate(row):
+            if value >= 0:
+                flank_hist[i][value] += 1
 
-def is_flank(window):
-    return window + BIN <= flank_left_end or window >= flank_right_start
+def histogram_median(counter):
+    total = sum(counter.values())
+    if total == 0:
+        return 0
+    ordered = sorted(counter.items())
+    wanted = [(total - 1) // 2, total // 2]
+    picked = []
+    seen = 0
+    for value, count in ordered:
+        while picked.__len__() < 2 and wanted[len(picked)] < seen + count:
+            picked.append(value)
+        seen += count
+    return sum(picked) / 2
+
+denominators = [histogram_median(h) for h in flank_hist]
 
 # Each dog is normalized by its own flank depth, exactly as in the CRAM pass, so
 # nothing depends on a coverage figure from the sample table.
-cn = []
-for per_window in depths:
-    denominator = statistics.median(
-        [d for w, ds in per_window.items() if is_flank(w) for d in ds])
-    cn.append({w: 2 * statistics.median(ds) / denominator
-               for w, ds in per_window.items() if len(ds) >= MINSITES})
+starts = sorted(buckets)
+cn = [{} for _ in samples]
+for b in range(len(starts) - SPAN + 1):
+    span_starts = starts[b:b + SPAN]
+    # only a run of SPAN buckets that really is contiguous is a window
+    if span_starts[-1] - span_starts[0] != (SPAN - 1) * STEP:
+        continue
+    rows = [row for w in span_starts for row in buckets[w]]
+    window = span_starts[SPAN // 2]
+    for i, denominator in enumerate(denominators):
+        if denominator > 0:
+            values = [row[i] for row in rows if row[i] >= 0]
+            if len(values) >= MINSITES:
+                cn[i][window] = 2 * statistics.median(values) / denominator
 
 windows = sorted({w for c in cn for w in c})
 cohort_median = {w: statistics.median([c[w] for c in cn if w in c])
                  for w in windows}
 dropped = {w for w in windows
-           if is_flank(w) and abs(cohort_median[w] - 2) > FLANK_TOLERANCE}
+           if is_normalizing(w) and abs(cohort_median[w] - 2) > FLANK_TOLERANCE}
 for w in sorted(dropped):
     print('dropped %s:%d-%d: median %.2f across the collection, not two'
-          % (chrom, w, w + BIN, cohort_median[w]), file=sys.stderr)
+          % (chrom, w, w + STEP, cohort_median[w]), file=sys.stderr)
 
 # The check that decides whether this second measurement is worth drawing: the
 # same windows in the same dogs, read from CRAM depth above.
@@ -413,11 +500,11 @@ for sample, per_window in zip(samples, cn):
         if w in per_window and w not in dropped:
             value = min(10, max(0, round(per_window[w])))
             if prev and prev[2] == w and prev[3] == value:
-                prev[2] = w + BIN
+                prev[2] = w + STEP
             else:
                 if prev:
                     rows.append(prev)
-                prev = [chrom, w, w + BIN, value, sample]
+                prev = [chrom, w, w + STEP, value, sample]
     if prev:
         rows.append(prev)
 
@@ -444,7 +531,7 @@ print('over the element the collection medians %.2f copies; %d of %d dogs '
 # was not), so print the block to paste rather than leaving it to be remembered.
 print()
 print('legend slot for the copy-number displays, paste into the track config:')
-painted = {min(CN_CAP, int(r[3].split()[1])) for r in rows}
+painted = {min(CN_CAP, r[3]) for r in rows}
 print(json.dumps([{'label': cn_label(cn), 'color': 'rgb(%s)' % cn_color(cn)}
                   for cn in sorted(painted)], indent=2))
 PY
@@ -475,10 +562,10 @@ LABR	Labrador Retriever	0
 BOXR	Boxer	0
 "
 
-PANEL_GROUPS="$PANEL_GROUPS" python3 - "$BIN" <<'PY'
+PANEL_GROUPS="$PANEL_GROUPS" python3 - "$STEP" <<'PY'
 import collections, gzip, json, os, statistics, sys
 
-BIN = int(sys.argv[1])
+STEP = int(sys.argv[1])
 groups = [line.split('\t') for line in
           os.environ['PANEL_GROUPS'].strip().split('\n')]
 
@@ -490,7 +577,7 @@ windows = collections.defaultdict(dict)
 for line in gzip.open('dog10k_cyp1a2_cohort_cn.bed.gz', 'rt'):
     f = line.split('\t')
     chrom = f[0]
-    for w in range(int(f[1]), int(f[2]), BIN):
+    for w in range(int(f[1]), int(f[2]), STEP):
         windows[f[9]][w] = (int(f[10]), f[8])
 
 # The element is where the collection itself sits above two, the same definition
@@ -540,11 +627,11 @@ for prefix, label, limit in groups:
         for w in sorted(windows[sample]):
             cn, color = windows[sample][w]
             if segment and segment[1] == w and segment[3] == cn:
-                segment[1] = w + BIN
+                segment[1] = w + STEP
             else:
                 if segment:
                     rows.append(segment)
-                segment = [w, w + BIN, color, cn, row_label]
+                segment = [w, w + STEP, color, cn, row_label]
         rows.append(segment)
 
 rows.sort(key=lambda r: r[0])

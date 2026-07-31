@@ -154,6 +154,10 @@
           ],
           "legend": [
             {
+              "label": "CN 1",
+              "color": "rgb(146,197,222)"
+            },
+            {
               "label": "CN 2",
               "color": "rgb(224,224,224)"
             },
@@ -289,6 +293,10 @@
             "Boxer 5"
           ],
           "legend": [
+            {
+              "label": "CN 1",
+              "color": "rgb(146,197,222)"
+            },
             {
               "label": "CN 2",
               "color": "rgb(224,224,224)"

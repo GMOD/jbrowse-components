@@ -877,19 +877,31 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // Copy number over the gene (Meadows et al. 2023, Fig 10a) across the whole
   // collection. The SNV callset carries a per-sample DP at every site for all
   // 1,987 canids, and the same ratio of element depth to that dog's own flank
-  // depth reproduces the CRAM answer (r = 0.97 per window, no bias). Painted as
-  // BED9, each 5 kb window rounded to an integer and colored by it, same as the
+  // depth reproduces the CRAM answer (r = 0.92 per window, no bias). Painted as
+  // BED9, each window rounded to an integer and colored by it, same as the
   // wolfdog ancestry figure above. A wiggle per dog was the alternative and it
-  // renders each window's 7-10% spread as wobble that reads like structure;
-  // rounding states the call instead.
+  // renders each window's spread as wobble that reads like structure; rounding
+  // states the call instead.
   //
-  // Sorted rather than clustered. Clustering answers "how many distinct profiles
-  // are there", and that answer is a dendrogram -- which needs a reader able to
-  // follow a row, and at a fraction of a pixel a row there is none. Sorting on
-  // the copy number each animal carries over the gene answers "how is copy
-  // number distributed" instead, which survives the scale: the integer calls
-  // resolve into bands with sharp edges, and that the edges are sharp is itself
-  // the finding (a genotype, not a continuous measurement).
+  // The window is 5 kb of depth stepped by 1 kb, per review ("i also wish the
+  // windows were smaller than 5kb"). 5 kb is what the counting noise sets, and
+  // that was measured rather than kept: over the collection's own flanks, where
+  // the answer is two by construction, 3.8% of 5 kb windows round off two
+  // against 12.1% at 2.5 kb, 13.7% at 2 kb and 21.4% at 1 kb, so a narrower
+  // window buys resolution by speckling a lane whose whole content is a flat
+  // baseline. Sliding the same width instead paints the middle kilobase of each
+  // window, which puts an element's edge within a kilobase of where it is
+  // without touching the noise -- and it is what makes the zoomed-out frame
+  // (185 kb, up from 60) readable rather than a row of 5 kb blocks.
+  //
+  // Clustered, not sorted on one window. Sorting answers "how is copy number
+  // distributed at THIS position", which needed a position picked by hand and
+  // which the 5 kb grid made arbitrary at the element's edges. Clustering groups
+  // rows by their whole profile across the window, so the bands that come out
+  // are extents rather than one column's values: animals carrying the same
+  // element, at the same edges, land together. That only became worth doing when
+  // the windows got finer -- at 5 kb steps most of the profile was the element
+  // and there was nothing else to group on.
   //
   // Named animals above the collection, the paper's own pairing for the
   // neighbouring SLC28A3 expansion (Fig 11): labelled rows thick enough to read,
@@ -909,7 +921,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-cyp1a2-cohort-copy-number',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr30:38,235,000-38,295,000',
+      loc: 'chr30:38,210,000-38,395,000',
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
@@ -928,13 +940,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_cyp1a2_cohort_cn',
           type: 'LinearMultiRowFeatureDisplay',
           height: 300,
-          // Sorted by the copy number each dog carries over the element rather
-          // than clustered by its whole profile. Same one-shot declarative
-          // trigger as the QTL painting: the display computes the order from the
-          // loaded features. 38,262,000 is inside the window with the widest
-          // spread and no copy-number-one dog, so the sort resolves into five
-          // clean bands running high to low with no loss colors interleaved.
-          sortRowsBy: { refName: 'chr30', pos: 38_262_000 },
+          // One-shot declarative trigger, same shape as the QTL painting's sort:
+          // the display runs MultiRowClusterFeatures over the loaded features
+          // and reorders its rows from the result, then clears the flag.
+          runClustering: true,
           // NO breed swatch stripe, and this is a measurement rather than a
           // preference. Review asked for one ("if it helps, add breed label
           // sidebar colors too"), and a previous pass deferred it on the belief
@@ -953,10 +962,13 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr30',
-    // sources exist only once features are loaded and binned into rows, which is
-    // also what the sort waits on
-    readySelector: '[data-testid="multirow-row-labels"]',
-    readyTimeout: 120000,
+    // the dendrogram exists only once the clustering RPC has returned, which is
+    // the last thing to land: waiting on the row labels instead caught the frame
+    // with "Computing distance matrix 0%" still in the corner and the rows in
+    // file order
+    readySelector:
+      'body:has([data-testid="tree_sidebar_dendrogram"]) [data-testid="multirow-row-labels"]',
+    readyTimeout: 180000,
     settleMs: 8000,
     // gene track, the 380px panel and the 300px collection lane, their headers,
     // and the copy-number key

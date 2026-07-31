@@ -161,16 +161,23 @@ CN = 2 * depth over the element / depth over that dog's flanks
 This needs no copy-number caller, and it carries its own check: the flanks have
 to come back out at two.
 
+Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
+evidence and is painted at 1 kb resolution. The width is what the counting noise
+sets: over the collection's own flanks, where the answer is two by construction,
+3.8% of 5 kb windows round off two against 13.7% of 2 kb ones, so a narrower
+window buys resolution by speckling the baseline. Sliding it buys the resolution
+without that.
+
 Callset depth is a different measurement from read depth, taken only where a
 variant was called, so the build script validates it rather than assuming. The
 Dog10K share also publishes 15 CRAMs, and running the same ratio over their
 reads gives an independent estimate for those dogs; over the shared windows the
-two agree at r = 0.97 with no bias. That painting is in the config as
+two agree at r = 0.92 with no bias. That painting is in the config as
 `dog10k_cyp1a2_cn` if you want to add it, but it is not shown here: which 15
 dogs have CRAMs is an accident of what the share published, so the picture
 invites a question about those breeds that the data cannot answer.
 
-<Figure caption="Copy number over CYP1A2, each 5 kb window colored by its rounded call, grey being two copies. Above, named animals: four wolves and every Golden Retriever, Labrador Retriever and Boxer in the collection. Below, all 1,987 canids, sorted by what each carries over the gene. Every Golden is expanded, every Boxer stays grey, the Labradors split." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2 and 185 kb around it, each window colored by its rounded call, grey being two copies. Above, named animals: four wolves and every Golden Retriever, Labrador Retriever and Boxer in the collection. Below, all 1,987 canids, clustered on their profiles. Every Golden is expanded, every Boxer stays grey, the Labradors split; the blue blocks to the right are deletions a few percent of the collection carries." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane is whole groups, not picked animals: every Golden Retriever,
 Labrador Retriever and Boxer in the collection, plus the four wolves the figure
@@ -180,14 +187,14 @@ fact in some breeds and segregating in others. Row labels come from the sample
 column, the order from `rowOrder`. The wolves rest on callset depth alone, since
 none of the dogs with published reads is a wolf.
 
-The lower lane is the same estimate over every canid, sorted by what each one
-carries over the gene. Right-click a column and pick **Sort rows by color
-here**, or set `sortRowsBy`. Sorted rather than clustered: a dendrogram needs
-rows a reader can follow and these are a third of a pixel each, where what
-survives is the distribution. It comes out as bands with sharp edges rather than
-a gradient.
+The lower lane is the same estimate over every canid, clustered on the profile
+each one carries across the window rather than sorted on one column: **Cluster
+rows by similarity** in the track menu, or `runClustering`. What that groups is
+extents, so animals whose expansion starts and ends in the same place land
+together, and the blocks either side of the gene are the deletion polymorphisms
+in the flanking sequence.
 
-One number does not reproduce: this estimate puts 80% of the collection at three
+One number does not reproduce: this estimate puts 79% of the collection at three
 or more copies where the paper reports 49.7%, and the two depth sources agree
 too closely for that to be noise. The difference is which interval is counted:
 QuicK-mer2 over an element whose extent was never published, against the windows
