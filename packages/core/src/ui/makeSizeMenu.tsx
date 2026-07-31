@@ -3,6 +3,10 @@ import { useState } from 'react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  isSlotCustomized,
+  makeCurrentValueDisplayTypeDefaultControl,
+} from '../configuration/promotableDefaults.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 import {
@@ -13,6 +17,7 @@ import SingleSlider from './SingleSlider.tsx'
 import { sliderScale } from './sliderScale.ts'
 
 import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
 
@@ -132,20 +137,13 @@ const SizeSliderRow = observer(function SizeSliderRow({
   )
 })
 
-// Shared inline "size" control as a single menu row (was a submenu of
-// slider/reset/default). Callers own their config slot/semantics and wire the
-// accessors + a title (which also derives the slider's test id). Used by wiggle
-// point-size/line-width, GWAS Manhattan point-size, arc width, the alignments
-// modification threshold and GC-content window/step sizes, so the
-// slider/reset/pin behavior can't drift. Pass `displayTypeDefault` for a promotable
-// slot to surface the "default for all tracks of this type" pin, `scale: 'log'`
-// for values spanning orders of magnitude, and `format` to label non-`px`
-// units.
-export function makeSizeMenu(opts: {
+// Everything a size row needs that doesn't depend on where its "is this the
+// default?" answer comes from — the one axis the two entry points below differ
+// on.
+interface SizeMenuOptions {
   label: string
   title: string
   getValue: () => number
-  isDefault: boolean
   min?: number
   max?: number
   step?: number
@@ -155,13 +153,51 @@ export function makeSizeMenu(opts: {
   commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
-  displayTypeDefault?: DisplayTypeDefaultControl
-}): MenuItem {
+}
+
+// Shared inline "size" control as a single menu row (was a submenu of
+// slider/reset/default). Callers own their config slot/semantics and wire the
+// accessors + a title (which also derives the slider's test id). Used by wiggle
+// point-size/line-width, GWAS Manhattan point-size, arc width, the alignments
+// modification threshold and GC-content window/step sizes, so the
+// slider/reset/pin behavior can't drift. Pass `scale: 'log'` for values spanning
+// orders of magnitude, and `format` to label non-`px` units.
+//
+// For a row over a promotable slot use `makePromotableSizeMenu`.
+export function makeSizeMenu(
+  opts: SizeMenuOptions & { isDefault: boolean },
+): MenuItem {
+  return sizeMenu(opts, opts.isDefault)
+}
+
+// The same row over a **promotable** slot, which derives both halves the plain
+// form takes by hand — the reset button's enablement (`isSlotCustomized`) and
+// the "default for all tracks of this type" pin — from the one slot name. A
+// slider has no fixed on-value, so the pin promotes whatever the track is
+// currently showing.
+//
+// Naming the slot once is the point: the call sites used to spell it twice, in
+// `isDefault` and again in the pin, with nothing checking the two agreed.
+export function makePromotableSizeMenu(
+  opts: SizeMenuOptions & { display: ResolvableDisplay; slot: string },
+): MenuItem {
+  const { display, slot } = opts
+  return sizeMenu(
+    opts,
+    !isSlotCustomized(display, slot),
+    makeCurrentValueDisplayTypeDefaultControl(display, slot),
+  )
+}
+
+function sizeMenu(
+  opts: SizeMenuOptions,
+  isDefault: boolean,
+  displayTypeDefault?: DisplayTypeDefaultControl,
+): MenuItem {
   const {
     label,
     title,
     getValue,
-    isDefault,
     min = 0.5,
     max = 12,
     step = 0.5,
@@ -171,7 +207,6 @@ export function makeSizeMenu(opts: {
     commitOnRelease,
     onChange,
     onReset,
-    displayTypeDefault,
   } = opts
   return {
     label,
