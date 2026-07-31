@@ -23,6 +23,7 @@ import {
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
 import type {
+  CascadeContext,
   PromotableDisplay,
   ResolvableDisplay,
 } from './promotableResolve.ts'
@@ -70,12 +71,32 @@ export function getConfigSnapshotWithPromotables(
   self: ResolvableDisplay,
 ): Record<string, unknown> {
   // the unresolved walk: this is the one place allowed to snapshot a promotable
-  // config, because the loop below is what resolves every such slot
+  // config, because `resolvePromotablesInto` is what resolves every such slot
   const snap = fullConfSnapshot(self.configuration)
-  for (const slot of promotableSlotNames(self.configuration)) {
-    snap[slot] = resolveSlot(self, slot).value
-  }
+  resolvePromotablesInto(cascadeContextFor(self), snap)
   return snap
+}
+
+/**
+ * The subsystem's one resolve loop: every promotable slot of `ctx.config`
+ * written into `snap` in place, returning the slots whose value came from a
+ * promoted default rather than from the config. Both serialization boundaries
+ * are this function over a different context — a display state node for the
+ * worker payload, a bare display config for a track that isn't open.
+ */
+function resolvePromotablesInto(
+  ctx: CascadeContext,
+  snap: Record<string, unknown>,
+): string[] {
+  const inherited: string[] = []
+  for (const slot of promotableSlotNames(ctx.config)) {
+    const res = resolveSlotIn(ctx, slot)
+    snap[slot] = res.value
+    if (res.inherited) {
+      inherited.push(slot)
+    }
+  }
+  return inherited
 }
 
 /**
@@ -123,50 +144,30 @@ export function getTrackConfigWithPromotables(
     const openDisplays = openPromotableDisplays(session)
     for (const [i, displayConfig] of displayConfigs.entries()) {
       const snap: unknown = displaySnaps[i]
-      if (isConfigurationModel(displayConfig) && isObject(snap)) {
-        fromDisplayTypeDefaults.push(
-          ...resolvePromotablesInto(session, openDisplays, displayConfig, snap),
-        )
+      const displayType = isObject(snap) ? snap.type : undefined
+      if (
+        isConfigurationModel(displayConfig) &&
+        isObject(snap) &&
+        typeof displayType === 'string'
+      ) {
+        // identity, not displayId: the hydration cache makes a track's config
+        // node stable, so an open display's `configuration` IS this node
+        const open = openDisplays.find(d => d.configuration === displayConfig)
+        const ctx = open
+          ? cascadeContextFor(open)
+          : {
+              config: displayConfig,
+              displayType,
+              ignorePromotedDefaults: false,
+              defaults: session,
+            }
+        for (const slot of resolvePromotablesInto(ctx, snap)) {
+          fromDisplayTypeDefaults.push(`${displayType}.${slot}`)
+        }
       }
     }
   }
   return { config, fromDisplayTypeDefaults }
-}
-
-// One display's promotable slots resolved into its snapshot entry in place,
-// returning `<displayType>.<slot>` for each value that came from a promoted
-// default rather than from the config. The same loop as
-// `getConfigSnapshotWithPromotables`, over a context instead of a display state
-// node — an unopened track has none.
-function resolvePromotablesInto(
-  session: AbstractSessionModel,
-  openDisplays: PromotableDisplay[],
-  displayConfig: AnyConfigurationModel,
-  snap: Record<string, unknown>,
-): string[] {
-  const displayType = snap.type
-  const inherited: string[] = []
-  if (typeof displayType === 'string') {
-    // identity, not displayId: the hydration cache makes a track's config node
-    // stable, so an open display's `configuration` IS this node
-    const open = openDisplays.find(d => d.configuration === displayConfig)
-    const ctx = open
-      ? cascadeContextFor(open)
-      : {
-          config: displayConfig,
-          displayType,
-          ignorePromotedDefaults: false,
-          defaults: session,
-        }
-    for (const slot of promotableSlotNames(displayConfig)) {
-      const res = resolveSlotIn(ctx, slot)
-      snap[slot] = res.value
-      if (res.inherited) {
-        inherited.push(`${displayType}.${slot}`)
-      }
-    }
-  }
-  return inherited
 }
 
 /**
@@ -228,19 +229,15 @@ function displaysInView(view: object): PromotableDisplay[] {
  * that acts on "the tracks the user is looking at": the cascade's own "apply to
  * open tracks", and the share/export bake. One walk so those can't drift apart.
  *
- * Recurses into composite views, because a display nested in one resolves the
- * cascade at read time like any other but was invisible to both callers: "apply
- * to N open tracks" undercounted it, and — the real bug — the share/export bake
- * neither baked its inherited values nor flagged it `ignorePromotedDefaults`, so
- * a shared session containing a breakpoint-split or synteny view rendered
- * differently for the recipient. `LGVSyntenyDisplay` (a promotable adopter) is
- * only ever reached through this branch. See `hasChildViews` for the one
- * composite shape the recursion does not cover.
+ * Recurses into composite views. A display nested in one resolves the cascade
+ * like any other but was invisible to both callers, and the share/export bake
+ * then neither baked its inherited values nor flagged it
+ * `ignorePromotedDefaults` — a shared session containing a breakpoint-split or
+ * synteny view rendered differently for the recipient. `LGVSyntenyDisplay` is
+ * only ever reached through this branch, so don't flatten the recursion away.
+ * `hasChildViews` names the one composite shape it does not cover.
  *
- * Views that show no tracks at all (e.g. dotplot) drop out via the structural
- * guards. In practice a track has one display (`replaceDisplay` swaps in place,
- * `activeDisplay` is `displays[0]`), so the inner flatMap just collects each
- * track's display without relying on multiple-per-track.
+ * Views showing no tracks (e.g. dotplot) drop out via the structural guards.
  */
 export function openPromotableDisplays(
   session: AbstractSessionModel,
@@ -329,13 +326,8 @@ export function tracksDifferingFrom(
  * action, which is the one explicit gesture that rewrites tracks. Clearing just
  * notifies.
  *
- * Toggling on used to *also* reset the clicking display to inherit, so its own
- * track updated with one click. That silently discarded that display's value:
- * pin-then-unpin left it at `promotedBase` rather than what it held before —
- * a two-click, non-undoable loss from a control that reads as a toggle. Keeping
- * the pin symmetric (it edits the stylesheet, never the elements) costs one
- * extra click on a customized track and removes the whole failure mode; that
- * track is now simply counted in "Override N customized tracks" like any other.
+ * The pin edits the stylesheet, never the elements — it stays symmetric, so
+ * pin-then-unpin can't discard a track's own value. ADR-048.
  */
 function applyDefaultToggle(
   self: ResolvableDisplay,
@@ -355,24 +347,12 @@ function applyDefaultToggle(
     const n = tracksDifferingFrom(self, slot, value).length
     if (n) {
       session.notify('Set as the default', 'info', {
-        // named for what it does, not for what it feels like. The default is
-        // already set, so a track that still differs is one holding its *own*
-        // value — the action clears that value so the track follows. "Apply to
-        // N open tracks" read as additive; it is a bulk, non-undoable discard of
-        // exactly those customizations, and the label has to say so.
+        // named for what it does: this clears those tracks' own values, a bulk
+        // non-undoable discard. "Apply to N open tracks" read as additive
         name: `Override ${n} customized ${pluralize(n, 'track')}`,
-        // re-derived on click, not captured: the snackbar outlives the click
-        // that raised it, so a track closed (or newly opened) in between would
-        // otherwise be reset as a dead node / silently skipped. `self` is the
-        // display the pin was clicked from, and it can be the one that closed —
-        // the whole walk hangs off its session, so guard it too.
-        //
-        // And the default itself can be gone by then (the user unpinned, or
-        // pinned a sibling value on the same slot). This action only ever means
-        // "make these tracks follow the default I just set", so with that default
-        // no longer in place it does nothing — clearing their own values would
-        // strand them on whatever replaced it, discarding customizations to reach
-        // a value nobody asked for.
+        // re-derived on click, never captured — the snackbar outlives the click
+        // that raised it, so both the target set and the default itself can have
+        // moved by now. ADR-048 for the three ways that goes wrong.
         onClick: () => {
           if (isAlive(self) && isPromotableDefault(self, slot, value)) {
             resetSlotToInherit(tracksDifferingFrom(self, slot, value), slot)

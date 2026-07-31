@@ -36,6 +36,16 @@ read one section, read [The cascade](#the-cascade).
 - UI is **one row per value**, each with a trailing `PushPin`. Filled = default
   for all tracks of this type. No separate "make default" row.
 
+Why it is shaped this way, and what was rejected getting here:
+[ADR-046](../architecture-decision-records/adr-046-resolveconf-names-the-cascade.md)
+(`resolveConf` is named, `getConf` never cascades),
+[ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)
+(`undefined` is the only inherit sentinel),
+[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md)
+(the pin never rewrites a track). This file is the mechanism; those are the
+decisions. Read the relevant one before undoing something here that looks
+accidental.
+
 ## Vocabulary (the two words that matter)
 
 - **customized** — the track's slot is *set* to a usable value of its own
@@ -128,39 +138,20 @@ one form and nothing to choose:
 - `maybeFrozen` — the object-valued case: `colorBy`, resolving to
   `{ type: 'normal' }`.
 
-**Why it's mandatory.** Spending only the unset state on the sentinel is what
-leaves every *real* value — `promotedBase` included — customizable per-track, so a
-track can hold `displayMode: 'normal'` under a promoted `compact`, or
-`linkedReads: 'off'` under a promoted `normal` (view-as-pairs). With a concrete
-`defaultValue` it would double as the follows-the-default signal, and writing that
-one value would read as "follow the default" — making the setting one-directional
-and, for a promoted non-default, un-turn-off-able on an individual track.
-
 `ConfigSlot` rejects the mirror mistake too: `promotedBase` on a slot that never
-says `promotable`. That builds a slot the resolver refuses on every
-`resolveConf` read ("not promotable") while the resolved read type still drops
-the sentinel — it type-checks and throws. Only an *unstated* `promotable` is the
-mistake; an explicit `promotable: false` is how a subclass turns an inherited
-promotable slot off, and the definition merge hands `ConfigSlot` the base's
-`promotedBase` alongside it. That pair of guards is also what lets
-`SlotValueResolvedFromDef` key on `promotedBase` — the only one of the two that
-survives a real override at the *type* level, since the type reads the
-subclass's literal definition and the merge is runtime-only
-(`LGVSyntenyDisplay`'s `colorBy` states `promotedBase` and inherits
-`promotable`).
-
-**Why `undefined` and not a spare `'inherit'` enum member.** An earlier form
-spelled the enum sentinel in-band, which meant the enumeration carried a member
-that wasn't a mode: `HEIGHT_MODE_VALUES` listed `'inherit'`, every consumer needed
-a second `HeightMode` type to subtract it back out, the config editor's dropdown
-offered "inherit" as a literal choice, and a raw `readConfObject` handed the
-string to a caller that had no idea what it meant. `maybeStringEnum` puts the
-nullability in the slot type instead, so the vocabulary is only ever real values.
+says `promotable` builds a slot the resolver refuses on every `resolveConf` read
+while the resolved read type still drops the sentinel — it type-checks and
+throws. Only an *unstated* `promotable` is the mistake; an explicit
+`promotable: false` is how a subclass turns an inherited promotable slot off.
 
 It costs nothing at the read site: `resolveConf` resolves `undefined` to
 `promotedBase` and the getter never surfaces it (and `SlotValueResolvedFromDef`
 drops `undefined` from the read type, so the getter's own annotation stays
 clean).
+
+**Why the sentinel is mandatory, why it isn't a spare `'inherit'` enum member,
+and why `defaultValue` may not double as it:**
+[ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md).
 
 ## The resolver
 
@@ -176,40 +167,27 @@ interface SlotResolution {
   inherited: boolean  // value came from the session tier, and moves the track off `base`
   value: unknown      // final cascaded value (never the unset sentinel)
 }
-
-function resolveSlot(self, slot): SlotResolution {
-  const def = getSlotDefinition(self.configuration, slot)
-  const base = def.promotedBase // required on every promotable slot
-  // `promoted` stays the raw session-wide value even for an opted-out display:
-  // it's a session-wide fact, and the pin's filled/outline state reports on the
-  // session, not on one display's view of it. The opt-out belongs to `inherited`
-  const promoted = getSession(self).getDisplayTypeDefault(self.type, slot)
-  // the raw stored read (`self.configuration[slot]`) — this *is* the resolver, so
-  // not `resolveConf`, which would recurse straight back in here, and not
-  // `readConfObject`, whose two extra behaviors are both unwanted: evaluating a
-  // `jexl:` string (which `isUsableValue` refuses outright) and snapshotting an
-  // MST-node value, which a `maybe*` slot never holds
-  const own = storedSlotValue(self, slot)
-  // a track is customized exactly when it holds a *usable* value — the same
-  // `isUsableValue` gate a promoted default passes, so a malformed or stale own
-  // value reads as not-customized and degrades to the inherited value rather
-  // than reaching a consumer that trusts every value
-  const customized = isUsableValue(def, own)
-  // a display that arrived in a received session skips the session-wide tier
-  // entirely (see "Received sessions" below), collapsing to "own value, else base"
-  const inheritedValue =
-    !self.ignorePromotedDefaults && isUsableValue(def, promoted) ? promoted : base
-  const value = customized ? own : inheritedValue
-  // "this display picked something up from the session" — a field, not a
-  // predicate re-spelled at each consumer, because either half is silent when
-  // dropped: without `customized` a customized track reads as inheriting,
-  // without the `base` compare a default that changes nothing gets reported
-  const inherited = !customized && !deepEqual(value, base)
-  return { base, customized, promoted, inherited, value }
-}
 ```
 
-There is deliberately **no callback case** — see [No callbacks](#no-callbacks-jexl).
+`resolveSlotIn` in `promotableResolve.ts` is the whole of it — about fifteen
+lines, commented in place. **Read it there rather than a copy here.** This
+section used to carry a transcription of the function body; it silently drifted
+from the real one (wrong `storedSlotValue` signature, and it predated the
+`resolveSlot` / `resolveSlotIn` split over a `CascadeContext`), which is exactly
+the failure a second copy invites.
+
+What the file won't tell you at a glance:
+
+- `promoted` stays the **raw** session-wide value even for an opted-out display.
+  It is a session-wide fact, and the pin's filled/outline state reports on the
+  session, not on one display's view of it. `ignorePromotedDefaults` may
+  neutralize only the inherited-value tier.
+- `customized` runs a track's **own** value through the same `isUsableValue` gate
+  as a promoted default, so a malformed or stale own value (a saved `colorBy`
+  naming a since-removed scheme) reads as not-customized and degrades in lockstep
+  rather than reaching a consumer that trusts every value it sees.
+- There is deliberately **no callback case** — see
+  [No callbacks](#no-callbacks-jexl).
 
 ### What a display has to be
 
@@ -638,33 +616,26 @@ An earlier design layered admin/user type-default configs via extra
 tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
 choice wins / display-type granularity" decisions; dropped the machinery.
 
-Later passes have only removed machinery. A **plain**
-promotable form once let `defaultValue` double as the inherit signal; no slot
-ever used it, so `ConfigSlot` now requires a `maybe*` type + `promotedBase` and
-the resolver has one path. A `PromotableDefaultsMixin` once forwarded the badge's
-two hooks per display; both underlying functions are total, so the badge calls
-them directly and the mixin is gone. And the sentinel itself was **collapsed onto
-`undefined`**: enums used to spend a spare `'inherit'` member on it (see [The
-inherit sentinel](#the-inherit-sentinel)), which put the mechanism into every
-enumeration, the config editor dropdown, and a second `Exclude<…, 'inherit'>`
-type per consumer. `maybeStringEnum` / `maybeFrozen` replaced that, so
-`isUsableValue`'s first check is a bare `value !== undefined` and no
-`defaultValue` comparison survives in the resolver.
+Every pass since has removed machinery, never added it. The two that carry a
+standing "don't reintroduce this" are ADRs —
+[ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)
+(the `'inherit'` enum member and the `defaultValue`-as-sentinel form) and
+[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md)
+(the pin resetting the clicking display). The rest were straightforward
+deletions, listed here only so a reader doesn't go looking for them:
 
-Two more went the same way. Controls used to act on a **group** of slots
-(`PromotableEntry[]` behind one pin), for a feature-height preset that promoted
-`featureHeight` + `featureSpacing` together; `featureSpacing` is derived now and
-every call site passed one slot, so the group form and its empty-group guard are
-gone. And the resolution used to be a **discriminated union** with a `jexl:`
-callback arm — see [No callbacks](#no-callbacks-jexl) for why that state was
-unauthorable and already degenerate.
-
-A third: the resolver used to take `PromotableDisplay` everywhere and
-`resolveConf` reached it through an `as unknown as` — so every caller owed the
-setter, and the cast meant a wrong node failed at runtime rather than at the call.
-Splitting `ResolvableDisplay` off removed the cast; the fallout was nine sites,
-all of them fakes under-modelling a real display (two type-only fixtures and one
-mixin's minimal cast target), not a design conflict.
+- **`PromotableDefaultsMixin`** forwarded the badge's two hooks per display. Both
+  underlying functions are total, so the badge calls them directly (see
+  [UI surface](#ui-surface) — that one *is* worth not reintroducing).
+- **Group controls** (`PromotableEntry[]` behind one pin) served a feature-height
+  preset promoting `featureHeight` + `featureSpacing` together; `featureSpacing`
+  is derived now and every call site passed one slot.
+- **A discriminated-union resolution** with a `jexl:` callback arm — see
+  [No callbacks](#no-callbacks-jexl) for why that state was unauthorable and
+  already degenerate.
+- **`PromotableDisplay` everywhere**, reached by `resolveConf` through an
+  `as unknown as`. Splitting the read-only `ResolvableDisplay` off removed the
+  cast; the fallout was nine sites, all fakes under-modelling a real display.
 
 The optionality of the session store went too: `get/setDisplayTypeDefault` (with
 `setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`) are

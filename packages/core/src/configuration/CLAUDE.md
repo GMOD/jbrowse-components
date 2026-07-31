@@ -8,13 +8,9 @@ it** — one named call, at the ~15 display getters that own a promotable slot.
 `getConf` does NOT: it stays exactly
 `readConfObject(model.configuration, path)`.
 
-That split is deliberate and was re-made after trying the other way. `getConf`
-briefly auto-detected promotable slots and cascaded them, so flipping
-`promotable: true` silently changed every existing read. It cost a `getType` on
-all ~1300 `getConf` calls in the repo (≈60% overhead over `readConfObject`,
-measured) to serve ~15, made resolution invisible at the call site, made
-`getConf` throw on a detached node for some slots and not others, and —
-decisively — broke the one thing every reader already knew about `getConf`.
+That split is deliberate and was re-made after building the other way and
+reverting it —
+[ADR-046](../../../../agent-docs/architecture-decision-records/adr-046-resolveconf-names-the-cascade.md).
 Resolution is not free and not universal, so it is named where it happens.
 
 The forgotten-resolution failure mode is caught by the **type system** instead
@@ -23,7 +19,9 @@ read is `T | undefined` while `resolveConf` is `T`. Hand the raw one to a
 consumer expecting a real value and tsc points at the call. (Don't paper over it
 with `?? someDefault` — that silently bypasses the cascade.)
 
-**The inherit sentinel is always `undefined`.** A promotable slot must be a
+**The inherit sentinel is always `undefined`**
+([ADR-047](../../../../agent-docs/architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)).
+A promotable slot must be a
 `maybe*` type (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/
 `maybeFrozen`), must leave `defaultValue` undefined, and must declare
 `promotedBase` — `ConfigSlot` throws otherwise, so the resolver has exactly one

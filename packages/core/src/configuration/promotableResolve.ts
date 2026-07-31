@@ -25,11 +25,8 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * **The inherit sentinel is always `undefined`.** Every promotable slot is a
  * `maybe*` type (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/
  * `maybeFrozen`), so being unset is CSS `inherit` and `promotedBase` is CSS
- * `initial`; `ConfigSlot` enforces both. That is what frees every *real* value,
- * `promotedBase` included, to be customized per-track under an opposite promoted
- * default — and it keeps the mechanism out of the slot's own vocabulary, so no
- * enumeration carries a fake `'inherit'` member for a menu or the config editor
- * to render.
+ * `initial`; `ConfigSlot` enforces both. ADR-047 for why it may be neither an
+ * in-band `'inherit'` enum member nor a doubled-up `defaultValue`.
  *
  * Comparisons against a promoted value use `deepEqual`, not `===`: needed once a
  * promotable slot is object-valued (`maybeFrozen`, e.g. alignments `colorBy`),
@@ -102,16 +99,13 @@ export function cascadeContextFor(self: ResolvableDisplay): CascadeContext {
 
 /**
  * What the slot literally holds, unevaluated — a stray `jexl:` string yields the
- * raw string rather than running it. Both callers need the raw form for the same
- * reason: they ask "is the slot set, and to what kind of thing?", a question that
- * has to be answerable with no feature context.
+ * raw string rather than running it. Both callers ask "is the slot set, and to
+ * what kind of thing?", which has to be answerable with no feature context.
  *
- * For a promotable slot this is also the *whole* stored read, not a cheaper
- * approximation of one. `readConfObject`'s two extra behaviors are both
- * unwanted here: it evaluates a `jexl:` string (which `isUsableValue` rejects
- * outright — see below), and it snapshots a value that is an MST node, which a
- * promotable value never is, since `ConfigSlot` admits only `maybe*` types and
- * those hold a primitive or a `types.frozen` plain object.
+ * For a promotable slot this is the *whole* stored read, not a cheap
+ * approximation: `readConfObject`'s two extra behaviors are both unwanted here —
+ * it evaluates a `jexl:` string (which `isUsableValue` refuses anyway) and it
+ * snapshots an MST-node value, which a `maybe*` slot never holds.
  */
 export function storedSlotValue(
   config: AnyConfigurationModel,
@@ -127,15 +121,12 @@ export function storedSlotValue(
  * independent checks, each obviously correct on its own:
  *   1. it's set at all — `undefined` IS the inherit sentinel on every promotable
  *      slot, which is why they're all `maybe*` types,
- *   2. it isn't a raw `jexl:` string. This is the *only* place a promotable slot
- *      handles callbacks, and it handles them by refusing them: a promoted
- *      default is one value shared by every track of a type, which is the
- *      opposite of a per-feature expression. Nothing in the app can author one
- *      (the config editor's callback toggle needs `contextVariable`, which no
- *      promotable slot declares), but both a saved track config and the
- *      localStorage-backed default store are untyped, so a hand-edited entry
+ *   2. it isn't a raw `jexl:` string. The *only* place a promotable slot handles
+ *      callbacks, and it handles them by refusing them — nothing in the app can
+ *      author one, but a hand-edited config or default store is untyped and
  *      would otherwise sail through `maybeColor`'s bare `typeof === 'string'`
- *      check and be handed to a renderer as a literal color,
+ *      check and reach a renderer as a literal color. DISPLAY_TYPE_DEFAULTS.md
+ *      §"No callbacks" for why the state is unauthorable in the first place,
  *   3. its JS shape fits the slot (`matchesSlotShape`),
  *   4. it passes the slot's optional semantic `validate` hook.
  * An unusable value is dropped so every consumer falls back in lockstep.
@@ -203,14 +194,9 @@ function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
  * The outcome of walking the cascade for one slot: the two tiers that fed it,
  * whether the track customized it, and the settled value.
  *
- * There is deliberately **no callback case**. A promotable slot cannot hold a
- * `jexl:` value through any supported path — the config editor only offers the
- * callback toggle on a slot that declares `contextVariable`, and no promotable
- * slot does (a promoted default is one value shared by every track of a type,
- * which is the opposite of a per-feature expression). A hand-edited config that
- * puts one there fails `isUsableValue` like any other unusable value and
- * degrades to the inherited value, so every consumer falls back in lockstep and
- * `value` is always readable.
+ * There is deliberately **no callback case** — a `jexl:` value fails
+ * `isUsableValue` like any other unusable value and degrades to the inherited
+ * one, so `value` is always readable. See `isUsableValue`.
  */
 export interface SlotResolution {
   /** value a track following the default shows with nothing promoted (CSS `initial`) */

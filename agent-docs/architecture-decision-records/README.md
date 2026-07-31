@@ -55,4 +55,7 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [043](adr-043-rpc-workers-carry-ui-code.md) | Accepted | RPC workers parse 2.2 MB of MUI/react-dom they never run; the fix is blocked on splitting every plugin index's model half from its React half, so we measure it and take smaller wins instead |
 | [044](adr-044-reactive-display-hooks-are-getters-or-pinned-views.md) | Accepted | Reactive display hooks are getters where possible, pinned views where not — an `.actions()` block untracks them silently |
 | [045](adr-045-region-too-large-gate-stays-in-lgv-plugin.md) | Rejected | The region-too-large gate does not move to `@jbrowse/render-core`; ADR-030 bars the dependency and the gate's only composers are plugin-side, so the export surface was cut in place instead |
+| [046](adr-046-resolveconf-names-the-cascade.md) | Accepted | Promotable-slot resolution is named at the call site (`resolveConf`); `getConf` never cascades |
+| [047](adr-047-undefined-is-the-only-inherit-sentinel.md) | Accepted | A promotable slot's inherit sentinel is always `undefined` (a `maybe*` type + `promotedBase`) — never an in-band `'inherit'` enum member or a doubled-up `defaultValue` |
+| [048](adr-048-pin-edits-the-stylesheet-not-the-elements.md) | Accepted | Setting a display-type default writes only the session-wide value; rewriting tracks is a separate, explicitly-labeled, opt-in action |
 <!-- END GENERATED ADR INDEX -->
