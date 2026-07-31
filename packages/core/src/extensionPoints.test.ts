@@ -31,6 +31,30 @@ test('props pass through unchanged rather than accumulating', () => {
   expect(seen).toEqual([props, props])
 })
 
+// "return what you were passed" is how a callback opts out, so forgetting the
+// return used to hand undefined to every later callback and to the producer
+test('a callback that returns nothing leaves the accumulator alone', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const pm = new PluginManager([])
+  pm.addToExtensionPoint<number>(POINT, n => n + 1)
+  pm.addToExtensionPoint<number>(POINT, (() => {}) as () => number)
+  pm.addToExtensionPoint<number>(POINT, n => n + 1)
+  expect(pm.evaluateExtensionPoint(POINT, 0)).toBe(2)
+  expect(warn).toHaveBeenCalled()
+  warn.mockRestore()
+})
+
+// a point whose args are undefined to begin with is notification-style, and
+// there every callback returns undefined legitimately
+test('a point started with undefined does not warn', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const pm = new PluginManager([])
+  pm.addToExtensionPoint<undefined>(POINT, arg => arg)
+  expect(pm.evaluateExtensionPoint(POINT, undefined)).toBeUndefined()
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
+})
+
 test('an unregistered point returns the args untouched', () => {
   expect(new PluginManager([]).evaluateExtensionPoint(POINT, 'unchanged')).toBe(
     'unchanged',

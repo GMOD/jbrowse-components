@@ -85,6 +85,34 @@ type ExtensionPointCallback = (
   props?: Record<string, unknown>,
 ) => unknown
 
+/**
+ * Marks a component built by wrapping the one the extension point accumulated
+ * so far, so {@link PluginManager.evaluateComponentExtensionPoint} can tell
+ * composition (two plugins each wrapping, both still visible) from a genuine
+ * clobber (a second plugin discarding the first). Set by `addWidgetWrapper`.
+ */
+export const wrappedComponent = Symbol.for('jbrowse.wrappedComponent')
+
+// a callback that forgets to return hands `undefined` to every later callback
+// and to the producer, which is a silent no-op the author has no way to see —
+// the accumulator survives instead, since "return what you were passed" is the
+// documented way to opt out
+function nextAccumulator(name: string, accumulator: unknown, result: unknown) {
+  let next = result
+  if (result === undefined && accumulator !== undefined) {
+    console.warn(
+      `a ${name} extension point callback returned undefined instead of the value it was passed, so its result was ignored`,
+    )
+    next = accumulator
+  }
+  return next
+}
+
+// a bare stack from minified plugin code names nothing, so say which point
+function logCallbackError(name: string, error: unknown) {
+  console.error(`error in a ${name} extension point callback`, error)
+}
+
 // Typed registry for extension points, mirroring RpcRegistry. Plugins augment
 // this interface via declaration merging so the addToExtensionPoint /
 // evaluateExtensionPoint / evaluateAsyncExtensionPoint overloads narrow per
@@ -140,11 +168,14 @@ export interface FeaturePanelProps {
 }
 
 // props passed to Core-replaceWidget components
+// #region replaceWidgetProps
 export interface ReplaceWidgetProps {
   session: AbstractSessionModel
+  /** has `type`; feature detail widgets also have `trackId` and `trackType` */
   model: WidgetModel
   toolbarHeight?: number
 }
+// #endregion
 
 export interface ExtensionPointRegistry {
   'Core-extendPluggableElement': {
@@ -258,6 +289,10 @@ export default class PluginManager {
   rootModel?: AbstractRootModel
 
   extensionPoints = new Map<string, ExtensionPointCallback[]>()
+
+  // singular component points are re-evaluated on every render, so the
+  // clobber warning is emitted once per point per app
+  warnedClobber = new Set<string>()
 
   /**
    * Lazy-hydration cache for `TrackConfigurationReference`/
@@ -768,11 +803,70 @@ export default class PluginManager {
     if (callbacks) {
       for (const callback of callbacks) {
         try {
-          accumulator = callback(accumulator, props)
+          accumulator = nextAccumulator(
+            extensionPointName,
+            accumulator,
+            callback(accumulator, props),
+          )
         } catch (error) {
-          console.error(error)
+          logCallbackError(extensionPointName, error)
         }
       }
+    }
+    return accumulator
+  }
+
+  /**
+   * Fire a *singular* component point — one where exactly one component can
+   * render, so a plugin that returns its own discards whatever the plugin
+   * before it returned. Same fold as {@link evaluateExtensionPoint}, plus a
+   * one-time warning naming the point when more than one callback genuinely
+   * takes the slot. A component built by `addWidgetWrapper` still renders the
+   * one it wrapped, so it composes and is not counted.
+   *
+   * Used by {@link PluggableComponent}; producers should render through that
+   * rather than calling this directly.
+   */
+  evaluateComponentExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    extendee: ExtensionPointArgs<N>,
+    props?: ExtensionPointProps<N>,
+  ): ExtensionPointResult<N>
+  evaluateComponentExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ) {
+    const callbacks = this.extensionPoints.get(extensionPointName)
+    let accumulator = extendee
+    let claims = 0
+    if (callbacks) {
+      for (const callback of callbacks) {
+        try {
+          const result = nextAccumulator(
+            extensionPointName,
+            accumulator,
+            callback(accumulator, props),
+          )
+          if (
+            result !== accumulator &&
+            (result as { [wrappedComponent]?: unknown } | undefined)?.[
+              wrappedComponent
+            ] !== accumulator
+          ) {
+            claims++
+          }
+          accumulator = result
+        } catch (error) {
+          logCallbackError(extensionPointName, error)
+        }
+      }
+    }
+    if (claims > 1 && !this.warnedClobber.has(extensionPointName)) {
+      this.warnedClobber.add(extensionPointName)
+      console.warn(
+        `more than one plugin replaced the ${extensionPointName} slot; only the last one registered is visible. Use a wrapper if the intent was to add to the default rather than replace it`,
+      )
     }
     return accumulator
   }
@@ -797,9 +891,13 @@ export default class PluginManager {
     if (callbacks) {
       for (const callback of callbacks) {
         try {
-          accumulator = await callback(accumulator, props)
+          accumulator = nextAccumulator(
+            extensionPointName,
+            accumulator,
+            await callback(accumulator, props),
+          )
         } catch (error) {
-          console.error(error)
+          logCallbackError(extensionPointName, error)
         }
       }
     }
@@ -830,7 +928,11 @@ export default class PluginManager {
     let accumulator = extendee
     if (callbacks) {
       for (const callback of callbacks) {
-        accumulator = await callback(accumulator, props)
+        accumulator = nextAccumulator(
+          extensionPointName,
+          accumulator,
+          await callback(accumulator, props),
+        )
       }
     }
     return accumulator

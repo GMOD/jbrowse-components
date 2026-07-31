@@ -35,7 +35,7 @@ const PluggableComponent = observer(function PluggableComponent<
 }) {
   // the result is the point's declared component type; TS can't narrow that
   // through the generic key, so it is restated here
-  const Component = pluginManager.evaluateExtensionPoint(
+  const Component = pluginManager.evaluateComponentExtensionPoint(
     name,
     DefaultComponent as ExtensionPointArgs<N>,
     props,

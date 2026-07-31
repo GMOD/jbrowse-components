@@ -310,61 +310,112 @@ which accumulates additive panels.
 - `args` - a `ReactComponent`
 - `props` - an object of the type below
 
+Import the props type from `@jbrowse/core/PluginManager`:
+
+<!-- include: packages/core/src/PluginManager.ts#replaceWidgetProps -->
+
 ```typescript
-import type { ReplaceWidgetProps } from '@jbrowse/core/PluginManager'
-// ReplaceWidgetProps:
-interface props {
+export interface ReplaceWidgetProps {
   session: AbstractSessionModel
-  model: WidgetModel // has model.type; feature widgets also have trackId/trackType
+  /** has `type`; feature detail widgets also have `trackId` and `trackType` */
+  model: WidgetModel
+  toolbarHeight?: number
 }
 ```
 
 Return value: the new React component.
 
-This point fires whenever any widget opens. To target only the feature details
-widget, filter on `model.trackId` (only feature detail widgets have one). You
-can also filter on `model.type` (e.g. `'AlignmentsFeatureWidget'`), but the type
-string varies by track type. Match a track id robustly with the `matchTrackId`
-helper and a `RegExp`; this also matches "user copies" of a track, which get a
-timestamp and `-sessionTrack` suffix appended to their id:
+This point fires whenever **any** widget opens, so a callback that does not
+scope itself takes over the drawer, the modal, and every feature details panel.
+Rather than write that scoping by hand, use the two helpers below. They are the
+supported way to use this point; reach for `addToExtensionPoint` directly only
+for something neither one expresses.
+
+#### addReplaceWidget: render something else entirely
 
 ```tsx
-import { matchTrackId } from '@jbrowse/core/util'
+import { addReplaceWidget } from '@jbrowse/core/ui'
 
-pluginManager.addToExtensionPoint(
-  'Core-replaceWidget',
-  (DefaultWidget, { model }) =>
-    matchTrackId(model.trackId, [/^volvox\.inv\.vcf/])
-      ? MyWidget
-      : DefaultWidget,
-)
+addReplaceWidget(pluginManager, {
+  select: { trackId: 'volvox.inv.vcf' },
+  component: MyWidget,
+})
 ```
 
-Example of Core-replaceWidget - add widget above the default widget
+`select` accepts any combination of the fields below, and all of the ones you
+give must match. Omitting `select` entirely matches every widget.
+
+<!-- include: packages/core/src/ui/addReplaceWidget.tsx#selector -->
+
+```typescript
+export interface WidgetSelector {
+  /** widget model type, e.g. `'AlignmentsFeatureWidget'` */
+  widgetType?: string | string[]
+  /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
+  trackType?: string | string[]
+  /** track id; a plain string also matches the user's copies of that track */
+  trackId?: string | RegExp | (string | RegExp)[]
+  /** escape hatch for anything the fields above cannot express */
+  where?: (props: ReplaceWidgetProps) => boolean
+}
+```
+
+Prefer `trackType` when what you mean is "my kind of track". A plain-string
+`trackId` also matches the user's copies of that track (the "Copy track" menu
+item appends a timestamp to the id), so scoping by id does not silently stop
+applying the first time someone copies the track. Pass a `RegExp` if you want to
+control the matching yourself.
+
+We match on the model rather than on the config because the config that produced
+a feature details widget isn't always retrievable.
+
+#### addWidgetWrapper: add to the default widget
+
+Most "replacements" really want to keep the default widget and put something
+around it. That is a different helper, because the wrapper has to receive the
+default rather than close over it:
 
 ```tsx
-pluginManager.addToExtensionPoint(
-  'Core-replaceWidget',
-  (DefaultWidget, { model }) => {
-    // replace widget for this particular track ID
-    return model.trackId !== 'volvox.inv.vcf'
-      ? DefaultWidget
-      : function NewWidget(props) {
-          // this new widget adds a custom panel above the old DefaultWidget,
-          // but you can replace it with any contents that you want
-          return (
-            <div>
-              <div>Custom content here above the default details widget</div>
-              <DefaultWidget {...props} />
-            </div>
-          )
-        }
-  },
-)
+import { addWidgetWrapper } from '@jbrowse/core/ui'
+
+addWidgetWrapper(pluginManager, {
+  select: { trackType: 'VariantTrack' },
+  wrapper: ({ DefaultWidget, ...props }) => (
+    <div>
+      <div>Custom content above the default details widget</div>
+      <DefaultWidget {...props} />
+    </div>
+  ),
+})
 ```
 
-We match on `model.trackId` rather than the config because the config that
-produced the feature details isn't always retrievable.
+Wrappers from different plugins nest, so two plugins can both add content
+without either one disappearing. Two plugins using `addReplaceWidget` on the
+same widget cannot, and JBrowse logs a warning naming the slot when that
+happens.
+
+:::caution Declare the wrapper outside the callback, or use `addWidgetWrapper`
+
+```tsx
+// this remounts the widget on every render
+pluginManager.addToExtensionPoint('Core-replaceWidget', DefaultWidget => {
+  return function NewWidget(props) {
+    return <DefaultWidget {...props} />
+  }
+})
+
+// use addWidgetWrapper instead, which builds the component once
+addWidgetWrapper(pluginManager, {
+  wrapper: ({ DefaultWidget, ...props }) => <DefaultWidget {...props} />,
+})
+```
+
+`Core-replaceWidget` is re-evaluated on every render of the drawer, so returning
+a component declared inside the callback hands React a brand new component type
+each time. The widget inside is unmounted and remounted, losing its scroll
+position, any text typed into it, and any panel the user had expanded.
+
+:::
 
 ### Core-extraFeaturePanel
 
@@ -538,10 +589,6 @@ comma-joined path of category names from the track's `category` config field, so
 `"category": ["Wiggle", "My Subcategory"]` produces
 `categoryId = "Tracks-Wiggle,My Subcategory"`. Return the default component
 unchanged for categories you don't handle.
-
-For a complete example see
-[test_data/volvox/umd_plugin.js](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js)
-(search for `TrackSelector-folderDialog`).
 
 ### LaunchView-LinearGenomeView
 
