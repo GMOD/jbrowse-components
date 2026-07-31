@@ -179,7 +179,7 @@ locus one rank holds alleles from many haplotypes, so a rank row means nothing
 biological. **Sample rows** rows by the assembly each allele came from instead,
 so reading across a row says what that strain does to the reference.
 
-<Figure caption="The five-strain graph in the Sample rows layout, under the genes and the segments track it was launched from. Row K12 is the reference backbone and each row below it is one strain: a deletion leaves that strain's row empty across the span it removes, and an insertion is a mark where it attaches." src="/img/pangenome/rgfa_sample_rows.png" />
+<Figure caption="A kilobase of the pggb graph in the Sample rows layout, under the genes and the segments lane for the same window. The top row is the K12 backbone, colored by reference position; each row below it is one strain, and its charcoal marks are the segments that strain takes instead, tied by grey threads to where they attach." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 What "came from" means depends on the format, and it is the one place the two
 formats say genuinely different things. On rGFA it is the strain that _first
@@ -190,6 +190,30 @@ stated outright, so a row is carriage and the node popup lists the rest.
 Both anchored layouts draw an allele across **the reference it replaces, never
 its own sequence length**: an insertion consumes no reference, so it draws as a
 mark where it attaches, with its size in the tooltip.
+
+## Two settings that decide what is drawn
+
+**Settings → Bubble spread** sets a floor on how long a node is drawn in the
+force layout (the anchored layouts place a node from its coordinates, so it does
+nothing there). The engine comes from Bandage, whose graphs are assembled
+contigs of kb to Mb, so its own floor is tiny: a pangenome allele of a few bases
+clamps to a stub, both arms of a bubble land inside one node thickness of each
+other, and the window draws as a single thread. **Open bubbles** and **Wide
+bubbles** give every allele a drawn length instead, at the cost that below the
+floor a node no longer draws proportional to its length.
+
+**Settings → Graph context** is how far the cut follows links past the region,
+and it defaults to **None**. An allele's interior segments are indexed under
+their own haplotype's sequence, so a query on the reference never reaches them,
+and a detour that leaves the backbone before the window and rejoins after it
+arrives as two stubs rather than as the one event it is. **1 hop** closes those,
+costing a query per off-reference segment already reached.
+
+<Figure caption="The paa island cut from the same segments track twice. Left, at Graph context None: the orange alternate segments end in mid-air, because the sequence between them sits on a strain's own contig that no K12 coordinate reaches. Right, at 1 hop: the same segments close into bubbles the backbone runs through, and the node and edge counts in the header rise to match." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+
+It expands a coordinate frontier rather than walking the graph, so it does not
+converge on an exact slice however far it runs; cut one of those with
+`gfatools view -R <region> -r 1` and open it as a [file](#route-2-a-gfa-file).
 
 ## Colors that mean the same thing in both panels
 

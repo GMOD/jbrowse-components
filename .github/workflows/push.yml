@@ -166,6 +166,12 @@ jobs:
       # part of `astro build`, so a broken "Open in Desktop" link could ship.
       - name: Check figure recipes round-trip and their field list is current
         run: node website/scripts/check-spec-recipes.ts --check
+      # A figure's live link loads its config out of the hosted build's own
+      # test_data, so a spec naming an untracked config renders fine here and
+      # hands every reader a config-not-found page. Offline half only; the
+      # published half is `--network`, which needs jbrowse.org.
+      - name: Check figure live links name a config that ships
+        run: node website/scripts/check-live-configs.ts
       - name: Check homepage images are up to date
         run: node website/scripts/gen-home-images.ts --check
       - name: Check doc code/path references resolve

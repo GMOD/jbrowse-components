@@ -67,6 +67,7 @@ showTree
 sideBySide
 sortRowsBy
 sortedBy
+subgraphContext
 subtreeFilter
 transcriptId
 uniprotId

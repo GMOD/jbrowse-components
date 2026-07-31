@@ -29,12 +29,23 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const TOOLBAR_READY =
   'body:has([data-testid="graph-perf-stats"]) [data-testid="graph-layout-select"]'
 
-const CONFIG = 'test_data/graphgenomeview/config_local.json'
+// The tracked fixtures, whose `esmUrl` is the published, content-addressed
+// plugin bundle. Their `*_local.json` siblings point that url at a local
+// `pnpm build` of the plugin instead and are gitignored, so a spec naming one
+// renders here and gives the reader a live link to a config that exists on no
+// server (checked by `pnpm check-live-configs`). Iterate against a local plugin
+// build by setting GRAPH_PLUGIN_LOCAL=1, and switch back before committing
+// figures.
+const local = process.env.GRAPH_PLUGIN_LOCAL
+  ? (name: string) => name.replace(/\.json$/, '_local.json')
+  : (name: string) => name
+const CONFIG = local('test_data/graphgenomeview/config.json')
 // The only fixture loading the graph's contributing strains as assemblies,
 // which is what the outbound launch needs: a node can open the strain it came
 // from, and the window can open as a synteny view of the strains in it.
-const ECOLI_PANGENOME_CONFIG =
-  'test_data/graphgenomeview/ecoli_pangenome_local.json'
+const ECOLI_PANGENOME_CONFIG = local(
+  'test_data/graphgenomeview/ecoli_pangenome.json',
+)
 const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
 const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
@@ -280,8 +291,7 @@ const SEGMENT_WINDOW = 'chr:4,054,000-4,066,000'
 //
 // The window is the span the slice was cut on, wide enough that the bubble's
 // flanking backbone (s501, s506) is in frame either side of it.
-const PAA_WINDOW = 'chr:1,445,000-1,474,500'
-
+//
 // The same span as numbers, which both the graph and the segments lane above it
 // ramp their colors over — the one thing that makes the island the same green in
 // each. It has to be stated to the graph, not read off it: a file-loaded graph
@@ -290,7 +300,15 @@ const PAA_WINDOW = 'chr:1,445,000-1,474,500'
 // rather than the window. The view takes `colorDomain` for that.
 const PAA_RAMP_DOMAIN = { start: 1445000, end: 1474500 }
 
-// The synteny rows above the graph. K12's window is PAA_WINDOW opened out a
+// The same span as a region, for the figures that cut it out of the track's own
+// indexes rather than loading the gfatools slice as a file.
+const PAA_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  ...PAA_RAMP_DOMAIN,
+}
+
+// The synteny rows above the graph. K12's window is PAA_RAMP_DOMAIN opened out a
 // little on the left, so the reader sees the Sakai band ARRIVE at the island's
 // right edge rather than starting at the frame's. The two partner windows are
 // the same span carried across each strain's own alignment to K12 in
@@ -349,7 +367,7 @@ const PKS_VIEW = '[data-testid="view-container-pks_graph"]'
 // snapshot the "Launch view, then Graph genome view (this region)" menu item
 // writes, so the figure documents the launch route rather than a second way in.
 // The view cuts its subgraph from the track's own tabix indexes on attach.
-const HPRC_CONFIG = 'test_data/graphgenomeview/hprc_local.json'
+const HPRC_CONFIG = local('test_data/graphgenomeview/hprc.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 const MHC_REGION = {
   refName: 'chr6',
@@ -641,6 +659,51 @@ function pggbLocusSession(layoutMode: 'auto' | 'samplerows') {
 // background while each half stays a right-sized figure on its own live link.
 // The force drawing is about as tall as it is wide; the anchored one is seven
 // rank rows.
+// The halves of pangenome/graph_context: the paa island cut from the segments
+// track twice, at Graph context None and at 1 hop. Same window, same track, same
+// colors; the second one follows each off-reference segment's own links one step
+// further, which is what turns the dangling arms into bubbles.
+//
+// Graph panes only, because both halves are the same window over the same track
+// and a linear lane would be duplicated across the composite for nothing. Stable
+// rank rather than reference position: the comparison is which nodes exist, and
+// rank paints every off-reference node one color instead of ramping it by where
+// it attaches.
+function graphContextPartSpecs(): ScreenshotSpec[] {
+  const part = (name: string, subgraphContext: number): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: ECOLI_SEGMENTS_TRACK,
+          loadedRegion: PAA_REGION,
+          layoutMode: 'force',
+          colorScheme: 'stable-rank',
+          bubbleSpread: 'open',
+          subgraphContext,
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    // the 1 hop half fires a tabix query per off-reference segment already
+    // reached, so it fetches for longer than the plain cut does
+    readyTimeout: 180000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    // half the composed width each
+    viewportWidth: 750,
+    viewportHeight: 710,
+    hideTooltip: true,
+  })
+  return [
+    part('pangenome/graph_context_none', 0),
+    part('pangenome/graph_context_hop1', 1),
+  ]
+}
+
 // The halves of pangenome/local_subgraph: the same pggb subgraph over the same
 // linear view, anchored on the K12 path and force-directed. The anchored half is
 // the figure's original claim (the strip's green-to-yellow step is the same step
@@ -925,7 +988,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
   },
   // The paa island as a bubble — the graph answer to the all-vs-all synteny
-  // figure, on the same locus (the comment above PAA_WINDOW records the two
+  // figure, on the same locus (the comment above PAA_RAMP_DOMAIN records the two
   // indexes it was read off). Force-directed, because what a reader is being shown is the
   // SHAPE: one long backbone node with the rest of the graph looping past it.
   // An anchored layout draws that loop flat against the backbone it replaces,
@@ -1421,6 +1484,75 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 1090,
     hideTooltip: true,
+  },
+  // The allele inventory, which the HPRC tutorial documents in JSON and had no
+  // picture of. It is a BED read by an AlignmentsTrack, and that pairing is the
+  // whole point: each row carries a CIGAR against the reference span it replaces
+  // (2062M63348I), so the display packs the overlapping alleles into rows and
+  // draws each insertion at the size it inserts instead of as a 1 bp box.
+  //
+  // The amylase window, the same one the graph figure above draws: 22 alleles,
+  // reaching 94 kb of insertion and 94 kb of deletion, which is few enough to
+  // read a row at a time and wide enough that the insertion markers are the
+  // figure. A denser window packs the same information into rows too thin to
+  // tell apart.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_allele_inventory',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: AMY_WINDOW,
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            hprcSegmentsLane(AMY_REGION),
+            {
+              trackId: 'hprc_minigraph_alleles',
+              type: 'LinearAlignmentsDisplay',
+              // the coverage row plus the six rows the window packs into; the
+              // display's default leaves most of its box empty here
+              height: 150,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 5000,
+    viewportWidth: 1000,
+    viewportHeight: 550,
+    hideTooltip: true,
+  },
+  // What Settings -> Graph context buys. A region query on the reference reaches
+  // a detour's entry and exit segments and nothing behind them, because the
+  // interior sits on the donor's own stable sequence, which no reference
+  // coordinate names. Those arrive as stubs hanging off the thread and read as
+  // small insertions rather than as the one event they are.
+  //
+  // The paa island rather than an HPRC window, because the point has to be
+  // visible in one look. Walking the hosted links index the way getSubgraph
+  // does: this window reaches 14 segments at context 0 and 22 at 1 hop, so
+  // every added node is a detour interior and the stubs close into bubbles. The
+  // same walk over the amylase window gains 15 of 78, which is the same
+  // operation on a drawing already dense enough that the reader cannot see it
+  // happen (rendered both ways, and the two FMMM layouts are simply different
+  // tangles).
+  //
+  ...graphContextPartSpecs(),
+  {
+    mode: 'compose',
+    name: 'pangenome/graph_context',
+    parts: ['pangenome/graph_context_none', 'pangenome/graph_context_hop1'],
+    direction: 'horizontal',
   },
   // The KIV-2 repeat in LPA, picked out of the bubble index rather than off a
   // locus list. Every record in hprc-v2.0-mc-grch38.bubbles.bed.gz, ranked for a
