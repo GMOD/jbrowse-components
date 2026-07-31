@@ -97,7 +97,10 @@ export function readFeaturesToMismatches(
               rPos,
               1,
               subCode === 0 ? 'N' : String.fromCharCode(subCode),
-              hasQual ? qual[pos[i]! - 1]! : -1,
+              // arena pos is 0-based as of @gmod/cram v10, so it indexes qual
+              // directly; the old `- 1` read one base early and returned
+              // undefined for a substitution at the first base of a read
+              hasQual ? qual[pos[i]!]! : -1,
               refCharCode,
               0,
             )
