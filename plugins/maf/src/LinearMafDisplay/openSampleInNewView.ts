@@ -1,6 +1,6 @@
 import { isSessionWithAddAssembly } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, resolveUriLocation } from '@jbrowse/core/util/io'
 
 import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -57,10 +57,13 @@ async function ensureAssembly(
 ) {
   const { assemblyConfigLocation, assemblyName } = target
   if (assemblyConfigLocation && !session.assemblyManager.has(assemblyName)) {
-    const configUrl = new URL(
-      assemblyConfigLocation.uri,
-      assemblyConfigLocation.baseUri,
-    )
+    // resolveUriLocation applies baseUri, which addRelativeUris stamped on when
+    // the declaring config was itself fetched from a url. A config handed over
+    // as an object has none, and its uri is then whatever the author wrote —
+    // which fetch resolves against the page, so resolve the same way here
+    // rather than letting `new URL` throw on a relative one.
+    const { uri } = resolveUriLocation(assemblyConfigLocation)
+    const configUrl = new URL(uri, globalThis.location?.href)
     const configJson: unknown = JSON.parse(
       await openLocation(assemblyConfigLocation).readFile('utf8'),
     )
