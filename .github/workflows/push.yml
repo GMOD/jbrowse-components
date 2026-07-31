@@ -380,10 +380,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+      - name: Zip jbrowse-web build
+        uses: ./.github/actions/zip-jbrowse-web
+        with:
+          filename: jbrowse-web-${{ env.REF_NAME }}.zip
+      # The sync carries all of test_data, unlike the zip above: the docs' and
+      # gallery's live links are `<code base>?config=test_data/…`, so they
+      # resolve out of what lands here.
       - name: Deploy to S3
         run: |
           cd products/jbrowse-web/build
-          zip -r "jbrowse-web-${REF_NAME}.zip" .
           cp test_data/config.json config.json
           aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
           aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/${REF_NAME}/*"

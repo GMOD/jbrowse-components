@@ -49,8 +49,9 @@ jobs:
           include-hidden-files: true
           retention-days: 1
       - name: Zip jbrowse-web build
-        working-directory: products/jbrowse-web/build
-        run: zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
+        uses: ./.github/actions/zip-jbrowse-web
+        with:
+          filename: jbrowse-web-${{ env.RELEASE_VERSION }}.zip
       # The blog post is committed in the tag, so the body no longer needs
       # pasting in by hand. Best-effort: a tag without a post still gets a
       # draft to collect binaries, just an empty body.
@@ -221,6 +222,12 @@ jobs:
     if: ${{ needs.createrelease.outputs.prerelease == 'false' }}
     runs-on: ubuntu-latest
     steps:
+      # Only for .github/actions/zip-jbrowse-web, and it has to precede the
+      # download: checkout cleans untracked files out of the workspace, which
+      # would take the downloaded build with it.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
       - name: Download jbrowse-web build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -232,9 +239,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+      - name: Zip jbrowse-web build
+        uses: ./.github/actions/zip-jbrowse-web
+        with:
+          filename: jbrowse-web-latest.zip
+      # The sync carries all of test_data, unlike the zip above: the docs' and
+      # gallery's live links are `<code base>?config=test_data/…`, so they
+      # resolve out of what lands here.
       - name: Copy branch build to S3
         run: |
-          cd products/jbrowse-web/build && zip -r jbrowse-web-latest.zip . && cd -
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
           aws s3 sync products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
           aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/latest/*"

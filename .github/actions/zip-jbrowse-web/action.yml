@@ -1,0 +1,34 @@
+name: Zip jbrowse-web build
+description:
+  Distributable zip of products/jbrowse-web/build, carrying only the volvox
+  test_data
+
+inputs:
+  filename:
+    description: Name of the zip to write inside products/jbrowse-web/build
+    required: true
+
+# `jbrowse create` and `jbrowse upgrade` unpack this zip into a user's install,
+# so it carries only volvox — the demo the docs' examples are written around.
+# The other ~26M of test_data is figure and tutorial data that exists for
+# jbrowse.org's own site, which gets it from the `aws s3 sync` of `build/` and
+# never from this zip. Keeping the rule here means it stays in one place rather
+# than hand-synced across the three jobs (push deploy, release createrelease,
+# release buildjbrowseweb) that publish a zip.
+#
+# The two hg19 files are volvox/connection_test.json's `../` references — the
+# only thing volvox reaches outside its own directory, and 5K.
+#
+# The `./` prefix on the exclude is required: zipping `.` makes zip match
+# candidate paths in that form.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: products/jbrowse-web/build
+      env:
+        ZIP_NAME: ${{ inputs.filename }}
+      run: |
+        zip -qr "$ZIP_NAME" . -x './test_data/*'
+        zip -qr "$ZIP_NAME" ./test_data/volvox* ./test_data/config.json \
+          ./test_data/hg19.chrom.sizes ./test_data/hg19_aliases.txt
