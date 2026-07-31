@@ -177,4 +177,16 @@ export interface Sample {
   id: string
   label: string
   color?: string
+  /**
+   * The assembly this sample's own genome is loaded as, making its rows
+   * navigable ("open this species' locus in a new view"). Unset — the default —
+   * means the row is not navigable.
+   *
+   * Deliberately supplied by the config rather than derived from `id`: sample
+   * ids are UCSC db names in some alignments, scientific names in others (which
+   * map to several assemblies, so a name lookup can silently land on the wrong
+   * one), and lab-internal ids in others still. See
+   * `agent-docs/guides/MAF_CROSS_VIEW_NAVIGATION.md`.
+   */
+  assemblyName?: string
 }

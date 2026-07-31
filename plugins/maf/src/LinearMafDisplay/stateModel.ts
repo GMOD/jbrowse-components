@@ -57,6 +57,7 @@ import {
   uniqueRegionsFromBlocks,
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
+import { findRowSpan } from './components/findRowSpan.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
@@ -109,6 +110,8 @@ export interface MafSource {
   name: string
   label?: string
   color?: string
+  /** assembly this row's genome is loaded as, when it is navigable */
+  assemblyName?: string
 }
 
 /**
@@ -446,6 +449,7 @@ export default function stateModelFactory(
             name: s.id,
             label: s.label,
             color: s.color,
+            ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
           }))
           const next = samplesCanonical
             ? incoming
@@ -716,6 +720,7 @@ export default function stateModelFactory(
             id: s.name,
             label: s.label ?? s.name,
             color: s.color,
+            ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
           }))
         },
         /**
@@ -1178,6 +1183,40 @@ export default function stateModelFactory(
             ...hit,
             sampleLabel: source.label ?? source.name,
           }
+        },
+        /**
+         * #method
+         * Where `rowIndex` sits in its own genome across the reference bp range
+         * `[startBp, endBp)` — the locus a "open this species here" navigation
+         * targets. Undefined when the row has no aligned base in the range, when
+         * no fetched block covers it, or when the row's genome isn't loaded as
+         * an assembly (`Sample.assemblyName` unset), since there is then nowhere
+         * to navigate to.
+         */
+        rowNavigationTarget(
+          displayedRegionIndex: number,
+          startBp: number,
+          endBp: number,
+          rowIndex: number,
+        ) {
+          const { sources } = self
+          const source =
+            sources && rowIndex >= 0 && rowIndex < sources.length
+              ? sources[rowIndex]!
+              : undefined
+          const region = source?.assemblyName
+            ? self.rpcDataMap.get(displayedRegionIndex)
+            : undefined
+          const span = region
+            ? findRowSpan(region, startBp, endBp, rowIndex)
+            : undefined
+          return span && source?.assemblyName
+            ? {
+                ...span,
+                assemblyName: source.assemblyName,
+                sampleLabel: source.label ?? source.name,
+              }
+            : undefined
         },
         /**
          * #method

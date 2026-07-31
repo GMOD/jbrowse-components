@@ -80,6 +80,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [PANGENOME_GRAPH_NEXT.md](guides/PANGENOME_GRAPH_NEXT.md) — the graph view's work queue: deterministic layout, pinning the plugin bundle, carriage, and the level-of-detail rework
 - [PANGENOME_FIGURE_PASS_HANDOFF.md](guides/PANGENOME_FIGURE_PASS_HANDOFF.md) — 2026-07-28 HPRC/pangenome figure pass: what shipped, and the tutorial prose still describing colors its figures no longer use
 - [MAF_LARGE_BLOCKS.md](guides/MAF_LARGE_BLOCKS.md) — why megabase MAF-tabix blocks are slow at every layer, why the byte gate under-reports them, and why clipping to the visible region is the wrong fix
+- [MAF_CROSS_VIEW_NAVIGATION.md](guides/MAF_CROSS_VIEW_NAVIGATION.md) — jumping from a MAF row to that species' own genome; why the sample→assembly mapping is config data, not a name lookup
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is

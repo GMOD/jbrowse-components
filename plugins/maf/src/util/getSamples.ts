@@ -16,6 +16,7 @@ interface SampleConfigEntry {
   id: string
   label?: string
   color?: string
+  assemblyName?: string
 }
 
 export type SampleConfig = string[] | SampleConfigEntry[]
@@ -27,7 +28,12 @@ function isStringArray(r: SampleConfig): r is string[] {
 export function normalizeSamples(r: SampleConfig): Sample[] {
   return isStringArray(r)
     ? r.map(id => ({ id, label: id }))
-    : r.map(s => ({ id: s.id, label: s.label ?? s.id, color: s.color }))
+    : r.map(s => ({
+        id: s.id,
+        label: s.label ?? s.id,
+        color: s.color,
+        ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
+      }))
 }
 
 /** Depth-first collection of the leaf (tip) names of a parsed Newick tree. */

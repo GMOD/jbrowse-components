@@ -34,7 +34,8 @@ const configSchema = ConfigurationSchema(
      */
     samples: {
       type: 'frozen',
-      description: 'string[] or {id:string,label:string,color?:string}[]',
+      description:
+        'string[] or {id:string,label:string,color?:string,assemblyName?:string}[]; assemblyName makes rows for that sample navigable to its own genome',
       defaultValue: [],
     },
     /**

@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 import { rowSpanAtY } from './mafHitTest.ts'
+import { sampleNavigationItems } from './sampleNavigationItems.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { ContextCoord } from './useDragSelection.ts'
@@ -82,6 +83,9 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
             openRows(samples?.slice(startRow, endRow))
           },
         },
+        ...(contextCoord
+          ? sampleNavigationItems(getSession(model), model, contextCoord)
+          : []),
       ]}
     />
   )

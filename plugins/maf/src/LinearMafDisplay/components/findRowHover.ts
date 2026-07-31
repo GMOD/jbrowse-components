@@ -56,7 +56,7 @@ export type RowHit = CellHit | InsertionHit | DeletionHit | EmptyHit
 // Forward-strand coordinate of the base `baseOffset` non-gap bases into the row.
 // For '-' rows the MAF start is relative to the reverse complement, so we mirror
 // through srcSize (the standard MAF coordinate transform).
-function forwardPos(row: MafAlignedRow, baseOffset: number) {
+export function forwardPos(row: MafAlignedRow, baseOffset: number) {
   if (row.start === undefined) {
     return undefined
   }
