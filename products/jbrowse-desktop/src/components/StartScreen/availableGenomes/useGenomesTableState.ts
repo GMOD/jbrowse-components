@@ -30,7 +30,6 @@ export function useGenomesTableState() {
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(50)
   const [searchQuery, setSearchQuery] = useState('')
-  const [clade, setClade] = useState('')
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [allGroups, setAllGroups] = useState(false)
   const [filterOption, setFilterOption] = useState<FilterOption>('all')
@@ -50,7 +49,6 @@ export function useGenomesTableState() {
     setPageIndex,
     pageSize,
     searchQuery,
-    clade,
     showOnlyFavs,
     filterOption,
     typeOption,
@@ -75,10 +73,6 @@ export function useGenomesTableState() {
     },
     setSearchQuery: (q: string) => {
       setSearchQuery(q)
-      setPageIndex(0)
-    },
-    setClade: (c: string) => {
-      setClade(c)
       setPageIndex(0)
     },
     setShowOnlyFavs: (v: boolean) => {

@@ -43,8 +43,6 @@ const genbankOnly = entry({
   ncbiName: 'GCA_000001.1_asm',
   taxonId: 4321,
 })
-const noTaxon = entry({ accession: 'GCA_000002.1', taxonId: undefined })
-
 const defaults = {
   searchQuery: '',
   filterOption: 'all' as const,
@@ -134,16 +132,6 @@ test('NCBI status filters read ncbiName, which UCSC rows do not have', () => {
   expect(withFilter('designatedReference')).toEqual(['GCF_000004335.4'])
 })
 
-test('clade filter skips rows whose source had no taxon', () => {
-  expect(
-    filterGenomes({
-      ...defaults,
-      rows: [hg38, panda, noTaxon],
-      cladeTaxonIds: new Set([9606, 9646]),
-    }).map(r => r.accession),
-  ).toEqual(['hg38', 'GCF_000004335.4'])
-})
-
 test('favorites filter keys on accession', () => {
   expect(
     filterGenomes({
@@ -156,13 +144,17 @@ test('favorites filter keys on accession', () => {
 })
 
 test('filters compose', () => {
-  expect(
+  const compose = (favoriteIds: Set<string>) =>
     filterGenomes({
       ...defaults,
       rows: [hg38, panda, genbankOnly],
       searchQuery: 'a',
       filterOption: 'refseq',
-      cladeTaxonIds: new Set([9646]),
-    }).map(r => r.accession),
-  ).toEqual(['GCF_000004335.4'])
+      showOnlyFavs: true,
+      favoriteIds,
+    }).map(r => r.accession)
+
+  expect(compose(new Set(['GCF_000004335.4']))).toEqual(['GCF_000004335.4'])
+  // the search and the refseq filter both leave panda; favorites still applies
+  expect(compose(new Set(['hg38']))).toEqual([])
 })

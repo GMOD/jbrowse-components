@@ -20,7 +20,6 @@ import { useGenomesData } from './useGenomesData.ts'
 import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useGlobalSearch } from './useGlobalSearch.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
-import useTaxonomyClades from './useTaxonomyClades.ts'
 
 import type { Fav, LaunchCallback } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
@@ -63,7 +62,6 @@ export default function GenomesDataTable({
     searchQuery,
     showOnlyFavs,
     filterOption,
-    clade,
     sorting,
     toggleSort,
     selected,
@@ -93,8 +91,6 @@ export default function GenomesDataTable({
     categories?.find(c => c.key === typeOption) ?? categories?.[0]
   const activeTypeOption = activeCategory?.key ?? typeOption
   const url = activeCategory?.url
-  const { clades } = useTaxonomyClades()
-  const cladeTaxonIds = clade ? clades?.get(clade) : undefined
 
   const favs = new Set(favorites.map(f => f.id))
   const toggleFavorite = (row: Entry) => {
@@ -116,7 +112,6 @@ export default function GenomesDataTable({
     showOnlyFavs,
     favorites,
     url,
-    cladeTaxonIds,
   })
 
   const {
@@ -166,7 +161,6 @@ export default function GenomesDataTable({
         state={state}
         activeTypeOption={activeTypeOption}
         categories={categories}
-        clades={clades}
         onLaunchSelected={() => {
           // resolve against allData (the full group), not the visible rows, so a
           // selection built up across searches launches every entry

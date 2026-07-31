@@ -58,28 +58,24 @@ export function groupRows(data: Entry[] | undefined) {
   return (data ?? []).filter(r => r.accession).toSorted(byOrderKey)
 }
 
-/** The subset of a group the current search/status/clade/favorites leave visible. */
+/** The subset of a group the current search/status/favorites leave visible. */
 export function filterGenomes({
   rows,
   searchQuery,
   filterOption,
   showOnlyFavs,
   favoriteIds,
-  cladeTaxonIds,
 }: {
   rows: Entry[]
   searchQuery: string
   filterOption: FilterOption
   showOnlyFavs: boolean
   favoriteIds: Set<string>
-  cladeTaxonIds?: Set<number>
 }) {
   const tokens = searchTokens(searchQuery)
   return applyFilter(rows, filterOption).filter(
     row =>
       matchesAllTokens(haystack(row), tokens) &&
-      (!cladeTaxonIds ||
-        (row.taxonId !== undefined && cladeTaxonIds.has(row.taxonId))) &&
       (!showOnlyFavs || favoriteIds.has(row.accession)),
   )
 }
@@ -90,14 +86,12 @@ export function useGenomesData({
   showOnlyFavs,
   favorites,
   url,
-  cladeTaxonIds,
 }: {
   searchQuery: string
   filterOption: FilterOption
   showOnlyFavs: boolean
   favorites: Fav[]
   url?: string
-  cladeTaxonIds?: Set<number>
 }): {
   data: Entry[]
   allData: Entry[]
@@ -120,7 +114,6 @@ export function useGenomesData({
       filterOption,
       showOnlyFavs,
       favoriteIds: new Set(favorites.map(r => r.id)),
-      cladeTaxonIds,
     }),
     allData,
     error,
