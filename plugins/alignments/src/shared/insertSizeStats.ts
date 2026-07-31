@@ -4,7 +4,25 @@ import { sum } from '@jbrowse/core/util'
 // up with the classic ±Nσ thresholds on well-behaved data.
 const MAD_TO_SD = 1.4826
 
-function median(sorted: number[]) {
+// `Array.prototype.sort` needs a numeric comparator, and at the ~150k
+// proper-pair inserts of a deep pileup its ~2.6M callback crossings dominate
+// robustSpread (benched 4.5x end-to-end against this form). TypedArray#sort is
+// comparator-free and numeric by definition. The copy keeps the caller's
+// element type, so an integer-valued caller that hands in the Int32Array it
+// already built (computePairedInsertSizeStats — |TLEN| is int32 in BAM) gets the
+// integer sort, another ~2x over Float64Array, while a fractional one (arc
+// radii, halved spans) stays exact. Float64Array holds any JS number exactly,
+// so no caller loses precision to the copy.
+function sortedCopy(values: ArrayLike<number>) {
+  const copy =
+    values instanceof Int32Array
+      ? new Int32Array(values)
+      : new Float64Array(values)
+  copy.sort()
+  return copy
+}
+
+function median(sorted: ArrayLike<number>) {
   const n = sorted.length
   const mid = n >> 1
   return n % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
@@ -17,7 +35,7 @@ function median(sorted: number[]) {
 // the middle yields the same value as sorting |x − med| — but ~2x cheaper at the
 // high coverage where this matters (the naive form sorts twice). Matches
 // `median()` semantics exactly (odd → middle element; even → mean of the two).
-function medianAbsDevFromSorted(sorted: number[], med: number) {
+function medianAbsDevFromSorted(sorted: ArrayLike<number>, med: number) {
   const n = sorted.length
   let lo = 0
   while (lo < n && sorted[lo]! < med) {
@@ -80,7 +98,7 @@ export interface RobustSpread {
 
 // Degenerate-MAD fallback: mean ± numSds·sd, as a two-pass mean-subtracted
 // variance (see robustSpread for why the single-pass form is unusable here).
-function meanSpread(values: number[], numSds: number): RobustSpread {
+function meanSpread(values: ArrayLike<number>, numSds: number): RobustSpread {
   const len = values.length
   const avg = sum(values) / len
   let sumSqDiff = 0
@@ -104,8 +122,11 @@ function meanSpread(values: number[], numSds: number): RobustSpread {
 // sum-of-squares form (len*Σx² − (Σx)²)/len² is unstable at high coverage: both
 // terms grow as O(len²·x̄²), overflow 2^53, and lose precision to catastrophic
 // cancellation — a slightly-negative result then yields sd = NaN.
-export function robustSpread(values: number[], numSds = 3): RobustSpread {
-  const sorted = [...values].sort((a, b) => a - b)
+export function robustSpread(
+  values: ArrayLike<number>,
+  numSds = 3,
+): RobustSpread {
+  const sorted = sortedCopy(values)
   const med = median(sorted)
   const mad = medianAbsDevFromSorted(sorted, med)
   return mad > 0
@@ -116,7 +137,9 @@ export function robustSpread(values: number[], numSds = 3): RobustSpread {
 // Total over any non-empty sample; callers decide whether the resulting band is
 // trustworthy enough to color from (see computePairedInsertSizeStats, which
 // rejects a degenerate upper === lower band).
-export function getInsertSizeStats(filtered: number[]): InsertSizeBand {
+export function getInsertSizeStats(
+  filtered: ArrayLike<number>,
+): InsertSizeBand {
   const { center, spread } = robustSpread(filtered)
   return {
     upper: center + spread,

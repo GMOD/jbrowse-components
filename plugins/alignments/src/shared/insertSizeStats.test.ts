@@ -43,6 +43,35 @@ test('randomized: O(n) MAD merge matches the naive double-sort exactly', () => {
   }
 })
 
+// The sample arrives as an Int32Array from computePairedInsertSizeStats (which
+// is what selects sortedCopy's integer sort) but as a plain array from the
+// tests and from arc radii. The two must not diverge.
+test('randomized: Int32Array input matches the plain-array path exactly', () => {
+  let seed = 999
+  const rng = () => {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff
+    return seed / 0x7fffffff
+  }
+  for (let trial = 0; trial < 200; trial++) {
+    const len = 1 + Math.floor(rng() * 300)
+    const values = Array.from({ length: len }, () =>
+      Math.floor(rng() * 100_000),
+    )
+    expect(getInsertSizeStats(Int32Array.from(values))).toEqual(
+      getInsertSizeStats(values),
+    )
+  }
+})
+
+// Arc radii are halved spans, so half of them are x.5 — the Float64Array branch
+// has to keep them, not truncate them into the integer sort.
+test('fractional values are not truncated', () => {
+  const values = Array.from({ length: 101 }, (_, i) => 100.5 + i)
+  const { upper, lower } = getInsertSizeStats(values)
+  expect(upper).toBeCloseTo(150.5 + 3 * 1.4826 * 25, 9)
+  expect(lower).toBeCloseTo(150.5 - 3 * 1.4826 * 25, 9)
+})
+
 // MAD = 0 sends the spread through the mean/sd fallback, which for a sample of
 // one (or of N identical values) is also 0 — collapsing the band onto a single
 // value. getInsertSizeStats stays total and reports it faithfully;

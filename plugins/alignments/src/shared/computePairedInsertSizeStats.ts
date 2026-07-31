@@ -34,17 +34,26 @@ function isPrimaryProperPair(flags: number) {
  * carries no information, so it is better to paint nothing than to paint that.
  */
 export function computePairedInsertSizeStats(groups: FeatureData[][]) {
-  const pairedInsertSizes: number[] = []
+  let count = 0
   for (const features of groups) {
     for (const f of features) {
       if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
-        pairedInsertSizes.push(f.insertSize)
+        count++
       }
     }
   }
-  const band =
-    pairedInsertSizes.length > 0
-      ? getInsertSizeStats(pairedInsertSizes)
-      : undefined
+  // Counted first so the sample lands in one exact-size Int32Array rather than a
+  // growing number[]: |TLEN| is int32, and an integer typed array is what buys
+  // getInsertSizeStats its comparator-free sort (see sortedCopy).
+  const pairedInsertSizes = new Int32Array(count)
+  let i = 0
+  for (const features of groups) {
+    for (const f of features) {
+      if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
+        pairedInsertSizes[i++] = f.insertSize
+      }
+    }
+  }
+  const band = count > 0 ? getInsertSizeStats(pairedInsertSizes) : undefined
   return band && band.upper > band.lower ? band : undefined
 }
