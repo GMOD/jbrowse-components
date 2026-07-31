@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
@@ -53,7 +53,7 @@ test('collapse introns on gene feature', async () => {
   }
 }, 60000)
 
-test('collapse introns dialog shows transcript table', async () => {
+test('collapse introns dialog lists the transcripts to scope to', async () => {
   const user = userEvent.setup()
   const { view, findAllByTestId, findByText } = await createView()
 
@@ -67,21 +67,11 @@ test('collapse introns dialog shows transcript table', async () => {
   fireEvent.click(await findByText('Collapse introns', ...opts))
   await findByText('Collapse introns of EDEN', ...opts)
 
-  const showButton = await screen.findByRole('button', {
-    name: /Show all transcripts/,
-  })
-  fireEvent.click(showButton)
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Transcript' }))
+  const listbox = within(await screen.findByRole('listbox', ...opts))
 
-  await waitFor(
-    () => {
-      expect(screen.getByText('Name/ID')).toBeInTheDocument()
-    },
-    { timeout: 10000 },
-  )
-
-  expect(screen.getByText('EDEN.1')).toBeInTheDocument()
-  expect(screen.getByText('EDEN.2')).toBeInTheDocument()
-  expect(screen.getByText('EDEN.3')).toBeInTheDocument()
-
-  fireEvent.click(await findByText('Cancel', ...opts))
+  expect(listbox.getByText(/All transcripts \(3\)/)).toBeInTheDocument()
+  expect(listbox.getByText(/^EDEN\.1 \(/)).toBeInTheDocument()
+  expect(listbox.getByText(/^EDEN\.2 \(/)).toBeInTheDocument()
+  expect(listbox.getByText(/^EDEN\.3 \(/)).toBeInTheDocument()
 }, 60000)

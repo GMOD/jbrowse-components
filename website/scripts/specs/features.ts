@@ -371,10 +371,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
       },
       {
         // stage 2: click through the confirmation dialog (uncaptured) → the
-        // reshaped view with introns collapsed. The dialog's help paragraph also
-        // contains the literal phrase "Replace current view", so a bare text
-        // click resolves to that (unclickable) prose first and the dialog never
-        // closes — scope to the actual button.
+        // reshaped view with introns collapsed. Scoped to `button::-p-text` so
+        // the click can't resolve to dialog prose that happens to repeat the
+        // button's wording.
         actions: [
           { type: 'click', text: 'Collapse introns' },
           { type: 'waitForText', text: 'Replace current view' },

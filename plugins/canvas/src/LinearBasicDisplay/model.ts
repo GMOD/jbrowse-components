@@ -22,6 +22,7 @@ import SegmentIcon from '@mui/icons-material/Segment'
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
+import { findSubfeatureById } from './baseModelHelpers.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -45,6 +46,16 @@ const SUBFEATURE_LABEL_OPTIONS = [
   value: DisplayConfig['subfeatureLabels']
   label: string
 }[]
+
+// Loose type test, matched case-insensitively like isCDS/isExon: real GFFs
+// carry 'mRNA', 'lnc_RNA', 'protein_coding_gene', 'transcript'. Gates the
+// collapse-introns menu item on the clicked feature and its transcript scope on
+// the clicked subfeature, so a mature-protein or repeat subpart hit doesn't
+// offer to collapse itself.
+function isGeneLikeType(type: string | undefined) {
+  const t = (type ?? '').toLowerCase()
+  return t.includes('gene') || t.includes('rna') || t.includes('transcript')
+}
 
 /**
  * #stateModel LinearBasicDisplay
@@ -145,12 +156,7 @@ export default function stateModelFactory(
       },
 
       get isGeneLike() {
-        const type = (self.contextMenuInfo?.item.type ?? '').toLowerCase()
-        return (
-          type.includes('gene') ||
-          type.includes('rna') ||
-          type.includes('transcript')
-        )
+        return isGeneLikeType(self.contextMenuInfo?.item.type)
       },
     }))
     .views(self => {
@@ -300,64 +306,111 @@ export default function stateModelFactory(
           }
           const {
             item: { featureId },
+            subfeature,
             displayedRegionIndex,
           } = info
+          // `subfeatureId` scopes the collapse to the isoform actually clicked;
+          // omitted, the whole gene's transcripts are unioned. A gene glyph's
+          // transcript hit boxes cover its entire span, so a glyph right-click
+          // always resolves to a transcript and the two scopes have to be
+          // offered side by side (same shape as the Highlight submenu) rather
+          // than narrowing unconditionally, which would leave no way to ask for
+          // the union.
+          const openDialog = async (subfeatureId?: string) => {
+            const session = getSession(self)
+            const fullFeature = await self.fetchFullFeature(
+              featureId,
+              displayedRegionIndex,
+            )
+            // isAlive guards against the display being closed while
+            // fetchFullFeature was in flight; getView/getContainingTrack
+            // below would throw on a detached node.
+            if (!fullFeature || !isAlive(self)) {
+              return
+            }
+            const target =
+              subfeatureId === undefined
+                ? fullFeature
+                : findSubfeatureById(fullFeature, subfeatureId)
+            if (!target) {
+              session.notify('Could not find the clicked transcript', 'warning')
+              return
+            }
+            const transcripts = getTranscripts(target)
+            if (!hasIntrons(transcripts)) {
+              session.notify('No introns found in this feature', 'info')
+              return
+            }
+            const view = getView(self)
+            const assemblyName = view.assemblyNames[0]
+            const assembly = assemblyName
+              ? session.assemblyManager.get(assemblyName)
+              : undefined
+            if (assembly) {
+              const trackId = readConfObject(
+                getContainingTrack(self).configuration,
+                'trackId',
+              )
+              session.queueDialog(handleClose => [
+                CollapseIntronsDialog,
+                {
+                  view,
+                  transcripts,
+                  handleClose,
+                  assembly,
+                  // solo is an exact uniqueId match and a gene-shaped feature
+                  // draws from its top-level id, so this stays the gene even
+                  // when a single transcript was picked
+                  featureId,
+                  // names the resulting view; the scope that was chosen, not
+                  // transcripts[0], since the gene scope collapses the union of
+                  // all its transcripts
+                  featureName: getFeatureName(target) ?? 'feature',
+                  trackId,
+                },
+              ])
+            } else {
+              // silently doing nothing here reads as a broken menu item
+              session.notify(
+                "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
+                'warning',
+              )
+            }
+          }
+          const transcriptHit =
+            subfeature && isGeneLikeType(subfeature.type)
+              ? subfeature
+              : undefined
           return [
             ...base,
-            {
-              label: 'Collapse introns',
-              icon: CloseFullscreenIcon,
-              onClick: async () => {
-                const session = getSession(self)
-                const fullFeature = await self.fetchFullFeature(
-                  featureId,
-                  displayedRegionIndex,
-                )
-                // isAlive guards against the display being closed while
-                // fetchFullFeature was in flight; getView/getContainingTrack
-                // below would throw on a detached node.
-                if (!fullFeature || !isAlive(self)) {
-                  return
-                }
-                const transcripts = getTranscripts(fullFeature)
-                if (!hasIntrons(transcripts)) {
-                  session.notify('No introns found in this feature', 'info')
-                  return
-                }
-                const view = getView(self)
-                const assemblyName = view.assemblyNames[0]
-                const assembly = assemblyName
-                  ? session.assemblyManager.get(assemblyName)
-                  : undefined
-                if (assembly) {
-                  const trackId = readConfObject(
-                    getContainingTrack(self).configuration,
-                    'trackId',
-                  )
-                  session.queueDialog(handleClose => [
-                    CollapseIntronsDialog,
+            transcriptHit
+              ? {
+                  label: 'Collapse introns',
+                  icon: CloseFullscreenIcon,
+                  subMenu: [
                     {
-                      view,
-                      transcripts,
-                      handleClose,
-                      assembly,
-                      featureId,
-                      // names the resulting view; the clicked feature, not
-                      // transcripts[0], since the default action collapses the
-                      // union of all its transcripts
-                      featureName: getFeatureName(fullFeature) ?? 'feature',
-                      trackId,
+                      label: transcriptHit.displayLabel
+                        ? `This transcript (${transcriptHit.displayLabel})`
+                        : 'This transcript',
+                      onClick: async () => {
+                        await openDialog(transcriptHit.featureId)
+                      },
                     },
-                  ])
-                } else {
-                  // silently doing nothing here reads as a broken menu item
-                  session.notify(
-                    "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
-                    'warning',
-                  )
+                    {
+                      label: 'All transcripts',
+                      onClick: async () => {
+                        await openDialog()
+                      },
+                    },
+                  ],
                 }
-              },
-            },
+              : {
+                  label: 'Collapse introns',
+                  icon: CloseFullscreenIcon,
+                  onClick: async () => {
+                    await openDialog()
+                  },
+                },
           ]
         },
       }

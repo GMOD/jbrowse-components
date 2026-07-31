@@ -153,9 +153,8 @@ const suite: TestSuite = {
         // CollapseIntronsDialog offers "Replace current view" (collapse in
         // place) or "Open in new view" (add a second LGV). We want the latter
         // so the snapshot shows both the original and the collapsed view.
-        // Match the button, not the text: the dialog's explanatory paragraph
-        // also contains the phrase, and a bare text match resolves to that <p>
-        // — clicking it silently does nothing and the new view never opens.
+        // Match the button, not a bare text node, so the click can't resolve to
+        // dialog prose that repeats the button's wording.
         const openInNewView = await page.waitForSelector(
           'button::-p-text(Open in new view)',
           { timeout: 10000 },

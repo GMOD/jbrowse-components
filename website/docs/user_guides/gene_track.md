@@ -29,10 +29,11 @@ Genes often span far more intronic than exonic sequence, so the coding parts are
 spread thinly across the view. Right-click a gene and choose **Collapse
 introns** to replace the view's displayed regions with just the gene's exons
 placed side by side. A window-size setting controls how many base pairs of
-flanking sequence to keep around each splice boundary. By default the union of
-exons across all transcripts is used, or pick a single transcript from the
-dialog. This makes it easy to read a gene's coding sequence (or inspect reads
-spanning it) without scrolling past large introns.
+flanking sequence to keep around each splice boundary. Right-clicking a specific
+transcript offers that isoform as well as the whole gene, whose exons are
+unioned; the dialog also has a transcript dropdown, which is how to reach an
+isoform that isn't drawn. This makes it easy to read a gene's coding sequence
+(or inspect reads spanning it) without scrolling past large introns.
 
 This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
