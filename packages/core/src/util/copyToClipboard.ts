@@ -1,9 +1,7 @@
 // Copies text to the clipboard. Replaces the `copy-to-clipboard` dependency.
 //
 // This is the bare write. A menu item should call `copyText` (./copyText.ts)
-// instead, which confirms the copy in a snackbar and reports a failure; it
-// imports this dynamically so the fallback below stays out of the initial
-// bundle.
+// instead, which confirms the copy in a snackbar and reports a failure.
 //
 // The async Clipboard API is preferred for plain text, but it only works in
 // secure contexts (https:// or localhost). JBrowse is frequently served over
@@ -11,23 +9,27 @@
 // execCommand('copy') path there. The execCommand path also handles rich
 // `text/html` copying via the copy event's clipboardData, which writeText
 // cannot do.
-interface CopyOptions {
+export interface CopyOptions {
   // MIME type to write, e.g. 'text/plain' (default) or 'text/html'
   format?: string
 }
 
-export default function copyToClipboard(
+// Throws when the write did not happen, which is the only signal the async API
+// gives (it reports a denied permission or an unfocused document by rejecting).
+// A caller that reports success must therefore await this, or it confirms a copy
+// that never landed.
+export default async function copyToClipboard(
   text: string,
   options: CopyOptions = {},
 ) {
   const format = options.format ?? 'text/plain'
   // navigator.clipboard is only present in secure contexts; isSecureContext is
   // the real gate, so insecure http:// falls through to execCommand below
-  const useAsync = format === 'text/plain' && window.isSecureContext
-  if (useAsync) {
-    void navigator.clipboard.writeText(text)
+  if (format === 'text/plain' && window.isSecureContext) {
+    await navigator.clipboard.writeText(text)
+  } else if (!execCommandCopy(text, format)) {
+    throw new Error('the browser rejected the clipboard write')
   }
-  return useAsync ? true : execCommandCopy(text, format)
 }
 
 function execCommandCopy(text: string, format: string) {

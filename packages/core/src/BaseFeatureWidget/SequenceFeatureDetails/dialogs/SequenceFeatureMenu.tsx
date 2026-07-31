@@ -5,6 +5,7 @@ import Settings from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
+import { copyText } from '../../../util/copyText.ts'
 import { saveAs } from '../../../util/index.ts'
 import {
   modeSupportsRevcomp,
@@ -55,22 +56,20 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
           {
             label: 'Copy plaintext',
             onClick: async () => {
-              const { default: copy } =
-                await import('../../../util/copyToClipboard.ts')
               const r = ref.current
               if (r) {
-                copy(getSequencePlaintext(r), { format: 'text/plain' })
+                await copyText(model, getSequencePlaintext(r), 'sequence')
               }
             },
           },
           {
             label: 'Copy HTML',
             onClick: async () => {
-              const { default: copy } =
-                await import('../../../util/copyToClipboard.ts')
               const r = ref.current
               if (r) {
-                copy(r.outerHTML, { format: 'text/html' })
+                await copyText(model, r.outerHTML, 'sequence HTML', {
+                  format: 'text/html',
+                })
               }
             },
           },

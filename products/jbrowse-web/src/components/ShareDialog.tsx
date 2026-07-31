@@ -9,6 +9,7 @@ import {
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem } from '@jbrowse/core/util'
+import { copyTextWithSession } from '@jbrowse/core/util/copyText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getShareableSessionSnapshot } from '@jbrowse/product-core'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
@@ -96,12 +97,8 @@ const ShareDialog = observer(function ShareDialog({
             <Button
               startIcon={<ContentCopyIcon />}
               disabled={disabled}
-              onClick={async () => {
-                const { default: copy } =
-                  await import('@jbrowse/core/util/copyToClipboard')
-                if (copy(url)) {
-                  session.notify('Copied to clipboard', 'success')
-                }
+              onClick={() => {
+                void copyTextWithSession(session, url, 'URL')
               }}
             >
               Copy to Clipboard

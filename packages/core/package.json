@@ -124,7 +124,6 @@
     "./util/colord": "./src/util/colord.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyText": "./src/util/copyText.ts",
-    "./util/copyToClipboard": "./src/util/copyToClipboard.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/fetchHub": "./src/util/fetchHub.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
@@ -634,10 +633,6 @@
         "types": "./esm/util/copyText.d.ts",
         "import": "./esm/util/copyText.js"
       },
-      "./util/copyToClipboard": {
-        "types": "./esm/util/copyToClipboard.d.ts",
-        "import": "./esm/util/copyToClipboard.js"
-      },
       "./util/diagonalizeRegions": {
         "types": "./esm/util/diagonalizeRegions.d.ts",
         "import": "./esm/util/diagonalizeRegions.js"
@@ -1128,9 +1123,6 @@
         ],
         "util/copyText": [
           "esm/util/copyText.d.ts"
-        ],
-        "util/copyToClipboard": [
-          "esm/util/copyToClipboard.d.ts"
         ],
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"

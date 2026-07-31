@@ -1,33 +1,45 @@
+import copyToClipboard from './copyToClipboard.ts'
 import { getSession } from './mstUtils.ts'
 
+import type { CopyOptions } from './copyToClipboard.ts'
+import type { AbstractSessionModel } from './types/index.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * Copy `text` to the clipboard from a menu item, confirming it in a snackbar
- * (`what` names what landed — "read name", "EDEN.1:c.93+1", "feature info") and
- * surfacing a failure rather than silently doing nothing.
+ * Copy `text` to the clipboard, confirming it in a snackbar (`what` names what
+ * landed — "read name", "EDEN.1:c.93+1", "feature info") and surfacing a failure
+ * rather than silently doing nothing.
  *
- * This is what a menu item wants; `copyToClipboard` is the bare DOM write under
- * it. Every display that offered a copy item had grown its own copy of this
- * wrapper, and they had drifted on both the wording and whether an error
- * reached the user at all.
- *
- * `copyToClipboard` is imported dynamically so its DOM/execCommand fallback
- * stays out of the initial bundle — which only works because this module is
- * separate from it, so keep it that way.
+ * Every display that offered a copy item had grown its own copy of this wrapper,
+ * and they had drifted on both the wording and whether an error reached the user
+ * at all. Take this when you hold a session; `copyText` when you hold a model.
  */
-export async function copyText(
-  node: IAnyStateTreeNode,
+export async function copyTextWithSession(
+  session: Pick<AbstractSessionModel, 'notify' | 'notifyError'>,
   text: string,
   what: string,
+  options?: CopyOptions,
 ) {
-  const session = getSession(node)
   try {
-    const { default: copy } = await import('./copyToClipboard.ts')
-    copy(text)
+    // awaited: copyToClipboard reports a rejected write by throwing, so without
+    // this the snackbar confirms a copy that never landed
+    await copyToClipboard(text, options)
     session.notify(`Copied ${what} to clipboard`, 'success')
   } catch (e) {
     console.error(e)
     session.notifyError(`${e}`, e)
   }
+}
+
+/**
+ * `copyTextWithSession` for a menu item on a model, which is what a display has
+ * in hand.
+ */
+export async function copyText(
+  node: IAnyStateTreeNode,
+  text: string,
+  what: string,
+  options?: CopyOptions,
+) {
+  return copyTextWithSession(getSession(node), text, what, options)
 }

@@ -10,6 +10,7 @@ import {
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
+import { copyTextWithSession } from '@jbrowse/core/util/copyText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   DEFAULT_WEB_BASE_URL,
@@ -173,12 +174,8 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
             <Button
               startIcon={<ContentCopyIcon />}
               disabled={disabled}
-              onClick={async () => {
-                const { default: copy } =
-                  await import('@jbrowse/core/util/copyToClipboard')
-                if (copy(url)) {
-                  session.notify('Copied to clipboard', 'success')
-                }
+              onClick={() => {
+                void copyTextWithSession(session, url, 'URL')
               }}
             >
               Copy to clipboard
