@@ -2,10 +2,11 @@ import { lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the three Dog10K tutorials (local_ancestry.md, dog10k_svs.md,
-// dog10k_lof.md). All read test_data/dog10k/config.json, whose data is built by
-// scripts/build_dog10k_wolfdog_ancestry.sh, scripts/build_dog10k_nhej1_sv.sh,
-// scripts/build_dog10k_cyp1a2.sh and scripts/build_dog10k_cyp1a2_cn.sh.
+// Figures for the five Dog10K tutorials (local_ancestry.md, dog10k_svs.md,
+// dog10k_lof.md, dog10k_selection.md, dog10k_retrogene.md). All read
+// test_data/dog10k/config.json, whose data is built by the scripts/build_dog10k_*
+// scripts: _wolfdog_ancestry, _nhej1_sv, _cyp1a2, _cyp1a2_cn, _slc28a3_cn,
+// _igf1, _size_fst and _fgf4_retrogene.
 
 const DOG_CONFIG = 'test_data/dog10k/config.json'
 
@@ -550,6 +551,218 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // gene track plus all 56 sample rows and the genotype legend
     viewportHeight: 1094,
   },
+
+  // The body-size selection scan, whole genome. Hudson Fst per 200 kb window
+  // between the toy/small and giant animals the IGF1 figure below already
+  // panels, computed by build_dog10k_size_fst.sh off the Dog10K phased panel and
+  // loaded as a GWASTrack — the score column is Fst rather than -log10(p), which
+  // is what `scoreColumn`/`scoreTransform: 'none'` on GWASAdapter are for.
+  //
+  // No `loc`, so afterAttach's showAllRegionsInAssembly lays out all 38
+  // autosomes. The assembly's chrom.sizes is local to the config, so there is no
+  // remote fetch for that call to race.
+  {
+    mode: 'url',
+    name: 'dog10k-size-fst-scan',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // No `loc`, so the view lays out whole regions; `displayedRegionNames`
+      // restricts it to the 38 autosomes in order. The scan is autosomal (the
+      // panel BCF is AutoAndXPAR), so drawing chrX would be an empty lane.
+      displayedRegionNames: Array.from({ length: 38 }, (_, i) => `chr${i + 1}`),
+      tracks: [
+        {
+          trackId: 'dog10k_size_fst',
+          type: 'LinearManhattanDisplay',
+          height: 380,
+          scatterPointSize: 4,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="manhattan-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 10000,
+    viewportHeight: 600,
+    // Three known body-size loci among the top windows, named. A reader cannot
+    // get a gene out of a scatter point, and a Manhattan whose peaks are
+    // anonymous is only a shape.
+    //
+    // Not "the three tallest": chr10 takes thirteen of the top fourteen windows,
+    // as one broad block running from about 2 to 10 Mb, so ranking by score
+    // alone names that block three times. Each label sits on the highest window
+    // overlapping its gene (HMGA2 rank 1, IGF1 rank 4, IGF2BP2 rank 14), which
+    // build_dog10k_size_fst.sh prints so the ranks can be re-derived.
+    //
+    // The locus is each gene's own coordinate resolved through the live model,
+    // so a re-render cannot leave a label pointing at the wrong chromosome. The
+    // pill is then pushed off that position and an arrow drawn back to it,
+    // because a pill centered on its own peak covers the one point it names,
+    // and a pill nudged clear of the peak with nothing joining them names any
+    // of the lanes it happens to sit over — both of which the first pass did.
+    //
+    // Only `dy` is hand-set, since `fracY` cannot say "at this score": the
+    // y-axis runs 0 to 0.8 over 461 px, so a window's point sits `381 - 461*fst`
+    // px below the track's top edge. Each head's `dy` is that value less about
+    // 15 px, deliberately: a head placed exactly on the point covers it, which
+    // the arrowhead is wide enough to do at this point size. The pills sit
+    // further up again, clear of both.
+    annotations: [
+      {
+        type: 'text',
+        text: 'HMGA2',
+        fontSize: 20,
+        anchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr10:8,600,000-8,800,000',
+          fracY: 0,
+          dx: 150,
+          dy: 18,
+        },
+      },
+      {
+        type: 'arrow',
+        anchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr10:8,600,000-8,800,000',
+          fracY: 0,
+          dx: 12,
+          dy: 34,
+        },
+        fromAnchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr10:8,600,000-8,800,000',
+          fracY: 0,
+          dx: 92,
+          dy: 26,
+        },
+      },
+      {
+        type: 'text',
+        text: 'IGF1',
+        fontSize: 20,
+        anchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr15:41,400,000-41,600,000',
+          fracY: 0,
+          dx: 128,
+          dy: 152,
+        },
+      },
+      {
+        type: 'arrow',
+        anchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr15:41,400,000-41,600,000',
+          fracY: 0,
+          dx: 8,
+          dy: 204,
+        },
+        fromAnchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr15:41,400,000-41,600,000',
+          fracY: 0,
+          dx: 88,
+          dy: 168,
+        },
+      },
+      {
+        // chr34 sits against the right edge of the view, so this one is labelled
+        // from the left; the other two have room on the right.
+        type: 'text',
+        text: 'IGF2BP2',
+        fontSize: 20,
+        anchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr34:18,600,000-18,800,000',
+          fracY: 0,
+          dx: -150,
+          dy: 186,
+        },
+      },
+      {
+        type: 'arrow',
+        anchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr34:18,600,000-18,800,000',
+          fracY: 0,
+          dx: -14,
+          dy: 234,
+        },
+        fromAnchor: {
+          track: 'dog10k_size_fst',
+          locus: 'chr34:18,600,000-18,800,000',
+          fracY: 0,
+          dx: -88,
+          dy: 202,
+        },
+      },
+    ],
+  },
+
+  // The FGF4 retrogene (Parker et al. 2009). A processed retrocopy has no
+  // introns, so reads from it pile onto the parent gene's exons and stop at each
+  // splice site; a short-read SV caller reading that pileup calls a deletion of
+  // each intron. The Dog10K Manta callset carries exactly two such records over
+  // FGF4, and build_dog10k_fgf4_retrogene.sh asserts each one's span against the
+  // RefSeq intron it claims before writing anything.
+  //
+  // POSITIONAL, not the matrix display, and here that is the figure rather than
+  // a preference: the claim is that the two blue blocks land in the two gaps of
+  // the gene model above them. A matrix spaces one column per record and throws
+  // that geometry away.
+  //
+  // No `layout` array. The row labels and the swatch groups come from
+  // `samplesTsvLocation` on the adapter (`dog10k_fgf4_samples.tsv`, written by
+  // the build script off the Dog10K sample table), so the sample-to-breed
+  // mapping lives beside the data instead of being restated here. The TSV's own
+  // order is the row order.
+  //
+  // The swatch says what a breed *looks like*, never what it carries: the two
+  // spaniel groups are standard-proportioned and carry a retrocopy anyway, which
+  // is the second insertion (Brown et al. 2017, disc disease rather than short
+  // legs). One record cannot tell the two apart, and a swatch keyed on the
+  // genotype would have hidden that.
+  {
+    mode: 'url',
+    name: 'dog10k-fgf4-retrogene',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // FGF4 is chr18:48,869,443-48,873,311; this frames the whole gene with
+      // just enough flank that the reader can see the records stop at the gene.
+      // Wider and the two 532/534 bp blocks shrink to slivers, which is the one
+      // thing this figure cannot afford.
+      loc: 'chr18:48,868,900-48,873,900',
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 60,
+        },
+        {
+          trackId: 'dog10k_fgf4_svs',
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 690,
+          colorBy: 'group',
+        },
+      ],
+    }),
+    readyText: 'chr18',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // gene track plus all 55 sample rows and both legends
+    viewportHeight: 1020,
+  },
+
+  // There is deliberately NO whole-collection figure beside the panel above,
+  // though `dog10k_fgf4_cohort_svs` is in the config so a reader can add the
+  // lane. 1,879 rows in 520 px is a third of a pixel each: rows alias, so the
+  // apparent stripe density is not the real carrier rate (the same trap the TCGA
+  // cohort lane documents), and the result it was drawn for — no wolf carries
+  // the record — is a 55-row band that reads as more of the surrounding
+  // whitespace. The wolves are already in the panel figure as twelve labelled
+  // rows, and the collection-wide count is printed by the build script, which is
+  // a number the tutorial can quote and a reader can re-derive. Neither needs an
+  // unreadable lane.
 
   // The CYP1A2 nonsense variant (Meadows et al. 2023, Fig 10): chr30:38,261,635
   // C>T turns codon 373's CGA into TGA, truncating a drug-metabolizing P450.

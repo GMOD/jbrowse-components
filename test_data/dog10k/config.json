@@ -55,6 +55,48 @@
       }
     },
     {
+      "type": "GWASTrack",
+      "trackId": "dog10k_size_fst",
+      "name": "Fst, toy/small vs giant breeds (200 kb windows)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "uri": "dog10k_size_fst.bed.gz",
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "fst",
+          "sites"
+        ],
+        "scoreColumn": "fst",
+        "scoreTransform": "none"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "dog10k_fgf4_svs",
+      "name": "Dog10K structural variants at FGF4 (named breeds)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_fgf4_svs.vcf.gz",
+        "samplesTsvLocation": { "uri": "dog10k_fgf4_samples.tsv" }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "dog10k_fgf4_cohort_svs",
+      "name": "Dog10K structural variants at FGF4 (whole collection)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_fgf4_cohort_svs.vcf.gz",
+        "samplesTsvLocation": { "uri": "dog10k_fgf4_cohort_samples.tsv" }
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "dog10k_cyp1a2_snvs",
       "name": "Dog10K SNVs at CYP1A2",

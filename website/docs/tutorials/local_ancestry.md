@@ -16,8 +16,7 @@ paint one row per haplotype.
 
 ## Prerequisites
 
-Every figure has an "Open this view in JBrowse ↗" link that loads the finished
-tracks, so the reading sections need only a browser. To build them yourself:
+To build the tracks:
 
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4;
   its `chrom.sizes` is all these tracks need, see the
@@ -285,9 +284,10 @@ plus its index and the genotype slice the second figure uses.
 ## See also
 
 - [Structural variants (Dog10K)](/docs/tutorials/dog10k_svs),
-  [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof) and
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection), the other
-  Dog10K tutorials, on the same assembly
+  [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
+  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene), the other Dog10K
+  tutorials, on the same assembly
 - [Phased trio analysis](/docs/tutorials/analyze_trio), the same display painted
   from hap-ibd inheritance blocks
 - [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)

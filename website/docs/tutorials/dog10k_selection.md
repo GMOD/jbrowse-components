@@ -2,20 +2,21 @@
 title: A selected haplotype (Dog10K)
 sidebar_label: Selected haplotype (Dog10K)
 description:
-  Slice one locus out of the Dog10K SNV callset for breeds at both ends of a
-  trait and cluster the genotype matrix
+  Scan the Dog10K panel for allele-frequency differences between breeds at both
+  ends of a trait, then slice one peak out of the SNV callset and cluster its
+  genotype matrix
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** slice a few hundred kb of the 397 GB Dog10K SNV callset over HTTP for
-every animal of fourteen toy breeds and eleven giant breeds, load it as a
+**TL;DR:** score every window of the Dog10K phased panel for how far apart
+fourteen toy breeds and eleven giant breeds sit, draw that as a Manhattan track,
+then slice one peak out of the 397 GB SNV callset over HTTP, load it as a
 multi-sample variant track with a sample-metadata TSV, and cluster the rows.
 
 ## Prerequisites
 
-The figure has an "Open this view in JBrowse ↗" link that loads the finished
-track, so reading needs only a browser. To build it yourself:
+To build the track:
 
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4;
   its `chrom.sizes` is all this track needs, see the
@@ -26,20 +27,62 @@ On Debian/Ubuntu, `apt install bcftools tabix curl python3` covers it. The
 packaged `bcftools` is linked against libcurl, so it can read the remote
 callset.
 
+## Scanning for a locus
+
+Body size is the trait, so the two groups are the breeds at its extremes: every
+animal of fourteen toy or small breeds against every animal of eleven giant
+breeds. Hudson Fst per window over the Dog10K phased imputation panel scores how
+far apart their allele frequencies sit, and
+[`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
+writes one BED line per window.
+
+A Manhattan track expects a `-log10(p)` column, and this file has neither a p
+column nor a p-value. `GWASAdapter` takes the column to read as the score, and
+the transform to apply to it, as separate settings, so a differentiation
+statistic loads with no reshaping:
+
+```json
+{
+  "type": "GWASTrack",
+  "trackId": "dog10k_size_fst",
+  "name": "Fst, toy/small vs giant breeds (200 kb windows)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "GWASAdapter",
+    "uri": "dog10k_size_fst.bed.gz",
+    "columnNames": ["chrom", "chromStart", "chromEnd", "name", "fst", "sites"],
+    "scoreColumn": "fst",
+    "scoreTransform": "none"
+  }
+}
+```
+
+Opening the assembly without a location shows all of its regions at once, so the
+display lays the autosomes out side by side rather than one at a time.
+
+<Figure caption="Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track. Three body-size genes are labelled at the windows they fall in; chr10 carries a run of high windows rather than a single point." src="/img/dog10k-size-fst-scan.png" />
+
+Each point is a window, so a peak names a region rather than a variant, and the
+run of high windows on chr10 is one region's worth.
+
+The rest of this tutorial takes the _IGF1_ peak rather than the taller one on
+chr10, because the next step needs a locus where there is something to draw per
+animal: _IGF1_ has a published shared haplotype, and a haplotype is what a
+genotype matrix shows.
+
 ## The locus
 
 _IGF1_ is a major determinant of body size in dogs: small breeds share a
 haplotype at the locus that large breeds largely lack
-([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). This tutorial
-draws that haplotype per animal rather than as an allele frequency, which shows
-how far along the chromosome it extends, which animals depart from their breed,
-and where wolves fall.
+([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). Drawing that
+haplotype per animal rather than as an allele frequency shows how far along the
+chromosome it extends, which animals depart from their breed, and where wolves
+fall, none of which a window score carries.
 
 ## Choosing the panel
 
-The panel is every animal of fourteen toy or small breeds, every animal of
-eleven giant breeds, and the twelve Greek gray wolves, taken from the Dog10K
-sample table by breed name.
+The panel is the two groups the scan compared plus the twelve Greek gray wolves,
+taken from the Dog10K sample table by breed name.
 
 The rows are selected on breed rather than on genotype. Rows selected by what
 they carry would group by what they carry, so the clustering below would
@@ -136,31 +179,41 @@ part of the haplotype, which bears on its origin but does not establish it.
 
 ## Where to go next
 
-The Dog10K paper's selection scan (its Fig. 8) lists peaks for five ancestry
-components, and the structural-variant paper lists more. Each is a region and a
-set of breeds, which is the input this recipe takes: change the region, the
-breed lists, and the metadata column.
+Both halves take the same two inputs, a pair of groups and a region, so any
+trait the sample table records can be substituted: change the breed lists and
+the scan reports its own peaks, then change the region and the metadata column
+to draw one of them. The Dog10K paper's own selection scan (its Fig. 8) lists
+peaks for five ancestry components, and the structural-variant paper lists more.
 
 ## Reproduce it end to end
 
-[`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
-runs every step:
+Two scripts, in order:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_igf1.sh
-bash build_dog10k_igf1.sh   # writes ./dog10k_igf1_build/
+BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
+curl -fO $BASE/build_dog10k_size_fst.sh
+curl -fO $BASE/build_dog10k_igf1.sh
+bash build_dog10k_size_fst.sh   # writes ./dog10k_size_fst_build/
+bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
 ```
 
-It downloads the Dog10K sample table, derives the breed lists and the metadata
-TSV from it, slices the window out of the callset, and reports the alt-allele
-dosage per size class over the sites inside _IGF1_ that separate the two dog
-classes, so the split can be checked numerically as well as read from the
-figure.
+[`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
+downloads the Dog10K sample table, derives the two breed panels from it, streams
+one autosome at a time out of the phased panel, and prints the ranked windows so
+the peaks the figure labels can be re-derived rather than taken from the
+labelling.
+
+[`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
+derives the same panels plus the metadata TSV, slices the _IGF1_ window out of
+the callset, and reports the alt-allele dosage per size class over the sites
+inside the gene that separate the two dog classes, so the split can be checked
+numerically as well as read from the figure.
 
 ## See also
 
 - [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
-  [SVs (Dog10K)](/docs/tutorials/dog10k_svs) and
+  [SVs (Dog10K)](/docs/tutorials/dog10k_svs),
+  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene) and
   [Local ancestry (Dog10K)](/docs/tutorials/local_ancestry), the other Dog10K
   tutorials, on the same assembly
 - [](/docs/user_guides/multivariant_track)
