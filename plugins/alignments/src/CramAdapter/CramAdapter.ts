@@ -97,9 +97,11 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     if (!refName) {
       throw new Error('unknown refName')
     }
+    // @gmod/cram is 0-based half-open since v10, which is what getSequence
+    // already takes, so the coordinates pass straight through
     const seq = await sequenceAdapter.getSequence({
       refName,
-      start: start - 1,
+      start,
       end,
     })
     return seq ?? ''
@@ -119,7 +121,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
           this.pluginManager,
         ),
         index,
-        seqFetch: (seqId: number, start: number, end: number) =>
+        fetchReferenceSequence: (seqId: number, start: number, end: number) =>
           this.seqFetch(seqId, start, end),
         checkSequenceMD5: false,
       })

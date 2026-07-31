@@ -46,7 +46,7 @@ export function readFeaturesToNumericCIGAR(
   arena: ReadFeatureArena | undefined,
   featureStart: number,
   featureCount: number,
-  alignmentStart: number,
+  recordStart: number,
   readLen: number,
 ): ArrayLike<number> {
   const cigarParts: number[] = []
@@ -62,7 +62,7 @@ export function readFeaturesToNumericCIGAR(
   // per *run*, they cost 6% and nothing respectively.
   let op = CIGAR_OP_M
   let oplen = 0
-  let lastPos = alignmentStart
+  let lastPos = recordStart
   let insLen = 0
   let seqLen = 0
 

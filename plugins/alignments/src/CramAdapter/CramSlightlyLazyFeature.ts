@@ -29,7 +29,7 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   }
 
   get start() {
-    return this.record.alignmentStart - 1
+    return this.record.start
   }
 
   get end() {
@@ -77,13 +77,13 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   get next_segment_position() {
     return this.record.mate
       ? `${this.adapter.refIdToName(this.record.mate.sequenceId)}:${
-          this.record.mate.alignmentStart
+          this.record.mate.start + 1
         }`
       : undefined
   }
 
   get next_pos() {
-    return this.record.mate ? this.record.mate.alignmentStart - 1 : undefined
+    return this.record.mate ? this.record.mate.start : undefined
   }
 
   // Read group lives outside the CRAM tag block, so it is spliced in to match
@@ -119,7 +119,7 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
       this.record.readFeatureArena,
       this.record.readFeatureStart,
       this.record.readFeatureCount,
-      this.record.alignmentStart,
+      this.record.start,
       this.record.readLength,
     )
     return this.numericCigar

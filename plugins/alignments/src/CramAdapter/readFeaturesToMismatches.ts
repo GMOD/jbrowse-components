@@ -57,7 +57,7 @@ export function readFeaturesToMismatches(
       // @gmod/cram. Letting one through flushes the insertion accumulator
       // below and splits a 2-base insertion into two 1-base callbacks
       if (RF_POSITIONAL[code]) {
-        const rPos = refPos[i]! - 1 - featStart
+        const rPos = refPos[i]! - featStart
 
         // Consecutive single-base 'i' features at the same refPos accumulate into
         // one insertion. Flush it before processing any non-'i' feature (or an 'i'

@@ -32,7 +32,7 @@ function cigarOf(
 test('cram read features to CIGAR', () => {
   expect(
     // from ctgA_15140_15565_0:0:1_1:0:0_2e8 in volvox-sorted.cram
-    cigarOf([{ code: 'i', data: 'C', pos: 25, refPos: 15164 }], 15140, 100),
+    cigarOf([{ code: 'i', data: 'C', pos: 24, refPos: 15163 }], 15139, 100),
   ).toMatchSnapshot()
 })
 
@@ -42,10 +42,10 @@ test("'b' verbatim bases align as matches (one M column per base)", () => {
   expect(
     cigarOf(
       [
-        { code: 'b', data: 'ACGT', pos: 1, refPos: 1 },
-        { code: 'D', data: 2, pos: 5, refPos: 5 },
+        { code: 'b', data: 'ACGT', pos: 0, refPos: 0 },
+        { code: 'D', data: 2, pos: 4, refPos: 4 },
       ],
-      1,
+      0,
       10,
     ),
   ).toBe('4M2D6M')
@@ -57,10 +57,10 @@ test('trailing single-base insertions are not dropped when remaining=0', () => {
   expect(
     cigarOf(
       [
-        { code: 'i', data: 'A', pos: 3, refPos: 3 },
-        { code: 'i', data: 'C', pos: 4, refPos: 3 },
+        { code: 'i', data: 'A', pos: 2, refPos: 2 },
+        { code: 'i', data: 'C', pos: 3, refPos: 2 },
       ],
-      0,
+      -1,
       5,
     ),
   ).toBe('3M2I')
@@ -73,11 +73,11 @@ test('single-base insertions either side of a deletion stay separate', () => {
   expect(
     cigarOf(
       [
-        { code: 'i', data: 'A', pos: 5, refPos: 5 },
-        { code: 'D', data: 1, pos: 6, refPos: 5 },
-        { code: 'i', data: 'C', pos: 6, refPos: 6 },
+        { code: 'i', data: 'A', pos: 4, refPos: 4 },
+        { code: 'D', data: 1, pos: 5, refPos: 4 },
+        { code: 'i', data: 'C', pos: 5, refPos: 5 },
       ],
-      1,
+      0,
       10,
     ),
   ).toBe('4M1I1D1I4M')
@@ -90,11 +90,11 @@ test('a Q between two single-base insertions does not split them', () => {
   expect(
     cigarOf(
       [
-        { code: 'i', data: 'A', pos: 3, refPos: 3 },
-        { code: 'Q', data: 36, pos: 3, refPos: 2 },
-        { code: 'i', data: 'C', pos: 4, refPos: 3 },
+        { code: 'i', data: 'A', pos: 2, refPos: 2 },
+        { code: 'Q', data: 36, pos: 2, refPos: 1 },
+        { code: 'i', data: 'C', pos: 3, refPos: 2 },
       ],
-      1,
+      0,
       5,
     ),
   ).toBe('2M2I1M')
@@ -106,22 +106,22 @@ test('zero-length ops are dropped and same-op runs merge', () => {
   expect(
     cigarOf(
       [
-        { code: 'H', data: 5, pos: 1, refPos: 4 },
-        { code: 'H', data: 5, pos: 1, refPos: 4 },
+        { code: 'H', data: 5, pos: 0, refPos: 3 },
+        { code: 'H', data: 5, pos: 0, refPos: 3 },
       ],
-      4,
+      3,
       0,
     ),
   ).toBe('10H')
   expect(
     cigarOf(
       [
-        { code: 'H', data: 5, pos: 1, refPos: 4 },
-        { code: 'I', data: '', pos: 1, refPos: 4 },
-        { code: 'D', data: 0, pos: 11, refPos: 14 },
-        { code: 'H', data: 5, pos: 11, refPos: 14 },
+        { code: 'H', data: 5, pos: 0, refPos: 3 },
+        { code: 'I', data: '', pos: 0, refPos: 3 },
+        { code: 'D', data: 0, pos: 10, refPos: 13 },
+        { code: 'H', data: 5, pos: 10, refPos: 13 },
       ],
-      4,
+      3,
       10,
     ),
   ).toBe('5H10M5H')
@@ -135,11 +135,11 @@ test('a long read switches to a Uint32Array without changing the CIGAR', () => {
   // 80 deletions, each preceded by a match run: 160 ops, well over the cutoff
   const many: ReadFeature[] = []
   for (let i = 0; i < 80; i++) {
-    many.push({ code: 'D', data: 2, pos: 1 + i * 5, refPos: 1 + i * 7 })
+    many.push({ code: 'D', data: 2, pos: 0 + i * 5, refPos: 0 + i * 7 })
   }
   // few enough features to stay under the cutoff, so both branches get exercised
-  const short = numericOf(many.slice(0, 3), 1, 500)
-  const long = numericOf(many, 1, 500)
+  const short = numericOf(many.slice(0, 3), 0, 500)
+  const long = numericOf(many, 0, 500)
 
   expect(Array.isArray(short)).toBe(true)
   expect(long).toBeInstanceOf(Uint32Array)
