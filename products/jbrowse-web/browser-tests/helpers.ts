@@ -399,6 +399,7 @@ export async function assertVirtualScrollStructure(
       hasCanvas: !!canvas,
       hasOuter: !!outer,
       outerOverflowY: outer ? css(outer, 'overflow-y') : null,
+      outerContain: outer ? css(outer, 'contain') : null,
       canvasPosition: canvas ? css(canvas, 'position') : null,
       nativeScroller,
     }
@@ -409,14 +410,27 @@ export async function assertVirtualScrollStructure(
       `missing canvas (${canvasSelector}) or trackRenderingContainer`,
     )
   }
-  // The outer container must clip (overflow hidden) rather than be a scroll
-  // port — that's what prevents a spurious second scrollbar. (Not asserting
-  // scrollHeight===clientHeight: absolutely-positioned chrome like the
-  // expand-indicator can extend a few px past a very short track and get
-  // harmlessly clipped here; with overflow hidden no scrollbar renders anyway.)
-  if (checks.outerOverflowY !== 'hidden') {
+  // The outer container must clip rather than be a scroll port — that's what
+  // prevents a spurious second scrollbar. Two mechanisms clip, and which one is
+  // in use is a perf detail this assertion shouldn't pin: `overflow:hidden/clip`
+  // or paint containment (`contain:strict`, what TrackRenderingContainer uses
+  // since b203a529b3 — hidden makes the box a scroll container the browser
+  // keeps recomputing). What is NOT allowed either way is `auto`/`scroll`.
+  // (Not asserting scrollHeight===clientHeight: absolutely-positioned chrome
+  // like the expand-indicator can extend a few px past a very short track and
+  // get harmlessly clipped here; no scrollbar renders regardless.)
+  const clipsByOverflow = /hidden|clip/.test(checks.outerOverflowY ?? '')
+  const clipsByContainment = /strict|content|paint/.test(
+    checks.outerContain ?? '',
+  )
+  if (!clipsByOverflow && !clipsByContainment) {
     throw new Error(
-      `outer TrackRenderingContainer overflow-y expected 'hidden', got '${checks.outerOverflowY}'`,
+      `outer TrackRenderingContainer must clip, but has overflow-y '${checks.outerOverflowY}' and contain '${checks.outerContain}'`,
+    )
+  }
+  if (/auto|scroll/.test(checks.outerOverflowY ?? '')) {
+    throw new Error(
+      `outer TrackRenderingContainer is a scroll port (overflow-y '${checks.outerOverflowY}') — that is the spurious second scrollbar`,
     )
   }
   if (checks.canvasPosition !== 'absolute') {
