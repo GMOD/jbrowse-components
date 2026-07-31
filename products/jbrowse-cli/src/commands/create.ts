@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import { mkdir, readdir } from 'node:fs/promises'
 import { parseArgs } from 'node:util'
 
 import {
@@ -7,8 +7,6 @@ import {
   printHelp,
   printVersions,
 } from '../utils.ts'
-
-const fsPromises = fs.promises
 
 const description = 'Downloads and installs the latest JBrowse 2 release'
 
@@ -98,7 +96,7 @@ export async function run(args: string[]) {
   }
 
   // mkdir will do nothing if dir exists
-  await fsPromises.mkdir(argsPath, { recursive: true })
+  await mkdir(argsPath, { recursive: true })
 
   if (!force) {
     await checkPath(argsPath)
@@ -116,7 +114,7 @@ export async function run(args: string[]) {
 }
 
 async function checkPath(userPath: string) {
-  const allFiles = await fsPromises.readdir(userPath)
+  const allFiles = await readdir(userPath)
   if (allFiles.length > 0) {
     throw new Error(
       `This directory (${userPath}) has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,

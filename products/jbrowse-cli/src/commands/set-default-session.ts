@@ -2,6 +2,7 @@ import { parseArgs } from 'node:util'
 
 import {
   printHelp,
+  readConfigFile,
   readJsonFile,
   resolveConfigPath,
   writeJsonFile,
@@ -76,7 +77,7 @@ export async function run(args: string[]) {
     delete: deleteDefaultSession,
   } = runFlags
   const target = await resolveConfigPath(runFlags.target, runFlags.out)
-  const configContents: Config = await readJsonFile(target)
+  const configContents: Config = await readConfigFile(target)
 
   if (deleteDefaultSession) {
     configContents.defaultSession = undefined

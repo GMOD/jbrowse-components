@@ -31,34 +31,65 @@ export async function runInTmpDir(
   }
 }
 
+function pollForOutput(received: () => boolean, attempts = 10) {
+  return new Promise<void>(resolve => {
+    const check = (remaining: number) => {
+      if (received() || remaining === 0) {
+        resolve()
+      } else {
+        setTimeout(() => {
+          check(remaining - 1)
+        }, 10)
+      }
+    }
+    check(attempts)
+  })
+}
+
 // Native command runner for testing
-export async function runCommand(
-  args: string | string[],
-): Promise<{ stdout: string; stderr: string; error?: Error }> {
+export async function runCommand(args: string | string[]): Promise<{
+  stdout: string
+  stderr: string
+  warnings: string
+  error?: Error
+}> {
   let stdout = ''
   let stderr = ''
+  // console.warn is kept apart from stderr: a warning is not a failure, and
+  // stderr below gets promoted into `error`. Capturing it at all keeps warnings
+  // assertable instead of leaking to the real console.
+  let warnings = ''
   let error: Error | undefined
   let outputReceived = false
+
+  const format = (args: unknown[]) => `${args.join(' ')}\n`
 
   // Mock console functions using Jest spies
   const consoleLogSpy = jest
     .spyOn(console, 'log')
-    .mockImplementation((...args: any[]) => {
-      stdout += `${args.join(' ')}\n`
+    .mockImplementation((...args: unknown[]) => {
+      stdout += format(args)
       outputReceived = true
     })
 
   const consoleErrorSpy = jest
     .spyOn(console, 'error')
-    .mockImplementation((...args: any[]) => {
-      stderr += `${args.join(' ')}\n`
+    .mockImplementation((...args: unknown[]) => {
+      stderr += format(args)
+      outputReceived = true
+    })
+
+  const consoleWarnSpy = jest
+    .spyOn(console, 'warn')
+    .mockImplementation((...args: unknown[]) => {
+      warnings += format(args)
       outputReceived = true
     })
 
   // Mock process.stdout.write
   const stdoutWriteSpy = jest
     .spyOn(process.stdout, 'write')
-    .mockImplementation((chunk: any) => {
+    .mockImplementation((chunk: string | Uint8Array) => {
       stdout += chunk.toString()
       outputReceived = true
       return true
@@ -67,7 +98,7 @@ export async function runCommand(
   // Mock process.stderr.write
   const stderrWriteSpy = jest
     .spyOn(process.stderr, 'write')
-    .mockImplementation((chunk: any) => {
+    .mockImplementation((chunk: string | Uint8Array) => {
       stderr += chunk.toString()
       outputReceived = true
       return true
@@ -90,27 +121,11 @@ export async function runCommand(
     // Run the native command with args directly instead of mutating process.argv
     await nativeMain(argsArray)
 
-    // Wait for any pending asynchronous console output
-    // This handles cases where commands start servers or other async operations
-    // that log output after the main command completes
-    await new Promise(resolve => {
-      if (outputReceived) {
-        // If we received output, wait a bit for any additional async output
-        setTimeout(resolve, 50)
-      } else {
-        // If no output yet, wait longer and check periodically
-        let attempts = 0
-        const checkForOutput = () => {
-          if (outputReceived || attempts > 10) {
-            resolve(undefined)
-          } else {
-            attempts++
-            setTimeout(checkForOutput, 10)
-          }
-        }
-        checkForOutput()
-      }
-    })
+    // Commands that start a server (admin-server) log from a callback that runs
+    // after main() resolves, so poll briefly for that first line. A command that
+    // already printed returns on the first check, rather than paying an
+    // unconditional ~50ms across every runCommand in the suite.
+    await pollForOutput(() => outputReceived)
   } catch (err) {
     if (err instanceof Error && err.message !== 'EXIT_MOCK') {
       error = err
@@ -119,6 +134,7 @@ export async function runCommand(
     // Restore Jest mocks
     consoleLogSpy.mockRestore()
     consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
     stdoutWriteSpy.mockRestore()
     stderrWriteSpy.mockRestore()
     processExitSpy.mockRestore()
@@ -137,10 +153,13 @@ export async function runCommand(
   return {
     stdout,
     stderr,
+    warnings,
     error,
   }
 }
 
+// arbitrary parsed config JSON that tests index into freely (conf.tracks[0]
+// etc). `unknown` here buys nothing but a cast at every call site.
 type Conf = Record<string, any>
 
 export function readConf(ctx: { dir: string }, ...rest: string[]): Conf {

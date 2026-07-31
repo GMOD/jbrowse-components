@@ -124,7 +124,10 @@ test('cannot add a track if there is no config file', async () => {
       '--load',
       'copy',
     ])
-    expect(error?.message).toMatchSnapshot()
+    // not a snapshot: the message names the absolute config path, which is a
+    // different tmp dir on every run
+    expect(error?.message).toContain('No JBrowse config found at')
+    expect(error?.message).toContain('jbrowse create <dir>')
   })
 })
 test('fails if it cannot assume the assemblyname', async () => {
@@ -907,8 +910,7 @@ test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNam
 test('warns (does not throw) when an assemblyName is not in the config', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const { error } = await runCommand([
+    const { error, warnings } = await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -918,18 +920,56 @@ test('warns (does not throw) when an assemblyName is not in the config', async (
     ])
     expect(error).toBeUndefined()
     expect(readConf(ctx).tracks).toHaveLength(1)
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('notARealAssembly'),
+    expect(warnings).toContain('notARealAssembly')
+  })
+})
+
+// --load copy on a file that already sits beside config.json used to unlink the
+// destination first, which is the same file as the source, so the data file was
+// deleted and the copy then failed with ENOENT
+test('--load copy --force keeps a data file already in the config dir', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeFile(ctxDir(ctx, 'simple.bam'), 'bamcontents')
+    await writeFile(ctxDir(ctx, 'simple.bam.bai'), 'baicontents')
+
+    const { error } = await runCommand([
+      'add-track',
+      'simple.bam',
+      '--load',
+      'copy',
+      '--force',
+    ])
+
+    expect(error).toBeUndefined()
+    expect(fs.readFileSync(ctxDir(ctx, 'simple.bam'), 'utf8')).toBe(
+      'bamcontents',
     )
-    warnSpy.mockRestore()
+    expect(fs.readFileSync(ctxDir(ctx, 'simple.bam.bai'), 'utf8')).toBe(
+      'baicontents',
+    )
+    expect(readConf(ctx).tracks).toHaveLength(1)
+  })
+})
+
+test('--load copy still fails when the source file does not exist', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      'notThere.bam',
+      '--load',
+      'copy',
+    ])
+    expect(error?.message).toContain('ENOENT')
+    expect(readConf(ctx).tracks).toHaveLength(0)
   })
 })
 
 test('does not warn when the assemblyName matches the config', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    await runCommand([
+    const { warnings } = await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -937,7 +977,6 @@ test('does not warn when the assemblyName matches the config', async () => {
       '--assemblyNames',
       'testAssembly',
     ])
-    expect(warnSpy).not.toHaveBeenCalled()
-    warnSpy.mockRestore()
+    expect(warnings).toBe('')
   })
 })

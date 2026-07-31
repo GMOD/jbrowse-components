@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { supported } from '../../types/common.ts'
-import { parseCommaSeparatedString } from '../../utils.ts'
+import { parseCommaSeparatedString, resolveConfigPath } from '../../utils.ts'
 
 import type { Config, Track } from '../../base.ts'
 
@@ -46,10 +46,6 @@ export function writeConf(obj: Config, configPath: string): void {
 export async function loadConfigForIndexing(
   target: string | undefined,
   out: string | undefined,
-  resolveConfigPath: (
-    target: string | undefined,
-    out: string | undefined,
-  ) => Promise<string>,
 ) {
   const configPath = await resolveConfigPath(target, out)
   const outLocation = path.dirname(configPath)

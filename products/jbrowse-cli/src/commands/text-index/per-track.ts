@@ -1,4 +1,3 @@
-import { resolveConfigPath } from '../../utils.ts'
 import { createTrixAdapter } from './adapter-utils.ts'
 import {
   formatDryRun,
@@ -34,7 +33,6 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   const { config, configPath, outLocation } = await loadConfigForIndexing(
     target,
     out,
-    resolveConfigPath,
   )
   const configTracks = config.tracks ?? []
   const confs = getTrackConfigs(

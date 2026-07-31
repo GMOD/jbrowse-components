@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
+import { printHelp, readConfigFile, resolveConfigPath } from '../utils.ts'
 import {
   guessTrack,
   guessTrackType,
@@ -281,7 +281,7 @@ export async function run(args?: string[]) {
   const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
 
-  const configContents: Config = await readJsonFile(targetConfigPath)
+  const configContents: Config = await readConfigFile(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
   const name = flags.name || trackId

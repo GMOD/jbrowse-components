@@ -2,7 +2,7 @@ import { parseArgs } from 'node:util'
 
 import {
   printHelp,
-  readJsonFile,
+  readConfigFile,
   requirePositional,
   resolveConfigPath,
   writeJsonFile,
@@ -63,7 +63,7 @@ export async function run(args?: string[]) {
 
   const target = await resolveConfigPath(flags.target, flags.out)
 
-  const config: Config = await readJsonFile(target)
+  const config: Config = await readConfigFile(target)
 
   const trackExists = config.tracks?.some(({ trackId: id }) => id === trackId)
   config.tracks = config.tracks?.filter(({ trackId: id }) => id !== trackId)

@@ -9,7 +9,7 @@ import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
 
 jest.mock('../cliFetch')
 
-const { stat, readdir, writeFile } = fs.promises
+const { readdir, readFile, writeFile } = fs.promises
 
 const testZipPath = path.join(
   __dirname,
@@ -61,7 +61,8 @@ test('fails if user selects a directory that does not exist', async () => {
   expect(stderr).toMatchSnapshot()
 })
 
-xtest('upgrades a directory', async () => {
+// no localPath: upgrades the install in the current directory
+test('upgrades the current directory', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
       if (new URL(url).host === 'api.github.com') {
@@ -73,11 +74,14 @@ xtest('upgrades a directory', async () => {
       }
     })
     await writeFile('manifest.json', '{"name":"JBrowse"}')
-    const prevStat = await stat(path.join(ctx.dir, 'manifest.json'))
-    await runCommand(['upgrade'])
+    const { error } = await runCommand(['upgrade'])
+    if (error) {
+      throw error
+    }
     expect(await readdir(ctx.dir)).toContain('manifest.json')
-    // upgrade successful if it updates stats of manifest json
-    expect(await stat('manifest.json')).not.toEqual(prevStat)
+    // the archive's manifest.json replaced the placeholder written above
+    const manifest = await readFile(path.join(ctx.dir, 'manifest.json'), 'utf8')
+    expect(JSON.parse(manifest).theme_color).toBe('#396494')
   })
 })
 
@@ -116,16 +120,22 @@ test('upgrades a directory from a url', async () => {
 })
 
 test('fails to upgrade if version does not exist', async () => {
-  mockFetch({ ok: false, status: 404, statusText: 'Not Found' })
-  const { stderr } = await runCommand(['upgrade', '--tag', 'v999.999.999'])
-  expect(stderr).toMatchSnapshot()
+  await runInTmpDir(async () => {
+    mockFetch({ ok: false, status: 404, statusText: 'Not Found' })
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    const { stderr } = await runCommand(['upgrade', '--tag', 'v999.999.999'])
+    expect(stderr).toMatchSnapshot()
+  })
 })
 test('fails if the fetch does not return the right file', async () => {
-  mockFetch({ headers: { 'content-type': 'application/json' } })
-  const { stderr } = await runCommand([
-    'upgrade',
-    '--url',
-    'https://example.com/JBrowse2-0.0.1.json',
-  ])
-  expect(stderr).toMatchSnapshot()
+  await runInTmpDir(async () => {
+    mockFetch({ headers: { 'content-type': 'application/json' } })
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    const { stderr } = await runCommand([
+      'upgrade',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.json',
+    ])
+    expect(stderr).toMatchSnapshot()
+  })
 })

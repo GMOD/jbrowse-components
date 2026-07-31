@@ -30,11 +30,16 @@ async function copyConf(ctx: { dir: string }) {
 beforeAll(() => (Date.now = jest.fn(() => 1)))
 
 test('fails if no config file', async () => {
-  const { error } = await runCommand([
-    'add-connection',
-    'https://example.com/hub.txt',
-  ])
-  expect(error?.message).toMatchSnapshot()
+  await runInTmpDir(async () => {
+    const { error } = await runCommand([
+      'add-connection',
+      'https://example.com/hub.txt',
+    ])
+    // not a snapshot: the message names the absolute config path, which is a
+    // different tmp dir on every run
+    expect(error?.message).toContain('No JBrowse config found at')
+    expect(error?.message).toContain('jbrowse create <dir>')
+  })
 })
 
 test('fails if data directory is not an url', async () => {

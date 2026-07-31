@@ -90,10 +90,9 @@ export async function run(args: string[]) {
     return
   }
 
-  const argsPath = positionals[0]
-  if (!argsPath) {
-    throw new Error('No directory supplied')
-  }
+  // localPath is optional: `jbrowse upgrade` upgrades the install in the
+  // current directory, as the examples and docs advertise
+  const argsPath = positionals[0] ?? '.'
 
   if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
     throw new Error(

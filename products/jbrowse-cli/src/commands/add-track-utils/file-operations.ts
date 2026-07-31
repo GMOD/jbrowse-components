@@ -23,6 +23,14 @@ export async function loadFile({
     return
   }
   const dest = path.join(destDir, subDir, path.basename(src))
+  // the file already sits where the config wants it (add-track run from inside
+  // the install dir), so there is nothing to copy/move/link. Bailing before the
+  // force-unlink matters: dest and src are the same file, so unlinking it
+  // deleted the user's data and left the copy with nothing to read. A source
+  // that isn't there still has to fail, so fall through to get its ENOENT.
+  if (path.resolve(src) === path.resolve(dest) && fs.existsSync(src)) {
+    return
+  }
   if (force) {
     await ignoreNotFound(unlink(dest))
   }

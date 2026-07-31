@@ -63,6 +63,23 @@ export async function readJsonFile<T>(location: string): Promise<T> {
   return JSON.parse(contents)
 }
 
+// reads the config of an existing install. Running a command from the wrong
+// directory is the most common mistake, and a bare ENOENT does not say which
+// directory was searched or what to do about it
+export async function readConfigFile<T>(location: string): Promise<T> {
+  // catching the code rather than testing the parsed value keeps a config that
+  // legitimately parses to something falsy from reporting itself as missing
+  return readJsonFile<T>(location).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new Error(
+        `No JBrowse config found at ${path.resolve(location)}\n` +
+          'Run "jbrowse create <dir>" to make a new installation, or point at an existing one with --out <dir>',
+      )
+    }
+    throw error
+  })
+}
+
 export async function writeJsonFile(location: string, contents: unknown) {
   debug(`Writing JSON file to ${process.cwd()} ${location}`)
   return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))

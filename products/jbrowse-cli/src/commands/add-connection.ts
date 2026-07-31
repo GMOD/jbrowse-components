@@ -5,7 +5,7 @@ import {
   debug,
   parseCommaSeparatedString,
   printHelp,
-  readJsonFile,
+  readConfigFile,
   requirePositional,
   resolveConfigPath,
 } from '../utils.ts'
@@ -136,7 +136,7 @@ export async function run(args?: string[]) {
   const target = await resolveConfigPath(flags.target, flags.out)
 
   const url = resolveURL(connectionUrlOrPath)
-  const configContents = await readJsonFile<Config>(target)
+  const configContents = await readConfigFile<Config>(target)
   debug(`Using config file ${target}`)
 
   if (!configContents.assemblies?.length) {

@@ -4,7 +4,7 @@ import {
   debug,
   printHelp,
   readInlineOrFileJson,
-  readJsonFile,
+  readConfigFile,
   requirePositional,
   resolveConfigPath,
 } from '../utils.ts'
@@ -79,7 +79,7 @@ export async function run(args?: string[]) {
 
   debug(`Sequence location is: ${track}`)
   const { update } = flags
-  const config: Config = await readJsonFile(target)
+  const config: Config = await readConfigFile(target)
   debug(`Found existing config file ${target}`)
 
   const trackConfig = await readInlineOrFileJson<Track>(track)
