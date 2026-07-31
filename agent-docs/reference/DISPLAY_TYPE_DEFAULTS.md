@@ -31,8 +31,10 @@ read one section, read [The cascade](#the-cascade).
   `getComputedStyle`. Worker RPC → `getConfigSnapshotWithPromotables`;
   share/export → `bakePromotedDefaultsIntoSnapshot`. Never emit a raw promotable
   slot.
-- Received sessions carry `ignorePromotedDefaults`: baking alone can't neutralize
-  a recipient's default when the sender saw the base value.
+- A shared session carries **baked values only**. A baked value reads as
+  *customized*, which is the top of the cascade, so a recipient's own defaults
+  can't repaint it. The one uncovered case is the sender sitting at `base` — see
+  [Received sessions](#received-sessions).
 - UI is **one row per value**, each with a trailing `PushPin`. Filled = default
   for all tracks of this type. No separate "make default" row.
 
@@ -61,7 +63,7 @@ accidental.
 
 | Concern | File |
 | --- | --- |
-| Read-time resolver (`resolveSlot`) + the `ResolvableDisplay` / `PromotableDisplay` shapes | `packages/core/src/configuration/promotableResolve.ts` |
+| Read-time resolver (`resolveSlot`) + the `ResolvableDisplay` shape | `packages/core/src/configuration/promotableResolve.ts` |
 | The usable-value gate (`isUsableValue`, `SHAPE_CHECKS`), shared by the resolver and by `ConfigSlot`'s `promotedBase` guard | `packages/core/src/configuration/slotShape.ts` |
 | Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
@@ -71,7 +73,6 @@ accidental.
 | Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
-| Received-session opt-out (`ignorePromotedDefaults`) | `packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx` |
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
@@ -88,7 +89,35 @@ Tests: `promotableDefaults.test.ts` (resolver + control builders),
 `colorBy.test.tsx` / `readConnections.test.tsx` / `sashimi.test.ts` (per-row
 pins), `DefaultForAllAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
 (badge), `ShareablePromotedDefaults.test.ts` (the share/export bake +
-`ignorePromotedDefaults` round-trip, jbrowse-web).
+the sender-at-base case it deliberately does not cover, jbrowse-web).
+
+### Promotable is a schema fact; the pin is a menu fact
+
+A slot's `promotable` flag travels down `baseConfiguration` to every subclass,
+but the **pin** is built by whichever track menu happens to construct a row for
+that slot. A display that inherits the flag and curates its own menu therefore
+has a promotable slot with **no pin anywhere** — and since a promoted default is
+keyed by *display type*, no other display's pin can write it either, so the slot
+resolves to `promotedBase` forever unless a track customizes it. Eleven such
+pairs exist today, all inherited rather than declared:
+
+| Display | Slots promotable with no pin | Why |
+| --- | --- | --- |
+| `LGVSyntenyDisplay` | `colorBy`, `linkedReads`, `mismatchAlpha`, `readConnections`, `readConnectionsDown`, `sashimiArcsMode`, `showSashimiLabels`, `showSoftClipping` | composes the alignments state model, but `LGVSyntenyDisplay/menus.ts` builds its own curated menu; only `getFeatureHeightMenuItem` brings pins (`featureHeight`, `heightMode`) |
+| `LinearVariantDisplay` | `subfeatureLabels`, `displayDirectionalChevrons` | the row 79 asymmetry: rows + getters live in the concrete `LinearBasicDisplay/model.ts` |
+| `LinearManhattanDisplay` | `lineWidth` | inherits it with the `wiggleConfigSchemaFields` spread, but `makeLineWidthMenuItems` is gated on a line rendering and only the two wiggle displays call it |
+
+**`promotable: false` is not the fix for the synteny or Manhattan rows.** Those
+slots are read through the *shared* model's `resolveConf` getters, which throw on
+a non-promotable slot — turning the flag off breaks the display outright. Wiring
+the missing rows is the only fix, and it is a product decision (new pins), not a
+cleanup.
+
+The generated user-guide table
+(`writePromotableSlotDocs`) is derived from the flag, so it lists all eleven; its
+column therefore claims "settings with a session-wide default", not "with a pin",
+and the guide says where the pin actually lives. Nothing static can see a menu
+row, so don't try to make that table exact.
 
 ## The cascade
 
@@ -194,23 +223,23 @@ default, and there is deliberately no callback case
 
 ### What a display has to be
 
-Two shapes, split by read vs write:
+One shape: **`ResolvableDisplay`** — `IAnyStateTreeNode` + `type` +
+`configuration`. Everything the cascade needs, and what **every public entry
+point takes**: `resolveConf`, both `make*Control` builders, `isSlotCustomized`,
+`getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`,
+`clearPromotedDefaults`, `resetSlotToInherit`.
 
-- **`ResolvableDisplay`** — `IAnyStateTreeNode` + `type` + `configuration` +
-  `ignorePromotedDefaults`. Everything the cascade needs to *read* a slot, and
-  what **every public entry point takes**: `resolveConf`, both `make*Control`
-  builders, `isSlotCustomized`, `getConfigSnapshotWithPromotables`,
-  `getDisplayTypeDefaultChanges`, `clearPromotedDefaults`.
-- **`PromotableDisplay`** — that plus `setIgnorePromotedDefaults`. Needed only
-  where a display is *collected to be reset*: `openPromotableDisplays` and the
-  chain down to `resetSlotToInherit`, the subsystem's one write to a display.
+There is deliberately no write-capable variant. A `PromotableDisplay` used to
+exist for the single member the subsystem wrote — `setIgnorePromotedDefaults` —
+and collapsed into this one when that flag was removed; the subsystem's only
+write to a display is now a config slot, reached through `configuration`.
 
 Asking for the display node rather than a bare `{ configuration }` is what keeps
 `resolveConf` **cast-free** — hand it a config holder and tsc names the missing
 members instead of the read failing at runtime with
-`getDisplayTypeDefault(undefined, slot)`. Splitting off the setter is what keeps
-that affordable: a mixin or test double that only resolves a slot doesn't have to
-fake a member it never calls. An MST mixin whose own `self` is an empty model
+`getDisplayTypeDefault(undefined, slot)`. Keeping the shape to two members is
+what keeps that affordable: a mixin or test double doesn't have to fake anything
+it never calls. An MST mixin whose own `self` is an empty model
 still casts (`confNode(self)` in `HeightModeMixin` / `WiggleScoreConfigMixin`) —
 that's the mixin not seeing props the concrete display declares, and the cast
 target names exactly what the cascade reads.
@@ -387,9 +416,9 @@ boundary means *calling* one — not writing bespoke resolution:
 (`SessionLoader`), HMR restore, and desktop's native `.jbrowse` file
 (`getSaveSession` in `products/jbrowse-desktop/src/rootModel/rootModel.ts`) all
 use a raw `getSnapshot(session)`, correctly: the same browser still has the
-`preferencesOverrides` the cascade resolves against, and baking would stamp
-`ignorePromotedDefaults: true` onto every display in the user's *own* reloaded
-session — permanently detaching their tracks from their own promoted defaults.
+`preferencesOverrides` the cascade resolves against, and baking would freeze
+today's resolved values into the user's *own* reloaded session, so later changing
+a promoted default would no longer move the tracks that were following it.
 The consequence to know: hand-passing a `.jbrowse` file to someone else is the
 one path that loses the sender's promoted defaults, since it's a save format, not
 an export. `ExportToWebDialog` is the desktop route that bakes.
@@ -418,12 +447,11 @@ copy of the snapshot in which, for every **open** display:
   an opened connection track's `connectionTrackConfigs` config), else a
   `trackConfigDeltas` entry against the admin base. The connection case is not
   cosmetic — deltas are merged over `jbrowse.tracks` alone, so a delta written
-  for a connection track resolves nowhere while its display still carries
-  `ignorePromotedDefaults`, and the recipient renders the base value. Only
+  for a connection track resolves nowhere, and the recipient renders the base
+  value. Only
   genuinely-inherited non-base values are baked — customized slots already live
   in the config, at-base slots need nothing — so no spurious "edited" badge
   appears on the recipient side for an untouched slot.
-- the display state is marked `ignorePromotedDefaults` (see below).
 
 Tracks the sender never opened carry no display state to resolve, so they're
 left to pick up the recipient's own defaults when opened — matching "export the
@@ -432,12 +460,10 @@ actual state of the *open* tracks".
 `openPromotableDisplays` recurses into a composite view's **`views` array**
 (breakpoint-split, the linear-comparative / synteny family), which holds child
 views rather than tracks of its own — `LGVSyntenyDisplay` is only reachable that
-way. It is the **only** walk that decides reach: `markIgnorePromotedDefaults`
-stamps the flag by matching the displayIds that walk already collected, walking
-the outgoing snapshot structurally rather than re-following
-views→tracks→displays. A second shape-aware walk had to be kept in step by hand,
-and a composite view it forgot got its values baked but not the flag — the half
-that silently loses to the recipient's own default.
+way. It is now the **only** walk that decides reach, which is the point: there
+used to be a second, shape-aware one stamping `ignorePromotedDefaults`, it had to
+be kept in step by hand, and a composite view it forgot got its values baked but
+not the flag.
 
 A view holding its children under *named props* instead
 (`SvInspectorView.circularView`) is **not** reached. Enumerating a view's own
@@ -447,30 +473,40 @@ initialized. Nothing is missed today (no display under those views declares a
 promotable slot); if one ever does, give that view a `views` getter returning its
 children rather than duck-typing harder in `hasChildViews`.
 
-### Received sessions (`ignorePromotedDefaults`)
+### Received sessions
 
-A `#property` on `BaseDisplay` (`stripDefault(boolean, false)`, so absent from
-snapshots until set). When `true`, `resolveSlot` skips the session-wide tier
-entirely — the display resolves from its own config only, ignoring *this*
-browser's promoted defaults.
+**Baked values are the whole mechanism, and they are sufficient for every case
+that has a value.** A baked value lands in the track's config layer, so the
+recipient reads it as *customized* — the top of the cascade — and their own
+promoted defaults are never consulted for that slot. Nothing is written to the
+display node.
 
-It exists because baking the values isn't sufficient on its own. Two cases:
+There is exactly one case the bake cannot cover: **the sender was sitting at
+`base`.** Nothing gets baked (the value equals base, and `stripDefault` drops it
+from the snapshot regardless), so a recipient who has promoted something else
+resolves it from their own cascade and sees their value. No value can express "I
+deliberately saw the default" — at-base and unset are byte-identical once
+stripped, which is the same property that makes the sentinel design work.
 
-- **Sender saw a non-base value** → baked into the config; the recipient's
-  display now reads as *customized* and ignores their cascade anyway.
-- **Sender saw the base value while the recipient has promoted a different one**
-  → nothing is baked (the value equals base), so without the flag the recipient's
-  cascade would repaint it. The flag is the only thing that forces the received
-  track to stay at what the sender saw. (For a *plain* slot it's the sole
-  mechanism that can neutralize a promoted default at all — no baked value can
-  read as customized there.)
+**That case is accepted, and reopening it means re-adding a flag.** It used to be
+covered by an `ignorePromotedDefaults` `#property` on `BaseDisplay` that made
+`resolveSlot` skip the session tier, stamped onto every open display by a second
+snapshot walk (`markIgnorePromotedDefaults`). Three reasons it went:
 
-So the bake sets the flag on **every** open display, making the shared session a
-faithful frozen picture, immune to the recipient's local preferences. The flag
-is **cleared** by `resetSlotToInherit` — i.e. the moment the recipient
-deliberately clicks "use this default", the display rejoins the cascade. A track
-the recipient opens *fresh* in a received session never gets the flag, so it
-picks up their defaults normally.
+- the second walk had to be kept in step with `openPromotableDisplays` by hand,
+  and a composite view it forgot got its values baked but not the flag — the half
+  that silently loses;
+- the flag was per *display*, not per slot, and permanent, so a recipient who had
+  promoted something found their own pins doing nothing to received tracks until
+  they clicked "use this default" on each;
+- a promoted default is a personal, local preference, and the only one the bake
+  touched. A shared session has never carried the sender's theme
+  (`sessionThemeName` is `.volatile()` and `shareableSnapshot.ts` doesn't mention
+  it), and a read height is a smaller imposition than a theme.
+
+Canary for the accepted behavior: the two paired tests in
+`ShareablePromotedDefaults.test.ts` — a sender at base picks up the recipient's
+default, and a baked value cannot be overridden by one.
 
 Note the About-track dialog needs **no** flattening: every promotable slot is
 display-level and the dialog intentionally hides the `displays` array, so there
@@ -642,6 +678,12 @@ deletions, listed here only so a reader doesn't go looking for them:
 - **`PromotableDisplay` everywhere**, reached by `resolveConf` through an
   `as unknown as`. Splitting the read-only `ResolvableDisplay` off removed the
   cast; the fallout was nine sites, all fakes under-modelling a real display.
+  The split then collapsed altogether with the `ignorePromotedDefaults` removal
+  below, since the setter it existed for went away.
+- **`ignorePromotedDefaults`**, the per-display received-session opt-out, and
+  `markIgnorePromotedDefaults`, the second snapshot walk that stamped it. See
+  [Received sessions](#received-sessions) for what it covered and why the trade
+  went the other way.
 
 The optionality of the session store went too: `get/setDisplayTypeDefault` (with
 `setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`) are

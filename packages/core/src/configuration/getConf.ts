@@ -80,9 +80,10 @@ export function resolveConf<
     ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   // the display state node itself, not just its `.configuration`: the cascade
-  // keys the session-wide tier on `type` and honours `ignorePromotedDefaults`.
-  // Asking for that shape is what keeps this cast-free — hand it a bare config
-  // holder and tsc names the missing members instead of failing at the first read
+  // keys the session-wide tier on `type` and reaches the session through the
+  // node. Asking for that shape is what keeps this cast-free — hand it a bare
+  // config holder and tsc names the missing members instead of failing at the
+  // first read
   model: ResolvableDisplay & { configuration: CONFMODEL },
   slot: SLOT,
 ): ConfigurationSlotValueResolved<

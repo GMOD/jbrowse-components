@@ -20,22 +20,14 @@ const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
 // The display shim the cascade operates on: the `type` + `configuration` it
-// reads, plus the received-session opt-out (`ignorePromotedDefaults`) that
-// BaseDisplay contributes to every real display.
+// reads, which is the whole of `ResolvableDisplay`.
 function testDisplayModel(
   configSchema: ReturnType<typeof ConfigurationSchema>,
 ) {
-  return types
-    .model('TestDisplay', {
-      type: types.literal('TestDisplay'),
-      configuration: configSchema,
-      ignorePromotedDefaults: types.optional(types.boolean, false),
-    })
-    .actions(self => ({
-      setIgnorePromotedDefaults(flag: boolean) {
-        self.ignorePromotedDefaults = flag
-      },
-    }))
+  return types.model('TestDisplay', {
+    type: types.literal('TestDisplay'),
+    configuration: configSchema,
+  })
 }
 
 // Minimal session + display shim (see configurationSchema.test.ts's
@@ -809,10 +801,16 @@ describe('promotable sentinel slot', () => {
   })
 })
 
-// A display that arrived in a session received from someone else opts out of
-// the session-wide tier, so this browser's promoted defaults can't repaint what
-// the sender saw. See BaseDisplay's `ignorePromotedDefaults` property.
-describe('a display from a received session', () => {
+// The property that makes the share/export bake self-sufficient, and the reason
+// a received display needs no opt-out flag: a baked value is written into the
+// track's config, so it reads as *customized*, and a customized value wins over
+// the session tier unconditionally. The recipient's own promoted default is never
+// consulted for a slot the sender had a value for.
+//
+// The uncovered case — sender at `base`, recipient has promoted something — is
+// asserted end-to-end in jbrowse-web's ShareablePromotedDefaults.test.ts, since
+// only there is there a real snapshot to bake.
+describe('a baked value beats the reader’s own promoted default', () => {
   const sentinelSchema = ConfigurationSchema('ReceivedSentinel', {
     mode: {
       type: 'maybeStringEnum',
@@ -823,64 +821,23 @@ describe('a display from a received session', () => {
     },
   })
 
-  // The case baking alone cannot cover: the sender saw the *base* value, so
-  // nothing is written into the shared config (it equals base) and only the
-  // opt-out stops the recipient's promoted value from repainting it.
-  test('ignores a promoted default, holding the base the sender saw', () => {
-    const { session, display } = createDisplay(sentinelSchema)
-    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    expect(resolveConf(display, 'mode')).toBe('compact')
-
-    display.setIgnorePromotedDefaults(true)
-    expect(resolveConf(display, 'mode')).toBe('normal')
-  })
-
   test('keeps its own baked-in value', () => {
     const { session, display } = createDisplay(sentinelSchema, {
       mode: 'compact',
     })
-    display.setIgnorePromotedDefaults(true)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'normal')
     expect(resolveConf(display, 'mode')).toBe('compact')
   })
 
-  test('reports no session-default changes for the affected-by-a-default badge', () => {
-    const { session, display } = createDisplay(sentinelSchema)
-    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    expect(getDisplayTypeDefaultChanges(display)).toEqual([
-      { path: ['mode'], from: 'normal', to: 'compact' },
-    ])
-
-    display.setIgnorePromotedDefaults(true)
-    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
-  })
-
-  // The opt-out neutralizes the session-wide TIER of the cascade for this
-  // display; it does not un-promote the value. The pin reports on the session,
-  // so it must keep reading the raw promoted default — otherwise every track in
-  // a received session shows an outline pin for a value that IS the user's
-  // default, and the toggle can only ever set, never clear it.
-  test('still reports the session default for the pin while opted out', () => {
-    const { session, display } = createDisplay(sentinelSchema)
-    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    expect(isPromotableDefault(display, 'mode', 'compact')).toBe(true)
-
-    display.setIgnorePromotedDefaults(true)
-    // the display no longer FOLLOWS the default...
-    expect(resolveConf(display, 'mode')).toBe('normal')
-    // ...but 'compact' is still what's promoted session-wide
-    expect(isPromotableDefault(display, 'mode', 'compact')).toBe(true)
-  })
-
-  test('follows the default once the user deliberately opts it back in', () => {
+  // clearing the baked value is how the recipient deliberately rejoins the
+  // cascade — the whole of what lifting the old opt-out flag used to also do
+  test('rejoins the cascade once the baked value is cleared', () => {
     const { session, display } = createDisplay(sentinelSchema, {
       mode: 'compact',
     })
-    display.setIgnorePromotedDefaults(true)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'normal')
 
     resetSlotToInherit([display], 'mode')
-    expect(display.ignorePromotedDefaults).toBe(false)
     expect(resolveConf(display, 'mode')).toBe('normal')
   })
 })
@@ -1009,9 +966,9 @@ test('resolving a non-promotable slot throws instead of silently collapsing', ()
 // synteny family) holds child views rather than tracks of its own, and a
 // promotable display nested in one resolves the cascade like any other. Both
 // callers of the open-display walk have to see it: "apply to open tracks" would
-// undercount, and the share/export bake would neither bake its inherited values
-// nor flag it `ignorePromotedDefaults` — so a shared session rendered
-// differently for the recipient. LGVSyntenyDisplay is only reachable this way.
+// undercount, and the share/export bake would not bake its inherited values —
+// so a shared session rendered differently for the recipient.
+// LGVSyntenyDisplay is only reachable this way.
 describe('displays nested inside a composite view', () => {
   const configSchema = ConfigurationSchema('NestedDisplay', {
     customHeight: {

@@ -102,7 +102,11 @@ test('a promoted object default is stored plain, not wrapped in a mobx proxy', (
   expect(promoted).toEqual(colorBy)
 })
 
-test('every open display is marked ignorePromotedDefaults in the shared snapshot', () => {
+test('the bake writes only track config, never display state', () => {
+  // the bake's whole mechanism is that a baked value lands in the track's config
+  // and so reads as *customized* on the recipient's side, which is the top of the
+  // cascade. It therefore needs nothing on the display node — no per-display
+  // opt-out flag, which is what a second shape-aware walk used to exist to stamp.
   const { rootModel, session } = openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -111,12 +115,12 @@ test('every open display is marked ignorePromotedDefaults in the shared snapshot
     getSnapshot(rootModel.session),
   )
 
-  const views = snap.views as {
-    tracks: { displays: { ignorePromotedDefaults?: boolean }[] }[]
-  }[]
+  const views = snap.views as { tracks: { displays: object[] }[] }[]
   const displays = views.flatMap(v => v.tracks.flatMap(t => t.displays))
   expect(displays.length).toBeGreaterThan(0)
-  expect(displays.every(d => d.ignorePromotedDefaults === true)).toBe(true)
+  for (const d of displays) {
+    expect(d).not.toHaveProperty('ignorePromotedDefaults')
+  }
 })
 
 test('the shared snapshot reproduces the sender value in a recipient with no promoted default', () => {
@@ -140,9 +144,16 @@ test('the shared snapshot reproduces the sender value in a recipient with no pro
   expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
 
-test("a recipient's own promoted default does not repaint the received track", () => {
+test("a sender at base picks up the recipient's own promoted default", () => {
+  // The one case the bake deliberately does not cover, asserted so the trade is
+  // visible rather than discovered. The sender was at `base`, so there is nothing
+  // to bake — the value equals base and `stripDefault` drops it from the snapshot
+  // either way — and no value can express "I deliberately saw the default". The
+  // recipient's own cascade therefore applies, exactly as their own theme does.
+  // Covering this needs a per-display `ignorePromotedDefaults` flag, which was
+  // removed: it cost a second walk that had to track the bake's by hand, and it
+  // detached received tracks from the recipient's pins for good.
   const { rootModel, session, display } = openVcfDisplay()
-  // sender saw the schema-resolved base value (no promotion)
   expect(resolveConf(display, SLOT)).toBe('normal')
 
   const shared = bakePromotedDefaultsIntoSnapshot(
@@ -150,7 +161,6 @@ test("a recipient's own promoted default does not repaint the received track", (
     getSnapshot(rootModel.session),
   )
 
-  // recipient has promoted a DIFFERENT value; the received track must ignore it
   const { rootModel: recipient } = getPluginManager(undefined, false)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
@@ -159,8 +169,31 @@ test("a recipient's own promoted default does not repaint the received track", (
     t => t.configuration.trackId === TRACK_ID,
   )!.displays[0]! as unknown as ResolvableDisplay
 
-  // stays at what the sender saw, not the recipient's promoted value
-  expect(resolveConf(recipientDisplay, SLOT)).toBe('normal')
+  expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
+})
+
+test("a recipient's promoted default cannot override a baked value", () => {
+  // the complement, and the reason the flag is unnecessary for every case that
+  // has a value: a baked value is a track config value, so it reads as
+  // customized and the recipient's session tier is never consulted.
+  const { rootModel, session } = openVcfDisplay()
+  session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
+
+  const shared = bakePromotedDefaultsIntoSnapshot(
+    session as never,
+    getSnapshot(rootModel.session),
+  )
+
+  const { rootModel: recipient } = getPluginManager(undefined, false)
+  recipient.setSession(shared)
+  const recipientSession = recipient.session as unknown as TestSession
+  // recipient promotes something else entirely
+  recipientSession.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, 'superCompact')
+  const recipientDisplay = recipientSession.views[0]!.tracks.find(
+    t => t.configuration.trackId === TRACK_ID,
+  )!.displays[0]! as unknown as ResolvableDisplay
+
+  expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
 
 test('a user-added (sessionTracks) track bakes into its own config, not a delta', () => {
@@ -211,8 +244,7 @@ test('an opened connection track bakes into its persisted config, not a dead del
   // a connection track lives in neither jbrowse.tracks nor sessionTracks: its
   // config is persisted under connectionTrackConfigs, and trackConfigDeltas is
   // only ever merged over an admin base. A delta written for one is inert, so
-  // the recipient — whose display is stamped ignorePromotedDefaults — would
-  // render the base value instead of what the sender saw.
+  // the recipient would render the base value instead of what the sender saw.
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession & {
     connectionTrackConfigs: Record<

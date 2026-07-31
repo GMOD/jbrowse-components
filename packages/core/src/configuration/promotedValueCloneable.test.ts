@@ -35,7 +35,6 @@ function createDisplay(deep: boolean) {
   const Display = types.model('CloneDisplay', {
     type: types.literal('CloneDisplay'),
     configuration: configSchema,
-    ignorePromotedDefaults: types.optional(types.boolean, false),
   })
   const Session = types
     .model('CloneSession', {

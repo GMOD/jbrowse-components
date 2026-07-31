@@ -44,16 +44,28 @@ interface Bake {
  * preferences) sees something different. This flattens the live cascade into a
  * self-contained snapshot:
  *
- *   - every slot an open display *inherits* from a promoted default (i.e.
- *     `getDisplayTypeDefaultChanges` — non-customized, differs from base) is
- *     baked into that track's config layer (its own config for a user-added or
- *     connection track, else a `trackConfigDeltas` entry against the admin
- *     base — see `ownTrackConfig`), so the concrete value travels with the
- *     document;
- *   - every open display is marked `ignorePromotedDefaults`, so the *recipient's*
- *     own promoted defaults can't repaint what the sender saw — including the
- *     case a baked value coincides with the schema default and would otherwise
- *     strip back to at-default and re-inherit on the other side.
+ * Every slot an open display *inherits* from a promoted default (i.e.
+ * `getDisplayTypeDefaultChanges` — non-customized, differs from base) is baked
+ * into that track's config layer: its own config for a user-added or connection
+ * track, else a `trackConfigDeltas` entry against the admin base (see
+ * `ownTrackConfig`). So the concrete value travels with the document, and
+ * because it lands in the track's config the recipient reads it as *customized*
+ * — a customized value is the top of the cascade, so their own promoted defaults
+ * never get consulted for it.
+ *
+ * **What this deliberately does not cover**, and the reason there is no flag
+ * here: a slot the sender was viewing at its *base* value. Nothing is baked for
+ * it (the value equals base, and `stripDefault` drops it from the snapshot
+ * regardless), so a recipient who has promoted something else resolves it from
+ * their own cascade and sees their value. There is no value that can express "I
+ * deliberately saw the default" — at-base and unset are byte-identical once
+ * stripped. That case used to be covered by stamping a per-display
+ * `ignorePromotedDefaults` on every open display, which cost a second
+ * shape-aware walk that had to stay in step with `openPromotableDisplays` by
+ * hand, and permanently detached received tracks from the recipient's own pins
+ * until they clicked "use this default" on each one. A promoted default is
+ * personal and local — the same as the theme a session is viewed in, which this
+ * function has never baked either.
  *
  * The live session is untouched; a modified deep copy of `snapshot` is returned.
  * Tracks the sender never opened carry no display state to resolve, so they're
@@ -72,63 +84,21 @@ export function bakePromotedDefaultsIntoSnapshot(
   snapshot: Record<string, unknown>,
 ): Record<string, unknown> {
   const snap = structuredClone(snapshot)
-  const bakes: Bake[] = []
-  const openDisplayIds = new Set<string>()
-
-  // one shared walk with the cascade's own "apply to open tracks", so the set
-  // this bakes and the set that acts on a promoted default can't drift
+  // `openPromotableDisplays` is the one walk that decides reach — shared with
+  // the cascade's own "apply to open tracks", so the set this bakes and the set
+  // that acts on a promoted default can't drift
   for (const display of openPromotableDisplays(session)) {
-    const displayId = getConf(display, 'displayId') as string
-    openDisplayIds.add(displayId)
     const changes = getDisplayTypeDefaultChanges(display)
     if (changes.length > 0) {
-      bakes.push({
+      bakeValues(snap, {
         trackId: getConf(getContainingTrack(display), 'trackId') as string,
-        displayId,
+        displayId: getConf(display, 'displayId') as string,
         displayType: display.type,
         values: Object.fromEntries(changes.map(c => [c.path[0], c.to])),
       })
     }
   }
-
-  markIgnorePromotedDefaults(snap, openDisplayIds)
-  for (const bake of bakes) {
-    bakeValues(snap, bake)
-  }
   return snap
-}
-
-// A display state serializes its `configuration` reference as the displayId
-// string; stamp `ignorePromotedDefaults` on every open one so the recipient
-// resolves it from its own config only.
-//
-// Identifies its targets purely by that id, walking the snapshot structurally
-// rather than following views -> tracks -> displays. Nothing else in a session
-// snapshot carries a displayId under `configuration`, and matching on the ids
-// `openPromotableDisplays` already collected means this can't reach a display
-// that walk didn't. That's the point: a shape-aware second walk had to be kept
-// in step with the first by hand, and a composite view it forgot to recurse into
-// got its values baked but not the flag — the values without the flag are the
-// half that silently loses to a recipient's own promoted default.
-function markIgnorePromotedDefaults(
-  node: unknown,
-  openDisplayIds: Set<string>,
-) {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      markIgnorePromotedDefaults(child, openDisplayIds)
-    }
-  } else if (isRecord(node)) {
-    if (
-      typeof node.configuration === 'string' &&
-      openDisplayIds.has(node.configuration)
-    ) {
-      node.ignorePromotedDefaults = true
-    }
-    for (const child of Object.values(node)) {
-      markIgnorePromotedDefaults(child, openDisplayIds)
-    }
-  }
 }
 
 // The track's own full config in the snapshot, when it has one: a user-added
@@ -138,9 +108,9 @@ function markIgnorePromotedDefaults(
 //
 // The connection case is not optional. `trackConfigDeltas` is merged over
 // `jbrowse.tracks` alone, so a delta written for a connection track resolves
-// nowhere while its display still gets stamped `ignorePromotedDefaults` — the
-// recipient would render the base value, which is the exact failure the bake
-// exists to prevent. `updateTrackConfiguration` splits on the same line.
+// nowhere — the recipient would render the base value, which is the exact
+// failure the bake exists to prevent. `updateTrackConfiguration` splits on the
+// same line.
 function ownTrackConfig(snap: Record<string, unknown>, trackId: string) {
   const sessionTrack = asArray(snap.sessionTracks).find(
     t => isRecord(t) && t.trackId === trackId,

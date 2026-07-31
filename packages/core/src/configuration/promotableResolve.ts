@@ -30,36 +30,21 @@ import type { AnyConfigurationModel } from './types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * Everything the cascade needs to **read** a promotable slot: the display type
- * it keys the session-wide default on, the config holding the track's own value,
- * and the received-session opt-out.
+ * Everything the cascade needs to read a promotable slot: the display type it
+ * keys the session-wide default on, and the config holding the track's own
+ * value. Every entry point takes this — `resolveConf`, the control builders,
+ * the worker snapshot, the badge diff — so each can take a display state node
+ * directly rather than through a cast.
  *
- * Deliberately excludes the setter. The subsystem performs exactly one write to
- * a display (`resetSlotToInherit` lifting the opt-out), so every read entry
- * point — `resolveConf`, the control builders, the worker snapshot, the badge
- * diff — asks for this narrower shape instead. That is what lets those take a
- * display state node directly rather than through a cast: a mixin or a test
- * double no longer has to fake a member it never uses.
+ * Read-only, and there is no write-capable variant. A `PromotableDisplay` used
+ * to exist for the one member the subsystem wrote (`setIgnorePromotedDefaults`,
+ * the received-session opt-out); with that flag gone the subsystem writes
+ * nothing to a display but a config slot, which `setConf` reaches through
+ * `configuration`.
  */
 export type ResolvableDisplay = IAnyStateTreeNode & {
   type: string
   configuration: AnyConfigurationModel
-  /**
-   * set on a display that arrived in a session received from someone else, to
-   * opt it out of the session-wide tier of the cascade. Declared by
-   * BaseDisplay, which every real display composes.
-   */
-  ignorePromotedDefaults: boolean
-}
-
-/**
- * A `ResolvableDisplay` the subsystem may also write to. Required only where a
- * display is *collected* to be reset — `openPromotableDisplays` and everything
- * downstream of it — because `resetSlotToInherit` clears the opt-out when the
- * user deliberately opts a received display back into the cascade.
- */
-export type PromotableDisplay = ResolvableDisplay & {
-  setIgnorePromotedDefaults: (flag: boolean) => void
 }
 
 /**
@@ -81,7 +66,6 @@ export interface PromotedDefaultStore {
 export interface CascadeContext {
   config: AnyConfigurationModel
   displayType: string
-  ignorePromotedDefaults: boolean
   defaults: PromotedDefaultStore
 }
 
@@ -89,7 +73,6 @@ export function cascadeContextFor(self: ResolvableDisplay): CascadeContext {
   return {
     config: self.configuration,
     displayType: self.type,
-    ignorePromotedDefaults: self.ignorePromotedDefaults,
     defaults: getSession(self),
   }
 }
@@ -169,10 +152,8 @@ export function resolveSlotIn(
   // `ConfigSlot` requires `promotedBase` on every promotable slot, so this is the
   // slot's CSS `initial`
   const base = def.promotedBase
-  // stays the raw session-wide value regardless of this display's opt-out: it's
   // a session-wide fact, and `isPromotableDefault` (the pin's filled/outline
-  // state) reports on the session, not on one display's view of it. The opt-out
-  // may neutralize only `inheritedValue` below.
+  // state) reports on the session, not on one display's view of it
   const promoted = ctx.defaults.getDisplayTypeDefault(ctx.displayType, slot)
   const own = storedSlotValue(ctx.config, slot)
   // A track is customized exactly when it holds a *usable* value — being unset
@@ -182,15 +163,17 @@ export function resolveSlotIn(
   // since-removed scheme) read as not-customized and degrade in lockstep,
   // instead of reaching a consumer that trusts every value it sees.
   const customized = isUsableValue(def, own)
-  // A display that arrived in a received session skips the session-wide tier
-  // entirely, collapsing the cascade to "own value, else base". Baking the
-  // sender's resolved values into the shared snapshot can't replace this: where
-  // the sender saw the *base* value nothing gets baked, so without the opt-out
-  // the recipient's own promoted default would repaint it.
-  const inheritedValue =
-    !ctx.ignorePromotedDefaults && isUsableValue(def, promoted)
-      ? promoted
-      : base
+  const inheritedValue = isUsableValue(def, promoted) ? promoted : base
+  // A customized value wins unconditionally, which is what makes the share bake
+  // sufficient on its own: a baked value lands in the track's config, so the
+  // recipient reads it as customized and their own promoted default never gets
+  // consulted. The one case a bake cannot cover is the sender sitting at `base`
+  // while the recipient has promoted something — nothing is baked (the value
+  // *is* base, and `stripDefault` drops it from the snapshot), so the recipient
+  // resolves it from their own cascade. That is accepted: a promoted default is
+  // personal and local, exactly like the theme a session is viewed in, and the
+  // alternative was a per-display `ignorePromotedDefaults` flag that also
+  // detached received tracks from the recipient's own pins for good.
   const value = customized ? own : inheritedValue
   return {
     base,

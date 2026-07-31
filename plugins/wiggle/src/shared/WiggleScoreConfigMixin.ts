@@ -21,10 +21,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 //
 // It extends `ResolvableDisplay` rather than declaring `configuration` alone
 // because two of the slots read through it (`scatterPointSize`, `lineWidth`) are
-// promotable, and the cascade keys the session-wide tier on `type` and honours
-// `ignorePromotedDefaults`. Every display this composes onto is a BaseDisplay,
-// so all three are really there — the cast is about what the *mixin* can see,
-// not about what the node has.
+// promotable, and the cascade keys the session-wide tier on `type`. Every display
+// this composes onto is a BaseDisplay, so both members are really there — the
+// cast is about what the *mixin* can see, not about what the node has.
 type ConfNode = ResolvableDisplay & {
   configuration: AnyConfigurationModel
 }

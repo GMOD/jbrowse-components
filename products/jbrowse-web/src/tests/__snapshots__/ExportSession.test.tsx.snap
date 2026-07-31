@@ -28,7 +28,6 @@ exports[`export session with alignments and gff tracks 1`] = `
               {
                 "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
                 "id": "test-id-2",
-                "ignorePromotedDefaults": true,
                 "type": "LinearAlignmentsDisplay",
               },
             ],
@@ -41,7 +40,6 @@ exports[`export session with alignments and gff tracks 1`] = `
               {
                 "configuration": "gff3tabix_genes-LinearBasicDisplay",
                 "id": "test-id-4",
-                "ignorePromotedDefaults": true,
                 "type": "LinearBasicDisplay",
               },
             ],

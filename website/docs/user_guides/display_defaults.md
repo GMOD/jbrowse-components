@@ -28,9 +28,9 @@ Three things follow from the pin only writing the default:
 
 - Tracks with no value of their own for that setting pick the default up at
   once, including tracks you open later.
-- Tracks you have already set keep what you gave them. The snackbar's **Apply to
-  N open tracks** action is what reaches those: it drops their own value so they
-  follow the default instead.
+- Tracks you have already set keep what you gave them. The snackbar's **Override
+  N customized tracks** action is what reaches those: it drops their own value
+  so they follow the default instead.
 - Choosing a value from a menu row, rather than from its pin, is a change to
   that one track, so a track you have clicked through is no longer following
   anything.
@@ -78,8 +78,11 @@ apply to the next session you open, and they are not included when you share
 one:
 
 - A session you **share** or **export** records the values the tracks were
-  actually showing, so whoever opens it sees your view even if they have pinned
-  different defaults of their own.
+  actually showing, so whoever opens it sees the settings you had turned on even
+  if they have pinned different defaults of their own.
+- A setting you left at JBrowse's built-in value has nothing to record, so if
+  the person opening it has pinned something there, theirs applies — the same
+  way they view your session in their own theme.
 - A track that recipient opens fresh in that session follows their defaults, as
   usual.
 - Embedded components (`@jbrowse/react-linear-genome-view2` and friends) have no
@@ -87,16 +90,21 @@ one:
 
 ## Settings that offer a default
 
-Every setting below carries a pin on the track-menu row that sets it. Follow a
-link for what the setting does and what it falls back to when nothing is pinned.
-A setting only appears in the menu while it applies to what the track is
-drawing: line width on a line rendering, point size on a scatter, the sashimi
-options once sashimi arcs are on.
+Each setting below resolves through a session-wide default for its display type.
+Follow a link for what the setting does and what it falls back to when nothing
+is pinned.
+
+The pin itself lives on the setting's own row in the track menu, so you only
+meet it where that menu offers the setting. A row appears while it applies to
+what the track is drawing — line width on a line rendering, point size on a
+scatter, the sashimi options once sashimi arcs are on — and a display that
+borrows another display's settings but curates its own menu (the synteny display
+reuses the alignments ones) offers only the rows it lists.
 
 <!-- PROMOTABLE_SLOTS START -->
 
 <!-- prettier-ignore -->
-| Track type | Display | Settings with a pin |
+| Track type | Display | Settings with a session-wide default |
 | --- | --- | --- |
 | SyntenyTrack | [](/docs/config/lgvsyntenydisplay) | [`colorBy`](/docs/config/lgvsyntenydisplay/#slot-colorby), [`featureHeight`](/docs/config/lgvsyntenydisplay/#slot-featureheight), [`heightMode`](/docs/config/lgvsyntenydisplay/#slot-heightmode), [`linkedReads`](/docs/config/lgvsyntenydisplay/#slot-linkedreads), [`mismatchAlpha`](/docs/config/lgvsyntenydisplay/#slot-mismatchalpha), [`readConnections`](/docs/config/lgvsyntenydisplay/#slot-readconnections), [`readConnectionsDown`](/docs/config/lgvsyntenydisplay/#slot-readconnectionsdown), [`sashimiArcsMode`](/docs/config/lgvsyntenydisplay/#slot-sashimiarcsmode), [`showSashimiLabels`](/docs/config/lgvsyntenydisplay/#slot-showsashimilabels), [`showSoftClipping`](/docs/config/lgvsyntenydisplay/#slot-showsoftclipping) |
 | AlignmentsTrack | [](/docs/config/linearalignmentsdisplay) | [`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby), [`featureHeight`](/docs/config/linearalignmentsdisplay/#slot-featureheight), [`heightMode`](/docs/config/linearalignmentsdisplay/#slot-heightmode), [`linkedReads`](/docs/config/linearalignmentsdisplay/#slot-linkedreads), [`mismatchAlpha`](/docs/config/linearalignmentsdisplay/#slot-mismatchalpha), [`readConnections`](/docs/config/linearalignmentsdisplay/#slot-readconnections), [`readConnectionsDown`](/docs/config/linearalignmentsdisplay/#slot-readconnectionsdown), [`sashimiArcsMode`](/docs/config/linearalignmentsdisplay/#slot-sashimiarcsmode), [`showSashimiLabels`](/docs/config/linearalignmentsdisplay/#slot-showsashimilabels), [`showSoftClipping`](/docs/config/linearalignmentsdisplay/#slot-showsoftclipping) |

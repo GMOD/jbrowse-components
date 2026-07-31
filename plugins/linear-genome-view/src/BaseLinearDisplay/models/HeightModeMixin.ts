@@ -8,10 +8,10 @@ import type { IReactionDisposer } from 'mobx'
 
 // The mixin's own `self` is the empty model it declares, so it can't see the
 // props the concrete display supplies. `ResolvableDisplay` is what the promotable
-// `heightMode` read needs (type + configuration + the received-session opt-out);
-// every display composing this is a BaseDisplay, so all three are really there.
-// The mixin took a `TConf extends PromotableDisplay` type parameter for this,
-// but no caller ever passed one — it only ever resolved to its own default.
+// `heightMode` read needs (type + configuration); every display composing this is
+// a BaseDisplay, so both are really there. The mixin took a
+// `TConf extends ResolvableDisplay` type parameter for this, but no caller ever
+// passed one — it only ever resolved to its own default.
 const confNode = (self: object) => self as ResolvableDisplay
 
 /**

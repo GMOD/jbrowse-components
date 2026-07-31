@@ -18,9 +18,9 @@ something auto-detection has to prevent. (Never paper that error over with
 (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/`maybeFrozen`),
 must leave `defaultValue` undefined, and must declare a `promotedBase` that
 passes the slot's own `isUsableValue` gate (an enum member actually in `model`,
-a finite number, whatever `validate` accepts).
-`ConfigSlot` throws otherwise, so `undefined` is the only inherit sentinel and
-`isUsableValue`'s first check is a bare `value !== undefined`
+a finite number, whatever `validate` accepts). `ConfigSlot` throws otherwise, so
+`undefined` is the only inherit sentinel and `isUsableValue`'s first check is a
+bare `value !== undefined`
 ([ADR-047](../../../../agent-docs/architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)).
 A subclass **overriding** an inherited promotable slot states only the
 difference — slot definitions merge over the base's (see "Slot overrides
@@ -51,9 +51,9 @@ slot list, shared by the enumerating callers and by `fullConfSnapshot`'s
 nested-schema guard) ← `promotableResolve.ts` (resolver) ← `getConf.ts` (reader)
 ← `promotableDefaults.ts` (control builders + share/worker helpers +
 `openPromotableDisplays`, the one open-display walk). Every public entry point
-takes a **`ResolvableDisplay`** — the display node, not a bare
-`{ configuration }`, which is what keeps them cast-free. Full model + the
-`ignorePromotedDefaults` opt-out:
+takes a **`ResolvableDisplay`** — the display node (`type` + `configuration`),
+not a bare `{ configuration }`, which is what keeps them cast-free. Full model,
+and the one case the share bake deliberately doesn't cover:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## Slot overrides merge over `baseConfiguration`

@@ -1083,6 +1083,12 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
 // override counts as promotable when the slot it shadows is (LGVSyntenyDisplay's
 // `colorBy`), matching the runtime merge; to opt a slot out, state
 // `promotable: false`.
+//
+// The column says "session-wide default", not "pin", because this is a *schema*
+// fact and the pin is a *menu* fact. A display that inherits a promotable slot
+// but whose track menu never builds a row for it has no pin — nothing static can
+// see that, so the header claims only what the flag proves. The known cases are
+// recorded in agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md.
 export function writePromotableSlotDocs(
   byFile: Record<string, Config>,
   displayToTrackType: Map<string, string>,
@@ -1118,7 +1124,10 @@ export function writePromotableSlotDocs(
     })
   return rewriteMarkerBlock(
     'PROMOTABLE_SLOTS',
-    markdownTable(['Track type', 'Display', 'Settings with a pin'], rows),
+    markdownTable(
+      ['Track type', 'Display', 'Settings with a session-wide default'],
+      rows,
+    ),
     { check },
   )
 }

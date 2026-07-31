@@ -29,11 +29,7 @@ import {
 
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
-import type {
-  CascadeContext,
-  PromotableDisplay,
-  ResolvableDisplay,
-} from './promotableResolve.ts'
+import type { CascadeContext, ResolvableDisplay } from './promotableResolve.ts'
 import type { AnyConfigurationModel } from './types.ts'
 
 /**
@@ -110,20 +106,20 @@ function resolvePromotablesInto(
  * boundary, and `fromDisplayTypeDefaults` is what lets the UI say so rather than
  * silently materializing a session preference into a track config.
  *
- * Resolves through the open display when the track is open (so a received
- * session's `ignorePromotedDefaults` is honored), and from the display config
- * alone when it isn't — an unopened track has no display state, but "what would
- * this render as" still has an answer.
+ * Resolves through the open display when the track is open, and from the display
+ * config alone when it isn't — an unopened track has no display state, but "what
+ * would this render as" still has an answer.
  *
  * **Writes every promotable slot, including the ones sitting at `promotedBase`,
  * and that is the decision — don't "align" it with the share bake.** The bake
- * writes only genuinely-inherited values because a shared session carries
- * `ignorePromotedDefaults` to pin the rest; a pasted `config.json` has no such
- * flag, so writing only the inherited ones would leave every other slot free to
- * pick up whatever the reader has promoted. What a user copying a config wants
- * is the values they are looking at. The cost is that the pasted track is
- * customized on those slots and no longer follows a later promoted default,
- * which is what a config file means.
+ * writes only genuinely-inherited values, because a baked value reads as
+ * customized on the recipient's side and an at-base slot needs nothing. A pasted
+ * `config.json` is read by a *different mechanism* — there is no cascade there at
+ * all — so writing only the inherited ones would leave every other slot to pick
+ * up whatever the reader has promoted in their own browser. What a user copying a
+ * config wants is the values they are looking at. The cost is that the pasted
+ * track is customized on those slots and no longer follows a later promoted
+ * default, which is what a config file means.
  */
 export interface TrackConfigWithPromotables {
   config: Record<string, unknown>
@@ -135,19 +131,14 @@ function cascadeContextForDisplayConfig(
   displayConfig: AnyConfigurationModel,
   displayType: string,
   session: AbstractSessionModel,
-  openDisplays: PromotableDisplay[],
+  openDisplays: ResolvableDisplay[],
 ): CascadeContext {
   // identity, not displayId: the hydration cache makes a track's config node
   // stable, so an open display's `configuration` IS this node
   const open = openDisplays.find(d => d.configuration === displayConfig)
   return open
     ? cascadeContextFor(open)
-    : {
-        config: displayConfig,
-        displayType,
-        ignorePromotedDefaults: false,
-        defaults: session,
-      }
+    : { config: displayConfig, displayType, defaults: session }
 }
 
 /**
@@ -208,7 +199,7 @@ export interface DisplayTypeDefaultControl {
 
 // A view whose open tracks we can enumerate. The generic view interface doesn't
 // surface `tracks`, so narrow structurally — the declared display shape is the
-// same PromotableDisplay the cascade already operates on.
+// same ResolvableDisplay the cascade already operates on.
 //
 // Checks the elements, not just that `tracks` is an array: this narrowing is
 // what every consumer downstream trusts, and an element without `displays`
@@ -218,7 +209,7 @@ export interface DisplayTypeDefaultControl {
 // confirms what is already true.
 function hasOpenTracks<T extends object>(
   view: T,
-): view is T & { tracks: { displays: PromotableDisplay[] }[] } {
+): view is T & { tracks: { displays: ResolvableDisplay[] }[] } {
   return (
     'tracks' in view &&
     Array.isArray(view.tracks) &&
@@ -248,7 +239,7 @@ function hasChildViews<T extends object>(
   )
 }
 
-function displaysInView(view: object): PromotableDisplay[] {
+function displaysInView(view: object): ResolvableDisplay[] {
   return [
     ...(hasOpenTracks(view) ? view.tracks.flatMap(t => t.displays) : []),
     ...(hasChildViews(view) ? view.views.flatMap(displaysInView) : []),
@@ -262,12 +253,12 @@ function displaysInView(view: object): PromotableDisplay[] {
  * open tracks", and the share/export bake. One walk so those can't drift apart.
  *
  * Recurses into composite views. A display nested in one resolves the cascade
- * like any other but was invisible to both callers, and the share/export bake
- * then neither baked its inherited values nor flagged it
- * `ignorePromotedDefaults` — a shared session containing a breakpoint-split or
- * synteny view rendered differently for the recipient. `LGVSyntenyDisplay` is
- * only ever reached through this branch, so don't flatten the recursion away.
- * `hasChildViews` names the one composite shape it does not cover.
+ * like any other but was invisible to both callers, so the share/export bake
+ * didn't bake its inherited values and a shared session containing a
+ * breakpoint-split or synteny view rendered differently for the recipient.
+ * `LGVSyntenyDisplay` is only ever reached through this branch, so don't flatten
+ * the recursion away. `hasChildViews` names the one composite shape it does not
+ * cover.
  *
  * A view holding neither (e.g. spreadsheet) drops out via the structural guards.
  * A view whose displays declare no promotable slot (e.g. dotplot, which does
@@ -276,12 +267,12 @@ function displaysInView(view: object): PromotableDisplay[] {
  */
 export function openPromotableDisplays(
   session: AbstractSessionModel,
-): PromotableDisplay[] {
+): ResolvableDisplay[] {
   const views = isViewContainer(session) ? session.views : []
   return views.flatMap(displaysInView)
 }
 
-function openDisplaysOfType(self: ResolvableDisplay): PromotableDisplay[] {
+function openDisplaysOfType(self: ResolvableDisplay): ResolvableDisplay[] {
   return openPromotableDisplays(getSession(self)).filter(
     display => display.type === self.type,
   )
@@ -293,27 +284,21 @@ function openDisplaysOfType(self: ResolvableDisplay): PromotableDisplay[] {
  * change. Backs the snackbar's "apply to open tracks" action. Displays already
  * unset are skipped. Takes the display set explicitly so it's unit-testable.
  *
- * Also lifts `ignorePromotedDefaults` on a display that arrived in a received
- * session: every caller reaches here from a deliberate "use this default"
- * click, and that opt-out only exists to stop defaults applying *silently*.
- * Without this the reset would strand such a display on its base value —
- * cleared of its own value, yet still refusing the default it was just told to
- * follow. The flag is per *display*, not per slot, so this opts that display
- * back into the cascade for every promotable slot it has — a second promoted
- * default can move with the one the user clicked. Per-slot opt-out would mean a
- * set of slot names on every display state node to spare that case; the flag
- * exists for received sessions, and re-opting in is an explicit gesture.
+ * Clearing the slot is the whole of it — this is the subsystem's only write to a
+ * display, and it goes through the config. It used to also lift a per-display
+ * `ignorePromotedDefaults` opt-out, which is what made a write-capable
+ * `PromotableDisplay` shape necessary; with that flag gone, a received track
+ * rejoins the cascade by having nothing to reject it.
  *
  * Dead displays are skipped rather than trusted: the "apply to open tracks"
  * snackbar can outlive a track the user closes in the meantime, and both reads
  * and writes throw on a destroyed MST node.
  */
 export function resetSlotToInherit(
-  displays: PromotableDisplay[],
+  displays: ResolvableDisplay[],
   slot: string,
 ): void {
   for (const display of displays.filter(display => isAlive(display))) {
-    display.setIgnorePromotedDefaults(false)
     // the stored value, because this asks only "is the slot set at all?" — a
     // question a `jexl:` value has to answer without being evaluated (this
     // caller has no feature context). Not `isSlotCustomized` either,
@@ -328,8 +313,8 @@ export function resetSlotToInherit(
 /**
  * Whether `value` is the current session default for `slot`. The live state the
  * pin's filled/outline reflects — a session-wide fact, so it reads the raw
- * promoted default and ignores this display's `ignorePromotedDefaults` opt-out
- * (which only governs what the display *follows*). Module-internal (exercised by
+ * promoted default rather than what this display resolves to (a customized track
+ * can be showing something else entirely). Module-internal (exercised by
  * promotableDefaults.test.ts); not part of the public barrel.
  */
 export function isPromotableDefault(
@@ -350,7 +335,7 @@ export function tracksDifferingFrom(
   self: ResolvableDisplay,
   slot: string,
   value: unknown,
-): PromotableDisplay[] {
+): ResolvableDisplay[] {
   return openDisplaysOfType(self).filter(
     display => !deepEqual(resolveSlot(display, slot).value, value),
   )

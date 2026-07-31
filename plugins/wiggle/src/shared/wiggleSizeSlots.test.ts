@@ -21,17 +21,10 @@ function createDisplay() {
       rpcManager: types.frozen({}),
       configuration: types.frozen({}),
       displayTypeDefaults: types.frozen<Record<string, unknown>>({}),
-      display: types
-        .model('TestDisplay', {
-          type: types.literal('TestDisplay'),
-          configuration: configSchema,
-          ignorePromotedDefaults: types.optional(types.boolean, false),
-        })
-        .actions(self => ({
-          setIgnorePromotedDefaults(flag: boolean) {
-            self.ignorePromotedDefaults = flag
-          },
-        })),
+      display: types.model('TestDisplay', {
+        type: types.literal('TestDisplay'),
+        configuration: configSchema,
+      }),
     })
     .views(self => ({
       getDisplayTypeDefault(_displayType: string, slot: string): unknown {
