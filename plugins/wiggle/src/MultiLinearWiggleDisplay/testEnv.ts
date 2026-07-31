@@ -62,12 +62,15 @@ export function createTestEnvironment() {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'BedTabixAdapter',
+        name: 'MultiWiggleAdapter',
         configSchema: ConfigurationSchema(
-          'BedTabixAdapter',
+          'MultiWiggleAdapter',
           {},
           { explicitlyTyped: true },
         ),
+        // as the real MultiWiggleAdapter declares — it's what surfaces the
+        // Resolution and Summary score mode track-menu entries
+        adapterCapabilities: ['hasResolution'],
         getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
       }),
   )
@@ -116,7 +119,7 @@ export function createTestEnvironment() {
       type: 'MultiQuantitativeTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
-      adapter: { type: 'BedTabixAdapter' },
+      adapter: { type: 'MultiWiggleAdapter' },
     },
     { pluginManager },
   )

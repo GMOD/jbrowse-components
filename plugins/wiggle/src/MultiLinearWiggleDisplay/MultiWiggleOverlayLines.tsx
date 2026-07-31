@@ -16,7 +16,7 @@ interface OverlayModel {
   isOverlay: boolean
   isDensityMode: boolean
   showRowSeparators: boolean
-  displayCrossHatches: boolean
+  showCrossHatches: boolean
   numSources: number
   numRows: number
   rowHeight: number
@@ -34,7 +34,7 @@ export default observer(function MultiWiggleOverlayLines({
     isOverlay,
     isDensityMode,
     showRowSeparators,
-    displayCrossHatches,
+    showCrossHatches,
     numSources,
     numRows,
     rowHeight,
@@ -74,7 +74,7 @@ export default observer(function MultiWiggleOverlayLines({
   // overlay is one row over the full height (rowHeight === height, top === 0),
   // so its hatches draw once; multi-row repeats them per source.
   const crossHatches =
-    displayCrossHatches && ticks
+    showCrossHatches && ticks
       ? Array.from({ length: numRows }).map((_, rowIdx) => (
           <CrossHatchLines
             // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one hatch set per source row

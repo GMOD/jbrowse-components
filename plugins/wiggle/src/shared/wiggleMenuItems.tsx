@@ -2,18 +2,27 @@ import {
   isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
 } from '@jbrowse/core/configuration'
+import { makeSizeMenu, radioItems } from '@jbrowse/core/ui'
 import {
   makeRadioSubMenu,
   makeResolutionSubMenuItem,
   makeScatterPointSizeMenuItem,
-  makeSizeMenu,
+  makeScoreSubMenu,
 } from '@jbrowse/wiggle-core'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
+import {
+  RESOLUTION_MAX,
+  RESOLUTION_MIN,
+  RESOLUTION_STEP,
+} from './WiggleScoreConfigMixin.ts'
+
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
+import type { ElementType } from 'react'
 
 export function makeRenderingTypeSubMenu(
   self: { renderingType: string; setRenderingType: (t: string) => void },
@@ -57,10 +66,23 @@ export function makeGroupedRenderingTypeSubMenu(
   }
 }
 
-// Top-level "Scatter point size" submenu, present only in scatter variants
-// ('scatter'/'multirowscatter'/'multiscatter') where point size applies. The
-// shared makeSizeMenu renders it as a single inline slider row with a promotable
-// "default for all tracks of this type" pin.
+// A top-level size submenu holding one inline slider row (value + reset + a
+// promotable "default for all tracks of this type" pin), present only in the
+// rendering types the size applies to: point size in the scatter variants
+// ('scatter'/'multirowscatter'/'multiscatter'), line width in the line ones.
+// Both are top-level rather than nested under Score because they describe the
+// mark, not the axis.
+// The row is a thunk so a rendering type that doesn't take the size never
+// walks its config slot's promotable cascade to build one it won't show.
+function sizeSubMenu(
+  applies: boolean,
+  label: string,
+  icon: ElementType,
+  row: () => MenuItem,
+): MenuItem[] {
+  return applies ? [{ label, icon, subMenu: [row()] }] : []
+}
+
 export function makePointSizeMenuItems(
   self: {
     renderingType: string
@@ -68,24 +90,15 @@ export function makePointSizeMenuItems(
     setScatterPointSize: (n?: number) => void
   } & ResolvableDisplay,
 ): MenuItem[] {
-  if (!self.renderingType.includes('scatter')) {
-    return []
-  }
-  return [
-    {
-      label: 'Scatter point size',
-      icon: ScatterPlotIcon,
-      subMenu: [
-        makeScatterPointSizeMenuItem(self, { label: 'Scatter point size' }),
-      ],
-    },
-  ]
+  return sizeSubMenu(
+    self.renderingType.includes('scatter'),
+    'Scatter point size',
+    ScatterPlotIcon,
+    // shared with the GWAS Manhattan point-size row, so the two can't drift
+    () => makeScatterPointSizeMenuItem(self, { label: 'Scatter point size' }),
+  )
 }
 
-// Top-level "Line width" submenu, present only in line variants
-// ('line'/'multirowline'/'multiline') where stroke thickness applies. The shared
-// makeSizeMenu renders it as a single inline slider row with a promotable
-// "default for all tracks of this type" pin.
 export function makeLineWidthMenuItems(
   self: {
     renderingType: string
@@ -93,50 +106,36 @@ export function makeLineWidthMenuItems(
     setLineWidth: (n?: number) => void
   } & ResolvableDisplay,
 ): MenuItem[] {
-  if (!self.renderingType.includes('line')) {
-    return []
-  }
-  return [
-    {
-      label: 'Line width',
-      icon: LineWeightIcon,
-      subMenu: [
-        makeSizeMenu({
-          label: 'Line width',
-          title: 'Line width',
-          // integer px with a floor of 1: the default range/step (0.5-12 by
-          // 0.5) crowds 1px into a few px at the far-left edge between 0.5 and
-          // 1.5, so a mouse drag can't reliably land on it. 1px as the leftmost
-          // stop makes it selectable by dragging fully left.
-          min: 1,
-          max: 10,
-          step: 1,
-          getValue: () => self.lineWidth,
-          isDefault: !isSlotCustomized(self, 'lineWidth'),
-          onChange: n => {
-            self.setLineWidth(n)
-          },
-          onReset: () => {
-            self.setLineWidth(undefined)
-          },
-          displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
-            self,
-            'lineWidth',
-          ),
-        }),
-      ],
-    },
-  ]
+  return sizeSubMenu(
+    self.renderingType.includes('line'),
+    'Line width',
+    LineWeightIcon,
+    () =>
+      makeSizeMenu({
+        label: 'Line width',
+        title: 'Line width',
+        // integer px with a floor of 1: the default range/step (0.5-12 by 0.5)
+        // crowds 1px into a few px at the far-left edge between 0.5 and 1.5, so a
+        // mouse drag can't reliably land on it. 1px as the leftmost stop makes it
+        // selectable by dragging fully left.
+        min: 1,
+        max: 10,
+        step: 1,
+        getValue: () => self.lineWidth,
+        isDefault: !isSlotCustomized(self, 'lineWidth'),
+        onChange: n => {
+          self.setLineWidth(n)
+        },
+        onReset: () => {
+          self.setLineWidth(undefined)
+        },
+        displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
+          self,
+          'lineWidth',
+        ),
+      }),
+  )
 }
-
-// Resolution is a multiplier on the number of bins fetched (higher = finer),
-// stepped multiplicatively by 2 with a default of 1. Rendered inline so the
-// user can step finer/coarser repeatedly without reopening the menu each click.
-// Bounds mirror setResolution's clamp so the buttons disable at the edges
-// instead of silently no-op'ing.
-const RESOLUTION_STEP = 2
-const RESOLUTION_MIN = 1 / 16
-const RESOLUTION_MAX = 1024
 
 function formatResolution(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
@@ -145,64 +144,81 @@ function formatResolution(n: number) {
 interface WithResolution {
   hasResolution: boolean
   resolution: number
-  summaryScoreMode: string
+  // the resolved mode, so the radio checks what the plot draws rather than a
+  // raw slot value density ignores
+  effectiveSummaryScoreMode: string
   isDensityMode: boolean
   setResolution: (n: number) => void
   setSummaryScoreMode: (v: string) => void
 }
 
-// Resolution lives at the top level of the track menu (not nested under Score)
-// for discoverability.
+// Resolution is a multiplier on the number of bins fetched (higher = finer),
+// stepped multiplicatively by 2 with a default of 1. It lives at the top level
+// of the track menu (not nested under Score) for discoverability, and renders
+// inline so the user can step finer/coarser repeatedly without reopening the
+// menu each click. Bounds are setResolution's own clamp, so the buttons disable
+// at the edges instead of silently no-op'ing.
 export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
-  if (!self.hasResolution) {
-    return []
-  }
-  return [
-    makeResolutionSubMenuItem({
-      getState: () => ({
-        label: formatResolution(self.resolution),
-        finerDisabled: self.resolution >= RESOLUTION_MAX,
-        coarserDisabled: self.resolution <= RESOLUTION_MIN,
-        resetDisabled: self.resolution === 1,
-      }),
-      onFiner: () => {
-        self.setResolution(self.resolution * RESOLUTION_STEP)
-      },
-      onCoarser: () => {
-        self.setResolution(self.resolution / RESOLUTION_STEP)
-      },
-      onReset: () => {
-        self.setResolution(1)
-      },
-    }),
-  ]
+  return self.hasResolution
+    ? [
+        makeResolutionSubMenuItem({
+          getState: () => ({
+            label: formatResolution(self.resolution),
+            finerDisabled: self.resolution >= RESOLUTION_MAX,
+            coarserDisabled: self.resolution <= RESOLUTION_MIN,
+            resetDisabled: self.resolution === 1,
+          }),
+          onFiner: () => {
+            self.setResolution(self.resolution * RESOLUTION_STEP)
+          },
+          onCoarser: () => {
+            self.setResolution(self.resolution / RESOLUTION_STEP)
+          },
+          onReset: () => {
+            self.setResolution(1)
+          },
+        }),
+      ]
+    : []
 }
 
-export function makeSummaryScoreModeSubMenu(self: WithResolution): MenuItem[] {
-  if (!self.hasResolution) {
-    return []
-  }
-  return [
-    {
-      label: 'Summary score mode',
-      subMenu: (
-        [
-          ['min', 'Minimum'],
-          ['max', 'Maximum'],
-          ['avg', 'Average'],
-          ['whiskers', 'Whiskers'],
-        ] as const
-      ).map(([value, label]) => ({
-        label,
-        type: 'radio' as const,
-        checked: self.summaryScoreMode === value,
-        // whiskers is ignored in density mode (score maps to color, not height)
-        disabled: value === 'whiskers' && self.isDensityMode,
-        disabledHelpText: 'Not available in density mode',
-        onClick: () => {
-          self.setSummaryScoreMode(value)
+const SUMMARY_SCORE_MODES = [
+  { value: 'min', label: 'Minimum' },
+  { value: 'max', label: 'Maximum' },
+  { value: 'avg', label: 'Average' },
+  { value: 'whiskers', label: 'Whiskers' },
+]
+
+function makeSummaryScoreModeSubMenu(self: WithResolution): MenuItem[] {
+  return self.hasResolution
+    ? [
+        {
+          label: 'Summary score mode',
+          subMenu: radioItems(
+            // density maps score to color rather than height, so it has no
+            // whiskers presentation at all — offering it would check a mode
+            // that neither the plot nor the score domain uses. The radio
+            // instead follows `effectiveSummaryScoreMode`, which is the
+            // average a whiskers-configured density track really draws.
+            self.isDensityMode
+              ? SUMMARY_SCORE_MODES.filter(m => m.value !== 'whiskers')
+              : SUMMARY_SCORE_MODES,
+            self.effectiveSummaryScoreMode,
+            v => {
+              self.setSummaryScoreMode(v)
+            },
+          ),
         },
-      })),
-    },
-  ]
+      ]
+    : []
+}
+
+// The one Score submenu both wiggle displays build: summary score mode leads
+// it, then the shared scale-type / autoscale / min-max rows.
+export function makeWiggleScoreSubMenu(
+  self: WithResolution & ScoreScaleModel,
+): MenuItem {
+  return makeScoreSubMenu(self, {
+    leadingItems: makeSummaryScoreModeSubMenu(self),
+  })
 }

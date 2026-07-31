@@ -30,6 +30,17 @@ type ConfNode = ResolvableDisplay & {
 }
 const confNode = (self: object) => self as ConfNode
 
+// Resolution is a multiplier on the number of bins fetched (higher = finer),
+// stepped multiplicatively. Only the coarser side needs a floor to avoid
+// degenerate binning; the finer side is self-limiting (bbi caps at raw
+// per-base data, so past that threshold more resolution returns identical
+// data), and the high ceiling lets whiskers reach raw at wider zooms. Exported
+// so the track-menu stepper disables at the same edges setResolution clamps to
+// instead of silently no-op'ing.
+export const RESOLUTION_MIN = 1 / 16
+export const RESOLUTION_MAX = 1024
+export const RESOLUTION_STEP = 2
+
 /**
  * #stateModel WiggleScoreConfigMixin
  * #category display
@@ -126,6 +137,17 @@ export function WiggleScoreConfigMixin() {
       },
       /**
        * #getter
+       * Whether score maps to color instead of height. Each display overrides
+       * this from its own rendering-type table (`density` /
+       * `multirowdensity`); the base is false so this mixin's resolved
+       * getters below can key on it, the same override idiom
+       * `autoscaleSourceNames` uses in WiggleCommonMixin.
+       */
+      get isDensityMode(): boolean {
+        return false
+      },
+      /**
+       * #getter
        */
       get minScore(): number {
         return getConf(confNode(self), 'minScore')
@@ -162,11 +184,10 @@ export function WiggleScoreConfigMixin() {
        * #action
        */
       setResolution(res: number) {
-        // Only the coarser side needs a floor (1/16) to avoid degenerate
-        // binning. The finer side is self-limiting: bbi caps at raw (per-base)
-        // data, so past the raw threshold more resolution returns identical
-        // data — a high ceiling lets whiskers reach raw at wider zooms.
-        self.resolution = Math.min(1024, Math.max(1 / 16, res))
+        self.resolution = Math.min(
+          RESOLUTION_MAX,
+          Math.max(RESOLUTION_MIN, res),
+        )
       },
       /**
        * #action
@@ -269,6 +290,32 @@ export function WiggleScoreConfigMixin() {
         return pluginManager
           .getAdapterType(adapterConfig.type)
           .adapterCapabilities.includes('hasResolution')
+      },
+      /**
+       * #getter
+       * Whether the score-axis cross hatches draw. Density spends color, not
+       * height, on the score, so there is no axis for them to rule — and the
+       * track menu drops the toggle there, which would strand hatches enabled
+       * in another plot type with no way to turn them off. Every consumer
+       * (on-screen overlay, multi-row overlay lines, SVG export) reads this,
+       * never the raw `displayCrossHatches` prop.
+       */
+      get showCrossHatches() {
+        return self.displayCrossHatches && !self.isDensityMode
+      },
+      /**
+       * #getter
+       * The summary mode actually drawn. Density has no whiskers presentation
+       * — `sourceLayers` falls back to the average scores — so the autoscale
+       * domain reads this rather than the raw slot; otherwise the color ramp
+       * spans the whisker extremes while the plot paints averages, and the
+       * score legend reports a range nothing on screen reaches. Single-wiggle
+       * defaults to whiskers, so plain "plot type → Density" hit this.
+       */
+      get effectiveSummaryScoreMode() {
+        return self.isDensityMode && self.summaryScoreMode === 'whiskers'
+          ? 'avg'
+          : self.summaryScoreMode
       },
     }))
 }

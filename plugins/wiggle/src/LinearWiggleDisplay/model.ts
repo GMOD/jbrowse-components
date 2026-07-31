@@ -17,7 +17,6 @@ import {
 import {
   computeYTicks,
   makeCrossHatchItem,
-  makeScoreSubMenu,
   makeShowSubMenu,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -31,7 +30,7 @@ import {
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
-  makeSummaryScoreModeSubMenu,
+  makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
@@ -134,6 +133,8 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * Overrides WiggleScoreConfigMixin's `false` base, which is what its
+       * `showCrossHatches` / `effectiveSummaryScoreMode` getters key on.
        */
       get isDensityMode() {
         return self.renderingType === 'density'
@@ -303,18 +304,13 @@ export default function stateModelFactory(
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
           ...makeResolutionSubMenu(self),
-          // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
-          // drops it); summary score mode leads the Score submenu, matching
-          // multi-wiggle.
-          makeScoreSubMenu(self, {
-            scaleType: true,
-            leadingItems: makeSummaryScoreModeSubMenu(self),
-          }),
+          makeWiggleScoreSubMenu(self),
           // cross hatches are meaningless in density mode (score maps to color,
-          // not height)
-          ...makeShowSubMenu([
-            ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
-          ]),
+          // not height), which `showCrossHatches` also enforces on the drawing
+          // side so a hatch enabled elsewhere doesn't strand itself here
+          ...makeShowSubMenu(
+            self.isDensityMode ? [] : [makeCrossHatchItem(self)],
+          ),
           // point size / line width are top-level submenus, each present only in
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),

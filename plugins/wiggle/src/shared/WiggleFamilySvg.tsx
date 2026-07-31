@@ -19,7 +19,7 @@ export interface WiggleFamilySvgModel extends SvgExportable {
   id: string
   height: number
   ticks?: YScaleTicks
-  displayCrossHatches: boolean
+  showCrossHatches: boolean
 }
 
 // Canvas geometry handed to the paint callback. The caller builds its own
@@ -82,7 +82,7 @@ export function WiggleFamilySvgFrame({
   // the plot itself is inset by the scalebar label gutter at top and bottom, so
   // it never overlaps the axis labels drawn in those bands
   const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
-  const { ticks, displayCrossHatches } = model
+  const { ticks, showCrossHatches } = model
   return (
     <>
       <SvgClipRect
@@ -104,7 +104,7 @@ export function WiggleFamilySvgFrame({
       {/* Y-scale cross-hatches, shared with the on-screen path so an exported
           SVG matches the track when the option is enabled. Tick y-positions
           already include YSCALEBAR_LABEL_OFFSET, aligning with the canvas group. */}
-      {displayCrossHatches && ticks ? (
+      {showCrossHatches && ticks ? (
         <CrossHatchLines ticks={ticks} width={canvasWidth} />
       ) : null}
       {legend}

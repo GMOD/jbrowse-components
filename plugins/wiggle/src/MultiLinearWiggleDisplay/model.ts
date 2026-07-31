@@ -6,6 +6,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { checkboxItem } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -23,7 +24,6 @@ import {
 import {
   computeYTicks,
   makeCrossHatchItem,
-  makeScoreSubMenu,
   makeShowSubMenu,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -40,7 +40,7 @@ import {
   makeLineWidthMenuItems,
   makePointSizeMenuItems,
   makeResolutionSubMenu,
-  makeSummaryScoreModeSubMenu,
+  makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
 import {
@@ -122,6 +122,8 @@ export default function stateModelFactory(
         return MultiWiggleComponent
       },
 
+      // overrides WiggleScoreConfigMixin's `false` base, which is what its
+      // showCrossHatches / effectiveSummaryScoreMode getters key on
       get isDensityMode() {
         return self.renderingType === 'multirowdensity'
       },
@@ -467,30 +469,25 @@ export default function stateModelFactory(
           ...(self.isOverlay
             ? []
             : [
-                {
-                  label: 'Show row separators',
-                  type: 'checkbox' as const,
-                  checked: self.showRowSeparators,
-                  onClick: () => {
+                checkboxItem(
+                  'Show row separators',
+                  self.showRowSeparators,
+                  () => {
                     self.setShowRowSeparators(!self.showRowSeparators)
                   },
-                },
+                ),
               ]),
           // the color key only renders as an overlay of >1 source
           ...(self.overlayLegendApplies
             ? [
-                {
-                  label: 'Show legend',
-                  type: 'checkbox' as const,
-                  checked: self.showLegend,
-                  onClick: () => {
-                    self.setShowLegend(!self.showLegend)
-                  },
-                },
+                checkboxItem('Show legend', self.showLegend, () => {
+                  self.setShowLegend(!self.showLegend)
+                }),
               ]
             : []),
           // density maps score to color, so score-axis cross hatches are
-          // meaningless there
+          // meaningless there (`showCrossHatches` enforces the same on the
+          // drawing side)
           ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
         ]
         return [
@@ -502,12 +499,10 @@ export default function stateModelFactory(
               // clustering reorders rows, so it needs rows to reorder and at
               // least two of them — the dialog would otherwise open only to
               // report the same thing after the user clicks Run
-              disabled:
-                !self.renderingType.startsWith('multirow') ||
-                self.sourcesWithoutLayout.length < 2,
-              disabledHelpText: self.renderingType.startsWith('multirow')
-                ? 'Needs at least two subtracks to cluster'
-                : 'Only available for multi-row rendering types',
+              disabled: self.isOverlay || self.sourcesWithoutLayout.length < 2,
+              disabledHelpText: self.isOverlay
+                ? 'Only available for multi-row rendering types'
+                : 'Needs at least two subtracks to cluster',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   WiggleClusterDialog,
@@ -537,10 +532,7 @@ export default function stateModelFactory(
             },
           ),
           ...makeResolutionSubMenu(self),
-          makeScoreSubMenu(self, {
-            scaleType: true,
-            leadingItems: makeSummaryScoreModeSubMenu(self),
-          }),
+          makeWiggleScoreSubMenu(self),
           ...makeShowSubMenu(showItems),
           // point size / line width are top-level submenus, each present only in
           // its respective scatter / line rendering

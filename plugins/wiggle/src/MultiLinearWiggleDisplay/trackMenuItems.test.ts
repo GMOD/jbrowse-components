@@ -150,6 +150,31 @@ describe('multi-wiggle track menu', () => {
     expect(session.queuedDialogs[0]![1]).toMatchObject({ model: display })
   })
 
+  it('keeps the menu open on every toggle, like the rest of the app', () => {
+    const { display } = makeDisplay({ renderingType: 'multirowxy' })
+    const items = subMenuOf(display.trackMenuItems(), 'Show')
+
+    expect(items.every(i => 'keepMenuOpen' in i && i.keepMenuOpen)).toBe(true)
+  })
+
+  it('offers only the summary modes density draws, checking the effective one', () => {
+    const { display } = makeDisplay({ renderingType: 'multirowdensity' })
+    display.configuration.setSlot('summaryScoreMode', 'whiskers')
+    const modes = subMenuOf(
+      subMenuOf(display.trackMenuItems(), 'Score'),
+      'Summary score mode',
+    )
+
+    // whiskers has no density presentation, so offering it would check a mode
+    // neither the plot nor the score domain uses — 'avg' is what both do
+    expect(labels(modes)).toEqual(['Minimum', 'Maximum', 'Average'])
+    expect(
+      modes
+        .filter(i => 'checked' in i && i.checked)
+        .map(i => 'label' in i && i.label),
+    ).toEqual(['Average'])
+  })
+
   it('offers the overlay legend toggle only where a color key means anything', () => {
     const overlay = makeDisplay({ renderingType: 'multixyplot' }).display
     expect(labels(subMenuOf(overlay.trackMenuItems(), 'Show'))).toContain(

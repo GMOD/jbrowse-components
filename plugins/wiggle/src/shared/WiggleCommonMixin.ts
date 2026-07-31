@@ -88,7 +88,7 @@ export function WiggleCommonMixin() {
         return entries
           ? {
               entries,
-              stats: computeScoreStats(self.summaryScoreMode, entries),
+              stats: computeScoreStats(self.effectiveSummaryScoreMode, entries),
             }
           : undefined
       },
@@ -103,7 +103,7 @@ export function WiggleCommonMixin() {
           ? autoscaleDomainFromStats({
               stats: visible.stats,
               autoscaleType: self.autoscaleType,
-              summaryScoreMode: self.summaryScoreMode,
+              summaryScoreMode: self.effectiveSummaryScoreMode,
               numStdDev: self.numStdDev,
               numQuantile: self.numQuantile,
               visibleEntries: visible.entries,

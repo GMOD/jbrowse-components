@@ -139,7 +139,7 @@ const WiggleBody = observer(function WiggleBody({
       ) : model.ticks ? (
         <YScaleBarOverlay ticks={model.ticks} height={height} />
       ) : null}
-      {model.displayCrossHatches && model.ticks ? (
+      {model.showCrossHatches && model.ticks ? (
         <CrossHatches ticks={model.ticks} width={width} height={height} />
       ) : null}
       {/* no mouseY, so no horizontal guide: y here is the score axis, which

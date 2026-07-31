@@ -1,3 +1,5 @@
+import { radioItems } from '@jbrowse/core/ui'
+
 import type { MenuItem } from '@jbrowse/core/ui'
 import type React from 'react'
 
@@ -22,14 +24,13 @@ export function makeRadioSubMenu<T extends string>(opts: {
     label,
     icon,
     subMenu: [
-      ...options.map(([optionValue, optionLabel]) => ({
-        label: optionLabel,
-        type: 'radio' as const,
-        checked: value === optionValue,
-        onClick: () => {
-          onChange(optionValue)
-        },
-      })),
+      // via radioItems so these keep the menu open like every other
+      // setting row — a plot type is usually picked by trying a couple
+      ...radioItems(
+        options.map(([value, label]) => ({ value, label })),
+        value,
+        onChange,
+      ),
       ...extraItems,
     ],
   }

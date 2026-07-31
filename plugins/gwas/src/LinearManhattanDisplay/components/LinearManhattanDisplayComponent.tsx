@@ -123,8 +123,7 @@ const ManhattanBody = observer(function ManhattanBody({
   contextMenu?: { coord: [number, number]; hit: ManhattanHit }
   setContextMenu: (v?: { coord: [number, number]; hit: ManhattanHit }) => void
 }) {
-  const { ticks, featureUnderMouse, displayCrossHatches, ldColoringActive } =
-    model
+  const { ticks, featureUnderMouse, showCrossHatches, ldColoringActive } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
 
   return (
@@ -140,7 +139,7 @@ const ManhattanBody = observer(function ManhattanBody({
         }}
       />
       {ticks ? <YScaleBarOverlay ticks={ticks} height={height} /> : null}
-      {displayCrossHatches && ticks ? (
+      {showCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
       ) : null}
       {featureUnderMouse ? (

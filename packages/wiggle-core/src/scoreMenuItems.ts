@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { checkboxItem, radioItems } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
@@ -43,24 +44,16 @@ export function makeScaleTypeSubMenu(self: {
 }): MenuItem {
   return {
     label: 'Scale type',
-    subMenu: [
-      {
-        label: 'Linear scale',
-        type: 'radio' as const,
-        checked: self.scaleType === 'linear',
-        onClick: () => {
-          self.setScaleType('linear')
-        },
+    subMenu: radioItems(
+      [
+        { value: 'linear', label: 'Linear scale' },
+        { value: 'log', label: 'Log scale' },
+      ],
+      self.scaleType,
+      v => {
+        self.setScaleType(v)
       },
-      {
-        label: 'Log scale',
-        type: 'radio' as const,
-        checked: self.scaleType === 'log',
-        onClick: () => {
-          self.setScaleType('log')
-        },
-      },
-    ],
+    ),
   }
 }
 
@@ -70,14 +63,13 @@ export function makeAutoscaleTypeSubMenu(
 ): MenuItem {
   return {
     label: 'Autoscale type',
-    subMenu: options.map(([val, label]) => ({
-      label,
-      type: 'radio' as const,
-      checked: self.autoscaleType === val,
-      onClick: () => {
-        self.setAutoscale(val)
+    subMenu: radioItems(
+      options.map(([value, label]) => ({ value, label })),
+      self.autoscaleType,
+      v => {
+        self.setAutoscale(v)
       },
-    })),
+    ),
   }
 }
 
@@ -123,14 +115,9 @@ export function makeCrossHatchItem(self: {
   displayCrossHatches: boolean
   toggleCrossHatches: () => void
 }): MenuItem {
-  return {
-    label: 'Show cross hatches',
-    type: 'checkbox' as const,
-    checked: self.displayCrossHatches,
-    onClick: () => {
-      self.toggleCrossHatches()
-    },
-  }
+  return checkboxItem('Show cross hatches', self.displayCrossHatches, () => {
+    self.toggleCrossHatches()
+  })
 }
 
 // The single Score submenu used by every wiggle-family display. Composition is
