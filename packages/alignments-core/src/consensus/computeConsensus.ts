@@ -158,6 +158,15 @@ export function buildConsensusTally(
     if ((feature.get('flags') as number) & excludeFlags) {
       continue
     }
+    // A read stored with SEQ='*' has no bases to vote with, and forEachMismatch
+    // emits nothing for it — so counting its coverage would make it a
+    // full-weight vote for the reference at every column it spans (refMatch is
+    // recovered as coverage minus the reads that disagree). samtools skips such
+    // reads; so does this. They are usually secondary alignments, which the
+    // default flags already drop, but the caller can choose to keep those.
+    if (feature.get('seq_length') === 0) {
+      continue
+    }
     const fStart = feature.get('start') as number
     const fEnd = feature.get('end') as number
 

@@ -35,7 +35,7 @@ import { locStringsToRegions } from './locStringsToRegions.ts'
 import { useConsensusSettings } from './useConsensusSettings.ts'
 
 import type { FilterBy } from '../shared/types.ts'
-import type { ConsensusVariant } from '@jbrowse/alignments-core'
+import type { ConsensusVcfEntry } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -49,9 +49,14 @@ function download(content: string, filename: string, type: string) {
   saveAs(new Blob([content], { type }), filename)
 }
 
-interface ConsensusDisplay extends IAnyStateTreeNode {
+export interface ConsensusDisplay extends IAnyStateTreeNode {
   adapterConfig: Record<string, unknown>
   filterBy?: FilterBy
+}
+
+interface ConsensusData {
+  records: { header: string; seq: string }[]
+  vcfEntries: ConsensusVcfEntry[]
 }
 
 const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
@@ -126,12 +131,16 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   // "not ready, don't fetch", which an undefined hetFract (ambiguity codes off,
   // the default) or an unchecked includeInsertions would trip, leaving the
   // dialog computing forever. Nested, they are just JSON.stringify'd.
+  //
+  // A consensus can be half a megabase of reads, so the fetch forwards
+  // useFetch's stop token: dismissing the dialog, or nudging a slider, stops
+  // the worker rather than leaving it grinding on a superseded answer.
   const { data, error } = useFetch(
     canFetch
-      ? [
+      ? ([
           'getConsensus',
           {
-            regions: regions.map(r => `${r.refName}:${r.start}-${r.end}`),
+            regions,
             adapterConfig: display.adapterConfig,
             filterBy,
             minDepth,
@@ -139,31 +148,30 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             hetFract: effectiveHetFract,
             includeInsertions,
           },
-        ]
+        ] as const)
       : false,
-    async () => {
+    async (_name, params, stopToken): Promise<ConsensusData> => {
       const sessionId = getRpcSessionId(display)
+      // every parsed region belongs to the dialog's one assembly, so the
+      // sequence adapter is resolved once rather than per region
+      const sequenceAdapter = getSequenceAdapterConfig(assembly)
       const results = await Promise.all(
-        regions.map(async region => {
-          const sequenceAdapter = getSequenceAdapterConfig(
-            region.assemblyName
-              ? session.assemblyManager.get(region.assemblyName)
-              : undefined,
-          )
-          const { consensus, variants } = (await session.rpcManager.call(
+        params.regions.map(async region => {
+          const { consensus, variants } = await session.rpcManager.call(
             sessionId,
             'GetConsensusSequence',
             {
-              adapterConfig: display.adapterConfig,
+              adapterConfig: params.adapterConfig,
               sequenceAdapter,
               regions: [region],
-              filterBy,
-              minDepth,
-              callFract,
-              hetFract: effectiveHetFract,
-              includeInsertions,
+              filterBy: params.filterBy,
+              minDepth: params.minDepth,
+              callFract: params.callFract,
+              hetFract: params.hetFract,
+              includeInsertions: params.includeInsertions,
+              stopToken,
             },
-          )) as { consensus: string; variants: ConsensusVariant[] }
+          )
           return {
             header: `${region.refName}:${region.start + 1}-${region.end} consensus`,
             seq: consensus,
@@ -182,7 +190,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
     },
   )
 
-  const loading = canFetch && data === undefined && !error
+  const loading = canFetch && !data && !error
   const sequence = data ? formatSeqFasta(data.records) : ''
   const vcf = data ? variantsToVcf(data.vcfEntries) : ''
   const variantCount = data
@@ -240,7 +248,6 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           <Button
             variant="contained"
             onClick={() => {
-              const session = getSession(model)
               if (!isSessionWithAddTracks(session)) {
                 session.notify('This session cannot add tracks', 'warning')
                 return

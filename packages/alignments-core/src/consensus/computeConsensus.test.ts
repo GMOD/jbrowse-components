@@ -17,6 +17,7 @@ interface ReadSpec {
   dels?: { pos: number; len: number }[]
   skips?: { pos: number; len: number }[]
   ins?: { afterPos: number; bases: string }[]
+  seqLength?: number
 }
 
 function mockFeature(r: ReadSpec): ConsensusFeature {
@@ -27,6 +28,9 @@ function mockFeature(r: ReadSpec): ConsensusFeature {
       }
       if (field === 'end') {
         return r.end
+      }
+      if (field === 'seq_length') {
+        return r.seqLength
       }
       return undefined
     },
@@ -188,6 +192,17 @@ describe('computeConsensus', () => {
       ...times(6, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'N' }] }),
     ]
     expect(run('A', reads)).toBe('N')
+  })
+
+  // A SEQ='*' read emits no mismatches, so leaving it in the coverage would
+  // make it a full-weight vote for the reference: here G (5 reads, weight 40)
+  // would lose to A (6 sequenceless reads, weight 48) at 48/88 and call N.
+  test('reads with no stored sequence do not vote for the reference', () => {
+    const reads = [
+      ...times(5, { start: 0, end: 1, mismatches: [{ pos: 0, base: 'G' }] }),
+      ...times(6, { start: 0, end: 1, seqLength: 0 }),
+    ]
+    expect(run('A', reads)).toBe('G')
   })
 })
 

@@ -5,6 +5,7 @@ import { launchTargetsMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
 
+import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
@@ -23,9 +24,11 @@ const ConsensusSequenceDialog = lazy(
 // "Launch" group the verb is already there.
 const CONSENSUS_LABEL = 'Consensus sequence'
 
-interface DisplayLike {
+// The dialog's own prop type plus the discriminator picking it out of a track's
+// displays, so what the dialog reads off a display is checked here rather than
+// re-declared and free to drift.
+interface DisplayLike extends ConsensusDisplay {
   type: string
-  adapterConfig: Record<string, unknown>
 }
 interface TrackLike {
   configuration: AnyConfigurationModel

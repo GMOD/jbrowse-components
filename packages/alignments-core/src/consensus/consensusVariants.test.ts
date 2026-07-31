@@ -126,6 +126,22 @@ describe('computeConsensusVariants', () => {
       { pos: 0, ref: 'AC', alt: 'A', depth: 5, af: 0.6, type: 'del' },
     ])
   })
+
+  // The region cuts into the middle of the deletion, so there is no reference
+  // base in front of it to anchor on. Anchoring on the next base instead would
+  // report ref 'CG' alt 'C' — a real-looking record that has lost the deletion's
+  // first base. Dropping it is the only honest option from inside the region.
+  test('a deletion running from the first column is dropped, not shifted', () => {
+    const reads = times(5, { start: 0, end: 5, dels: [{ pos: 0, len: 2 }] })
+    expect(variants('ACGTA', reads)).toEqual([])
+  })
+
+  test('a deletion one column in is still anchored', () => {
+    const reads = times(5, { start: 0, end: 5, dels: [{ pos: 1, len: 1 }] })
+    expect(variants('ACGTA', reads)).toEqual([
+      { pos: 0, ref: 'AC', alt: 'A', depth: 5, af: 1, type: 'del' },
+    ])
+  })
 })
 
 describe('computeConsensusVariants with IUPAC ambiguity', () => {
@@ -231,5 +247,26 @@ describe('variantsToVcf', () => {
       .split('\n')
       .filter(l => !l.startsWith('#'))
     expect(rows.map(r => r.split('\t')[1])).toEqual(['6', '21'])
+  })
+
+  // a divergent 500kb region (the dialog's ceiling) can produce more records
+  // than the spread-call argument limit, which merging with push(...) blew up on
+  test('merges refName blocks larger than the spread-argument limit', () => {
+    const block = (offset: number) =>
+      Array.from({ length: 200_000 }, (_, i) => ({
+        pos: offset + i,
+        ref: 'A',
+        alt: 'G',
+        depth: 5,
+        af: 1,
+        type: 'snv' as const,
+      }))
+    const vcf = variantsToVcf([
+      { refName: 'ctgA', variants: block(0) },
+      { refName: 'ctgA', variants: block(200_000) },
+    ])
+    expect(vcf.split('\n').filter(l => l.startsWith('ctgA\t'))).toHaveLength(
+      400_000,
+    )
   })
 })

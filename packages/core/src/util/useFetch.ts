@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { createStopToken, stopStopToken } from './stopToken.ts'
+
+import type { StopToken } from './stopToken.ts'
+
 // Minimal data-fetching hook, replacing SWR. JBrowse only ever used the
 // {data, error, isLoading, mutate} subset with background revalidation off
 // (every data source is stable for the lifetime of the dialog/widget that
@@ -19,11 +23,16 @@ type FetchingKey<Key> = Exclude<Key, null | undefined | false>
  * narrowing the null-key ternary already did); a string key arrives as the
  * single argument (`useGenomesData`). Most fetchers close over what they need
  * and declare no parameters at all, which stays assignable either way.
+ *
+ * A stop token follows the key arguments. It is created per fetch and stopped
+ * when the key changes or the component unmounts, so a fetcher that forwards it
+ * to an RPC cancels the worker instead of leaving it grinding on an answer
+ * nobody is waiting for. Fetchers that don't take it are unaffected.
  */
 type FetcherArgs<Key> =
   FetchingKey<Key> extends readonly unknown[]
-    ? FetchingKey<Key>
-    : [FetchingKey<Key>]
+    ? [...FetchingKey<Key>, StopToken]
+    : [FetchingKey<Key>, StopToken]
 
 interface FetchState<Data> {
   data: Data | undefined
@@ -98,13 +107,16 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       return undefined
     } else {
       let alive = true
+      const stopToken = createStopToken()
       setState({ data: undefined, error: undefined, isLoading: true })
       // The runtime counterpart of FetcherArgs: an array key becomes one
-      // argument per element, anything else a single argument. A conditional
-      // type over an unresolved `Key` can't be discharged inside the function
-      // body, so the parameter list is erased for this one call — callers still
-      // get the precise arity, and the looseness stops here.
-      const args: unknown[] = Array.isArray(key) ? key : [key]
+      // argument per element, anything else a single argument, then the stop
+      // token. A conditional type over an unresolved `Key` can't be discharged
+      // inside the function body, so the parameter list is erased for this one
+      // call — callers still get the precise arity, and the looseness stops
+      // here.
+      const keyArgs: unknown[] = Array.isArray(key) ? key : [key]
+      const args = [...keyArgs, stopToken]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
       Promise.resolve()
         .then(() => call(...args))
@@ -122,6 +134,9 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
         })
       return () => {
         alive = false
+        // the token's lifetime is this fetch's. An abort rejection lands in the
+        // catch above with alive already false, so it never surfaces as an error
+        stopStopToken(stopToken)
       }
     }
   }, [serialized, nonce])

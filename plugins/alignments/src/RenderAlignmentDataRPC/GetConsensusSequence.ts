@@ -4,6 +4,7 @@ import {
   computeConsensusVariants,
 } from '@jbrowse/alignments-core'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { isMismatchFeature } from '../shared/extractCigarFeatures.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
@@ -32,12 +33,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     GetConsensusSequence: {
       args: GetConsensusSequenceArgs
+      // The caller already knows which region it asked about, and after
+      // renameRegions the refName here is the adapter's, not the one it asked
+      // with — so only the computed answer comes back.
       return: {
         consensus: string
         variants: ConsensusVariant[]
-        refName: string
-        start: number
-        end: number
       }
     }
   }
@@ -68,7 +69,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       )
     }
 
-    const { featuresArray } = await fetchFeaturesFromAdapter({
+    const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
@@ -92,6 +93,10 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       throw new Error('Could not fetch reference sequence for consensus')
     }
 
+    // Last chance to bail before the tally and the two walks, which are
+    // synchronous over the whole region and can't be interrupted once started.
+    checkStopToken2(stopTokenCheck)
+
     const reference = regionSequence.slice(region.start - regionSequenceStart)
 
     // Only per-base alignment features can be tallied — the same discriminator
@@ -109,12 +114,6 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
     const consensus = computeConsensus(reference, tally, consensusOpts)
     const variants = computeConsensusVariants(reference, tally, consensusOpts)
 
-    return {
-      consensus,
-      variants,
-      refName: region.refName,
-      start: region.start,
-      end: region.end,
-    }
+    return { consensus, variants }
   }
 }

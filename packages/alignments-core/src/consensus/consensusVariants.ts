@@ -50,6 +50,11 @@ export function computeConsensusVariants(
   let prevRefPos = -1
 
   let delOpen = false
+  // A deletion run whose first column is the region's first column has no
+  // reference base in front of it to anchor a VCF record on. Anchoring on the
+  // next base instead silently drops the run's first deleted base from REF, so
+  // the run is skipped entirely — the FASTA still omits it either way.
+  let delUnanchorable = false
   let delAnchorPos = -1
   let delAnchorBase = ''
   let delBases = ''
@@ -67,8 +72,9 @@ export function computeConsensusVariants(
         af: delTscore ? delScore / delTscore : 0,
         type: 'del',
       })
-      delOpen = false
     }
+    delOpen = false
+    delUnanchorable = false
   }
 
   walkConsensus(
@@ -81,14 +87,18 @@ export function computeConsensusVariants(
       if (call === '*') {
         if (delOpen) {
           delBases += refBase
-        } else if (prevRefBase) {
-          delOpen = true
-          delAnchorPos = prevRefPos
-          delAnchorBase = prevRefBase
-          delBases = refBase
-          delDepth = depth
-          delScore = callScore
-          delTscore = tscore
+        } else if (!delUnanchorable) {
+          if (prevRefBase) {
+            delOpen = true
+            delAnchorPos = prevRefPos
+            delAnchorBase = prevRefBase
+            delBases = refBase
+            delDepth = depth
+            delScore = callScore
+            delTscore = tscore
+          } else {
+            delUnanchorable = true
+          }
         }
       } else {
         closeDel()
@@ -133,13 +143,17 @@ export interface ConsensusVcfEntry {
 export function variantsToVcf(entries: ConsensusVcfEntry[]) {
   // Merge entries by refName (a rubber-band can span several blocks of the same
   // refName) so each contig appears once and its records are position-sorted.
+  // pushed one at a time rather than spread: a divergent 500kb region can
+  // exceed the argument-count limit that `push(...variants)` blows up on.
   const byRef = new Map<string, ConsensusVariant[]>()
   for (const { refName, variants } of entries) {
-    const arr = byRef.get(refName)
-    if (arr) {
-      arr.push(...variants)
-    } else {
-      byRef.set(refName, [...variants])
+    let arr = byRef.get(refName)
+    if (!arr) {
+      arr = []
+      byRef.set(refName, arr)
+    }
+    for (const variant of variants) {
+      arr.push(variant)
     }
   }
 
