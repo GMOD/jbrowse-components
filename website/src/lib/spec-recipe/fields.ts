@@ -319,6 +319,71 @@ const TRACK_LABELS: Record<string, string> = {
   hidden: 'Hidden',
 }
 
+// GraphGenomeView settings. The plugin is third-party, so there is no option
+// table to import the way the alignments ones are imported: every label below is
+// read off the bundle the figures actually render, which is pinned by
+// content-addressed esmUrl in test_data/graphgenomeview, so it cannot drift
+// without a diff in this repo. `Layout` and `Color` are selects in the view's own
+// toolbar. The rest are selects in the `Graph settings` dialog, which the view
+// menu opens with its `Settings` item, and which is the answer to "where is this
+// in the GUI" for a reader who only has the figure (review, on graph_context:
+// "what the gui is for selecting this, user might not intuitively understand").
+const GRAPH_LAYOUTS: Record<string, string> = {
+  auto: 'Anchored',
+  samplerows: 'Sample rows',
+  force: 'Force-directed layout',
+}
+
+const GRAPH_COLOR_SCHEMES: Record<string, string> = {
+  uniform: 'Uniform',
+  random: 'Random',
+  rainbow: 'Rainbow',
+  depth: 'Depth',
+  'node-length': 'Node Length',
+  'stable-rank': 'Stable rank',
+  'reference-position': 'Reference position',
+  grey: 'Grey',
+}
+
+const GRAPH_BUBBLE_SPREADS: Record<string, string> = {
+  auto: 'Proportional',
+  open: 'Open bubbles',
+  wide: 'Wide bubbles',
+}
+
+const GRAPH_CONTEXTS: Record<number, string> = {
+  0: 'None',
+  1: '1 hop',
+  2: '2 hops',
+}
+
+const GRAPH_SETTINGS = 'Graph view menu → Settings'
+
+const graphToolbarField = (
+  label: string,
+  table: Record<string, string>,
+): FieldRecipe => {
+  return value => {
+    const option = typeof value === 'string' ? table[value] : undefined
+    return option
+      ? { path: `Graph view toolbar → ${label} → ${option}` }
+      : undefined
+  }
+}
+
+const graphSettingsField = (
+  label: string,
+  table: Record<string, string>,
+  note?: string,
+): FieldRecipe => {
+  return value => {
+    const option = typeof value === 'string' ? table[value] : undefined
+    return option
+      ? { path: `${GRAPH_SETTINGS} → ${label} → ${option}`, note }
+      : undefined
+  }
+}
+
 export const viewFields: Record<string, FieldRecipe> = {
   showCenterLine: value =>
     typeof value === 'boolean'
@@ -340,6 +405,50 @@ export const viewFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean'
       ? {
           path: `Synteny view menu → Show curved lines (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  // How the view got there at all, which is the step a reader with only the
+  // figure is missing: a graph view is launched from a segments track rather
+  // than added empty. The item is the plugin's own
+  // 'Graph genome view (this region)' inside core's 'Launch view' submenu
+  // (pushLaunchViewMenuItem).
+  loadedTrackId: value =>
+    typeof value === 'string'
+      ? {
+          path: `${TRACK_MENU} (on the graph segments track) → Launch view → Graph genome view (this region)`,
+          note: 'Launching from the track is what ties the two panels together: the graph is cut from the same file the lane above it draws.',
+        }
+      : undefined,
+  loadedRegion: value =>
+    asRecord(value)
+      ? {
+          path: 'Set the location box before launching the graph view.',
+          note: 'The cut is the window the linear view was showing, so the graph covers what you were looking at.',
+        }
+      : undefined,
+  layoutMode: graphToolbarField('Layout', GRAPH_LAYOUTS),
+  colorScheme: graphToolbarField('Color', GRAPH_COLOR_SCHEMES),
+  bubbleSpread: graphSettingsField(
+    'Bubble spread',
+    GRAPH_BUBBLE_SPREADS,
+    'Sets a floor on how long a node is drawn in the force layout, so a short allele is a visible arm rather than a speck. Does nothing in the anchored layouts, which place a node from its coordinates.',
+  ),
+  // the select lists the GFA's own path names, so the figure's value IS the
+  // option a reader picks
+  referencePath: value =>
+    typeof value === 'string'
+      ? {
+          path: `${GRAPH_SETTINGS} → Reference path → ${value}`,
+          note: 'Which path the anchored layouts draw x against. Only offered when the file states more than one.',
+        }
+      : undefined,
+  // the only numeric one of the graph settings, so it can't use the string
+  // tables above
+  subgraphContext: value =>
+    typeof value === 'number' && GRAPH_CONTEXTS[value]
+      ? {
+          path: `${GRAPH_SETTINGS} → Graph context → ${GRAPH_CONTEXTS[value]}`,
+          note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, which is why it defaults to None.',
         }
       : undefined,
   highlight: value =>

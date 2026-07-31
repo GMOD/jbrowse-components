@@ -144,9 +144,9 @@ odgi extract -i graph.og -r K12#1#chr:1004500-1004900 -E -o - \
 vg chunk -x graph.xg -p K12#1#chr:1004500-1004900 -c 20 > window.vg
 ```
 
-A plain GFA states no reference, so pick which path to anchor on under
-**Settings → Reference path**. `odgi extract` writes the window into the path
-name (`K12#1#chr:1004500-1004961`), which is where the offsets come from; a
+A plain GFA states no reference, so pick which path to anchor on under **View
+menu → Settings → Reference path**. `odgi extract` writes the window into the
+path name (`K12#1#chr:1004500-1004961`), which is where the offsets come from; a
 whole-genome path simply starts at zero.
 
 ## Three layouts
@@ -193,27 +193,35 @@ mark where it attaches, with its size in the tooltip.
 
 ## Two settings that decide what is drawn
 
-**Settings → Bubble spread** sets a floor on how long a node is drawn in the
-force layout (the anchored layouts place a node from its coordinates, so it does
-nothing there). The engine comes from Bandage, whose graphs are assembled
-contigs of kb to Mb, so its own floor is tiny: a pangenome allele of a few bases
-clamps to a stub, both arms of a bubble land inside one node thickness of each
-other, and the window draws as a single thread. **Open bubbles** and **Wide
-bubbles** give every allele a drawn length instead, at the cost that below the
-floor a node no longer draws proportional to its length.
+**View menu → Settings → Bubble spread** sets a floor on how long a node is
+drawn in the force layout (the anchored layouts place a node from its
+coordinates, so it does nothing there). The engine comes from Bandage, whose
+graphs are assembled contigs of kb to Mb, so its own floor is tiny: a pangenome
+allele of a few bases clamps to a stub, both arms of a bubble land inside one
+node thickness of each other, and the window draws as a single thread. **Open
+bubbles** and **Wide bubbles** give every allele a drawn length instead, at the
+cost that below the floor a node no longer draws proportional to its length.
 
-**Settings → Graph context** is how far the cut follows links past the region,
-and it defaults to **None**. An allele's interior segments are indexed under
-their own haplotype's sequence, so a query on the reference never reaches them,
-and a detour that leaves the backbone before the window and rejoins after it
-arrives as two stubs rather than as the one event it is. **1 hop** closes those,
-costing a query per off-reference segment already reached.
+**View menu → Settings → Graph context** is how far the cut follows links past
+the region, and it defaults to **None**. An allele's interior segments are
+indexed under their own haplotype's sequence, so a query on the reference never
+reaches them, and a detour that leaves the backbone before the window and
+rejoins after it arrives as two stubs rather than as the one event it is. **1
+hop** closes those, costing a query per off-reference segment already reached.
+Set it whenever the shape of the graph is what you are reading: at None one
+detour draws as two unrelated insertions.
 
-<Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. Left, at Graph context None: the charcoal off-reference segments end in mid-air, because the sequence between them sits on a strain's own contig that no K12 coordinate reaches. Right, at 1 hop: the same segments close into bubbles the backbone runs through, and the node and edge counts in the header rise to match." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. The red boxes are the same two nodes in both halves, 43 bp and 558 bp, where one CFT073 detour leaves the backbone and rejoins it. Left, at Graph context None, they end in mid-air, because the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the arrow marks the 5.5 kb interior the extra queries found, and the two boxes are now the two sides of a closed bubble (the node and edge counts in the header rise to match). A hop is one step, so the right half has loose ends of its own where the walk stopped, plus the reference either side of the window at 308 bp and 9.5 kb." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
-It expands a coordinate frontier rather than walking the graph, so it does not
-converge on an exact slice however far it runs; cut one of those with
-`gfatools view -R <region> -r 1` and open it as a [file](#route-2-a-gfa-file).
+There is a **2 hops** setting as well, and the two extra steps are not the same
+kind of thing. On this window 1 hop is the detour interiors, which is the whole
+of the figure above. 2 hops is mostly backbone outside the window, plus the 40
+kb Sakai segment behind one of the alleles, none of which the linear panel can
+show: it widens the neighbourhood rather than completing the window. The setting
+expands a coordinate frontier rather than walking the graph, so it never
+converges on an exact slice however far it runs. For an exact slice, cut one
+with `gfatools view -R <region> -r 1` and open it as a
+[file](#route-2-a-gfa-file).
 
 ## Colors that mean the same thing in both panels
 

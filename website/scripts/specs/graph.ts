@@ -1,6 +1,6 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Figures for the pangenome tutorials that use the third-party
 // jbrowse-plugin-graphgenomeview (GraphGenomeView). The plugin bundle and the
@@ -719,8 +719,56 @@ function pggbLocusSession(
 // (ALT_ALLELE_COLOR) — which is what makes "the added nodes are off-reference"
 // visible rather than asserted. Stable rank was the coloring while these were
 // graph panes alone.
+//
+// Both halves box THE SAME TWO NODES and say which setting they are (review: "I
+// don't particularly understand the difference here. ideally, shows red boxes
+// and arrow and/or text annotation showing the difference between the two
+// sides"). Without that, the difference is stated only as a node count in a
+// header over two FMMM tangles that share no visible landmark, so the reader has
+// nothing to compare. Boxed on their ids rather than their positions, so the two
+// layouts can put them wherever they like:
+//
+// - s2093 (43 bp) and s2095 (558 bp) are where one CFT073 detour leaves the
+//   backbone and rejoins it. At None they are the two loose ends. At 1 hop the
+//   same two boxes are the two sides of a closed bubble.
+// - s2094 (5.5 kb) is that detour's interior. It sits on CFT073's own contig, so
+//   no K12 coordinate names it and the region query cannot reach it. It is what
+//   the hop adds, and the arrow in that half points at it.
+//
+// The hop reaches five other segments too, which is why the right half still has
+// loose ends: one step out lands on a new frontier (s2092, s2387, s2633), and two
+// of the five are rank 0 reference either side of the window (s499, s508).
 function graphContextPartSpecs(): ScreenshotSpec[] {
-  const part = (name: string, subgraphContext: number): ScreenshotSpec => ({
+  const DETOUR_ENTRY = 's2093+'
+  const DETOUR_EXIT = 's2095+'
+  const DETOUR_INTERIOR = 's2094+'
+  // The label sits in the graph pane's own top-right, which is empty in both
+  // layouts, anchored on the canvas the graph draws into. NOT on the node-count
+  // readout beside it, which was the first thing tried: that element is text, so
+  // its width and therefore its centre move with the numbers it happens to be
+  // showing. `17 nodes, 21 edges` against `20 nodes, 25 edges` shifted the pill
+  // and swung the arrow tail off the pane, which is a callout decalibrated by the
+  // thing it is captioning. The canvas is sized by the viewport instead, and its
+  // 13px height difference between the halves is the only thing dy inherits.
+  //
+  // maxWidth is what keeps the pill inside its own half of the composite: with
+  // the pill's left edge at the canvas centre plus dx, the wrap has to leave room
+  // for it inside the remaining ~260px.
+  const canvasAnchor = { selector: '[data-testid="graph-genome-canvas"]' }
+  const label = (text: string): Annotation => ({
+    type: 'text',
+    text,
+    anchor: canvasAnchor,
+    dx: 110,
+    dy: -278,
+    maxWidth: 205,
+    fontSize: 18,
+  })
+  const part = (
+    name: string,
+    subgraphContext: number,
+    text: string,
+  ): ScreenshotSpec => ({
     mode: 'url',
     name,
     url: sessionSpec(CONFIG, {
@@ -776,10 +824,39 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     // (the 1 hop cut is the taller drawing of the two, so it sets this)
     viewportHeight: 1006,
     hideTooltip: true,
+    annotations: [
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
+        type: 'box',
+        anchor: { view: 1, graphNode },
+        strokeWidth: 3,
+      })),
+      label(text),
+      // the arrow only exists in the half that has an interior to point at
+      ...(subgraphContext > 0
+        ? [
+            {
+              type: 'arrow',
+              anchor: { view: 1, graphNode: DETOUR_INTERIOR },
+              // out of the pill's lower left corner, which is where the label
+              // above puts it
+              fromAnchor: { ...canvasAnchor, dx: 160, dy: -206 },
+              strokeWidth: 3,
+            } satisfies Annotation,
+          ]
+        : []),
+    ],
   })
   return [
-    part('pangenome/graph_context_none', 0),
-    part('pangenome/graph_context_hop1', 1),
+    part(
+      'pangenome/graph_context_none',
+      0,
+      'Graph context: None\nthe boxed ends stop in mid-air',
+    ),
+    part(
+      'pangenome/graph_context_hop1',
+      1,
+      'Graph context: 1 hop\nthe interior arrives, closing the bubble',
+    ),
   ]
 }
 

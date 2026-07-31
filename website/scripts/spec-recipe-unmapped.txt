@@ -10,7 +10,6 @@ arcColorByType
 autoDiagonalize
 autoscale
 bicolorPivot
-bubbleSpread
 cigarMode
 collapseEmptyRows
 collapseGroupRows
@@ -18,7 +17,6 @@ color
 colorBy
 colorByChromosome
 colorDomain
-colorScheme
 connectedView
 conservationMode
 displayCrossHatches
@@ -37,17 +35,13 @@ id
 jexlFilters
 jexlFiltersSetting
 layout
-layoutMode
 levelHeights
 linkedReads
-loadedRegion
-loadedTrackId
 minAlignmentLength
 negColor
 numStdDev
 posColor
 readConnectionsHeight
-referencePath
 renderingMode
 rowHeight
 rowIdentityAutoZoom
@@ -67,7 +61,6 @@ showTree
 sideBySide
 sortRowsBy
 sortedBy
-subgraphContext
 subtreeFilter
 transcriptId
 uniprotId

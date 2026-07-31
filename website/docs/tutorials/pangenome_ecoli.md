@@ -494,9 +494,9 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - 
 ```
 
 Nothing in a plain GFA marks one path as the reference, so pick which to anchor
-on under **Settings → Reference path**. `odgi extract` writes the window into
-the path name (`K12#1#chr:1004500-1004961`), which is where the offsets come
-from.
+on under **View menu → Settings → Reference path**. `odgi extract` writes the
+window into the path name (`K12#1#chr:1004500-1004961`), which is where the
+offsets come from.
 
 The same walk outside the browser puts those nodes on a linear track, so the
 segment under the cursor is the same segment in both panels:
