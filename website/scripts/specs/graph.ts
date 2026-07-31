@@ -1616,6 +1616,12 @@ export const graphSpecs: ScreenshotSpec[] = [
   // layout-forces.js) pushes the bypassed nodes perpendicularly off it, so the
   // layout itself closes the bubble instead of the edge bowing to fake one.
   //
+  // The step after this one, which is NOT taken: project the link index into a
+  // LinearPairedArcDisplay track and drop the graph panel. Decided against, with
+  // the three reasons in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage
+  // ("No linearized deletion track"). Short version: the arcs are anonymous, and
+  // the wave VCF already states this event with a genotype per haplotype.
+  //
   // On this window the anchored layout costs nothing and pays twice: the arc
   // spans exactly the bp it removes, and it spans them under the hg38 row of the
   // synteny view above, so the boxed CFHR3/CFHR1, the carrier's missing ribbon

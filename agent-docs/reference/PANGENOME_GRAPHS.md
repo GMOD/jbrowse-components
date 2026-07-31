@@ -121,6 +121,35 @@ about this, and the two workarounds are:
 - **the reference row is the pipeline's own check**: K12 comes out `ref` at all
   601 bubbles. An indel there means suspect the join, not the biology.
 
+### No linearized deletion track. Decided 2026-07-31, do not rebuild it
+
+The anchored layout draws the backbone at reference coordinates, which invites
+the next step: project the link index into a `LinearPairedArcDisplay` track (or a
+custom track type in the plugin) so a deletion is an arc in an ordinary LGV with
+no graph view at all. The pieces are all there — `links.bed.gz` states both
+endpoints with ranks, `deletionEdges.ts` already classifies them, `BedpeAdapter`
+and the arc display ship in core. It was **not built**, for three reasons in this
+file:
+
+- **The arcs are anonymous.** A backbone-to-backbone skip has GRCh38 at both
+  ends, so it names no donor (Carriage, above). A row in a linear track is read
+  as carriage, which is the misreading that retired `hprc_allele_inventory`'s
+  sample rows and that "Structure, not sequence" in `pangenome_hprc.md` exists to
+  head off.
+- **`wave.vcf.gz` already does it, better.** It is not symbolic, it is
+  tabix-indexed, it carries explicit ALTs to 65 kb and a genotype per haplotype,
+  and it needs no plugin. The CFHR deletion is one of its records with 139 of 464
+  haplotypes carrying it. A projected arc would be the same event with the
+  genotypes thrown away.
+- **What the projection would uniquely add is what an axis cannot hold.**
+  Segment-level correspondence with the graph panel, and the chaining and nesting
+  of an alternate path. Nesting is the part with no linear encoding, so the
+  content worth linearizing is already in the VCF and the content not in the VCF
+  is not linearizable.
+
+Same shape as the reroot-MAF reverts: a linear projection of a graph looks like a
+missing feature and is usually a claim the graph cannot support.
+
 ## Verified facts, so nobody re-derives them
 
 - `gfatools bubble` reports **top-level bubbles only**, and on the E. coli graph
