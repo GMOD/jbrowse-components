@@ -9,7 +9,7 @@ import {
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { comparer } from 'mobx'
+import { compareStructural } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -313,7 +313,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         fullConfig: PlainTrackConfig,
       ) {
         const node = self.editableTrackConfigs.get(trackId)
-        if (node && !comparer.structural(getSnapshot(node), fullConfig)) {
+        if (node && !compareStructural(getSnapshot(node), fullConfig)) {
           applySnapshot(node, fullConfig)
         }
       }
@@ -395,7 +395,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               // identity and make the tracks getter rehydrate a new merged node
               // for no real change.
               const existing = self.trackConfigDeltas[trackId]
-              if (!existing || !comparer.structural(existing, delta)) {
+              if (!existing || !compareStructural(existing, delta)) {
                 writeDelta(trackId, delta)
               }
               syncEditableTrackConfig(trackId, trackConf)

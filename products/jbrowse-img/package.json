@@ -40,7 +40,7 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.13.0",
+    "@jbrowse/mobx-state-tree": "^6.0.0",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
@@ -50,7 +50,7 @@
     "@types/jsdom": "^28.0.3",
     "canvas": "^3.2.3",
     "jsdom": "^30.0.1",
-    "mobx-react": "^9.2.2",
+    "mobx-react": "^10.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tmp": "^0.2.7"

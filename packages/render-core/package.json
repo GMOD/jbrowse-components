@@ -57,8 +57,8 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@jbrowse/mobx-state-tree": "^5.13.0",
-    "mobx": "^6.16.1"
+    "@jbrowse/mobx-state-tree": "^6.0.0",
+    "mobx": "^7.0.0"
   },
   "peerDependencies": {
     "react": ">=19.0.0"

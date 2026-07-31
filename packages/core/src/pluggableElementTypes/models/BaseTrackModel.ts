@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
-import { comparer, reaction } from 'mobx'
+import { compareStructural, reaction } from 'mobx'
 
 import { ConfigurationReference, getConf } from '../../configuration/index.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
@@ -226,7 +226,7 @@ export function createBaseTrackModel(
        * otherwise schedule a spurious flush for every track ever shown, even
        * completely untouched ones — `reaction` only fires on an actual change.
        *
-       * `equals: comparer.structural` is load-bearing, not an optimization:
+       * `equals: compareStructural` is load-bearing, not an optimization:
        * `self.configuration` is a re-resolving reference, and persisting a save
        * swaps the resolved node identity (admin `updateTrackConf` replaces the
        * frozen `jbrowse.tracks` entry, rehydrating a brand-new MST node; the
@@ -253,7 +253,7 @@ export function createBaseTrackModel(
                 }
               }, 400)
             },
-            { equals: comparer.structural },
+            { equals: compareStructural },
           ),
         )
         addDisposer(self, () => {

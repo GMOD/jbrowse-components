@@ -32,10 +32,10 @@
   "dependencies": {
     "@gmod/bbi": "^10.0.1",
     "@gmod/bed": "^2.2.7",
-    "@gmod/tabix": "^3.5.0",
+    "@gmod/tabix": "^3.5.1",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.13.0",
-    "mobx": "^6.16.1",
+    "@jbrowse/mobx-state-tree": "^6.0.0",
+    "mobx": "^7.0.0",
     "rxjs": "^7.8.2"
   },
   "publishConfig": {

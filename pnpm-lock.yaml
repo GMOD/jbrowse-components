@@ -36,8 +36,8 @@ importers:
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       '@eslint-react/eslint-plugin':
-        specifier: ^5.18.0
-        version: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+        specifier: ^5.18.1
+        version: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
@@ -45,8 +45,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/web':
         specifier: workspace:^
         version: link:products/jbrowse-web
@@ -204,11 +204,11 @@ importers:
         specifier: ^2.10.2
         version: 2.10.2(webpack@5.109.2)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       oxfmt:
         specifier: ^0.61.0
         version: 0.61.0
@@ -285,8 +285,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -294,11 +294,11 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -324,8 +324,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -339,11 +339,11 @@ importers:
         specifier: ^7.0.4
         version: 7.0.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -390,8 +390,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/quick-lru':
         specifier: ^7.3.5
         version: 7.3.5
@@ -432,11 +432,11 @@ importers:
         specifier: ^8.0.3
         version: 8.0.3
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       pako-esm2:
         specifier: ^2.0.2
         version: 2.0.2
@@ -459,8 +459,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -471,11 +471,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -500,8 +500,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/icons-material':
         specifier: ^9.2.0
         version: 9.2.0(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
@@ -509,11 +509,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -524,11 +524,11 @@ importers:
   packages/render-core:
     dependencies:
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -544,8 +544,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -553,11 +553,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -574,8 +574,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/icons-material':
         specifier: ^9.2.0
         version: 9.2.0(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
@@ -583,8 +583,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
 
   packages/text-indexing:
     dependencies:
@@ -615,8 +615,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -633,11 +633,11 @@ importers:
         specifier: ^9.10.1
         version: 9.10.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mui/system@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -654,8 +654,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -663,8 +663,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -678,8 +678,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -690,8 +690,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -714,8 +714,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/modifications-utils':
         specifier: workspace:^
         version: link:../../packages/modifications-utils
@@ -741,11 +741,11 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -759,8 +759,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -774,11 +774,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -796,8 +796,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/material':
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -805,8 +805,8 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -823,17 +823,17 @@ importers:
         specifier: ^2.2.7
         version: 2.2.7
       '@gmod/tabix':
-        specifier: ^3.5.0
-        version: 3.5.0
+        specifier: ^3.5.1
+        version: 3.5.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -850,11 +850,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -878,8 +878,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -893,11 +893,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=16.8.4'
         version: 19.2.8
@@ -914,8 +914,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -932,11 +932,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -950,8 +950,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
@@ -962,11 +962,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -977,8 +977,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.0
-        version: 3.5.0
+        specifier: ^3.5.1
+        version: 3.5.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -986,8 +986,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/material':
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -995,11 +995,11 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1016,8 +1016,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/icons-material':
         specifier: ^9.2.0
         version: 9.2.0(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
@@ -1025,11 +1025,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
@@ -1052,8 +1052,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../config
@@ -1073,11 +1073,11 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1104,8 +1104,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1128,11 +1128,11 @@ importers:
         specifier: ^9.10.1
         version: 9.10.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mui/system@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1146,8 +1146,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1161,11 +1161,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1176,20 +1176,20 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.0
-        version: 3.5.0
+        specifier: ^3.5.1
+        version: 3.5.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       gff-nostream:
         specifier: ^5.1.2
         version: 5.1.2
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -1200,8 +1200,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../dotplot-view
@@ -1218,11 +1218,11 @@ importers:
         specifier: ^9.10.1
         version: 9.10.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mui/system@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1230,14 +1230,14 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.0
-        version: 3.5.0
+        specifier: ^3.5.1
+        version: 3.5.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1254,8 +1254,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../bed
@@ -1281,11 +1281,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1299,8 +1299,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1320,11 +1320,11 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       pako-esm2:
         specifier: ^2.0.2
         version: 2.0.2
@@ -1338,8 +1338,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/icons-material':
         specifier: ^9.2.0
         version: 9.2.0(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
@@ -1347,11 +1347,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1365,14 +1365,14 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       generic-filehandle2:
         specifier: ^2.2.1
         version: 2.2.1
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -1389,8 +1389,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1413,11 +1413,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1431,8 +1431,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
@@ -1446,11 +1446,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1470,8 +1470,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../data-management
@@ -1497,11 +1497,11 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1515,8 +1515,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@mui/icons-material':
         specifier: ^9.2.0
         version: 9.2.0(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
@@ -1530,11 +1530,11 @@ importers:
         specifier: ^4.4.0
         version: 4.4.0
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1548,11 +1548,11 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -1572,8 +1572,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1584,11 +1584,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1605,8 +1605,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1626,11 +1626,11 @@ importers:
         specifier: ^9.10.1
         version: 9.10.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mui/system@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1644,8 +1644,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../circular-view
@@ -1662,11 +1662,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1701,8 +1701,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.0
-        version: 3.5.0
+        specifier: ^3.5.1
+        version: 3.5.1
       '@gmod/vcf':
         specifier: ^7.0.10
         version: 7.0.10
@@ -1716,8 +1716,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-canvas':
         specifier: workspace:^
         version: link:../canvas
@@ -1749,11 +1749,11 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1770,8 +1770,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../data-management
@@ -1797,11 +1797,11 @@ importers:
         specifier: ^9.10.1
         version: 9.10.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@mui/material@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mui/system@9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -1851,8 +1851,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -1986,11 +1986,11 @@ importers:
         specifier: ^6.8.9
         version: 6.8.9
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2035,8 +2035,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -2065,8 +2065,8 @@ importers:
         specifier: ^30.0.1
         version: 30.0.1(canvas@3.2.3)
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2114,8 +2114,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2219,11 +2219,11 @@ importers:
         specifier: ^7.0.4
         version: 7.0.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=18.0.0'
         version: 19.2.8
@@ -2246,8 +2246,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/react-app2':
         specifier: workspace:*
         version: link:..
@@ -2255,11 +2255,11 @@ importers:
         specifier: ^7.1.6
         version: 7.1.6(@astrojs/markdown-remark@7.2.2)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.2)(terser@5.49.0)(yaml@2.9.0)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2295,8 +2295,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2325,11 +2325,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=18.0.0'
         version: 19.2.8
@@ -2349,8 +2349,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/react-circular-genome-view2':
         specifier: workspace:*
         version: link:..
@@ -2358,11 +2358,11 @@ importers:
         specifier: ^7.1.6
         version: 7.1.6(@astrojs/markdown-remark@7.2.2)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.2)(terser@5.49.0)(yaml@2.9.0)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2401,8 +2401,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2464,11 +2464,11 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: '>=18.0.0'
         version: 19.2.8
@@ -2491,8 +2491,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:*
         version: link:../../../plugins/linear-genome-view
@@ -2506,11 +2506,11 @@ importers:
         specifier: ^7.1.6
         version: 7.1.6(@astrojs/markdown-remark@7.2.2)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.2)(terser@5.49.0)(yaml@2.9.0)
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2540,8 +2540,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.13.0
-        version: 5.13.0(mobx@6.16.1)
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2669,11 +2669,11 @@ importers:
         specifier: ^8.0.3
         version: 8.0.3
       mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
       pixelmatch:
         specifier: ^7.2.0
         version: 7.2.0
@@ -4066,50 +4066,50 @@ packages:
     resolution: {integrity: sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
 
-  '@eslint-react/ast@5.18.0':
-    resolution: {integrity: sha512-WV7IrRiRlcJeY3UgfhI4kM8BGJCAMsmBImBeqR15Hu1gA7pT2lc7uDbv6Y963bmpJbVQN3krdbqEgXANnOjlaQ==}
+  '@eslint-react/ast@5.18.1':
+    resolution: {integrity: sha512-6NTpdv+Z6eHT2lc8DkfJZUG6tUvZQkRBlvBpYuoeen+HIvzz59aOt1YEL4dd6FQlXD4DPbCBGXCjcV879hT8Sg==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  '@eslint-react/core@5.18.0':
-    resolution: {integrity: sha512-0XTnjY5gNKI6SnSqKdJVX3aRncz4Dzty9G2LYGJsaq01yNMbdTUY0FFadP91pBODjOVlr5PLH2LILMipnrbsTQ==}
+  '@eslint-react/core@5.18.1':
+    resolution: {integrity: sha512-n2avrghmy22iMFJWGXKacyMMvtaFrPqq1Yydd7L1DKmUe/hubjD4Uc1ZKV/F2xRh8dQ0Gp2b5TVv7H/Nq5DxUQ==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  '@eslint-react/eslint-plugin@5.18.0':
-    resolution: {integrity: sha512-El0r5EKDyudriw5kn4SLbaIdjDg+x0X4lNjGgGOT3bRDl5c5Wup2ZvnBQD+XRLcVyQOkpYc3l4lxdvXpJ2J3Kg==}
+  '@eslint-react/eslint-plugin@5.18.1':
+    resolution: {integrity: sha512-BlgYu//MKKnLHhQhh6E6ChSbEYj/a/cuRnyc+akOUtn8qCEqf2Le+/Rcxjfso3ujDjrq5yZt8E28aNOubtE6WA==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  '@eslint-react/eslint@5.18.0':
-    resolution: {integrity: sha512-ypEfKyEccb2hl2KVTzr2a7+U+QF66CiG8VakjnPwTmoXUq16XtDVkhBIJJzbVXv2knl5RZhU98/fAURziZAZVw==}
+  '@eslint-react/eslint@5.18.1':
+    resolution: {integrity: sha512-T7AOWRwc1+gBEQUFoGSsBVHmWpsanGWVU52NTmWxij9ZGIlqbG+JC6vpCBa6IzGPKbulCu4B/np2JIydZQM1pQ==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  '@eslint-react/jsx@5.18.0':
-    resolution: {integrity: sha512-9XTmXLzWYV7QCUEQYdQjbW9zrJNNTEgkuNbv8ApngUvttbmWSUFSKmA3MJNojOyjmj0fttCLcItUcCM9ThLOAw==}
+  '@eslint-react/jsx@5.18.1':
+    resolution: {integrity: sha512-sT0JQ0yw/prFwtEu0cplzS0fZBpNHL1s7awHrD5xKABpqsVS2wofB52p2TSX2nmuNj011hSUW+xlu58GXYZ/fQ==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  '@eslint-react/shared@5.18.0':
-    resolution: {integrity: sha512-EQnptEj1i3byDDLSF7rHPRNmg7OabMMh9LL2B756ou1raaox1YmoqJTvLQvQWZVs1jHuDyR4ByvVeDzJvnUByA==}
+  '@eslint-react/shared@5.18.1':
+    resolution: {integrity: sha512-sLtaIw5PGVriltlBfDD/wUvF4+K3EDGuFhoUF2HKSIdhf28glyrcf6s2d0HnjFXUjXKcD325MNWL7Cectvs2GA==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  '@eslint-react/var@5.18.0':
-    resolution: {integrity: sha512-klGm2vgw2209YeMdGhiLzP+e/SmbVmCO06+BteC25xTtbd56mUiYb234B0qFEyRbvOh5EpO383npJEzt3EPcGw==}
+  '@eslint-react/var@5.18.1':
+    resolution: {integrity: sha512-w1OP5/EJ4ocGWSw+nSpZnfehlnAvfVxOrlgx7k+xTHACyoFQZZXrehOYC7M/0ArQA68sOXo0C1ymEfTJE30StQ==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
@@ -4211,8 +4211,8 @@ packages:
   '@gmod/nclist@3.0.11':
     resolution: {integrity: sha512-b7wbxPAQCvyi9Eny/O5uTRq2CRaJJlS8TG4CBTOCaMbhFSv7Cy108ps0nntxtxO7TKc/mVs4V1TJNL8uzQG3IQ==}
 
-  '@gmod/tabix@3.5.0':
-    resolution: {integrity: sha512-pZbSboKhbYF/8we9kgI5q5io5MPtzV/6fzt+tCvTjS/crpzwtwQstUB7l/QaRL6gl2FYIe1iOdcHChyM91BnbA==}
+  '@gmod/tabix@3.5.1':
+    resolution: {integrity: sha512-441rX9a5MtSIf+k65PhEKo4XsQFn1plOpa7s/u06TMncVDZhowupFfi0PF7yt4sV5WdI36MCri7qvQePO3TPKQ==}
 
   '@gmod/trix@3.0.18':
     resolution: {integrity: sha512-xHtQ7Ah7SO9xRxYLOONvuCcL0T5nPGzhGQ2dEDIkgzERQGa2yZDPU/TGtN+SBUmztg+MHVfO9gSayNoXYOtHKA==}
@@ -4439,11 +4439,11 @@ packages:
   '@jbrowse/jexl@3.0.2':
     resolution: {integrity: sha512-9Q1elTlSW0Pn9dHpqYvdx2FqcUvd8CPNqx5KvNjEjJLARcRtC2sebATHtl4S1njz6Rm6F2JC2ngKAlODq0LjCA==}
 
-  '@jbrowse/mobx-state-tree@5.13.0':
-    resolution: {integrity: sha512-V+7S3Phe+cdH/T1x67ccQHUqcw3f2wk2cPCAcedMpzMrV7ArpkoTl2bZSteoNPzHUDfis7RBFVXEKZxbQQ9hfg==}
+  '@jbrowse/mobx-state-tree@6.0.0':
+    resolution: {integrity: sha512-tfBS4MLXuF4OKBL+HH5qjraenvtgO6+qyOnwsvXsyrS3d4yF/QLXcYcOO4OfJpG8miFzdEmkoxjcw4tVRwLibw==}
     engines: {node: '>=22', pnpm: '>=10'}
     peerDependencies:
-      mobx: ^6.3.0
+      mobx: ^7.0.0
 
   '@jbrowse/quick-lru@7.3.5':
     resolution: {integrity: sha512-DPEtODWKt+QGmCg+EO36sSmKOmdjJOwtxeV/4PBnf+7jqC/P7R4YIz+/yohtqh9UZ38dbLtXIlmigPlkZy8SAA==}
@@ -4807,12 +4807,12 @@ packages:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@napi-rs/wasm-runtime@1.2.0':
-    resolution: {integrity: sha512-kDoONqMa+VnZ4vvvu/ZUurpJ4gkZU57e7g69qpNgWhYcZFPUHZM2CEMKm+cG6ufDVALbjMvfmMjFVqaK7uEMnA==}
+  '@napi-rs/wasm-runtime@1.2.1':
+    resolution: {integrity: sha512-KjZdi8Q1wh89gsVmghvbrMgWl6ZWmRmHV6wjB7/g4Zf0dyO+hH3neZUtuDNPO00qq5YE5RITVWvrIZKRaAmzGQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
     peerDependencies:
-      '@emnapi/core': ^2.0.0-alpha.3
-      '@emnapi/runtime': ^2.0.0-alpha.3
+      '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.3
+      '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.3
 
   '@noble/hashes@1.4.0':
     resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
@@ -6194,8 +6194,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  baseline-browser-mapping@2.11.6:
-    resolution: {integrity: sha512-69D/imtToCsIcAl8WBS2YaRwA4jO/j0HhU+hELqMEu9f54MoUtI6+XH5mrKU8rEFNEk/Ui1I2MK4/JkWacclGw==}
+  baseline-browser-mapping@2.11.7:
+    resolution: {integrity: sha512-APw5YuIQAg6L9w4sHDI6j26DGFJI6RpYOhnkMPdC9lWbkKvsyPHzDsve1yd73lk21yz7Y09Kci8B2Pp9FonzWA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -7031,22 +7031,22 @@ packages:
     peerDependencies:
       eslint: '>=7'
 
-  eslint-plugin-react-dom@5.18.0:
-    resolution: {integrity: sha512-Yb4fYRI29zDjUqy8bf+iwJitIJ7JmYXVRZ5eXWGEcq29w3tVATsMSBAjLQPo/OC6JOxUaIdr0xyCUOEbbev45A==}
+  eslint-plugin-react-dom@5.18.1:
+    resolution: {integrity: sha512-0PakQ8iPZ2yq4zi99T28l+NlefxrE/92CpIQ1SbbFT2fqNIjRz1L+ewWIzAsMdyUUjQzcCj8domEJ36y20K8Zw==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  eslint-plugin-react-jsx@5.18.0:
-    resolution: {integrity: sha512-+0tz4Z6W2T9apI3Kq6T5w4CQSoAL7d2gmHkgCCoB1TAm7Ag4nZEPN97YCbi+LuckCrh+BQDbpUCA7AnoyLynEg==}
+  eslint-plugin-react-jsx@5.18.1:
+    resolution: {integrity: sha512-bT8/pcYwp1Anyjnvjqz1jRJBGdo4ydXlR6hciyQUiHzOxAWpIOP61ggAVgbA9JU3qOr4/hldMpGZHdJP5pqfgw==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  eslint-plugin-react-naming-convention@5.18.0:
-    resolution: {integrity: sha512-Bw9u8u3i4f+NKuesWjBdLJ3FFAe8i6lVr6Ih6K50AFd+3iL6bt+1SlAaI13rv2JB0yXevT7zuMI4NapKwj4qmw==}
+  eslint-plugin-react-naming-convention@5.18.1:
+    resolution: {integrity: sha512-fN6U+Q5QOZ7ZJlTn7XsKB0NvRx0qDp+7tV2Zht3nhtKQ2tl4cxFz8QV78l++FqMtBtCNfxTiInuo5u5Xt8Ymjw==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
@@ -7057,22 +7057,22 @@ packages:
     peerDependencies:
       eslint: ^9 || ^10
 
-  eslint-plugin-react-rsc@5.18.0:
-    resolution: {integrity: sha512-Lsb5g8Hb8UjCUiXzKKd60sp7gDCEVjtb4yq7Z0WzKcZQsEsTo7MjbEYzvR1otkVHGN8kJe9DmYKbd+4BnNGEvQ==}
+  eslint-plugin-react-rsc@5.18.1:
+    resolution: {integrity: sha512-s792p16e8YNhGA3vgIseDxdrwTuNb+gHn0Gau5PsTZ42d8Zuvi3ZJWLfkAZfvMfblaDev6tSAv2fZzWB0brEIg==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  eslint-plugin-react-web-api@5.18.0:
-    resolution: {integrity: sha512-b3ozdXQVxd9+t/7JQcW0TETbX9XzhImFk+hJ/6WIwY9bkgp0fGShu5HX1dVUBOe/WBApYC2hjkq2olHrBz0d9w==}
+  eslint-plugin-react-web-api@5.18.1:
+    resolution: {integrity: sha512-Az8kJEM2Bk8PhJR3UBLWBVZkir/2l+qX545PTi8Kx3JdDlK6IlU1vz69/B5tJ/YXo6cJKP3bKTqaAzcT5ikl8g==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
       typescript: '*'
 
-  eslint-plugin-react-x@5.18.0:
-    resolution: {integrity: sha512-Qe1weZELW10yi524DfpsUGDmL9f3Xyife9ldm4kzdaP874O0jxluRgQF5p+Ov4TVb7rshN9xSZTDc77b0o9IZA==}
+  eslint-plugin-react-x@5.18.1:
+    resolution: {integrity: sha512-i0a17vUMoMhiHjcXz4IYfO42Br6xQkbu+PqVftUHM49i1bbYD+22GFMgNmKkLCMNKXZSQhocKvIKUwhMIbFTQg==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: '*'
@@ -8515,34 +8515,20 @@ packages:
   mlly@1.8.2:
     resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
 
-  mobx-react-lite@4.1.1:
-    resolution: {integrity: sha512-iUxiMpsvNraCKXU+yPotsOncNNmyeS2B5DKL+TL6Tar/xm+wwNJAubJmtRSeAoYawdZqwv8Z/+5nPRHeQxTiXg==}
+  mobx-react-lite@5.0.0:
+    resolution: {integrity: sha512-+Kg+KhOQx/ggkFuHViUJvsOsgmAFvBUHfGb/cimNX5Csb1MfMYjbp5CcUu6kw2zr11HwB1gaD7FnqdAcCryvhg==}
     peerDependencies:
-      mobx: ^6.9.0
-      react: ^16.8.0 || ^17 || ^18 || ^19
-      react-dom: '*'
-      react-native: '*'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
+      mobx: ^7.0.0
+      react: ^18 || ^19
 
-  mobx-react@9.2.2:
-    resolution: {integrity: sha512-ShszmQzR/VrhU3M0cQ7DA/s8qNcLcF2emSuudJ/TnDILS3C1Im48mdaG6CpyjZHy8+WqgXUCC9mPqSRIwPPMuQ==}
+  mobx-react@10.0.0:
+    resolution: {integrity: sha512-ua0SJ0jndAufm+efiyhyZI6UT4xpZDC+dqWeH1/seLG7dpUH07qHZ2GvMY7d/OCdp12o56hu0vk5cbaI+8yYIA==}
     peerDependencies:
-      mobx: ^6.9.0
-      react: ^16.8.0 || ^17 || ^18 || ^19
-      react-dom: '*'
-      react-native: '*'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
+      mobx: ^7.0.0
+      react: ^18 || ^19
 
-  mobx@6.16.1:
-    resolution: {integrity: sha512-syNcDdX3KT+Jq3je6eGjBhuc24Z68td2VG0zNFqRswaE433D9SNH5VRy/xrGbJsUixfppLLccXhAW9JSf6n+SQ==}
+  mobx@7.0.0:
+    resolution: {integrity: sha512-J+hR/wq6RdBnB4QXQRqGrWL9vOOLKaYhXh0ooxLAW4AE72av10Y5+xiaxohUYmPZiUswfpxMjQooYqpWkv+Fxg==}
 
   modern-tar@0.7.7:
     resolution: {integrity: sha512-t9VmxaqrmANnEOBhpSDI6HD192Ge48k8vmWqQQL7hSFEqHEYwZbbsu49+aKLWZeRvFs3j1pMhXOqqF4kPlvjkQ==}
@@ -10524,7 +10510,7 @@ snapshots:
 
   '@astrojs/compiler-binding-wasm32-wasi@0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.2.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -10532,7 +10518,7 @@ snapshots:
 
   '@astrojs/compiler-binding-wasm32-wasi@0.3.2(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)
+      '@napi-rs/wasm-runtime': 1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -11568,7 +11554,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@napi-rs/wasm-runtime': 1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+      '@napi-rs/wasm-runtime': 1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
     optional: true
 
   '@bruits/satteri-win32-arm64-msvc@0.9.5':
@@ -11955,7 +11941,7 @@ snapshots:
 
   '@eslint-community/regexpp@4.12.2': {}
 
-  '@eslint-react/ast@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/ast@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/typescript-estree': 8.65.0(typescript@6.0.3)
@@ -11966,12 +11952,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint-react/core@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/core@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/var': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/var': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/scope-manager': 8.65.0
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
@@ -11981,21 +11967,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint-react/eslint-plugin@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/eslint-plugin@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
-      eslint-plugin-react-dom: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      eslint-plugin-react-jsx: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      eslint-plugin-react-naming-convention: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      eslint-plugin-react-rsc: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      eslint-plugin-react-web-api: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      eslint-plugin-react-x: 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      eslint-plugin-react-dom: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      eslint-plugin-react-jsx: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      eslint-plugin-react-naming-convention: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      eslint-plugin-react-rsc: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      eslint-plugin-react-web-api: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      eslint-plugin-react-x: 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint-react/eslint@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/eslint@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
@@ -12003,12 +11989,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint-react/jsx@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/jsx@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/var': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/var': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
@@ -12017,9 +12003,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint-react/shared@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/shared@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
       ts-pattern: 5.9.0
@@ -12028,10 +12014,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint-react/var@5.18.0(eslint@10.8.0)(typescript@6.0.3)':
+  '@eslint-react/var@5.18.1(eslint@10.8.0)(typescript@6.0.3)':
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/scope-manager': 8.65.0
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
@@ -12151,7 +12137,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.5.0':
+  '@gmod/tabix@3.5.1':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.3.1
@@ -12348,9 +12334,9 @@ snapshots:
 
   '@jbrowse/jexl@3.0.2': {}
 
-  '@jbrowse/mobx-state-tree@5.13.0(mobx@6.16.1)':
+  '@jbrowse/mobx-state-tree@6.0.0(mobx@7.0.0)':
     dependencies:
-      mobx: 6.16.1
+      mobx: 7.0.0
 
   '@jbrowse/quick-lru@7.3.5': {}
 
@@ -12824,21 +12810,21 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@napi-rs/wasm-runtime@1.2.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+  '@napi-rs/wasm-runtime@1.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
+  '@napi-rs/wasm-runtime@1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)':
+  '@napi-rs/wasm-runtime@1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)':
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.2
@@ -13160,7 +13146,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@napi-rs/wasm-runtime': 1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+      '@napi-rs/wasm-runtime': 1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
     optional: true
 
   '@rolldown/binding-win32-arm64-msvc@1.1.5':
@@ -13737,7 +13723,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
-      '@napi-rs/wasm-runtime': 1.2.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     optional: true
 
   '@unrs/resolver-binding-win32-arm64-msvc@1.12.2':
@@ -14187,7 +14173,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  baseline-browser-mapping@2.11.6: {}
+  baseline-browser-mapping@2.11.7: {}
 
   batch@0.6.1: {}
 
@@ -14246,7 +14232,7 @@ snapshots:
 
   browserslist@4.28.7:
     dependencies:
-      baseline-browser-mapping: 2.11.6
+      baseline-browser-mapping: 2.11.7
       caniuse-lite: 1.0.30001806
       electron-to-chromium: 1.5.398
       node-releases: 2.0.51
@@ -15025,12 +15011,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react-dom@5.18.0(eslint@10.8.0)(typescript@6.0.3):
+  eslint-plugin-react-dom@5.18.1(eslint@10.8.0)(typescript@6.0.3):
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/jsx': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/jsx': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       compare-versions: 6.1.1
@@ -15039,13 +15025,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react-jsx@5.18.0(eslint@10.8.0)(typescript@6.0.3):
+  eslint-plugin-react-jsx@5.18.1(eslint@10.8.0)(typescript@6.0.3):
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/core': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/jsx': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/core': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/jsx': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
@@ -15053,13 +15039,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react-naming-convention@5.18.0(eslint@10.8.0)(typescript@6.0.3):
+  eslint-plugin-react-naming-convention@5.18.1(eslint@10.8.0)(typescript@6.0.3):
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/core': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/var': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/core': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/var': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
@@ -15072,13 +15058,13 @@ snapshots:
     dependencies:
       eslint: 10.8.0
 
-  eslint-plugin-react-rsc@5.18.0(eslint@10.8.0)(typescript@6.0.3):
+  eslint-plugin-react-rsc@5.18.1(eslint@10.8.0)(typescript@6.0.3):
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/core': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/var': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/core': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/var': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       eslint: 10.8.0
@@ -15086,13 +15072,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react-web-api@5.18.0(eslint@10.8.0)(typescript@6.0.3):
+  eslint-plugin-react-web-api@5.18.1(eslint@10.8.0)(typescript@6.0.3):
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/core': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/var': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/core': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/var': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       birecord: 0.1.2
@@ -15102,14 +15088,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react-x@5.18.0(eslint@10.8.0)(typescript@6.0.3):
+  eslint-plugin-react-x@5.18.1(eslint@10.8.0)(typescript@6.0.3):
     dependencies:
-      '@eslint-react/ast': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/core': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/eslint': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/jsx': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/shared': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
-      '@eslint-react/var': 5.18.0(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/ast': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/core': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/eslint': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/jsx': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/shared': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
+      '@eslint-react/var': 5.18.1(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/scope-manager': 8.65.0
       '@typescript-eslint/type-utils': 8.65.0(eslint@10.8.0)(typescript@6.0.3)
       '@typescript-eslint/types': 8.65.0
@@ -17008,23 +16994,18 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.4
 
-  mobx-react-lite@4.1.1(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  mobx-react-lite@5.0.0(mobx@7.0.0)(react@19.2.8):
     dependencies:
-      mobx: 6.16.1
+      mobx: 7.0.0
       react: 19.2.8
-      use-sync-external-store: 1.6.0(react@19.2.8)
-    optionalDependencies:
-      react-dom: 19.2.8(react@19.2.8)
 
-  mobx-react@9.2.2(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  mobx-react@10.0.0(mobx@7.0.0)(react@19.2.8):
     dependencies:
-      mobx: 6.16.1
-      mobx-react-lite: 4.1.1(mobx@6.16.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      mobx: 7.0.0
+      mobx-react-lite: 5.0.0(mobx@7.0.0)(react@19.2.8)
       react: 19.2.8
-    optionalDependencies:
-      react-dom: 19.2.8(react@19.2.8)
 
-  mobx@6.16.1: {}
+  mobx@7.0.0: {}
 
   modern-tar@0.7.7: {}
 
