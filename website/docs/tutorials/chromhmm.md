@@ -15,8 +15,9 @@ into one color-coded row per cell type from a single track, adapter, and fetch.
 - `node`, for the [JBrowse CLI](/docs/cli)
 
 On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
-comes from [nodejs.org](https://nodejs.org/). No aligner and no heavy compute
-needed.
+comes from [nodejs.org](https://nodejs.org/).
+
+## Many cell types in one track
 
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
 states (active promoter, strong enhancer, heterochromatin, ...) from

@@ -9,14 +9,13 @@ tutorial_category: Synteny & comparative genomics
 
 **TL;DR:** genomes.jbrowse.org already carries UCSC's pairwise liftOver
 alignments for every genome, so you can turn one on in a linear genome view and
-launch a two-panel linear synteny view from any chain block. No download and no
-second assembly setup: JBrowse resolves the mate genome on demand.
+launch a two-panel linear synteny view from any chain block. JBrowse resolves
+the mate genome on demand, so the second assembly needs no setup.
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a ready-made JBrowse
 config for every UCSC genome, and each one already carries UCSC's pairwise
-liftOver alignments to the other genomes. Nothing to download, nothing to
-convert, and no second install: any pair UCSC has a chain file for can be
-compared in a couple of clicks, in a browser.
+liftOver alignments to the other genomes, so any pair UCSC has a chain file for
+can be compared in a couple of clicks.
 
 This tutorial compares hg38 against T2T-CHM13 (hs1) at _TNNT3_, a locus that
 GRCh38 and T2T-CHM13 lay out differently.

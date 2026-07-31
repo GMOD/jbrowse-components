@@ -16,6 +16,8 @@ state back into the file it opens, so keep a copy if you need both.
 - [Node.js](https://nodejs.org/) 18 or newer
 - JBrowse Desktop, or a web server if you want to serve the same folder
 
+## One folder that opens in either app
+
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
 command line instead of clicking through the **Add track** form. You run a few
 commands and end up with one folder (a `config.json` sitting next to your data

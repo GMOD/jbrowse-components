@@ -11,15 +11,15 @@ draws one row per file.
 
 ## Prerequisites
 
-Nothing to install to read along. To build the tracks you need cells already
-clustered and labeled, which means either a fragments file (or a barcoded BAM)
-plus a barcode-to-label table, or the project object your analysis tool already
-holds: an `AnnData` in SnapATAC2 (Python), an `ArchRProject` in ArchR, or a
-Seurat/Signac object in R. The pseudobulk step runs in that same environment, so
-the BigWigs it writes can also be viewed inline through the
-[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
-[](/docs/jbrowser)) without leaving the session. You will also need a JBrowse
-instance to load the finished BigWigs into.
+To build the tracks:
+
+- cells already clustered and labeled: either a fragments file (or a barcoded
+  BAM) plus a barcode-to-label table, or the project object your analysis tool
+  already holds, an `AnnData` in SnapATAC2 (Python), an `ArchRProject` in ArchR,
+  or a Seurat/Signac object in R
+- a JBrowse instance to load the finished BigWigs into
+
+## Why pseudobulk
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
 a single cell is almost entirely zero and no locus reads as open or closed.
@@ -37,6 +37,11 @@ takes from that object to a loaded JBrowse instance. PBMCs are a good check on
 the whole path, because the answer is known in advance: at a T-cell marker the
 T-cell rows have to carry the signal and the B-cell and monocyte rows have to
 stay flat.
+
+The pseudobulk step runs in the same environment your clustering does, so the
+BigWigs it writes can also be viewed inline through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[](/docs/jbrowser)) without leaving the session.
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset over CD8A, loaded as one MultiQuantitativeTrack, each row keeping the color and cluster order the single-cell object gave it. The CD8 Memory, CD8 Naive, and MAIT rows carry the accessibility here while the B cell and monocyte rows stay flat." src="/img/scatac/pbmc5k_cd8a.png" />
 

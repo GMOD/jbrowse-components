@@ -27,6 +27,8 @@ it in JBrowse: synteny, variants, a whole-genome alignment, and depth.
   `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+## Cactus against pggb
+
 The graph is built here, not downloaded.
 
 The [pggb tutorial](/docs/tutorials/pangenome_ecoli) uses the same five strains

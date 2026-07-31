@@ -12,17 +12,12 @@ HiFi data and its benchmark SV/CNV calls into JBrowse.
 
 ## Prerequisites
 
-This tutorial assumes you are setting up a JBrowse 2 instance on an Apache 2
-HTTP server on Ubuntu or Debian Linux, but the data-preparation steps work on
-any platform.
-
-You will need:
-
-- A Linux machine with HTTP access (either a public URL or `http://localhost`)
+- A Linux machine with HTTP access (either a public URL or `http://localhost`).
+  The instructions set up JBrowse 2 on Apache 2 under Ubuntu or Debian; the
+  data-preparation steps work on any platform.
 - Approximately 1 TB of free disk space to build the tracks from the raw reads,
   or ~1.5 TB to run the full reproduce pipeline below (the BAM/CRAM files are
-  large); each figure below also has its own live link, so you don't have to
-  build the instance to see the results.
+  large)
 - At least 32 GB of RAM for the minimap2 alignment step (you can downsize the
   machine after data prep is done, and a 2 GB instance is sufficient to host the
   finished site)
@@ -37,6 +32,8 @@ You will need:
     later), for the coverage tracks
   - [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV) (v1.0 or later),
     for the copy-number tracks
+
+## The C-GIAB dataset
 
 All of the data-preparation commands below are also collected into one
 reproducible script (see [Reproduce it end to end](#reproduce-it-end-to-end)).
@@ -352,8 +349,7 @@ chromosome-scale rearrangements in the assembly.
 
 A
 [live demo](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json)
-with all tracks pre-loaded is available to follow along without a local
-instance.
+carries all of these tracks pre-loaded.
 
 ### Walkthrough: a chr3–chr13 translocation
 

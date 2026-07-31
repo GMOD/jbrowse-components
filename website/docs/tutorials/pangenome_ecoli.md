@@ -25,6 +25,8 @@ them.
 - `python3`, htslib (`bgzip`, `tabix`), `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+## The four linear projections
+
 The graph is built here, not downloaded.
 
 Most of what JBrowse draws are the graph's **linear projections**: the same
@@ -528,9 +530,9 @@ graph-derived tracks, and a default session. It also writes the `odgi viz`
 raster, the two graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and
 `ecoli_rgfa_slice.gfa`), and the rGFA tabix indexes behind the segments track,
 all of which need the cactus image for minigraph and gfatools. The `config.json`
-declares the graph genome view plugin, so the graph track and the launch menu
-item work with nothing to install. It needs the same tools listed under
-[What you need](#prerequisites).
+declares the graph genome view plugin, so the graph track and its launch menu
+item work without adding the plugin by hand. It needs the same tools listed
+under [What you need](#prerequisites).
 
 The PAF sort and bigWig conversion spill temp files large enough to overflow a
 tmpfs `/tmp`, so the script routes `TMPDIR` to a `tmp/` directory inside the

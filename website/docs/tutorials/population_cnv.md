@@ -17,12 +17,14 @@ second half packs the same values into one Zarr store.
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
-- Nothing to download. The per-sample copy-number BigWigs are hosted, and each
-  one is under 600 KB for the whole genome:
+- The per-sample copy-number BigWigs, hosted, each under 600 KB for the whole
+  genome:
 
 | File                                                                                | What                                   |
 | ----------------------------------------------------------------------------------- | -------------------------------------- |
 | `https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw` | one individual's copy number, 1kb bins |
+
+## The QuicK-mer2 estimates
 
 These are [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates over the
 30x 1000 Genomes panel, produced by the Kidd lab at the University of Michigan

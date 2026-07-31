@@ -18,6 +18,8 @@ reference are direct alignments and row order is a real choice.
 - `samtools`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+## Three genomes from one ortholog table
+
 Like [All-vs-all synteny](/docs/tutorials/allvsall_synteny), a linear synteny
 view here stacks more than two genomes: N genome rows with a synteny "ribbon"
 band between each adjacent pair. This tutorial builds a three-way grape / peach

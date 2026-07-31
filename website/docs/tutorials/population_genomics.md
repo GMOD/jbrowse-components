@@ -16,9 +16,7 @@ of its own.
 
 ## Prerequisites
 
-The pipeline uses these standard command-line tools, plus `curl` and `node` for
-the [JBrowse CLI](/docs/cli):
-
+- `curl`, and `node` for the [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
   a VCF
 - [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and
@@ -33,6 +31,8 @@ but `bedGraphToBigWig`, which is a
 [single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
 Homebrew has the same four (`brew install vcftools bcftools htslib`), and all
 five are on [bioconda](https://bioconda.github.io/) if you already run conda.
+
+## Windowed statistics as tracks
 
 Population-genetic scans are per-window statistics running along the genome: Fst
 (differentiation between groups), nucleotide diversity (π) within a group, dxy

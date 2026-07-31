@@ -11,9 +11,14 @@ engine itself.
 
 ## Prerequisites
 
-A text editor and a local HTTP server. Opening the HTML file directly won't
-work, JBrowse needs it served. `npx serve -S` in the folder works (`-S` resolves
-symlinks, so a data file you symlink in still loads).
+- a text editor
+- a local HTTP server: opening the HTML file directly won't work, JBrowse needs
+  it served. `npx serve -S` in the folder works (`-S` resolves symlinks, so a
+  data file you symlink in still loads)
+
+## What this builds
+
+<Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
 For the full JBrowse app instead of one view, see the
 [web quickstart](/docs/quickstart_web). For other view types (synteny, dotplot,
@@ -22,8 +27,6 @@ circular), a different bundler, or working demo repos, see
 [LGV storybook](https://jbrowse.org/storybook/lgv/) has live, copy-pasteable
 examples for everything beyond a basic view: themes, per-feature colors, text
 search, drawer widgets, reacting to view state, web-worker rendering.
-
-<Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
 ## Quick start
 

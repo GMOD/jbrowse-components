@@ -14,9 +14,9 @@ metric, and you can test all three before you build a figure.
 
 ## Prerequisites
 
-Nothing to install for the two figures below, which load hosted data. The
-[reproduce script](#reproduce-it-end-to-end) needs `plink` (1.9, not plink2),
-`htslib` (`bgzip`, `tabix`), `samtools`, `curl` and `python3`.
+- the two figures below load hosted data
+- the [reproduce script](#reproduce-it-end-to-end) needs `plink` (1.9, not
+  plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl`, and `python3`
 
 ## Reading the triangle
 

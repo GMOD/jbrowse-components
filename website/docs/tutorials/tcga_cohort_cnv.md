@@ -15,15 +15,16 @@ vertical stripes down the stack.
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
-- Nothing to download. Both files are hosted, and the whole 1104-tumor cohort is
-  a few MB of segment calls:
+- Both files, hosted; the whole 1104-tumor cohort is a few MB of segment calls:
 
 | File                                                                  | What                         |
 | --------------------------------------------------------------------- | ---------------------------- |
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`                 | the segment stack            |
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies |
 
-Both come from **open-access** GDC data, so no dbGaP application and no token is
+## What the two files hold
+
+Both come from open-access GDC data, so no dbGaP application and no token is
 involved. [Reproduce it end to end](#reproduce-it-end-to-end) below builds them
 from the GDC for any project id.
 

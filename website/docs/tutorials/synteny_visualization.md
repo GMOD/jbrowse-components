@@ -15,9 +15,6 @@ minimap2 argument order.
 
 ## Prerequisites
 
-This tutorial follows three _Helicobacter pylori_ strains (26695, CHC155, and
-J99) from raw assemblies to a stacked three-genome synteny view. You will need:
-
 - a JBrowse 2 instance (see the [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop); the steps below are identical
   on both, and on Desktop the FASTAs and alignments are local files)
@@ -27,10 +24,12 @@ J99) from raw assemblies to a stacked three-genome synteny view. You will need:
   [`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh)
   downloads from NCBI (see [below](#reproduce-it-end-to-end))
 
-Everything below works the same on any pair of assemblies you have. To follow
-along without downloading anything, the finished dataset is hosted:
+## Three strains, stacked
+
+This tutorial follows three _Helicobacter pylori_ strains (26695, CHC155, and
+J99) from raw assemblies to a stacked three-genome synteny view. The steps work
+the same on any pair of assemblies you have, and the finished dataset is hosted:
 [open the H. pylori synteny demo](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json).
-Each figure opens the exact view that produced it.
 
 ## Aligning the assemblies
 
@@ -188,7 +187,7 @@ from [nodejs.org](https://nodejs.org/).
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/tutorials/genomes_synteny), the same views on UCSC's hosted liftOver
-  chains with nothing to download
+  chains
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
 - [MAF track config guide](/docs/config_guides/maf_track) for multiway alignment

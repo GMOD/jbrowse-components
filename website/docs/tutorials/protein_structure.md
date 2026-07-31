@@ -12,10 +12,13 @@ needs a gene feature carrying a recognizable protein or transcript ID.
 
 ## Prerequisites
 
-Nothing to start: the next section opens a preconfigured instance with both
-plugins already loaded. To use them on your own data, add the two plugins to a
-JBrowse instance, covered under
-[Installing the plugins](#installing-the-plugins).
+- one of the instances under
+  [Where both plugins are already loaded](#where-both-plugins-are-already-loaded),
+  which carry protein3d and msaview already
+- or, for your own data, those two plugins added to a JBrowse instance, covered
+  under [Installing the plugins](#installing-the-plugins)
+
+## The two plugins
 
 JBrowse 2 can link genomic data to protein-level views: interactive 3D
 structures from [AlphaFold DB](https://alphafold.ebi.ac.uk/) and
@@ -43,7 +46,7 @@ The approach is described in our
 [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
 (_Journal of Molecular Biology_, 2026).
 
-## Try it without installing anything
+## Where both plugins are already loaded
 
 The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) shows
 all three views linked at once: search a human gene and it launches an MSA
@@ -155,8 +158,8 @@ is where the row's gaps get taken into account.
 
 A connected view can also be built declaratively as a session-spec URL, useful
 for demo links and embedded apps. The
-[TP53 example above](#try-it-without-installing-anything) is the short form: a
-UniProt accession plus a transcript ID, and the plugin derives the AlphaFold
+[TP53 example above](#where-both-plugins-are-already-loaded) is the short form:
+a UniProt accession plus a transcript ID, and the plugin derives the AlphaFold
 structure, finds the transcript in the `connectedView` tracks at `loc`, and
 translates its CDS to align against the structure. The explicit form takes a
 structure `url`, feature, and protein sequence instead, for a transcript no

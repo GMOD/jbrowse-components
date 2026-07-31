@@ -20,6 +20,8 @@ haplotype blocks that drive it.
   [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
   hosting step)
 
+## The BXD panel
+
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
 and DBA/2J (the "D" parent). Each strain's genome is a fixed pattern of B and D

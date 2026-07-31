@@ -13,8 +13,6 @@ CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
 
 ## Prerequisites
 
-This is a full command-line pipeline:
-
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, and `wget`
@@ -25,6 +23,8 @@ This is a full command-line pipeline:
 - htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
   `bedGraphToBigWig`, for the optional aggregate track only
+
+## What bisulfite data looks like
 
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
 without any long-read basecaller. A chemical (sodium bisulfite) or enzymatic

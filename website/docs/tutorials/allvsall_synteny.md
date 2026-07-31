@@ -18,13 +18,13 @@ large files).
 - `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+## Stacking N genomes from one file
+
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
 related (strains or accessions of one species), the most convenient source is a
 single all-vs-all PAF, with every genome aligned to every other. This tutorial
 builds a five-strain _E. coli_ pangenome view from one such file.
-
-Every figure below links to the live session that produced it.
 
 This same five-strain view also builds in Python or R: a `synteny_view` inside
 `JBrowseApp` ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or

@@ -14,12 +14,11 @@ and read the genotypes across breeds with the wild canids as the control.
 
 ## Prerequisites
 
-The figure has an "Open this view in JBrowse ↗" link that loads the finished
-tracks, so reading needs only a browser. To build the track yourself:
+To build the tracks:
 
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4)
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
-- for the copy-number section, `samtools` built with libcurl
+- `samtools` built with libcurl, for the copy-number section
 
 ## The gene and the question
 

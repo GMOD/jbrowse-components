@@ -12,16 +12,14 @@ and read crossovers straight off the track.
 
 ## Prerequisites
 
-To follow the viewing sections you need only a browser: every figure below has
-an "Open this view in JBrowse ↗" link that loads the finished tracks live, so
-you can read the whole tutorial without installing anything.
-
-To build the tracks yourself:
+To build the tracks:
 
 - the `hg38` assembly set up in JBrowse
   ([assemblies guide](/docs/config_guides/assemblies))
 - Java 8+, for hap-ibd
 - `python3`, `node`, and htslib (`bgzip`, `tabix`)
+
+## The trio VCF
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which

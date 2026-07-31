@@ -23,6 +23,8 @@ so each also needs a BED per genome mapping gene ids to coordinates.
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+## Why MCScan rather than a whole-genome aligner
+
 Unlike [pairwise minimap2](/docs/tutorials/synteny_visualization), which aligns
 sequence to sequence, MCScan compares two genomes through their gene
 annotations, so it still finds synteny between species too divergent for a

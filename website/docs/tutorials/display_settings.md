@@ -12,13 +12,15 @@ session spec or embedded view. When both are set, the per-session value wins.
 
 ## Prerequisites
 
-A JBrowse instance with a track already loaded (see the
-[web quickstart](/docs/quickstart_web) or
-[desktop quickstart](/docs/quickstart_desktop)). Everything here is config and
-URL editing, so there is nothing else to install.
+- a JBrowse instance with a track already loaded (see the
+  [web quickstart](/docs/quickstart_web) or
+  [desktop quickstart](/docs/quickstart_desktop))
+- a text editor for its `config.json`
 
-Track display settings (height, color scheme, display type, score range, and so
-on) live in two places:
+## Where display settings live
+
+Everything here is config and URL editing. Track display settings (height, color
+scheme, display type, score range, and so on) live in two places:
 
 - Persistent defaults live in `config.json`, in the track's `displayDefaults`
   object. These apply every time the track opens, in every session.
