@@ -189,4 +189,10 @@ export interface Sample {
    * `agent-docs/guides/MAF_CROSS_VIEW_NAVIGATION.md`.
    */
   assemblyName?: string
+  /**
+   * Config to load `assemblyName` from when the session doesn't already have
+   * it — a portal hosting many genomes keeps one config per genome, so the
+   * aligned species is normally absent from the config the user opened.
+   */
+  assemblyConfigUrl?: string
 }

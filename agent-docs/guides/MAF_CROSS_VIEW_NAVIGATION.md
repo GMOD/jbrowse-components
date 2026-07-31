@@ -43,7 +43,14 @@ Unset means the row is not navigable, so no existing track changes behavior.
 Config authors write:
 
 ```js
-samples: [{ id: 'SPRET_EiJ', label: 'SPRET/EiJ', assemblyName: 'SPRET_EiJ' }]
+samples: [
+  {
+    id: 'SPRET_EiJ',
+    label: 'SPRET/EiJ',
+    assemblyName: 'SPRET_EiJ',
+    assemblyConfigUrl: 'https://jbrowse.org/hubs/genark/mouseStrains/SPRET_EiJ/config.json',
+  },
+]
 ```
 
 - `components/findRowSpan.ts` — the row's own locus over a reference bp range.
@@ -62,18 +69,23 @@ samples: [{ id: 'SPRET_EiJ', label: 'SPRET/EiJ', assemblyName: 'SPRET_EiJ' }]
   `<displayId>_<assemblyName>` so following the same species repeatedly
   re-navigates one view. Same pattern as the spreadsheet view's location links.
 
-The assembly is assumed to be loadable by the session; a `assemblyName` naming
-an assembly the session doesn't have produces the view's own
-assembly-not-found error rather than a pre-flight check. If a deployment needs
-to load one on demand, `addSessionAssembly`
-(`packages/core/src/util/types/index.ts:294`, the call
-`JB2TrackHubConnection/doConnect.ts` uses) is the hook, and `Sample` would grow
-the config location to load it from.
+`assemblyConfigUrl` is what makes this work on a portal at all. A site hosting
+many genomes keeps one config per genome — genomes.jbrowse.org has ~50k — so an
+alignment's species are not, and cannot be, all present in the config the user
+opened. `ensureAssembly` fetches just the named assembly out of that config and
+`addSessionAssembly`s it (with `addRelativeUris`, same as
+`JB2TrackHubConnection/doConnect.ts`, or the fetched config's relative sequence
+URIs resolve against the page). Omit it when the assembly is already in the
+config; a name the session can't resolve and can't fetch surfaces the view's own
+assembly-not-found error.
 
-Not verified in a running browser yet — covered by `findRowSpan.test.ts` and
-`sampleNavigationItems.test.ts` only. The first real config to point it at is
-`~/src/jb2hubs`'s mouseStrains hub, whose sample ids are exact assembly names;
-see `agent-docs/MAF_CROSS_VIEW_NAVIGATION.md` there.
+**Verified live** against `~/src/jb2hubs`'s regenerated mouseStrains AKR_J
+config in a real jbrowse-web build (puppeteer, `--use-angle=gl`): drag-select →
+right-click lists `Open AKR_J chr1:3000400-3000486` / `Open mm10
+chr1:5880965-5881051` / `Open SPRET_EiJ chr1:3129040-3129126`, and clicking the
+SPRET_EiJ entry fetched that assembly and opened a second LGV on
+`SPRET_EiJ chr1:3,129,040..3,129,126`. Unit coverage is `findRowSpan.test.ts`
+and `sampleNavigationItems.test.ts`.
 
 The stretch version — open a **synteny** view driven by the MAF blocks
 themselves, since the MAF carries both coordinate systems and the alignment, so

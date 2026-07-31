@@ -112,6 +112,8 @@ export interface MafSource {
   color?: string
   /** assembly this row's genome is loaded as, when it is navigable */
   assemblyName?: string
+  /** config to load that assembly from, when the session lacks it */
+  assemblyConfigUrl?: string
 }
 
 /**
@@ -450,6 +452,9 @@ export default function stateModelFactory(
             label: s.label,
             color: s.color,
             ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
+            ...(s.assemblyConfigUrl
+              ? { assemblyConfigUrl: s.assemblyConfigUrl }
+              : {}),
           }))
           const next = samplesCanonical
             ? incoming
@@ -721,6 +726,9 @@ export default function stateModelFactory(
             label: s.label ?? s.name,
             color: s.color,
             ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
+            ...(s.assemblyConfigUrl
+              ? { assemblyConfigUrl: s.assemblyConfigUrl }
+              : {}),
           }))
         },
         /**
@@ -1214,6 +1222,7 @@ export default function stateModelFactory(
             ? {
                 ...span,
                 assemblyName: source.assemblyName,
+                assemblyConfigUrl: source.assemblyConfigUrl,
                 sampleLabel: source.label ?? source.name,
               }
             : undefined

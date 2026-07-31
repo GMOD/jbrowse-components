@@ -17,6 +17,7 @@ interface SampleConfigEntry {
   label?: string
   color?: string
   assemblyName?: string
+  assemblyConfigUrl?: string
 }
 
 export type SampleConfig = string[] | SampleConfigEntry[]
@@ -33,6 +34,9 @@ export function normalizeSamples(r: SampleConfig): Sample[] {
         label: s.label ?? s.id,
         color: s.color,
         ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
+        ...(s.assemblyConfigUrl
+          ? { assemblyConfigUrl: s.assemblyConfigUrl }
+          : {}),
       }))
 }
 

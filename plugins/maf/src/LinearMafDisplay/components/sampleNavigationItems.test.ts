@@ -1,3 +1,7 @@
+import {
+  findAssemblyConf,
+  openSampleInNewView,
+} from '../openSampleInNewView.ts'
 import { sampleNavigationItems } from './sampleNavigationItems.ts'
 
 import type { SampleNavigationModel } from './sampleNavigationItems.ts'
@@ -56,6 +60,7 @@ const coord = {
 function target(sampleLabel: string, start: number) {
   return {
     assemblyName: 'mm10',
+    assemblyConfigUrl: undefined,
     chr: 'chr2',
     start,
     end: start + 20,
@@ -95,21 +100,25 @@ test('many navigable rows collapse into a submenu', () => {
   expect(item && 'subMenu' in item && item.subMenu).toHaveLength(8)
 })
 
-test('clicking launches a view keyed on display + assembly', () => {
+test('launching opens a view keyed on display + assembly', async () => {
   views.length = 0
-  const items = sampleNavigationItems(
-    session,
-    model({ 0: target('SPRET_EiJ', 1000) }),
-    coord,
-  )
-  const [item] = items
-  if (item && 'onClick' in item) {
-    item.onClick()
-  }
+  await openSampleInNewView(session, 'display1', target('SPRET_EiJ', 1000))
   expect(views).toEqual([
     {
       id: 'display1_mm10',
       init: { assembly: 'mm10', loc: 'chr2:1001-1020' },
     },
   ])
+})
+
+test('findAssemblyConf picks the named assembly out of a fetched config', () => {
+  const configJson = {
+    assemblies: [{ name: 'rn6' }, { name: 'SPRET_EiJ', sequence: {} }],
+  }
+  expect(findAssemblyConf(configJson, 'SPRET_EiJ')).toEqual({
+    name: 'SPRET_EiJ',
+    sequence: {},
+  })
+  expect(findAssemblyConf(configJson, 'nonexistent')).toBeUndefined()
+  expect(findAssemblyConf({}, 'rn6')).toBeUndefined()
 })
