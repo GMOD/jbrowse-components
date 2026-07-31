@@ -232,11 +232,12 @@ align to the same three exons, so as two regions of one row their ribbons cross
 through each other; from above and below they close on the gene instead, and
 each intron is one gap seen twice.
 
-<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the two SV records. Each retrocopy's CDS is one box against the parent's three, and the ribbon gaps fall on the two records." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the per-breed sample rows between the two ribbons. Each retrocopy's CDS is one box against the parent's three, and each ribbon gap sits over a record whose carriers stop at the Labradors." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
-The window is narrower than the one above, so the three exons and both gaps fill
-the frame; each retrocopy row shows the part of its record that covers this
-window, not the whole thing.
+The window stops where the CFA18 alignment does, so that retrocopy is on screen
+end to end and the CFA12 ribbon runs on past it. The sample rows are the same
+track as the figure above, in the same coordinates, so a block edge can be read
+against both the intron boundary above it and the breeds carrying it.
 
 The two gaps in each ribbon are the two records, at the same coordinates and the
 same lengths, and

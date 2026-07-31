@@ -357,20 +357,19 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
                 type: 'LinearBasicDisplay',
                 height: 60,
               },
-              // The positional display, one row of two features, NOT the 55-row
-              // multi-sample display the figure above uses. Per-breed carriage is
-              // that figure's job and it is directly above this one; here the
-              // records are a coordinate to compare the gaps against, and 55 rows
-              // between the two synteny bands would put 690 px between the things
-              // being compared.
+              // The 55-row multi-sample display, per review, rather than the
+              // one-row positional display this used to carry. It draws each
+              // record at its real coordinates the same way, so the geometry the
+              // figure is about (a block edge on an intron boundary) survives the
+              // swap, and every row now also says which breeds carry the record.
+              // The cost is real and was the reason for the earlier choice: it
+              // puts ~690 px between the two synteny bands, so the upper ribbon
+              // and the lower one can no longer be taken in at once.
               {
                 trackId: 'dog10k_fgf4_svs',
-                type: 'LinearVariantDisplay',
-                // one row, once `showLabels`/`showDescriptions` are off on the
-                // track (the two records don't overlap -- it was record 1's name
-                // and its `<DEL:SVSIZE=532:AGGREGATED>` description that pushed
-                // record 2 onto a second row)
-                height: 34,
+                type: 'LinearMultiSampleVariantDisplay',
+                height: 690,
+                colorBy: 'group',
               },
             ],
           },
@@ -924,30 +923,31 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'dog10k-fgf4-retrogene-synteny',
-    // NOT the window the figure above draws, which was the first version of this.
-    // Sharing it put the whole payload -- three exons, two gaps, two records -- in
-    // the left quarter of the frame, with the other three quarters the flat 3'
-    // exon: measured, the gaps plus exon 2 were 695 px of a 2,918 px data area.
-    // This is 2.2 kb instead of 5, so they fill it. What the wide window showed
-    // and this does not is that each retrocopy spans the whole transcript, and
-    // that the two differ in 3' extent; both are in the script output the guide
-    // quotes, and neither was legible in the frame anyway.
+    // 3.8 kb, zoomed out per review from the 2.2 kb this used to draw, and the
+    // right edge is not a round number: 48,872,890 is where the CFA18 alignment
+    // ends, so the window holds that retrocopy end to end and the CFA12 ribbon
+    // visibly runs on past it, which is the 3' difference between the two
+    // records. Still not the 5 kb of the figure above, which put the whole
+    // payload -- three exons, two gaps, two records -- in the left quarter of the
+    // frame and gave the other three quarters to the flat 3' exon (measured: the
+    // gaps plus exon 2 were 695 px of a 2,918 px data area).
     //
     // The retrocopy rows are the sub-range that covers this window, derived by
     // walking each PAF's CIGAR rather than scaled by eye. They have to be: a
     // retrocopy is 1,066 bp shorter than the reference span it covers, so a row
     // showing more would trail ribbon-free sequence and one showing less would cut
     // its own alignment.
-    url: fgf4SyntenySession('chr18:48,869,100-48,871,300', {
-      'FGF4retro-CFA18': 'FGF4retro-CFA18:1-1036',
-      'FGF4retro-CFA12': 'FGF4retro-CFA12:2-1033',
+    url: fgf4SyntenySession('chr18:48,869,100-48,872,900', {
+      'FGF4retro-CFA18': 'FGF4retro-CFA18:1-2625',
+      'FGF4retro-CFA12': 'FGF4retro-CFA12:2-2639',
     }),
     readyText: 'chr18',
     readyTimeout: 90000,
     settleMs: 6000,
-    // an annotation lane per retrocopy plus the gene and SV lanes between them,
-    // and the two synteny bands. Sized by the generator's below-the-fold check.
-    viewportHeight: 750,
+    // an annotation lane per retrocopy, the gene lane and the 55-row sample block
+    // between them, and the two synteny bands. Sized by the generator's
+    // below-the-fold check.
+    viewportHeight: 1410,
   },
 
   // There is deliberately NO whole-collection figure beside the panel above,
