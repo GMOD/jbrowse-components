@@ -16,7 +16,6 @@ export {
 export { getFiltersMenuItem } from './filters.ts'
 export { collapseGroupRowsItems, groupByRadioMenuItem } from './groupByMenu.ts'
 export type { CollapseGroupRowsModel, GroupByRadioItem } from './groupByMenu.ts'
-export { checkboxItem } from './menuHelpers.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getMaxHeightMenuItem, getReadsMenuItem } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'

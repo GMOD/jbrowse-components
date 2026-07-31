@@ -1,5 +1,5 @@
+import { checkboxItem } from '@jbrowse/core/ui'
 import {
-  checkboxItem,
   collapseGroupRowsItems,
   getMaxHeightMenuItem,
   groupByRadioMenuItem,

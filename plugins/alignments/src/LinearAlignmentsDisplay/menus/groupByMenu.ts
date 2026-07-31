@@ -1,6 +1,5 @@
+import { checkboxItem } from '@jbrowse/core/ui'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
-
-import { checkboxItem } from './menuHelpers.ts'
 
 import type { GroupByType } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'

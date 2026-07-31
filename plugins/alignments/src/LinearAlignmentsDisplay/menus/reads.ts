@@ -1,11 +1,10 @@
 import { lazy } from 'react'
 
-import { promotableToggleItem } from '@jbrowse/core/ui'
+import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { collapseGroupRowsItems } from './groupByMenu.ts'
-import { checkboxItem } from './menuHelpers.ts'
 
 import type { CollapseGroupRowsModel } from './groupByMenu.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'

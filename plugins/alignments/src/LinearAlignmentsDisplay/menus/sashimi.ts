@@ -1,4 +1,5 @@
 import {
+  checkboxItem,
   makeSizeMenu,
   promotableRadioItem,
   promotableToggleItem,
@@ -6,7 +7,6 @@ import {
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
-import { checkboxItem } from './menuHelpers.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'

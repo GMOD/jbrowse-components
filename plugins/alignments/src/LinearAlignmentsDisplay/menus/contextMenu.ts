@@ -124,7 +124,7 @@ export function copyFeatureInfo(self: ContextMenuModel, feat: Feature) {
 
 // Cigar and coverage-indicator hits build the identical two-item submenu: sort
 // the pileup by what's under the cursor, or open its details widget. `block` is
-// captured once by getContextMenuItems and read inside the onClicks because
+// captured once by getHitMenuItems and closed over by the onClicks because
 // closeContextMenu nulls self.contextMenuBlock before they fire.
 //
 // `sort` false collapses the pair to the bare details item — for a display whose
@@ -143,22 +143,20 @@ function sortAndDetailsSubMenu({
   sort,
 }: {
   self: ContextMenuModel
-  block: ResolvedBlock | undefined
+  block: ResolvedBlock
   label: string
   sortLabel: string
   sortType: string
   position: number
   detailsLabel: string
-  openDetails: (block: ResolvedBlock) => void
+  openDetails: () => void
   sort: boolean
 }): MenuItem {
   const detailsItem = {
     label: detailsLabel,
     icon: MenuOpenIcon,
     onClick: () => {
-      if (block) {
-        openDetails(block)
-      }
+      openDetails()
     },
   }
   return sort
@@ -170,13 +168,11 @@ function sortAndDetailsSubMenu({
             label: sortLabel,
             icon: SwapVertIcon,
             onClick: () => {
-              if (block) {
-                self.setSortedByAtPosition({
-                  type: sortType,
-                  pos: position,
-                  refName: block.refName,
-                })
-              }
+              self.setSortedByAtPosition({
+                type: sortType,
+                pos: position,
+                refName: block.refName,
+              })
             },
           },
           detailsItem,
@@ -297,70 +293,83 @@ export function getHitMenuItems(
   const cigarHit = self.contextMenuCigarHit
   const indicatorHit = self.contextMenuIndicatorHit
   const modHit = self.contextMenuModHit
+  // Every item below names the block's refName (the indicator widget also its
+  // rpcData), and the hit test only reports a hit inside a resolved block, so
+  // one gate covers all three — rather than some items vanishing without a block
+  // and others rendering with a dead onClick. Snapshotted here, with the hits,
+  // because closeContextMenu clears them before any onClick fires.
   const block = self.contextMenuBlock
   const items: MenuItem[] = []
 
-  if (cigarHit) {
-    const typeLabel = getCigarTypeLabel(cigarHit.type)
-    const isInterbase = isInterbaseType(cigarHit.type)
-    items.push(
-      sortAndDetailsSubMenu({
-        self,
-        block,
-        label: typeLabel,
-        sortLabel: isInterbase
-          ? `Sort by ${typeLabel.toLowerCase()} at position`
-          : 'Sort by base at position',
-        sortType: isInterbase ? cigarHit.type : 'basePair',
-        position: cigarHit.position,
-        // Named with its span, so "Open deletion details" beside a feature-level
-        // "Open feature details" reads as the CIGAR op the cursor is on rather
-        // than as an unexplained second kind of detail. A mismatch is 1bp by
-        // construction and says nothing.
-        detailsLabel: `Open ${typeLabel.toLowerCase()} details${
-          cigarHit.length > 1 ? ` (${cigarHit.length.toLocaleString()} bp)` : ''
-        }`,
-        openDetails: b => {
-          openCigarWidget(self, cigarHit, b.refName)
-        },
-        sort,
-      }),
-    )
-  }
+  if (block) {
+    if (cigarHit) {
+      const typeLabel = getCigarTypeLabel(cigarHit.type)
+      const isInterbase = isInterbaseType(cigarHit.type)
+      items.push(
+        sortAndDetailsSubMenu({
+          self,
+          block,
+          label: typeLabel,
+          sortLabel: isInterbase
+            ? `Sort by ${typeLabel.toLowerCase()} at position`
+            : 'Sort by base at position',
+          sortType: isInterbase ? cigarHit.type : 'basePair',
+          position: cigarHit.position,
+          // Named with its span, so "Open deletion details" beside a
+          // feature-level "Open feature details" reads as the CIGAR op the
+          // cursor is on rather than as an unexplained second kind of detail. A
+          // mismatch is 1bp by construction and says nothing.
+          detailsLabel: `Open ${typeLabel.toLowerCase()} details${
+            cigarHit.length > 1
+              ? ` (${cigarHit.length.toLocaleString()} bp)`
+              : ''
+          }`,
+          openDetails: () => {
+            openCigarWidget(self, cigarHit, block.refName)
+          },
+          sort,
+        }),
+      )
+    }
 
-  // A modified base opens its per-read modification widget from the menu too —
-  // reachable on a plain modified base, where there's no cigarHit submenu above.
-  // block/modHit are snapshotted (like cigarHit/block) since closeContextMenu
-  // clears them before this onClick fires. snpBase annotates the widget when the
-  // modified base is also a SNP, mirroring the left-click path.
-  if (modHit && block) {
-    const snpBase = cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
-    items.push({
-      label: 'Open modification details',
-      icon: MenuOpenIcon,
-      onClick: () => {
-        openModificationWidget(self, modHit, block.refName, snpBase)
-      },
-    })
-  }
-
-  if (indicatorHit) {
-    const typeLabel = getCigarTypeLabel(indicatorHit.indicatorType)
-    items.push(
-      sortAndDetailsSubMenu({
-        self,
-        block,
-        label: `Coverage ${typeLabel}`,
-        sortLabel: `Sort by ${typeLabel.toLowerCase()} at position`,
-        sortType: indicatorHit.indicatorType,
-        position: indicatorHit.position,
-        detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
-        openDetails: b => {
-          openIndicatorWidget(self, indicatorHit, b.refName, b.rpcData)
+    // A modified base opens its per-read modification widget from the menu too —
+    // reachable on a plain modified base, where there's no cigarHit submenu
+    // above. snpBase annotates the widget when the modified base is also a SNP,
+    // mirroring the left-click path.
+    if (modHit) {
+      const snpBase = cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
+      items.push({
+        label: 'Open modification details',
+        icon: MenuOpenIcon,
+        onClick: () => {
+          openModificationWidget(self, modHit, block.refName, snpBase)
         },
-        sort,
-      }),
-    )
+      })
+    }
+
+    if (indicatorHit) {
+      const typeLabel = getCigarTypeLabel(indicatorHit.indicatorType)
+      items.push(
+        sortAndDetailsSubMenu({
+          self,
+          block,
+          label: `Coverage ${typeLabel}`,
+          sortLabel: `Sort by ${typeLabel.toLowerCase()} at position`,
+          sortType: indicatorHit.indicatorType,
+          position: indicatorHit.position,
+          detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
+          openDetails: () => {
+            openIndicatorWidget(
+              self,
+              indicatorHit,
+              block.refName,
+              block.rpcData,
+            )
+          },
+          sort,
+        }),
+      )
+    }
   }
 
   return items

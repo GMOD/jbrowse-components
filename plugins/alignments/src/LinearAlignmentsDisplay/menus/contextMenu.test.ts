@@ -202,7 +202,10 @@ test('a modification hit offers "Open modification details"', () => {
   expect(labels).toContain('Open modification details')
 })
 
-test('sort is a no-op without a block', () => {
+// Every hit item names the block's refName, so without one there is nothing to
+// offer — the alternative (a visible row whose click silently does nothing) is
+// what this replaced.
+test('no hit items without a block', () => {
   const model = makeModel({
     contextMenuCigarHit: {
       type: 'mismatch',
@@ -212,8 +215,7 @@ test('sort is a no-op without a block', () => {
     },
     contextMenuBlock: undefined,
   })
-  firstSubMenuItem(run(model)[0]).onClick()
-  expect(model.sortCalls).toEqual([])
+  expect(run(model)).toEqual([])
 })
 
 test('a read hit offers a "Sort by" submenu anchored at the clicked column', () => {

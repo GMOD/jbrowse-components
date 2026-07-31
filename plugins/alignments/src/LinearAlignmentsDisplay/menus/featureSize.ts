@@ -2,12 +2,11 @@ import { lazy } from 'react'
 
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { capitalizeFirst, getSession } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
-import { capitalizeFirst } from './menuHelpers.ts'
 
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'

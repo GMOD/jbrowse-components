@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { capitalizeFirst, getSession } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import {
@@ -9,7 +9,6 @@ import {
 } from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
-import { capitalizeFirst } from './menuHelpers.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
@@ -43,7 +42,9 @@ interface SortByModel {
 // Callers pick the applicable modes and the label noun (like pickColorOptions):
 // alignments takes every mode with 'read'; LGVSyntenyDisplay drops base pair /
 // tag — a PAF block has neither per-base sequence nor SAM tags — and uses
-// 'feature'.
+// 'feature'. The noun is held lower-case because it also lands mid-label
+// ("Longest reads first"); rows that lead with it capitalize through
+// `capitalizeFirst`.
 
 export type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
 
@@ -57,14 +58,15 @@ const ALL_SORT_MODES: SortMode[] = [
 
 function getSortMode(model: SortByModel): SortMode {
   const type = model.sortedBy?.type
-  if (type === undefined) {
-    return model.largeFeaturesFirst ? 'length' : 'position'
-  }
-  return type === 'strand' || type === 'tag'
-    ? type
-    : type === 'basePair' || isInterbaseType(type)
-      ? 'basePair'
+  return type === undefined
+    ? model.largeFeaturesFirst
+      ? 'length'
       : 'position'
+    : type === 'strand' || type === 'tag'
+      ? type
+      : type === 'basePair' || isInterbaseType(type)
+        ? 'basePair'
+        : 'position'
 }
 
 export function getSortByMenuItem(
@@ -77,7 +79,13 @@ export function getSortByMenuItem(
   },
 ) {
   const noun = opts?.noun ?? 'read'
-  const mode = getSortMode(model)
+  const modes = opts?.modes ?? ALL_SORT_MODES
+  // A stored ordering this menu doesn't offer — a base-pair or tag sort saved
+  // against a display that later curated them away (LGVSyntenyDisplay) — falls
+  // back to the unsorted default rather than leaving every radio blank, the same
+  // rule `checkedType` applies to the group-by radios.
+  const stored = getSortMode(model)
+  const mode = modes.includes(stored) ? stored : 'position'
   const items: Record<SortMode, RadioMenuItem> = {
     position: {
       label: 'Start location',
@@ -141,7 +149,7 @@ export function getSortByMenuItem(
     icon: SwapVertIcon,
     disabled: opts?.disabled,
     disabledHelpText: opts?.disabledHelpText,
-    subMenu: (opts?.modes ?? ALL_SORT_MODES).map(m => items[m]),
+    subMenu: modes.map(m => items[m]),
   }
 }
 

@@ -40,7 +40,6 @@ export {
 } from './LinearAlignmentsDisplay/index.ts'
 export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
 export {
-  checkboxItem,
   collapseGroupRowsItems,
   copyFeatureInfo,
   getColorByMenuItem,

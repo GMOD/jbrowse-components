@@ -109,6 +109,21 @@ describe('curated modes', () => {
     ).toEqual(['Start location', 'Longest features first', 'Feature strand'])
   })
 
+  // Mirrors the group-by radios, which tick "None" for a stored dimension they
+  // don't offer: a blank radio group reads as a broken menu.
+  test.each(['basePair', 'tag'])(
+    'a stored %s sort this menu does not offer falls back to Start location',
+    type => {
+      const item = getSortByMenuItem(makeModel({ sortedBy: sorted(type) }), {
+        ...opts,
+        modes: [...opts.modes],
+      })
+      expect(item.subMenu.filter(i => i.checked).map(i => i.label)).toEqual([
+        'Start location',
+      ])
+    },
+  )
+
   test('still tracks the checked mode', () => {
     const item = getSortByMenuItem(makeModel({ largeFeaturesFirst: true }), {
       ...opts,

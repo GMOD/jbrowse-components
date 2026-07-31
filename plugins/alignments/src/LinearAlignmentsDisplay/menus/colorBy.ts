@@ -1,6 +1,11 @@
 import { lazy } from 'react'
 
-import { makeSizeMenu, promotableRadioItem } from '@jbrowse/core/ui'
+import {
+  checkboxItem,
+  makeSizeMenu,
+  promotableRadioItem,
+  radioItems,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
@@ -13,7 +18,6 @@ import {
   DEFAULT_MODIFICATION_THRESHOLD,
   isModificationTypeVisible,
 } from '../../shared/types.ts'
-import { checkboxItem, radioItems } from './menuHelpers.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type {
@@ -419,7 +423,7 @@ function schemeRadios(
 // plain radios, pinning the tag actually in use.
 function tagSection(
   model: AnyColorByModel,
-  include: boolean,
+  include: boolean | undefined,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
   const { colorBy } = model
@@ -447,11 +451,16 @@ function tagSection(
     : []
 }
 
+// Plain scheme radios in a submenu — nothing here reads a modification field, so
+// it takes the bare model. Threading the `modModel` probe through it instead
+// silently dropped the whole section for a caller that opted in but carries no
+// modification state.
 function pairedEndSection(
-  model: ModificationsModel | undefined,
+  model: AnyColorByModel,
+  include: boolean | undefined,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
-  return model
+  return include
     ? [
         {
           label: 'Paired end',
@@ -549,13 +558,10 @@ export function getColorByMenuItem(
     icon: Palette,
     subMenu: [
       schemeRadios(model, options.colorOptions, options.displayTypeDefault),
-      tagSection(
-        model,
-        options.includeTagOption ?? false,
-        options.displayTypeDefault,
-      ),
+      tagSection(model, options.includeTagOption, options.displayTypeDefault),
       pairedEndSection(
-        options.includePairedEnd ? mods : undefined,
+        model,
+        options.includePairedEnd,
         options.displayTypeDefault,
       ),
       modificationsSection(
