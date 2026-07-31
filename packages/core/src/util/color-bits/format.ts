@@ -91,6 +91,8 @@ function rgbToHSL(r: number, g: number, b: number) {
   r /= 255
   g /= 255
   b /= 255
+  // `l` here is the max channel (HSV value) and `s` the chroma, not the HSL
+  // lightness/saturation; the real lightness is (max + min) / 2 = l - s / 2
   const l = Math.max(r, g, b)
   const s = l - Math.min(r, g, b)
   const h = s
@@ -100,10 +102,19 @@ function rgbToHSL(r: number, g: number, b: number) {
         ? 2 + (b - r) / s
         : 4 + (r - g) / s
     : 0
+  // the saturation formula is picked by lightness, not by the max channel:
+  // branching on `l` understated it whenever max > 0.5 while lightness < 0.5
+  // (e.g. #0a0ac8 came out 63.3% instead of 90.5%)
+  const doubleLightness = 2 * l - s
   buffer[0] = 60 * h < 0 ? 60 * h + 360 : 60 * h
   buffer[1] =
-    100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0)
-  buffer[2] = (100 * (2 * l - s)) / 2
+    100 *
+    (s
+      ? doubleLightness <= 1
+        ? s / doubleLightness
+        : s / (2 - doubleLightness)
+      : 0)
+  buffer[2] = (100 * doubleLightness) / 2
 }
 
 // https://stackoverflow.com/a/29463581/3112706

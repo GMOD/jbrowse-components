@@ -53,26 +53,49 @@ export function emphasize(color: string, coefficient = 0.15): string {
   return muiEmphasize(convertedColor || color, coefficient)
 }
 
+const CONTRAST_STEPS = 20
+
+/**
+ * Push `foreground` away from `background` until it clears `minContrastRatio`,
+ * returning the closest it got when that ratio is unreachable.
+ *
+ * `minContrastRatio` genuinely cannot be met against a mid-luminance
+ * background: lighten/darken clamp their coefficient at 1, so the candidate
+ * pins at white/black, and against a `#b0b0b0` paper the best ratio any color
+ * reaches is about 2.2. This used to be a `while (ratio < min)` loop with an
+ * unbounded coefficient, which froze the render thread outright for 38 of the 40
+ * default refName colors.
+ */
 export function makeContrasting(
   foreground: string,
   background = 'white',
   minContrastRatio = 3,
 ) {
-  let convertedForeground = namedColorToHex(foreground) || foreground
+  const originalColor = namedColorToHex(foreground) || foreground
   const convertedBackground = namedColorToHex(background) || background
   const backgroundLuminance = getLuminance(convertedBackground)
-  let contrastRatio = getContrastRatio(convertedForeground, convertedBackground)
-  const originalColor = convertedForeground
-  let coefficient = 0.05
-  while (contrastRatio < minContrastRatio) {
-    convertedForeground =
+  let best = originalColor
+  let bestRatio = getContrastRatio(originalColor, convertedBackground)
+  // an integer step keeps the last coefficient exactly 1, where the clamp bites
+  for (
+    let step = 1;
+    step <= CONTRAST_STEPS && bestRatio < minContrastRatio;
+    step++
+  ) {
+    const coefficient = step / CONTRAST_STEPS
+    const candidate =
       backgroundLuminance > 0.5
         ? darken(originalColor, coefficient)
         : lighten(originalColor, coefficient)
-    coefficient += 0.05
-    contrastRatio = getContrastRatio(convertedForeground, convertedBackground)
+    const ratio = getContrastRatio(candidate, convertedBackground)
+    // lightening a dark color against a mid-grey background dips before it
+    // climbs, so track the max rather than taking the last candidate
+    if (ratio > bestRatio) {
+      best = candidate
+      bestRatio = ratio
+    }
   }
-  return convertedForeground
+  return best
 }
 
 export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'

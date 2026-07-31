@@ -98,6 +98,20 @@ describe('colord wrapper over color-bits', () => {
     test('toHslString', () => {
       expect(colord('#ff0000').toHslString()).toBe('hsl(0, 100%, 50%)')
     })
+
+    // Regression: saturation was selected by the max channel rather than by
+    // lightness, so any color with max > 0.5 but lightness < 0.5 came out
+    // desaturated. Values cross-checked against the CSS HSL definition.
+    test.each([
+      ['#0a0ac8', 'hsl(240, 90.5%, 41.2%)'],
+      ['#8c5959', 'hsl(0, 22.3%, 44.9%)'],
+      ['#c86432', 'hsl(20, 60%, 49%)'],
+      ['#ffffff', 'hsl(0, 0%, 100%)'],
+      ['#000000', 'hsl(0, 0%, 0%)'],
+      ['#808080', 'hsl(0, 0%, 50.2%)'],
+    ])('%s -> %s', (hex, expected) => {
+      expect(colord(hex).toHslString()).toBe(expected)
+    })
   })
 
   describe('manipulation', () => {
