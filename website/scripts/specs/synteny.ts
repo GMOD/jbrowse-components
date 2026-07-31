@@ -127,19 +127,26 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
     // two collapsed scalebar rows around one 260px band
     viewportHeight: 445,
     annotations: [
-      { type: 'text' as const, x: 24, y: 56, fontSize: 22, text: label },
+      {
+        type: 'text' as const,
+        x: 24,
+        y: 56,
+        fontSize: 22,
+        maxWidth: 700,
+        text: label,
+      },
     ],
   })
   return [
     part(
       'mcscan_synteny/anchors',
       ['grape_peach_synteny_mcscan'],
-      '.anchors: one ribbon per gene pair',
+      '.anchors open; one ribbon per gene pair',
     ),
     part(
       'mcscan_synteny/anchors_simple',
       ['grape_peach_synteny_mcscan_simple', 'grape_peach_synteny_mcscan'],
-      '.anchors.simple blocks over the same gene pairs',
+      '.anchors and .anchors.simple open; one ribbon per gene\nrendered on top of chained synteny blocks',
     ),
   ]
 }
