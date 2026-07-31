@@ -81,10 +81,10 @@ on opposite strands, since without strand information you can't tell which gene
 a read belongs to.
 
 The surfeit locus is a tightly-packed gene cluster with genes alternating
-strands (RPL7A, SURF1, SURF2, SURF4). Coloring each read by its fragment's
-strand cleanly separates them:
+strands (RPL7A, SURF1, SURF2, SURF4). Open the track menu and pick **Color by...
+→ Paired end → First of pair strand**:
 
-<Figure caption="The same reads colored by first-of-pair strand: the alternating-strand cluster (RPL7A, SURF1, SURF2, SURF4) separates cleanly into two colors." src="/img/rnaseq/strand_specific.png" />
+<Figure caption="The same reads under the two colorings at the surfeit locus. Default coloring is one grey pileup across the cluster; first-of-pair strand splits it into two colors that switch where the genes do." src="/img/rnaseq/strand_specific.png" links="Default=rnaseq/strand_specific_default,First of pair strand=rnaseq/strand_specific_pair" />
 
 ## Short reads vs long reads
 

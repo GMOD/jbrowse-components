@@ -4,11 +4,9 @@ import {
   HG002_NANOPORE_HP_TRACK,
   VOLVOX,
   VOLVOX_SV_CRAM_ADAPTER,
-  cascadeBoxes,
   lgvSession,
   menuCascade,
   sessionSpec,
-  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -16,6 +14,71 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The menu label for `fit`, straight from the shared option table, so the click
 // path and the boxed annotation below can't drift from the menu.
 const FIT_LABEL = heightModeLabel('fit', 'read')
+
+// The surfeit locus, the most tightly-packed gene cluster in the vertebrate
+// genome, with genes on alternating strands (RPL7A +, SURF1 -, SURF2 +, SURF4 -)
+// sharing bidirectional promoters. The two halves are the same reads under the
+// two colorings, which is the comparison the section is about: without the
+// per-read strand there is nothing in the pileup that says which of two abutting
+// genes a read came from.
+//
+// This was one frame with the Color by... -> Paired end -> First of pair strand
+// cascade open over it, teaching the click path and its result at once. The
+// cascade is three menus wide and covered most of the pileup underneath, so the
+// result had nowhere to show. The click path is not lost: it is in the recipe
+// dialog beside the figure's live links, derived from `colorBy` on the session.
+//
+// Both colorings are written into their own session (never driven by a menu),
+// so each half's live link opens the state it shows.
+function strandSpecificParts(): ScreenshotSpec[] {
+  const part = (
+    name: string,
+    colorBy: { type: string },
+    label: string,
+  ): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr9:136,214,000-136,229,000',
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          type: 'LinearAlignmentsDisplay',
+          colorBy,
+          coverageHeight: 90,
+          height: 330,
+          maxHeight: 2000,
+          minSashimiScore: 3,
+        },
+      ],
+    }),
+    readyText: 'RPL7A',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    // the gene track, the sashimi/coverage band and the pileup, with no room to
+    // spare: two of these stack into one figure
+    viewportHeight: 668,
+    hideTooltip: true,
+    annotations: [
+      { type: 'text', x: 24, y: 56, fontSize: 22, maxWidth: 700, text: label },
+    ],
+  })
+  return [
+    part(
+      'rnaseq/strand_specific_default',
+      { type: 'normal' },
+      'Default coloring: strand is not in the picture',
+    ),
+    part(
+      'rnaseq/strand_specific_pair',
+      { type: 'firstOfPairStrand' },
+      'Color by first of pair strand',
+    ),
+  ]
+}
 
 export const alignmentsSpecs: ScreenshotSpec[] = [
   {
@@ -951,52 +1014,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Strand-specific RNA-seq at the surfeit locus — the most tightly-packed gene
-  // cluster in the vertebrate genome, with genes on alternating strands
-  // (RPL7A +, SURF1 -, SURF2 +, SURF4 -) sharing bidirectional promoters.
-  // colorBy firstOfPairStrand colors each read pair by its fragment strand, so
-  // the strongly-transcribed RPL7A reads are all one color even though SURF1
-  // sits immediately downstream on the opposite strand — the per-read strand is
-  // exactly what assigns each read to the correct gene when transcripts abut or
-  // overlap. The reads are already colored by firstOfPairStrand in the session
-  // (so the auto-appended live "Open in JBrowse" link opens the colored view —
-  // don't move this to a menu-click-only stage, which would leave the live link
-  // uncolored), and the track menu is opened over them along Color by... →
-  // Paired end → First of pair strand (boxed, and shown checked) so the one
-  // frame teaches both the menu path and its result.
+  ...strandSpecificParts(),
   {
-    mode: 'url',
+    mode: 'compose',
     name: 'rnaseq/strand_specific',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr9:136,214,000-136,229,000',
-      trackLabels: 'offset',
-      tracks: [
-        'ncbi_gff_hg19',
-        {
-          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
-          colorBy: { type: 'firstOfPairStrand' },
-          coverageHeight: 110,
-          height: 460,
-          maxHeight: 2000,
-          minSashimiScore: 3,
-        },
-      ],
-    }),
-    readyText: 'RPL7A',
-    readyTimeout: 60000,
-    settleMs: 15000,
-    viewportHeight: 760,
-    hideTooltip: true,
-    actions: [
-      trackMenuIcon('Pairend_StrandSpecific_51mer_Human_hg19'),
-      ...menuCascade(['Color by...', 'Paired end', 'First of pair strand']),
-    ],
-    annotations: cascadeBoxes([
-      'Color by...',
-      'Paired end',
-      'First of pair strand',
-    ]),
+    parts: ['rnaseq/strand_specific_default', 'rnaseq/strand_specific_pair'],
   },
 ]
