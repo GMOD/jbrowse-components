@@ -106,6 +106,25 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
 
       /**
+       * #method
+       * whether the session already knows this assembly, by alias or by a
+       * config whose model is not built yet. Existence probes must use this,
+       * not get(): get() reports an unknown name to
+       * Core-handleUnrecognizedAssembly, so a caller that is itself about to
+       * supply the assembly would kick off a redundant resolution (on
+       * genomes.jbrowse.org, a connection to a config that does not exist).
+       */
+      // annotated because assemblyNameMap is a Record, so its index read is
+      // never undefined to the compiler and `!!` on it infers the literal
+      // `true` — which would make `!has(name)` unusable at call sites
+      has(asmName: string): boolean {
+        return (
+          !!self.assemblyNameMap[asmName] ||
+          this.assemblyNamesList.includes(asmName)
+        )
+      },
+
+      /**
        * #getter
        * read via readConfObject, matching how the afterAttach autorun names the
        * assemblies it creates: get() treats a name found here as "a config

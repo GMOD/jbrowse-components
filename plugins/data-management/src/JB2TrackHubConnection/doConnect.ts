@@ -20,7 +20,7 @@ export async function doConnect(self: ConnectionDoConnectArg) {
   addRelativeUris(configJson, new URL(configUri))
   if (configJson.assemblies) {
     for (const assembly of configJson.assemblies) {
-      if (!session.assemblyManager.get(assembly.name)) {
+      if (!session.assemblyManager.has(assembly.name)) {
         session.addSessionAssembly?.(assembly)
       }
     }

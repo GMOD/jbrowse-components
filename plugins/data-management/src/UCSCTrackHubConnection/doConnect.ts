@@ -54,7 +54,7 @@ function ensureAssembly(
   genomeName: string,
   baseUri: string,
 ) {
-  if (session.assemblyManager.get(genomeName)) {
+  if (session.assemblyManager.has(genomeName)) {
     return true
   } else if (session.addSessionAssembly) {
     session.addSessionAssembly(generateAssembly(genome, baseUri))

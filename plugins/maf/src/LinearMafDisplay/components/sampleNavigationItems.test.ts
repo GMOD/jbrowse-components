@@ -111,6 +111,37 @@ test('launching opens a view keyed on display + assembly', async () => {
   ])
 })
 
+// get() reports an unknown name to Core-handleUnrecognizedAssembly, so using it
+// as the "do we have this already?" probe made every navigation kick off a
+// plugin's assembly-resolution guess (on genomes.jbrowse.org, a connection to a
+// config that 404s) even when the answer was yes.
+test('the have-we-got-it probe does not go through get()', async () => {
+  views.length = 0
+  const calls: string[] = []
+  const loadedSession = {
+    views,
+    addView: (_type: string, snap: { id: string }) => {
+      views.push(snap)
+    },
+    assemblyManager: {
+      has: (name: string) => {
+        calls.push(`has:${name}`)
+        return true
+      },
+      get: (name: string) => {
+        calls.push(`get:${name}`)
+        return undefined
+      },
+    },
+  } as unknown as AbstractSessionModel
+  await openSampleInNewView(loadedSession, 'display1', {
+    ...target('SPRET_EiJ', 1000),
+    assemblyConfigUrl: 'https://example.com/mm10/config.json',
+  })
+  expect(calls).toEqual(['has:mm10'])
+  expect(views).toHaveLength(1)
+})
+
 test('findAssemblyConf picks the named assembly out of a fetched config', () => {
   const configJson = {
     assemblies: [{ name: 'rn6' }, { name: 'SPRET_EiJ', sequence: {} }],

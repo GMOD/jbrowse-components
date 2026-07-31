@@ -79,6 +79,15 @@ URIs resolve against the page). Omit it when the assembly is already in the
 config; a name the session can't resolve and can't fetch surfaces the view's own
 assembly-not-found error.
 
+`ensureAssembly` asks whether the session already has the assembly with
+`assemblyManager.has()`, **not** `get()`. `get()` on an unknown name reports it
+to `Core-handleUnrecognizedAssembly`, so probing with it made every click ask
+the installed plugins to go resolve a name the MAF display was about to supply
+itself — on genomes.jbrowse.org that meant the Hubs plugin opening a connection
+to a `/ucsc/<strain>/config.json` that doesn't exist, and a red 404 over a
+navigation that had worked. Both hub connections' `doConnect` probed the same
+way and were switched over too.
+
 **Verified live** against `~/src/jb2hubs`'s regenerated mouseStrains AKR_J
 config in a real jbrowse-web build (puppeteer, `--use-angle=gl`): drag-select →
 right-click lists `Open AKR_J chr1:3000400-3000486` / `Open mm10

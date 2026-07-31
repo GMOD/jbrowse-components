@@ -56,7 +56,7 @@ async function ensureAssembly(
   target: SampleNavigationTarget,
 ) {
   const { assemblyConfigUrl, assemblyName } = target
-  if (assemblyConfigUrl && !session.assemblyManager.get(assemblyName)) {
+  if (assemblyConfigUrl && !session.assemblyManager.has(assemblyName)) {
     const configJson: unknown = JSON.parse(
       await openLocation({
         uri: assemblyConfigUrl,
