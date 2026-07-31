@@ -72,11 +72,11 @@ function data(
   overrides?: Partial<VariantInsertionGlyphData>,
 ): VariantInsertionGlyphData {
   return {
-    cellPositions: Uint32Array.from([10, 11, 10, 11]),
     cellRowIndices: Uint32Array.from([0, 1]),
     cellColors: Uint32Array.from([ALT_BLUE, REF_GREY]),
     cellCarriesAlt: Uint8Array.from([1, 0]),
     cellFeatureIndices: Uint32Array.from([0, 0]),
+    featurePositions: Uint32Array.from([10, 11]),
     featureInsertedBp: Int32Array.from([INSERTED]),
     numCells: 2,
     ...overrides,
@@ -164,9 +164,7 @@ test('widens without a label on rows too short for letters', () => {
 test('skips a cell already wider than the bar', () => {
   // a record covering 20bp (200px) of reference is wider than any bar this
   // insertion earns, so a second fill would be pure overdraw
-  const { calls } = draw(
-    data({ cellPositions: Uint32Array.from([10, 30, 10, 30]) }),
-  )
+  const { calls } = draw(data({ featurePositions: Uint32Array.from([10, 30]) }))
   expect(calls).toEqual([])
 })
 

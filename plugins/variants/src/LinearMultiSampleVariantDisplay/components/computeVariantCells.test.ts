@@ -555,3 +555,73 @@ test('a site with no ALT alleles reports an empty alt list', () => {
   expect(result.numCells).toBe(1)
   expect(result.featureGenotypeMap.f1!.alt).toEqual([])
 })
+
+// featureGenotypeMap is the genotype record the anchored sort reads (via the
+// interned genotypeCodes), not a log of what got painted. Under the default
+// `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, and keying the
+// map off the painted cells made every hom-ref row indistinguishable from a
+// no-call to `sortSourcesAroundVariant` — while the matrix display, which
+// always paints ref, sorted the same data differently.
+describe('featureGenotypeMap records every genotype, not only painted ones', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1', sampleName: 'S1' },
+    { name: 'S2', sampleName: 'S2' },
+  ]
+  const feature = makeFeature({
+    genotypes: { S1: '0/0', S2: '0/1' },
+    ALT: ['G'],
+    REF: 'A',
+    start: 10,
+    end: 11,
+  })
+  const run = (referenceDrawingMode: string) =>
+    computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'alleleCount',
+      referenceDrawingMode,
+      featureGenotypes: genotypeLookup([feature]),
+    })
+
+  test('skip mode keeps the hom-ref genotype while drawing no cell for it', () => {
+    const result = run('skip')
+    expect(result.numCells).toBe(1)
+    expect(result.featureGenotypeMap.f1!.genotypes).toEqual({
+      S1: '0/0',
+      S2: '0/1',
+    })
+  })
+
+  test('the genotype map is identical in draw mode', () => {
+    expect(run('draw').featureGenotypeMap.f1!.genotypes).toEqual(
+      run('skip').featureGenotypeMap.f1!.genotypes,
+    )
+  })
+
+  test('phased mode keeps a hom-ref call that paints nothing', () => {
+    const phasedFeature = makeFeature({
+      genotypes: { S1: '0|0', S2: '1|0' },
+      ALT: ['G'],
+      REF: 'A',
+      start: 10,
+      end: 11,
+    })
+    const result = computeVariantCells({
+      filteredVariants: [{ feature: phasedFeature, mostFrequentAlt: '1' }],
+      sources: [
+        { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+        { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+        { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+        { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
+      ],
+      renderingMode: 'phased',
+      referenceDrawingMode: 'skip',
+      featureGenotypes: genotypeLookup([phasedFeature]),
+    })
+    expect(result.numCells).toBe(1)
+    expect(result.featureGenotypeMap.f1!.genotypes).toEqual({
+      S1: '0|0',
+      S2: '1|0',
+    })
+  })
+})

@@ -26,11 +26,11 @@ const FONT = '10px sans-serif'
  * boundary. Both satisfy this.
  */
 export interface VariantInsertionGlyphData {
-  cellPositions: Uint32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
   cellCarriesAlt: Uint8Array
   cellFeatureIndices: Uint32Array
+  featurePositions: Uint32Array
   featureInsertedBp: Int32Array
   numCells: number
 }
@@ -87,53 +87,60 @@ export function drawVariantInsertionGlyphs(
       const toX = makeBpMapper(block)
       const pxPerBp =
         (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
-      // Whether a marker is drawn, and where, depends only on the feature — every
-      // cell of one variant shares its span and its inserted bp. Resolve it once
-      // per feature (thousands) instead of once per cell (features × samples),
-      // so the draw loop is a lookup.
+      // Whether a marker is drawn, and where, depends only on the feature —
+      // every cell of one variant shares its span and its inserted bp — so this
+      // walks `featurePositions` (thousands) rather than the cells (features ×
+      // samples). Records that insert nothing are every SNP and every deletion,
+      // and they can't produce a marker, so they never reach the geometry.
       const numFeatures = region.featureInsertedBp.length
-      const resolved = new Uint8Array(numFeatures)
       const drawsMarker = new Uint8Array(numFeatures)
       const markerXCenter = new Float64Array(numFeatures)
-      for (let i = 0; i < region.numCells; i++) {
-        const featureIdx = region.cellFeatureIndices[i]!
-        if (!resolved[featureIdx]) {
-          resolved[featureIdx] = 1
-          const x1 = toX(region.cellPositions[i * 2]!)
-          const x2 = toX(region.cellPositions[i * 2 + 1]!)
-          markerXCenter[featureIdx] = (x1 + x2) / 2
-          drawsMarker[featureIdx] = variantCellSpanPx({
+      let anyMarker = false
+      for (let f = 0; f < numFeatures; f++) {
+        const insertedBp = region.featureInsertedBp[f]!
+        if (insertedBp > 0) {
+          const x1 = toX(region.featurePositions[f * 2]!)
+          const x2 = toX(region.featurePositions[f * 2 + 1]!)
+          const span = variantCellSpanPx({
             x1,
             x2,
-            insertedBp: region.featureInsertedBp[featureIdx]!,
+            insertedBp,
             pxPerBp,
             drawnRowHeight,
-          }).drawsMarker
-            ? 1
-            : 0
+          })
+          if (span.drawsMarker) {
+            markerXCenter[f] = (x1 + x2) / 2
+            drawsMarker[f] = 1
+            anyMarker = true
+          }
         }
       }
-      for (let i = 0; i < region.numCells; i++) {
-        const featureIdx = region.cellFeatureIndices[i]!
-        if (region.cellCarriesAlt[i] && drawsMarker[featureIdx]) {
-          // Y-cull as the block painter does
-          const y = region.cellRowIndices[i]! * rowHeight - scrollTop
-          if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
-            const xCenter = markerXCenter[featureIdx]!
-            const inserted = region.featureInsertedBp[featureIdx]!
-            ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
-            drawInsertionMarker(
-              ctx,
-              xCenter,
-              y,
-              drawnRowHeight,
-              inserted,
-              pxPerBp,
-            )
-            if (getInsertionType(inserted, pxPerBp) === 'large' && labelFits) {
-              ctx.fillStyle = 'white'
-              ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
+      // A callset where nothing earns a marker — a SNP panel, or any window
+      // zoomed out past the point an insertion outgrows its cell — skips the
+      // per-cell walk entirely instead of running it to draw nothing.
+      if (anyMarker) {
+        for (let i = 0; i < region.numCells; i++) {
+          const featureIdx = region.cellFeatureIndices[i]!
+          if (region.cellCarriesAlt[i] && drawsMarker[featureIdx]) {
+            // Y-cull as the block painter does
+            const y = region.cellRowIndices[i]! * rowHeight - scrollTop
+            if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
+              const xCenter = markerXCenter[featureIdx]!
+              const inserted = region.featureInsertedBp[featureIdx]!
               ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
+              drawInsertionMarker(
+                ctx,
+                xCenter,
+                y,
+                drawnRowHeight,
+                inserted,
+                pxPerBp,
+              )
+              if (getInsertionType(inserted, pxPerBp) === 'large' && labelFits) {
+                ctx.fillStyle = 'white'
+                ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
+                ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
+              }
             }
           }
         }

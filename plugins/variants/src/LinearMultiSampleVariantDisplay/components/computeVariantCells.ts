@@ -198,7 +198,7 @@ export function computeVariantCells({
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')
-    const featureType = feature.get('type')! || ''
+    const featureType = feature.get('type') ?? ''
     const bpLen = end - start
     const shape = getShapeType(featureType)
     // A monomorphic record spells ALT '.', which @gmod/vcf parses to undefined.
@@ -210,7 +210,7 @@ export function computeVariantCells({
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
     const description = feature.get('description') as string
-    const renderedGenotypes: Record<string, string> = {}
+    const sourceGenotypes: Record<string, string> = {}
     // Per-variant override color, resolved once per feature (not per cell);
     // undefined when no override is set, so normal genotype coloring runs.
     const overrideColor = featureColor?.(feature)
@@ -244,6 +244,14 @@ export function computeVariantCells({
         if (!genotype) {
           continue
         }
+        // Recorded before the color check, not per drawn cell: this map is the
+        // genotype record the anchored sort reads, and under
+        // `referenceDrawingMode: 'skip'` a hom-ref call paints nothing. Keying
+        // it off what was painted made every hom-ref row read as a no-call
+        // there while the matrix (which always paints ref) sorted them apart.
+        // Costs nothing on the wire — `genotypeCodes` is a fixed
+        // Uint16Array(numSamples) either way.
+        sourceGenotypes[sampleName] = genotype
         if (genotype.includes('|')) {
           const c = getPhasedColor(
             splitPhasedAlleles(genotype),
@@ -271,16 +279,13 @@ export function computeVariantCells({
               !isRefCell && c !== NO_CALL_COLOR,
               featureIdx,
             )
-            renderedGenotypes[sampleName] = genotype
           }
         } else if (isNoCall(genotype)) {
           // A missing unphased call (`./.`, `.`) is a no-call, not unphased
           // data — draw it as no-call rather than the black "Unphased" fill.
           addCell(start, end, j, noCallAbgr, shape, false, false, featureIdx)
-          renderedGenotypes[sampleName] = genotype
         } else {
           addCell(start, end, j, BLACK_ABGR, shape, false, false, featureIdx)
-          renderedGenotypes[sampleName] = genotype
         }
       }
     } else {
@@ -289,6 +294,8 @@ export function computeVariantCells({
         const { sampleName } = sources[j]!
         const genotype = samp[sampleName]
         if (genotype) {
+          // See the phased loop: recorded whether or not a cell is painted.
+          sourceGenotypes[sampleName] = genotype
           const c = getAlleleColor(
             genotype,
             mostFrequentAlt,
@@ -307,7 +314,6 @@ export function computeVariantCells({
               c !== REFERENCE_COLOR && c !== NO_CALL_COLOR,
               featureIdx,
             )
-            renderedGenotypes[sampleName] = genotype
           }
         }
       }
@@ -322,7 +328,7 @@ export function computeVariantCells({
       length: bpLen,
       insertedBp: inserted,
       type: featureType,
-      genotypes: renderedGenotypes,
+      genotypes: sourceGenotypes,
     }
     insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start

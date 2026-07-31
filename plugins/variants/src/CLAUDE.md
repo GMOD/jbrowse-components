@@ -95,6 +95,17 @@ sample→genotype `Record` crossing the RPC→model boundary must key by
 hover lookup (resolve `sampleName` via `sourceMap` first), and
 `anchoredHaplotypeSort.ts`.
 
+That map is a **genotype record, not a log of what got painted** — record every
+genotype the sources cover, whether or not the loop emitted a cell for it. It
+is what `sortByGenotype` reads (through the interned `genotypeCodes`), and under
+the default `referenceDrawingMode: 'skip'` a hom-ref call paints nothing: keying
+it off the drawn cells made every hom-ref row decode as code 0, i.e. `MISSING`
+to `sortSourcesAroundVariant`, so the same data sorted differently in the
+regular display than in the matrix (which always paints ref). It costs nothing
+on the wire — `genotypeCodes` is a fixed `Uint16Array(numSamples)` either way.
+Pinned by `computeVariantCells.test.ts`
+(`featureGenotypeMap records every genotype`).
+
 ## Genotype matrices: NaN is the only missing marker
 
 `getGenotypeMatrix` / `getPhasedGenotypeMatrix` emit `Float32Array` rows with

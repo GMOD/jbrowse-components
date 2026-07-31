@@ -86,6 +86,7 @@ type SetSlotFn = (slotName: string, value: unknown) => void
 
 // Config slots ported onto the *other* variant display's config when the
 // user switches display type via the track menu (see getPortableSettings).
+// `featureColor` is deliberately absent — it is ported separately, raw.
 const PORTABLE_CONFIG_KEYS = [
   'renderingMode',
   'minorAlleleFrequencyFilter',
@@ -96,7 +97,6 @@ const PORTABLE_CONFIG_KEYS = [
   'referenceDrawingMode',
   'colorBy',
   'groupBy',
-  'featureColor',
 ] as const
 
 // Loaded features in genomic order plus their interned genotype codes: what an
@@ -1193,6 +1193,12 @@ export default function MultiSampleVariantBaseModelF(
               for (const key of PORTABLE_CONFIG_KEYS) {
                 target.setSlot(key, getConf(self, key))
               }
+              // Raw, never through getConf: featureColor can hold a `jexl:...`
+              // string, and getConf evaluates one on read with no `feature`
+              // bound — so the consequence-impact preset
+              // (`jexl:impactColor(feature)`) threw out of the display-type
+              // switch instead of carrying the expression across.
+              target.setSlot('featureColor', self.featureColor)
             }
           }
           return {

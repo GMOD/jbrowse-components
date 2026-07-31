@@ -34,9 +34,10 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
-// Items for the "Show..." submenu — toggles for sidebar labels, the clustering
-// tree, subtree filter, and the legend. Extended by subclasses via super-capture
-// (e.g. the regular display adds "Show reference alleles").
+// Items for the "Show..." submenu — the toggles both displays share. Extended
+// by subclasses via super-capture (the regular display adds "Show reference
+// alleles"); the clustering tree and subtree filter have their own entries via
+// `clusteringMenuItem`.
 export function variantShowSubmenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {

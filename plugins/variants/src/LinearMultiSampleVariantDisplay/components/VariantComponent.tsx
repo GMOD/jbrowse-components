@@ -50,8 +50,8 @@ function getFeatureUnderMouse(
   eventClientX: number,
   eventClientY: number,
 ): VariantHit | undefined {
-  const cellData = model.cellData
-  if (cellData?.mode !== 'regular') {
+  const { cellData } = model
+  if (!cellData) {
     return undefined
   }
   const mouseX = eventClientX - rect.left
@@ -64,13 +64,12 @@ function getFeatureUnderMouse(
     return undefined
   }
 
-  const regionCellData = cellData.perRegionCellData[region.displayedRegionIndex]
-  if (!regionCellData) {
-    return undefined
-  }
-
+  // Through perRegionCellMap, the model's one walk of the payload, rather than
+  // indexing perRegionCellData again here — that second path could see a
+  // region set the canvas and the glyph overlay did not.
+  const regionCellData = model.perRegionCellMap.get(region.displayedRegionIndex)
   const featureIndex = model.featureIndices.get(region.displayedRegionIndex)
-  if (!featureIndex) {
+  if (!regionCellData || !featureIndex) {
     return undefined
   }
 
@@ -156,6 +155,11 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     return null
   }
   const toX = makeBpMapper(region)
+  // The 2px floor every painter applies (shaders/variant.slang,
+  // Canvas2DVariantRenderer, variantCellSpanPx) — the box has to be the size
+  // the cell was drawn at, not the size a row nominally occupies, or a
+  // sub-pixel row highlights as an invisible sliver over a 2px cell.
+  const drawnRowHeight = Math.max(model.effectiveRowHeight, 2)
   // Same drawn extent the cell painted, so the box lands on an insertion marker
   // rather than the ~1bp reference span underneath it.
   const { left, width } = variantCellSpanPx({
@@ -164,13 +168,13 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     insertedBp: cell.insertedBp,
     pxPerBp:
       (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
-    drawnRowHeight: Math.max(model.effectiveRowHeight, 2),
+    drawnRowHeight,
   })
   // Screen Y from model.scrollTop — the same value the GPU cells draw at, so
   // the highlight can't diverge from its cell (virtual scroll: one scroll
   // source). Cull when the row is fully outside the viewport.
   const top = cell.rowIndex * model.effectiveRowHeight - model.scrollTop
-  if (top + model.effectiveRowHeight < 0 || top > model.availableHeight) {
+  if (top + drawnRowHeight < 0 || top > model.availableHeight) {
     return null
   }
   return (
@@ -180,7 +184,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
         left,
         top,
         width,
-        height: model.effectiveRowHeight,
+        height: drawnRowHeight,
         ...hoverBoxStyle,
         pointerEvents: 'none',
         zIndex: 5,
