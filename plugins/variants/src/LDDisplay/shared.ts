@@ -319,11 +319,20 @@ export default function sharedModelFactory(
        * lines, or recombination scale). The hit-test subtracts this from
        * mouseY before reversing the render transform.
        */
+      // Index mode always reserves the zone -- that is where the connector
+      // lines live. Genomic-positions mode draws no connectors, so it reserves
+      // only what is actually turned on, and nothing at all when neither is:
+      // the recombination plot at its own configured height, the labels at the
+      // draggable `lineZoneHeight`. The labels are rotated text of unknown
+      // extent, so the room for them is the user's to set, not ours to measure
+      // -- but with no band at all they landed on top of the triangle.
       get effectiveLineZoneHeight() {
-        if (self.useGenomicPositions) {
-          return self.showRecombination ? self.recombinationZoneHeight : 0
-        }
-        return self.lineZoneHeight
+        return self.useGenomicPositions
+          ? Math.max(
+              self.showRecombination ? self.recombinationZoneHeight : 0,
+              self.showLabels ? self.lineZoneHeight : 0,
+            )
+          : self.lineZoneHeight
       },
       /**
        * #getter
@@ -612,7 +621,6 @@ export default function sharedModelFactory(
                   label: 'R² (squared correlation)',
                   type: 'radio',
                   checked: self.effectiveLdMetric === 'r2',
-                  keepMenuOpen: true,
                   helpText: `Squared correlation between the two variants (0-1). ${computeNote}${plinkNote}`,
                   onClick: () => {
                     self.setLDMetric('r2')
@@ -622,7 +630,6 @@ export default function sharedModelFactory(
                   label: "D' (normalized D)",
                   type: 'radio',
                   checked: self.effectiveLdMetric === 'dprime',
-                  keepMenuOpen: true,
                   disabled: !self.dprimeAvailable,
                   helpText: self.dprimeAvailable
                     ? `Lewontin's normalized D (0-1). ${computeNote}${

@@ -232,7 +232,13 @@ keep the two from drifting:
   old position (`ConnectorLines.test.tsx`).
 - The resize handle is gated on `lineZoneHeight`, never on there being lines: an
   empty viewport still reserves the zone, and that is when a user most wants to
-  drag it shut.
+  drag it shut. It drags from where it is drawn, not from the slot, because
+  `effectiveLineZoneHeight` can be something taller than the slot.
+- LD's genomic-positions mode has no connectors (the triangle is already at
+  genomic x) and reserves the band only for what is switched on — the
+  recombination plot at `recombinationZoneHeight`, the labels at the draggable
+  `lineZoneHeight`, whichever is taller. Room for the rotated labels is dragged,
+  not measured; before that they had no band and drew over the triangle.
 
 ## Allele counting: two implementations on purpose, count inline
 

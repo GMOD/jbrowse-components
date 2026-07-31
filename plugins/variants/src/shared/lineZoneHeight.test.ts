@@ -41,6 +41,28 @@ test('only the index-laid-out displays reserve a zone', () => {
   )
 })
 
+// Genomic-positions mode draws no connector lines, so it reserves only what is
+// switched on. Labels used to get nothing at all and rendered over the triangle.
+test('LD reserves the genomic-positions zone for whatever is switched on', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setUseGenomicPositions(true)
+
+  expect(display.effectiveLineZoneHeight).toBe(0)
+
+  display.setShowLabels(true)
+  expect(display.effectiveLineZoneHeight).toBe(display.lineZoneHeight)
+  // and that band is the draggable one, so the room for the rotated labels is
+  // the user's to set rather than something we measure text extents for
+  display.setLineZoneHeight(140)
+  expect(display.effectiveLineZoneHeight).toBe(140)
+
+  // the recombination plot wants the same band at its own configured height —
+  // whichever is taller wins, so neither ends up drawn over the triangle
+  display.setShowRecombination(true)
+  display.setLineZoneHeight(10)
+  expect(display.effectiveLineZoneHeight).toBe(display.recombinationZoneHeight)
+})
+
 test('a resize lands on the config, so it outlives the display instance', () => {
   const m = matrixDisplay()
   m.setLineZoneHeight(60)

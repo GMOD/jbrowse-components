@@ -6,13 +6,12 @@ import {
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import { ConnectorZone } from '../shared/ConnectorLines.tsx'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
+import LDLabelZone from './components/LDLabelZone.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
-import VariantLabels from './components/VariantLabels.tsx'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 
 import type { SharedLDModel } from './shared.ts'
@@ -103,9 +102,7 @@ function LdSvgBody({
           />
         </g>
         {useGenomicPositions ? (
-          <ConnectorZone width={visibleWidth} height={height} exportSVG>
-            <VariantLabels model={self} />
-          </ConnectorZone>
+          <LDLabelZone model={self} exportSVG />
         ) : (
           <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
         )}

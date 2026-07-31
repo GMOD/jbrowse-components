@@ -35,6 +35,10 @@ export interface ConnectorLinesModel {
   setLineZoneHeight: (arg: number) => void
 }
 
+function round(px: number) {
+  return Math.round(px * 100) / 100
+}
+
 const useStyles = makeStyles()({
   resizeHandle: {
     height: 5,
@@ -91,7 +95,10 @@ const ConnectorLineField = observer(function ConnectorLineField({
     for (const { mx, gx } of lineCoords) {
       lo = Math.min(lo, mx, gx)
       hi = Math.max(hi, mx, gx)
-      d += `M${mx} ${lineZoneHeight}L${gx} 0`
+      // 2dp, not the raw float: a column center is (i + 0.5) * pitch, so most
+      // of these serialize as 17 digits, and at 10^4 lines that is ~300KB of
+      // SVG export spent below a hundredth of a pixel
+      d += `M${round(mx)} ${lineZoneHeight}L${round(gx)} 0`
     }
     return {
       pathD: d,
@@ -187,6 +194,36 @@ export function ConnectorZone({
 }
 
 /**
+ * The drag handle along the bottom of the zone, sitting `top` pixels down. Every
+ * zone in both displays resizes through this one `lineZoneHeight` slot (the
+ * clamp lives in the setter), so a zone dragged shut can always be dragged back
+ * open.
+ */
+export const ConnectorZoneResizeHandle = observer(
+  function ConnectorZoneResizeHandle({
+    model,
+    top,
+  }: {
+    model: ConnectorLinesModel
+    top: number
+  }) {
+    const { classes } = useStyles()
+    return (
+      <ResizeHandle
+        style={{ position: 'absolute', top: top - 4 }}
+        // from where the handle is drawn, not from the slot: in LD's genomic
+        // mode the zone can be the taller recombination plot, and dragging the
+        // slot up from under it would eat the first N pixels doing nothing
+        onDrag={d => {
+          model.setLineZoneHeight(top + d)
+        }}
+        className={classes.resizeHandle}
+      />
+    )
+  },
+)
+
+/**
  * The lines tying each matrix column to its genomic position, shared by the LD
  * and multi-sample-matrix displays: the faint field, the hovered line and its
  * tooltip, an optional externally driven `highlight` (the matrix crosshair
@@ -205,7 +242,6 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
   exportSVG?: boolean
   children?: React.ReactNode
 }) {
-  const { classes } = useStyles()
   const { height, lineZoneHeight, connectorLineCoords: lineCoords } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const [hovered, setHovered] = useState<ConnectorCoord>()
@@ -246,13 +282,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
       `lineZoneHeight`, and a viewport with no variants in it is exactly when a
       user wants to drag that space back. */}
       {exportSVG || lineZoneHeight === 0 ? null : (
-        <ResizeHandle
-          style={{ position: 'absolute', top: lineZoneHeight - 4 }}
-          onDrag={d => {
-            model.setLineZoneHeight(lineZoneHeight + d)
-          }}
-          className={classes.resizeHandle}
-        />
+        <ConnectorZoneResizeHandle model={model} top={lineZoneHeight} />
       )}
     </>
   )
