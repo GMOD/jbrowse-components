@@ -15,10 +15,10 @@ recipes, see the [](/docs/cookbook).
 - [](/docs/config_guides/assemblies)
 - [](/docs/config_guides/tracks)
 - [](/docs/config_guides/authentication)
-- [](/docs/config_guides/connections)
-- [](/docs/config_guides/file_types)
-- [](/docs/config_guides/plugins)
 - [](/docs/config_guides/slot_types)
+- [](/docs/config_guides/connections)
+- [](/docs/config_guides/plugins)
+- [](/docs/config_guides/file_types)
 - [](/docs/config_guides/text_searching)
 
 ## Track types
@@ -41,8 +41,8 @@ recipes, see the [](/docs/cookbook).
 
 ## Appearance
 
-- [](/docs/config_guides/default_session)
 - [](/docs/config_guides/theme)
+- [](/docs/config_guides/default_session)
 - [](/docs/config_guides/track_selector)
 
 ## Deployment

@@ -72,25 +72,25 @@ own via pull request.
 
 ### Pluggable elements
 
-- [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/creating_addtrack_workflow)
+- [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/creating_connection)
 - [](/docs/developer_guides/creating_display)
-- [](/docs/developer_guides/creating_gpu_display)
-- [](/docs/developer_guides/creating_text_search_adapter)
 - [](/docs/developer_guides/creating_view)
 - [](/docs/developer_guides/creating_widget)
 - [](/docs/developer_guides/drawer_widgets)
-- [](/docs/developer_guides/menus)
+- [](/docs/developer_guides/creating_gpu_display)
 - [](/docs/developer_guides/plotting_features)
 - [](/docs/developer_guides/svg_export)
+- [](/docs/developer_guides/creating_text_search_adapter)
+- [](/docs/developer_guides/menus)
 
 ### Core concepts
 
 - [](/docs/developer_guides/configuration_schema)
 - [](/docs/developer_guides/data_fetching)
-- [](/docs/developer_guides/extension_points)
 - [](/docs/developer_guides/imports_and_reexports)
+- [](/docs/developer_guides/extension_points)
 - [](/docs/developer_guides/mst_patterns)
 - [](/docs/developer_guides/rpc_workers)
 

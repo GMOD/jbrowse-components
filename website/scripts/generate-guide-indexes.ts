@@ -109,11 +109,24 @@ function buildTocSection(
   }
   const lines: string[] = []
   for (const cat of categoryOrder) {
-    const entries = allEntries.get(cat)?.sort(
-      // Same curated lead pages the sidebar lifts, so a category's first entry
-      // is the same on both surfaces. The rest keep readdir order.
-      (a, b) => guideRank(a.dir, a.slug) - guideRank(b.dir, b.slug),
-    )
+    // Curated lead pages first (the ones the sidebar lifts), then alphabetical
+    // — the same two keys docs-sidebar.ts sorts a category by, so a page has
+    // the same neighbors here as it does in the nav. This used to be readdir
+    // order, i.e. filename order, which is not the order a reader sees: the
+    // list renders titles, so slot_types.md ("Config slot types") sorted under
+    // S and file_types.md ("Supported file types") under F, leaving both
+    // surfaces sorted differently and neither matching its own labels. Sorting
+    // on `title` rather than the sidebar's `sidebar_label ?? title` is
+    // deliberate: each list is ordered by the string it actually displays, so
+    // each reads as sorted to its own reader. The two diverge only for the
+    // three developer guides whose labels differ from their titles.
+    const entries = allEntries
+      .get(cat)
+      ?.sort(
+        (a, b) =>
+          guideRank(a.dir, a.slug) - guideRank(b.dir, b.slug) ||
+          a.title.localeCompare(b.title),
+      )
     if (!entries?.length) {
       continue
     }
