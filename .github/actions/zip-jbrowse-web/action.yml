@@ -16,9 +16,6 @@ inputs:
 # than hand-synced across the three jobs (push deploy, release createrelease,
 # release buildjbrowseweb) that publish a zip.
 #
-# The two hg19 files are volvox/connection_test.json's `../` references — the
-# only thing volvox reaches outside its own directory, and 5K.
-#
 # The `./` prefix on the exclude is required: zipping `.` makes zip match
 # candidate paths in that form.
 runs:
@@ -30,5 +27,4 @@ runs:
         ZIP_NAME: ${{ inputs.filename }}
       run: |
         zip -qr "$ZIP_NAME" . -x './test_data/*'
-        zip -qr "$ZIP_NAME" ./test_data/volvox* ./test_data/config.json \
-          ./test_data/hg19.chrom.sizes ./test_data/hg19_aliases.txt
+        zip -qr "$ZIP_NAME" ./test_data/volvox* ./test_data/config.json

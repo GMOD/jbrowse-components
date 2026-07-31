@@ -1,14 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 
-import masterConfig from '../../test_data/volvox/connection_test.json' with { type: 'json' }
 import {
-  JBrowse,
   createView,
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
-  getPluginManager,
   mockConsoleWarn,
   setup,
 } from './util.tsx'
@@ -142,16 +139,3 @@ test('copy and delete track to session tracks', () => {
     })
   })
 }, 40000)
-
-xtest('delete connection', async () => {
-  const { pluginManager } = getPluginManager(masterConfig, true)
-  const { findAllByTestId, findByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-
-  const deleteButtons = await findAllByTestId('delete-connection')
-  expect(deleteButtons.length).toBe(2)
-  fireEvent.click(deleteButtons[0]!)
-  fireEvent.click(await findByText('OK'))
-  expect((await findAllByTestId('delete-connection')).length).toBe(1)
-})
