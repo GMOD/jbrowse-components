@@ -5,12 +5,12 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { measureGridWidth } from '@jbrowse/core/util'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
+import { measuredColumns } from '../measuredColumns.ts'
 import VariantAlleleFrequencyTable from './VariantAlleleFrequencyTable.tsx'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
@@ -22,18 +22,23 @@ import {
 
 import type { Descriptions, VCFFeatureSerialized } from '../types.ts'
 import type { Filters } from './types.ts'
-import type { GridColDef } from '@mui/x-data-grid'
 
-type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'
+// One entry per mode: its toggle-button label and which columns it shows. Adding
+// a mode here adds its button and its filter, with no third list to update.
+const columnDisplayModes = {
+  all: { label: 'All', shows: () => true },
+  gtOnly: {
+    label: 'GT only',
+    shows: (field: string) => field === 'sample' || field === 'GT',
+  },
+  gtAndGenotype: {
+    label: 'GT+resolved genotype',
+    shows: (field: string) =>
+      field === 'sample' || field === 'GT' || field === 'genotype',
+  },
+}
 
-const columnDisplayModes: ReadonlySet<ColumnDisplayMode> = new Set([
-  'all',
-  'gtOnly',
-  'gtAndGenotype',
-])
-
-const gtOnlyFields = new Set(['sample', 'GT'])
-const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
+type ColumnDisplayMode = keyof typeof columnDisplayModes
 
 // Stable empty defaults so the row/frequency/column memos below don't churn on
 // every render when a field is absent.
@@ -54,7 +59,10 @@ export default function VariantSampleGrid({
       'all',
     )
   // guard against a stale/corrupt stored value
-  const columnDisplayMode = columnDisplayModes.has(storedColumnDisplayMode)
+  const columnDisplayMode = Object.hasOwn(
+    columnDisplayModes,
+    storedColumnDisplayMode,
+  )
     ? storedColumnDisplayMode
     : 'all'
   const [showFilters, setShowFilters] = useLocalStorage(
@@ -123,13 +131,12 @@ export default function VariantSampleGrid({
         }
       }
     }
-    return ['sample', ...fields].map(
-      field =>
-        ({
-          field,
-          description: descriptions?.FORMAT?.[field]?.Description,
-          width: measureGridWidth(rows.map(r => r[field])),
-        }) satisfies GridColDef<(typeof rows)[0]>,
+    return measuredColumns(
+      rows,
+      ['sample', ...fields].map(field => ({
+        field,
+        description: descriptions?.FORMAT?.[field]?.Description,
+      })),
     )
   }, [rows, descriptions])
 
@@ -196,11 +203,11 @@ export default function VariantSampleGrid({
             }
           }}
         >
-          <ToggleButton value="all">All</ToggleButton>
-          <ToggleButton value="gtOnly">GT only</ToggleButton>
-          <ToggleButton value="gtAndGenotype">
-            GT+resolved genotype
-          </ToggleButton>
+          {Object.entries(columnDisplayModes).map(([mode, { label }]) => (
+            <ToggleButton key={mode} value={mode}>
+              {label}
+            </ToggleButton>
+          ))}
         </ToggleButtonGroup>
       </div>
 
@@ -249,13 +256,9 @@ export default function VariantSampleGrid({
         <DataGrid
           rows={filteredRows}
           hideFooter={filteredRows.length < 100}
-          columns={
-            columnDisplayMode === 'gtOnly'
-              ? columns.filter(f => gtOnlyFields.has(f.field))
-              : columnDisplayMode === 'gtAndGenotype'
-                ? columns.filter(f => gtAndGenotypeFields.has(f.field))
-                : columns
-          }
+          columns={columns.filter(c =>
+            columnDisplayModes[columnDisplayMode].shows(c.field),
+          )}
           rowHeight={25}
           columnHeaderHeight={25}
           showToolbar={showToolbar}

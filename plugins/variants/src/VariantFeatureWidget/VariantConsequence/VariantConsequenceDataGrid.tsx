@@ -2,11 +2,10 @@ import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { LabeledCheckbox } from '@jbrowse/core/ui'
-import { measureGridWidth } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import type { GridColDef } from '@mui/x-data-grid'
+import { measuredColumns } from '../measuredColumns.ts'
 
 export default function VariantConsequenceDataGrid({
   data,
@@ -26,13 +25,7 @@ export default function VariantConsequenceDataGrid({
     }
     return row
   })
-  const columns = fields.map(
-    field =>
-      ({
-        field,
-        width: measureGridWidth(rows.map(r => r[field])),
-      }) satisfies GridColDef<(typeof rows)[0]>,
-  )
+  const columns = measuredColumns(rows, fields)
 
   // Without resolved column names (the VCF header's ANN/CSQ "Format:" field
   // list) the DataGrid can only render a headerless "No columns" shell, so

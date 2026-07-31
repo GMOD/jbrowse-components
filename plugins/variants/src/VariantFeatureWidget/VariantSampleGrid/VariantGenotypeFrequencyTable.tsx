@@ -1,5 +1,7 @@
-import { measureGridWidth, resolveSelectedIds } from '@jbrowse/core/util'
+import { resolveSelectedIds } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
+
+import { measuredColumns } from '../measuredColumns.ts'
 
 import type { FrequencyTable, VariantSampleGridRow } from './types.ts'
 
@@ -65,21 +67,12 @@ export default function VariantGenotypeFrequencyTable({
               : new Set(gridRows.filter(r => ids.has(r.id)).map(r => r.GT)),
           )
         }}
-        columns={[
-          { field: 'GT', width: measureGridWidth(gridRows.map(r => r.GT)) },
-          {
-            field: 'count',
-            width: measureGridWidth(gridRows.map(r => r.count)),
-          },
-          {
-            field: 'frequency',
-            width: measureGridWidth(gridRows.map(r => r.frequency)),
-          },
-          {
-            field: 'genotype',
-            width: measureGridWidth(gridRows.map(r => r.genotype)),
-          },
-        ]}
+        columns={measuredColumns(gridRows, [
+          'GT',
+          'count',
+          'frequency',
+          'genotype',
+        ])}
         showToolbar={showToolbar}
       />
     </div>

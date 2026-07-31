@@ -3,7 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import VariantFeatureDetails from './VariantFeatureWidget.tsx'
 import { stateModelFactory } from './stateModelFactory.ts'
@@ -22,11 +22,14 @@ function renderWidget(featureData: VCFFeatureSerialized) {
     { pluginManager },
   )
   model.widget.setFeatureData(featureData)
-  return render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <VariantFeatureDetails model={model.widget} />
-    </ThemeProvider>,
-  )
+  return {
+    ...render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <VariantFeatureDetails model={model.widget} />
+      </ThemeProvider>,
+    ),
+    widget: model.widget,
+  }
 }
 
 test('renders with just the required model elements', () => {
@@ -127,6 +130,31 @@ test('a breakend in a multiallelic record still gets the breakend panel', async 
     ALT: ['A[ctgB:100[', '<DEL>'],
   })
   await findByText('ctgB:100')
+})
+
+test('clicking the next variant resets the previous one local UI state', async () => {
+  // the widget instance is reused per track, so the details subtree has to be
+  // keyed by feature or state like the ALT toggle (and the sample grid's
+  // filters) carries over to a variant it was never set on
+  const longAllele = { REF: 'ACGTACGTACGTA', ALT: ['TGCATGCATGCAT'] }
+  const { findByText, getByText, widget } = renderWidget({
+    uniqueId: 'variantA',
+    refName: 'ctgA',
+    start: 176,
+    end: 189,
+    ...longAllele,
+  })
+  fireEvent.click(getByText('Show raw ALT'))
+  await findByText('Show simplified ALT')
+
+  widget.setFeatureData({
+    uniqueId: 'variantB',
+    refName: 'ctgA',
+    start: 300,
+    end: 313,
+    ...longAllele,
+  })
+  await findByText('Show raw ALT')
 })
 
 test('a breakend whose ALTs name no mate offers no navigation', async () => {

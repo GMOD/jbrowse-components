@@ -177,8 +177,16 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
   model: VariantFeatureWidgetModel
 }) {
   const { featureData } = model
+  // keyed by feature: the widget instance is reused for the next variant clicked
+  // (one widget id per track, and the drawer renders it without a key), so
+  // without this the sample grid's filters and genotype selection carry over and
+  // silently empty the next variant's grid
   return featureData ? (
-    <FeatDefined feat={featureData} model={model} />
+    <FeatDefined
+      key={featureData.uniqueId}
+      feat={featureData}
+      model={model}
+    />
   ) : (
     <div>
       No feature loaded, may not be available after page refresh because it was

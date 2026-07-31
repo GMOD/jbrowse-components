@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { ActionLink } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import { getMinimalDesc } from '../VcfFeature/util.ts'
@@ -37,14 +38,15 @@ export default function AltFormatter({
   const detail = getDetail({ value, svlen, mate })
   return alt !== value ? (
     <div>
-      <button
+      <ActionLink
         onClick={() => {
           setShow(!show)
         }}
       >
         {show ? 'Show simplified ALT' : 'Show raw ALT'}
-      </button>{' '}
+      </ActionLink>{' '}
       {show ? value : alt}
+      {detail}
     </div>
   ) : (
     `${value}${detail}`

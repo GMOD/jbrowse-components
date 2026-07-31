@@ -1,5 +1,6 @@
-import { measureGridWidth } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
+
+import { measuredColumns } from '../measuredColumns.ts'
 
 import type { AlleleFrequency } from './types.ts'
 
@@ -16,23 +17,11 @@ export default function VariantAlleleFrequencyTable({
         hideFooter
         rowHeight={25}
         columnHeaderHeight={25}
-        columns={[
-          {
-            field: 'allele',
-            headerName: 'Allele',
-            width: measureGridWidth(frequencies.map(r => r.allele)),
-          },
-          {
-            field: 'count',
-            headerName: 'Count',
-            width: measureGridWidth(frequencies.map(r => r.count)),
-          },
-          {
-            field: 'frequency',
-            headerName: 'Frequency',
-            width: measureGridWidth(frequencies.map(r => r.frequency)),
-          },
-        ]}
+        columns={measuredColumns(frequencies, [
+          { field: 'allele', headerName: 'Allele' },
+          { field: 'count', headerName: 'Count' },
+          { field: 'frequency', headerName: 'Frequency' },
+        ])}
       />
     </div>
   )
