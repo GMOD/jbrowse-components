@@ -308,6 +308,23 @@ const PAA_REGION = {
   ...PAA_RAMP_DOMAIN,
 }
 
+// s502's own span out of the segs index (`tabix ecoli_minigraph.segs.bed.gz
+// 'K12#1#chr:1445000-1474500'` -> 1,446,100-1,467,909), so the segment carrying
+// paaABCDEFGHIJK is marked from the file rather than by eye. 21,809 bp, which is
+// the `21.8 kb` label the graph draws on the same segment's node: the one number
+// tying the linear panel to the graph in the figures that show both.
+const PAA_ISLAND_HIGHLIGHT = {
+  refName: 'chr',
+  start: 1446100,
+  end: 1467909,
+  color: 'rgba(214,137,16,0.13)',
+}
+
+// The same span as a locstring, for a linear view placed over one of these cuts:
+// the window has to be the cut's own region, or the lane's ramp and the graph's
+// run over different spans and the shared hue stops meaning anything.
+const PAA_WINDOW = `chr:${PAA_RAMP_DOMAIN.start}-${PAA_RAMP_DOMAIN.end}`
+
 // The synteny rows above the graph. K12's window is PAA_RAMP_DOMAIN opened out a
 // little on the left, so the reader sees the Sakai band ARRIVE at the island's
 // right edge rather than starting at the frame's. The two partner windows are
@@ -664,24 +681,61 @@ function pggbLocusSession(layoutMode: 'auto' | 'samplerows') {
 // colors; the second one follows each off-reference segment's own links one step
 // further, which is what turns the dangling arms into bubbles.
 //
-// Graph panes only, because both halves are the same window over the same track
-// and a linear lane would be duplicated across the composite for nothing. Stable
-// rank rather than reference position: the comparison is which nodes exist, and
-// rank paints every off-reference node one color instead of ramping it by where
-// it attaches.
+// Each half carries the linear view the cut was made from (review: "I don't
+// particularly understand the difference here. At the very least it needs a
+// lineargenomeview"). Two graph drawings alone state the difference only as a
+// node count in the header: FMMM lays the same window out differently once nodes
+// are added, so the two tangles do not visibly share a single node. With the
+// island's genes and the segments lane above each one, both halves are the same
+// stretch of K12 twice over, and the added nodes are the ones with no block in
+// the lane above them.
+//
+// That also settles the coloring: a graph shown beside a linear view uses
+// reference position, so the backbone thread and the blocks above it are the same
+// hue at the same bp, and every off-reference node is the one flat charcoal
+// (ALT_ALLELE_COLOR) — which is what makes "the added nodes are off-reference"
+// visible rather than asserted. Stable rank was the coloring while these were
+// graph panes alone.
 function graphContextPartSpecs(): ScreenshotSpec[] {
   const part = (name: string, subgraphContext: number): ScreenshotSpec => ({
     mode: 'url',
     name,
     url: sessionSpec(CONFIG, {
-      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
+      sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
       views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PAA_WINDOW,
+          // No island highlight here, though rgfa_paa_bubble carries one: this
+          // window IS the cut, so s502 is 21.8 kb of 29.5 and the band covers
+          // three quarters of the panel, reading as a background tint rather
+          // than as a mark. The block's own green and the `21.8 kb` label on the
+          // green node below are what tie the two panels together.
+          tracks: [
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+              showDescriptions: false,
+              height: 60,
+            },
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              showLabels: 'off',
+              heightMode: 'grow',
+              color: referencePositionColor(PAA_RAMP_DOMAIN),
+            },
+          ],
+        },
         {
           type: 'GraphGenomeView',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
           loadedRegion: PAA_REGION,
           layoutMode: 'force',
-          colorScheme: 'stable-rank',
+          colorScheme: 'reference-position',
           bubbleSpread: 'open',
           subgraphContext,
         },
@@ -695,7 +749,9 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     settleMs: 8000,
     // half the composed width each
     viewportWidth: 750,
-    viewportHeight: 710,
+    // the linear view's two lanes on top of the graph pane the halves used to be
+    // (the 1 hop cut is the taller drawing of the two, so it sets this)
+    viewportHeight: 1006,
     hideTooltip: true,
   })
   return [
@@ -1036,14 +1092,7 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               assembly: 'K12',
               loc: PAA_SYNTENY_WINDOW,
-              highlight: [
-                {
-                  refName: 'chr',
-                  start: 1446100,
-                  end: 1467909,
-                  color: 'rgba(214,137,16,0.13)',
-                },
-              ],
+              highlight: [PAA_ISLAND_HIGHLIGHT],
               tracks: [
                 {
                   trackId: 'K12_genes',
@@ -1491,11 +1540,28 @@ export const graphSpecs: ScreenshotSpec[] = [
   // (2062M63348I), so the display packs the overlapping alleles into rows and
   // draws each insertion at the size it inserts instead of as a 1 bp box.
   //
-  // The amylase window, the same one the graph figure above draws: 22 alleles,
-  // reaching 94 kb of insertion and 94 kb of deletion, which is few enough to
-  // read a row at a time and wide enough that the insertion markers are the
-  // figure. A denser window packs the same information into rows too thin to
-  // tell apart.
+  // The CFHR window, not amylase (review: "it is just too complex in this genome
+  // region. we need a simpler region with less diversity"). Amylase is 22 alleles
+  // of which four are tens of kb of insertion at nearly the same coordinate, so
+  // the lane packed six rows of overlapping grey bars carrying five-digit labels
+  // and the reader had to disentangle which bar belonged to which. This window
+  // holds 16, and its structure is one 84,683 bp deletion with small insertions
+  // scattered around it (`tabix hprc-v2.0-mc-grch38.alleles.bed.gz
+  // chr1:196700000-196900000`).
+  //
+  // It is also the window hprc_cfhr_deletion draws as a graph, which is the
+  // second reason to move: the arc that figure labels "skips 84.7 kb of
+  // reference" is the -84,683 bar here, so the same event is a loop in one figure
+  // and the span it covers in the other.
+  //
+  // What a ROW is, since the obvious reading is wrong and the reviewer asked for
+  // sample names: rows are the display's packing of overlapping alleles, and the
+  // track cannot carry haplotype rows at all. The BED's `firstSeenIn` is
+  // minigraph's build order, not carriage -- an allele several haplotypes share
+  // is attributed to whichever was added first, so rows keyed on it would read as
+  // a haplotype pileup while stating something else (build_rgfa_alleles.sh says
+  // this at the field). Per-haplotype carriage is the callset's, which is what
+  // hprc_graph_vs_callset draws.
   {
     mode: 'url',
     name: 'pangenome/hprc_allele_inventory',
@@ -1504,7 +1570,7 @@ export const graphSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: AMY_WINDOW,
+          loc: CFHR_WINDOW,
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
@@ -1513,13 +1579,13 @@ export const graphSpecs: ScreenshotSpec[] = [
               displayMode: 'compact',
               height: 70,
             },
-            hprcSegmentsLane(AMY_REGION),
+            hprcSegmentsLane(CFHR_REGION),
             {
               trackId: 'hprc_minigraph_alleles',
               type: 'LinearAlignmentsDisplay',
-              // the coverage row plus the six rows the window packs into; the
+              // the coverage row plus the three rows this window packs into; the
               // display's default leaves most of its box empty here
-              height: 150,
+              height: 115,
             },
           ],
         },
@@ -1529,7 +1595,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     viewportWidth: 1000,
-    viewportHeight: 550,
+    viewportHeight: 515,
     hideTooltip: true,
   },
   // What Settings -> Graph context buys. A region query on the reference reaches

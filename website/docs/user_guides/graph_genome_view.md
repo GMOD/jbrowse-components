@@ -209,7 +209,7 @@ and a detour that leaves the backbone before the window and rejoins after it
 arrives as two stubs rather than as the one event it is. **1 hop** closes those,
 costing a query per off-reference segment already reached.
 
-<Figure caption="The paa island cut from the same segments track twice. Left, at Graph context None: the orange alternate segments end in mid-air, because the sequence between them sits on a strain's own contig that no K12 coordinate reaches. Right, at 1 hop: the same segments close into bubbles the backbone runs through, and the node and edge counts in the header rise to match." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. Left, at Graph context None: the charcoal off-reference segments end in mid-air, because the sequence between them sits on a strain's own contig that no K12 coordinate reaches. Right, at 1 hop: the same segments close into bubbles the backbone runs through, and the node and edge counts in the header rise to match." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 It expands a coordinate frontier rather than walking the graph, so it does not
 converge on an exact slice however far it runs; cut one of those with

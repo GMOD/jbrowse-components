@@ -285,6 +285,17 @@ const CEA_LAYOUT = CEA_GROUPS.flatMap(({ label, color, ids }) =>
   })),
 )
 
+// One score domain for both halves of dog10k-size-fst-scan, so the peak the
+// zoom draws is the same height as the point it comes from. 0.8 is what the
+// whole-genome half gets from autoscale anyway (build_dog10k_size_fst.sh prints
+// the top windows; the highest is chr10's), and writing it down is what keeps
+// the two axes from parting company when only one of them is autoscaled.
+const FST_AXIS = { minScore: 0, maxScore: 0.8 }
+
+// The IGF1 peak window, which the zoom half marks and the tutorial's next
+// figure slices. One 200 kb bin of the scan.
+const IGF1_PEAK_WINDOW = 'chr15:41,400,000-41,600,000'
+
 export const dog10kSpecs: ScreenshotSpec[] = [
   // Dog10K wolfdog local ancestry, chr1: 22 haplotype rows painted by FLARE
   // against European gray wolf and breed-dog reference panels. Four Saarloos and
@@ -552,18 +563,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     viewportHeight: 1094,
   },
 
-  // The body-size selection scan, whole genome. Hudson Fst per 200 kb window
-  // between the toy/small and giant animals the IGF1 figure below already
-  // panels, computed by build_dog10k_size_fst.sh off the Dog10K phased panel and
-  // loaded as a GWASTrack — the score column is Fst rather than -log10(p), which
-  // is what `scoreColumn`/`scoreTransform: 'none'` on GWASAdapter are for.
+  // The body-size selection scan, whole genome: the top half of
+  // dog10k-size-fst-scan. Hudson Fst per 200 kb window between the toy/small
+  // and giant animals the IGF1 figure below already panels, computed by
+  // build_dog10k_size_fst.sh off the Dog10K phased panel and loaded as a
+  // GWASTrack — the score column is Fst rather than -log10(p), which is what
+  // `scoreColumn`/`scoreTransform: 'none'` on GWASAdapter are for.
   //
   // No `loc`, so afterAttach's showAllRegionsInAssembly lays out all 38
   // autosomes. The assembly's chrom.sizes is local to the config, so there is no
   // remote fetch for that call to race.
   {
     mode: 'url',
-    name: 'dog10k-size-fst-scan',
+    name: 'dog10k-size-fst-scan-genome',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
       // No `loc`, so the view lays out whole regions; `displayedRegionNames`
@@ -576,6 +588,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearManhattanDisplay',
           height: 380,
           scatterPointSize: 4,
+          ...FST_AXIS,
         },
       ],
     }),
@@ -642,7 +655,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         fontSize: 20,
         anchor: {
           track: 'dog10k_size_fst',
-          locus: 'chr15:41,400,000-41,600,000',
+          locus: IGF1_PEAK_WINDOW,
           fracY: 0,
           dx: 128,
           dy: 152,
@@ -652,14 +665,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         type: 'arrow',
         anchor: {
           track: 'dog10k_size_fst',
-          locus: 'chr15:41,400,000-41,600,000',
+          locus: IGF1_PEAK_WINDOW,
           fracY: 0,
           dx: 8,
           dy: 204,
         },
         fromAnchor: {
           track: 'dog10k_size_fst',
-          locus: 'chr15:41,400,000-41,600,000',
+          locus: IGF1_PEAK_WINDOW,
           fracY: 0,
           dx: 88,
           dy: 168,
@@ -697,6 +710,58 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+
+  // The zoom half of dog10k-size-fst-scan (review: "if possible create a two
+  // part figure with a zoom in also"). Two megabases of chr15 around the IGF1
+  // peak, the same track and the same axis as the whole-genome half above it, so
+  // the labelled point up there becomes a window with neighbours to be higher
+  // than and a gene track saying what it sits on. The window the tutorial slices
+  // next is inside this one, which is what makes the pair a path rather than two
+  // pictures.
+  //
+  // `highlight` rather than a callout: it is the peak window's own coordinates
+  // drawn by the view, so the marked band cannot drift off the point it marks,
+  // and it is in the figure's live link.
+  {
+    mode: 'url',
+    name: 'dog10k-size-fst-scan-igf1',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr15:40,600,000-42,600,000',
+      highlight: [IGF1_PEAK_WINDOW],
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+          displayMode: 'compact',
+          height: 90,
+        },
+        {
+          trackId: 'dog10k_size_fst',
+          type: 'LinearManhattanDisplay',
+          height: 380,
+          // ten windows across this view against twelve thousand across the
+          // genome, so the points carry the figure at a size the whole-genome
+          // half could not use
+          scatterPointSize: 9,
+          ...FST_AXIS,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="manhattan-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 6000,
+    // the gene lane, all 380 px of the score lane, and its bottom border: at 700
+    // the lowest windows sat on the frame edge
+    viewportHeight: 716,
+  },
+
+  {
+    mode: 'compose',
+    name: 'dog10k-size-fst-scan',
+    parts: ['dog10k-size-fst-scan-genome', 'dog10k-size-fst-scan-igf1'],
   },
 
   // The FGF4 retrogene (Parker et al. 2009). A processed retrocopy has no

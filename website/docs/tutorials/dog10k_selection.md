@@ -60,10 +60,12 @@ statistic loads with no reshaping:
 Opening the assembly without a location shows all of its regions at once, so the
 display lays the autosomes out side by side rather than one at a time.
 
-<Figure caption="Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track. Three body-size genes are labelled at the windows they fall in; chr10 carries a run of high windows rather than a single point." src="/img/dog10k-size-fst-scan.png" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track, with three body-size genes labelled at the windows they fall in. Bottom: two megabases of chr15 on the same axis, the highlighted band the IGF1 window and the gene track naming what it sits on." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region rather than a variant, and the
-run of high windows on chr10 is one region's worth.
+run of high windows on chr10 is one region's worth. At two megabases the same
+windows are drawn at their real width, against the neighbours that set the
+peak's scale.
 
 The rest of this tutorial takes the _IGF1_ peak rather than the taller one on
 chr10, because the next step needs a locus where there is something to draw per

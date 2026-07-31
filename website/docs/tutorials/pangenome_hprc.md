@@ -410,7 +410,7 @@ against the reference span it replaces (`2062M63348I`), and the alignments
 display draws whatever has one, so the alleles pack into rows and each insertion
 draws at its real magnitude instead of as a 1 bp box.
 
-<Figure caption="The allele inventory over the amylase window, under the RefSeq genes and the rGFA segments. Grey bars are the reference span each allele replaces and purple marks are insertions, each drawn at the size it inserts and labelled with it, which is what the CIGAR in the BED buys: as a plain feature track every one of them would be a 1 bp box." src="/img/pangenome/hprc_allele_inventory.png" />
+<Figure caption="The allele inventory over the complement factor H cluster, under the RefSeq genes and the rGFA segments. Grey bars are the reference span each allele replaces, labelled with it, and purple marks are insertions drawn at the size they insert, which is what the CIGAR in the BED buys. The long bar from CFHR3 to CFHR1 is the deletion the graph figure above draws as an arc. Rows are the display packing overlapping alleles, not haplotypes." src="/img/pangenome/hprc_allele_inventory.png" />
 
 The
 [E. coli tutorial](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
