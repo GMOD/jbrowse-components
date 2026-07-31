@@ -387,13 +387,10 @@ function applyModifier(
           snap.displayMode = val1 === 'super-compact' ? 'superCompact' : val1
         }
       } else if (val1 && hasFeatureSize) {
-        const n = +val1
-        if (Number.isNaN(n)) {
-          throw new Error(
-            `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
-          )
-        }
-        snap.featureHeight = n
+        snap.featureHeight = parseNum(
+          'featureHeight (use normal, compact, super-compact, or a number)',
+          val1,
+        )
       }
       break
     }
@@ -435,17 +432,6 @@ function applyModifier(
       if (val1) {
         result.displayType = displayTypeAliases[val1] ?? val1
       }
-      break
-    }
-    // `index:` locates the track's index file (.bai/.csi/.tbi). It's consumed at
-    // config-build time (readData), so it's a no-op here — listed only so it
-    // isn't mistaken for a typo and warned about.
-    case 'index': {
-      break
-    }
-    // `name:` sets the track's display name (consumed at config-build time in
-    // readData); a no-op here for the same reason as `index:`.
-    case 'name': {
       break
     }
     case 'autoscale': {
@@ -510,6 +496,10 @@ function applyModifier(
       }
       break
     }
+    case 'index':
+    case 'name': {
+      break
+    }
     default: {
       console.warn(`Warning: unknown track option "${prefix}"`)
       break
@@ -520,7 +510,8 @@ function applyModifier(
 // Parse a track's modifier list into a declarative display snapshot. snpcov is
 // applied last because it reads the resolved height. Pure (no view/display), so
 // it's unit-testable; the center-line sort is returned as an intent for the
-// caller to resolve against the view.
+// caller to resolve against the view. Note: `index:` and `name:` modifiers are
+// consumed at config-build time (readData) and are silently ignored here.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {} }
   const apply = (opt: string) => {

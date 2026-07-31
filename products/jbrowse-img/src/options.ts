@@ -248,7 +248,7 @@ export function getNumber(
 // silently falling back to the default) when a present value isn't one of them —
 // a typo like `--cigarMode ful` or `--trackLabels lft` should be reported, the
 // same way an unknown option name is.
-function getEnum<T extends string>(
+export function getEnum<T extends string>(
   rest: Record<string, unknown>,
   key: string,
   allowed: readonly T[],
@@ -277,18 +277,8 @@ export function getNumberList(rest: Record<string, unknown>, key: string) {
   return list.length ? list : undefined
 }
 
-const trackLabelModes: TrackLabelMode[] = ['offset', 'overlay', 'left', 'none']
-
-export function getTrackLabels(rest: Record<string, unknown>) {
-  return getEnum(rest, 'trackLabels', trackLabelModes)
-}
-
+export const trackLabelModes = ['offset', 'overlay', 'left', 'none'] as const
 export const cigarModes = ['off', 'matches', 'full'] as const
-
-export function getCigarMode(rest: Record<string, unknown>) {
-  return getEnum(rest, 'cigarMode', cigarModes)
-}
-
 // The built-in theme names (see packages/core/src/ui/theme.ts). Kept in sync
 // with the --themeName help text; validated so a misspelled theme warns instead
 // of silently rendering the default.
@@ -299,10 +289,6 @@ export const themeNames = [
   'darkStock',
   'darkMinimal',
 ] as const
-
-export function getThemeName(rest: Record<string, unknown>) {
-  return getEnum(rest, 'themeName', themeNames)
-}
 
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),

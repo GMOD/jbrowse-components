@@ -1,13 +1,14 @@
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
   buildHelp,
+  cigarModes,
   getBoolean,
   getBooleanValue,
-  getCigarMode,
+  getEnum,
   getNumber,
   getString,
-  getThemeName,
-  getTrackLabels,
+  themeNames,
+  trackLabelModes,
   knownOptions,
 } from './options.ts'
 import { parseArgv, standardizeArgv } from './parseArgv.ts'
@@ -37,8 +38,12 @@ test('applies fallbacks when options are absent', () => {
 test('validates trackLabels against the allowed modes', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
-    expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
+    expect(
+      getEnum(parse('--trackLabels offset'), 'trackLabels', trackLabelModes),
+    ).toBe('offset')
+    expect(
+      getEnum(parse('--trackLabels bogus'), 'trackLabels', trackLabelModes),
+    ).toBeUndefined()
   } finally {
     warn.mockRestore()
   }
@@ -47,13 +52,17 @@ test('validates trackLabels against the allowed modes', () => {
 test('warns on an invalid enum value instead of silently defaulting', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getCigarMode(parse('--cigarMode full'))).toBe('full')
-    expect(getThemeName(parse('--themeName darkStock'))).toBe('darkStock')
+    expect(getEnum(parse('--cigarMode full'), 'cigarMode', cigarModes)).toBe(
+      'full',
+    )
+    expect(
+      getEnum(parse('--themeName darkStock'), 'themeName', themeNames),
+    ).toBe('darkStock')
     expect(warn).not.toHaveBeenCalled()
 
-    expect(getCigarMode(parse('--cigarMode ful'))).toBeUndefined()
-    expect(getThemeName(parse('--themeName drakStock'))).toBeUndefined()
-    expect(getTrackLabels(parse('--trackLabels lft'))).toBeUndefined()
+    expect(getEnum(parse('--cigarMode ful'), 'cigarMode', cigarModes)).toBeUndefined()
+    expect(getEnum(parse('--themeName drakStock'), 'themeName', themeNames)).toBeUndefined()
+    expect(getEnum(parse('--trackLabels lft'), 'trackLabels', trackLabelModes)).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(3)
   } finally {
     warn.mockRestore()
@@ -63,8 +72,12 @@ test('warns on an invalid enum value instead of silently defaulting', () => {
 test('absent enum flags return undefined without warning', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getCigarMode(parse('--loc chr1'))).toBeUndefined()
-    expect(getThemeName(parse('--loc chr1'))).toBeUndefined()
+    expect(
+      getEnum(parse('--loc chr1'), 'cigarMode', cigarModes),
+    ).toBeUndefined()
+    expect(
+      getEnum(parse('--loc chr1'), 'themeName', themeNames),
+    ).toBeUndefined()
     expect(warn).not.toHaveBeenCalled()
   } finally {
     warn.mockRestore()
