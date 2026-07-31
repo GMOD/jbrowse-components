@@ -840,9 +840,9 @@
   "alignments/haplotype": {
     "name": "alignments/haplotype",
     "status": "good",
-    "note": "this changed from blue+red to red+green which is undesirable. i think we need to assume HP:1 is the first in index not HP:0",
-    "reviewedAt": "2026-07-30T13:56:51.585Z",
-    "hash": "9b56103ed16376f191856df28d219b07b795c1d8"
+    "note": "",
+    "reviewedAt": "2026-07-31T02:52:44.582Z",
+    "hash": "4e041a5ad084823da13b9ccc75e53fa28711e865"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
@@ -982,9 +982,9 @@
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
-    "note": "this should be blue and pink but it is pink and red due to the hp numeric indexes i think, please fix. ",
-    "reviewedAt": "2026-07-30T20:16:15.082Z",
-    "hash": "b672de36a60a6d177aa07549542549bff4fbd642"
+    "note": "",
+    "reviewedAt": "2026-07-31T03:01:15.446Z",
+    "hash": "bbdd60ff6502bded32cd4edf70a8b13f6b0ca9b2"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
@@ -1321,9 +1321,9 @@
   "inversion_long_read": {
     "name": "inversion_long_read",
     "status": "good",
-    "note": "DONE: readConnectionsHeight 130 -> 60. The band only ever holds one dome ~1.2 kb wide, so at 130 the arc was the tallest single thing in the frame and the reads it describes were pushed down to make room for it. Two measurements the regen reported while doing it: the display height was 800 but the 'Not split' section runs out of rows ~180px before the box ends, so that is now 620, and viewportHeight 1140 -> 960 to match. Nothing about the data changed - same window, same split/not-split grouping, same magenta junction arc.",
-    "reviewedAt": "2026-07-30T14:02:25.341Z",
-    "hash": "a580c8afa4a32902e3a524450ee26490df006645"
+    "note": "please make this a single frame picture, potentially extra-wide screenshot",
+    "reviewedAt": "2026-07-31T02:53:12.050Z",
+    "hash": "ef33c0b3ae0e0739bef41319b9544b60de4058f8"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1527,8 +1527,8 @@
     "name": "rnaseq/strand_specific",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:14:14.472Z",
-    "hash": "e2a97eb3157d96c69e8606dfeb91462bae078dcc"
+    "reviewedAt": "2026-07-31T03:01:15.604Z",
+    "hash": "d1b61f909e8ce0ce629574e8e4f81a19a18c7124"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",
@@ -1959,10 +1959,10 @@
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "bad",
-    "note": "using bezier curves for the connections similar to breakpoint split view might help indicate the 'directionality' of the nodes?",
-    "reviewedAt": "2026-07-30T20:34:11.874Z",
-    "hash": "bcc3684c50eb733ac934ed3b2ec4ea70611706e5"
+    "status": "good",
+    "note": "FIXED in the plugin, and not by curving the edges. Measured the bezier idea first: on an anchored layout a bubble's two nodes sit one above the other, so a curve that leaves each node along its own direction bows right at the top and left at the bottom on the way in and the mirror of that on the way out -- the two arms cross twice, which bubbleCrossing.test.ts catches on 17 of the pggb subgraph's alleles. Straight-ish arms are what that test is protecting. What WAS wrong is the thing the crossings in this figure actually came from: computeEdgeCurves joined the source's last point to the target's first regardless of which end the link touches, so 'L s381 - s2087 +' then 'L s2087 + s378 -' (NCTC86 crossing that locus right to left) drew the second link 7 kb backwards across the segment it rejoins -- the long X under the 4.2 kb node. The link strands cannot be converted to drawn ends, because nothing records which direction a layout drew a node in; each edge now attaches at whichever end of each node faces the other node's drawn SPAN (ties go forward, which is what keeps an overlapping bubble from hanging its entry and exit off the same end). The rGFA slice's reverse-complement exclusion is gone from the test, so every bubble in it is checked. Published as graphgenomeviewer 7cf54ea5fbf7, three fixtures repinned, all graph figures regenerated. pangenome/{pggb_locus_sample_rows,hprc_mhc_layout_anchored,hprc_cfhr_deletion} moved with it and want a look: the CFHR deletion arc in particular now ends on the node it rejoins instead of looping back near its start.",
+    "reviewedAt": "2026-07-31T06:35:36.133Z",
+    "hash": "6eb76782d2f754e062020a7e1093b885a801911a"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2260,9 +2260,9 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "good",
-    "note": "DONE, matrix mode as suggested. In position space the records sit where they are, and over 400 kb most of the panel is the gaps between them, so the shared haplotype read as speckle - which is what 'hard to see the overarching pattern' was. One column per record gives every SNV the same width and the clades come out as solid blocks: the small-breed cluster carries alt across most of the window, the giant cluster is grey (reference) through the middle, and the size swatch beside the dendrogram lines up with the split. The reason the spec had avoided the matrix was that a boundary then lands at a column rather than a coordinate; the connector band above the rows answers that, at 34px rather than the 20px default - not higher, because with hundreds of records no single line can be followed and a tall band is just a grey wedge over the rows. Caption updated.",
-    "reviewedAt": "2026-07-30T13:58:10.387Z",
+    "status": "bad",
+    "note": "what do you think about the clustering? i cant really tell what the 'story' is here. DONE, matrix mode as suggested. In position space the records sit where they are, and over 400 kb most of the panel is the gaps between them, so the shared haplotype read as speckle - which is what 'hard to see the overarching pattern' was. One column per record gives every SNV the same width and the clades come out as solid blocks: the small-breed cluster carries alt across most of the window, the giant cluster is grey (reference) through the middle, and the size swatch beside the dendrogram lines up with the split. The reason the spec had avoided the matrix was that a boundary then lands at a column rather than a coordinate; the connector band above the rows answers that, at 34px rather than the 20px default - not higher, because with hundreds of records no single line can be followed and a tall band is just a grey wedge over the rows. Caption updated.",
+    "reviewedAt": "2026-07-31T05:49:51.010Z",
     "hash": "43d83c5b637e94311a8ec281a9a2e09d0e2fac95"
   },
   "dog10k-slc28a3-copy-number": {
@@ -2289,9 +2289,9 @@
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
     "status": "good",
-    "note": "DONE: the second frame now has both files open. The block ribbon is the band, and the .anchors file it was built from is a lane in each panel, so which gene pairs went into one block is in that frame instead of being carried across from the frame above. Tried the literal reading first (both tracks on the synteny level) and measured it: the block ribbons paint straight over the gene ribbons in the same pink, the band goes solid, and neither file is readable - there is no per-track color to separate them from a session spec, since the synteny level takes bare trackIds. Frame 1 is unchanged. Caption updated.",
-    "reviewedAt": "2026-07-30T14:00:42.018Z",
-    "hash": "d07b15c1e3e3ab31b9a364f190dd51ddbbda4d21"
+    "note": "FIXED as asked. Frame 2 now draws BOTH files on the one synteny band (level tracks [simple, anchors], blocks first so the gene threads land on top), and the lane workaround is gone. The reason the previous attempt went solid was the window, not the blend: it framed a single MCScan block, so .anchors.simple was one ribbon spanning the entire band and there was nothing for the gene pairs to sit inside. The window is now a run of seven consecutive blocks (grape chr9:1-7.7Mb vs peach Pp03:2.1-6.9Mb, five collinear + two inverted, same order on both genomes), so at the view's 0.2 alpha each block is a pale trapezoid with its gene pairs darker inside it and empty gaps between blocks. Caption rewritten; gallery links regenerated.",
+    "reviewedAt": "2026-07-31T05:56:59.683Z",
+    "hash": "d032d8d561b180d274d43c0182789e6d929ed8a1"
   },
   "mcscan_synteny/dotplot": {
     "name": "mcscan_synteny/dotplot",
@@ -2334,5 +2334,12 @@
     "note": "DONE, both parts, in the plugin and published (5e1c0d4f42b5, pins bumped in the three test_data/graphgenomeview configs). WHAT 'SKIPS' REFERS TO: the reference, and the label now says so - 'skips 84.7 kb of reference'. Yes, it is something missing from the reference: a deletion contributes no node, only an edge from one backbone segment to another that is not its neighbour, so the arc's number is the reference span the haplotypes taking it do not carry. THE RED: measured, and the collision was real to within three points. The arc was rgb(214,39,40); the reference-position ramp is hue 0 to 300 at 70%/50%, so its hue-0 end is rgb(217,38,38) - at the start of any region the deletion arc and the backbone under it were the same red. Near-black now (rgb(24,24,28)), with the label recolored to match: nothing else in the drawing is near-black (nodes are ramp hues or the off-reference charcoal, plain links are mid grey), so weight and darkness carry the arc instead of a hue and hue keeps meaning reference position and only that. hprc_amylase_graph and hprc_lpa_kiv2 carry the same arcs and were regenerated with it; both had been kept behind the content-stable gate at 0.245% and 0.069%, which is the case the website CLAUDE.md says to --force and diff. Prose in pangenome_hprc.md updated off 'those edges are red'.",
     "reviewedAt": "2026-07-30T14:09:42.273Z",
     "hash": "b5fdaa5c28c342046e48cb72a99521f009a18d31"
+  },
+  "dog10k-fgf4-retrogene": {
+    "name": "dog10k-fgf4-retrogene",
+    "status": "bad",
+    "note": "make sure paper is cited",
+    "reviewedAt": "2026-07-31T05:49:27.458Z",
+    "hash": "713809d4eb5ae491899c5d48fc1ce2bc8f742b99"
   }
 }
