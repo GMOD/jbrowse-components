@@ -1,4 +1,14 @@
 import {
+  RF_DELETION,
+  RF_HARD_CLIP,
+  RF_INSERTION,
+  RF_INSERT_BASE,
+  RF_POSITIONAL,
+  RF_REF_SKIP,
+  RF_SOFT_CLIP,
+  RF_SUBST,
+} from '@gmod/cram'
+import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
@@ -7,10 +17,8 @@ import {
   SOFTCLIP_TYPE,
 } from '@jbrowse/cigar-utils'
 
-import type { CramRecord } from '@gmod/cram'
+import type { ReadFeatureArena } from '@gmod/cram'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
-
-type ReadFeatures = CramRecord['readFeatures']
 
 // A clip has no bases to report — its length travels in `cliplen`, which is what
 // every consumer reads. Matches forEachMismatchNumeric.
@@ -20,88 +28,114 @@ const NO_BASES = ''
 // (extracted so it's unit-testable with plain fixtures, like
 // readFeaturesToNumericCIGAR). refPos is read-relative; windowStart/windowEnd are
 // passed already converted to that space, or ±Infinity for no clip.
+//
+// Reads cram-js's columnar read features rather than `record.readFeatures`,
+// which rebuilds an array of ~64-byte objects on every access. Only the
+// insertion branches touch a payload string, and only inside the window.
 export function readFeaturesToMismatches(
-  readFeatures: ReadFeatures,
+  arena: ReadFeatureArena | undefined,
+  featureStart: number,
+  featureCount: number,
   featStart: number,
   qual: ArrayLike<number> | null | undefined,
   wLo: number,
   wHi: number,
   callback: MismatchCallback,
 ) {
-  if (readFeatures !== undefined) {
+  if (arena !== undefined) {
     const hasQual = !!qual
-    const len = readFeatures.length
+    const { codes, pos, refPos, num, refCodes, subCodes } = arena
+    const end = featureStart + featureCount
     let insertedBases = ''
     let insertedBasesLen = 0
     let insertionPos = 0
 
-    for (let i = 0; i < len; i++) {
-      const rf = readFeatures[i]!
-      const refPos = rf.refPos - 1 - featStart
-      const { code } = rf
+    for (let i = featureStart; i < end; i++) {
+      const code = codes[i]!
+      // skips q/Q, whose refPos reports where a quality score sits in the
+      // read rather than an alignment position — see RF_POSITIONAL in
+      // @gmod/cram. Letting one through flushes the insertion accumulator
+      // below and splits a 2-base insertion into two 1-base callbacks
+      if (RF_POSITIONAL[code]) {
+        const rPos = refPos[i]! - 1 - featStart
 
-      // Consecutive single-base 'i' features at the same refPos accumulate into
-      // one insertion. Flush it before processing any non-'i' feature (or an 'i'
-      // that starts a new position). Flushing here (rather than after) emits the
-      // insertion ahead of a same-position mismatch, matching the BAM/CRAM
-      // readFeatures order.
-      if (insertedBasesLen > 0 && (code !== 'i' || refPos !== insertionPos)) {
-        if (insertionPos >= wLo && insertionPos < wHi) {
-          callback(
-            INSERTION_TYPE,
-            insertionPos,
-            0,
-            insertedBases,
-            -1,
-            0,
-            insertedBasesLen,
-          )
+        // Consecutive single-base 'i' features at the same refPos accumulate into
+        // one insertion. Flush it before processing any non-'i' feature (or an 'i'
+        // that starts a new position). Flushing here (rather than after) emits the
+        // insertion ahead of a same-position mismatch, matching the BAM/CRAM
+        // readFeatures order.
+        if (
+          insertedBasesLen > 0 &&
+          (code !== RF_INSERT_BASE || rPos !== insertionPos)
+        ) {
+          if (insertionPos >= wLo && insertionPos < wHi) {
+            callback(
+              INSERTION_TYPE,
+              insertionPos,
+              0,
+              insertedBases,
+              -1,
+              0,
+              insertedBasesLen,
+            )
+          }
+          insertedBases = ''
+          insertedBasesLen = 0
         }
-        insertedBases = ''
-        insertedBasesLen = 0
-      }
 
-      const inWindow = refPos < wHi && refPos + 1 > wLo
+        const inWindow = rPos < wHi && rPos + 1 > wLo
+        // the data value for D/N/H, the payload length for I/i
+        const n = num[i]!
 
-      if (code === 'X') {
-        if (inWindow) {
-          const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
-          callback(
-            MISMATCH_TYPE,
-            refPos,
-            1,
-            rf.sub ?? 'N',
-            hasQual ? qual[rf.pos - 1]! : -1,
-            refCharCode,
-            0,
-          )
+        if (code === RF_SUBST) {
+          if (inWindow) {
+            // 0 where the reference base is unknown, and 0 & ~0x20 is still 0
+            const refCharCode = refCodes[i]! & ~0x20
+            const subCode = subCodes[i]!
+            callback(
+              MISMATCH_TYPE,
+              rPos,
+              1,
+              subCode === 0 ? 'N' : String.fromCharCode(subCode),
+              hasQual ? qual[pos[i]! - 1]! : -1,
+              refCharCode,
+              0,
+            )
+          }
+        } else if (code === RF_INSERTION) {
+          if (inWindow) {
+            callback(
+              INSERTION_TYPE,
+              rPos,
+              0,
+              arena.payloadStringAt(i),
+              -1,
+              0,
+              n,
+            )
+          }
+        } else if (code === RF_REF_SKIP) {
+          if (rPos < wHi && rPos + n > wLo) {
+            callback(SKIP_TYPE, rPos, n, 'N', -1, 0, 0)
+          }
+        } else if (code === RF_SOFT_CLIP) {
+          if (inWindow) {
+            callback(SOFTCLIP_TYPE, rPos, 1, NO_BASES, -1, 0, n)
+          }
+        } else if (code === RF_HARD_CLIP) {
+          if (inWindow) {
+            callback(HARDCLIP_TYPE, rPos, 1, NO_BASES, -1, 0, n)
+          }
+        } else if (code === RF_DELETION) {
+          if (rPos < wHi && rPos + n > wLo) {
+            callback(DELETION_TYPE, rPos, n, '*', -1, 0, 0)
+          }
+        } else if (code === RF_INSERT_BASE) {
+          // consecutive 'i' features share a refPos; record where they insert
+          insertionPos = rPos
+          insertedBases += arena.payloadStringAt(i)
+          insertedBasesLen += n
         }
-      } else if (code === 'I') {
-        if (inWindow) {
-          callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
-        }
-      } else if (code === 'N') {
-        if (refPos < wHi && refPos + rf.data > wLo) {
-          callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
-        }
-      } else if (code === 'S') {
-        if (inWindow) {
-          const dataLen = rf.data.length
-          callback(SOFTCLIP_TYPE, refPos, 1, NO_BASES, -1, 0, dataLen)
-        }
-      } else if (code === 'H') {
-        if (inWindow) {
-          callback(HARDCLIP_TYPE, refPos, 1, NO_BASES, -1, 0, rf.data)
-        }
-      } else if (code === 'D') {
-        if (refPos < wHi && refPos + rf.data > wLo) {
-          callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
-        }
-      } else if (code === 'i') {
-        // consecutive 'i' features share a refPos; record where they insert
-        insertionPos = refPos
-        insertedBases += rf.data
-        insertedBasesLen++
       }
     }
 

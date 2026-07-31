@@ -116,7 +116,9 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // of its ~3 reads per read beats installing a per-instance copy.
   get NUMERIC_CIGAR() {
     this.numericCigar ??= readFeaturesToNumericCIGAR(
-      this.record.readFeatures,
+      this.record.readFeatureArena,
+      this.record.readFeatureStart,
+      this.record.readFeatureCount,
       this.record.alignmentStart,
       this.record.readLength,
     )
@@ -222,7 +224,9 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     const wHi =
       windowEnd === undefined ? Number.POSITIVE_INFINITY : windowEnd - featStart
     readFeaturesToMismatches(
-      this.record.readFeatures,
+      this.record.readFeatureArena,
+      this.record.readFeatureStart,
+      this.record.readFeatureCount,
       featStart,
       this.qualRaw,
       wLo,

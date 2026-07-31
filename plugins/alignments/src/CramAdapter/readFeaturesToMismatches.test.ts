@@ -1,9 +1,9 @@
+import { arenaFromReadFeatures } from '@gmod/cram'
+
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 
-import type { CramRecord } from '@gmod/cram'
+import type { ReadFeature } from '@gmod/cram'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
-
-type ReadFeatures = CramRecord['readFeatures']
 
 interface Emit {
   type: number
@@ -14,8 +14,11 @@ interface Emit {
 }
 
 // Collect callback emissions into plain objects for assertion. featStart 0 and
-// no window (±Infinity) keeps refPos == read-relative position.
-function collect(readFeatures: ReadFeatures, qual?: Uint8Array) {
+// no window (±Infinity) keeps refPos == read-relative position. The fixtures are
+// written as plain features and packed into a one-record arena, the columnar
+// shape the walk reads.
+function collect(readFeatures: ReadFeature[], qual?: Uint8Array) {
+  const arena = arenaFromReadFeatures(readFeatures)
   const out: Emit[] = []
   const cb: MismatchCallback = (
     type,
@@ -29,7 +32,9 @@ function collect(readFeatures: ReadFeatures, qual?: Uint8Array) {
     out.push({ type, start, length, base, cliplen })
   }
   readFeaturesToMismatches(
-    readFeatures,
+    arena,
+    0,
+    arena.length,
     0,
     qual,
     Number.NEGATIVE_INFINITY,
@@ -49,6 +54,20 @@ test('consecutive single-base i features merge into one insertion', () => {
   const insertions = out.filter(o => o.base === 'AC')
   expect(insertions).toHaveLength(1)
   expect(insertions[0]).toMatchObject({ start: 3, cliplen: 2 })
+})
+
+test('a Q between two i features does not split the insertion', () => {
+  // q/Q report where a quality score sits in the *read*, so the Q that follows
+  // an inserted base carries a refPos behind the insertion — see RF_POSITIONAL
+  // in @gmod/cram. Letting it through flushed the accumulator here and emitted
+  // two 1-base insertions at the same position instead of one 2-base insertion.
+  const out = collect([
+    { code: 'i', data: 'A', pos: 3, refPos: 4 },
+    { code: 'Q', data: 36, pos: 3, refPos: 3 },
+    { code: 'i', data: 'C', pos: 4, refPos: 4 },
+  ])
+  expect(out).toHaveLength(1)
+  expect(out[0]).toMatchObject({ start: 3, base: 'AC', cliplen: 2 })
 })
 
 test('insertion is emitted before a same-position mismatch', () => {
