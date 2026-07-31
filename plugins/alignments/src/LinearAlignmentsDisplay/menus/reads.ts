@@ -98,11 +98,23 @@ export function getReadsMenuItem(model: ReadsModel) {
         },
         displayTypeDefault: model.softClippingDisplayTypeDefault,
       }),
+      // Every interbase mark — the count bars and the fixed-size triangles
+      // alike — draws inside the coverage band (`coveragePassPlan`, and the
+      // Canvas2D twin), and the hit test spells the same conjunction. So the
+      // dependency is stated here rather than gated on: with coverage off this
+      // toggle is inert, and the same sentence is on LGVSyntenyDisplay's
+      // corresponding row.
       checkboxItem(
         'Show interbase indicators',
         model.showInterbaseIndicators,
         () => {
           model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+        },
+        {
+          helpText:
+            'Mark insertions and clipping, which occupy no reference base, ' +
+            'with a between-base tick. Drawn in the coverage band, so it ' +
+            'needs "Show coverage" on.',
         },
       ),
       // Which reads populate the pileup. These change what's fetched (they also

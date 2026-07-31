@@ -86,51 +86,40 @@ export function getSortByMenuItem(
   // rule `checkedType` applies to the group-by radios.
   const stored = getSortMode(model)
   const mode = modes.includes(stored) ? stored : 'position'
+  // Rows that only write an ordering keep the menu open; `tag` opens a dialog,
+  // so it dismisses — the one asymmetry in the group, and now the only thing
+  // spelled out per row.
+  const radio = (
+    m: SortMode,
+    label: string,
+    onClick: () => void,
+    keepMenuOpen = true,
+  ): RadioMenuItem => ({
+    label,
+    type: 'radio',
+    checked: mode === m,
+    keepMenuOpen,
+    onClick,
+  })
   const items: Record<SortMode, RadioMenuItem> = {
-    position: {
-      label: 'Start location',
-      type: 'radio',
-      checked: mode === 'position',
-      keepMenuOpen: true,
-      onClick: () => {
-        model.setLargeFeaturesFirst(false)
-        model.clearSortedBy()
-      },
-    },
-    length: {
-      label: `Longest ${noun}s first`,
-      type: 'radio',
-      checked: mode === 'length',
-      keepMenuOpen: true,
-      onClick: () => {
-        model.clearSortedBy()
-        model.setLargeFeaturesFirst(true)
-      },
-    },
-    strand: {
-      label: `${capitalizeFirst(noun)} strand`,
-      type: 'radio',
-      checked: mode === 'strand',
-      keepMenuOpen: true,
-      onClick: () => {
-        model.setSortedBy('strand')
-      },
-    },
-    basePair: {
-      label: 'Base pair',
-      type: 'radio',
-      checked: mode === 'basePair',
-      keepMenuOpen: true,
-      onClick: () => {
-        model.setSortedBy('basePair')
-      },
-    },
-    // Opens a dialog for the tag name, so this one closes the menu.
-    tag: {
-      label: 'Tag...',
-      type: 'radio',
-      checked: mode === 'tag',
-      onClick: () => {
+    position: radio('position', 'Start location', () => {
+      model.setLargeFeaturesFirst(false)
+      model.clearSortedBy()
+    }),
+    length: radio('length', `Longest ${noun}s first`, () => {
+      model.clearSortedBy()
+      model.setLargeFeaturesFirst(true)
+    }),
+    strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
+      model.setSortedBy('strand')
+    }),
+    basePair: radio('basePair', 'Base pair', () => {
+      model.setSortedBy('basePair')
+    }),
+    tag: radio(
+      'tag',
+      'Tag...',
+      () => {
         getSession(model).queueDialog(handleClose => [
           SortByTagDialog,
           {
@@ -141,7 +130,8 @@ export function getSortByMenuItem(
           },
         ])
       },
-    },
+      false,
+    ),
   }
   return {
     label: 'Sort by...',

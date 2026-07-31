@@ -15,6 +15,8 @@ const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
 )
 
+const PRESETS = Object.values(COMPACTNESS_PRESETS)
+
 // The preset vocabulary lives in a UI-free leaf module so non-UI readers (the
 // website's figure recipes) can name a featureHeight by its menu label without
 // importing React. Re-exported here, where it has always been imported from.
@@ -60,7 +62,7 @@ export function getFeatureHeightMenuItem(
       // back to fixed); the pin promotes that height as the session default. The
       // rows stay open (promotableRadioItem's default) so size + mode can both be
       // set in one visit.
-      ...Object.values(COMPACTNESS_PRESETS).map(preset =>
+      ...PRESETS.map(preset =>
         promotableRadioItem({
           label: preset.label,
           checked: sizeActive && matchesPreset(preset),
@@ -79,8 +81,7 @@ export function getFeatureHeightMenuItem(
       {
         label: 'Custom...',
         type: 'radio' as const,
-        checked:
-          sizeActive && !Object.values(COMPACTNESS_PRESETS).some(matchesPreset),
+        checked: sizeActive && !PRESETS.some(matchesPreset),
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             SetFeatureHeightDialog,

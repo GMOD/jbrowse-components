@@ -1,3 +1,5 @@
+import { defaultFilterFlags } from './util.ts'
+
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 // Coloring mode for paired-end arcs / read cloud. A deliberately smaller,
@@ -186,13 +188,21 @@ export interface FilterBy {
 
 // Legacy sessions stored a single `tagFilter`; fold it into `tagFilters` so
 // every consumer only ever reads the plural form.
+//
+// The flag masks are backfilled here because `filterBy` is a `frozen` slot, so a
+// hand-written config may set only `readName` or only `tagFilters` and leave the
+// masks absent — `FilterBy` declares them required, and every reader (the
+// worker's flag test, the menu's active-filter count, the dialog's checkboxes)
+// assumes that. Without this, `filterBy: { readName: 'x' }` counted as two
+// filters and tested reads against an undefined mask.
 export function normalizeFilterBy(
-  filterBy: FilterBy & { tagFilter?: TagFilter },
+  filterBy: Partial<FilterBy> & { tagFilter?: TagFilter },
 ): FilterBy {
   const { tagFilter, ...rest } = filterBy
-  return tagFilter !== undefined && rest.tagFilters === undefined
-    ? { ...rest, tagFilters: [tagFilter] }
-    : rest
+  const base = { ...defaultFilterFlags, ...rest }
+  return tagFilter !== undefined && base.tagFilters === undefined
+    ? { ...base, tagFilters: [tagFilter] }
+    : base
 }
 
 // In-track stacked grouping. `type` selects the per-read group-key generator

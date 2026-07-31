@@ -220,11 +220,19 @@ function setModTypeShown(
 // gates only the by-type view (two-color uses a fixed 50% cutoff; the fill
 // paints every cytosine), which its caption states. The promotion pin on each
 // radio promotes the bare view (no refinements baked in).
+//
+// All three refinements are revealed only once this scheme is the active one,
+// like bisulfite's "Show unmethylated" below. `patchMods` is the single writer
+// and it always writes `type: 'modifications'`, so a refinement clicked from
+// another scheme both switched the scheme and rebuilt it from `{}` — which
+// silently threw away a `bisulfite` selection (its own cytosine context
+// included) from the row directly beneath.
 function modificationsMenu(
   model: ModificationsModel,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem {
   const mods = currentMods(model)
+  const isActive = model.colorBy.type === 'modifications'
   const byTwoColor =
     model.colorBy.type === 'modifications' &&
     (!!mods.twoColor || !!mods.fillUnmarked)
@@ -261,8 +269,8 @@ function modificationsMenu(
           modifications: twoColorView,
         }),
       }),
-      DIVIDER,
-      ...(types.length > 1
+      ...(isActive ? [DIVIDER] : []),
+      ...(isActive && types.length > 1
         ? [
             {
               label: 'Modification types',
@@ -284,34 +292,42 @@ function modificationsMenu(
             },
           ]
         : []),
-      {
-        label: 'Probability threshold',
-        helpText:
-          'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
-        subMenu: [
-          makeSizeMenu({
-            label: 'threshold',
-            title: 'Hide calls under',
-            min: 0,
-            max: 100,
-            step: 1,
-            format: n => `${n}%`,
-            // tier-1: the threshold reaches the worker's extractModifications
-            // via rpcProps, so commit on release, not every intermediate pixel.
-            commitOnRelease: true,
-            getValue: () => model.modificationThreshold,
-            isDefault:
-              model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD,
-            onChange: v => {
-              patchMods(model, { threshold: v })
+      ...(isActive
+        ? [
+            {
+              label: 'Probability threshold',
+              helpText:
+                'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
+              subMenu: [
+                makeSizeMenu({
+                  label: 'threshold',
+                  title: 'Hide calls under',
+                  min: 0,
+                  max: 100,
+                  step: 1,
+                  format: n => `${n}%`,
+                  // tier-1: the threshold reaches the worker's
+                  // extractModifications via rpcProps, so commit on release,
+                  // not every intermediate pixel.
+                  commitOnRelease: true,
+                  getValue: () => model.modificationThreshold,
+                  isDefault:
+                    model.modificationThreshold ===
+                    DEFAULT_MODIFICATION_THRESHOLD,
+                  onChange: v => {
+                    patchMods(model, { threshold: v })
+                  },
+                  onReset: () => {
+                    patchMods(model, {
+                      threshold: DEFAULT_MODIFICATION_THRESHOLD,
+                    })
+                  },
+                }),
+              ],
             },
-            onReset: () => {
-              patchMods(model, { threshold: DEFAULT_MODIFICATION_THRESHOLD })
-            },
-          }),
-        ],
-      },
-      ...(hasCytosineMeth(model)
+          ]
+        : []),
+      ...(isActive && hasCytosineMeth(model)
         ? [
             {
               label: 'Cytosine context',
@@ -387,7 +403,13 @@ function bisulfiteItem(model: ModificationsModel): MenuItem {
   }
 }
 
-// --- menu sections: each returns its items, or [] when not applicable --------
+// --- menu sections ----------------------------------------------------------
+//
+// Each builder returns its item(s) and nothing else — whether a section is
+// OFFERED is decided once, visibly, in the `subMenu` list at the bottom. The
+// builders used to take the caller's `include` flag and the pin factory as
+// extra parameters, which spread one caller decision across six signatures and
+// hid the opt-in list the file's comments keep describing.
 
 // A plain radio that selects a whole color scheme (no extra config). When the
 // display is promotable, each row also carries its own pin (endAdornment) that
@@ -407,69 +429,49 @@ function colorRadio(
   })
 }
 
-function schemeRadios(
-  model: AnyColorByModel,
-  colorOptions: ColorOption[] | undefined,
-  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
-): MenuItem[] {
-  return (colorOptions ?? basicColorOptions).map(o =>
-    colorRadio(model, o, displayTypeDefault),
-  )
-}
-
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
 // the only scheme whose choice has a parameter, and it was previously invisible
 // without reopening the dialog. Carries the same session-default pin as the
 // plain radios, pinning the tag actually in use.
-function tagSection(
+function tagItem(
   model: AnyColorByModel,
-  include: boolean | undefined,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
-): MenuItem[] {
+): MenuItem {
   const { colorBy } = model
   const active = colorBy.type === 'tag' && colorBy.tag !== undefined
-  return include
-    ? [
-        promotableRadioItem({
-          label: active ? `Tag (${colorBy.tag})...` : 'Tag...',
-          checked: colorBy.type === 'tag',
-          // the only promotable row whose click opens a dialog rather than
-          // writing a value, so it dismisses the menu instead of the builder's
-          // default of staying open
-          keepMenuOpen: false,
-          onClick: () => {
-            getSession(model).queueDialog((onClose: () => void) => [
-              ColorByTagDialog,
-              { model, handleClose: onClose },
-            ])
-          },
-          displayTypeDefault: active
-            ? displayTypeDefault?.({ type: 'tag', tag: colorBy.tag })
-            : undefined,
-        }),
-      ]
-    : []
+  return promotableRadioItem({
+    label: active ? `Tag (${colorBy.tag})...` : 'Tag...',
+    checked: colorBy.type === 'tag',
+    // the only promotable row whose click opens a dialog rather than writing a
+    // value, so it dismisses the menu instead of the builder's default of
+    // staying open
+    keepMenuOpen: false,
+    onClick: () => {
+      getSession(model).queueDialog((onClose: () => void) => [
+        ColorByTagDialog,
+        { model, handleClose: onClose },
+      ])
+    },
+    displayTypeDefault: active
+      ? displayTypeDefault?.({ type: 'tag', tag: colorBy.tag })
+      : undefined,
+  })
 }
 
 // Plain scheme radios in a submenu — nothing here reads a modification field, so
 // it takes the bare model. Threading the `modModel` probe through it instead
 // silently dropped the whole section for a caller that opted in but carries no
 // modification state.
-function pairedEndSection(
+function pairedEndItem(
   model: AnyColorByModel,
-  include: boolean | undefined,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
-): MenuItem[] {
-  return include
-    ? [
-        {
-          label: 'Paired end',
-          subMenu: pairedEndColorOptions.map(o =>
-            colorRadio(model, o, displayTypeDefault),
-          ),
-        },
-      ]
-    : []
+): MenuItem {
+  return {
+    label: 'Paired end',
+    subMenu: pairedEndColorOptions.map(o =>
+      colorRadio(model, o, displayTypeDefault),
+    ),
+  }
 }
 
 // The MM/ML "Modifications" submenu shows while types are still loading (unless
@@ -477,99 +479,85 @@ function pairedEndSection(
 // ready display with zero detected types falls through to bisulfite only.
 // Bisulfite is reference-based, so it applies to any alignments display
 // regardless of MM/ML tags.
-function modificationsSection(
-  model: ModificationsModel | undefined,
+function modificationsItems(
+  model: ModificationsModel,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
-  return model
-    ? [
-        ...(model.modificationsReady
-          ? model.detectedModificationTypes.length
-            ? [modificationsMenu(model, displayTypeDefault)]
-            : []
-          : model.regionTooLarge
-            ? []
-            : [
-                {
-                  label: 'Loading modifications...',
-                  disabled: true,
-                  onClick() {},
-                },
-              ]),
-        bisulfiteItem(model),
-      ]
-    : []
+  const detecting = !model.modificationsReady && !model.regionTooLarge
+  return [
+    ...(model.modificationsReady && model.detectedModificationTypes.length
+      ? [modificationsMenu(model, displayTypeDefault)]
+      : []),
+    ...(detecting
+      ? [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
+      : []),
+    bisulfiteItem(model),
+  ]
 }
 
-function arcColorSection(arcColor: ColorByMenuOptions['arcColor']): MenuItem[] {
-  return arcColor
-    ? [
-        {
-          label: 'Arc color',
-          type: 'subMenu',
-          helpText:
-            'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
-          subMenu: radioItems(
-            arcColorOptions,
-            arcColor.current,
-            arcColor.setColor,
-          ),
-        },
-      ]
-    : []
+function arcColorItem(
+  arcColor: NonNullable<ColorByMenuOptions['arcColor']>,
+): MenuItem {
+  return {
+    label: 'Arc color',
+    type: 'subMenu',
+    helpText:
+      'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
+    subMenu: radioItems(arcColorOptions, arcColor.current, arcColor.setColor),
+  }
 }
 
-function supplementarySection(
-  supp: ColorByMenuOptions['supplementaryColoring'],
-): MenuItem[] {
-  return supp
-    ? [
-        {
-          label: 'Supplementary / split reads',
-          subMenu: [
-            checkboxItem(
-              'Color supplementary alignments by primary strand',
-              supp.flipStrandLongReadChains,
-              () => {
-                supp.setFlipStrandLongReadChains(!supp.flipStrandLongReadChains)
-              },
-            ),
-            checkboxItem(
-              'Color supplementary chains orange',
-              supp.colorSupplementaryChains,
-              () => {
-                supp.setColorSupplementaryChains(!supp.colorSupplementaryChains)
-              },
-            ),
-          ],
+function supplementaryItem(
+  supp: NonNullable<ColorByMenuOptions['supplementaryColoring']>,
+): MenuItem {
+  return {
+    label: 'Supplementary / split reads',
+    subMenu: [
+      checkboxItem(
+        'Color supplementary alignments by primary strand',
+        supp.flipStrandLongReadChains,
+        () => {
+          supp.setFlipStrandLongReadChains(!supp.flipStrandLongReadChains)
         },
-      ]
-    : []
+      ),
+      checkboxItem(
+        'Color supplementary chains orange',
+        supp.colorSupplementaryChains,
+        () => {
+          supp.setColorSupplementaryChains(!supp.colorSupplementaryChains)
+        },
+      ),
+    ],
+  }
 }
 
 export function getColorByMenuItem(
   model: AnyColorByModel,
   options: ColorByMenuOptions = {},
 ) {
-  const mods = modModel(model)
+  const {
+    colorOptions = basicColorOptions,
+    includeTagOption,
+    includePairedEnd,
+    includeModifications,
+    arcColor,
+    supplementaryColoring,
+    displayTypeDefault: pin,
+  } = options
+  const mods = includeModifications ? modModel(model) : undefined
   return {
     label: 'Color by...',
     type: 'subMenu' as const,
     icon: Palette,
     subMenu: [
-      schemeRadios(model, options.colorOptions, options.displayTypeDefault),
-      tagSection(model, options.includeTagOption, options.displayTypeDefault),
-      pairedEndSection(
-        model,
-        options.includePairedEnd,
-        options.displayTypeDefault,
-      ),
-      modificationsSection(
-        options.includeModifications ? mods : undefined,
-        options.displayTypeDefault,
-      ),
-      arcColorSection(options.arcColor),
-      supplementarySection(options.supplementaryColoring),
-    ].flat(),
+      ...colorOptions.map(o => colorRadio(model, o, pin)),
+      ...(includeTagOption ? [tagItem(model, pin)] : []),
+      ...(includePairedEnd ? [pairedEndItem(model, pin)] : []),
+      ...(mods ? modificationsItems(mods, pin) : []),
+      ...(arcColor ? [arcColorItem(arcColor)] : []),
+      ...(supplementaryColoring
+        ? [supplementaryItem(supplementaryColoring)]
+        : []),
+    ] satisfies MenuItem[],
   }
 }

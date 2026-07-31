@@ -370,7 +370,24 @@ describe('color by modifications menu', () => {
 
   test('the per-type filter is hidden when only one type is detected', () => {
     const model = makeModModel(['m'])
+    model.colorBy = { type: 'modifications' }
     expect(byLabel(model, 'Modification types')).toBeFalsy()
+  })
+
+  // patchMods is the single writer and always writes type:'modifications', so a
+  // refinement reachable from another scheme would switch the scheme and rebuild
+  // it from {} — silently discarding the bisulfite selection one row below.
+  test.each([
+    'Modification types',
+    'Probability threshold',
+    'Cytosine context',
+  ])('%s is revealed only while the modifications scheme is active', label => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = { type: 'bisulfite' }
+    expect(byLabel(model, label)).toBeFalsy()
+
+    model.colorBy = { type: 'modifications' }
+    expect(byLabel(model, label)).toBeTruthy()
   })
 
   // The threshold is the shared makeSizeMenu row, so assert through its props.
@@ -408,8 +425,13 @@ describe('color by modifications menu', () => {
   })
 
   test('cytosine context is shown only for cytosine methylation data', () => {
-    expect(byLabel(makeModModel(['m', 'h']), 'Cytosine context')).toBeTruthy()
-    expect(byLabel(makeModModel(['a']), 'Cytosine context')).toBeFalsy()
+    const cytosine = makeModModel(['m', 'h'])
+    cytosine.colorBy = { type: 'modifications' }
+    expect(byLabel(cytosine, 'Cytosine context')).toBeTruthy()
+
+    const other = makeModModel(['a'])
+    other.colorBy = { type: 'modifications' }
+    expect(byLabel(other, 'Cytosine context')).toBeFalsy()
   })
 })
 

@@ -42,13 +42,11 @@ const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 
 type LGV = LinearGenomeViewModel
 
-interface ContextMenuModel extends IAnyStateTreeNode {
-  // The read under the cursor, known only after a GetPileupFeatureDetails round
-  // trip — so it is undefined for the first paint of every menu. Items that can
-  // be built from the id alone must not gate on it (see withContextMenuFeature).
-  contextMenuFeature: Feature | undefined
-  // The same read's id, carried by the hit test and so known synchronously.
-  contextMenuFeatureId: string | undefined
+// What the CIGAR / modification / indicator items need, and no more. Split from
+// the read-level surface below because LGVSyntenyDisplay reuses only these — a
+// PAF block has no mate, tags, name or sequence, so making it satisfy the read
+// half to reach `getHitMenuItems` was a type it had to fake rather than have.
+interface HitMenuModel extends IAnyStateTreeNode {
   contextMenuCigarHit: CigarHitResult | undefined
   contextMenuIndicatorHit: IndicatorHitResult | undefined
   contextMenuModHit: ModificationHitResult | undefined
@@ -58,22 +56,43 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   // snapshot — closeContextMenu runs before the click callback, so reading it
   // live would see undefined.
   contextMenuBlock: ResolvedBlock | undefined
-  // Genomic column under the right-click, anchoring the read menu's "sort at the
-  // clicked position" items. Captured into the onClicks like contextMenuBlock.
-  contextMenuGenomicPos: number | undefined
-  filterBy: FilterBy
-  setFilterBy: (filterBy: FilterBy) => void
   setSortedByAtPosition: (arg: {
     type: string
     pos: number
     refName: string
     tag?: string
   }) => void
-  selectFeature: (feature: Feature) => void
+}
+
+// Just enough to resolve the read the menu was opened over — what
+// `withContextMenuFeature` and `copyFeatureInfo` take, so an extension point
+// that only wants those two doesn't declare a hit-test surface it never reads.
+interface FeatureLookupModel extends IAnyStateTreeNode {
   withFeatureById: (
     featureId: string,
     onFeat: (feat: Feature) => void,
   ) => Promise<void>
+}
+
+// The read/tag quick-filter rows read and merge into the same slot, and nothing
+// else.
+interface FilterModel {
+  filterBy: FilterBy
+  setFilterBy: (filterBy: FilterBy) => void
+}
+
+interface ContextMenuModel
+  extends HitMenuModel, FeatureLookupModel, FilterModel {
+  // The read under the cursor, known only after a GetPileupFeatureDetails round
+  // trip — so it is undefined for the first paint of every menu. Items that can
+  // be built from the id alone must not gate on it (see withContextMenuFeature).
+  contextMenuFeature: Feature | undefined
+  // The same read's id, carried by the hit test and so known synchronously.
+  contextMenuFeatureId: string | undefined
+  // Genomic column under the right-click, anchoring the read menu's "sort at the
+  // clicked position" items. Captured into the onClicks like contextMenuBlock.
+  contextMenuGenomicPos: number | undefined
+  selectFeature: (feature: Feature) => void
 }
 
 // Act on the read the menu was opened over. `feat` is the fetched feature as
@@ -83,7 +102,7 @@ interface ContextMenuModel extends IAnyStateTreeNode {
 // Neither can be read live inside the onClick — closeContextMenu clears both
 // before the callback fires.
 export function withContextMenuFeature(
-  self: ContextMenuModel,
+  self: FeatureLookupModel,
   featureId: string,
   feat: Feature | undefined,
   onFeat: (feat: Feature) => void,
@@ -105,7 +124,7 @@ function getReadTag(feat: Feature, tag: string): string | undefined {
 
 // Set the filter for one tag while preserving filters on other tags, so quick
 // HP/RG filters (and any dialog-set tag) coexist instead of clobbering.
-function setTagFilter(self: ContextMenuModel, tag: string, value: string) {
+function setTagFilter(self: FilterModel, tag: string, value: string) {
   const others = (self.filterBy.tagFilters ?? []).filter(f => f.tag !== tag)
   self.setFilterBy({
     ...self.filterBy,
@@ -117,7 +136,7 @@ function setTagFilter(self: ContextMenuModel, tag: string, value: string) {
 // copy, shared with the displays that offer it as a top-level item rather than
 // inside a Copy submenu (LGVSyntenyDisplay, whose PAF block has no read name or
 // sequence to copy beside it).
-export function copyFeatureInfo(self: ContextMenuModel, feat: Feature) {
+export function copyFeatureInfo(self: IAnyStateTreeNode, feat: Feature) {
   const { uniqueId: _uniqueId, ...rest } = feat.toJSON()
   void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
 }
@@ -142,7 +161,7 @@ function sortAndDetailsSubMenu({
   openDetails,
   sort,
 }: {
-  self: ContextMenuModel
+  self: HitMenuModel
   block: ResolvedBlock
   label: string
   sortLabel: string
@@ -183,7 +202,7 @@ function sortAndDetailsSubMenu({
 
 // Quick per-read filters (read name / HP / RG) plus a clear item, shown only
 // when a filter is active. Each coexists with the others (setTagFilter merges).
-function getFilterSubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
+function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
   const readName = feat.get('name')
   const hp = getReadTag(feat, 'HP')
   const rg = getReadTag(feat, 'RG')
@@ -235,7 +254,7 @@ function getFilterSubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
 
 // Copy read name / 1-based location / raw sequence / full feature JSON, each
 // present only when the underlying field exists (feature info always is).
-function getCopySubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
+function getCopySubMenu(self: IAnyStateTreeNode, feat: Feature): MenuItem[] {
   const readName = feat.get('name')
   const refName = feat.get('refName')
   const seq = feat.get('seq')
@@ -287,7 +306,7 @@ function getCopySubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
 // same mismatch and interbase layers off a PAF cs/CIGAR) reuses them, with
 // `sort: false` since its sort menu offers no position-anchored mode.
 export function getHitMenuItems(
-  self: ContextMenuModel,
+  self: HitMenuModel,
   { sort = true }: { sort?: boolean } = {},
 ): MenuItem[] {
   const cigarHit = self.contextMenuCigarHit
