@@ -531,7 +531,7 @@ describe('blockToFeature', () => {
     length: bases.replaceAll('-', '').length,
   })
 
-  test('no sampleFilter — all rows included, simple dot-split', () => {
+  test('no sampleFilter — all rows included, dot-split', () => {
     const block = {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('mm10.chr2', 'ACGT')],
       columnNumber: 4,
@@ -542,6 +542,30 @@ describe('blockToFeature', () => {
     expect(feature!.alignments).toHaveProperty('mm10')
     expect(feature!.alignments.hg38!.chr).toBe('chr1')
     expect(feature!.alignments.mm10!.chr).toBe('chr2')
+  })
+
+  // Discovery (no sampleFilter) used a first-dot split here while MAF-tabix
+  // used the version-aware one, so the same haplotype-suffixed genome became a
+  // different row — and carried a different `chr` into color-by-source-
+  // chromosome and the inversion consensus — depending on file format.
+  test('no sampleFilter — a haplotype suffix stays on the sample id', () => {
+    const block = {
+      rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('HG002.1.chr1', 'ACGT')],
+      columnNumber: 4,
+    }
+    const aln = blockToFeature(block)!.alignments
+    expect(aln['HG002.1']).toBeDefined()
+    expect(aln['HG002.1']!.chr).toBe('chr1')
+  })
+
+  // ...but a dotted contig accession is still all chromosome.
+  test('no sampleFilter — a dotted contig accession is not read as a version', () => {
+    const block = {
+      rows: [makeRow('hg38.CM000663.2', 'ACGT')],
+      columnNumber: 4,
+    }
+    const aln = blockToFeature(block)!.alignments
+    expect(aln.hg38!.chr).toBe('CM000663.2')
   })
 
   test('sampleFilter with plain names — rows not in filter are dropped', () => {
@@ -743,6 +767,48 @@ describe('BgzipTaffyAdapter integration tests', () => {
     expect(Math.max(...featuresArray.map(f => f.get('end')))).toBeGreaterThan(
       15_053_500,
     )
+  })
+
+  // The estimate feeds the fetch gate, so it has to track the size of the read
+  // `getFeatures` would issue — both now derive it from one `queryBlockSpan`.
+  test('getRegionByteSize grows with the region and is 0 off-index', async () => {
+    const adapter = new BgzipTaffyAdapter(
+      configSchema.create({
+        tafGzLocation: {
+          localPath: require.resolve('../../test_data/celegans/chrI.taf.gz'),
+          locationType: 'LocalPathLocation',
+        },
+        taiLocation: {
+          localPath:
+            require.resolve('../../test_data/celegans/chrI.taf.gz.tai'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+    const region = (start: number, end: number) => ({
+      assemblyName: 'ce10',
+      refName: 'chrI',
+      start,
+      end,
+    })
+
+    const narrow = await adapter.getRegionByteSize([region(3700, 50_000)])
+    const wide = await adapter.getRegionByteSize([region(3700, 500_000)])
+    expect(narrow).toBeGreaterThan(0)
+    expect(wide).toBeGreaterThan(narrow)
+
+    // Several regions accumulate rather than reporting only the last.
+    const both = await adapter.getRegionByteSize([
+      region(3700, 50_000),
+      region(200_000, 300_000),
+    ])
+    expect(both).toBeGreaterThan(narrow)
+
+    expect(
+      await adapter.getRegionByteSize([
+        { assemblyName: 'ce10', refName: 'chrNope', start: 0, end: 1000 },
+      ]),
+    ).toBe(0)
   })
 
   test('adapter returns empty array for region with no data', async () => {

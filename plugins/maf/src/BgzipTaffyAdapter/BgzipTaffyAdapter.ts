@@ -81,11 +81,20 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       const hasCoordinates = semicolonIndex !== -1
 
       if (hasCoordinates) {
-        if (currentBlock && columns.length > 0) {
-          const feature = buildFeature(currentBlock, columns)
-          if (feature) {
-            yield feature
+        if (currentBlock) {
+          if (columns.length > 0) {
+            const feature = buildFeature(currentBlock, columns)
+            if (feature) {
+              yield feature
+            }
           }
+          // Advance the chain even for a block that emitted no feature. TAF
+          // coordinates are deltas against the *immediately preceding* block
+          // (parseCoordinatesAndEstablishBlock walks `pBlock`), so skipping one
+          // silently reanchors every block after it — plausible-looking rows at
+          // wrong coordinates rather than a visible failure. A column-less
+          // block is only reachable from a malformed file, but the cost of
+          // being wrong here is high and the cost of being right is nil.
           pBlock = currentBlock
         }
 

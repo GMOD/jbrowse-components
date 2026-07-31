@@ -6,7 +6,9 @@ export interface ParsedAssemblyName {
 }
 
 /**
- * Parses assembly name and chromosome from a combined string in MAF tabix format.
+ * Split a MAF `genome.sequence` source token when no sample set is configured
+ * to resolve it against — the discovery path shared by all three adapters
+ * (MAF-tabix, bigMaf, TAF) and by the `.tai` index reader.
  *
  * Handles multiple formats:
  * - Single string with no dots: assemblyName is the entire string, chr is empty
@@ -15,6 +17,15 @@ export interface ParsedAssemblyName {
  *   - assemblyName includes the version (e.g., "hg38.1" from "hg38.1.chr1")
  * - `assembly.chr.more`: Two dots where middle part is non-numeric
  *   - assemblyName is first part, chr includes rest (e.g., "mm10" and "chr1.random")
+ *
+ * The numeric-middle case is the whole reason this isn't a plain first-dot
+ * split: a haplotype-suffixed genome (`Species1.1.chr3`) otherwise discovers as
+ * `Species1` with chr `1.chr3`. bigMaf and TAF used a first-dot splitter until
+ * they were unified here, so the same alignment produced different rows and a
+ * different `row.chr` (which drives color-by-source-chromosome and the
+ * inversion consensus) depending on which file format it was read from.
+ * `matchSampleId` remains preferred whenever a sample set exists — it resolves
+ * exactly instead of heuristically.
  */
 export function parseAssemblyAndChr(
   assemblyAndChr: string,
@@ -124,28 +135,6 @@ export function parseMafTabixEntry(
     strand: parseStrand(strandStr),
     srcSize: srcSizeStr === undefined ? undefined : parseInt(srcSizeStr, 10),
     seq,
-  }
-}
-
-/**
- * Parses assembly name and chromosome from a combined string in BigMaf format.
- *
- * Uses simple dot splitting: org.chr where org is before the first dot,
- * chr is everything after the first dot.
- */
-export function parseAssemblyAndChrSimple(
-  organismChr: string,
-): ParsedAssemblyName {
-  const dotIndex = organismChr.indexOf('.')
-  if (dotIndex === -1) {
-    return {
-      assemblyName: organismChr,
-      chr: '',
-    }
-  }
-  return {
-    assemblyName: organismChr.slice(0, dotIndex),
-    chr: organismChr.slice(dotIndex + 1),
   }
 }
 

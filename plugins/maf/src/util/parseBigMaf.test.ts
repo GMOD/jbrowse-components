@@ -1,4 +1,4 @@
-import { parseAssemblyAndChrSimple } from './parseAssemblyName.ts'
+import { parseAssemblyAndChr } from './parseAssemblyName.ts'
 import { parseBigMafStanza } from './parseBigMaf.ts'
 
 // bigMaf joins the lines of a MAF stanza with ';'. Example adapted from the
@@ -15,7 +15,7 @@ const stanza = [
 test('parses s lines with strand + srcSize, first as reference', () => {
   const { alignments, referenceSeq } = parseBigMafStanza(
     stanza,
-    parseAssemblyAndChrSimple,
+    parseAssemblyAndChr,
   )
   expect(referenceSeq).toBe('gcagctgaaaaca')
   expect(alignments.hg18).toEqual({
@@ -28,7 +28,7 @@ test('parses s lines with strand + srcSize, first as reference', () => {
 })
 
 test('attaches i-line context to the preceding s line', () => {
-  const { alignments } = parseBigMafStanza(stanza, parseAssemblyAndChrSimple)
+  const { alignments } = parseBigMafStanza(stanza, parseAssemblyAndChr)
   expect(alignments.panTro1!.context).toEqual({
     leftStatus: 'N',
     leftCount: 0,
@@ -44,10 +44,7 @@ test('attaches i-line context to the preceding s line', () => {
 })
 
 test('parses e lines into empties, not alignments', () => {
-  const { alignments, empties } = parseBigMafStanza(
-    stanza,
-    parseAssemblyAndChrSimple,
-  )
+  const { alignments, empties } = parseBigMafStanza(stanza, parseAssemblyAndChr)
   expect(alignments.mm4).toBeUndefined()
   expect(empties.mm4).toEqual({
     chr: 'chr6',
@@ -65,10 +62,22 @@ test('handles negative strand and leading whitespace, ignores q lines', () => {
     's mm10.chr1 200 4 - 5000 acgt',
     'q mm10.chr1 9999',
   ].join(';')
-  const { alignments } = parseBigMafStanza(s, parseAssemblyAndChrSimple)
+  const { alignments } = parseBigMafStanza(s, parseAssemblyAndChr)
   expect(alignments.mm10!.strand).toBe(-1)
   // q line must not create a spurious record
   expect(Object.keys(alignments).sort()).toEqual(['hg18', 'mm10'])
+})
+
+// bigMaf and TAF used a first-dot split here while MAF-tabix used the
+// version-aware one, so the same haplotype-suffixed genome discovered as a
+// different sample id (and a different `chr`) per file format.
+test('a haplotype-suffixed genome keeps its suffix in the sample id', () => {
+  const s = [
+    's hg38.chr7 100 4 + 1000 ACGT',
+    's HG002.1.chr7 200 4 + 900 acgt',
+  ].join(';')
+  const { alignments } = parseBigMafStanza(s, parseAssemblyAndChr)
+  expect(alignments['HG002.1']).toMatchObject({ chr: 'chr7', start: 200 })
 })
 
 test('drops rows the resolver rejects', () => {

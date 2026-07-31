@@ -1,7 +1,7 @@
 import { DASH } from '../util/asciiBytes.ts'
 import {
   matchSampleId,
-  parseAssemblyAndChrSimple,
+  parseAssemblyAndChr,
 } from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord } from '../types.ts'
@@ -194,7 +194,7 @@ export function blockToFeature(
   for (const row of block.rows) {
     const parsed = sampleIds
       ? matchSampleId(row.sequenceName, sampleIds)
-      : parseAssemblyAndChrSimple(row.sequenceName)
+      : parseAssemblyAndChr(row.sequenceName)
     if (parsed?.assemblyName) {
       alignments[parsed.assemblyName] = {
         chr: parsed.chr,

@@ -1,7 +1,6 @@
 import {
   matchSampleId,
   parseAssemblyAndChr,
-  parseAssemblyAndChrSimple,
   parseMafTabixEntry,
   selectReferenceSequenceString,
 } from './parseAssemblyName.ts'
@@ -87,7 +86,7 @@ describe('matchSampleId (sample-set aware splitting)', () => {
   })
 })
 
-describe('parseAssemblyAndChr (MafTabix format)', () => {
+describe('parseAssemblyAndChr (shared sample-discovery split)', () => {
   test('no dot - entire string is assembly name', () => {
     const result = parseAssemblyAndChr('hg38')
     expect(result).toEqual({
@@ -197,40 +196,6 @@ describe('parseAssemblyAndChr (MafTabix format)', () => {
     expect(result).toEqual({
       assemblyName: 'GRCh37.1',
       chr: '1',
-    })
-  })
-})
-
-describe('parseAssemblyAndChrSimple (BigMaf format)', () => {
-  test('no dot - entire string is assembly name', () => {
-    const result = parseAssemblyAndChrSimple('hg38')
-    expect(result).toEqual({
-      assemblyName: 'hg38',
-      chr: '',
-    })
-  })
-
-  test('single dot - simple org.chr format', () => {
-    const result = parseAssemblyAndChrSimple('hg38.chr1')
-    expect(result).toEqual({
-      assemblyName: 'hg38',
-      chr: 'chr1',
-    })
-  })
-
-  test('multiple dots - only splits on first dot', () => {
-    const result = parseAssemblyAndChrSimple('mm10.chr1.random')
-    expect(result).toEqual({
-      assemblyName: 'mm10',
-      chr: 'chr1.random',
-    })
-  })
-
-  test('empty string', () => {
-    const result = parseAssemblyAndChrSimple('')
-    expect(result).toEqual({
-      assemblyName: '',
-      chr: '',
     })
   })
 })
@@ -439,11 +404,6 @@ describe('refName renaming compatibility', () => {
     // When a file uses "chrI" but assembly has alias "I" -> "chrI"
     // The chr portion extracted here should match what renameRegionsIfNeeded expects
     const { chr } = parseAssemblyAndChr('ce10.chrI')
-    expect(chr).toBe('chrI')
-  })
-
-  test('parseAssemblyAndChrSimple extracts chr correctly for refName alias matching', () => {
-    const { chr } = parseAssemblyAndChrSimple('ce10.chrI')
     expect(chr).toBe('chrI')
   })
 

@@ -8,7 +8,7 @@ import { toMafStatus } from '../util/mafStatus.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
   matchSampleId,
-  parseAssemblyAndChrSimple,
+  parseAssemblyAndChr,
 } from '../util/parseAssemblyName.ts'
 import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 
@@ -50,7 +50,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
       const resolve = (organismChr: string) =>
         sampleIds
           ? matchSampleId(organismChr, sampleIds)
-          : parseAssemblyAndChrSimple(organismChr)
+          : parseAssemblyAndChr(organismChr)
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const { alignments, empties, referenceSeq } = parseBigMafStanza(
