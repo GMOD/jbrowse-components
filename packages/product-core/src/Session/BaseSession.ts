@@ -1,6 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { setNumberGrouping } from '@jbrowse/core/util'
+import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
@@ -141,8 +142,9 @@ export function BaseSessionModel<
        * `rpcProps()`, and V8's structured-clone serializer rejects a Proxy:
        * `worker.postMessage` threw `DataCloneError` on the next fetch of any
        * track following that default (electron IPC and `structuredClone` in the
-       * share bake likewise). Nothing mutates a preference in place, and the map
-       * still notifies per key on `set`, so shallow values lose no reactivity.
+       * share bake likewise). The map still notifies per key on `set`, so shallow
+       * values lose no reactivity — and nothing can mutate a preference in place,
+       * because `setPreferenceOverride` freezes what it stores.
        */
       preferencesOverrides: observable.map<string, unknown>(undefined, {
         deep: false,
@@ -357,7 +359,11 @@ export function BaseSessionModel<
         if (value === undefined) {
           self.preferencesOverrides.delete(key)
         } else {
-          self.preferencesOverrides.set(key, value)
+          // frozen because `deep: false` hands an object-valued preference (a
+          // promoted `colorBy`) straight back out by reference to every display
+          // following it, so the "nothing mutates a preference in place" this
+          // store relies on is enforced rather than assumed
+          self.preferencesOverrides.set(key, freezeDeep(value))
         }
       },
       /**

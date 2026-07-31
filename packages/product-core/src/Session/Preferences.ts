@@ -3,6 +3,7 @@ import {
   localStorageSetItem,
   setNumberGrouping,
 } from '@jbrowse/core/util'
+import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -41,7 +42,10 @@ export function PreferencesSessionMixin(pluginManager: PluginManager) {
     .compose(BaseSessionModel(pluginManager), types.model({}))
     .actions(self => ({
       afterAttach() {
-        self.preferencesOverrides.replace(loadStoredPreferences())
+        // the restore path bypasses `setPreferenceOverride`, so it freezes here
+        // too — a promoted default read back from localStorage is shared by
+        // reference exactly like a freshly set one
+        self.preferencesOverrides.replace(freezeDeep(loadStoredPreferences()))
         // Applied once, here, rather than reactively: the same setting has to
         // hold in the RPC workers (which format tooltip strings from jexl
         // `mouseover` slots) and they only learn it at boot, so a live

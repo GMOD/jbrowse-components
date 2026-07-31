@@ -1,5 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { freezeDeep } from '../util/freezeDeep.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
@@ -206,6 +207,13 @@ export default function ConfigSlot({
         "a 'promotable' slot requires 'promotedBase' (the value its inherit sentinel resolves to)",
       )
     }
+    // The resolver hands `promotedBase` out by reference, so an object-valued one
+    // (`maybeFrozen`, e.g. alignments `colorBy`) is one literal shared live by
+    // every track sitting at base. Freeze it here, the only place it enters the
+    // system, so mutating a resolved value throws instead of silently rewriting
+    // the default for every other track — and for every later session, since this
+    // object belongs to the schema. See `freezeDeep` for why by-reference stays.
+    freezeDeep(promotedBase)
   } else if (promotedBase !== undefined && promotable === undefined) {
     // the mirror mistake: `promotedBase` without `promotable` builds a slot the
     // resolver refuses ("not promotable") on every `resolveConf` read, while the

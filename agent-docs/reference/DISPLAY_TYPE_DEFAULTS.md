@@ -109,6 +109,21 @@ Two things make this cheap:
   default doesn't rewrite every track's config — tracks that follow the default
   just resolve differently on their next read.
 
+**Objects are shared, and frozen.** A resolved value is handed out **by
+reference**: `promotedBase` is the schema's own literal, so every track sitting at
+base reads the same object, and a promoted default is handed straight back out of
+the preference store to every follower. That is deliberate — `===` stability is
+what lets a display's cached computed re-resolve without waking anything
+downstream — so both sources freeze the value instead (`freezeDeep`, called from
+`ConfigSlot` and from `setPreferenceOverride`/the localStorage restore). An
+in-place edit of a resolved value throws rather than silently rewriting what every
+other track reads, and for `promotedBase` what every *later session* reads too,
+since that object belongs to the schema. Two consequences: declare `promotedBase`
+as its own literal rather than a reference to an object other code mutates, and
+build a modified value by copying (`{...colorBy, type}`), never by assignment.
+Canaries: `promotedValueCloneable.test.ts`, `sessionModelFactory.test.ts`
+("freezes an object-valued promoted default").
+
 **Objects compare structurally.** `customized` needs no comparison at all — the
 sentinel is `undefined`, so "holds a usable value" is the whole test. But every
 comparison *against the promoted value* (`isPromotableDefault` for the pin's

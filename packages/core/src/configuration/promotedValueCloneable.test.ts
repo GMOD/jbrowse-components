@@ -77,6 +77,27 @@ test('a promoted object default resolves to a structured-cloneable value', () =>
   expect(onTheWire).toEqual({ type: 'insertSizeAndOrientation' })
 })
 
+// The other property a resolved value must have. An object-valued `promotedBase`
+// is the schema's own literal, handed out by reference to every track sitting at
+// base — so `ConfigSlot` freezes it, and mutating a resolved value throws instead
+// of rewriting the default for every other track (and every later session built
+// from that schema).
+test('a resolved base value cannot be mutated in place', () => {
+  const session = createDisplay(false)
+  const resolved: unknown = resolveConf(session.display, 'colorBy')
+  expect(resolved).toEqual({ type: 'normal' })
+  expect(Object.isFrozen(resolved)).toBe(true)
+  expect(() => {
+    setType(resolved, 'tag')
+  }).toThrow(TypeError)
+})
+
+function setType(value: unknown, type: string) {
+  if (typeof value === 'object' && value !== null) {
+    Object.assign(value, { type })
+  }
+}
+
 // Why the `deep: false` above is load-bearing rather than a micro-optimization:
 // a deep observable map wraps the value in a Proxy on `set`, `resolveSlot` hands
 // that Proxy straight back out as the resolved value, and postMessage rejects it.

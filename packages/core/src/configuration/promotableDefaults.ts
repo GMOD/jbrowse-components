@@ -121,6 +121,25 @@ export interface TrackConfigWithPromotables {
   fromDisplayTypeDefaults: string[]
 }
 
+function cascadeContextForDisplayConfig(
+  displayConfig: AnyConfigurationModel,
+  displayType: string,
+  session: AbstractSessionModel,
+  openDisplays: PromotableDisplay[],
+): CascadeContext {
+  // identity, not displayId: the hydration cache makes a track's config node
+  // stable, so an open display's `configuration` IS this node
+  const open = openDisplays.find(d => d.configuration === displayConfig)
+  return open
+    ? cascadeContextFor(open)
+    : {
+        config: displayConfig,
+        displayType,
+        ignorePromotedDefaults: false,
+        defaults: session,
+      }
+}
+
 /**
  * #api core/configuration
  * See {@link TrackConfigWithPromotables}.
@@ -147,17 +166,12 @@ export function getTrackConfigWithPromotables(
         isObject(snap) &&
         typeof displayType === 'string'
       ) {
-        // identity, not displayId: the hydration cache makes a track's config
-        // node stable, so an open display's `configuration` IS this node
-        const open = openDisplays.find(d => d.configuration === displayConfig)
-        const ctx = open
-          ? cascadeContextFor(open)
-          : {
-              config: displayConfig,
-              displayType,
-              ignorePromotedDefaults: false,
-              defaults: session,
-            }
+        const ctx = cascadeContextForDisplayConfig(
+          displayConfig,
+          displayType,
+          session,
+          openDisplays,
+        )
         for (const slot of resolvePromotablesInto(ctx, snap)) {
           fromDisplayTypeDefaults.push(`${displayType}.${slot}`)
         }

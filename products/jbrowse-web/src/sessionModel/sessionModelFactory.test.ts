@@ -204,6 +204,26 @@ describe('JBrowseWebSessionModel', () => {
       ).toBe(20)
     })
 
+    it('freezes an object-valued promoted default, which is shared by reference', () => {
+      const session = createTestSession()
+      session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy', {
+        type: 'tag',
+        tag: 'HP',
+      })
+      // `deep: false` hands this straight back out to every display following
+      // it, so an in-place edit would rewrite what all of them read
+      const promoted: unknown = session.getDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'colorBy',
+      )
+      expect(promoted).toEqual({ type: 'tag', tag: 'HP' })
+      expect(() => {
+        if (typeof promoted === 'object' && promoted !== null) {
+          Object.assign(promoted, { tag: 'XT' })
+        }
+      }).toThrow(TypeError)
+    })
+
     it('drops the display-type entry once its last slot is cleared', () => {
       const session = createTestSession()
       // start from a clean store (createTestSession reloads persisted prefs)

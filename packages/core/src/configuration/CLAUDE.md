@@ -32,10 +32,14 @@ that serializes a display's config for elsewhere must flatten** — the worker v
 walker (`fullConfSnapshot`) is **off the barrel entirely**, so the obvious wrong
 spelling in a new `rpcProps()` doesn't resolve, and
 `getShareableSessionSnapshot` fuses the snapshot and the bake so the pair can't
-be split. A resolved value is handed out **by reference** from that store, so it
-must stay structured-cloneable: `preferencesOverrides` is a `deep: false`
-`observable.map` because a MobX Proxy makes `worker.postMessage` throw
-`DataCloneError` (`promotedValueCloneable.test.ts`).
+be split. A resolved value is handed out **by reference** — from that store, and
+from the schema itself for `promotedBase` — which has two consequences, both
+guarded. It must stay structured-cloneable: `preferencesOverrides` is a
+`deep: false` `observable.map` because a MobX Proxy makes `worker.postMessage`
+throw `DataCloneError` (`promotedValueCloneable.test.ts`). And it must not be
+mutated in place, since every track at base shares one object: `freezeDeep` at
+both sources (`ConfigSlot`, `setPreferenceOverride`) makes that throw instead of
+silently repainting every other track. Build a modified value by copying.
 
 Layering: `util.ts` (`promotableSlotNames`, the type-cached per-schema slot
 list, shared by the enumerating callers and by `fullConfSnapshot`'s
