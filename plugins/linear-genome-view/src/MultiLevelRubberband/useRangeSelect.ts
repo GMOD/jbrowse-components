@@ -22,12 +22,27 @@ export function useRangeSelect(
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
+  // one selection spans every level, so it is released from all of them at once.
+  // Committing is not the mirror of this and stays inline below: each level maps
+  // the same pixels through its own pxToBp, so the offsets differ per view.
+  const clearOffsets = useCallback(() => {
+    transaction(() => {
+      for (const view of model.views) {
+        view.setOffsets(undefined, undefined)
+      }
+    })
+  }, [model])
+
+  // releases the committed offsets too, since mouseOut no longer does while the
+  // menu is open — closing the menu (button, Escape, or a bare click) is the
+  // point the selection is actually finished with
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(0)
     setGuideX(undefined)
-  }, [])
+    clearOffsets()
+  }, [clearOffsets])
 
   useEffect(() => {
     const el = ref.current
@@ -105,12 +120,15 @@ export function useRangeSelect(
   }
 
   function mouseOut() {
-    setGuideX(undefined)
-    transaction(() => {
-      for (const view of model.views) {
-        view.setOffsets(undefined, undefined)
-      }
-    })
+    // Leave both the guide and the committed offsets alone once the menu is up
+    // (anchorPosition) or a drag is running: the offsets are exactly what the
+    // menu's items act on, and moving the pointer off the strip toward the menu
+    // used to clear them out from under it — "Zoom to region" then no-opped and
+    // "Get sequence" saw no regions.
+    if (!anchorPosition && !mouseDragging) {
+      setGuideX(undefined)
+      clearOffsets()
+    }
   }
 
   function handleMenuItemClick(callback: () => void) {

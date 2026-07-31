@@ -15,7 +15,8 @@ function TestRubberband({ model }: { model: MultiLevelRubberbandModel }) {
       ref={ref}
       onMouseDown={mouseDown}
       onMouseMove={mouseMove}
-      onMouseOut={mouseOut}
+      // onMouseLeave, matching MultiLevelRubberband
+      onMouseLeave={mouseOut}
     />
   )
 }
@@ -26,6 +27,16 @@ function makeView(setOffsets = jest.fn()) {
     setOffsets,
     bpPerPx: 1,
   }
+}
+
+// A cancelled selection still calls setOffsets(undefined, undefined) to release
+// any previous one, so "nothing was selected" is about no call carrying an actual
+// pair of offsets — not about setOffsets never firing.
+function expectNoSelectionCommitted(setOffsets: jest.Mock) {
+  expect(setOffsets.mock.calls).not.toContainEqual([
+    expect.anything(),
+    expect.anything(),
+  ])
 }
 
 describe('useRangeSelect (MultiLevelRubberband)', () => {
@@ -73,7 +84,7 @@ describe('useRangeSelect (MultiLevelRubberband)', () => {
       )
     })
 
-    expect(setOffsets).not.toHaveBeenCalled()
+    expectNoSelectionCommitted(setOffsets)
   })
 
   it('escape key during drag cancels selection', () => {
@@ -97,7 +108,7 @@ describe('useRangeSelect (MultiLevelRubberband)', () => {
       )
     })
 
-    expect(setOffsets).not.toHaveBeenCalled()
+    expectNoSelectionCommitted(setOffsets)
   })
 
   it('selects left-to-right regardless of drag direction', () => {
@@ -121,5 +132,28 @@ describe('useRangeSelect (MultiLevelRubberband)', () => {
       expect.objectContaining({ offset: 100 }),
       expect.objectContaining({ offset: 250 }),
     )
+  })
+
+  // the menu's items act on the committed offsets, and reaching the menu means
+  // moving the pointer off the strip
+  it('keeps the committed selection when the pointer leaves with the menu open', () => {
+    const setOffsets = jest.fn()
+    const model = {
+      views: [makeView(setOffsets)],
+    } as unknown as MultiLevelRubberbandModel
+
+    render(<TestRubberband model={model} />)
+    const el = screen.getByTestId('rubberband')
+
+    fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 250, clientY: 0 }),
+      )
+    })
+    setOffsets.mockClear()
+    fireEvent.mouseLeave(el)
+
+    expect(setOffsets).not.toHaveBeenCalled()
   })
 })

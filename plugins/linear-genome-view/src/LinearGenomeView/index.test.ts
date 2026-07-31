@@ -676,6 +676,79 @@ test('navTo with omitted coords on a duplicated refName', () => {
   expect(model.bpPerPx).toBeCloseTo(12.5)
 })
 
+// `grow` must be clamped to the region that actually contains the location, not
+// to the first region sharing its refName: clamping against the first one
+// dragged an endpoint outside every region and made the containment search fail,
+// so navTo(loc) worked while navTo(loc, grow) threw for the same loc
+test('navTo with grow on a duplicated refName', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testNavToGrowDuplicateRefName',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 5000, end: 20000 },
+    { assemblyName: 'volvox', refName: 'ctgA', start: 30000, end: 40000 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
+  ])
+
+  // 1000bp of the second ctgA region, no padding
+  model.navTo({ refName: 'ctgA', start: 32000, end: 33000 })
+  expect(model.bpPerPx).toBeCloseTo(1.25)
+
+  // same target, padded 20% either side: 1400bp across the same 800px
+  model.navTo({ refName: 'ctgA', start: 32000, end: 33000 }, 0.2)
+  expect(model.bpPerPx).toBeCloseTo(1.75)
+})
+
+describe('animated zoom hands off to direct interaction', () => {
+  function setup(id: string) {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({ id, type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100000 },
+    ])
+    model.zoomTo(10)
+    return model
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  // guards the `animating` flag from the opposite failure: if it were never set,
+  // the animation's own first zoomTo would cancel the animation and zoom() would
+  // do nothing at all
+  it('an uninterrupted animated zoom reaches its target', () => {
+    const model = setup('testZoomAnimReaches')
+    model.zoom(1)
+    jest.advanceTimersByTime(3000)
+    expect(model.bpPerPx).toBeCloseTo(1)
+  })
+
+  // the spring keeps driving zoomTo for up to a second, so a wheel zoom, a
+  // rubberband "zoom to region" or a nav landing in that window used to be
+  // overwritten on the next frame
+  it('a direct zoomTo mid-animation wins', () => {
+    const model = setup('testZoomAnimHandoff')
+    model.zoom(1)
+    model.zoomTo(5)
+    jest.advanceTimersByTime(3000)
+    expect(model.bpPerPx).toBe(5)
+  })
+})
+
 describe('Zoom to selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   let model: LGV

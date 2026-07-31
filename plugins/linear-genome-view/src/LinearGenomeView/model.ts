@@ -170,9 +170,9 @@ function navLocationRefName(
  * Resolve one end of a navigation range to the displayedRegion index that
  * contains it plus the bp offset into that region. `side` selects which edge of
  * the (grow-expanded) interval anchors the offset — 'left' for the range start,
- * 'right' for the range end — accounting for reversed regions. Both the default
- * region and the containing index use first-occurrence lookups so they agree
- * when a refName is displayed more than once.
+ * 'right' for the range end — accounting for reversed regions. Omitted
+ * start/end default to the first occurrence of the refName; containment is then
+ * resolved against those raw coords, and only the region it picks bounds `grow`.
  */
 function resolveNavEndpoint({
   location,
@@ -194,22 +194,19 @@ function resolveNavEndpoint({
     defaultAssemblyName,
     location,
   )
-  const region = displayedRegions.find(r => r.refName === refName)
-  if (!region) {
+  const first = displayedRegions.find(r => r.refName === refName)
+  if (!first) {
     throw new Error(`could not find a region with refName "${refName}"`)
   }
-  let start = location.start ?? region.start
-  let end = location.end ?? region.end
-  if (grow) {
-    ;({ start, end } = expandRegion(start, end, grow, region.start, region.end))
-  }
+  const rawStart = location.start ?? first.start
+  const rawEnd = location.end ?? first.end
   const index = displayedRegions.findIndex(
     r =>
       r.refName === refName &&
-      start >= r.start &&
-      start <= r.end &&
-      end <= r.end &&
-      end >= r.start,
+      rawStart >= r.start &&
+      rawStart <= r.end &&
+      rawEnd <= r.end &&
+      rawEnd >= r.start,
   )
   if (index === -1) {
     throw new Error(
@@ -217,6 +214,16 @@ function resolveNavEndpoint({
     )
   }
   const r = displayedRegions[index]!
+  // grow AFTER resolving the containing region, and clamp to that region — not
+  // to the first occurrence of the refName. Growing first clamped the padded
+  // interval to a region that need not be the one containing it, so on a
+  // duplicated refName (collapsed introns, a refName displayed twice) the
+  // clamp dragged an endpoint back to the wrong region and the containment
+  // search below then found nothing: `navTo(loc)` succeeded where
+  // `navTo(loc, 0.2)` threw for the very same loc.
+  const { start, end } = grow
+    ? expandRegion(rawStart, rawEnd, grow, r.start, r.end)
+    : { start: rawStart, end: rawEnd }
   const leftEdge = r.reversed ? r.end - end : start - r.start
   const rightEdge = r.reversed ? r.end - start : end - r.start
   return { index, offset: side === 'left' ? leftEdge : rightEdge }
@@ -1440,19 +1447,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let cancelLastSlide = () => {}
       let cancelLastZoom = () => {}
 
+      // Both animations pass `read`, so the spring yields the moment anything
+      // else moves the view: an animation drives zoomTo/scrollTo from its own
+      // position for up to a second, and a direct interaction landing in that
+      // window — a wheel/pinch zoom, a locstring nav, a rubberband "zoom to
+      // region", a click-drag pan — used to be overwritten on the next frame.
+      // Only the zoom slider defended itself, via cancelZoomAnimation, and
+      // expecting every future call site to remember that is not a workable
+      // contract.
+
       /**
        * #action
        * perform animated slide
        */
       function slide(viewWidths: number) {
-        const [animate, cancelAnimation] = springAnimate(
-          self.offsetPx,
-          self.offsetPx + self.width * viewWidths,
-          self.scrollTo,
-          undefined,
-          undefined,
-          200,
-        )
+        const [animate, cancelAnimation] = springAnimate({
+          from: self.offsetPx,
+          to: self.offsetPx + self.width * viewWidths,
+          read: () => self.offsetPx,
+          write: px => {
+            self.scrollTo(px)
+          },
+          tension: 200,
+        })
         cancelLastSlide()
         cancelLastSlide = cancelAnimation
         animate()
@@ -1464,39 +1481,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       function zoom(targetBpPerPx: number) {
         cancelLastZoom()
-
-        // Clamp to zoom limits
         const effectiveTarget = clamp(
           targetBpPerPx,
           self.minBpPerPx,
           self.maxBpPerPx,
         )
-
-        // If already at limit (or effectively no change), do nothing
-        if (effectiveTarget === self.bpPerPx) {
-          return
+        // nothing to animate when already at the limit, or at the target
+        if (effectiveTarget !== self.bpPerPx) {
+          const [animate, cancelAnimation] = springAnimate({
+            from: self.bpPerPx,
+            to: effectiveTarget,
+            read: () => self.bpPerPx,
+            write: bpPerPx => {
+              self.zoomTo(bpPerPx)
+            },
+            tension: 1000,
+            friction: 50,
+          })
+          cancelLastZoom = cancelAnimation
+          animate()
         }
-
-        // Animate bpPerPx directly from current to target
-        const [animate, cancelAnimation] = springAnimate(
-          self.bpPerPx,
-          effectiveTarget,
-          self.zoomTo,
-          undefined,
-          0,
-          1000,
-          50,
-        )
-        cancelLastZoom = cancelAnimation
-        animate()
       }
 
       /**
        * #action
-       * cancel an in-flight animated zoom, e.g. when the user takes over with
-       * the zoom slider or another direct zoomTo. Without this a running spring
-       * keeps driving self.zoomTo from its own internal position and overwrites
-       * the direct interaction on the next frame.
+       * cancel an in-flight animated zoom. The animation already yields to any
+       * other zoom on its own, so this is for stopping it *without* changing the
+       * zoom — the slider grabbing the thumb, before it has a value to commit.
        */
       function cancelZoomAnimation() {
         cancelLastZoom()

@@ -182,8 +182,17 @@ const RefNameMenu = observer(function RefNameMenu({
       menuItems={[
         {
           label: `Focus on ${refName}`,
+          // moveTo by index, not navTo by refName: navTo resolves to the FIRST
+          // region carrying the name, so on a duplicated refName (collapsed
+          // introns, a chromosome displayed twice) clicking the third chr1 label
+          // jumped to the first. Every other item in this menu is already
+          // idx-based.
           onClick: () => {
-            model.navTo({ refName })
+            const region = displayedRegions[idx]!
+            model.moveTo(
+              { index: idx, offset: 0 },
+              { index: idx, offset: region.end - region.start },
+            )
           },
         },
         {

@@ -31,7 +31,10 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 // (easy to trigger now that features/regions can open this) never round-trips
 // megabases just to be display-blocked. Above the display limit the sequence is
 // still downloadable; above the fetch limit it is refused outright.
-const MAX_DISPLAY_BP = 1_000_000
+//
+// The display limit is in FASTA characters, not bp — it caps what goes into the
+// textarea, which is the formatted output including headers and line breaks.
+const MAX_DISPLAY_CHARS = 1_000_000
 const MAX_FETCH_BP = 10_000_000
 
 const GetSequenceDialog = observer(function GetSequenceDialog({
@@ -88,7 +91,17 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         }),
       )
     : ''
-  const sequenceTooLarge = sequence ? sequence.length > MAX_DISPLAY_BP : false
+  const sequenceTooLarge = sequence.length > MAX_DISPLAY_CHARS
+  // What the textarea says instead of a sequence. `tooLargeToFetch` disables the
+  // fetch, so without this branch it left an empty box with no loading state, no
+  // error and no explanation — and a Download FASTA button that wrote 0 bytes.
+  const notice = tooLargeToFetch
+    ? `Selected region is ${toLocale(totalBp)}bp, over the ${toLocale(
+        MAX_FETCH_BP,
+      )}bp limit for fetching a reference sequence. Zoom in or select a smaller region.`
+    : sequenceTooLarge
+      ? 'Reference sequence too large to display, use the download FASTA button'
+      : undefined
 
   return (
     <Dialog
@@ -110,12 +123,8 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           readOnly
           minRows={5}
           maxRows={10}
-          disabled={sequenceTooLarge}
-          value={
-            sequenceTooLarge
-              ? 'Reference sequence too large to display, use the download FASTA button'
-              : sequence
-          }
+          disabled={notice !== undefined}
+          value={notice ?? sequence}
         />
         <FormGroup>
           <LabeledCheckbox
@@ -141,7 +150,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         <CopyToClipboardButton
           value={sequence}
           copiedLabel="Copied"
-          disabled={loading || !!error || sequenceTooLarge}
+          disabled={!sequence || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
@@ -158,7 +167,9 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
               'jbrowse_ref_seq.fa',
             )
           }}
-          disabled={loading || !!error}
+          // `!sequence` covers every path with nothing to write: still loading,
+          // errored, and the over-fetch-limit refusal
+          disabled={!sequence}
           color="primary"
           startIcon={<GetAppIcon />}
         >

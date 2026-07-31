@@ -86,7 +86,10 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}
-        onMouseOut={mouseOut}
+        // Leave, not out: mouseout bubbles up from every child, so moving across
+        // the ControlComponent's own children fired it and flickered the guide.
+        // Matches Rubberband/OverviewRubberband.
+        onMouseLeave={mouseOut}
       >
         {ControlComponent}
       </div>
