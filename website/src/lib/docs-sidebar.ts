@@ -315,11 +315,23 @@ export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
   ]
 }
 
+// Showcase is spliced in after the last collapsible category rather than
+// appended, so the nav renders as one run of categories followed by one run of
+// plain links. sidebars.json keeps its own standalone entries (the embedding
+// pages, the CLI tools, FAQ) at the end for the same reason: a link with no
+// disclosure arrow sitting between two categories reads as a rendering bug, and
+// interleaving the two shapes makes neither run scannable.
 export function buildSiteSidebar(
   allDocs: DocEntry[],
   baseUrl: string,
 ): SidebarEntry[] {
-  return [...buildSidebar(allDocs, baseUrl), ...buildShowcaseGroups(baseUrl)]
+  const docs = buildSidebar(allDocs, baseUrl)
+  const lastGroup = docs.findLastIndex(entry => entry.type === 'group')
+  return [
+    ...docs.slice(0, lastGroup + 1),
+    ...buildShowcaseGroups(baseUrl),
+    ...docs.slice(lastGroup + 1),
+  ]
 }
 
 // The /search page groups results into a handful of broad audience filters.

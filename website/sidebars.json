@@ -53,11 +53,6 @@
         }
       ]
     },
-    "embedded_components",
-    "jbrowser",
-    "jbrowse_jupyter",
-    "cli",
-    "jbrowse-img",
     {
       "type": "category",
       "label": "Autogen docs: Config schema",
@@ -91,6 +86,11 @@
         }
       ]
     },
+    "embedded_components",
+    "jbrowser",
+    "jbrowse_jupyter",
+    "cli",
+    "jbrowse-img",
     "faq"
   ]
 }
