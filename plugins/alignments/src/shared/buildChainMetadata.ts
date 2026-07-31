@@ -3,7 +3,7 @@ import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_REVERSE,
   SAM_FLAG_SUPPLEMENTARY,
-  splitInversion,
+  splitJunctionKind,
 } from '@jbrowse/alignments-core'
 import { groupBy } from '@jbrowse/core/util'
 
@@ -18,16 +18,16 @@ export const SPLIT_NONE = 0
 export const SPLIT_INVERSION = 1
 export const SPLIT_DELETION = 2
 
-// Classify one supplementary segment against its primary mate's strand:
-// opposite strand = an inversion junction; same known strand = a co-linear
-// deletion / tandem-dup junction; unknown (the primary is off-screen, strand 0)
-// = nothing to draw. Uses the shared splitInversion classifier so this can't
-// drift from the arc/connector coloring.
+// This path's encoding of the shared junction classifier: unknown (the primary
+// is off-screen, strand 0) means nothing to draw.
+const SPLIT_KIND_MARKER = {
+  inversion: SPLIT_INVERSION,
+  deletion: SPLIT_DELETION,
+}
+
 function classifySplitKind(primaryStrand: number, suppStrand: number) {
-  if (splitInversion(primaryStrand, suppStrand) !== undefined) {
-    return SPLIT_INVERSION
-  }
-  return primaryStrand !== 0 && suppStrand !== 0 ? SPLIT_DELETION : SPLIT_NONE
+  const kind = splitJunctionKind(primaryStrand, suppStrand)
+  return kind === undefined ? SPLIT_NONE : SPLIT_KIND_MARKER[kind]
 }
 
 // A mate can carry several supplementary segments; inversion is the stronger
@@ -36,6 +36,111 @@ function strongerSplitKind(a: number, b: number) {
   return a === SPLIT_INVERSION || b === SPLIT_INVERSION
     ? SPLIT_INVERSION
     : Math.max(a, b)
+}
+
+function isSupplementary(f: ChainFeatureData) {
+  return (f.flags & SAM_FLAG_SUPPLEMENTARY) !== 0
+}
+
+function isFirstInPair(f: ChainFeatureData) {
+  return (f.flags & SAM_FLAG_FIRST_IN_PAIR) !== 0
+}
+
+// One pass over a chain's (few) features gathering everything the per-chain
+// arrays are written from. `mate0Primary`/`mate1Primary` are each mate's own
+// primary strand — a pair has two opposite-strand primaries, so a single
+// `primaryStrand` can't frame a supplement against the mate it split from. 0
+// means that mate's primary isn't in this chain (off-screen).
+function summarizeChain(chain: ChainFeatureData[]) {
+  let minStart = Number.POSITIVE_INFINITY
+  let maxEnd = Number.NEGATIVE_INFINITY
+  let hasSupp = false
+  let paired = false
+  let primaryStrand = 1
+  let primaryPairOrientation = 0
+  let mate0Primary = 0
+  let mate1Primary = 0
+  for (const f of chain) {
+    if (f.start < minStart) {
+      minStart = f.start
+    }
+    if (f.end > maxEnd) {
+      maxEnd = f.end
+    }
+    if (f.flags & SAM_FLAG_PAIRED) {
+      paired = true
+    }
+    if (isSupplementary(f)) {
+      hasSupp = true
+    } else {
+      primaryStrand = f.flags & SAM_FLAG_REVERSE ? -1 : 1
+      primaryPairOrientation = f.pairOrientation
+      if (isFirstInPair(f)) {
+        mate0Primary = f.strand
+      } else {
+        mate1Primary = f.strand
+      }
+    }
+  }
+  return {
+    minStart,
+    maxEnd,
+    hasSupp,
+    paired,
+    primaryStrand,
+    primaryPairOrientation,
+    mate0Primary,
+    mate1Primary,
+  }
+}
+
+type ChainSummary = ReturnType<typeof summarizeChain>
+
+// Second pass over the (tiny) chain, only when it could matter: classify each
+// mate's split against its OWN primary — known from the summary, so segment
+// order is moot. A mate with several supplementary segments keeps the strongest
+// kind.
+function mateSplitKinds(chain: ChainFeatureData[], summary: ChainSummary) {
+  let mate0SplitKind = SPLIT_NONE
+  let mate1SplitKind = SPLIT_NONE
+  if (summary.paired && summary.hasSupp) {
+    for (const f of chain) {
+      if (isSupplementary(f)) {
+        const isFirst = isFirstInPair(f)
+        const kind = classifySplitKind(
+          isFirst ? summary.mate0Primary : summary.mate1Primary,
+          f.strand,
+        )
+        if (isFirst) {
+          mate0SplitKind = strongerSplitKind(mate0SplitKind, kind)
+        } else {
+          mate1SplitKind = strongerSplitKind(mate1SplitKind, kind)
+        }
+      }
+    }
+  }
+  return { mate0SplitKind, mate1SplitKind }
+}
+
+// The read-fill marker for a chain that has no split to report: 0 = no
+// supplementary segment at all, 1 = supplementary framed against a forward
+// primary, 2 = against a reverse primary. For a paired chain (two
+// opposite-strand primaries) `primaryStrand` is whichever was iterated last, but
+// that's fine — the fwd-vs-rev distinction is only read on the unpaired branch
+// of the read-fill classifier (colorUtils), where a chain has exactly one
+// primary. Paired chains that DID split overwrite this per-mate with the split
+// markers (see buildChainResultFields).
+function suppType(summary: ChainSummary) {
+  return summary.hasSupp ? (summary.primaryStrand === -1 ? 2 : 1) : 0
+}
+
+// How far apart a chain reaches, the key chain layout packs by. Normally the
+// genomic span it covers; for a lone read whose mate is elsewhere the span is
+// just one read length, so its |TLEN| — the fragment's true reach — is the
+// better sort key when the aligner set one.
+function chainDistance(chain: ChainFeatureData[], summary: ChainSummary) {
+  const soleTlen = chain.length === 1 ? chain[0]!.insertSize : 0
+  return soleTlen > 0 ? soleTlen : summary.maxEnd - summary.minStart
 }
 
 /**
@@ -83,84 +188,22 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   const featureIdToChainIdx = new Map<string, number>()
   for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
     const [chainKey, chain] = chainEntries[chainIdx]!
-    let minStart = Number.POSITIVE_INFINITY
-    let maxEnd = Number.NEGATIVE_INFINITY
-    let hasSupp = false
-    let paired = false
-    let primaryStrand = 1
-    let primaryPairOrientation = 0
-    // Each mate's primary strand (a pair has two opposite-strand primaries, so
-    // one "primaryStrand" can't frame a supplement). Scalars, not per-chain
-    // arrays, to keep this worker loop allocation-free. 0 = no primary seen.
-    let mate0Primary = 0
-    let mate1Primary = 0
+    const summary = summarizeChain(chain)
+    const { mate0SplitKind, mate1SplitKind } = mateSplitKinds(chain, summary)
     for (const f of chain) {
-      if (f.start < minStart) {
-        minStart = f.start
-      }
-      if (f.end > maxEnd) {
-        maxEnd = f.end
-      }
-      if (f.flags & SAM_FLAG_PAIRED) {
-        paired = true
-      }
-      if (f.flags & SAM_FLAG_SUPPLEMENTARY) {
-        hasSupp = true
-      } else {
-        primaryStrand = f.flags & SAM_FLAG_REVERSE ? -1 : 1
-        primaryPairOrientation = f.pairOrientation
-        if (f.flags & SAM_FLAG_FIRST_IN_PAIR) {
-          mate0Primary = f.strand
-        } else {
-          mate1Primary = f.strand
-        }
-      }
       featureIdToChainIdx.set(f.id, chainIdx)
     }
-    // Second pass over the (tiny) chain, only when it could matter: classify
-    // each mate's split against its own primary (known from pass 1, so segment
-    // order is moot). A mate with several supplementary segments keeps the
-    // strongest kind.
-    let mate0SplitKind = SPLIT_NONE
-    let mate1SplitKind = SPLIT_NONE
-    if (paired && hasSupp) {
-      for (const f of chain) {
-        if (f.flags & SAM_FLAG_SUPPLEMENTARY) {
-          const isFirst = (f.flags & SAM_FLAG_FIRST_IN_PAIR) !== 0
-          const kind = classifySplitKind(
-            isFirst ? mate0Primary : mate1Primary,
-            f.strand,
-          )
-          if (isFirst) {
-            mate0SplitKind = strongerSplitKind(mate0SplitKind, kind)
-          } else {
-            mate1SplitKind = strongerSplitKind(mate1SplitKind, kind)
-          }
-        }
-      }
-    }
-    let distance = maxEnd - minStart
-    if (chain.length === 1) {
-      const tlen = chain[0]!.insertSize
-      if (tlen > 0) {
-        distance = tlen
-      }
-    }
-    chainAbsMinStarts[chainIdx] = minStart
-    chainAbsMaxEnds[chainIdx] = maxEnd
-    chainDistances[chainIdx] = distance
+    chainAbsMinStarts[chainIdx] = summary.minStart
+    chainAbsMaxEnds[chainIdx] = summary.maxEnd
+    chainDistances[chainIdx] = chainDistance(chain, summary)
     // For normal chains this is the QNAME; secondary alignments get a
     // unique synthetic key so they never merge with their primary's chain
     // (cross-region merge + chainIdMap both key on this). Never displayed.
     chainNames.push(chainKey)
-    // 1=fwd primary, 2=rev primary. For a paired chain (two opposite-strand
-    // primaries) this is whichever was iterated last, but that's fine: the fwd-
-    // vs-rev (1-vs-2) distinction is only read on the unpaired branch of the
-    // read-fill classifier (colorUtils), where a chain has exactly one primary.
-    chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
+    chainSuppTypes[chainIdx] = suppType(summary)
     chainMate0SplitKind[chainIdx] = mate0SplitKind
     chainMate1SplitKind[chainIdx] = mate1SplitKind
-    chainPairOrientations[chainIdx] = primaryPairOrientation
+    chainPairOrientations[chainIdx] = summary.primaryPairOrientation
     chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
 

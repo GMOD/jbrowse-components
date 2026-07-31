@@ -1,4 +1,4 @@
-import { splitInversion } from '@jbrowse/alignments-core'
+import { splitJunctionKind } from '@jbrowse/alignments-core'
 
 import {
   connectionEndpoints,
@@ -76,17 +76,18 @@ function pairedColorType(orientNum: number) {
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
-// Strand-flip → inversion; co-linear same-strand (both strands known) → simple
-// deletion; unknown strand → the default pair color. Maps the shared
-// splitInversion category to this path's GPU palette indices, matching the
-// arc-path unpairedOrientationColor and the read-fill split classifier so an
-// unknown-strand split doesn't claim the deletion color in just this one channel.
+// This path's encoding of the shared junction classifier: an unknown-strand
+// split falls back to the default pair color.
+const SPLIT_KIND_COLOR = {
+  inversion: LINKED_READ_COLOR_SPLIT_INV,
+  deletion: LINKED_READ_COLOR_SPLIT_NORMAL,
+}
+
 export function splitColorType(s1: number, s2: number) {
-  return splitInversion(s1, s2) !== undefined
-    ? LINKED_READ_COLOR_SPLIT_INV
-    : s1 !== 0 && s2 !== 0
-      ? LINKED_READ_COLOR_SPLIT_NORMAL
-      : LINKED_READ_COLOR_PAIR_UNKNOWN
+  const kind = splitJunctionKind(s1, s2)
+  return kind === undefined
+    ? LINKED_READ_COLOR_PAIR_UNKNOWN
+    : SPLIT_KIND_COLOR[kind]
 }
 
 // Group reads across all displayed regions by readName. Used by both the
@@ -134,7 +135,7 @@ export function classifyPair(
 ): ClassifiedPair {
   const hasPaired = !isSplit
   const { bp1, s1, bp2, s2 } = connectionEndpoints({ e1, e2, isSplit })
-  const orientNum = e1.data.readPairOrientations[e1.readIdx] ?? 0
+  const orientNum = e1.data.readPairOrientations[e1.readIdx]!
   const isNormal = isNormalOrientation(hasPaired, orientNum, s1, s2)
   const colorType = hasPaired
     ? pairedColorType(orientNum)
@@ -158,6 +159,13 @@ export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
 ): Generator<LinkedPair> {
   for (const [, entries] of groupReadsByName(laidOutPileupMap)) {
+    // Pure fast path, NOT a correctness gate — a singleton group yields no
+    // connection either way (nothing to chain, and a mate link needs both sides
+    // present). It's here because that is the overwhelmingly common group at
+    // depth, and skipping it avoids the resolver's dedup Map and its several
+    // per-group arrays. Do not grow a branch off this count: which mates are on
+    // screen is the mate partition's question, and answering it from an entry
+    // count is what once dropped a split read's off-screen mate arc.
     if (entries.length >= 2) {
       for (const { e1, e2, isSplit } of readGroupConnections(entries)) {
         yield { e1, e2, c: classifyPair(e1, e2, isSplit) }

@@ -38,7 +38,7 @@ import { autorun, observable, reaction } from 'mobx'
 
 import {
   arcColorLegendCategory,
-  computeArcsRegionMap,
+  computeArcsByGroup,
 } from '../features/arcs/compute.ts'
 import { anyArcsDrawn } from '../features/arcs/types.ts'
 import {
@@ -1489,25 +1489,32 @@ export default function stateModelFactory(
         /**
          * #getter
          * Per-group arc upload feed: group key → (region idx → `ArcsUploadData`).
-         * The heavy `computeArcsFromPileupData` pass runs once per group (arcs are
+         * The heavy connection-resolution pass runs once per group (arcs are
          * pre-grouped by refName so each region lookup is O(1)); ungrouped is the
          * single-group case. Empty map when read-connections are off, so the
          * off-path skips the per-read region scan entirely. Source of truth for
          * the per-section arc feed (`sourceSections`) and the shared cross-group
          * `arcsYDomainBp`.
          *
-         * Hidden lanes are skipped, not just unread: the per-section consumers
-         * look this up by an already-filtered `groupOrder` key, but the
-         * cross-group scans (`arcsYDomainBp`, `arcLegendCategories`) walk every
-         * entry — so a hidden lane's arcs would size the read-cloud Y axis the
-         * visible lanes share and key legend swatches for arcs nothing draws.
-         * Skipping also saves the whole per-read arc pass over a lane no section
-         * renders.
+         * `computeArcsByGroup` owns the whole fan-out rather than a loop here,
+         * because the arc COLOR scale (`poolArcScale`: long-range threshold +
+         * whether the read set is paired at all) describes the fetch, not a lane
+         * — the same rule the worker follows for `insertSizeStats` and this model
+         * follows for `arcsYDomainBp`. Computing it needs every group's arcs in
+         * hand, which a per-group loop can't provide.
+         *
+         * Hidden lanes are passed in rather than pre-filtered so they're dropped
+         * before that pooling. They must be skipped, not just left unread: the
+         * per-section consumers look this up by an already-filtered `groupOrder`
+         * key, but the cross-group scans (`arcsYDomainBp`, `arcLegendCategories`)
+         * walk every entry — so a hidden lane's arcs would size the read-cloud Y
+         * axis the visible lanes share and key legend swatches for arcs nothing
+         * draws. Skipping also saves the whole per-read arc pass over a lane no
+         * section renders.
          */
         get arcsByGroup() {
-          const out = new Map<string, Map<number, ArcsUploadData>>()
           if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
-            return out
+            return new Map<string, Map<number, ArcsUploadData>>()
           }
           const regionInfos = [...self.loadedRegions.entries()]
             .filter(([idx]) => self.rpcDataMap.has(idx))
@@ -1538,13 +1545,12 @@ export default function stateModelFactory(
               ? (refName: string) => assembly.getCanonicalRefName2(refName)
               : undefined,
           }
-          const hidden = self.hiddenGroupKeys
-          for (const [key, rawMap] of this.rawDataByGroup) {
-            if (!hidden.has(key)) {
-              out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))
-            }
-          }
-          return out
+          return computeArcsByGroup(
+            this.rawDataByGroup,
+            regionInfos,
+            settings,
+            self.hiddenGroupKeys,
+          )
         },
       }))
       .views(self => ({

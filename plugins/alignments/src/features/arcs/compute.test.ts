@@ -13,6 +13,7 @@ import {
   ARC_SHAPE_FLAT_SPLIT,
   arcColorLegendCategory,
   arcsToRegionResult,
+  computeArcsByGroup,
   computeArcsFromPileupData,
   groupArcsByRef,
 } from './compute.ts'
@@ -114,7 +115,7 @@ function makePileupData(
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),
-    sashimiColorTypes: new Uint8Array(0),
+    sashimiStrands: new Int8Array(0),
     sashimiCounts: new Uint32Array(0),
     maxY: 0,
     numInsertions: 0,
@@ -1154,6 +1155,74 @@ describe('computeArcsFromPileupData', () => {
     expect(arcs[0]!.colorType).toBe(7)
   })
 
+  test('split read whose mate is off screen still draws the off-screen mate link', () => {
+    // One mate on screen as TWO segments (primary + supplementary); the other
+    // mate is off screen at chr1:8000. Regression guard: the off-screen mate
+    // link used to be reached only through an `entries.length === 1` branch, so
+    // a read that happened to carry a second on-screen segment of its own
+    // silently lost it — exactly the split + discordant reads that carry the
+    // most SV evidence. Entry count can't distinguish "both mates present" from
+    // "one mate, two segments"; the mate partition can.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500, 3000, 3200]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+      ]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([7000, 7000]),
+      readPairOrientations: new Uint8Array([1, 1]),
+      readNames: ['readA', 'readA'],
+      readClipAtStart: new Uint32Array([0, 500]),
+      readNextRefs: ['chr1', 'chr1'],
+      readNextPositions: new Uint32Array([8000, 8000]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    // The within-read split junction (1500 → 3000) AND the mate link from the
+    // read's own outer 5' edge (1000) to the mate's recorded position (8000).
+    expect(arcs.map(a => [a.p1.bp, a.p2.bp])).toEqual([
+      [1500, 3000],
+      [1000, 8000],
+    ])
+  })
+
+  test('a split read whose mate is off screen draws no mate link when long-range is off', () => {
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500, 3000, 3200]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+      ]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([7000, 7000]),
+      readPairOrientations: new Uint8Array([1, 1]),
+      readNames: ['readA', 'readA'],
+      readClipAtStart: new Uint32Array([0, 500]),
+      readNextRefs: ['chr1', 'chr1'],
+      readNextPositions: new Uint32Array([8000, 8000]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: false,
+    })
+    // Both split segments are on screen, so their junction always draws; the
+    // off-screen mate link is the only thing the setting gates.
+    expect(arcs.map(a => [a.p1.bp, a.p2.bp])).toEqual([[1500, 3000]])
+  })
+
   test('paired multi-segment read steps through an off-screen 3rd split segment', () => {
     // First-in-pair read has two on-screen segments A (clip 0, chr1:1000) and C
     // (clip 200, chr1:5000) plus a middle segment B (clip 100) mapped off-screen
@@ -1367,6 +1436,122 @@ describe('computeArcsFromPileupData', () => {
     expect(
       arcs.filter(a => radius(a) < 5_000).every(a => a.colorType === 0),
     ).toBe(true)
+  })
+})
+
+describe('computeArcsByGroup', () => {
+  const regions = [
+    { refName: 'chr1', start: 0, end: 2_000_000, displayedRegionIndex: 0 },
+  ]
+  const settings = {
+    colorByType: 'orientation' as const,
+    drawInter: false,
+    drawLongRange: true,
+  }
+
+  // One LR pair per span, laid out end to end from `from`.
+  function lrPairs(from: number, spans: number[], tag: string) {
+    const positions: number[] = []
+    const flags: number[] = []
+    const strands: number[] = []
+    const orientations: number[] = []
+    const inserts: number[] = []
+    const names: string[] = []
+    spans.forEach((span, i) => {
+      const a = from + i * 4000
+      const b = a + span
+      positions.push(a, a + 100, b, b + 100)
+      flags.push(
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      )
+      strands.push(1, -1)
+      orientations.push(1, 1)
+      inserts.push(span, span)
+      names.push(`${tag}${i}`, `${tag}${i}`)
+    })
+    return makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array(positions),
+      readFlags: new Uint16Array(flags),
+      readStrands: new Int8Array(strands),
+      readPairOrientations: new Uint8Array(orientations),
+      readInsertSizes: new Float32Array(inserts),
+      readNames: names,
+    })
+  }
+
+  // Lane A: a tight ~2kb cluster (radii ~1000), enough to characterize a
+  // threshold. Lane B: a 60kb pair (radius ~30k, past the 10kb large-insert
+  // gate) and a 15kb one (radius ~7.5k, below it — the control that must stay
+  // COLOR_DEFAULT either way, since only the 60kb pair's verdict is the
+  // threshold's to change).
+  const CLUSTER = [1800, 1900, 2000, 2000, 2000, 2100, 2100, 2200, 1950, 2050]
+  const laneA = () => new Map([[0, lrPairs(1000, CLUSTER, 'a')]])
+  const laneB = () => new Map([[0, lrPairs(1_000_000, [60_000, 15_000], 'b')]])
+
+  function colorTypesOf(
+    byGroup: Map<string, Map<number, { arcColorTypes: Uint8Array }>>,
+    key: string,
+  ) {
+    return [...byGroup.get(key)!.get(0)!.arcColorTypes]
+  }
+
+  test('the long-range threshold is pooled across lanes, not per lane', () => {
+    // Scaled per lane, B's two pairs ARE its whole distribution — the
+    // median±MAD band straddles them both and neither reads as long-range.
+    // Pooled with A, the threshold sits near A's cluster (~1.2kb) and the 60kb
+    // pair is correctly flagged. colorByType 'orientation' ignores insert size
+    // except via that override, so an LR pair is COLOR_DEFAULT (0) unless it
+    // fires → COLOR_LONG_INSERT (1).
+    const byGroup = computeArcsByGroup(
+      new Map([
+        ['a', laneA()],
+        ['b', laneB()],
+      ]),
+      regions,
+      settings,
+      new Set<string>(),
+    )
+    // Only the 60kb pair flips; the 15kb control stays default, so this isn't a
+    // blanket repaint of the lane.
+    expect(colorTypesOf(byGroup, 'b')).toEqual([1, 0])
+    // The lane that set the scale is unaffected by it.
+    expect(colorTypesOf(byGroup, 'a').every(c => c === 0)).toBe(true)
+  })
+
+  test('a hidden lane neither renders nor shifts the pooled scale', () => {
+    // Same two lanes, but A is hidden. Dropping it before pooling leaves B
+    // scaled to itself alone, so its 60kb pair falls back to COLOR_DEFAULT —
+    // proving the hidden lane was excluded from the scale, not merely from the
+    // output.
+    const byGroup = computeArcsByGroup(
+      new Map([
+        ['a', laneA()],
+        ['b', laneB()],
+      ]),
+      regions,
+      settings,
+      new Set(['a']),
+    )
+    expect(byGroup.has('a')).toBe(false)
+    expect(colorTypesOf(byGroup, 'b')).toEqual([0, 0])
+  })
+
+  test('one visible lane matches the single-group entry point exactly', () => {
+    const data = lrPairs(1000, CLUSTER, 'a')
+    const byGroup = computeArcsByGroup(
+      new Map([['only', new Map([[0, data]])]]),
+      regions,
+      settings,
+      new Set<string>(),
+    )
+    const { arcs, lines } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      regions,
+      settings,
+    )
+    expect(byGroup.get('only')!.get(0)).toEqual(arcsToRegionResult(arcs, lines))
   })
 })
 

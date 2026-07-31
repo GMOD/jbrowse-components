@@ -52,8 +52,13 @@ export {
   isAbnormalPairDirection,
   pairDirection,
   splitInversion,
+  splitJunctionKind,
 } from './orientation.ts'
-export type { PairDirection, SplitInversion } from './orientation.ts'
+export type {
+  PairDirection,
+  SplitInversion,
+  SplitJunctionKind,
+} from './orientation.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
   SAM_FLAG_DUPLICATE,

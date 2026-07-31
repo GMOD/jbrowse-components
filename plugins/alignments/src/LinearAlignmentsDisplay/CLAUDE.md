@@ -112,6 +112,11 @@ the set as the last argument to `eachGroup`/`eachGroupData`/`someGroupData`. The
 per-group regroupers keep every lane on purpose — consumers look them up by an
 already-filtered `groupOrder` key.
 
+Arcs take the set the same way (last argument to `computeArcsByGroup`) rather
+than being pre-filtered by the caller, because the drop has to happen **before**
+`poolArcScale` — a hidden lane's insert radii would otherwise still set the
+long-range coloring threshold the visible lanes share.
+
 ### Collapse groups to one row (`collapseGroupRows`)
 
 A fourth question, orthogonal to the three above: how tall is each group?

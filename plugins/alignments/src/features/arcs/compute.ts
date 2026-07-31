@@ -3,7 +3,7 @@ import {
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECONDARY,
-  splitInversion,
+  splitJunctionKind,
 } from '@jbrowse/alignments-core'
 import {
   connectionEndpointBps,
@@ -150,15 +150,17 @@ export function arcColorLegendCategory(
   }
 }
 
-// A split junction (or unpaired-read segment pairing): opposite strands → the
-// magenta inversion color; same strands (both known) → the yellow deletion
-// color; unknown → default. Matches the split-read fill + connector colors.
+// This path's encoding of the shared junction classifier: magenta inversion /
+// yellow deletion, matching the split-read fill + connector colors; an
+// unknown-strand junction falls back to the default slot.
+const SPLIT_KIND_COLOR = {
+  inversion: COLOR_SPLIT_INVERSION,
+  deletion: COLOR_SPLIT_DELETION,
+}
+
 function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
-  return splitInversion(p1Strand, p2Strand) !== undefined
-    ? COLOR_SPLIT_INVERSION
-    : p1Strand !== 0 && p2Strand !== 0
-      ? COLOR_SPLIT_DELETION
-      : COLOR_DEFAULT
+  const kind = splitJunctionKind(p1Strand, p2Strand)
+  return kind === undefined ? COLOR_DEFAULT : SPLIT_KIND_COLOR[kind]
 }
 
 // pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
@@ -348,13 +350,21 @@ function computeArcShape({
   return { shapeType: ARC_SHAPE_ARC, yBp: absrad }
 }
 
-function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
+// Takes one array per group, not one flat array: the threshold describes the
+// whole fetched read set, so every group's arcs contribute to it (see
+// `poolArcScale`). Iterated rather than flattened so pooling costs no copy.
+function computeLongRangeThreshold(pendingArcsByGroup: PendingArc[][]) {
   // Split-junction spans are breakpoint gaps, not paired-end insert radii;
   // mixing them into the distribution skews the spread and mis-classifies the
   // long-insert coloring. Characterize the threshold from mate-link arcs only.
-  const radii = pendingArcs
-    .filter(a => !a.isSplit && a.p1Ref === a.p2Ref)
-    .map(a => Math.abs(a.p2Bp - a.p1Bp) / 2)
+  const radii: number[] = []
+  for (const arcs of pendingArcsByGroup) {
+    for (const a of arcs) {
+      if (!a.isSplit && a.p1Ref === a.p2Ref) {
+        radii.push(Math.abs(a.p2Bp - a.p1Bp) / 2)
+      }
+    }
+  }
   if (radii.length === 0) {
     return Infinity
   }
@@ -370,6 +380,25 @@ interface ReadEntry {
   refName: string
   readIdx: number
   data: PileupDataResult
+}
+
+// Per-entry field accessors. Every read field lives in a parallel TypedArray
+// indexed by `readIdx` — and `readPositions` is the one with a stride of 2 — so
+// naming the reads once keeps the `* 2` / `* 2 + 1` arithmetic in a single place
+// instead of re-spelled at each of the five sites that need a span.
+function entryFlags(e: ReadEntry) {
+  return e.data.readFlags[e.readIdx]!
+}
+
+function entryStrand(e: ReadEntry) {
+  return e.data.readStrands[e.readIdx]!
+}
+
+function entrySpan(e: ReadEntry) {
+  return {
+    start: e.data.readPositions[e.readIdx * 2]!,
+    end: e.data.readPositions[e.readIdx * 2 + 1]!,
+  }
 }
 
 // Bucket every fetched read by its QNAME so mates / split segments that share a
@@ -434,10 +463,8 @@ interface ArcChainContext {
 // mate's alignment.
 function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
   const { data, readIdx, refName } = entry
-  const flags = data.readFlags[readIdx]!
-  const strand = data.readStrands[readIdx]!
-  const start = data.readPositions[readIdx * 2]!
-  const end = data.readPositions[readIdx * 2 + 1]!
+  const strand = entryStrand(entry)
+  const { start, end } = entrySpan(entry)
   const mateRef = data.readNextRefs?.[readIdx] ?? ''
   return {
     p1Ref: refName,
@@ -445,7 +472,7 @@ function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
     p1Strand: strand,
     p2Ref: mateRef ? ctx.canonicalRefName(mateRef) : refName,
     p2Bp: data.readNextPositions?.[readIdx] ?? 0,
-    p2Strand: flags & SAM_FLAG_MATE_REVERSE ? -1 : 1,
+    p2Strand: entryFlags(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
     pairOrientationNum: data.readPairOrientations[readIdx]!,
     tlen: data.readInsertSizes[readIdx]!,
     isSplit: false,
@@ -453,76 +480,106 @@ function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
 }
 
 function entrySeg(entry: ReadEntry): SegAln {
-  const { data, readIdx, refName } = entry
   return {
-    refName,
-    start: data.readPositions[readIdx * 2]!,
-    end: data.readPositions[readIdx * 2 + 1]!,
-    strand: data.readStrands[readIdx]!,
-    clipAtStart: data.readClipAtStart?.[readIdx] ?? 0,
+    refName: entry.refName,
+    ...entrySpan(entry),
+    strand: entryStrand(entry),
+    clipAtStart: entry.data.readClipAtStart?.[entry.readIdx] ?? 0,
     onScreen: true,
   }
 }
 
-// The unpaired read's complete segment chain: every on-screen segment (a fetched
-// entry) plus any segment named in a sibling's SA tag that no view currently
-// shows. Sorted into read order by clip-at-start-of-read. Every segment's
-// refName is canonical — entries already are; SA segments are normalized here —
-// so the `${refName}:${start}` dedup collapses a fetched segment and its
-// SA-tag twin to one entry (first writer wins, and on-screen segments are added
-// first, so the on-screen record survives). That single canonical chain is what
-// lets a connector step through an off-screen segment and keeps a same-chr split
-// junction from reading as inter-chromosomal.
-//
-// This dedup requires both sides to agree on `start`, which is why
-// readPositions must carry the read's TRUE start (buildBaseReadArrays): a start
-// clipped to the region would never match its SA twin's un-clipped one, leaving
-// both copies in the chain to be joined as a spurious same-strand "deletion".
+function isSecondaryEntry(e: ReadEntry) {
+  return (entryFlags(e) & SAM_FLAG_SECONDARY) !== 0
+}
+
+// Locus identity of a segment — the dedup key that collapses a fetched segment
+// and its SA-tag twin. Two records naming the same refName + start are the same
+// alignment, whichever side described it. Sound only because every SegAln's
+// refName is canonical (entries already are; SA segments are normalized in
+// `saSegments`) and because `readPositions` carries the read's TRUE start
+// (buildBaseReadArrays): a start clipped to the region would never match its SA
+// twin's un-clipped one, leaving both copies in the chain to be joined as a
+// spurious same-strand "deletion".
+function segLocusKey(seg: SegAln) {
+  return `${seg.refName}:${seg.start}`
+}
+
+// The off-screen segments one entry's SA tag names, canonical-refName'd.
+// Truncated / placeholder-CIGAR / non-numeric-position SA records parse to a
+// zero-length or NaN span and would emit a junk arc, so they're dropped here.
+function saSegments(entry: ReadEntry, ctx: ArcChainContext): SegAln[] {
+  const { data, readIdx } = entry
+  return featurizeSA(
+    data.readSuppAlignments?.[readIdx],
+    data.readIds[readIdx]!,
+    data.readStrands[readIdx],
+    data.readNames[readIdx],
+  )
+    .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
+    .map(sa => ({
+      refName: ctx.canonicalRefName(sa.refName),
+      start: sa.start,
+      end: sa.end,
+      strand: sa.strand,
+      clipAtStart: sa.clipLengthAtStartOfRead,
+      onScreen: false,
+    }))
+}
+
+// The read's complete segment chain: every on-screen segment (a fetched entry)
+// plus any segment named in a sibling's SA tag that no view currently shows,
+// deduplicated by locus and sorted into read order by clip-at-start-of-read.
+// That single canonical chain is what lets a connector step through an
+// off-screen segment and keeps a same-chr split junction from reading as
+// inter-chromosomal.
 function unpairedReadChain(
   entries: ReadEntry[],
   ctx: ArcChainContext,
 ): SegAln[] {
+  // Secondary alignments are alternate mappings, not part of the read's split
+  // chain — dropped along with their SA tags, as every other path does.
+  const own = entries.filter(e => !isSecondaryEntry(e))
   const byPos = new Map<string, SegAln>()
-  const addSeg = (seg: SegAln) => {
-    const key = `${seg.refName}:${seg.start}`
+  // On-screen segments first, so a segment described by BOTH a fetched record
+  // and a sibling's SA tag keeps the on-screen record (first writer wins).
+  for (const seg of [
+    ...own.map(entrySeg),
+    ...own.flatMap(e => saSegments(e, ctx)),
+  ]) {
+    const key = segLocusKey(seg)
     if (!byPos.has(key)) {
       byPos.set(key, seg)
     }
   }
-  for (const entry of entries) {
-    // Secondary alignments are alternate mappings, not part of the read's split
-    // chain — dropped here as the multi-entry path does.
-    if (!(entry.data.readFlags[entry.readIdx]! & SAM_FLAG_SECONDARY)) {
-      addSeg(entrySeg(entry))
-    }
-  }
-  for (const { data, readIdx } of entries) {
-    // Secondary alignments are alternate mappings, not part of the read's split
-    // chain — skip their SA tags too, matching the on-screen-segment loop above.
-    if (data.readFlags[readIdx]! & SAM_FLAG_SECONDARY) {
-      continue
-    }
-    for (const sa of featurizeSA(
-      data.readSuppAlignments?.[readIdx],
-      data.readIds[readIdx]!,
-      data.readStrands[readIdx],
-      data.readNames[readIdx],
-    )) {
-      // Drop truncated / placeholder-CIGAR / non-numeric-position SA entries —
-      // they parse to a zero-length or NaN span and would emit a junk arc.
-      if (Number.isFinite(sa.start) && sa.end > sa.start) {
-        addSeg({
-          refName: ctx.canonicalRefName(sa.refName),
-          start: sa.start,
-          end: sa.end,
-          strand: sa.strand,
-          clipAtStart: sa.clipLengthAtStartOfRead,
-          onScreen: false,
-        })
-      }
-    }
-  }
   return [...byPos.values()].sort((a, b) => a.clipAtStart - b.clipAtStart)
+}
+
+// The junction between two read-adjacent segments: the first segment's
+// read-trailing (3') edge joined to the next segment's read-leading (5') edge,
+// so a fwd→rev inversion lands on the breakpoint rather than the far edge of the
+// reverse segment. One spelling of the `connectionEndpointBps` call, so the
+// SegAln path can't disagree with the entry path (`pendingArcFromConnection`)
+// about which edges a split junction connects.
+function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
+  const { bp1, bp2 } = connectionEndpointBps({
+    s1: a1.strand,
+    start1: a1.start,
+    end1: a1.end,
+    s2: a2.strand,
+    start2: a2.start,
+    end2: a2.end,
+    isSplit: true,
+  })
+  return {
+    p1Ref: a1.refName,
+    p1Bp: bp1,
+    p1Strand: a1.strand,
+    p2Ref: a2.refName,
+    p2Bp: bp2,
+    p2Strand: a2.strand,
+    isSplit: true,
+  }
 }
 
 // Chain an unpaired read's segments in true read order (by clip-at-start-of-read,
@@ -543,24 +600,7 @@ function unpairedChainArcs(
     const a1 = chain[j]!
     const a2 = chain[j + 1]!
     if ((a1.onScreen && a2.onScreen) || ctx.drawLongRange) {
-      const { bp1, bp2 } = connectionEndpointBps({
-        s1: a1.strand,
-        start1: a1.start,
-        end1: a1.end,
-        s2: a2.strand,
-        start2: a2.start,
-        end2: a2.end,
-        isSplit: true,
-      })
-      arcs.push({
-        p1Ref: a1.refName,
-        p1Bp: bp1,
-        p1Strand: a1.strand,
-        p2Ref: a2.refName,
-        p2Bp: bp2,
-        p2Strand: a2.strand,
-        isSplit: true,
-      })
+      arcs.push(splitJunctionArc(a1, a2))
     }
   }
   return arcs
@@ -574,12 +614,8 @@ function unpairedChainArcs(
 // TLEN driving its color (a pair could look unremarkably small yet be painted
 // long-insert, or vice versa).
 function pairOuterBp(entry: ReadEntry) {
-  const { data, readIdx } = entry
-  return readLeadingBp(
-    data.readStrands[readIdx]!,
-    data.readPositions[readIdx * 2]!,
-    data.readPositions[readIdx * 2 + 1]!,
-  )
+  const { start, end } = entrySpan(entry)
+  return readLeadingBp(entryStrand(entry), start, end)
 }
 
 // Build a pending arc from one resolved connection. Split junctions carry no
@@ -617,79 +653,103 @@ function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
       }
 }
 
+// The link to a mate that isn't on screen: only RNEXT/PNEXT locate it, so this
+// is the one connection kind the bezier overlay can't draw and the arc path can.
+// Gated on `drawLongRange` (the "show off-screen mate connections" setting) and
+// skipped for a mate that is unmapped, which has no locus at all.
+function offScreenMateArcs(
+  entry: ReadEntry,
+  ctx: ArcChainContext,
+): PendingArc[] {
+  const mateUnmapped = (entryFlags(entry) & SAM_FLAG_MATE_UNMAPPED) !== 0
+  return ctx.drawLongRange && !mateUnmapped ? [mateArc(entry, ctx)] : []
+}
+
+// Every QNAME group resolves the same way — the bezier overlay's group
+// resolution (resolveReadGroup owns the secondary filter, the readId dedup, the
+// mate partition, and the mate-link guard) with two arc-path substitutions:
+//
+//   - the SA-augmented per-mate chainer, which steps through an off-screen SA
+//     segment (gated by drawLongRange) so a 3rd, off-screen split segment still
+//     gets its junctions instead of being skipped over. The bezier path chains
+//     only on-screen entries, so the SA walk lives here rather than leaking
+//     pseudo-entries into the shared skeleton;
+//   - the off-screen mate link, which only this path can draw.
+//
+// An unpaired (long) read falls out as the case where the partition puts every
+// segment on one side and neither mate hook fires.
 function collectPendingArcs(
   readsByName: Map<string, ReadEntry[]>,
   ctx: ArcChainContext,
 ) {
   const pendingArcs: PendingArc[] = []
   for (const entries of readsByName.values()) {
-    const anyPaired = entries.some(
-      e => e.data.readFlags[e.readIdx]! & SAM_FLAG_PAIRED,
+    pendingArcs.push(
+      ...resolveReadGroup<ReadEntry, PendingArc>(entries, {
+        chainMate: segs => unpairedChainArcs(segs, ctx),
+        mateLink: (e1, e2) =>
+          pendingArcFromConnection({ e1, e2, isSplit: false }),
+        loneMateLink: primary => offScreenMateArcs(primary, ctx),
+      }),
     )
-    if (!anyPaired) {
-      // Unpaired (long) read: chain its full read-order segment set, stepping
-      // through any off-screen segment rather than joining across it. Handles
-      // both the lone-read (single on-screen segment, junctions all long-range)
-      // and the multi-segment on-screen cases uniformly.
-      pendingArcs.push(...unpairedChainArcs(entries, ctx))
-    } else if (entries.length === 1) {
-      // A lone paired read connects to an off-screen mate / supplementary block —
-      // only drawn when long-range connections are enabled. The two link kinds
-      // are independent read properties, so it gets BOTH: its mate link (when
-      // the mate is mapped) AND its SA split junctions (when it carries
-      // supplementary alignments).
-      if (ctx.drawLongRange) {
-        const entry = entries[0]!
-        const flags = entry.data.readFlags[entry.readIdx]!
-        // Secondary alignments (0x100) are alternate mappings, not the read's
-        // true locus, and carry unset TLEN / pair-orientation — drop them here
-        // as every other path does (partitionReadGroup, unpairedReadChain)
-        // rather than anchoring a spurious mate link at the secondary locus.
-        // They survive the default flag filter (1540 omits 0x100), so a lone
-        // on-screen secondary (primary + mate off-screen, e.g. a multimapper)
-        // would otherwise reach mateArc.
-        if (!(flags & SAM_FLAG_SECONDARY)) {
-          if (!(flags & SAM_FLAG_MATE_UNMAPPED)) {
-            pendingArcs.push(mateArc(entry, ctx))
-          }
-          pendingArcs.push(...unpairedChainArcs(entries, ctx))
-        }
-      }
-    } else {
-      // ≥2 on-screen paired alignments sharing a name. Same group resolution as
-      // the bezier overlay (resolveReadGroup owns the partition + mate-link
-      // guard), but with the SA-augmented per-mate chainer: it steps through any
-      // off-screen SA segment (gated by drawLongRange) so a 3rd, off-screen split
-      // segment still gets its junctions instead of being skipped over. The
-      // bezier path chains only on-screen entries, so the SA walk lives here
-      // rather than leaking pseudo-entries into the shared skeleton.
-      pendingArcs.push(
-        ...resolveReadGroup(
-          entries,
-          segs => unpairedChainArcs(segs, ctx),
-          (e1, e2) => pendingArcFromConnection({ e1, e2, isSplit: false }),
-        ),
-      )
-    }
   }
   return pendingArcs
 }
 
-export function computeArcsFromPileupData(
+// Per-group half of the pipeline: the expensive read grouping + connection
+// resolution, plus the two dataset facts a pooled scale is built from. Split out
+// so every group's arcs exist before any of them is colored.
+interface ArcInputs {
+  pendingArcs: PendingArc[]
+  hasPaired: boolean
+  stats: InsertSizeBand | undefined
+}
+
+function collectArcInputs(
   rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
   settings: ArcSettings,
-) {
-  const { colorByType, cloud = false, drawInter, drawLongRange } = settings
+): ArcInputs {
   const readsByName = groupReadsByName(rpcDataMap, regions)
   const { hasPaired, stats } = computePairingInfo(rpcDataMap)
   const pendingArcs = collectPendingArcs(readsByName, {
-    drawLongRange,
+    drawLongRange: settings.drawLongRange,
     canonicalRefName: settings.canonicalRefName ?? (refName => refName),
   })
+  return { pendingArcs, hasPaired, stats }
+}
 
-  const longRangeThreshold = computeLongRangeThreshold(pendingArcs)
+// Everything that decides an arc's COLOR but belongs to the whole fetched read
+// set rather than to one group. Pooled for the same reason the worker pools
+// `insertSizeStats` and the model maxes `arcsYDomainBp` across groups: a
+// per-group scale paints the same pair long-insert in one stacked section and
+// normal in the next, and `hasPaired` switches whole lanes between the
+// pair-orientation and split-junction branches of `getArcColorType`. `stats` is
+// already the worker's pooled band, so pooling it here is just picking the one
+// value every group carries.
+interface ArcScale {
+  hasPaired: boolean
+  stats: InsertSizeBand | undefined
+  longRangeThreshold: number
+}
 
+function poolArcScale(inputs: ArcInputs[]): ArcScale {
+  return {
+    hasPaired: inputs.some(i => i.hasPaired),
+    stats: inputs.find(i => i.stats !== undefined)?.stats,
+    longRangeThreshold: computeLongRangeThreshold(
+      inputs.map(i => i.pendingArcs),
+    ),
+  }
+}
+
+// Colour + shape one group's resolved connections against the pooled scale.
+function resolveArcs(
+  pendingArcs: PendingArc[],
+  { hasPaired, stats, longRangeThreshold }: ArcScale,
+  settings: ArcSettings,
+) {
+  const { colorByType, cloud = false, drawInter } = settings
   const arcs: ComputedArc[] = []
   const lines: ComputedLine[] = []
 
@@ -730,7 +790,7 @@ export function computeArcsFromPileupData(
     // zoom — a far-apart arc collapses to near-vertical lines at its real
     // endpoints (arc.slang), and zooming out to show the whole span restores
     // the rounded arc. (drawLongRange only gates connections to mates that
-    // aren't loaded in the current view; see the single-entry branch above.)
+    // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({
       arc,
       colorByType,
@@ -825,21 +885,12 @@ export function arcsToRegionResult(
   }
 }
 
-// Full per-region arc upload feed for one set of raw pileup data: compute arcs,
-// bucket them by refName, then materialize each region's `ArcsUploadData`. This
-// is the single arc pipeline — grouped mode runs it once per group, ungrouped
-// once for the lone group — so the ungrouped result is exactly the N==1 case of
-// the grouped one, byte-identical by construction.
-export function computeArcsRegionMap(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+// Bucket one group's computed arcs by refName, then materialize each region's
+// `ArcsUploadData`.
+function arcsToRegionMap(
+  { arcs, lines }: { arcs: ComputedArc[]; lines: ComputedLine[] },
   regions: RegionInfo[],
-  settings: ArcSettings,
 ): Map<number, ArcsUploadData> {
-  const { arcs, lines } = computeArcsFromPileupData(
-    rpcDataMap,
-    regions,
-    settings,
-  )
   const { arcsByRef, linesByRef } = groupArcsByRef(arcs, lines)
   const out = new Map<number, ArcsUploadData>()
   for (const ri of regions) {
@@ -848,6 +899,58 @@ export function computeArcsRegionMap(
       arcsToRegionResult(
         arcsByRef.get(ri.refName) ?? [],
         linesByRef.get(ri.refName) ?? [],
+      ),
+    )
+  }
+  return out
+}
+
+/**
+ * Arcs + connector ticks for one group's raw pileup data, scaled to that group
+ * alone. The single-group entry point; grouped rendering goes through
+ * `computeArcsByGroup` instead, which pools the color scale across every lane.
+ */
+export function computeArcsFromPileupData(
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  regions: RegionInfo[],
+  settings: ArcSettings,
+) {
+  const inputs = collectArcInputs(rpcDataMap, regions, settings)
+  return resolveArcs(inputs.pendingArcs, poolArcScale([inputs]), settings)
+}
+
+/**
+ * The full arc upload feed for every visible group of one fetch.
+ *
+ * Resolution runs per group (a read belongs to exactly one lane, and each lane
+ * draws its own band), but the color scale is characterized ONCE across all of
+ * them — see `poolArcScale`. Resolving every group before coloring any is what
+ * makes that possible at no extra cost: the expensive half already had to run
+ * per group.
+ *
+ * Hidden lanes are dropped before pooling, not after, so a lane the display
+ * never draws can't shift the scale the visible ones share.
+ */
+export function computeArcsByGroup(
+  rawDataByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>,
+  regions: RegionInfo[],
+  settings: ArcSettings,
+  hiddenGroupKeys: ReadonlySet<string>,
+): Map<string, Map<number, ArcsUploadData>> {
+  const visible = [...rawDataByGroup].filter(
+    ([key]) => !hiddenGroupKeys.has(key),
+  )
+  const inputs = visible.map(([, rawMap]) =>
+    collectArcInputs(rawMap, regions, settings),
+  )
+  const scale = poolArcScale(inputs)
+  const out = new Map<string, Map<number, ArcsUploadData>>()
+  for (let i = 0; i < visible.length; i++) {
+    out.set(
+      visible[i]![0],
+      arcsToRegionMap(
+        resolveArcs(inputs[i]!.pendingArcs, scale, settings),
+        regions,
       ),
     )
   }

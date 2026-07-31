@@ -49,3 +49,23 @@ export function splitInversion(
 ): SplitInversion | undefined {
   return s1 === -1 && s2 === 1 ? 'rf' : s1 === 1 && s2 === -1 ? 'fr' : undefined
 }
+
+// What a split-read junction between two segments of one read means, from the
+// segments' strands alone: a strand flip is an inversion junction, a co-linear
+// (both strands known and equal) join is a deletion / tandem-dup junction, and
+// an unknown strand on either side classifies as neither. Every path that
+// colors a junction spells this same three-way rule — the coverage-arc palette,
+// the linked-read connector palette, and the chain read-fill marker — so it
+// lives here and each maps the category to its own vocabulary.
+export type SplitJunctionKind = 'inversion' | 'deletion'
+
+export function splitJunctionKind(
+  s1: number,
+  s2: number,
+): SplitJunctionKind | undefined {
+  return splitInversion(s1, s2) !== undefined
+    ? 'inversion'
+    : s1 !== 0 && s2 !== 0
+      ? 'deletion'
+      : undefined
+}

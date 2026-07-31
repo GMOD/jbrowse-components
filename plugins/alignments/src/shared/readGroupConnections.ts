@@ -54,6 +54,24 @@ function startEndOf(e: MinEntry) {
   ] as const
 }
 
+// Named flag predicates, so the partition below reads as the rule it implements
+// rather than as bitmask arithmetic. Each returns a boolean, not the masked bit.
+function isSupplementary(e: MinEntry) {
+  return (flagsOf(e) & SAM_FLAG_SUPPLEMENTARY) !== 0
+}
+
+function isSecondary(e: MinEntry) {
+  return (flagsOf(e) & SAM_FLAG_SECONDARY) !== 0
+}
+
+function isPaired(e: MinEntry) {
+  return (flagsOf(e) & SAM_FLAG_PAIRED) !== 0
+}
+
+function isFirstInPair(e: MinEntry) {
+  return (flagsOf(e) & SAM_FLAG_FIRST_IN_PAIR) !== 0
+}
+
 // The two absolute-bp endpoints (+ strands) of a resolved connection, reading
 // the strands/positions off the entry bundle and delegating to the shared
 // `connectionEndpointBps` rule (see @jbrowse/cigar-utils).
@@ -93,32 +111,18 @@ function splitJunctions<E extends MinEntry>(segs: E[]): ReadConnection<E>[] {
 
 // The primary (non-supplementary) segment carries the read's pair orientation /
 // template length, so the mate link sources its color from it. Falls back to
-// the read-order-first segment if no primary is on screen.
+// the first-listed segment if no primary is on screen.
 function primaryOf<E extends MinEntry>(segs: E[]) {
-  return segs.find(e => !(flagsOf(e) & SAM_FLAG_SUPPLEMENTARY)) ?? segs[0]!
+  return segs.find(e => !isSupplementary(e)) ?? segs[0]!
 }
 
-// Dedup a QNAME group by readId, drop the alignments that never take part in a
-// connection, then split the survivors into first/second-in-pair sub-reads.
-//   - readId dedup: the same physical read overlapping two displayedRegions
-//     (e.g. spanning collapsed-intron exons) is returned by each region's
-//     fetch, arriving as duplicate entries sharing a readId (f.id() =
-//     adapter.id + fileOffset, stable across fetches). Collapse them, else the
-//     copies look like a 2-segment split read and splitJunctions fabricates a
-//     self-junction. Genuine split segments and mates are distinct records with
-//     distinct ids, so they survive.
-//   - filter: secondary alignments are alternate mappings, not split segments,
-//     so they never chain. Mate-unmapped reads are NOT filtered here: an
-//     unmapped mate has no position and is never fetched alongside this read, so
-//     the only same-name members are this read's own primary + supplementary
-//     segments — dropping them would delete a legitimate split junction, and the
-//     first/second guard in readGroupConnections already blocks a dangling mate
-//     link when the second mate is absent.
-//   - partition: everything lands in `first` when the group is unpaired.
-// Used only by resolveReadGroup below, which both the mate-link resolver and the
-// arc path's SA-augmented chaining route through, so both agree on which
-// segments belong to which mate.
-function partitionReadGroup<E extends MinEntry>(entries: E[]) {
+// The same physical read overlapping two displayedRegions (e.g. spanning
+// collapsed-intron exons) is returned by each region's fetch, arriving as
+// duplicate entries sharing a readId (f.id() = adapter.id + fileOffset, stable
+// across fetches). Collapse them, else the copies look like a 2-segment split
+// read and splitJunctions fabricates a self-junction. Genuine split segments and
+// mates are distinct records with distinct ids, so they survive.
+function dedupeByReadId<E extends MinEntry>(entries: E[]) {
   const byId = new Map<string, E>()
   for (const e of entries) {
     const id = readIdOf(e)
@@ -126,14 +130,31 @@ function partitionReadGroup<E extends MinEntry>(entries: E[]) {
       byId.set(id, e)
     }
   }
-  const filtered = [...byId.values()].filter(
-    e => !(flagsOf(e) & SAM_FLAG_SECONDARY),
-  )
-  const hasPaired = filtered.some(e => flagsOf(e) & SAM_FLAG_PAIRED)
+  return [...byId.values()]
+}
+
+// Dedup a QNAME group by readId, drop the alignments that never take part in a
+// connection, then split the survivors into first/second-in-pair sub-reads.
+//   - filter: secondary alignments are alternate mappings, not split segments,
+//     so they never chain. Mate-unmapped reads are NOT filtered here: an
+//     unmapped mate has no position and is never fetched alongside this read, so
+//     the only same-name members are this read's own primary + supplementary
+//     segments — dropping them would delete a legitimate split junction, and the
+//     both-sides-present guard in resolveReadGroup already blocks a dangling
+//     mate link when the second mate is absent.
+//   - partition: everything lands in `first` when the group is unpaired.
+// Used only by resolveReadGroup below, which both the mate-link resolver and the
+// arc path's SA-augmented chaining route through, so both agree on which
+// segments belong to which mate. It is also the ONLY answer to "are both mates
+// on screen?" — an entry count can't tell two mates from one mate's two split
+// segments.
+function partitionReadGroup<E extends MinEntry>(entries: E[]) {
+  const filtered = dedupeByReadId(entries).filter(e => !isSecondary(e))
+  const hasPaired = filtered.some(isPaired)
   const first: E[] = []
   const second: E[] = []
   for (const e of filtered) {
-    if (!hasPaired || flagsOf(e) & SAM_FLAG_FIRST_IN_PAIR) {
+    if (!hasPaired || isFirstInPair(e)) {
       first.push(e)
     } else {
       second.push(e)
@@ -143,18 +164,32 @@ function partitionReadGroup<E extends MinEntry>(entries: E[]) {
 }
 
 // The shape every connection renderer shares: chain each mate's own segments in
-// read order (`chainMate`), then link the two mates' primaries (`mateLink`) —
-// but only when both mates are actually present, so a lone read (unmapped or
-// off-screen mate) never emits a dangling link. Generic over the produced
-// element `T` so the bezier overlay (ReadConnection) and the coverage arcs
-// (PendingArc) route through one skeleton and can't drift on which segments
-// join. Each caller supplies its own per-mate chainer: the bezier path chains
-// only the on-screen segments (`splitJunctions`), the arc path additionally
-// walks off-screen SA segments.
+// read order (`chainMate`), then link the two mates' primaries (`mateLink`) when
+// both mates are present, or hand the one present mate to `loneMateLink` when
+// only one is. Generic over the produced element `T` so the bezier overlay
+// (ReadConnection) and the coverage arcs (PendingArc) route through one skeleton
+// and can't drift on which segments join. Each caller supplies its own per-mate
+// chainer: the bezier path chains only the on-screen segments
+// (`splitJunctions`), the arc path additionally walks off-screen SA segments.
+//
+// `loneMateLink` defaults to emitting nothing, which is what a renderer drawing
+// between two on-screen reads has to do — it has no second endpoint. The arc
+// path overrides it because RNEXT/PNEXT locate the absent mate, so it CAN draw
+// that link. Routing it through here rather than through an entry-count branch
+// at the call site is what keeps the link from vanishing when the read happens
+// to have a second on-screen segment of its own (a split read): counting raw
+// entries can't tell "both mates present" from "one mate, two segments".
 export function resolveReadGroup<E extends MinEntry, T>(
   entries: E[],
-  chainMate: (segs: E[]) => T[],
-  mateLink: (primary1: E, primary2: E) => T,
+  {
+    chainMate,
+    mateLink,
+    loneMateLink = () => [],
+  }: {
+    chainMate: (segs: E[]) => T[]
+    mateLink: (primary1: E, primary2: E) => T
+    loneMateLink?: (primary: E) => T[]
+  },
 ): T[] {
   const { first, second, hasPaired } = partitionReadGroup(entries)
   const out = chainMate(first)
@@ -162,6 +197,9 @@ export function resolveReadGroup<E extends MinEntry, T>(
     out.push(...chainMate(second))
     if (first.length > 0 && second.length > 0) {
       out.push(mateLink(primaryOf(first), primaryOf(second)))
+    } else {
+      // `hasPaired` guarantees a survivor, so exactly one side is populated.
+      out.push(...loneMateLink(primaryOf(first.length > 0 ? first : second)))
     }
   }
   return out
@@ -178,9 +216,8 @@ export function resolveReadGroup<E extends MinEntry, T>(
 export function readGroupConnections<E extends MinEntry>(
   entries: E[],
 ): ReadConnection<E>[] {
-  return resolveReadGroup(entries, splitJunctions, (e1, e2) => ({
-    e1,
-    e2,
-    isSplit: false,
-  }))
+  return resolveReadGroup(entries, {
+    chainMate: splitJunctions,
+    mateLink: (e1, e2) => ({ e1, e2, isSplit: false }),
+  })
 }
