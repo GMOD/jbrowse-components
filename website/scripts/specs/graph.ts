@@ -158,6 +158,24 @@ const PGGB_LOCUS = {
 }
 const PGGB_LOCUS_WINDOW = 'chr:2,121,000-2,122,000'
 
+// The per-strain window, which cannot be the kilobase above (review of the sample
+// rows figure: "too chaotic. too many tiny segments ... I know it shows the per
+// sample rows but i just dont get it"). pggb cuts a segment at every variant, so
+// that window is 154 nodes -- about 6 px each, and a row of 6 px marks says
+// nothing about what a strain carries. This is the window local_subgraph draws,
+// where the same index returns 37 segments, the long ones are 59 and 158 bp, and
+// the strains genuinely differ: CFT073's contig only reaches the last 293 bp
+// (`tabix ecoli_pggb.segs.bed.gz 'K12#1#chr:1004500-1004961'`, whose sixth column
+// lists the strains carrying each segment), so its row starts where it joins and
+// the tutorial already explains that boundary as ycbF ending and pyrD starting.
+const PGGB_ROWS_LOCUS = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 1004500,
+  end: 1004961,
+}
+const PGGB_ROWS_WINDOW = 'chr:1,004,500-1,004,961'
+
 // The same graph read per strain instead of per segment: one row per strain,
 // each block that strain's allele at one bubble, from the BED
 // scripts/build_minigraph_paths.sh projects out of `minigraph --call`.
@@ -623,16 +641,21 @@ function ecoliHoverSession() {
   })
 }
 
-// The pggb pair: same locus, same colors, one in each anchored layout. Both name
-// their layout, because the view's own default is the force drawing.
-function pggbLocusSession(layoutMode: 'auto' | 'samplerows') {
+// The pggb pair: the same track in two anchored layouts. Both name their layout,
+// because the view's own default is the force drawing, and each takes its own
+// window: a kilobase is the right scale for the backbone sweep and far too dense
+// for per-strain rows (see PGGB_ROWS_LOCUS).
+function pggbLocusSession(
+  layoutMode: 'auto' | 'samplerows',
+  { region, window }: { region: typeof PGGB_LOCUS; window: string },
+) {
   return sessionSpec(CONFIG, {
     sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_SEGMENTS_SESSION_TRACK],
     views: [
       {
         type: 'LinearGenomeView',
         assembly: 'K12',
-        loc: PGGB_LOCUS_WINDOW,
+        loc: window,
         tracks: [
           { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
           {
@@ -642,14 +665,14 @@ function pggbLocusSession(layoutMode: 'auto' | 'samplerows') {
             // integer ids, and the lane is here for the color sweep
             showLabels: 'off',
             height: 50,
-            color: referencePositionColor(PGGB_LOCUS),
+            color: referencePositionColor(region),
           },
         ],
       },
       {
         type: 'GraphGenomeView',
         loadedTrackId: PGGB_SEGMENTS_TRACK,
-        loadedRegion: PGGB_LOCUS,
+        loadedRegion: region,
         layoutMode,
         colorScheme: 'reference-position',
       },
@@ -908,7 +931,10 @@ export const graphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/pggb_locus_graph',
-    url: pggbLocusSession('auto'),
+    url: pggbLocusSession('auto', {
+      region: PGGB_LOCUS,
+      window: PGGB_LOCUS_WINDOW,
+    }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
     settleMs: 5000,
@@ -924,12 +950,18 @@ export const graphSpecs: ScreenshotSpec[] = [
   // that a row is first-seen attribution. Here the name comes from a path that
   // actually walks the segment, so a row is carriage.
   //
-  // Same window and same colors as the figure above, so the pair reads as one
-  // graph seen two ways rather than as two loci.
+  // Same track and same colors as the figure above, at PGGB_ROWS_LOCUS rather than
+  // at its kilobase: rows are what this figure is for, and a row has to be
+  // readable segment by segment. Here the five rows differ from each other in
+  // ways a reader can name -- CFT073 absent from the left half of the window, the
+  // 1 bp nodes taken by some strains and not others.
   {
     mode: 'url',
     name: 'pangenome/pggb_locus_sample_rows',
-    url: pggbLocusSession('samplerows'),
+    url: pggbLocusSession('samplerows', {
+      region: PGGB_ROWS_LOCUS,
+      window: PGGB_ROWS_WINDOW,
+    }),
     readySelector:
       'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
     readyTimeout: 120000,

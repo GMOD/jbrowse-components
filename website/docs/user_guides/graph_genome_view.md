@@ -179,7 +179,7 @@ locus one rank holds alleles from many haplotypes, so a rank row means nothing
 biological. **Sample rows** rows by the assembly each allele came from instead,
 so reading across a row says what that strain does to the reference.
 
-<Figure caption="A kilobase of the pggb graph in the Sample rows layout, under the genes and the segments lane for the same window. The top row is the K12 backbone, colored by reference position; each row below it is one strain, and its charcoal marks are the segments that strain takes instead, tied by grey threads to where they attach." src="/img/pangenome/pggb_locus_sample_rows.png" />
+<Figure caption="460 bp of the pggb graph in the Sample rows layout, under the genes and the segments lane for the same window. The top row is the K12 backbone, each segment labelled with its length; each row below it is one strain, and its charcoal marks are the segments that strain takes instead, tied by grey threads to where they attach." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 What "came from" means depends on the format, and it is the one place the two
 formats say genuinely different things. On rGFA it is the strain that _first

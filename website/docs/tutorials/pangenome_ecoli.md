@@ -449,7 +449,11 @@ graph a row means carriage, since it names a path that actually walks the
 segment. On an rGFA it means build order instead, because minigraph's `SR` names
 the assembly that contributed the segment first.
 
-<Figure caption="The same window in Sample rows. Each row is one strain and each mark is a segment that strain carries, colored by where on K12 it sits, so a bubble shows which strains take which route through it." src="/img/pangenome/pggb_locus_sample_rows.png" />
+Rows want a narrower window than the sweep above. A row draws what a strain
+takes _instead of_ the reference, so it is read segment by segment, and at 17 bp
+per segment a kilobase leaves each one a few pixels wide.
+
+<Figure caption="460 bp of the same graph in Sample rows, at the ycbF/pyrD boundary. The top row is the K12 backbone with each segment's length on it; below it each strain's marks are the segments it takes instead of the reference, tied by threads to where they attach. Sakai and IAI39 have marks at several places, CFT073 and NCTC86 at one or two." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 #### Where this stops, and what to do instead
 

@@ -23,10 +23,9 @@ To build the tracks:
 ## The variant that is not there
 
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
-breed-defining short legs to an expressed _FGF4_
-retrogene: a processed copy of the _FGF4_ transcript, reinserted somewhere else
-in the genome. Processed means it was made from the spliced mRNA, so the copy
-has no introns.
+breed-defining short legs to an expressed _FGF4_ retrogene: a processed copy of
+the _FGF4_ transcript, reinserted somewhere else in the genome. Processed means
+it was made from the spliced mRNA, so the copy has no introns.
 
 That is what makes it findable without knowing where it landed. Short reads from
 the retrocopy map to the parent gene, because the parent's exons are the
@@ -135,9 +134,8 @@ never sees the homozygous loss a real deletion would give it.
 
 Two _FGF4_ retrocopies are known in dogs. Parker et al. tied one to short legs;
 [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114) tied a second, on
-a different chromosome, to
-chondrodystrophy and intervertebral disc disease, which is why breeds of
-ordinary proportions carry a copy too.
+a different chromosome, to chondrodystrophy and intervertebral disc disease,
+which is why breeds of ordinary proportions carry a copy too.
 
 Both are copies of the same transcript, so both leave the same footprint at the
 parent gene, and one record here cannot say which. That is why the swatch says
