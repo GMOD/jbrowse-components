@@ -76,53 +76,46 @@ const TNNT3_FRAME = {
 // those pairs make up. The tutorial stated that difference in prose and showed
 // one figure with both tracks on at once, where neither is separable.
 //
-// The window is one MCScan block, read out of the .anchors.simple file itself:
-// its highest-scoring collinear pair with a 1:1 span, grape chr19
-// 5,138,069-7,773,743 against peach Pp04 12,426,874-14,979,513, with 160 gene
-// pairs inside it. Each panel frames that block plus a little padding, at
-// matching bp/px, so `.anchors.simple` is one wide ribbon across the whole
-// figure while `.anchors` resolves into the 160 near-parallel threads it is made
-// of. Straight ribbons, not curved: within a single collinear block a curve only
-// bows what is a flat correspondence.
+// The window is a run of seven consecutive MCScan blocks, read out of the
+// .anchors.simple file itself: grape chr9 56,558-7,626,065 against peach Pp03
+// 2,204,428-6,833,100, five collinear and two inverted, in the same order on
+// both genomes. A window of ONE block — which this figure used to frame — makes
+// `.anchors.simple` a single ribbon spanning the entire band, i.e. a solid slab
+// with nothing to compare it against; seven blocks separated by gaps are seven
+// ribbons, which is what "one ribbon per block" means. Straight ribbons, not
+// curved: within a collinear block a curve only bows a flat correspondence.
 //
 // Neither panel carries a track: the subject is the ribbon band, so
 // collapseEmptyRows drops each row to its scalebar rather than a "No tracks
 // active" block.
 function mcscanFilePartSpecs(): ScreenshotSpec[] {
-  // `lane` puts a SECOND MCScan file in both panels as a feature lane, so a
-  // frame can hold both files at once. Not as a second ribbon set on the same
-  // level: measured, and the block ribbons paint straight over the gene ribbons
-  // in the same pink, so the band goes solid and neither file is readable.
-  const part = (
-    name: string,
-    trackId: string,
-    label: string,
-    lane?: string,
-  ) => ({
+  // The second frame draws BOTH files on the one synteny level, per review
+  // ("both tracks blended"). That reads only because the window holds several
+  // blocks: the view's 0.2 alpha makes each block a pale trapezoid, and the gene
+  // ribbons it was built from paint darker inside it, with the between-block
+  // gaps left empty by the .simple file but crossed by stray single anchors.
+  // Blocks first in the level so the gene threads land on top of them.
+  const part = (name: string, trackIds: string[], label: string) => ({
     mode: 'url' as const,
     name,
     url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
-          tracks: [[trackId]],
+          tracks: [trackIds],
           drawCurves: false,
           levelHeights: [260],
           collapseEmptyRows: true,
           views: [
             {
               assembly: 'grape',
-              loc: 'chr19:5,000,000-7,900,000',
-              tracks: lane
-                ? [{ trackId: lane, type: 'LGVSyntenyDisplay', height: 40 }]
-                : [],
+              loc: 'chr9:1-7,700,000',
+              tracks: [],
             },
             {
               assembly: 'peach',
-              loc: 'Pp04:12,300,000-15,100,000',
-              tracks: lane
-                ? [{ trackId: lane, type: 'LGVSyntenyDisplay', height: 40 }]
-                : [],
+              loc: 'Pp03:2,100,000-6,900,000',
+              tracks: [],
             },
           ],
         },
@@ -131,9 +124,8 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 8000,
-    // two collapsed scalebar rows around one 260px band, plus the anchors lane
-    // in each panel where the frame carries one
-    viewportHeight: lane ? 595 : 445,
+    // two collapsed scalebar rows around one 260px band
+    viewportHeight: 445,
     annotations: [
       { type: 'text' as const, x: 24, y: 56, fontSize: 22, text: label },
     ],
@@ -141,18 +133,13 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
   return [
     part(
       'mcscan_synteny/anchors',
-      'grape_peach_synteny_mcscan',
+      ['grape_peach_synteny_mcscan'],
       '.anchors: one ribbon per gene pair',
     ),
-    // Both files at once, per review ("show .anchors.simple and .anchors open at
-    // same time"). The block ribbons are the band; the gene anchors they were
-    // built from are the lane in each panel, so which gene pairs went into one
-    // block is IN this frame rather than carried across from the one above.
     part(
       'mcscan_synteny/anchors_simple',
-      'grape_peach_synteny_mcscan_simple',
-      '.anchors.simple: one ribbon per block',
-      'grape_peach_synteny_mcscan',
+      ['grape_peach_synteny_mcscan_simple', 'grape_peach_synteny_mcscan'],
+      '.anchors.simple blocks over the same gene pairs',
     ),
   ]
 }
