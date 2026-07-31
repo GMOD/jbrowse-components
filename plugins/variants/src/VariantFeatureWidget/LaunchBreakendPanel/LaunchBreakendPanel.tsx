@@ -1,6 +1,6 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ActionLink } from '@jbrowse/core/ui'
-import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import {
   getAssemblyName,
   hasBreakpointSplitView,
@@ -41,43 +41,33 @@ const LocStringList = observer(function LocStringList({
   ) : null
 })
 
+// One link, not one per endpoint: the split view is launched from the feature,
+// and launchBreakpointSplitView resolves the mate from it, so a multi-mate
+// record used to render N links that all did the same thing. The endpoints
+// themselves are enumerated by LocStringList above.
 const LaunchBreakpointSplitViewPanel = observer(
   function LaunchBreakpointSplitViewPanel({
-    locStrings,
     model,
     feature,
   }: {
-    locStrings: string[]
     model: VariantFeatureWidgetModel
     feature: SimpleFeatureSerialized
   }) {
-    const session = getSession(model)
-    const simpleFeature = new SimpleFeature(feature)
     const assemblyName = getAssemblyName(model.view)
     return assemblyName ? (
-      <div>
-        <Typography>Launch split view</Typography>
-        <ul>
-          {locStrings.map(locString => (
-            <li key={locString}>
-              {`${feature.refName}:${toLocale(feature.start + 1)} // ${locString}`}{' '}
-              <ActionLink
-                onClick={() => {
-                  launchBreakpointSplitView({
-                    session,
-                    view: model.view,
-                    assemblyName,
-                    feature: simpleFeature,
-                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
-                  })
-                }}
-              >
-                Open in breakpoint split view
-              </ActionLink>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ActionLink
+        onClick={() => {
+          launchBreakpointSplitView({
+            session: getSession(model),
+            view: model.view,
+            assemblyName,
+            feature: new SimpleFeature(feature),
+            stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
+          })
+        }}
+      >
+        Open breakpoints in split view
+      </ActionLink>
     ) : null
   },
 )
@@ -95,11 +85,7 @@ export default function LaunchBreakendPanel({
     <BaseCard title="Breakends">
       <LocStringList model={model} locStrings={locStrings} />
       {hasBreakpointSplitView(model) ? (
-        <LaunchBreakpointSplitViewPanel
-          model={model}
-          locStrings={locStrings}
-          feature={feature}
-        />
+        <LaunchBreakpointSplitViewPanel model={model} feature={feature} />
       ) : null}
     </BaseCard>
   )

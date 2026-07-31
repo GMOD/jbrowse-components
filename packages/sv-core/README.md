@@ -57,6 +57,22 @@ Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
+### getBreakendMateLocString
+
+The mate locString ("chr2:100") of a parsed breakend, or undefined when it names
+no navigable position. Two ALT forms reach here without one: a single breakend
+(`.A` / `G.`) has no mate at all, and the symbolic-mate forms (`G<DEL>`,
+`<DEL>G`) get a placeholder `<DEL>:1` from parseBreakend, which puts a symbolic
+allele id where a contig name belongs. Callers that navigate or split-view a
+mate must drop both rather than treat `<DEL>` as a refName.
+
+```js
+// type signature
+(breakend?: Breakend | undefined) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ### parseSvAlt
 
 Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.

@@ -8,9 +8,16 @@ import type { Variant } from '@gmod/vcf'
 // Coerce a VCF INFO value (which may be a string like '5', a number, '.', or
 // undefined) to a finite number, or undefined when it isn't numeric. VCF uses
 // '.' for missing values, which would otherwise coerce to NaN and leak into
-// feature coordinates / descriptions.
+// feature coordinates / descriptions. null and '' are excluded before the
+// coercion because Number() calls both 0 rather than NaN, and a missing entry is
+// absent, not zero: @gmod/vcf parses '.' to undefined, which a snapshot
+// round-trip (the feature widget's frozen prop, session storage) hands back as
+// null, and that read as an SVLEN of 0bp / a mate at position 0.
 export function parseFiniteNumber(value: unknown): number | undefined {
-  const n = Number(value)
+  const n =
+    value === null || value === undefined || value === ''
+      ? Number.NaN
+      : Number(value)
   return Number.isFinite(n) ? n : undefined
 }
 

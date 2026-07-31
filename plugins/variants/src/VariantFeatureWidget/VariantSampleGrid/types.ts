@@ -23,7 +23,3 @@ export interface VariantSampleGridRow {
 
 export type InfoFields = Record<string, unknown[]>
 export type Filters = Record<string, string>
-
-export interface VariantFieldDescriptions {
-  FORMAT?: Record<string, { Description?: string }>
-}

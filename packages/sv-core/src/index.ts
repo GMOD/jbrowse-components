@@ -7,6 +7,7 @@ export {
   getAssemblyName,
   getBreakendAssemblyRegions,
   getBreakendCoveringRegions,
+  getBreakendMateLocString,
   hasBreakpointSplitView,
   makeTitle,
   navToLoc,

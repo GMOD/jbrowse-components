@@ -1,4 +1,9 @@
-import { getBreakendCoveringRegions, splitRegionAtPosition } from './util.ts'
+import {
+  getBreakendCoveringRegions,
+  getBreakendMateLocString,
+  safeParseBreakend,
+  splitRegionAtPosition,
+} from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
@@ -90,6 +95,32 @@ describe('getBreakendCoveringRegions', () => {
     expect(result.refName).toBe('chr1')
     expect(result.mateRefName).toBe('chr1')
     expect(result.matePos).toBe(500)
+  })
+})
+
+describe('getBreakendMateLocString', () => {
+  const locStringOf = (alt: string) =>
+    getBreakendMateLocString(safeParseBreakend(alt))
+
+  test('bracket notation yields the mate locString', () => {
+    expect(locStringOf('N[chr2:201[')).toBe('chr2:201')
+    expect(locStringOf(']chr2:201]N')).toBe('chr2:201')
+  })
+
+  test('a single breakend has no mate', () => {
+    expect(locStringOf('.A')).toBeUndefined()
+    expect(locStringOf('G.')).toBeUndefined()
+  })
+
+  test('the symbolic-mate forms name no contig', () => {
+    // parseBreakend answers these with a '<DEL>:1' placeholder
+    expect(locStringOf('G<DEL>')).toBeUndefined()
+    expect(locStringOf('<DEL>G')).toBeUndefined()
+  })
+
+  test('a plain allele is not a breakend', () => {
+    expect(locStringOf('A')).toBeUndefined()
+    expect(locStringOf('<DEL>')).toBeUndefined()
   })
 })
 

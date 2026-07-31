@@ -16,13 +16,12 @@ export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
   clickedAlleles?: string
 }
 
-export interface Descriptions {
-  INFO?: {
-    ANN?: {
-      Description?: string
-    }
-    CSQ?: {
-      Description?: string
-    }
-  }
+// VCF header metadata (@gmod/vcf `getMetadata()`, fetched via CoreGetMetadata),
+// narrowed to what the widget reads: the per-field Description strings it uses
+// for the ANN/CSQ column lists and the sample-grid column tooltips.
+type FieldDescriptions = Record<string, { Description?: string } | undefined>
+
+export type Descriptions = {
+  INFO?: FieldDescriptions
+  FORMAT?: FieldDescriptions
 }

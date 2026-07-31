@@ -115,9 +115,9 @@ export function filterSampleRows(
   error: unknown
 } {
   try {
-    const compiledFilters = Object.keys(filter)
-      .filter(k => filter[k])
-      .map(k => ({ key: k, re: new RegExp(filter[k]!, 'i') }))
+    const compiledFilters = Object.entries(filter)
+      .filter(([, value]) => value)
+      .map(([key, value]) => ({ key, re: new RegExp(value, 'i') }))
     return {
       rows: compiledFilters.length
         ? rows.filter(row =>

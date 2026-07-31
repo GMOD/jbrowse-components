@@ -182,7 +182,6 @@ exports[`renders with just the required model elements 1`] = `
                 >
                   <div
                     class="css-c392m0"
-                    style="width: 62px;"
                   >
                     INFO.MQ
                   </div>

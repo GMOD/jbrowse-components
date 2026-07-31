@@ -8,7 +8,9 @@ import { render } from '@testing-library/react'
 import VariantFeatureDetails from './VariantFeatureWidget.tsx'
 import { stateModelFactory } from './stateModelFactory.ts'
 
-test('renders with just the required model elements', () => {
+import type { VCFFeatureSerialized } from './types.ts'
+
+function renderWidget(featureData: VCFFeatureSerialized) {
   const pluginManager = new PluginManager([])
   const Session = types.model({
     rpcManager: types.optional(types.frozen(), {}),
@@ -16,14 +18,19 @@ test('renders with just the required model elements', () => {
     widget: stateModelFactory(pluginManager),
   })
   const model = Session.create(
-    {
-      widget: {
-        type: 'VariantFeatureWidget',
-      },
-    },
+    { widget: { type: 'VariantFeatureWidget' } },
     { pluginManager },
   )
-  model.widget.setFeatureData({
+  model.widget.setFeatureData(featureData)
+  return render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <VariantFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+}
+
+test('renders with just the required model elements', () => {
+  const { container } = renderWidget({
     uniqueId: 'hello',
     refName: 'ctgA',
     start: 176,
@@ -33,34 +40,14 @@ test('renders with just the required model elements', () => {
     ALT: ['<TRA>'],
     QUAL: 10.4,
     INFO: {
-      MQ: 5,
+      MQ: [5],
     },
   })
-
-  const { container } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <VariantFeatureDetails model={model.widget} />
-    </ThemeProvider>,
-  )
   expect(container).toMatchSnapshot()
 })
 
 test('pairs each symbolic ALT with its own SVLEN', () => {
-  const pluginManager = new PluginManager([])
-  const Session = types.model({
-    rpcManager: types.optional(types.frozen(), {}),
-    configuration: ConfigurationSchema('test', {}),
-    widget: stateModelFactory(pluginManager),
-  })
-  const model = Session.create(
-    {
-      widget: {
-        type: 'VariantFeatureWidget',
-      },
-    },
-    { pluginManager },
-  )
-  model.widget.setFeatureData({
+  const { container } = renderWidget({
     uniqueId: 'hello',
     refName: 'ctgA',
     start: 176,
@@ -71,32 +58,31 @@ test('pairs each symbolic ALT with its own SVLEN', () => {
       SVLEN: [-100, 200],
     },
   })
-
-  const { container } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <VariantFeatureDetails model={model.widget} />
-    </ThemeProvider>,
-  )
   expect(container.textContent).toContain('<DEL> (100bp)')
   expect(container.textContent).toContain('<DUP> (200bp)')
 })
 
-test('shows the mate breakpoint, not a span, for a translocation', () => {
-  const pluginManager = new PluginManager([])
-  const Session = types.model({
-    rpcManager: types.optional(types.frozen(), {}),
-    configuration: ConfigurationSchema('test', {}),
-    widget: stateModelFactory(pluginManager),
-  })
-  const model = Session.create(
-    {
-      widget: {
-        type: 'VariantFeatureWidget',
-      },
+test('shows the span for an SVLEN the header did not declare Integer', () => {
+  // parseInfo only coerces to Number when the header gives Type=Integer/Float,
+  // so an undeclared SVLEN arrives as strings, and '.' as undefined
+  const { container } = renderWidget({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    REF: 'A',
+    ALT: ['<DEL>', '<DUP>'],
+    INFO: {
+      SVLEN: ['-100', undefined],
     },
-    { pluginManager },
-  )
-  model.widget.setFeatureData({
+  })
+  expect(container.textContent).toContain('<DEL> (100bp)')
+  expect(container.textContent).toContain('<DUP>')
+  expect(container.textContent).not.toContain('<DUP> (')
+})
+
+test('shows the mate breakpoint, not a span, for a translocation', () => {
+  const { container } = renderWidget({
     uniqueId: 'hello',
     refName: 'ctgA',
     start: 176,
@@ -109,12 +95,53 @@ test('shows the mate breakpoint, not a span, for a translocation', () => {
       SVLEN: [790000000],
     },
   })
-
-  const { container } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <VariantFeatureDetails model={model.widget} />
-    </ThemeProvider>,
-  )
   expect(container.textContent).toContain('<TRA> (ctgB:790,000,000)')
   expect(container.textContent).not.toContain('790Mbp')
+})
+
+test('lists each distinct breakend endpoint once, skipping mate-less ALTs', async () => {
+  const { findByText, container } = renderWidget({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    type: 'breakend',
+    REF: 'A',
+    // two ALTs pointing at the same mate, a mate-less single breakend, and a
+    // plain allele from the same multiallelic record
+    ALT: ['A[ctgB:100[', ']ctgB:100]A', '.A', 'AT'],
+  })
+  await findByText('ctgB:100')
+  expect(container.querySelectorAll('li')).toHaveLength(1)
+})
+
+test('a breakend in a multiallelic record still gets the breakend panel', async () => {
+  const { findByText } = renderWidget({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    // multiallelic records carry the comma-joined SO terms of every ALT
+    type: 'breakend,deletion',
+    REF: 'A',
+    ALT: ['A[ctgB:100[', '<DEL>'],
+  })
+  await findByText('ctgB:100')
+})
+
+test('a breakend whose ALTs name no mate offers no navigation', async () => {
+  const { container, findByText } = renderWidget({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    type: 'breakend',
+    REF: 'A',
+    // the symbolic-mate form: parseBreakend answers it with a '<DEL>:1'
+    // placeholder, which names no contig
+    ALT: ['A<DEL>'],
+  })
+  await findByText('ALT')
+  expect(container.textContent).not.toContain('Breakends')
+  expect(container.querySelectorAll('li')).toHaveLength(0)
 })

@@ -20,8 +20,8 @@ import {
   getSampleGridRows,
 } from './getSampleGridRows.ts'
 
-import type { VCFFeatureSerialized } from '../types.ts'
-import type { Filters, VariantFieldDescriptions } from './types.ts'
+import type { Descriptions, VCFFeatureSerialized } from '../types.ts'
+import type { Filters } from './types.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
 type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'
@@ -39,14 +39,13 @@ const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
 // every render when a field is absent.
 const EMPTY_SAMPLES = {}
 const EMPTY_ALT: string[] = []
-const EMPTY_DESCRIPTIONS: VariantFieldDescriptions = {}
 
 export default function VariantSampleGrid({
   feature,
-  descriptions = EMPTY_DESCRIPTIONS,
+  descriptions,
 }: {
   feature: VCFFeatureSerialized
-  descriptions?: VariantFieldDescriptions | null
+  descriptions?: Descriptions
 }) {
   const [filter, setFilter] = useState<Filters>({})
   const [storedColumnDisplayMode, setColumnDisplayMode] =

@@ -2,6 +2,7 @@ import { parseBreakend } from '@gmod/vcf'
 import { getEnv, getSession } from '@jbrowse/core/util'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Breakend } from '@gmod/vcf'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -33,6 +34,22 @@ export function safeParseBreakend(alt: string) {
 
 /**
  * #api
+ * The mate locString ("chr2:100") of a parsed breakend, or undefined when it
+ * names no navigable position. Two ALT forms reach here without one: a single
+ * breakend (`.A` / `G.`) has no mate at all, and the symbolic-mate forms
+ * (`G<DEL>`, `<DEL>G`) get a placeholder `<DEL>:1` from parseBreakend, which
+ * puts a symbolic allele id where a contig name belongs. Callers that navigate
+ * or split-view a mate must drop both rather than treat `<DEL>` as a refName.
+ */
+export function getBreakendMateLocString(breakend?: Breakend) {
+  const matePosition = breakend?.MatePosition
+  return matePosition === undefined || matePosition.startsWith('<')
+    ? undefined
+    : matePosition
+}
+
+/**
+ * #api
  * Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
  * Returns undefined when no mate coordinate info is found.
  */
@@ -48,6 +65,7 @@ export function parseSvAlt(
     }
   | undefined {
   const bnd = alt !== undefined ? safeParseBreakend(alt) : undefined
+  const mateLocString = getBreakendMateLocString(bnd)
   const refName = feature.get('refName')
 
   if (alt !== undefined && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
@@ -62,8 +80,8 @@ export function parseSvAlt(
       mateRefName: (info?.CHR2?.[0] as string | undefined) ?? refName,
       matePos,
     }
-  } else if (bnd?.MatePosition !== undefined) {
-    const [mateRefName, matePosStr] = bnd.MatePosition.split(':')
+  } else if (bnd !== undefined && mateLocString !== undefined) {
+    const [mateRefName, matePosStr] = mateLocString.split(':')
     if (
       mateRefName === undefined ||
       mateRefName === '' ||

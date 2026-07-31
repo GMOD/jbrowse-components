@@ -3,11 +3,12 @@ import { Suspense, lazy } from 'react'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
-import { safeParseBreakend } from '@jbrowse/sv-core'
+import { assembleLocString, notEmpty } from '@jbrowse/core/util'
+import { getBreakendMateLocString, safeParseBreakend } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getTraMate } from '../VcfFeature/util.ts'
+import { getTraMate, parseFiniteNumber } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { isSvLaunchType } from './svLaunchType.ts'
@@ -49,10 +50,13 @@ function AnnotationPanel({
       ?.match(regex)?.[1]
       ?.split('|')
       .map(f => f.trim()) ?? []
-  const data = feature.INFO?.[fieldKey] ?? []
-  return (
+  const data = feature.INFO?.[fieldKey]
+  // gate here rather than inside the grid: most variants carry neither field,
+  // and mounting the lazy grid just to have it render null still fetches its
+  // chunk on every feature click
+  return data?.length ? (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
-  )
+  ) : null
 }
 
 function LaunchBreakendWidgetArea({
@@ -64,21 +68,26 @@ function LaunchBreakendWidgetArea({
 }) {
   const { type = '', ALT = [], INFO, mate } = feat
   const traMate = getTraMate(INFO)
+  // a multiallelic record carries the comma-joined SO terms of all its ALTs
+  // (e.g. 'breakend,deletion'), so match the type as a substring. ALTs with no
+  // navigable mate are dropped: they have no endpoint to open, and listing them
+  // produced rows whose link navigated to '' or to a '<DEL>:1' placeholder.
+  const locStrings = type.includes('breakend')
+    ? [
+        ...new Set(
+          ALT.map(alt =>
+            getBreakendMateLocString(safeParseBreakend(alt)),
+          ).filter(notEmpty),
+        ),
+      ]
+    : type.includes('translocation') && traMate !== undefined
+      ? [traMate]
+      : type.includes('paired_feature') && mate
+        ? [assembleLocString(mate)]
+        : []
 
-  return type === 'breakend' ? (
-    <LaunchBreakendPanel
-      feature={feat}
-      locStrings={ALT.map(alt => safeParseBreakend(alt)?.MatePosition ?? '')}
-      model={model}
-    />
-  ) : type === 'translocation' && traMate !== undefined ? (
-    <LaunchBreakendPanel feature={feat} model={model} locStrings={[traMate]} />
-  ) : type === 'paired_feature' && mate ? (
-    <LaunchBreakendPanel
-      feature={feat}
-      model={model}
-      locStrings={[`${mate.refName}:${mate.start}`]}
-    />
+  return locStrings.length ? (
+    <LaunchBreakendPanel feature={feat} model={model} locStrings={locStrings} />
   ) : isSvLaunchType(type) ? (
     <LaunchSvPanel feature={feat} model={model} />
   ) : null
@@ -91,7 +100,9 @@ const FeatDefined = observer(function FeatDefined({
   feat: VCFFeatureSerialized
   model: VariantFeatureWidgetModel
 }) {
-  const { descriptions } = model
+  // annotated to shed the MST node brand types.frozen() carries on the
+  // instance, which a spread would otherwise copy into the descriptions object
+  const descriptions: Descriptions | undefined = model.descriptions
   const {
     samples,
     genotypes,
@@ -101,11 +112,10 @@ const FeatDefined = observer(function FeatDefined({
     ...rest
   } = feat
   const { REF = '', INFO } = rest
-  const svlenInfo = INFO?.SVLEN
-  const svlen =
-    Array.isArray(svlenInfo) && svlenInfo.every(v => typeof v === 'number')
-      ? svlenInfo
-      : undefined
+  // SVLEN arrives as strings when the header doesn't declare it Integer, and
+  // can carry '.' for a missing entry, so coerce per ALT index rather than
+  // requiring the whole array to be numeric (which dropped the span entirely)
+  const svlens = Array.isArray(INFO?.SVLEN) ? INFO.SVLEN : []
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -121,7 +131,11 @@ const FeatDefined = observer(function FeatDefined({
             <AltFormatter
               value={`${value}`}
               refString={REF}
-              svlen={index === undefined ? undefined : svlen?.[index]}
+              svlen={
+                index === undefined
+                  ? undefined
+                  : parseFiniteNumber(svlens[index])
+              }
               mate={getTraMate(INFO)}
             />
           ) : (

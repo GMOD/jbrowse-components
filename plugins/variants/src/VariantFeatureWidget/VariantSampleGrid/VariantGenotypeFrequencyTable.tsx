@@ -1,4 +1,4 @@
-import { measureGridWidth } from '@jbrowse/core/util'
+import { measureGridWidth, resolveSelectedIds } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
 
 import type { FrequencyTable, VariantSampleGridRow } from './types.ts'
@@ -53,23 +53,17 @@ export default function VariantGenotypeFrequencyTable({
         checkboxSelection
         rowSelectionModel={rowSelectionModel}
         onRowSelectionModelChange={newSelection => {
-          if (newSelection.type === 'exclude' && newSelection.ids.size === 0) {
-            setSelectedGenotypes(null)
-          } else if (newSelection.type === 'include') {
-            setSelectedGenotypes(
-              new Set(
-                gridRows.filter(r => newSelection.ids.has(r.id)).map(r => r.GT),
-              ),
-            )
-          } else {
-            setSelectedGenotypes(
-              new Set(
-                gridRows
-                  .filter(r => !newSelection.ids.has(r.id))
-                  .map(r => r.GT),
-              ),
-            )
-          }
+          const ids = resolveSelectedIds(
+            newSelection,
+            gridRows.map(r => r.id),
+          )
+          // every genotype selected is the same view as none selected, so
+          // collapse it to "no filter" instead of a count of n of n
+          setSelectedGenotypes(
+            ids.size === gridRows.length
+              ? null
+              : new Set(gridRows.filter(r => ids.has(r.id)).map(r => r.GT)),
+          )
         }}
         columns={[
           { field: 'GT', width: measureGridWidth(gridRows.map(r => r.GT)) },

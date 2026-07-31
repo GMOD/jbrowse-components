@@ -1,6 +1,7 @@
 import { stateModelFactory as baseModelFactory } from '@jbrowse/core/BaseFeatureWidget'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Descriptions } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -22,7 +23,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      descriptions: types.frozen(),
+      descriptions: types.frozen<Descriptions | undefined>(),
     }),
   )
 }
