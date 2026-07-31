@@ -78,3 +78,6 @@ products/jbrowse-react-linear-genome-view/examples-site/panukbPhenotypes.json
 perf-out/
 test_data/graphgenomeview/_localdist/
 test_data/graphgenomeview/*_local.json
+products/jbrowse-web/browser-tests/ultradeep-trace.json
+scripts/build_dog10k_cyp1a2_cn.sh
+test_data/dog10k/dog10k_fgf4_cohort_samples.tsv
