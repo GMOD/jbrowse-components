@@ -172,7 +172,9 @@ async function runAutoDiagonalize(
     const { runDotplotDiagonalize } =
       await import('./util/runDotplotDiagonalize.ts')
     await waitForInit(self, () => self.initialized, superseded)
-    if (self.initialized && isAlive(self) && !superseded()) {
+    // superseded first: it subsumes the isAlive check, and reading `initialized`
+    // on a detached node throws
+    if (!superseded() && self.initialized) {
       await runDotplotDiagonalize(self, opts)
       // only now is the plot truly diagonalized — release the `settled` gate.
       // if runDotplotDiagonalize threw, withDiagonalizeProgress catches it and

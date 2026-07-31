@@ -195,6 +195,18 @@ reports itself (an assembly failure lands in `error` and the import form's
 banner; a supersede is the next init taking over), so the caller re-checks its
 own precondition and skips quietly rather than notifying.
 
+**One timer survives, and it is not an oversight.** LGV's `openTracklist` waits
+1s for the width change that opening the drawer causes. The rule that condemns
+the others acquits this one: they waited on state that either arrives or turns
+into an error, both observable, whereas this waits on an *event whose absence is
+a normal steady state* — embedded and modal-drawer layouts don't shrink the
+view, so no change is ever coming and nothing says so. "Never" and "not yet" are
+indistinguishable without a clock, so the clock is the only available bound. It
+uses MobX's `when(..., { timeout })`, which disposes its own timer; the hand-
+rolled `Promise.race([when(cond), setTimeout])` shape does not — the losing timer
+outlives the race. Before adding a ceiling, check which of the two kinds of wait
+you have.
+
 `apply` therefore never clears `init` and never catches for reporting — it
 catches only the failures it wants to keep going through (a bad locstring in one
 row), and everything it lets escape is fatal-as-of-that-point. Per view:
