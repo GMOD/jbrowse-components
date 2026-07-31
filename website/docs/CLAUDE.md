@@ -7,19 +7,19 @@ the source instead.
 
 ## Auto-generated — do not hand-edit
 
-| Path(s)                                                           | Regenerate with              | Source of truth                                                                                                                              |
-| ----------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config/*.md` (config schema API)                                 | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`website/scripts/api-docs/generateConfigDocs.ts`)                                            |
-| `models/*.md` (state model API)                                   | `pnpm autogen` (repo root)   | MST model definitions in source (`website/scripts/api-docs/generateStateModelDocs.ts`)                                                       |
-| `api/*.md` (plugin-export API)                                    | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`website/scripts/api-docs/generateApiDocs.ts`)                                                          |
-| color swatch tables between `<!-- COLOR_TABLE … -->`              | `pnpm autogen` (repo root)   | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`website/scripts/api-docs/generateColorDocs.ts`)                         |
-| file-type tables between `<!-- FILE_TYPES … -->`                  | `pnpm autogen` (repo root)   | `#fileFormat`-tagged adapter configSchemas (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                              |
-| the track/display table between `<!-- DISPLAY_TYPES … -->`        | `pnpm autogen` (repo root)   | `new DisplayType({name, trackType})` registrations (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                      |
-| gotcha callouts between `<!-- GOTCHA … -->`                       | `pnpm autogen` (repo root)   | `#gotcha`-tagged `#config` blocks in source (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                             |
-| the pinnable-settings table between `<!-- PROMOTABLE_SLOTS … -->` | `pnpm autogen` (repo root)   | `promotable: true` config slots, per registered display type (`writePromotableSlotDocs` in `website/scripts/api-docs/generateConfigDocs.ts`) |
-| `user_guide.md`, `config_guide.md`, `developer_guide.md`          | `pnpm autogen` (repo root)   | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                                          |
-| `jbrowse-img.md` (@jbrowse/img static-export tool)                | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                                                                     |
-| `cli.md` (@jbrowse/cli command reference)                         | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                                                                     |
+| Path(s)                                                           | Regenerate with            | Source of truth                                                                                                                              |
+| ----------------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config/*.md` (config schema API)                                 | `pnpm autogen` (repo root) | `configSchema` blocks in plugin/package source (`website/scripts/api-docs/generateConfigDocs.ts`)                                            |
+| `models/*.md` (state model API)                                   | `pnpm autogen` (repo root) | MST model definitions in source (`website/scripts/api-docs/generateStateModelDocs.ts`)                                                       |
+| `api/*.md` (plugin-export API)                                    | `pnpm autogen` (repo root) | `#api <group>` JSDoc tags in source (`website/scripts/api-docs/generateApiDocs.ts`)                                                          |
+| color swatch tables between `<!-- COLOR_TABLE … -->`              | `pnpm autogen` (repo root) | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`website/scripts/api-docs/generateColorDocs.ts`)                         |
+| file-type tables between `<!-- FILE_TYPES … -->`                  | `pnpm autogen` (repo root) | `#fileFormat`-tagged adapter configSchemas (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                              |
+| the track/display table between `<!-- DISPLAY_TYPES … -->`        | `pnpm autogen` (repo root) | `new DisplayType({name, trackType})` registrations (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                      |
+| gotcha callouts between `<!-- GOTCHA … -->`                       | `pnpm autogen` (repo root) | `#gotcha`-tagged `#config` blocks in source (`website/scripts/api-docs/generateFileTypeDocs.ts`)                                             |
+| the pinnable-settings table between `<!-- PROMOTABLE_SLOTS … -->` | `pnpm autogen` (repo root) | `promotable: true` config slots, per registered display type (`writePromotableSlotDocs` in `website/scripts/api-docs/generateConfigDocs.ts`) |
+| `user_guide.md`, `config_guide.md`, `developer_guide.md`          | `pnpm autogen` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                                                                          |
+| `jbrowse-img.md` (@jbrowse/img static-export tool)                | `pnpm autogen` (repo root) | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                                                                     |
+| `cli.md` (@jbrowse/cli command reference)                         | `pnpm autogen` (repo root) | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                                                                     |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen`, which drives every generator listed in `scripts/autogen.ts`.

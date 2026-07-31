@@ -1,8 +1,8 @@
 import { parseBreakend } from '@gmod/vcf'
 import { getEnv, getSession } from '@jbrowse/core/util'
 
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Breakend } from '@gmod/vcf'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

@@ -96,8 +96,8 @@ hover lookup (resolve `sampleName` via `sourceMap` first), and
 `anchoredHaplotypeSort.ts`.
 
 That map is a **genotype record, not a log of what got painted** — record every
-genotype the sources cover, whether or not the loop emitted a cell for it. It
-is what `sortByGenotype` reads (through the interned `genotypeCodes`), and under
+genotype the sources cover, whether or not the loop emitted a cell for it. It is
+what `sortByGenotype` reads (through the interned `genotypeCodes`), and under
 the default `referenceDrawingMode: 'skip'` a hom-ref call paints nothing: keying
 it off the drawn cells made every hom-ref row decode as code 0, i.e. `MISSING`
 to `sortSourcesAroundVariant`, so the same data sorted differently in the

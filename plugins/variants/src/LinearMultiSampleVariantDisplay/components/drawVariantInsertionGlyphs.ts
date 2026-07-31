@@ -136,7 +136,10 @@ export function drawVariantInsertionGlyphs(
                 inserted,
                 pxPerBp,
               )
-              if (getInsertionType(inserted, pxPerBp) === 'large' && labelFits) {
+              if (
+                getInsertionType(inserted, pxPerBp) === 'large' &&
+                labelFits
+              ) {
                 ctx.fillStyle = 'white'
                 ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
                 ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
