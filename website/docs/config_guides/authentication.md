@@ -66,9 +66,9 @@ In rough order of simplicity:
 
 - No server at all. [JBrowse Desktop](/docs/quickstart_desktop) reads files off
   your own machine, so nothing is published in the first place.
-- Expiring links. S3 presigned URLs or CloudFront signed cookies are simple to
-  set up, but a link stops working when its signature expires, taking any saved
-  session or share link with it.
+- Expiring links. [S3 presigned URLs](#private-files-in-s3) or CloudFront signed
+  cookies are simple to set up, but a link stops working when its signature
+  expires, taking any saved session or share link with it.
 - `internetAccounts` (the rest of this page), for data you do not control:
   Dropbox, Google Drive, an OAuth-protected API, a portal that issues tokens.
   JBrowse prompts for the credential and attaches it to requests for the domains
@@ -251,6 +251,121 @@ keyed by the account's `internetAccountId`. It is not written into a saved or
 shared session, so sharing a session with a colleague shares the view, not your
 credentials. They are prompted for their own. Closing the tab discards the
 token.
+
+## Private files in S3
+
+An object in a private bucket has no credential JBrowse can be told to send in a
+header, so none of the account types above reach it. Two approaches do.
+
+### Presigned URLs
+
+`aws s3 presign` turns a private object into a URL that carries its own
+signature in the query string. It needs no `internetAccounts` entry and no
+plugin, because what JBrowse fetches is an ordinary URL. Sign the data file and
+its index separately, since each is its own object:
+
+```bash
+aws s3 presign s3://mybucket/sample.bam --expires-in 604800
+aws s3 presign s3://mybucket/sample.bam.bai --expires-in 604800
+```
+
+Both signed URLs then go in the track, spelled out rather than using the
+[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand):
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "private_sample",
+  "name": "Sample from a private bucket",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": {
+      "uri": "https://mybucket.s3.amazonaws.com/sample.bam?X-Amz-Algorithm=..."
+    },
+    "index": {
+      "location": {
+        "uri": "https://mybucket.s3.amazonaws.com/sample.bam.bai?X-Amz-Algorithm=..."
+      }
+    }
+  }
+}
+```
+
+Range requests work, because `Range` is not one of the headers a presigned URL
+signs, so S3 answers them as usual. Three things to know before relying on this:
+
+- **Name the index yourself.** The `uri` shorthand derives a missing index URL
+  by appending `.bai`, which on a signed URL lands after the signature
+  parameters and produces a URL the bucket rejects.
+- **Choose the file type yourself.** Type detection matches the end of the URL,
+  and a signed URL ends in signature parameters rather than in `.bam`, so the
+  Add track form guesses nothing. Pick the type in the form, or write the
+  adapter `type` as above.
+- **The link expires.** Seven days is the maximum, and a URL signed with
+  temporary credentials expires with the session that signed it, which is much
+  sooner. Any saved session or share link holding one stops working at that
+  point.
+
+### An internet account that signs at fetch time
+
+A signed URL written into a config expires there, so the way to get access that
+lasts is to keep the **permanent unsigned URL** in the config and derive the
+signature per request. That is an internet account, and it refreshes on the same
+mechanics OAuth uses: `getFetcher` obtains the credential through
+`getValidatedToken`, `validateToken` is where an expiring credential is renewed,
+and `removeToken` drops the cached one so the next request re-derives it. No
+built-in account type covers S3, so this is a plugin. It has two shapes.
+
+**Sign in the browser.** A state model extending `BaseInternetAccountModel`
+overrides `getFetcher` and computes a SigV4 signature there, over the URL, the
+method, and the `range` header its caller passed in. Each range request is a
+different string to sign, so the signature is per request and can never be
+obtained once and cached. What is cached is the credential, and it must be a
+**temporary** one from a Cognito identity pool or from
+`AssumeRoleWithWebIdentity`: a static app has nowhere to keep a long-lived
+access key, and config.json is public. `validateToken` checks how much life the
+credentials have left and trades them for a fresh set before they lapse.
+
+**Presign on your own backend.** Where you would rather no AWS credential
+reached the browser at all, `getFetcher` asks your backend to sign the URL it
+was handed, then fetches the URL that comes back with the caller's `init`
+untouched. The credential JBrowse holds is your app's own session token, which
+is what authorizes the presign call. Signed URLs can be short-lived here, a few
+minutes, because nothing persists them. Cache them per object with their expiry
+rather than presigning every 256 KB chunk, and swap the URL **inside** the
+fetcher rather than rewriting the location: the range cache keys on the URL the
+filehandle was constructed with, so a stable unsigned URL keeps the cache intact
+while a rotating signed one would fragment it. `GoogleDriveOAuthModel` is the
+in-tree precedent for rewriting the URL per request this way.
+
+Either shape works in the RPC workers with no extra plumbing, because the
+credential travels there over the existing pre-authorization path as an opaque
+token. Both should also treat a `403` as a possibly-stale signature and retry
+once after refreshing, since a credential can lapse between two chunk fetches of
+a file already open on screen.
+
+Bucket CORS then has to allow the headers the signature covers (`Authorization`,
+`Range`, `x-amz-date`, `x-amz-content-sha256`) and expose `Content-Range`.
+Without that last one JBrowse cannot determine the object's size, and the track
+fails with an error saying so.
+
+CloudFront signed cookies are the one route that needs no JBrowse code and
+refreshes without it, since your app renews the cookie and the browser attaches
+it. It only applies when the data is served from the same origin as the app,
+though, because JBrowse's data requests do not opt into sending credentials
+cross-origin.
+
+### Resolving the URL outside JBrowse
+
+An [embedded component](/docs/embedded_components) can skip both routes. The
+host app asks whatever backend it already runs for a signed URL pair, then
+builds the track config from the result. Access control stays where the app
+already enforces it, JBrowse fetches a plain URL, and no credential is involved
+on the JBrowse side at all. Mint the URLs each time the page loads rather than
+persisting them into a saved session, and sign them for longer than a viewing
+session is likely to last: a URL resolved before the component mounts cannot
+renew itself afterwards, which is the reason for the fetch-time account above.
 
 ## CORS
 
