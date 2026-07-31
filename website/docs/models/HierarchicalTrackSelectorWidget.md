@@ -17,6 +17,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('HierarchicalTrackSelectorWidget')</code> |  |
 | <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
+| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>trackContainerId: types.maybe(types.string)</code> | Which of the view's track containers this selector writes into, by id. Absent — the usual case — means the view itself. A view owning several track lists (the synteny view, one per level band) names one here; the container is resolved through `view.trackContainerFor` rather than referenced directly, because it isn't a view and so isn't a legal target for the `view` reference above. |
 
 ## Volatiles
 
@@ -38,6 +39,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-trackcontainer">**trackContainer**</span><br><code>TrackContainer &#124; undefined</code> | The track list this selector shows and writes into: the view itself, or one of its containers when `trackContainerId` names one. |
 | <span id="getter-showntrackids">**shownTrackIds**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-selectionset">**selectionSet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>Set&lt;ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>Set&lt;ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;&gt;</code></pre></dialog></span> |  |
 | <span id="getter-favoritesset">**favoritesSet**</span><br><code>Set&lt;string&gt;</code> |  |
@@ -94,6 +96,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | <span id="action-addtorecentlyused">**addToRecentlyUsed**</span><br><code>(id: string) =&gt; void</code> |  |
 | <span id="action-clearrecentlyused">**clearRecentlyUsed**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setview">**setView**</span><br><code>(view: unknown) =&gt; void</code> |  |
+| <span id="action-settrackcontainerid">**setTrackContainerId**</span><br><code>(id: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setcategorymode">**setCategoryMode**</span><br><code>(id: string, mode: CategoryMode &#124; undefined) =&gt; void</code> |  |
 | <span id="action-clearcategorymodes">**clearCategoryModes**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearfiltertext">**clearFilterText**</span><br><code>() =&gt; void</code> |  |

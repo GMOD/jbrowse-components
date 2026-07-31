@@ -45,11 +45,14 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  |
 | <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>string</code> |  |
+| <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height. Each display overrides this from its own rendering-type table (`density` / `multirowdensity`); the base is false so this mixin's resolved getters below can key on it, the same override idiom `autoscaleSourceNames` uses in WiggleCommonMixin. |
 | <span id="getter-minscore">**minScore**</span><br><code>number</code> |  |
 | <span id="getter-maxscore">**maxScore**</span><br><code>number</code> |  |
 | <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> |  |
 | <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> |  |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> |  |
+| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so there is no axis for them to rule — and the track menu drops the toggle there, which would strand hatches enabled in another plot type with no way to turn them off. Every consumer (on-screen overlay, multi-row overlay lines, SVG export) reads this, never the raw `displayCrossHatches` prop. |
+| <span id="getter-effectivesummaryscoremode">**effectiveSummaryScoreMode**</span><br><code>string</code> | The summary mode actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this. |
 
 ## Methods
 
