@@ -27,12 +27,15 @@ export interface BaseMenuItem {
   /** tooltip shown when the item is disabled, in place of helpText */
   disabledHelpText?: string
   /**
-   * Keep the menu open after this row is clicked, instead of dismissing it.
-   * Opt-in per item (the menu still closes on every other row) so settings
-   * toggles — radios/checkboxes the user may flip several of in one session —
-   * stay put, while terminal actions (dialogs, exports, navigation) close as
-   * usual. The menu content is an observer, so the open menu updates its
-   * checked marks live.
+   * Override whether the menu stays open after this row is clicked. Leave it
+   * unset and the row TYPE decides: a `checkbox`/`radio` is a setting, so the
+   * menu stays put (users flip several in one visit, and the menu content is an
+   * observer, so its checked marks update live), while every other row is an
+   * action and dismisses.
+   *
+   * Set `false` on a checkbox/radio whose click is really terminal — it opens a
+   * dialog ("Custom...", "Solid color...") or swaps the display out from under
+   * the menu. Set `true` on a non-checkbox row that should survive its click.
    */
   keepMenuOpen?: boolean
   /**
@@ -90,5 +93,20 @@ export type MenuItem =
   | RadioMenuItem
   | SubMenuItem
   | CustomMenuItem
+
+/**
+ * Whether clicking a row leaves the menu up — the rule `CascadingMenu` applies,
+ * exported so a display's menu-shape test asserts the behavior a user gets
+ * rather than re-deriving it from the flag (each test that spelled out
+ * `keepMenuOpen === true` had to be revisited when the default moved here).
+ *
+ * Defaulted by row TYPE: a checkbox/radio is a setting and stays put, every
+ * other row is an action and dismisses. `keepMenuOpen` overrides either way.
+ */
+export function staysOpenOnClick(item: ClickableMenuItem) {
+  return (
+    item.keepMenuOpen ?? (item.type === 'checkbox' || item.type === 'radio')
+  )
+}
 
 export type MenuItemsGetter = MenuItem[] | (() => MenuItem[])

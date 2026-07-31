@@ -110,11 +110,12 @@ function rowHeightMenuItems(self: MultiRowMenuSelf): MenuItem[] {
       }
     }),
     // written out rather than going through radioItems because a dialog opener
-    // dismisses the menu instead of keeping it open
+    // opts out of the checkbox/radio default and dismisses the menu
     {
       label: 'Custom...',
       type: 'radio',
       checked: preset === undefined,
+      keepMenuOpen: false,
       onClick: () => {
         getSession(self).queueDialog(handleClose => [
           SetRowHeightDialog,

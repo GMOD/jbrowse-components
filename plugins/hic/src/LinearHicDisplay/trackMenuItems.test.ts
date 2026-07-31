@@ -1,3 +1,5 @@
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { DEFAULT_HIC_COLOR_SCHEME } from './components/colorRamp.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
@@ -68,7 +70,7 @@ describe('hic track menu shape', () => {
     // 5 visibility checkboxes + 3 schemes + 3 normalizations, so the assertion
     // below can't pass by finding no rows at all
     expect(rows.length).toBe(11)
-    expect(rows.map(i => [labelOf(i), i.keepMenuOpen])).toEqual(
+    expect(rows.map(i => [labelOf(i), staysOpenOnClick(i)])).toEqual(
       rows.map(i => [labelOf(i), true]),
     )
   })

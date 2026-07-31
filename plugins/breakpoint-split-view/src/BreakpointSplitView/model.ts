@@ -655,6 +655,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Show header',
                 type: 'checkbox',
                 checked: self.showHeader,
+                // opts out of the checkbox "stay open" default: this menu is
+                // rendered by a button in the very header the row hides, so
+                // staying open would leave it anchored to a removed node
+                keepMenuOpen: false,
                 onClick: () => {
                   self.setShowHeader(!self.showHeader)
                 },

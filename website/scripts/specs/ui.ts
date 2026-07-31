@@ -641,6 +641,13 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Show...' },
       { type: 'waitForText', text: 'Show curved lines' },
       { type: 'click', text: 'Show curved lines' },
+      // a checkbox row leaves the menu up (CascadingMenu keeps settings rows
+      // open), so dismiss both levels before the capture — the hidden waits
+      // fail the spec rather than baking an open menu into the figure
+      { type: 'press', key: 'Escape' },
+      { type: 'press', key: 'Escape' },
+      { type: 'waitForText', text: 'Show curved lines', hidden: true },
+      { type: 'waitForText', text: 'Show...', hidden: true },
       { type: 'delay', ms: 2000 },
     ],
   },

@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '../util/tss-react/index.ts'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
+import { staysOpenOnClick } from './MenuTypes.ts'
 
 import type {
   BaseMenuItem,
@@ -274,7 +275,7 @@ function CascadingMenuItem({
           // model state that closing clears (e.g. a right-click menu's ephemeral
           // hit/context fields): capture that state when the menu items are
           // built, not live inside onClick.
-          if (closeAfterItemClick && !item.keepMenuOpen) {
+          if (closeAfterItemClick && !staysOpenOnClick(item)) {
             onCloseRoot()
           }
           onMenuItemClick(item.onClick)

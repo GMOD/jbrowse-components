@@ -158,6 +158,10 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       label: 'Solid color...',
       type: 'radio' as const,
       checked: self.colorByMode === 'solid',
+      // opts out of the checkbox/radio default: this opens a dialog, so it
+      // dismisses like any other action (same split as the multi-row "Row
+      // height" group, whose "Custom..." peer does too)
+      keepMenuOpen: false,
       onClick: () => {
         self.openSetColorDialog()
       },
@@ -166,10 +170,6 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       label: 'Strand',
       type: 'radio' as const,
       checked: self.colorByMode === 'strand',
-      // the one row here that only writes a setting, so it stays put like every
-      // other setting radio in this menu; its two siblings open a dialog and so
-      // dismiss (same split as the multi-row "Row height" group)
-      keepMenuOpen: true,
       onClick: () => {
         self.setFeatureColor(STRAND_COLOR_JEXL)
       },
@@ -178,6 +178,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       label: 'Attribute...',
       type: 'radio' as const,
       checked: self.colorByMode === 'attribute',
+      keepMenuOpen: false,
       onClick: () => {
         self.openColorByAttributeDialog()
       },

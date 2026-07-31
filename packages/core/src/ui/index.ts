@@ -71,7 +71,7 @@ export { default as MonospaceTextField } from './MonospaceTextField.tsx'
 export { default as ShareLinkField } from './ShareLinkField.tsx'
 export { default as SingleSlider } from './SingleSlider.tsx'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
-export { makeSizeMenu } from './makeSizeMenu.tsx'
+export { makePromotableSizeMenu, makeSizeMenu } from './makeSizeMenu.tsx'
 export {
   INLINE_MENU_ROW_WIDTH,
   ResetToDefaultButton,
@@ -123,6 +123,7 @@ export type {
   RadioMenuItem,
   SubMenuItem,
 } from './MenuTypes.ts'
+export { staysOpenOnClick } from './MenuTypes.ts'
 export { pushLaunchViewMenuItem } from './launchViewMenu.ts'
 export { launchTargetsMenuItem } from './launchTargetsMenuItem.ts'
 export { default as Crosshairs } from './Crosshairs.tsx'

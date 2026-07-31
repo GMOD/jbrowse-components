@@ -133,6 +133,10 @@ export function workspacesMenuItem(
     type: 'checkbox',
     checked: session?.effectiveUseWorkspaces ?? false,
     helpText: WORKSPACES_HELP_TEXT,
+    // opts out of the checkbox "stay open" default: this re-lays out the whole
+    // app (classic stack <-> dockview), so it's a one-shot mode switch rather
+    // than a setting to flip repeatedly with the menu up
+    keepMenuOpen: false,
     onClick: () => {
       session?.setUseWorkspacesPreference(!session.effectiveUseWorkspaces)
     },

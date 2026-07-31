@@ -82,6 +82,7 @@ export function getFeatureHeightMenuItem(
         label: 'Custom...',
         type: 'radio' as const,
         checked: sizeActive && !PRESETS.some(matchesPreset),
+        keepMenuOpen: false,
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             SetFeatureHeightDialog,

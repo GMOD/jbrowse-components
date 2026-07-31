@@ -16,18 +16,68 @@ function renderMenu(menuItems: MenuItem[]) {
   const onMenuItemClick = jest.fn((cb: () => void) => {
     cb()
   })
+  const onClose = jest.fn()
   const utils = render(
     <ThemeProvider theme={theme}>
       <CascadingMenu
         open
         menuItems={menuItems}
         onMenuItemClick={onMenuItemClick}
-        onClose={() => {}}
+        onClose={onClose}
       />
     </ThemeProvider>,
   )
-  return { ...utils, onMenuItemClick }
+  return { ...utils, onMenuItemClick, onClose }
 }
+
+// Whether a click dismisses the menu is decided by the row TYPE, so a
+// hand-written literal behaves like one built by `checkboxItem` — most of the
+// repo's checkbox/radio literals never set the old opt-in flag, and each one
+// shut the menu on every toggle.
+describe('CascadingMenu dismissal', () => {
+  it.each([
+    ['checkbox' as const, false],
+    ['radio' as const, false],
+  ])('keeps the menu open for a bare %s literal', (type, checked) => {
+    const { getByText, onClose } = renderMenu([
+      { type, label: 'Alpha', checked, onClick: () => {} },
+    ])
+    fireEvent.click(getByText('Alpha'))
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('dismisses for a plain action row', () => {
+    const { getByText, onClose } = renderMenu([
+      { label: 'Export...', onClick: () => {} },
+    ])
+    fireEvent.click(getByText('Export...'))
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  // The override that matters: a radio whose click opens a dialog, or swaps the
+  // display the rest of the menu was built from, still has to dismiss.
+  it('dismisses a checkbox/radio that opts out', () => {
+    const { getByText, onClose } = renderMenu([
+      {
+        type: 'radio',
+        label: 'Custom...',
+        checked: false,
+        keepMenuOpen: false,
+        onClick: () => {},
+      },
+    ])
+    fireEvent.click(getByText('Custom...'))
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('keeps an action row open when it opts in', () => {
+    const { getByText, onClose } = renderMenu([
+      { label: 'Bump', keepMenuOpen: true, onClick: () => {} },
+    ])
+    fireEvent.click(getByText('Bump'))
+    expect(onClose).not.toHaveBeenCalled()
+  })
+})
 
 describe('CascadingMenu endAdornment', () => {
   it("renders an item's endAdornment", () => {

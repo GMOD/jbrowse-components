@@ -1,3 +1,5 @@
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -47,7 +49,7 @@ describe('canvas track menu shape', () => {
     ]) {
       for (const item of group) {
         if (item.type === 'radio' || item.type === 'checkbox') {
-          expect([labelOf(item), item.keepMenuOpen]).toEqual([
+          expect([labelOf(item), staysOpenOnClick(item)]).toEqual([
             labelOf(item),
             true,
           ])
@@ -64,7 +66,10 @@ describe('canvas track menu shape', () => {
     const colorBy = subMenuOf(display.trackMenuItems(), 'Color by...')
 
     expect(
-      colorBy.map(i => [labelOf(i), 'keepMenuOpen' in i && !!i.keepMenuOpen]),
+      colorBy.map(i => [
+        labelOf(i),
+        'onClick' in i ? staysOpenOnClick(i) : undefined,
+      ]),
     ).toEqual([
       ['Solid color...', false],
       ['Strand', true],

@@ -199,6 +199,8 @@ test('the favorites filter applies to cross-group hits, not just the group', asy
   const search = await screen.findByPlaceholderText('Search genomes...')
   fireEvent.change(search, { target: { value: 'a' } })
 
+  // the menu stays open across a settings row (it's a checkbox), so both
+  // toggles are clicked from the one opening
   const settings = await screen.findByRole('button', { name: 'Table settings' })
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Search all groups'))
@@ -207,7 +209,6 @@ test('the favorites filter applies to cross-group hits, not just the group', asy
   expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
   expect(screen.getByText('Homo sapiens')).toBeTruthy()
 
-  fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Show favorites only'))
 
   await waitFor(() => {
@@ -226,8 +227,10 @@ test('a cross-group selection built across two searches launches both', async ()
   // both toggles clear the selection, so they have to come before it
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Enable multiple selection'))
-  fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Search all groups'))
+  // a settings row leaves the menu up, and the menu is a modal — everything
+  // behind it is aria-hidden — so dismiss it before querying the table
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
 
   const search = screen.getByPlaceholderText('Search genomes...')
   fireEvent.change(search, { target: { value: 'panda' } })
@@ -252,8 +255,10 @@ test('select-all adds the rows on screen without dropping the rest', async () =>
   const settings = await screen.findByRole('button', { name: 'Table settings' })
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Enable multiple selection'))
-  fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Search all groups'))
+  // a settings row leaves the menu up, and the menu is a modal — everything
+  // behind it is aria-hidden — so dismiss it before querying the table
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
 
   const search = screen.getByPlaceholderText('Search genomes...')
   fireEvent.change(search, { target: { value: 'panda' } })

@@ -93,6 +93,8 @@ export function variantTrackMenuItems(
           label: 'Custom...',
           type: 'radio',
           checked: self.rowHeight !== 0,
+          // a dialog opener, so it opts out of the checkbox/radio default
+          keepMenuOpen: false,
           onClick: () => {
             getSession(self).queueDialog(handleClose => [
               SetRowHeightDialog,

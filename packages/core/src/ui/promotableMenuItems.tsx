@@ -10,8 +10,9 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 //
 // `keepMenuOpen` defaults to true for the same reason it's hard-coded in
 // `toggleMenuItems.ts`: these rows only write a setting, users flip several in
-// one visit, and the menu is an observer so the ticks and pins move live. A row
-// whose click opens a dialog instead (colorBy's "Tag...") passes false.
+// one visit, and the menu is an observer so the ticks and pins move live —
+// matching what `CascadingMenu` derives from the row type anyway. A row whose
+// click opens a dialog instead (colorBy's "Tag...") passes false.
 export function promotableToggleItem({
   label,
   helpText,

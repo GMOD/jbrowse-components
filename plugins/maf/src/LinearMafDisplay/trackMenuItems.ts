@@ -214,6 +214,8 @@ function rowHeightMenuItems(self: MafMenuSelf): MenuItem[] {
       type: 'radio',
       checked:
         rowHeight !== 0 && !HEIGHT_PRESETS.some(p => p.rowHeight === rowHeight),
+      // a dialog opener, so it opts out of the checkbox/radio default
+      keepMenuOpen: false,
       onClick: () => {
         getSession(self).queueDialog(handleClose => [
           SetRowHeightDialog,

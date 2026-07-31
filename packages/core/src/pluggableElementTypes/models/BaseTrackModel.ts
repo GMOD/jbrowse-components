@@ -334,6 +334,11 @@ export function createBaseTrackModel(
                       label: displayType.displayName,
                       helpText: displayType.helpText,
                       checked: d.displayId === shownId,
+                      // opts out of the checkbox/radio "stay open" default:
+                      // every row above this submenu came from the display
+                      // being replaced, so leaving the menu up would keep a
+                      // list of items built against a destroyed MST node
+                      keepMenuOpen: false,
                       onClick: () => {
                         if (d.displayId !== shownId) {
                           self.replaceDisplay(

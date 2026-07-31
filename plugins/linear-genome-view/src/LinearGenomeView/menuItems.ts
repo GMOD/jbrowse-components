@@ -139,6 +139,10 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Show header',
           type: 'checkbox',
           checked: !self.hideHeader,
+          // opts out of the checkbox "stay open" default: with the header
+          // hidden these same items are reachable from MiniControls, which this
+          // row unmounts — leaving the menu anchored to a removed node
+          keepMenuOpen: false,
           onClick: () => {
             self.setHideHeader(!self.hideHeader)
           },
