@@ -6,6 +6,7 @@ import PluginManager from '../../PluginManager.ts'
 import { ConfigurationSchema } from '../../configuration/index.ts'
 import { createJBrowseTheme } from '../../ui/index.ts'
 import { stateModelFactory } from '../stateModelFactory.ts'
+import FeatureDetails from './FeatureDetails.tsx'
 import BaseFeatureDetails from './index.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -37,6 +38,32 @@ function setup(feature: SimpleFeatureSerialized) {
   act(() => {
     model.widget.setFormattedData(feature)
   })
+  return utils
+}
+
+// same shape as setup(), plus the caller-supplied props FeatureDetails threads
+// down through the subfeature cards
+function setupWithDescriptions(feature: SimpleFeatureSerialized) {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    { widget: { type: 'BaseFeatureWidget' } },
+    { pluginManager },
+  )
+  const utils = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <FeatureDetails
+        model={model.widget}
+        feature={feature}
+        descriptions={{ score: 'the confidence score' }}
+        formatter={value => <span>{`fmt:${value}`}</span>}
+      />
+    </ThemeProvider>,
+  )
   return utils
 }
 
@@ -97,6 +124,24 @@ test('callback can hide a core detail field (type)', async () => {
   expect(queryByText('Type')).toBeNull()
 })
 
+test('callback can override the derived Length row', async () => {
+  const { findByText, queryByText } = setup({
+    ...base,
+    __jbrowsefmt: { length: '100 bp (approx)' },
+  })
+  expect(await findByText('100 bp (approx)')).toBeTruthy()
+  expect(queryByText('100')).toBeNull()
+})
+
+test('callback can hide the derived Length row', async () => {
+  const { findByText, queryByText } = setup({
+    ...base,
+    __jbrowsefmt: { length: null },
+  })
+  expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
+  expect(queryByText('Length')).toBeNull()
+})
+
 test('formatted value can be an html link', async () => {
   const { findByText } = setup({
     ...base,
@@ -106,4 +151,19 @@ test('formatted value can be an html link', async () => {
   expect(link.closest('a')?.getAttribute('href')).toBe(
     'https://example.com/gene',
   )
+})
+
+// FeatureDetails recurses for each subfeature card; a subfeature's fields are
+// the same fields, so the caller's descriptions and value formatter (which ride
+// the same props) have to reach them too
+test('subfeature cards get the caller formatter', async () => {
+  const { findAllByText } = setupWithDescriptions({
+    ...base,
+    subfeatures: [
+      { refName: 'ctgA', start: 2, end: 52, type: 'exon', score: 9 },
+    ],
+  })
+  // the parent's own score plus the subfeature's, both run through formatter
+  expect((await findAllByText('fmt:37')).length).toBe(1)
+  expect((await findAllByText('fmt:9')).length).toBe(1)
 })

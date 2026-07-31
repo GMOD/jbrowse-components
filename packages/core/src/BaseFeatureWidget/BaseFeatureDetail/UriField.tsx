@@ -13,7 +13,7 @@ export default function UriField({
   let href: string
   try {
     href = new URL(uri, baseUri).href
-  } catch (e) {
+  } catch {
     href = uri
   }
   return <SimpleField name={name} prefix={prefix} value={href} />

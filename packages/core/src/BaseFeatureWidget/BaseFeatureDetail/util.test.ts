@@ -47,4 +47,8 @@ describe('accessNested', () => {
   test('returns undefined for missing path', () => {
     expect(accessNested(['x', 'y'], {})).toBeUndefined()
   })
+
+  test('a subfield does not inherit its parent field description', () => {
+    expect(accessNested(['a', 'b'], { a: 'parent desc' })).toBeUndefined()
+  })
 })

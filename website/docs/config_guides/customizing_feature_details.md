@@ -64,7 +64,15 @@ mention are left untouched), and the result drives what the panel shows:
   a session) turns hidden fields into `null` anyway.
 
 This applies to core fields too: returning `{type: undefined}` removes the Type
-row, `{name: ...}` rewrites the Name row, and so on.
+row, `{name: ...}` rewrites the Name row, and so on. `length` counts as one,
+even though the panel computes it from `start`/`end` rather than reading it off
+the feature: name it and your value is shown, set it null and the row is gone.
+
+The same slots exist session-wide as
+[`configuration.formatDetails`](/docs/config/formatdetails/), which applies to
+every track. Where both are set, the track's `feature`/`subfeatures` object is
+merged over the session's, so a track can override individual fields the global
+callback added.
 
 ## Making sophisticated customizations to feature detail panels
 

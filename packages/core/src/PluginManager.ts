@@ -168,6 +168,12 @@ export interface FeaturePanelProps {
   model: FeatureWidgetModel
   /** snapshot of the feature being shown */
   feature: SimpleFeatureSerialized
+  /**
+   * how far down the subfeature tree this card is: 0 is the feature the user
+   * clicked, 1 its subfeatures, and so on. The point fires for every card, so a
+   * panel that belongs only on the clicked feature selects on `depth === 0`
+   */
+  depth: number
 }
 // #endregion
 

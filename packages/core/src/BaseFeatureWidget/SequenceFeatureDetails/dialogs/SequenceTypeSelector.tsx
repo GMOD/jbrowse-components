@@ -10,6 +10,8 @@ import type {
   SequenceFeatureDetailsModel,
 } from '../model.ts'
 
+type Option = [SequenceDisplayMode, string]
+
 const useStyles = makeStyles()({
   formControl: {
     margin: 0,
@@ -33,6 +35,37 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
   const hasCDS = featureHasCDS(feature)
   const hasExonOrCDS = featureHasExonOrCDS(feature)
 
+  // each group is annotated, so a mode name that isn't a SequenceDisplayMode is
+  // a compile error rather than a Select whose value silently matches no option
+  const codingOptions: Option[] = [
+    ['cds', 'CDS'],
+    ['protein', 'Protein'],
+  ]
+  const splicedOptions: Option[] = [
+    ['cdna', 'cDNA'],
+    ['gene', 'Genomic w/ full introns'],
+    [
+      'gene_updownstream',
+      `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
+    ],
+    ['gene_collapsed_intron', `Genomic w/ ${intronBp}bp intron`],
+    [
+      'gene_updownstream_collapsed_intron',
+      `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream`,
+    ],
+  ]
+  const plainGenomicOptions: Option[] = [
+    ['genomic', 'Genomic'],
+    [
+      'genomic_sequence_updownstream',
+      `Genomic +/- ${upDownBp}bp up+down stream`,
+    ],
+  ]
+  const options = [
+    ...(hasCDS ? codingOptions : []),
+    ...(hasExonOrCDS ? splicedOptions : plainGenomicOptions),
+  ]
+
   return (
     <FormControl className={classes.formControl}>
       <Select
@@ -43,38 +76,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
         }}
         aria-label="Sequence type"
       >
-        {[
-          ...(hasCDS
-            ? [
-                ['cds', 'CDS'],
-                ['protein', 'Protein'],
-              ]
-            : []),
-          ...(hasExonOrCDS
-            ? [
-                ['cdna', 'cDNA'],
-                ['gene', 'Genomic w/ full introns'],
-                [
-                  'gene_updownstream',
-                  `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
-                ],
-                ['gene_collapsed_intron', `Genomic w/ ${intronBp}bp intron`],
-                [
-                  'gene_updownstream_collapsed_intron',
-                  `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream`,
-                ],
-              ]
-            : []),
-          ...(!hasExonOrCDS
-            ? [
-                ['genomic', 'Genomic'],
-                [
-                  'genomic_sequence_updownstream',
-                  `Genomic +/- ${upDownBp}bp up+down stream`,
-                ],
-              ]
-            : []),
-        ].map(([key, val]) => (
+        {options.map(([key, val]) => (
           <MenuItem key={key} value={key} data-testid={`sequence_type_${key}`}>
             {val}
           </MenuItem>

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { useCopyToClipboard } from '../../ui/useCopyToClipboard.ts'
+
 const TRUNCATE_LENGTH = 100
 
 // a 'show more...' toggle used as a formatter on feature details: long values
@@ -7,20 +9,14 @@ const TRUNCATE_LENGTH = 100
 // slow down the rest of the app, so they are truncated until expanded
 export default function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const { copied, copy } = useCopyToClipboard(700)
   const display = String(value)
   return display.length > TRUNCATE_LENGTH ? (
     <>
       <button
         type="button"
-        onClick={async () => {
-          const { default: copy } =
-            await import('../../util/copyToClipboard.ts')
+        onClick={() => {
           void copy(display)
-          setCopied(true)
-          setTimeout(() => {
-            setCopied(false)
-          }, 700)
         }}
       >
         {copied ? 'Copied to clipboard' : 'Copy'}

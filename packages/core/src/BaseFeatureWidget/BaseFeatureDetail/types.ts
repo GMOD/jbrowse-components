@@ -1,9 +1,9 @@
-import type { BaseCardProps, FeatureFormatter } from '../types.tsx'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { BaseCardProps, Descriptors, FeatureFormatter } from '../types.tsx'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 
 export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
-  model: IAnyStateTreeNode
-  descriptions?: Record<string, React.ReactNode>
+  model: BaseFeatureWidgetModel
+  descriptions?: Descriptors
   formatter?: FeatureFormatter
 }

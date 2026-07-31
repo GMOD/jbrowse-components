@@ -508,12 +508,16 @@ kind of track". `trackId` and `trackType` are documented under
 [`Core-replaceWidget`](#core-replacewidget); a plain-string `trackId` matches
 the user's copies of that track too.
 
-`where` additionally receives the `feature` being shown, which the declarative
-fields can't reach:
+`where` additionally receives the `feature` being shown and the `depth` of the
+card it is being shown on, neither of which the declarative fields can reach.
+The point fires once per card, including the nested card for every subfeature,
+so `depth === 0` is how a panel says "only the feature the user clicked":
 
 ```tsx
 addFeaturePanel(pluginManager, {
-  select: { where: ({ feature }) => feature.type === 'gene' },
+  select: {
+    where: ({ feature, depth }) => feature.type === 'gene' && depth === 0,
+  },
   panel: MyGenePanel,
 })
 ```
@@ -528,6 +532,12 @@ export interface FeaturePanelProps {
   model: FeatureWidgetModel
   /** snapshot of the feature being shown */
   feature: SimpleFeatureSerialized
+  /**
+   * how far down the subfeature tree this card is: 0 is the feature the user
+   * clicked, 1 its subfeatures, and so on. The point fires for every card, so a
+   * panel that belongs only on the clicked feature selects on `depth === 0`
+   */
+  depth: number
 }
 ```
 

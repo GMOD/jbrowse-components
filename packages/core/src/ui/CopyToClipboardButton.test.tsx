@@ -15,13 +15,15 @@ afterEach(() => {
   copyMock.mockClear()
 })
 
-test('copies a string value and shows feedback', () => {
-  const { getByRole, getByText } = render(
+// the feedback lands after the clipboard write resolves -- copyToClipboard only
+// reports a rejected write by rejecting, so the label can't flash before then
+test('copies a string value and shows feedback', async () => {
+  const { getByRole, findByText } = render(
     <CopyToClipboardButton value="hello">Copy</CopyToClipboardButton>,
   )
   fireEvent.click(getByRole('button'))
   expect(copyMock).toHaveBeenCalledWith('hello')
-  expect(getByText('Copied to clipboard!')).toBeTruthy()
+  expect(await findByText('Copied to clipboard!')).toBeTruthy()
 })
 
 test('defers a function value until the click', () => {
@@ -35,12 +37,22 @@ test('defers a function value until the click', () => {
   expect(copyMock).toHaveBeenCalledWith('computed')
 })
 
-test('honors a custom copiedLabel', () => {
-  const { getByRole, getByText } = render(
+test('honors a custom copiedLabel', async () => {
+  const { getByRole, findByText } = render(
     <CopyToClipboardButton value="x" copiedLabel="Done!">
       Copy
     </CopyToClipboardButton>,
   )
   fireEvent.click(getByRole('button'))
-  expect(getByText('Done!')).toBeTruthy()
+  expect(await findByText('Done!')).toBeTruthy()
+})
+
+test('a rejected clipboard write does not claim success', async () => {
+  copyMock.mockRejectedValueOnce(new Error('denied'))
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { getByRole, findByText } = render(
+    <CopyToClipboardButton value="x">Copy</CopyToClipboardButton>,
+  )
+  fireEvent.click(getByRole('button'))
+  expect(await findByText('Copy')).toBeTruthy()
 })

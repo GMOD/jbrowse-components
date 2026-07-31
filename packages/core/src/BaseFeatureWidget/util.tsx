@@ -52,17 +52,19 @@ export function getStrandStr(strand: number | undefined) {
 export const nullReplacer = (_: string, v: unknown) =>
   v === undefined ? null : v
 
+// `currentDepth < depth` rather than a `depth <= currentDepth` bail so a config
+// with no formatDetails schema at all (depth reads back undefined) formats
+// nothing, instead of every level -- NaN comparisons are false either way round
 export function formatSubfeatures(
   obj: SerializedFeat,
   depth: number,
   parse: (obj: Record<string, unknown>) => void,
   currentDepth = 0,
 ) {
-  if (depth <= currentDepth) {
-    return
-  }
-  for (const sub of obj.subfeatures ?? []) {
-    formatSubfeatures(sub, depth, parse, currentDepth + 1)
-    parse(sub)
+  if (currentDepth < depth) {
+    for (const sub of obj.subfeatures ?? []) {
+      formatSubfeatures(sub, depth, parse, currentDepth + 1)
+      parse(sub)
+    }
   }
 }

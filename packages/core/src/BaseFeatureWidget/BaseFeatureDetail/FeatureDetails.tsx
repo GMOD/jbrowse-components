@@ -43,6 +43,12 @@ const coreDetails = [
 ]
 
 interface FeatureDetailsProps {
+  // TODO: this wants to be BaseFeatureWidgetModel -- it reads `maxDepth` and
+  // hands the model to the sequence panel, which needs the real thing. It can't
+  // be: every widget composing the base model overrides the `type` literal,
+  // which makes the composed instance non-assignable to the base. So the panel
+  // relies on IAnyStateTreeNode being assignable to anything, and a model
+  // missing e.g. `sequenceFeatureDetails` is not a compile error here.
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerialized
   depth?: number
@@ -62,7 +68,7 @@ const FeatureDetails = observer(function FeatureDetails(
     descriptions,
     formatter,
   } = props
-  const maxDepth: number = model.maxDepth ?? Infinity
+  const maxDepth = model.maxDepth ?? Infinity
   const {
     mate: m,
     name = '',
@@ -72,12 +78,17 @@ const FeatureDetails = observer(function FeatureDetails(
     uniqueId,
   } = feature
   const pm = getEnv(model).pluginManager
+  // resolved rather than raw props: `depth` is what tells a registered panel
+  // whether it is under the clicked feature (0) or a nested subfeature card, and
+  // it is only defaulted here -- passing raw props left it undefined at the top
+  // level, so a `where: p => p.depth === 0` selector could never match
+  const panelProps = { ...props, depth }
   // each registered panel scopes itself (returns null when it doesn't apply)
   // and owns its own BaseCard/Divider chrome. [x].flat() tolerates a legacy
   // callback that returned a single component instead of appending to the array
   const extraPanels = [
     /** #extensionPoint Core-extraFeaturePanel | sync | Add extra panels to the feature details widget */
-    pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], props),
+    pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], panelProps),
   ].flat()
   return (
     <BaseCard title={generateTitle(name, id, type)}>
@@ -119,7 +130,7 @@ const FeatureDetails = observer(function FeatureDetails(
           key={i}
           fallback={null}
         >
-          <Panel {...props} />
+          <Panel {...panelProps} />
         </Suspense>
       ))}
 
@@ -138,6 +149,13 @@ const FeatureDetails = observer(function FeatureDetails(
               }}
               model={model}
               depth={depth + 1}
+              // a subfeature's fields are the same fields, so the caller's
+              // descriptions and value formatter apply here too -- omitting
+              // them silently dropped e.g. VCF header descriptions and the
+              // truncating <Formatter> from every nested card
+              descriptions={descriptions}
+              formatter={formatter}
+              omit={omit}
             />
           ))}
         </BaseCard>

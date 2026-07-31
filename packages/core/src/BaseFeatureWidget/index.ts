@@ -1,5 +1,5 @@
 export { configSchema } from './configSchema.ts'
-export type { MaybeSerializedFeat } from './types.tsx'
+export type { Descriptors, MaybeSerializedFeat } from './types.tsx'
 export type {
   SequenceHoverPosition,
   ShowCoordinatesMode,

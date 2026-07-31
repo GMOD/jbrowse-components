@@ -17,6 +17,17 @@ export function applyFeatureFormatting<
   return { ...feature, ...feature.__jbrowsefmt }
 }
 
+// Whether a formatDetails callback named `key` at all -- including setting it
+// to null/undefined, which is how a callback hides a field. Lets a derived row
+// (e.g. Length) defer to the callback without treating "hidden" as "absent".
+export function isFormattedField(
+  feature: { __jbrowsefmt?: Record<string, unknown> },
+  key: string,
+) {
+  const fmt = feature.__jbrowsefmt
+  return fmt !== undefined && key in fmt
+}
+
 export function generateTitle(name: unknown, id: unknown, type: unknown) {
   const label = name || id
   return [label ? ellipses(`${label}`) : '', type ? `${type}` : '']
@@ -37,12 +48,15 @@ export function generateMaxWidth(array: unknown[][], prefix: string[]) {
 //
 // @param arr  example ['a','b'], obj = {a:{b:'hello}}
 // @returns hello (with special addition to grab description also)
+//
+// A path that runs out of objects before it runs out of elements has no
+// description: walking ['INFO','ANN'] into `{INFO: 'a string'}` used to stop at
+// the string and hand it back, so every subfield of an object-valued attribute
+// inherited its parent's description.
 export function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
   let obj2: unknown = obj
   for (const elt of arr) {
-    if (isObject(obj2)) {
-      obj2 = obj2[elt]
-    }
+    obj2 = isObject(obj2) ? obj2[elt] : undefined
   }
   return typeof obj2 === 'string'
     ? obj2

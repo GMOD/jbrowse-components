@@ -47,7 +47,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
         <Button
           variant="contained"
           onClick={() => {
-            setShown(!shown)
+            setShown(val => !val)
           }}
         >
           {shown ? 'Hide feature sequence' : 'Show feature sequence'}

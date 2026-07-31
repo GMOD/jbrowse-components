@@ -6,10 +6,15 @@ import type { FeaturePanelProps } from '../PluginManager.ts'
 const Panel = () => null
 const Other = () => null
 
-function fire(pm: PluginManager, model: Partial<FeaturePanelProps['model']>) {
+function fire(
+  pm: PluginManager,
+  model: Partial<FeaturePanelProps['model']>,
+  depth = 0,
+) {
   return pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], {
     model: model,
     feature: { uniqueId: 'f1', refName: 'ctgA', start: 0, end: 10 },
+    depth,
   })
 }
 
@@ -63,8 +68,21 @@ test('where can scope on the feature being shown', () => {
         end: 10,
         type: 'gene',
       },
+      depth: 0,
     }),
   ).toEqual([Panel])
+})
+
+// the point fires for every subfeature card too, so this is how a panel says
+// "only on the feature the user actually clicked"
+test('where can scope to the top-level card by depth', () => {
+  const pm = new PluginManager([])
+  addFeaturePanel(pm, {
+    select: { where: ({ depth }) => depth === 0 },
+    panel: Panel,
+  })
+  expect(fire(pm, {}, 0)).toEqual([Panel])
+  expect(fire(pm, {}, 1)).toEqual([])
 })
 
 test('an empty selector adds the panel everywhere', () => {

@@ -10,7 +10,7 @@ import { formatSubfeatures, nullReplacer } from './util.tsx'
 import type PluginManager from '../PluginManager.ts'
 import type { SimpleFeatureSerialized } from '../util/index.ts'
 import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
-import type { MaybeSerializedFeat } from './types.tsx'
+import type { Descriptors, MaybeSerializedFeat } from './types.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -87,7 +87,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       descriptions: types.optional(
-        types.frozen<Record<string, unknown> | undefined>(),
+        types.frozen<Descriptors | undefined>(),
         undefined,
       ),
     })
@@ -168,11 +168,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
               try {
                 const { unformattedFeatureData, track } = self
                 const session = getSession(self)
+                // the track's slot wins where it has one, otherwise the
+                // session-wide `configuration.formatDetails` applies on its own
+                // -- a widget can outlive its track (safeReference) or never
+                // have had one, and the global config still means something
+                const conf = (slot: string, args?: Record<string, unknown>) =>
+                  track
+                    ? getConf(track, ['formatDetails', slot], args)
+                    : getConf(session, ['formatDetails', slot], args)
                 if (track) {
                   self.setExtra(
                     track.type,
                     track.configuration.trackId,
-                    getConf(track, ['formatDetails', 'maxDepth']),
+                    conf('maxDepth'),
                   )
                 }
                 if (unformattedFeatureData) {
@@ -183,20 +191,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
                     feature: Record<string, unknown>,
                   ) => ({
                     ...getConf(session, ['formatDetails', scope], { feature }),
-                    ...getConf(track, ['formatDetails', scope], { feature }),
+                    ...(track
+                      ? getConf(track, ['formatDetails', scope], { feature })
+                      : {}),
                   })
 
-                  if (track) {
-                    feature.__jbrowsefmt = combine('feature', feature)
+                  feature.__jbrowsefmt = combine('feature', feature)
 
-                    formatSubfeatures(
-                      feature,
-                      getConf(track, ['formatDetails', 'depth']),
-                      sub => {
-                        sub.__jbrowsefmt = combine('subfeatures', sub)
-                      },
-                    )
-                  }
+                  formatSubfeatures(feature, conf('depth'), sub => {
+                    sub.__jbrowsefmt = combine('subfeatures', sub)
+                  })
 
                   self.setFormattedData(feature)
                 }
