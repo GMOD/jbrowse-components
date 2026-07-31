@@ -66,6 +66,7 @@ const searchIndex = [
 ]
 
 let fetched: string[] = []
+let failing = new Set<string>()
 
 const bodyFor = (url: string) =>
   url === UCSC_URL
@@ -76,10 +77,14 @@ const bodyFor = (url: string) =>
 
 beforeEach(() => {
   fetched = []
+  failing = new Set()
   globalThis.fetch = jest.fn((url: string) => {
     fetched.push(url)
     return Promise.resolve({
-      ok: true,
+      ok: !failing.has(url),
+      status: 500,
+      statusText: 'Internal Server Error',
+      text: () => Promise.resolve(''),
       json: () => Promise.resolve(bodyFor(url)),
     })
   }) as unknown as typeof fetch
@@ -265,6 +270,22 @@ test('select-all adds the rows on screen without dropping the rest', async () =>
   // unchecking it takes back only what it added
   fireEvent.click(screen.getAllByRole('checkbox')[0]!)
   expect(screen.getByText('Open 1 selected')).toBeTruthy()
+})
+
+// the index is only what a cross-group *search* reads, so failing to load it
+// must not take down the group the user is browsing
+test('a failed search index does not block browsing the selected group', async () => {
+  failing.add(SEARCH_INDEX_URL)
+  setup()
+  const settings = await screen.findByRole('button', { name: 'Table settings' })
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Search all groups'))
+
+  await waitFor(() => {
+    expect(fetched).toContain(SEARCH_INDEX_URL)
+  })
+  expect(screen.getByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
+  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
 })
 
 test('sort headers are buttons and expose their direction', async () => {

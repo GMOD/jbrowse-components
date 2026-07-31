@@ -3,7 +3,6 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import { matchesAllTokens, searchTokens } from './searchTokens.ts'
 
-import type { Fav } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
 
 // Every field the table can display for either group, so a search matches
@@ -110,13 +109,13 @@ export function useGenomesData({
   searchQuery,
   filterOption,
   showOnlyFavs,
-  favorites,
+  favoriteIds,
   url,
 }: {
   searchQuery: string
   filterOption: FilterOption
   showOnlyFavs: boolean
-  favorites: Fav[]
+  favoriteIds: Set<string>
   url?: string
 }): {
   data: Entry[]
@@ -139,7 +138,7 @@ export function useGenomesData({
       searchQuery,
       filterOption,
       showOnlyFavs,
-      favoriteIds: new Set(favorites.map(r => r.id)),
+      favoriteIds,
     }),
     allData,
     error,

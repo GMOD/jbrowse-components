@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 
 import { ActionLink } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
-import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DialogContentText } from '@mui/material'
 
@@ -16,9 +15,8 @@ import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
 import { sortAndPaginate } from './sortAndPaginate.ts'
 import useCategories from './useCategories.ts'
-import { applyRowFilters, useGenomesData } from './useGenomesData.ts'
 import { useGenomesTableState } from './useGenomesTableState.ts'
-import { useGlobalSearch } from './useGlobalSearch.ts'
+import { useResultSet } from './useResultSet.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
 
 import type { Fav, LaunchCallback } from '../types.ts'
@@ -101,33 +99,19 @@ export default function GenomesDataTable({
     }
   }
 
-  const {
-    data,
-    allData,
-    error,
-    isLoading: genomesLoading,
-  } = useGenomesData({
+  const results = useResultSet({
+    url,
+    categoriesLoading,
     searchQuery,
     filterOption,
     showOnlyFavs,
-    favorites,
-    url,
+    favoriteIds: favs,
+    allGroups,
   })
 
-  const {
-    rows: globalRows,
-    resolveAccessions,
-    indexedCount,
-    isLoading: globalLoading,
-    error: globalError,
-  } = useGlobalSearch({ enabled: allGroups, searchQuery })
-  // the toggle only changes what a *search* covers; with no query there is
-  // nothing to search and the selected group is still what to browse
-  const globalMode = allGroups && !!searchQuery.trim()
-
   // categoriesError leaves url undefined, which would otherwise hang on an
-  // infinite skeleton; surface it (and any genome-list error) instead.
-  const loadError = categoriesError ?? error ?? globalError
+  // infinite skeleton; surface it (and any row-fetch error) instead.
+  const loadError = categoriesError ?? results.error
 
   // the search index labels a row with its category key, using 'uncategorized'
   // for the groups categories.json does not list separately
@@ -141,34 +125,11 @@ export default function GenomesDataTable({
     launch,
     onClose,
     showAllColumns,
-    groupTitles: globalMode ? groupTitles : undefined,
+    groupTitles: results.isGlobal ? groupTitles : undefined,
   })
 
-  // in global mode the selected group is not what is on screen, so the rows to
-  // paginate, to resolve a selection against, and to count all come from the
-  // index. searchAllGroups only searches, so the status and favorites filters —
-  // which the menu still offers here — are applied to its hits separately.
-  const visibleRows = globalMode
-    ? applyRowFilters({
-        rows: globalRows,
-        filterOption,
-        showOnlyFavs,
-        favoriteIds: favs,
-      })
-    : data
-
-  // A selection is keyed by accession and outlives the query that surfaced each
-  // row, so it resolves against the whole group when browsing one and the whole
-  // index in global mode — never against what is currently on screen.
-  const selectedRows = () =>
-    globalMode
-      ? resolveAccessions(selected)
-      : [...selected]
-          .map(acc => allData.find(row => row.accession === acc))
-          .filter(notEmpty)
-
   const { pageRows, currentPage, totalRows } = sortAndPaginate({
-    data: visibleRows,
+    data: results.rows,
     columns,
     sorting,
     pageIndex,
@@ -182,7 +143,9 @@ export default function GenomesDataTable({
         activeTypeOption={activeTypeOption}
         categories={categories}
         onLaunchSelected={() => {
-          launch(selectedRows().map(row => row.jbrowseConfig))
+          launch(
+            results.resolveSelection(selected).map(row => row.jbrowseConfig),
+          )
           onClose()
         }}
         onResetFavorites={() => {
@@ -195,11 +158,7 @@ export default function GenomesDataTable({
 
       {loadError ? <NetworkErrorMessage error={loadError} /> : null}
 
-      {loadError ? null : (
-          globalMode
-            ? globalLoading
-            : categoriesLoading || genomesLoading || !url
-        ) ? (
+      {loadError ? null : results.isLoading ? (
         <SkeletonLoader columnCount={columns.length} />
       ) : (
         <div ref={tableRef}>
@@ -214,7 +173,7 @@ export default function GenomesDataTable({
             emptyMessage={
               // offer the wider search exactly where it runs out, since the
               // selected group is 1 of 19 and nothing else says so
-              searchQuery.trim() && !globalMode ? (
+              searchQuery.trim() && !results.isGlobal ? (
                 <>
                   No matches in {activeCategory?.title ?? 'this group'} —{' '}
                   <ActionLink
@@ -235,8 +194,8 @@ export default function GenomesDataTable({
             pageIndex={currentPage}
             pageSize={pageSize}
             totalRows={totalRows}
-            scopeTotal={globalMode ? indexedCount : allData.length}
-            scopeLabel={globalMode ? 'across all groups' : 'in this group'}
+            scopeTotal={results.scopeTotal}
+            scopeLabel={results.scopeLabel}
             onPageChange={setPageIndex}
             onPageSizeChange={setPageSize}
           />
