@@ -36,7 +36,7 @@ const TimeTraveller = types
   }))
   .actions(self => {
     let targetStore: IAnyStateTreeNode | undefined
-    let snapshotDisposer: IDisposer
+    let snapshotDisposer: IDisposer | undefined
     let skipNextUndoState = false
     let debounceTimer: ReturnType<typeof setTimeout> | undefined
     let pendingSnapshot: unknown
@@ -61,11 +61,20 @@ const TimeTraveller = types
       },
 
       beforeDestroy() {
-        snapshotDisposer()
+        // initialize() only runs once a session exists, so a root torn down
+        // before that (a failed boot, a test) has no disposer to call
+        snapshotDisposer?.()
         if (debounceTimer) {
           clearTimeout(debounceTimer)
         }
       },
+      /**
+       * Start recording history for the target store. Re-runs whenever the root
+       * swaps in a new session node, so it must be idempotent: the previous
+       * registration is disposed and the history reset, because `history` is
+       * volatile while `undoIdx` is a persisted prop — carrying the old
+       * session's snapshots forward would make undo apply them to the new one.
+       */
       initialize() {
         targetStore = self.targetPath
           ? resolvePath(self, self.targetPath)
@@ -76,6 +85,16 @@ const TimeTraveller = types
             'Failed to find target store for TimeTraveller. Please provide `targetPath` property, or a `targetStore` in the environment',
           )
         }
+
+        snapshotDisposer?.()
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+          debounceTimer = undefined
+        }
+        pendingSnapshot = undefined
+        skipNextUndoState = false
+        self.history = []
+        self.undoIdx = -1
 
         snapshotDisposer = onSnapshot(targetStore, snapshot => {
           if (self.notTrackingUndo) {
@@ -104,9 +123,7 @@ const TimeTraveller = types
           }, 300)
         })
 
-        if (self.history.length === 0) {
-          this.addUndoState(getSnapshot(targetStore))
-        }
+        this.addUndoState(getSnapshot(targetStore))
       },
       undo() {
         self.undoIdx--

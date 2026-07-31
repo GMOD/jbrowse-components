@@ -87,6 +87,46 @@ test('change after undo is recorded (skipNextUndoState reset regression)', () =>
   expect(target.value).toBe(0)
 })
 
+// Mirrors HistoryManagementMixin: the TimeTraveller sits next to a `session`
+// prop that the root replaces wholesale, and its init autorun re-fires each time.
+const Root = types
+  .model('Root', {
+    session: types.optional(TargetStore, { value: 0 }),
+    history: types.optional(TimeTraveller, { targetPath: '../session' }),
+  })
+  .actions(self => ({
+    setSession(value: number) {
+      self.session = TargetStore.create({ value })
+    },
+  }))
+
+test('re-initializing for a new session resets history', () => {
+  // Regression: initialize() re-runs on every setSession, but skipped its
+  // baseline once history was non-empty and never disposed the old onSnapshot.
+  // `history` is volatile while `undoIdx` is a persisted prop, so undo applied
+  // the *previous* session's snapshot to the new session.
+  const root = Root.create()
+  root.history.initialize()
+
+  root.session.setValue(1)
+  flushDebounce()
+  expect(root.history.history).toHaveLength(2)
+  expect(root.history.undoIdx).toBe(1)
+
+  root.setSession(100)
+  root.history.initialize()
+
+  expect(root.history.history).toEqual([{ value: 100 }])
+  expect(root.history.undoIdx).toBe(0)
+  expect(root.history.canUndo).toBe(false)
+
+  // and undo now walks the new session's history, not the old one's
+  root.session.setValue(101)
+  flushDebounce()
+  root.history.undo()
+  expect(root.session.value).toBe(100)
+})
+
 test('undo during pending debounce does not record the undone change', () => {
   // If the user makes a change (debounce starts) then immediately undoes,
   // the debounce should be cancelled — we must not add the change to history.
