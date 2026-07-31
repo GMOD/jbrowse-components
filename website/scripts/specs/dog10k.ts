@@ -1,4 +1,4 @@
-import { lgvSession } from '../screenshot-spec-helpers.ts'
+import { lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -6,7 +6,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // dog10k_lof.md, dog10k_selection.md, dog10k_retrogene.md). All read
 // test_data/dog10k/config.json, whose data is built by the scripts/build_dog10k_*
 // scripts: _wolfdog_ancestry, _nhej1_sv, _cyp1a2, _cyp1a2_cn, _slc28a3_cn,
-// _igf1, _size_fst and _fgf4_retrogene.
+// _igf1, _size_fst, _fgf4_retrogene and _fgf4_synteny.
 
 const DOG_CONFIG = 'test_data/dog10k/config.json'
 
@@ -295,6 +295,95 @@ const FST_AXIS = { minScore: 0, maxScore: 0.8 }
 // The IGF1 peak window, which the zoom half marks and the tutorial's next
 // figure slices. One 200 kb bin of the scan.
 const IGF1_PEAK_WINDOW = 'chr15:41,400,000-41,600,000'
+
+// What a retrocopy row carries: the submitters' own annotation of the deposited
+// record, which is the figure's claim restated in the form a reader already knows
+// how to read -- the parent's CDS is three boxes and this is one. It is GenBank's
+// feature table, not a prediction of ours; build_dog10k_fgf4_synteny.sh fails if
+// either CDS is a `join(...)`, the shape a processed retrocopy cannot have.
+//
+// A sequence track under it was the first version, from when the annotation did
+// not exist and the row needed anything at all to stay off the "No tracks active"
+// empty state. Dropped once the annotation landed: at 1 bp/px it was base-colored
+// stripes, the most saturated thing in the frame and the least informative, and it
+// sat directly against the synteny bands competing with the ribbons. Bases are a
+// zoom away in the live link.
+const RETRO_TRACKS = (genesTrackId: string) => [
+  {
+    trackId: genesTrackId,
+    type: 'LinearBasicDisplay',
+    height: 55,
+  },
+]
+
+// The retrocopy-vs-parent synteny session. `parent` is the chr18 window and
+// `retro` the corresponding sub-range of each retrocopy, which have to be derived
+// together: a retrocopy is 1,066 bp shorter than the reference span it covers, so
+// the two rows can never share a scale, and a row showing more or less than its
+// alignment covers would put ribbon-free sequence in the frame.
+function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
+  return sessionSpec(DOG_CONFIG, {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        // straight quadrilaterals, not drawCurves: a bezier bows away from its
+        // own endpoints, and the whole figure is where four block edges sit
+        // against two intron boundaries
+        drawCurves: false,
+        // 'matches', so each intron is an unpainted gap in the ribbon rather
+        // than a colored wedge. NOT a cosmetic choice: 'full' names each indel
+        // op, and the perspective-flip swaps D<->I, so the SAME 532 bp gap came
+        // out as a yellow deletion above the parent row and a blue insertion
+        // below it -- one event in two colors, decided by stacking order.
+        // Unpainted is symmetric, and "the retrocopy has nothing here" is the
+        // claim anyway. It also drops the slivers the 1-6 bp indels drew.
+        cigarMode: 'matches',
+        alpha: 0.45,
+        // 2-D form, one entry per adjacent pair: level 0 is retro-CFA18 against
+        // the parent, level 1 the parent against retro-CFA12
+        tracks: [['dog10k_fgf4_retro_cfa18'], ['dog10k_fgf4_retro_cfa12']],
+        views: [
+          {
+            assembly: 'FGF4retro-CFA18',
+            loc: retro['FGF4retro-CFA18']!,
+            tracks: RETRO_TRACKS('dog10k_fgf4_retro_cfa18_genes'),
+          },
+          {
+            assembly: 'UU_Cfam_GSD_1.0',
+            loc: parent,
+            tracks: [
+              {
+                trackId: 'canFam4_ncbi_refseq',
+                type: 'LinearBasicDisplay',
+                height: 60,
+              },
+              // The positional display, one row of two features, NOT the 55-row
+              // multi-sample display the figure above uses. Per-breed carriage is
+              // that figure's job and it is directly above this one; here the
+              // records are a coordinate to compare the gaps against, and 55 rows
+              // between the two synteny bands would put 690 px between the things
+              // being compared.
+              {
+                trackId: 'dog10k_fgf4_svs',
+                type: 'LinearVariantDisplay',
+                // one row, once `showLabels`/`showDescriptions` are off on the
+                // track (the two records don't overlap -- it was record 1's name
+                // and its `<DEL:SVSIZE=532:AGGREGATED>` description that pushed
+                // record 2 onto a second row)
+                height: 34,
+              },
+            ],
+          },
+          {
+            assembly: 'FGF4retro-CFA12',
+            loc: retro['FGF4retro-CFA12']!,
+            tracks: RETRO_TRACKS('dog10k_fgf4_retro_cfa12_genes'),
+          },
+        ],
+      },
+    ],
+  })
+}
 
 export const dog10kSpecs: ScreenshotSpec[] = [
   // Dog10K wolfdog local ancestry, chr1: 22 haplotype rows painted by FLARE
@@ -816,6 +905,49 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track plus all 55 sample rows and both legends
     viewportHeight: 1020,
+  },
+
+  // The same claim as sequence rather than as inference, which is what the figure
+  // above cannot do: it draws a caller's response to a retrocopy, never the
+  // retrocopy. Both dog FGF4 retrocopies were Sanger-sequenced and deposited
+  // (MF040222, the CFA18 insertion of Parker et al. 2009; MF040221, the CFA12
+  // insertion of Brown et al. 2017), so each one can be aligned back to the
+  // parent gene, and build_dog10k_fgf4_synteny.sh asserts that its gaps against
+  // the reference are the annotated introns before writing a PAF.
+  //
+  // THREE LEVELS, parent gene in the middle. Both retrocopies align to the same
+  // three exons, so as two regions of one row their ribbons would cross through
+  // each other; on either side of the parent they instead close on it from above
+  // and below, and the two deletion wedges land at the same coordinates twice.
+  // The retrocopy rows are the whole contig, which is the point -- a retrocopy is
+  // continuous sequence exactly where the reference has an intron.
+  {
+    mode: 'url',
+    name: 'dog10k-fgf4-retrogene-synteny',
+    // NOT the window the figure above draws, which was the first version of this.
+    // Sharing it put the whole payload -- three exons, two gaps, two records -- in
+    // the left quarter of the frame, with the other three quarters the flat 3'
+    // exon: measured, the gaps plus exon 2 were 695 px of a 2,918 px data area.
+    // This is 2.2 kb instead of 5, so they fill it. What the wide window showed
+    // and this does not is that each retrocopy spans the whole transcript, and
+    // that the two differ in 3' extent; both are in the script output the guide
+    // quotes, and neither was legible in the frame anyway.
+    //
+    // The retrocopy rows are the sub-range that covers this window, derived by
+    // walking each PAF's CIGAR rather than scaled by eye. They have to be: a
+    // retrocopy is 1,066 bp shorter than the reference span it covers, so a row
+    // showing more would trail ribbon-free sequence and one showing less would cut
+    // its own alignment.
+    url: fgf4SyntenySession('chr18:48,869,100-48,871,300', {
+      'FGF4retro-CFA18': 'FGF4retro-CFA18:1-1036',
+      'FGF4retro-CFA12': 'FGF4retro-CFA12:2-1033',
+    }),
+    readyText: 'chr18',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // an annotation lane per retrocopy plus the gene and SV lanes between them,
+    // and the two synteny bands. Sized by the generator's below-the-fold check.
+    viewportHeight: 750,
   },
 
   // There is deliberately NO whole-collection figure beside the panel above,

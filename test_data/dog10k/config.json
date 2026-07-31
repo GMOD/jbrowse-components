@@ -13,6 +13,36 @@
           }
         }
       }
+    },
+    {
+      "name": "FGF4retro-CFA18",
+      "displayName": "CFA18 retrocopy (MF040222)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "FGF4retro-CFA18-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "uri": "FGF4retro-CFA18.fa",
+          "faiLocation": {
+            "uri": "FGF4retro-CFA18.fa.fai"
+          }
+        }
+      }
+    },
+    {
+      "name": "FGF4retro-CFA12",
+      "displayName": "CFA12 retrocopy (MF040221)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "FGF4retro-CFA12-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "uri": "FGF4retro-CFA12.fa",
+          "faiLocation": {
+            "uri": "FGF4retro-CFA12.fa.fai"
+          }
+        }
+      }
     }
   ],
   "tracks": [
@@ -83,7 +113,14 @@
         "type": "VcfTabixAdapter",
         "uri": "dog10k_fgf4_svs.vcf.gz",
         "samplesTsvLocation": { "uri": "dog10k_fgf4_samples.tsv" }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "showLabels": "off",
+          "showDescriptions": false
+        }
+      ]
     },
     {
       "type": "VariantTrack",
@@ -94,6 +131,50 @@
         "type": "VcfTabixAdapter",
         "uri": "dog10k_fgf4_cohort_svs.vcf.gz",
         "samplesTsvLocation": { "uri": "dog10k_fgf4_cohort_samples.tsv" }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "dog10k_fgf4_retro_cfa18",
+      "name": "FGF4 CFA18 retrocopy (MF040222) vs its parent gene",
+      "assemblyNames": ["FGF4retro-CFA18", "UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "dog10k_fgf4_retro_cfa18.paf",
+        "queryAssembly": "FGF4retro-CFA18",
+        "targetAssembly": "UU_Cfam_GSD_1.0"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "dog10k_fgf4_retro_cfa12",
+      "name": "FGF4 CFA12 retrocopy (MF040221) vs its parent gene",
+      "assemblyNames": ["FGF4retro-CFA12", "UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "dog10k_fgf4_retro_cfa12.paf",
+        "queryAssembly": "FGF4retro-CFA12",
+        "targetAssembly": "UU_Cfam_GSD_1.0"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_fgf4_retro_cfa18_genes",
+      "name": "FGF4 CFA18 retrocopy: GenBank annotation (MF040222)",
+      "assemblyNames": ["FGF4retro-CFA18"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "FGF4retro-CFA18.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dog10k_fgf4_retro_cfa12_genes",
+      "name": "FGF4 CFA12 retrocopy: GenBank annotation (MF040221)",
+      "assemblyNames": ["FGF4retro-CFA12"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "FGF4retro-CFA12.gff3.gz"
       }
     },
     {

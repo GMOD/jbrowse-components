@@ -11,7 +11,8 @@ tutorial_category: Population genomics
 **TL;DR:** slice two structural-variant records out of the Dog10K Manta callset
 over HTTP, load them as a multi-sample variant track under the gene model, and
 read an insertion that is nowhere near the window off the shape of the calls it
-leaves behind.
+leaves behind. Then align the retrocopy's own deposited sequence back to the
+parent gene in a synteny view and see the same two gaps as sequence.
 
 ## Prerequisites
 
@@ -19,6 +20,7 @@ To build the tracks:
 
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4)
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
+- `minimap2` and `samtools`, for the synteny half
 
 ## The variant that is not there
 
@@ -143,9 +145,126 @@ what a breed looks like rather than what it carries: the spaniels are exactly
 the rows where the two disagree, and a swatch keyed on the genotype would have
 hidden them.
 
-Placing the insertion needs the other side of the junction, reads spanning
+Placing either insertion needs the other side of the junction, reads spanning
 retrocopy into flanking sequence, which is a different query against a different
 callset.
+
+## The retrocopy itself, as sequence
+
+Everything above is the caller's response to a retrocopy rather than the
+retrocopy. For this locus the retrocopy is also available directly: both copies
+were amplified and Sanger-sequenced, and both are deposited, as
+[MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
+insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
+CFA12 one. That is unusual. Most candidate retrocopies have no sequenced insert,
+which is why the callset footprint above is the method that generalizes and this
+section is a check available here rather than a recipe.
+
+Use `minimap2 -x splice`. The query is a spliced transcript's worth of sequence
+and the reference has introns in the middle of it, so no genomic preset chains
+across the gaps (`asm5`, `asm10` and `asm20` all return the 3' exon alone). Load
+each retrocopy as a one-contig assembly and its alignment as a `SyntenyTrack`:
+
+```json
+{
+  "name": "FGF4retro-CFA12",
+  "displayName": "CFA12 retrocopy (MF040221)",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "FGF4retro-CFA12-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "IndexedFastaAdapter",
+      "uri": "FGF4retro-CFA12.fa",
+      "faiLocation": { "uri": "FGF4retro-CFA12.fa.fai" }
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "dog10k_fgf4_retro_cfa12",
+  "name": "FGF4 CFA12 retrocopy (MF040221) vs its parent gene",
+  "assemblyNames": ["FGF4retro-CFA12", "UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "dog10k_fgf4_retro_cfa12.paf",
+    "queryAssembly": "FGF4retro-CFA12",
+    "targetAssembly": "UU_Cfam_GSD_1.0"
+  }
+}
+```
+
+`assemblyNames` is ordered `[query, target]`, which is the reverse of the order
+minimap2 takes its inputs.
+
+Each record is titled "complete cds" and carries a feature table, so the gene
+model on a retrocopy row is the submitters' annotation rather than a prediction.
+The build script writes it out as GFF3, and requires the CDS to be a single
+interval: a `join(...)` would mean the deposited copy has introns, which is the
+one thing a processed retrocopy cannot have.
+
+```
+FGF4retro-CFA18  MF040222  gene 1..2665, single CDS 243..863 (207 codons), protein ATG34091.1
+FGF4retro-CFA12  MF040221  gene 1..3209, single CDS 241..861 (207 codons), protein ATG34090.1
+```
+
+Load it per retrocopy as an ordinary `FeatureTrack`. It states the same thing
+the alignment does, in a form that needs no reading of ribbons: the parent's CDS
+is three boxes and a processed copy's is one.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dog10k_fgf4_retro_cfa12_genes",
+  "name": "FGF4 CFA12 retrocopy: GenBank annotation (MF040221)",
+  "assemblyNames": ["FGF4retro-CFA12"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "FGF4retro-CFA12.gff3.gz"
+  }
+}
+```
+
+Put the parent gene between the two retrocopies rather than beside them. Both
+align to the same three exons, so as two regions of one row their ribbons cross
+through each other; from above and below they close on the gene instead, and
+each intron is one gap seen twice.
+
+<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the two SV records. Each retrocopy's CDS is one box against the parent's three, and the ribbon gaps fall on the two records." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+
+The window is narrower than the one above, so the three exons and both gaps fill
+the frame; each retrocopy row shows the part of its record that covers this
+window, not the whole thing.
+
+The two gaps in each ribbon are the two records, at the same coordinates and the
+same lengths, and
+[`build_dog10k_fgf4_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_synteny.sh)
+asserts that against the RefSeq introns before it writes a PAF:
+
+```
+FGF4retro-CFA18 aligns chr18:48869200-48872890
+  gap 48869783-48870314 (532 bp): FGF4 intron 48869783-48870314
+  gap 48870419-48870952 (534 bp): FGF4 intron 48870419-48870952
+FGF4retro-CFA12 aligns chr18:48869203-48873418
+  gap 48869783-48870314 (532 bp): FGF4 intron 48869783-48870314
+  gap 48870419-48870952 (534 bp): FGF4 intron 48870419-48870952
+```
+
+Set the synteny view's indel drawing to **Transparent indels** rather than the
+default **Colored indels**. Colored indels name each CIGAR operation, and which
+name an operation gets depends on which side the alignment is read from: each
+gap is drawn as a deletion above the parent row and as an insertion below it, so
+one event takes two colors according to stacking order. Unpainted is the same on
+both sides.
+
+The two records agree at 207 codons but their spans against chr18 differ, so the
+two retrocopies took the same coding sequence and different amounts of UTR.
+
+This still does not place either insertion. A retrocopy's deposited sequence is
+the insert, ending in its poly(A) tail, so it carries no flank to align anywhere
+else.
 
 ## Across the collection
 
@@ -203,6 +322,20 @@ it, checks both records against the RefSeq introns, slices them out of the
 callset for the panel and for the whole collection, and prints the genotype
 counts and the two records' agreement quoted above.
 
+[`build_dog10k_fgf4_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_synteny.sh)
+builds the synteny half, the two retrocopies and their alignments:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_fgf4_synteny.sh
+bash build_dog10k_fgf4_synteny.sh   # writes ./dog10k_fgf4_synteny_build/
+```
+
+It fetches both GenBank records and the parent locus, writes each record's
+feature table out as GFF3, aligns each retrocopy, and rewrites the PAF into
+absolute `chr18` coordinates. It exits non-zero unless every gap in both
+alignments lands on an annotated _FGF4_ intron and each deposited CDS is a
+single interval.
+
 ## See also
 
 - [SVs (Dog10K)](/docs/tutorials/dog10k_svs),
@@ -213,6 +346,7 @@ counts and the two records' agreement quoted above.
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 - [](/docs/user_guides/sv_visualization)
+- [](/docs/user_guides/linear_synteny_view)
 
 ## References
 
