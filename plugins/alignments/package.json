@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@gmod/bam": "^7.6.0",
-    "@gmod/cram": "^8.6.1",
+    "@gmod/cram": "^8.7.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
