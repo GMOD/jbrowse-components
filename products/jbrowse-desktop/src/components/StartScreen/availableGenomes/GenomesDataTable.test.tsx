@@ -211,6 +211,62 @@ test('the favorites filter applies to cross-group hits, not just the group', asy
   expect(screen.getByText('Ailuropoda melanoleuca')).toBeTruthy()
 })
 
+// a selection is keyed by accession and deliberately outlives the query that
+// surfaced each row, so launching has to resolve it against more than the hits
+// currently on screen
+test('a cross-group selection built across two searches launches both', async () => {
+  const { launch } = setup()
+  const settings = await screen.findByRole('button', { name: 'Table settings' })
+
+  // both toggles clear the selection, so they have to come before it
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Enable multiple selection'))
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Search all groups'))
+
+  const search = screen.getByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
+  await screen.findByText('Ailuropoda melanoleuca')
+  // [0] is the header select-all; [1] is the single hit's own checkbox
+  fireEvent.click(screen.getAllByRole('checkbox')[1]!)
+
+  fireEvent.change(search, { target: { value: 'homo' } })
+  await screen.findByText('Homo sapiens')
+  // [0] is the header select-all; [1] is the single hit's own checkbox
+  fireEvent.click(screen.getAllByRole('checkbox')[1]!)
+
+  fireEvent.click(screen.getByText('Open 2 selected'))
+  expect(launch.mock.calls[0]![0].toSorted()).toEqual([
+    'https://jbrowse.org/hubs/genark/GCF/000/004/335/GCF_000004335.4/config.json',
+    'https://jbrowse.org/ucsc/hg38/config.json',
+  ])
+})
+
+test('select-all adds the rows on screen without dropping the rest', async () => {
+  setup()
+  const settings = await screen.findByRole('button', { name: 'Table settings' })
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Enable multiple selection'))
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Search all groups'))
+
+  const search = screen.getByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
+  await screen.findByText('Ailuropoda melanoleuca')
+  fireEvent.click(screen.getAllByRole('checkbox')[1]!)
+  expect(screen.getByText('Open 1 selected')).toBeTruthy()
+
+  // the header checkbox now covers a different hit; panda is off screen
+  fireEvent.change(search, { target: { value: 'homo' } })
+  await screen.findByText('Homo sapiens')
+  fireEvent.click(screen.getAllByRole('checkbox')[0]!)
+  expect(screen.getByText('Open 2 selected')).toBeTruthy()
+
+  // unchecking it takes back only what it added
+  fireEvent.click(screen.getAllByRole('checkbox')[0]!)
+  expect(screen.getByText('Open 1 selected')).toBeTruthy()
+})
+
 test('sort headers are buttons and expose their direction', async () => {
   setup()
   const organism = await screen.findByRole('button', { name: 'Organism' })

@@ -1,7 +1,11 @@
 import { fetchJson } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
-import { SEARCH_INDEX_URL, searchAllGroups } from './searchIndex.ts'
+import {
+  SEARCH_INDEX_URL,
+  entriesForAccessions,
+  searchAllGroups,
+} from './searchIndex.ts'
 
 /**
  * Searches every group at once, via the prebuilt index of all ~50k assemblies.
@@ -22,6 +26,8 @@ export function useGlobalSearch({
 
   return {
     rows: searchAllGroups(data, searchQuery),
+    resolveAccessions: (accessions: Set<string>) =>
+      entriesForAccessions(data, accessions),
     indexedCount: data?.length ?? 0,
     isLoading,
     error,

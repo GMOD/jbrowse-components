@@ -127,6 +127,21 @@ function byRelevance(a: ScoredRow, b: ScoredRow) {
 }
 
 /**
+ * The entries for a set of accessions, from anywhere in the index. A selection
+ * is keyed by accession and outlives the query that surfaced each row, so
+ * launching one cannot rely on the hits the current query leaves on screen.
+ */
+export function entriesForAccessions(
+  data: IndexRow[] | undefined,
+  accessions: Set<string>,
+): Entry[] {
+  return (data ?? [])
+    .filter(row => accessions.has(row[0]))
+    .map(row => toEntry(row))
+    .filter(notEmpty)
+}
+
+/**
  * Hits for `searchQuery` across every group, most relevant first. Filters the
  * raw tuples and only scores and builds objects for what matched, so a
  * keystroke does not walk 50k rows more than once.

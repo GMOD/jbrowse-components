@@ -116,6 +116,7 @@ export default function GenomesDataTable({
 
   const {
     rows: globalRows,
+    resolveAccessions,
     indexedCount,
     isLoading: globalLoading,
     error: globalError,
@@ -155,7 +156,17 @@ export default function GenomesDataTable({
         favoriteIds: favs,
       })
     : data
-  const selectableRows = globalMode ? globalRows : allData
+
+  // A selection is keyed by accession and outlives the query that surfaced each
+  // row, so it resolves against the whole group when browsing one and the whole
+  // index in global mode — never against what is currently on screen.
+  const selectedRows = () =>
+    globalMode
+      ? resolveAccessions(selected)
+      : [...selected]
+          .map(acc => allData.find(row => row.accession === acc))
+          .filter(notEmpty)
+
   const { pageRows, currentPage, totalRows } = sortAndPaginate({
     data: visibleRows,
     columns,
@@ -171,14 +182,7 @@ export default function GenomesDataTable({
         activeTypeOption={activeTypeOption}
         categories={categories}
         onLaunchSelected={() => {
-          // resolve against allData (the full group), not the visible rows, so a
-          // selection built up across searches launches every entry
-          launch(
-            [...selected]
-              .map(acc => selectableRows.find(row => row.accession === acc))
-              .filter(notEmpty)
-              .map(row => row.jbrowseConfig),
-          )
+          launch(selectedRows().map(row => row.jbrowseConfig))
           onClose()
         }}
         onResetFavorites={() => {

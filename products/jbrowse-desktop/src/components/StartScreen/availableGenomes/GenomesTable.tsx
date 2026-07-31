@@ -119,12 +119,19 @@ export default function GenomesTable({
                 size="small"
                 checked={allSelected}
                 indeterminate={someSelected}
+                // adds or removes only the rows on screen: the selection spans
+                // pages and searches, so replacing it wholesale here would drop
+                // everything picked elsewhere
                 onChange={() => {
-                  setSelected(
-                    allSelected
-                      ? new Set()
-                      : new Set(rows.map(r => r.accession)),
-                  )
+                  const next = new Set(selected)
+                  for (const row of rows) {
+                    if (allSelected) {
+                      next.delete(row.accession)
+                    } else {
+                      next.add(row.accession)
+                    }
+                  }
+                  setSelected(next)
                 }}
                 sx={checkboxSx}
               />
