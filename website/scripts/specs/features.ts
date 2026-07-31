@@ -26,9 +26,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // two open tracks are seeded differently to show both halves of that: the
     // pileup track has no featureHeight (it follows the default, so pinning
     // Compact turns it compact at once) and the CRAM track is customized to 12
-    // (it keeps its own value, and is the "1 open track" the snackbar offers to
-    // reach). Two stages mirror the how-to: stage 1 opens the submenu with the
-    // Compact row's pin circled; stage 2 clicks it and boxes the snackbar
+    // (it keeps its own value, and is the "1 customized track" the snackbar
+    // offers to override). Two stages mirror the how-to: stage 1 opens the
+    // submenu with the Compact row's pin circled; stage 2 clicks it and boxes the snackbar
     // action, then makes the customized track compact so the frame shows the end
     // state.
     mode: 'url',
@@ -107,12 +107,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: '[aria-label="make Compact the default for all tracks"]',
           },
-          { type: 'waitForText', text: 'Apply to 1 open track' },
+          { type: 'waitForText', text: 'Override 1 customized track' },
           ...dismissMenus(),
           // make the OTHER open track compact through its own Read-height menu
           // (not the snackbar action, which would dismiss the snackbar the
           // reviewer wants left visible) so the frame ends with both tracks
-          // compact and the "Apply to 1 open track" affordance still on screen
+          // compact and the "Override 1 customized track" affordance still on screen
           trackMenuIcon('volvox_cram_alignments_ctga'),
           ...openFeatureHeightSubmenu(),
           { type: 'click', text: 'Compact' },
@@ -123,7 +123,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         annotations: [
           {
             type: 'box',
-            anchor: { text: 'Apply to 1 open track' },
+            anchor: { text: 'Override 1 customized track' },
             strokeWidth: 3,
           },
           {
