@@ -1,17 +1,19 @@
 import type { Region } from '@jbrowse/core/util'
 
-// Off-screen px kept on each side of the viewport so panning reveals alignments
-// without a refetch. On the synteny path the worker's whole-feature cull
-// (executeSyntenyFeaturesAndPositions), the geometry emit cull
-// (buildSyntenyGeometry), and the main-thread fetch window (syntenyFetchRegions)
-// must all agree on this, so it is the single source of truth imported by each.
-// The dotplot path has no worker cull — it maps every feature in the fetched
-// regions — so there it sizes the fetch window alone.
+// Floor for the off-screen px kept on each side of the viewport so panning
+// reveals alignments without a refetch. Only a floor: every consumer goes
+// through syntenyPanBufferPx below, which widens it on wide views.
 export const PAN_BUFFER_PX = 2000
 
-// Pan buffer in px, widened to half the viewport on wide views. Sizes both the
-// worker's whole-feature cull and the main-thread fetch window, so a feature the
-// worker would keep is never left unfetched (fetch window >= cull window).
+// Pan buffer in px, widened to half the viewport on wide views. The single
+// source of truth for all three synteny windows, which must agree: the worker's
+// whole-feature cull (executeSyntenyFeaturesAndPositions), the geometry emit
+// cull (buildSyntenyGeometry), and the main-thread fetch window
+// (syntenyFetchRegions). A feature the geometry stage would emit is never left
+// unfetched or culled earlier, and the distance a pan can travel before the
+// snapped fetch window rolls over is exactly the distance geometry was emitted
+// for. The dotplot path has no worker cull — it maps every feature in the
+// fetched regions — so there this sizes the fetch window alone.
 export function syntenyPanBufferPx(widthPx: number) {
   return Math.max(widthPx * 0.5, PAN_BUFFER_PX)
 }

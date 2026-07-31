@@ -25,6 +25,7 @@ import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.t
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   CigarOpMask,
@@ -93,6 +94,34 @@ export interface FeatPos {
 // instead of on every settled zoom.
 function bucketBpPerPx(bpPerPx: number) {
   return Math.floor(Math.log2(Math.max(bpPerPx, 1)))
+}
+
+// One connected genome view's snapped fetch window. Written once so the query
+// axis's window (what the fetch sends) and the target axis's (which only enters
+// the refetch key) can't drift apart.
+function viewFetchWindow(view: {
+  visibleRegions: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+    displayedRegionIndex: number
+  }[]
+  displayedRegions: Region[]
+  width: number
+  bpPerPx: number
+}) {
+  const { visibleRegions, displayedRegions, width, bpPerPx } = view
+  return syntenyFetchRegions({
+    visibleRegions,
+    displayedRegions,
+    width,
+    bpPerPx,
+  })
+}
+
+function windowSignature(regions: Region[]) {
+  return regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(',')
 }
 
 function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
@@ -359,9 +388,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * First load: a fetch is running and no data has arrived yet. Excludes
-       * error so error UI and loading UI never show simultaneously. Drives the
-       * full striped LoadingOverlay.
+       * First load: no data has arrived yet. Deliberately not `&& fetching` —
+       * that would blink the overlay off during the pre-fetch debounce gap.
+       * Excludes error so error UI and loading UI never show simultaneously.
+       * Drives the full striped LoadingOverlay.
        */
       get loading() {
         return !this.ready && !self.error
@@ -632,26 +662,33 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * The query axis's (v0) fetch window, and the regions the fetch actually
+       * sends: the visible content blocks expanded by the shared pan buffer and
+       * snapped outward to a buffer-sized grid, so a pan within the buffer
+       * neither refetches nor exposes an unfetched strip. The target axis is not
+       * scoped — the fetch is one-dimensional (query regions in, every mate out)
+       * — it only contributes its cumBp index, so it appears in
+       * `fetchRegionsKey` but not here.
+       */
+      get fetchRegions() {
+        const connected = this.connectedViews
+        return connected ? viewFetchWindow(connected.v0) : []
+      },
+      /**
+       * #getter
        * Stable key over the *snapped* fetch window of both connected views. The
-       * fetch autorun tracks this so a scroll/zoom that moves the snapped window
-       * refetches, while a sub-buffer pan (identical snapped window) does not —
-       * a MobX computed only notifies when its string output changes. Mirrors
-       * the window syntenyFetchRegions hands the worker.
+       * fetch autorun tracks this (through `currentFetchKey`) so a scroll/zoom
+       * that moves either snapped window refetches, while a sub-buffer pan
+       * (identical snapped windows) does not — a MobX computed only notifies
+       * when its string output changes. Built from the same `fetchRegions` the
+       * worker is handed, so the key can't describe a window the fetch didn't
+       * use.
        */
       get fetchRegionsKey() {
         const connected = this.connectedViews
         return connected
-          ? [connected.v0, connected.v1]
-              .map(v =>
-                syntenyFetchRegions({
-                  visibleRegions: v.visibleRegions,
-                  displayedRegions: v.displayedRegions,
-                  width: v.width,
-                  bpPerPx: v.bpPerPx,
-                })
-                  .map(r => `${r.refName}:${r.start}-${r.end}`)
-                  .join(','),
-              )
+          ? [this.fetchRegions, viewFetchWindow(connected.v1)]
+              .map(windowSignature)
               .join('_')
           : undefined
       },

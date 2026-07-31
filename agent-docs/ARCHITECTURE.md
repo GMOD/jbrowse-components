@@ -23,7 +23,9 @@ collected under [See also](#see-also) at the end.
 - Two fetch foundations cover every **LGV** display: `MultiRegionDisplayMixin`
   (per region, its own autoruns) and `GlobalFetchMixin` (one dataset, display
   installs its own autorun). The non-LGV views (synteny, dotplot) compose
-  neither and hand-roll fetch, debounce and staleness.
+  neither: they run a bare fetch autorun over shared parts —
+  `SyntenyFetchStateMixin`, `createStopTokenRotation`, `leadingEdgeDebounce`,
+  `isDataCurrent`.
 - `DisplayChrome` owns every terminal state — loading, error, render error,
   region-too-large — via the single `displayPhase` getter.
 - Shaders are `.slang` compiled by `pnpm gen:shaders`. **Never hand-edit
@@ -127,19 +129,26 @@ gate is derived and opt-in; arc's `ArcFetchModel` enables it like every other
 byte-gated display (see [the region-too-large
 gate](#the-region-too-large-gate-summary)).
 
-**The non-LGV views are a third shape, not a row in that table.** Multi-LGV
-synteny (`LinearSyntenyDisplay`) composes only `BaseDisplay` and owns its fetch;
-dotplot puts `RenderLifecycleMixin` at the *view* level. Neither gets
-`FetchMixin`'s cancel/stale machinery, `RegionTooLargeMixin` or `loadedRegions`,
-so each re-implements a `fetching` flag and its own leading-edge debounce
-(`leadingEdgeDebounce`, the same scheduler `installGlobalFetchAutorun` uses).
-They do answer the
+**The non-LGV views are a third shape, not a row in that table.** Both
+comparative displays (`LinearSyntenyDisplay`, `DotplotDisplay`) compose
+`BaseDisplay` + `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their
+fetch in a bare autorun. Neither gets `FetchMixin`'s cancel/stale machinery,
+`RegionTooLargeMixin` or `loadedRegions`; instead the pieces are shared à la
+carte — the mixin holds `fetching` / `loadedFetchKey` / `assembliesSwapped`,
+`createStopTokenRotation` (core) does latest-wins token rotation plus the
+`isCurrent()` guard every post-await write is gated on, and the debounce is
+`leadingEdgeDebounce`, the same scheduler `installGlobalFetchAutorun` uses.
+They also answer the
 shared `dataCurrent` freshness question and run the shared `computeSvgReady`
 policy, just via a signature compare (`isDataCurrent` over `dotplotFetchKey` /
 synteny's `currentFetchKey`) rather than spatial coverage — which is where the
 stale-capture bugs lived
 ([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) §"On-screen capture gate").
-The remaining duplication is the fetch state machine itself, not freshness.
+Both autoruns track exactly one signature computed (`currentFetchKey`) plus
+`adapterConfig`, and read every value behind it `untracked`, so a pan inside the
+buffered window can't refire the fetch. The remaining duplication is the fetch
+state machine itself — `begin()` / `prime()` / try / catch / finally — not
+freshness.
 Both scope their fetch through the shared `syntenyFetchRegions`
 (`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and
 snapped to a buffer-sized grid, so a pan inside the buffer neither refetches nor
@@ -147,11 +156,14 @@ exposes an unfetched strip, and the freshness key stays stable across the
 gesture. Synteny scopes its query axis, dotplot its h axis; neither scopes the
 other axis, because the fetch is one-dimensional in both.
 
-Both put their `RenderLifecycleMixin` on the *view*, so one canvas is shared by
-every display in it. That is what makes their upload callbacks keyed rather than
-per-region: they diff through `createKeyedUploadSync` and delete each departed
-key individually, because an active-set prune computed from one display's map
-would wipe its siblings' buffers.
+Both put their `RenderLifecycleMixin` *above* the display, so one canvas is
+shared by several displays: dotplot on the view itself, synteny on
+`LinearSyntenyViewHelper` — the per-level (row-gap) model — so a 3-row stack has
+two canvases, one per band, each shared by that level's synteny tracks. That is
+what makes their upload callbacks keyed rather than per-region: they diff through
+`createKeyedUploadSync` and delete each departed key individually, because an
+active-set prune computed from one display's map would wipe its siblings'
+buffers.
 
 Circular view's `ChordVariantDisplay` is a fourth shape, off this axis
 entirely: it paints main-thread JSX SVG (radial, so it keeps a bespoke

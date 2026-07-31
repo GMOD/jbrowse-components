@@ -5,7 +5,7 @@ import {
   CIGAR_N,
 } from '@jbrowse/cigar-utils'
 import {
-  PAN_BUFFER_PX,
+  syntenyPanBufferPx,
   visitCigarRenderedSegments,
 } from '@jbrowse/synteny-core'
 
@@ -112,8 +112,17 @@ export function buildSyntenyGeometry({
 }): SyntenyGeometry {
   const featureCount = p11_cumBp.length
 
-  const emitLeft = -PAN_BUFFER_PX
-  const emitRight = viewWidth + PAN_BUFFER_PX
+  // Emit window for CIGAR detail segments and location markers (the base
+  // trapezoid is not culled here — features this far off-screen were already
+  // dropped by executeSyntenyFeaturesAndPositions). Same width-scaled buffer the
+  // fetch window and that whole-feature cull use: a fixed 2000px was narrower
+  // than both on a view wider than 4000px, and since the fetch key snaps to a
+  // buffer-sized grid, a pan of up to syntenyPanBufferPx doesn't refetch — so
+  // detail culled inside that distance left plain base ribbons at the leading
+  // edge of the pan until the snapped window rolled over.
+  const emitBufferPx = syntenyPanBufferPx(viewWidth)
+  const emitLeft = -emitBufferPx
+  const emitRight = viewWidth + emitBufferPx
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 

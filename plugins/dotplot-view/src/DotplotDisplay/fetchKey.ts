@@ -1,7 +1,7 @@
 import { regionSignature } from '@jbrowse/synteny-core'
 
 import type { Region } from '@jbrowse/core/util'
-import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
+import type { BpIndexViewSnap, LodTier } from '@jbrowse/synteny-core'
 
 // Signature of the inputs a dotplot feature fetch depends on: the LOD tier, each
 // axis's zoom and displayed-region order/orientation, and the snapped h-axis
@@ -18,7 +18,8 @@ import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 // Keyed on the raw viewport it would flip on every pointer move of a drag,
 // closing `svgReady` and the `settled` gate for the whole gesture.
 export function dotplotFetchKey(
-  lodMode: string,
+  // the resolved tier, never the 'auto' preference — see resolveLodTier
+  lodTier: LodTier,
   hAxis: BpIndexViewSnap,
   vAxis: BpIndexViewSnap,
   fetchRegions: Region[],
@@ -28,5 +29,5 @@ export function dotplotFetchKey(
   const window = fetchRegions
     .map(r => `${r.refName}:${r.start}-${r.end}`)
     .join(',')
-  return `${lodMode}::${axis(hAxis)}::${axis(vAxis)}::${window}`
+  return `${lodTier}::${axis(hAxis)}::${axis(vAxis)}::${window}`
 }

@@ -243,10 +243,10 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2Offset = v2.offsetPx
   const bpPerPxInv1 = 1 / v1.bpPerPx
   const bpPerPxInv2 = 1 / v2.bpPerPx
-  // Shared with the main-thread fetch window (syntenyFetchRegions) and >= the
-  // PAN_BUFFER_PX emit cull in buildSyntenyGeometry, so this whole-feature cull
-  // never drops a feature the geometry stage would emit, and the scoped fetch
-  // never omits a feature this cull would keep.
+  // The one buffer all three windows use — the main-thread fetch window
+  // (syntenyFetchRegions), this whole-feature cull, and the emit cull in
+  // buildSyntenyGeometry — so this cull never drops a feature the geometry stage
+  // would emit, and the scoped fetch never omits a feature this cull would keep.
   const bufferPx = syntenyPanBufferPx(viewWidth)
   const offScreenLeftBound = -bufferPx
   const offScreenRightBound = viewWidth + bufferPx

@@ -10,7 +10,6 @@ import {
   createStopTokenRotation,
   detectDisplayAssembliesSwapped,
   renameRegionsForAdapter,
-  syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
@@ -38,69 +37,64 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       async function syntenyFetchAutorun() {
-        if (self.isMinimized) {
+        // Teardown guard, as on the swap check below: removeView mutates
+        // observables this body reads before the disposers run, and
+        // getContainingView on a detached node warns then throws — here into an
+        // unawaited promise.
+        if (!isAlive(self) || self.isMinimized) {
           return
         }
         // A synteny level draws between two adjacent genome views; this display
         // only depends on those two, not the whole stack. connectedViews is the
         // shared gate (same one renderParams uses).
-        const view = getContainingView(self) as LinearSyntenyViewModel
         const connected = self.connectedViews
         if (!connected) {
           return
         }
         const { v0, v1 } = connected
-        const connectedViews = [v0, v1]
 
-        // Tracked deps that SHOULD trigger refetch when changed:
-        //   - displayedRegions (per view) — region set drives cumBp output
-        //   - adapterConfig and CIGAR drawing options
-        //   - fetchRegionsKey — the snapped visible window + pan buffer of both
-        //     views. Scoping the indexed fetch to this makes scroll/zoom past
-        //     the buffer refetch the newly-visible slice; sub-buffer pans keep
-        //     the same snapped window so the computed doesn't refire.
-        //   - bpPerPxBucketKey — the log2 zoom bucket of both views. Still
-        //     needed for the small-region case, where fetchRegions is clamped
-        //     to the whole (zoom-independent) region: without this, zooming out
-        //     would not refetch and the worker's stale px cull would leave
-        //     newly-visible features unemitted.
-        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`.
-        // Sub-buffer scroll moves are absorbed by the worker's px buffer.
-        for (const v of connectedViews) {
-          void v.displayedRegions
-        }
-        void self.fetchRegionsKey
-        void self.bpPerPxBucketKey
-        const adapterConfig = self.adapterConfig
-        const { drawCIGAR, drawCIGARMatchesOnly, drawLocationMarkers } = view
-        // Tracked: the tier is a fetch input, and in 'auto' it flips at a zoom
-        // the bucket key above cannot see (see the getter).
-        const lodTier = self.lodTier
-        // Snapshot the fetch-input signature now, from the same tracked inputs
-        // this fetch depends on, so the resulting data is tagged with what it
-        // was fetched for even if the view changes again mid-RPC.
+        // The only other tracked deps. `currentFetchKey` folds every input this
+        // fetch depends on — both views' region sets, the snapped fetch window,
+        // the log2 zoom bucket, the CIGAR/marker draw options and the resolved
+        // LOD tier — into one computed, so the autorun refires exactly when a
+        // refetch is needed. A pan inside the buffered window recomputes it to
+        // the same string and doesn't refire; that same string tags the
+        // resulting data, so it can't drift from what was fetched even if the
+        // view moves again mid-RPC. Tracking the underlying observables
+        // individually (as this once did) is strictly noisier: a
+        // setDisplayedRegions that yields an identical region signature would
+        // refetch data that is still valid. Same shape as dotplot's fetch.
         const fetchKey = self.currentFetchKey
-        // Untracked reads: values for the worker's fetch-time cull. Reading
-        // these inside `untracked` prevents them from registering as autorun
-        // deps, so scroll/zoom changes don't refire the fetch (fetchRegionsKey/
-        // bpPerPxBucketKey above decide that); the worker still sees the
-        // *current* offsetPx/bpPerPx.
+        const adapterConfig = self.adapterConfig
+        // Untracked: the values behind that key, and the raw geometry the
+        // worker culls with. Reading them here rather than as deps keeps
+        // offsetPx/width changes from refiring the fetch, while the worker
+        // still sees the current axes.
         //
         // Query axis (v0) drives the scoped single-axis fetch, so it alone
-        // carries the visible window + pan buffer and the cull width.
+        // carries the visible window + pan buffer and the cull width; the
+        // target axis (v1) only supplies its cumBp index + cull geometry.
+        const {
+          drawCIGAR,
+          drawCIGARMatchesOnly,
+          drawLocationMarkers,
+          lodTier,
+        } = untracked(() => {
+          const view = getContainingView(self) as LinearSyntenyViewModel
+          return {
+            drawCIGAR: view.drawCIGAR,
+            drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
+            drawLocationMarkers: view.drawLocationMarkers,
+            lodTier: self.lodTier,
+          }
+        })
         const rawQuery = untracked(() => ({
           bpPerPx: v0.bpPerPx,
           offsetPx: v0.offsetPx,
           displayedRegions: v0.displayedRegions,
           width: v0.width,
-          fetchRegions: syntenyFetchRegions({
-            visibleRegions: v0.visibleRegions,
-            displayedRegions: v0.displayedRegions,
-            width: v0.width,
-            bpPerPx: v0.bpPerPx,
-          }),
+          fetchRegions: self.fetchRegions,
         }))
-        // Target axis (v1) only supplies its cumBp index + cull geometry.
         const rawTarget = untracked(() => ({
           bpPerPx: v1.bpPerPx,
           offsetPx: v1.offsetPx,

@@ -88,6 +88,13 @@ export function doAfterAttach(
     self,
     autorun(
       async function dotplotFetchAutorun() {
+        // Same guard as the two autoruns below: teardown mutates observables
+        // this body reads (removeView -> removeTemporaryAssembly invalidates
+        // view.initialized) before the disposers run, and getContainingView on a
+        // detached node warns then throws — here into an unawaited promise.
+        if (!isAlive(self)) {
+          return
+        }
         const view = getContainingView(self) as DotplotViewModel
         if (!view.initialized) {
           return

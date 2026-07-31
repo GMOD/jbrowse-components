@@ -45,6 +45,9 @@ const useStyles = makeStyles()({
 // a drag. Tuned to be tolerant of jittery trackpads.
 const CLICK_DRAG_THRESHOLD_PX = 5
 
+// MouseEvent.button for the left/primary button
+const PRIMARY_BUTTON = 0
+
 function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
   featureIndex: number,
@@ -161,12 +164,20 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleMouseDown(event: React.MouseEvent) {
-    dragStartXRef.current = event.clientX
-    lastDragXRef.current = event.clientX
+    // Primary button only. A right-click is mousedown -> contextmenu -> mouseup
+    // at the same position, so arming the drag on it made handleMouseUp read
+    // that as a click and open the feature widget behind the context menu.
+    if (event.button === PRIMARY_BUTTON) {
+      dragStartXRef.current = event.clientX
+      lastDragXRef.current = event.clientX
+    }
   }
 
   function handleMouseUp(event: React.MouseEvent<HTMLCanvasElement>) {
     const start = dragStartXRef.current
+    if (event.button !== PRIMARY_BUTTON) {
+      return
+    }
     lastDragXRef.current = undefined
     dragStartXRef.current = undefined
     if (
