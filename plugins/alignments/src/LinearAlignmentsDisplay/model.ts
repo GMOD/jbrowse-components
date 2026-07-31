@@ -86,7 +86,6 @@ import {
   nextGroupHeightOverride,
 } from './groupLayout.ts'
 import {
-  anyGroupHasSashimiDownArcs,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
@@ -1310,6 +1309,24 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Group keys whose junctions land in the strip below coverage, i.e. the
+         * lanes that strip is reserved for. One memoized scan for both questions
+         * asked of it: `belowCoverageBandsInput` only needs whether any lane
+         * wants the strip, `sections` needs which — and the 'auto' mode's
+         * crossing test is O(junctions²) per lane, so running it twice was the
+         * whole scan twice.
+         */
+        get sashimiDownArcLanes() {
+          return groupsWithSashimiDownArcs(
+            self.rpcDataMap,
+            self.minSashimiScore,
+            self.sashimiArcsMode,
+            self.hiddenGroupKeys,
+          )
+        },
+
+        /**
+         * #getter
          * Inputs to `belowCoverageBandsGeometry` — the below-coverage band
          * settings plus whether any sashimi junction is present. Defined here
          * (an earlier .views block than `belowCoverageBands`) so the fit-budget
@@ -1324,12 +1341,7 @@ export default function stateModelFactory(
             readConnectionsHeight: self.readConnectionsHeight,
             showSashimiArcs: self.showSashimiArcs,
             sashimiArcsHeight: self.sashimiArcsHeight,
-            hasSashimiDownArcs: anyGroupHasSashimiDownArcs(
-              self.rpcDataMap,
-              self.minSashimiScore,
-              self.sashimiArcsMode,
-              self.hiddenGroupKeys,
-            ),
+            hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
           }
         },
 
@@ -1695,12 +1707,7 @@ export default function stateModelFactory(
           // `arcsByGroup` is empty when read-connections are off, so this costs
           // nothing on that path.
           const arcsByGroup = self.arcsByGroup
-          const sashimiLanes = groupsWithSashimiDownArcs(
-            self.rpcDataMap,
-            self.minSashimiScore,
-            self.sashimiArcsMode,
-            self.hiddenGroupKeys,
-          )
+          const sashimiLanes = self.sashimiDownArcLanes
           const groups =
             order.length === 0
               ? // No data (or a grouped fetch over an empty region): the synthetic

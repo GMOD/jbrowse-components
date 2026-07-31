@@ -300,9 +300,11 @@ for the change. Each strip's rule is split in two halves, deliberately:
   spelling each, shared by `belowCoverageBandsGeometry` (global geometry, fit
   budget) and `computeStackedSections`;
 - the **data** half, per lane — `SectionGroupInput.hasArcs` (from
-  `anyArcsDrawn(arcsByGroup.get(key))`) and `hasSashimiDownArcs` (from
-  `groupsWithSashimiDownArcs`, the per-lane form of the older
-  `anyGroupHasSashimiDownArcs`).
+  `anyArcsDrawn(arcsByGroup.get(key))`) and `hasSashimiDownArcs` (from the
+  `sashimiDownArcLanes` getter, i.e. `groupsWithSashimiDownArcs`). The
+  display-wide question `belowCoverageBandsInput` asks is that same set being
+  non-empty — one memoized scan, since 'auto' mode's crossing test is
+  O(junctions²) per lane.
 
 Consequences worth knowing:
 

@@ -109,7 +109,7 @@ export interface BelowCoverageBandsInput {
   showSashimiArcs: boolean
   sashimiArcsHeight: number
   // Whether any junction actually lands in the below-coverage strip, already
-  // resolved against the mode + score filter by `anyGroupHasSashimiDownArcs`
+  // resolved against the mode + score filter by `groupsWithSashimiDownArcs`
   // (mode lives there, not here: 'auto' has to inspect the junctions to know).
   hasSashimiDownArcs: boolean
 }

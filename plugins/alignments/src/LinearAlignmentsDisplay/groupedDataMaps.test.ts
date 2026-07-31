@@ -2,7 +2,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
-  anyGroupHasSashimiDownArcs,
   groupsWithSashimiDownArcs,
   buildChainIdMap,
   buildRawDataByGroup,
@@ -307,14 +306,20 @@ const crossing: [number, number, number][] = [
   [300, 700, 2],
 ]
 
-test('anyGroupHasSashimiDownArcs: auto reserves the strip only while a crossing pair survives the score filter', () => {
+// The display-wide question ("is the strip reserved at all") is this set being
+// non-empty — how `model.sashimiDownArcLanes` is read by `belowCoverageBandsInput`.
+function anyLane(...args: Parameters<typeof groupsWithSashimiDownArcs>) {
+  return groupsWithSashimiDownArcs(...args).size > 0
+}
+
+test('auto reserves the strip only while a crossing pair survives the score filter', () => {
   const m = new Map([[0, grouped([{ key: '', data: junctionData(crossing) }])]])
-  expect(anyGroupHasSashimiDownArcs(m, 0, 'auto')).toBe(true)
+  expect(anyLane(m, 0, 'auto')).toBe(true)
   // filtering the 2-read junction leaves nothing to cross => nothing goes down
-  expect(anyGroupHasSashimiDownArcs(m, 5, 'auto')).toBe(false)
+  expect(anyLane(m, 5, 'auto')).toBe(false)
 })
 
-test('anyGroupHasSashimiDownArcs: auto ignores nested + disjoint junctions', () => {
+test('auto ignores nested + disjoint junctions', () => {
   const m = new Map([
     [
       0,
@@ -331,15 +336,15 @@ test('anyGroupHasSashimiDownArcs: auto ignores nested + disjoint junctions', () 
       ]),
     ],
   ])
-  expect(anyGroupHasSashimiDownArcs(m, 0, 'auto')).toBe(false)
+  expect(anyLane(m, 0, 'auto')).toBe(false)
 })
 
-test('anyGroupHasSashimiDownArcs: auto pools a group across regions, but not across groups', () => {
+test('auto pools a group across regions, but not across groups', () => {
   const split = new Map([
     [0, grouped([{ key: '+', data: junctionData([crossing[0]!]) }])],
     [1, grouped([{ key: '+', data: junctionData([crossing[1]!]) }])],
   ])
-  expect(anyGroupHasSashimiDownArcs(split, 0, 'auto')).toBe(true)
+  expect(anyLane(split, 0, 'auto')).toBe(true)
   // same two junctions, but each group assigns sides alone => neither crosses
   const perGroup = new Map([
     [
@@ -350,38 +355,10 @@ test('anyGroupHasSashimiDownArcs: auto pools a group across regions, but not acr
       ]),
     ],
   ])
-  expect(anyGroupHasSashimiDownArcs(perGroup, 0, 'auto')).toBe(false)
+  expect(anyLane(perGroup, 0, 'auto')).toBe(false)
 })
 
-// A lane the display hides (LGVSyntenyDisplay's self-alignment lane) must not
-// drive the derivations shared across the visible lanes — it was still
-// reserving the sashimi strip for every other lane.
-test('anyGroupHasSashimiDownArcs: a hidden group does not reserve the strip', () => {
-  const m = new Map([
-    [
-      0,
-      grouped([
-        { key: 'self', data: junctionData([[100, 700, 9]]) },
-        { key: 'other', data: junctionData([]) },
-      ]),
-    ],
-  ])
-  expect(anyGroupHasSashimiDownArcs(m, 5, 'down')).toBe(true)
-  expect(anyGroupHasSashimiDownArcs(m, 5, 'down', new Set(['self']))).toBe(
-    false,
-  )
-})
-
-test('anyGroupHasSashimiDownArcs: down reserves for any surviving junction, up never does', () => {
-  const m = new Map([
-    [0, grouped([{ key: '', data: junctionData([[100, 700, 3]]) }])],
-  ])
-  expect(anyGroupHasSashimiDownArcs(m, 0, 'down')).toBe(true)
-  expect(anyGroupHasSashimiDownArcs(m, 4, 'down')).toBe(false)
-  expect(anyGroupHasSashimiDownArcs(m, 0, 'up')).toBe(false)
-})
-
-// The per-lane form: a lane with no junction must be named as not needing the
+// A lane with no junction must be named as not needing the
 // strip, so `computeStackedSections` can drop it rather than leaving dead space.
 test('groupsWithSashimiDownArcs: names only the lanes needing the strip', () => {
   const m = new Map([

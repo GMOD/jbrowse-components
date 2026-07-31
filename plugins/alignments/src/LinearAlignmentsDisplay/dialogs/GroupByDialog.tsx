@@ -26,6 +26,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // same node straight through, so the two can't disagree about the tag/color
 // surface while the dialog stays free of menu-only state.
 export type GroupByDialogModel = {
+  id: string
   adapterConfig: AnyConfigurationModel
   configuration: AnyConfigurationModel
   colorBy: ColorBy
@@ -76,8 +77,12 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     )
   })
   const debouncedTag = useDebounce(groupByTag, 1000)
+  // Keyed by the display's id, never the node itself: useFetch JSON-stringifies
+  // its key, and an MST node stringifies to its whole snapshot — so the key both
+  // cost a full serialization per render and changed on any unrelated model edit,
+  // re-running this RPC over the visible blocks.
   const { data: tagSet, error } = useFetch<string[]>(
-    debouncedTag ? ['getUniqueTags', model, debouncedTag] : null,
+    debouncedTag ? ['getUniqueTags', model.id, debouncedTag] : null,
     () =>
       getUniqueTags({
         self: model,

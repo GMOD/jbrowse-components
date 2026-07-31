@@ -33,34 +33,21 @@ export function* eachGroup(
 
 const NOTHING_HIDDEN: ReadonlySet<string> = new Set()
 
-// True when some junction will actually be drawn in the strip below coverage —
-// i.e. whether that strip is worth reserving. 'up' never uses it; 'down' uses it
-// for any surviving junction; 'auto' only splits an arc down when junctions
-// cross (see `hasCrossingSpans`), so a score filter that leaves no crossing pair
-// frees the strip entirely and the survivors reclaim it.
+// Which group keys put a junction in the strip below coverage, i.e. which lanes
+// that strip is worth reserving for — so a grouping where only one lane has
+// junctions doesn't hand every other lane an empty strip (the arc band's
+// `hasArcs` does the same for read connections). 'up' never reserves; 'down'
+// reserves for any surviving junction; 'auto' only splits an arc down when
+// junctions cross (see `hasCrossingSpans`), so a score filter that leaves no
+// crossing pair frees the strip entirely and the survivors reclaim it. The
+// display-wide question — is the strip reserved at all — is this set being
+// non-empty (`model.sashimiDownArcLanes`).
 //
 // Deliberately genomic-bp, over every *loaded* region, so the layout keeps
 // depending only on `rpcDataMap` — projecting to screen px would make the pileup
 // re-lay-out on every pan frame. Interleaving survives any monotonic projection,
 // so within a region this matches the screen-space assignment `computeSashimiArcs`
 // runs; it only ever over-reserves (loaded ⊇ visible).
-export function anyGroupHasSashimiDownArcs(
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  minSashimiScore: number,
-  mode: SashimiArcsMode,
-  hidden?: ReadonlySet<string>,
-) {
-  return (
-    groupsWithSashimiDownArcs(rpcDataMap, minSashimiScore, mode, hidden).size >
-    0
-  )
-}
-
-// Which group keys put a junction in the strip below coverage, i.e. which lanes
-// the strip is worth reserving for. The per-lane form of
-// `anyGroupHasSashimiDownArcs` above, so a grouping where only one lane has
-// junctions doesn't hand every other lane an empty strip (the arc band's
-// `hasArcs` does the same for read connections).
 export function groupsWithSashimiDownArcs(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   minSashimiScore: number,

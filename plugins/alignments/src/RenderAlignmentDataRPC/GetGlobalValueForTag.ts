@@ -1,6 +1,8 @@
 import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
+
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -39,14 +41,16 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
       const features =
         (await dataAdapter?.getFeaturesArray(region, { stopToken })) ?? []
       for (const feature of features) {
-        // Mirror extractFeatureTagValue's source order (tags object, else the
-        // bare field) so every value the render path can color by is discovered
-        // here — otherwise a field-backed tag colors per read but never gets a
-        // palette entry, leaving those reads on the no-tag fallback.
-        const tags = feature.get('tags') as Record<string, unknown> | undefined
-        const val = tags ? tags[tag] : feature.get(tag)
-        if (val != null) {
-          tagValues.add(`${val}`)
+        // The same extractor the render path keys on, so a field-backed tag (no
+        // `tags` object) is discovered here too — re-spelling its source order
+        // let a tag color per read while never getting a palette entry, leaving
+        // those reads on the no-tag fallback. '' is that extractor's
+        // absent/no-value sentinel, which grouping files under "<tag>: none" and
+        // coloring paints with the no-value neutral — neither is a discovered
+        // value.
+        const val = extractFeatureTagValue(feature, tag)
+        if (val !== '') {
+          tagValues.add(val)
         }
       }
     }
