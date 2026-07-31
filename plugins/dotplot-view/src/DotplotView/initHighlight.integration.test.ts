@@ -75,3 +75,58 @@ test('init loc navigation runs once regions exist, and highlight still applies',
   expect(view.hview.offsetPx).toBeGreaterThan(0)
   expect(notifyError).not.toHaveBeenCalled()
 })
+
+// A bad entry used to throw out of applyInitHighlights into the autorun's
+// catch, which skipped every init step that runs after highlights (loc-nav
+// among them) and cleared init. Each entry now fails on its own.
+test('a bad init.highlight entry keeps its siblings and the loc-nav after it', async () => {
+  const session = setup()
+  const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
+  const consoleError = jest.spyOn(console, 'error').mockImplementation()
+  const view = session.addView('DotplotView', {
+    init: {
+      views: [
+        { assembly: 'volvox', loc: 'ctgA:5000-15000' },
+        { assembly: 'volvox' },
+      ],
+      highlight: ['ctgA:1000-2000', 'nonexistent:1-2', 'ctgA:8000-9000'],
+    },
+  })
+  view.setWidth(800)
+
+  await when(() => view.initialized, { timeout: 15000 })
+  await when(() => view.highlight.length === 2, { timeout: 15000 })
+
+  // the two good entries survived the bad one between them
+  expect(view.highlight.map((h: { start: number }) => h.start)).toEqual([
+    999, 7999,
+  ])
+  // and the loc-nav that runs after highlights still happened
+  expect(view.hview.offsetPx).toBeGreaterThan(0)
+  expect(notifyError).toHaveBeenCalledTimes(1)
+  expect(consoleError).toHaveBeenCalled()
+})
+
+test('a bad per-axis init loc leaves the other axis navigated', async () => {
+  const session = setup()
+  const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+  const view = session.addView('DotplotView', {
+    init: {
+      views: [
+        { assembly: 'volvox', loc: 'nonexistent:1-2' },
+        { assembly: 'volvox', loc: 'ctgA:5000-15000' },
+      ],
+    },
+  })
+  view.setWidth(800)
+
+  await when(() => view.initialized, { timeout: 15000 })
+  // the whole point: axis 0 throws first, and before the per-axis catch that
+  // aborted the loop, so axis 1 never navigated and this would time out
+  await when(() => view.vview.offsetPx > 0, { timeout: 15000 })
+
+  expect(notifyError).toHaveBeenCalledTimes(1)
+  // the plot materialized, so init is consumed rather than kept for a retry
+  expect(view.init).toBeUndefined()
+})

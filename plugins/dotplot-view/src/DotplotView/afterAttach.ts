@@ -24,17 +24,34 @@ type AssemblyManager = ReturnType<typeof getSession>['assemblyManager']
 // three forms LinearGenomeView's init.highlight accepts, so both go through
 // core's shared coerceHighlight. Pure — no view dependency — so it is unit
 // testable on its own.
+//
+// Resolved per entry: coerceHighlight throws on an unknown refName or a
+// malformed locstring, and one typo must take out neither its siblings nor the
+// init steps that run after highlights. Bad entries come back as `errors` for
+// the caller to report rather than being swallowed.
 export function parseInitHighlights(
   entries: string[],
   assemblyManager: AssemblyManager,
   defaultAssembly: string,
-): HighlightType[] {
-  return entries.flatMap(h => {
-    const highlight = coerceHighlight(h, defaultAssembly, refName =>
-      assemblyManager.isValidRefName(refName, defaultAssembly),
-    )
-    return highlight ? [highlight] : []
-  })
+): {
+  highlights: HighlightType[]
+  errors: { entry: string; error: unknown }[]
+} {
+  const highlights: HighlightType[] = []
+  const errors: { entry: string; error: unknown }[] = []
+  for (const entry of entries) {
+    try {
+      const highlight = coerceHighlight(entry, defaultAssembly, refName =>
+        assemblyManager.isValidRefName(refName, defaultAssembly),
+      )
+      if (highlight) {
+        highlights.push(highlight)
+      }
+    } catch (error) {
+      errors.push({ entry, error })
+    }
+  }
+  return { highlights, errors }
 }
 
 // Navigate one dotplot axis (hview/vview) to a loc string for region-based
@@ -112,14 +129,21 @@ function applyInitDisplaySettings(
 
 function applyInitHighlights(self: DotplotViewModel, init: DotplotViewInit) {
   if (init.highlight) {
-    const { assemblyManager } = getSession(self)
-    const highlights = parseInitHighlights(
+    const session = getSession(self)
+    const { highlights, errors } = parseInitHighlights(
       init.highlight,
-      assemblyManager,
+      session.assemblyManager,
       self.assemblyNames[0]!,
     )
     for (const h of highlights) {
       self.addToHighlights(h)
+    }
+    for (const { entry, error } of errors) {
+      console.error(error)
+      session.notifyError(
+        `Invalid init highlight ${JSON.stringify(entry)}: ${error}`,
+        error,
+      )
     }
   }
 }
@@ -186,12 +210,25 @@ function applyInitDisplayedRegions(
 // region-based linking: navigate each axis to its requested loc. Assumes the
 // view is already initialized (caller waits) so displayed regions exist.
 function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
-  const { assemblyManager } = getSession(self)
+  const session = getSession(self)
   const axes = [self.hview, self.vview]
   for (const [i, v] of init.views.entries()) {
     const axis = axes[i]
     if (v.loc && axis) {
-      navAxisToLoc(axis, v.loc, self.assemblyNames[i]!, assemblyManager)
+      // per axis: navAxisToLoc parses the locstring, which throws on an unknown
+      // refName. One bad axis is a half-placed plot, not a broken view — it must
+      // not cost the other axis its navigation
+      try {
+        navAxisToLoc(
+          axis,
+          v.loc,
+          self.assemblyNames[i]!,
+          session.assemblyManager,
+        )
+      } catch (e) {
+        console.error(e)
+        session.notifyError(`Invalid init loc "${v.loc}": ${e}`, e)
+      }
     }
   }
 }
@@ -262,16 +299,30 @@ function setupInitAutorun(self: DotplotViewModel) {
               }
             }
           }
+          // Unconditional, unlike the catch below: the malformed-init branch
+          // lands here too, and a structurally bad init can never succeed on
+          // retry — keeping it would just re-notify on every reload
           if (isAlive(self)) {
             self.setInit(undefined)
           }
         } catch (e) {
-          // a bad highlight/loc entry must not nuke the whole view init; clear
-          // init so the autorun doesn't retry-loop on the same failure
+          // Backstop only — the recoverable failures (unresolvable track, bad
+          // highlight, bad loc) are each caught at their own step now, so
+          // anything landing here is unexpected.
+          //
+          // Failure policy keys off whether the view has materialized, the same
+          // line postProcessSnapshot already draws for persistence. Before
+          // setAssemblyNames lands there are no axes and `init` is still
+          // persisted, so keep it for a reload retry. After, the plot is usable
+          // and `init` has already been consumed: clear it, both so the autorun
+          // can't retry-loop and so a later width change can't re-fire this over
+          // a half-applied init.
           console.error(e)
           if (isAlive(self)) {
             getSession(self).notifyError(`${e}`, e)
-            self.setInit(undefined)
+            if (self.assemblyNames.length) {
+              self.setInit(undefined)
+            }
           }
         } finally {
           initRunning = false

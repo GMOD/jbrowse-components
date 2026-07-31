@@ -142,7 +142,7 @@ export {
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
 export { MultiLevelRubberband } from './MultiLevelRubberband/index.ts'
-export { fetchResults } from './searchUtils.ts'
+export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
 export { normalizeTrackInit } from './LinearGenomeView/normalizeTrackInit.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {

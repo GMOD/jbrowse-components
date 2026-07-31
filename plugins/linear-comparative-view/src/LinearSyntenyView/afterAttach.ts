@@ -1,6 +1,9 @@
 import { getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { normalizeTrackInit } from '@jbrowse/plugin-linear-genome-view'
+import {
+  normalizeTrackInit,
+  SearchResultsNotFoundError,
+} from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
@@ -8,10 +11,12 @@ import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from './model.ts'
 import type { LinearSyntenyViewInit } from './types.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One genome row per init.views entry, each opened on its assembly's whole
 // region set. Awaits every assembly first so a failure surfaces before any view
-// is built (the catch in setupInitAutorun keeps `init` for a retry).
+// is built — that ordering is what makes this the view's only fatal step, and
+// what lets the catch below keep `init` for a retry.
 async function buildViews(
   self: LinearSyntenyViewModel,
   init: LinearSyntenyViewInit,
@@ -49,6 +54,31 @@ async function buildViews(
   await Promise.all(self.views.map(view => when(() => view.initialized)))
 }
 
+// Navigate one genome row, reporting a bad `loc` as that row's problem. Without
+// this catch a single typo'd locstring rejects the whole Promise.all below, and
+// the outer catch drops every row that loaded fine back to the import form —
+// navToLocString throws both UnknownRefNameError (bad refName) and
+// SearchResultsNotFoundError (a gene name that matched nothing).
+async function navRowToLoc(
+  self: LinearSyntenyViewModel,
+  view: LinearGenomeViewModel,
+  loc: string,
+  assembly: string,
+) {
+  try {
+    await view.navToLocString(loc, assembly)
+  } catch (e) {
+    console.error(e)
+    const session = getSession(self)
+    if (e instanceof SearchResultsNotFoundError) {
+      // a gene name that matched nothing is a soft miss, not an app error
+      session.notify(e.message, 'warning')
+    } else {
+      session.notifyError(`${e}`, e)
+    }
+  }
+}
+
 // Per-row location + track list. Rows are independent, so they navigate
 // concurrently.
 async function applyInitViewLocsAndTracks(
@@ -60,7 +90,7 @@ async function applyInitViewLocsAndTracks(
       const view = self.views[idx]
       if (view) {
         if (viewInit.loc) {
-          await view.navToLocString(viewInit.loc, viewInit.assembly)
+          await navRowToLoc(self, view, viewInit.loc, viewInit.assembly)
         } else {
           view.showAllRegionsInAssembly(viewInit.assembly)
         }
@@ -115,8 +145,8 @@ export function doAfterAttach(self: LinearSyntenyViewModel) {
   // double-invoke cause width to settle in multiple steps. Each width change
   // re-fires this autorun, and without the guard a second run's setViews()
   // detaches the first run's view models — the first's
-  // `when(() => view.initialized)` then throws on the dead node, the catch
-  // clears init, and the import form appears.
+  // `when(() => view.initialized)` then throws on the dead node and the catch
+  // reports a teardown as a view error.
   let running = false
   addDisposer(
     self,
@@ -155,22 +185,32 @@ export function doAfterAttach(self: LinearSyntenyViewModel) {
           }
         } catch (e) {
           console.error(e)
-          // setError is the whole report: it flips showImportForm, and the form
-          // renders model.error in its own banner, so a notifyError snackbar
-          // would state the same failure twice (and the banner persists).
+          // Failure policy keys off whether the view has materialized, the same
+          // line postProcessSnapshot already draws for persistence.
           //
-          // Keep init on failure: a transient error (assembly not yet
-          // registered, a network blip) must stay recoverable. Clearing it here,
-          // while views is still empty, permanently strands the view on the
-          // import form with no retry. Leaving init set lets a reload re-run
-          // this autorun (init is persisted while views is empty, see
-          // postProcessSnapshot).
+          // Rows not built yet (buildViews threw: assembly missing, network
+          // blip) — nothing is on screen and `init` is still persisted, so keep
+          // it for a reload retry and record the error. setError is the whole
+          // report: it flips showImportForm, and the form renders model.error in
+          // its own banner, so a snackbar would state the same failure twice
+          // (and the banner persists). The error is volatile and doesn't survive
+          // the reload; in this session it flips the view off the loading
+          // spinner onto the form, the only way out until then.
           //
-          // The error itself is volatile, so it doesn't survive that reload —
-          // in this session it flips the view off the loading spinner and onto
-          // the import form, which is the only way out until then.
+          // Rows built — the view works, so a later failure is one sub-step's
+          // problem and must not take the view down with it. setError would,
+          // since showImportForm keys off `error` alone and would discard rows
+          // that loaded fine. Clearing `init` is also what disarms the re-fire:
+          // `width` is a dependency of this autorun, so leaving it set lets any
+          // resize re-run buildViews, whose setViews rebuilds the rows and
+          // throws away wherever the user had navigated.
           if (isAlive(self)) {
-            self.setError(e)
+            if (self.views.length) {
+              self.setInit(undefined)
+              getSession(self).notifyError(`${e}`, e)
+            } else {
+              self.setError(e)
+            }
           }
         } finally {
           running = false
