@@ -36,13 +36,31 @@ export interface Feature {
   toJSON(): SimpleFeatureSerialized
 }
 
+// brand carried by jexlFeatureProxy so the real feature can be recovered from a
+// proxy whose properties all resolve to data values
+const featureTarget = Symbol('featureTarget')
+
+interface MaybeProxiedFeature {
+  [featureTarget]?: Feature
+}
+
 export function isFeature(thing: unknown): thing is Feature {
   return (
     typeof thing === 'object' &&
     thing !== null &&
     typeof (thing as Feature).get === 'function' &&
-    typeof (thing as Feature).id === 'function'
+    (typeof (thing as Feature).id === 'function' || featureTarget in thing)
   )
+}
+
+/**
+ * Recover the underlying feature from a jexlFeatureProxy, or return a raw
+ * feature untouched. Needed by callers that want the feature's methods
+ * (`id()`, `parent()`) rather than the data value the proxy resolves a
+ * property to.
+ */
+export function unwrapFeature(feature: Feature & MaybeProxiedFeature): Feature {
+  return feature[featureTarget] ?? feature
 }
 
 /**
@@ -50,28 +68,49 @@ export function isFeature(thing: unknown): thing is Feature {
  * (`feature.score`) instead of `get(feature,'score')`. Since jexl has no
  * member-call syntax, attributes resolve to values: any property (including
  * `id`, i.e. a data field such as a GFF3 `ID=`) is forwarded to
- * `feature.get(name)` where a SimpleFeature keeps its data, and `parent`
- * resolves to the parent feature (re-wrapped so `feature.parent.type` works).
- * `get` is the one method kept callable, so the legacy
- * `get(feature,'x')`/`getTag(feature,'x')` forms still work; the `parent`/`id`
- * jexl functions tolerate the value form (see jexl.ts).
+ * `feature.get(name)` where a SimpleFeature keeps its data. Exceptions:
+ * `parent` resolves to the parent feature (re-wrapped so `feature.parent.type`
+ * works), `uniqueId` to the feature's identity (`id()`) so it reads the same
+ * whether or not the feature happens to keep a uniqueId in its data, and
+ * `get`/`toJSON` stay callable methods so the legacy
+ * `get(feature,'x')`/`getTag(feature,'x')` forms and serialization still work.
+ * The `parent`/`id` jexl functions unwrap the proxy (see jexl.ts).
  */
-export function jexlFeatureProxy(feature: Feature): Feature {
-  return new Proxy(feature, {
-    get(target, prop) {
-      if (typeof prop !== 'string') {
-        return Reflect.get(target, prop)
-      }
-      if (prop === 'get') {
-        return target.get.bind(target)
-      }
-      if (prop === 'parent') {
-        const p = target.parent?.()
-        return p ? jexlFeatureProxy(p) : undefined
-      }
-      return target.get(prop)
-    },
-  })
+export function jexlFeatureProxy(
+  feature: Feature & MaybeProxiedFeature,
+): Feature {
+  return feature[featureTarget]
+    ? feature
+    : new Proxy(feature, {
+        has(target, prop) {
+          return prop === featureTarget || Reflect.has(target, prop)
+        },
+        get(target, prop) {
+          switch (prop) {
+            case featureTarget: {
+              return target
+            }
+            case 'get': {
+              return target.get.bind(target)
+            }
+            case 'toJSON': {
+              return target.toJSON.bind(target)
+            }
+            case 'uniqueId': {
+              return target.id()
+            }
+            case 'parent': {
+              const p = target.parent?.()
+              return p ? jexlFeatureProxy(p) : undefined
+            }
+            default: {
+              return typeof prop === 'string'
+                ? target.get(prop)
+                : Reflect.get(target, prop)
+            }
+          }
+        },
+      })
 }
 
 /**
@@ -98,8 +137,11 @@ export interface SimpleFeatureArgs {
   data: Record<string, unknown>
   /** optional parent feature */
   parent?: Feature
-  /** unique identifier. can also be in data.uniqueId */
-  id: string | number // thing that can be stringified easily
+  /**
+   * unique identifier, stringified. the serialized form
+   * (SimpleFeatureSerialized) carries it as `uniqueId` instead
+   */
+  id: string | number
 }
 
 // subfeatures do not have to have uniqueId
@@ -131,38 +173,26 @@ function isSimpleFeatureSerialized(
 }
 
 // a feature is valid if it has a non-inverted interval, or is a bare reference
-// sequence alias record (which carries no coordinates)
-function validateFeatureData(data: Record<string, unknown>) {
+// sequence alias record: aliases and no coordinates at all (e.g. what
+// FromConfigAdapter yields when used as a refNameAliases adapter). A feature
+// that carries coordinates is still validated even if it also happens to have
+// an aliases attribute
+function validateFeatureData(data: Record<string, unknown>, uniqueId: string) {
   const { aliases, start, end } = data
-  const validInterval =
-    typeof start === 'number' && typeof end === 'number' && end - start >= 0
-  if (!aliases && !validInterval) {
-    throw new Error(
-      `invalid feature data, end less than start. end: ${end} start: ${start}`,
-    )
-  }
-}
-
-// raw subfeatures arrive as either plain arg objects or already-inflated
-// features; inflate the former into SimpleFeature instances, inheriting the
-// parent strand when a subfeature doesn't specify its own
-function inflateSubfeatures(
-  raw: unknown,
-  parent: SimpleFeature,
-  parentId: string,
-  parentStrand: unknown,
-): Feature[] | undefined {
-  return Array.isArray(raw)
-    ? raw.map((f: SimpleFeatureSerializedNoId | Feature, i) =>
-        isFeature(f)
-          ? f
-          : new SimpleFeature({
-              id: f.uniqueId ?? `${parentId}-${i}`,
-              data: { ...f, strand: f.strand ?? parentStrand },
-              parent,
-            }),
+  const aliasRecord = !!aliases && start === undefined && end === undefined
+  if (!aliasRecord) {
+    if (typeof start !== 'number' || typeof end !== 'number') {
+      throw new Error(
+        `invalid feature data for "${uniqueId}", start and end must be numbers. start: ${start} end: ${end}`,
       )
-    : undefined
+    }
+    // written as a negated >= so NaN coordinates are rejected too
+    if (!(end >= start)) {
+      throw new Error(
+        `invalid feature data for "${uniqueId}", end less than start. end: ${end} start: ${start}`,
+      )
+    }
+  }
 }
 
 /**
@@ -197,22 +227,33 @@ export default class SimpleFeature implements Feature {
     const id = serialized ? args.uniqueId : args.id
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id === undefined || id === null) {
-      throw new Error(
-        'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
-      )
+      throw new Error('SimpleFeature requires an `id` or `uniqueId` attribute')
     }
     this.uniqueId = String(id)
 
-    validateFeatureData(this.data)
+    validateFeatureData(this.data, this.uniqueId)
 
-    // keep inflated subfeatures in a separate field so the caller's input data
-    // is never mutated (features are effectively immutable)
-    this.subfeatures = inflateSubfeatures(
-      this.data.subfeatures,
-      this,
-      this.uniqueId,
-      this.data.strand,
-    )
+    this.subfeatures = this.inflateSubfeatures()
+  }
+
+  // raw subfeatures arrive as either plain arg objects or already-inflated
+  // features; inflate the former into SimpleFeature instances, inheriting this
+  // feature's strand when a subfeature doesn't specify its own. The result is
+  // kept in a separate field so the caller's input data is never mutated
+  // (features are effectively immutable)
+  private inflateSubfeatures(): Feature[] | undefined {
+    const raw = this.data.subfeatures
+    return Array.isArray(raw)
+      ? raw.map((f: SimpleFeatureSerializedNoId | Feature, i) =>
+          isFeature(f)
+            ? f
+            : new SimpleFeature({
+                id: f.uniqueId ?? `${this.uniqueId}-${i}`,
+                data: { ...f, strand: f.strand ?? this.data.strand },
+                parent: this,
+              }),
+        )
+      : undefined
   }
 
   /**

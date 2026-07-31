@@ -2,6 +2,7 @@ import { Jexl } from '@jbrowse/jexl'
 
 import { randomColor } from './color/index.ts'
 import { colord } from './colord.ts'
+import { jexlFeatureProxy, unwrapFeature } from './simpleFeature.ts'
 
 import type { Colord } from './colord.ts'
 import type { Feature } from './simpleFeature.ts'
@@ -30,16 +31,15 @@ export default function JexlF(/* config?: any*/) {
   // below are core functions
   j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
 
-  // parent/id read as a method on a raw feature, but as a value on a
-  // jexlFeatureProxy (jexl has no member-call syntax) — tolerate both
+  // on a jexlFeatureProxy `feature.parent`/`feature.id` are data values (jexl
+  // has no member-call syntax, and `id` is a real data field e.g. GFF3 `ID=`),
+  // so unwrap to the underlying feature to reach its methods. The parent comes
+  // back wrapped so `parent(feature).type` reads like `feature.parent.type`
   j.addFunction('parent', (feature: Feature) => {
-    const p: unknown = feature.parent
-    return typeof p === 'function' ? p.call(feature) : p
+    const p = unwrapFeature(feature).parent?.()
+    return p ? jexlFeatureProxy(p) : undefined
   })
-  j.addFunction('id', (feature: Feature) => {
-    const i: unknown = feature.id
-    return typeof i === 'function' ? i.call(feature) : i
-  })
+  j.addFunction('id', (feature: Feature) => unwrapFeature(feature).id())
 
   // let user cast a jexl type into a javascript type
   j.addFunction('cast', (arg: unknown) => arg)

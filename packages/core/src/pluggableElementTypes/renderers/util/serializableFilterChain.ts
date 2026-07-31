@@ -33,11 +33,18 @@ export default class SerializableFilterChain {
   // named bindings the expression may reference. Both go through the same
   // context builder as config-slot evaluation, so a Feature is exposed
   // identically (proxy + `get()`), regardless of which path evaluates it.
+  //
+  // an empty chain skips context construction entirely: passes() runs once per
+  // feature in the render admission path, and the unfiltered case would
+  // otherwise allocate a spread, a context object, and a feature proxy per
+  // feature only to admit it
   passes(feature: unknown, extraContext?: Record<string, unknown>) {
-    const context = buildJexlContext({ ...extraContext, feature })
-    for (const entry of this.filterChain) {
-      if (!entry.expr.eval(context)) {
-        return false
+    if (this.filterChain.length > 0) {
+      const context = buildJexlContext({ ...extraContext, feature })
+      for (const entry of this.filterChain) {
+        if (!entry.expr.eval(context)) {
+          return false
+        }
       }
     }
     return true
