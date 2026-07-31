@@ -1,3 +1,5 @@
+import { addExtensionElement } from '@jbrowse/core/ui'
+
 import DotplotHighlight from './DotplotHighlight.tsx'
 import Highlight from './Highlight.tsx'
 import LGVHighlightSVG from './LGVHighlightSVG.tsx'
@@ -7,49 +9,29 @@ import ScalebarHighlight from './ScalebarHighlight.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function AddHighlightModelF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'LinearGenomeView-TracksContainerComponent',
-    (rest, { model }) => [
-      ...rest,
-      <Highlight key="highlight_grid_bookmark" model={model} />,
-    ],
+    Highlight,
   )
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'LinearGenomeView-ScalebarHighlightComponent',
-    (rest, { model }) => [
-      ...rest,
-      <ScalebarHighlight
-        key="scalebar_highlight_grid_bookmark"
-        model={model}
-      />,
-    ],
+    ScalebarHighlight,
   )
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'LinearGenomeView-OverviewScalebarComponent',
-    (rest, { model }) => [
-      ...rest,
-      <OverviewHighlight
-        key="overview_highlight_grid_bookmark"
-        model={model}
-      />,
-    ],
+    OverviewHighlight,
   )
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'DotplotView-OverlaySVGComponent',
-    (rest, { model }) => [
-      ...rest,
-      <DotplotHighlight key="dotplot_highlight_grid_bookmark" model={model} />,
-    ],
+    DotplotHighlight,
   )
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'LinearGenomeView-HighlightSVGComponent',
-    (rest, { model, height }) => [
-      ...rest,
-      <LGVHighlightSVG
-        key="lgv_highlight_svg_grid_bookmark"
-        model={model}
-        height={height}
-      />,
-    ],
+    LGVHighlightSVG,
   )
 }

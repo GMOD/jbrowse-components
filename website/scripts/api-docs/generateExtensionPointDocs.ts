@@ -31,6 +31,7 @@ interface ExtensionPoint {
   id: string
   kind: string
   description: string
+  shape?: string
 }
 
 // `#extensionPoint <id> | <sync|async> | <description>` occurrences in one file.
@@ -50,7 +51,7 @@ function collectFromFile(file: string, points: ExtensionPoint[]) {
 // — a typed point with no `#extensionPoint` tag is an error below. (A point that
 // is neither typed nor tagged still slips through; typing it is the fix, and is
 // wanted anyway.)
-function collectRegistryKeys(file: string, keys: Set<string>) {
+function collectRegistryKeys(file: string, keys: Map<string, string>) {
   const text = fs.readFileSync(file, 'utf8')
   const blocks = /interface ExtensionPointRegistry\s*\{/g
   let m: RegExpExecArray | null
@@ -67,15 +68,30 @@ function collectRegistryKeys(file: string, keys: Set<string>) {
       }
       i++
     }
-    for (const k of text.slice(start, i).matchAll(/^\s*'([\w-]+)':/gm)) {
-      keys.add(k[1]!)
+    const block = text.slice(start, i)
+    // the entry's own `args:` line, which is what says whether callbacks
+    // accumulate into a list or hand one value along
+    for (const k of block.matchAll(/^\s*'([\w-]+)':\s*\{([\s\S]*?)^\s*\}/gm)) {
+      keys.set(k[1]!, /^\s*args:\s*(.+)$/m.exec(k[2]!)?.[1]?.trim() ?? '')
     }
   }
 }
 
+/**
+ * What a second plugin registering on the same point does to the first. An
+ * array-valued `args` means every callback appends and they all survive; any
+ * other `args` is a single value threaded along, so each callback overwrites
+ * what the one before it returned. This is the distinction that the point
+ * *names* don't carry (`DotplotView-OverlaySVGComponent` accumulates,
+ * `DotplotView-OverlayHTMLComponent` does not).
+ */
+function shapeOf(args: string) {
+  return args === '' ? '' : args.endsWith('[]') ? 'list' : 'single'
+}
+
 function collectExtensionPoints(): ExtensionPoint[] {
   const points: ExtensionPoint[] = []
-  const registryKeys = new Set<string>()
+  const registryKeys = new Map<string, string>()
   for (const dir of SOURCE_DIRS) {
     for (const file of listSources(dir)) {
       collectFromFile(file, points)
@@ -83,7 +99,7 @@ function collectExtensionPoints(): ExtensionPoint[] {
     }
   }
   const tagged = new Set(points.map(p => p.id))
-  const untagged = [...registryKeys].filter(k => !tagged.has(k)).sort()
+  const untagged = [...registryKeys.keys()].filter(k => !tagged.has(k)).sort()
   if (untagged.length > 0) {
     throw new Error(
       `these extension points are in ExtensionPointRegistry but carry no \`#extensionPoint <id> | <sync|async> | <description>\` JSDoc tag, so they are missing from the docs index: ${untagged.join(', ')}`,
@@ -103,13 +119,17 @@ function collectExtensionPoints(): ExtensionPoint[] {
       byId.set(p.id, p)
     }
   }
-  return [...byId.values()].sort((a, b) => a.id.localeCompare(b.id))
+  return [...byId.values()]
+    .map(p => ({ ...p, shape: shapeOf(registryKeys.get(p.id) ?? '') }))
+    .sort((a, b) => a.id.localeCompare(b.id))
 }
 
 function renderTable(points: ExtensionPoint[]) {
   return markdownTable(
-    ['Extension point', 'Type', 'Description'],
-    points.map(p => `| \`${p.id}\` | ${p.kind} | ${p.description} |`),
+    ['Extension point', 'Type', 'Shape', 'Description'],
+    points.map(
+      p => `| \`${p.id}\` | ${p.kind} | ${p.shape} | ${p.description} |`,
+    ),
   )
 }
 

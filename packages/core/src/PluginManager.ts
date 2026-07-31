@@ -216,6 +216,28 @@ export type ExtensionPointProps<N extends ExtensionPointName> =
     : Record<string, unknown>
 
 /**
+ * The trailing `props` parameter of the evaluate methods, required exactly when
+ * the point declares one. Omitting it there used to typecheck and then hand
+ * `undefined` to every callback, so each one threw on destructuring the props
+ * it was promised.
+ */
+export type ExtensionPointPropsArgs<N extends ExtensionPointName> =
+  'props' extends keyof ExtensionPointRegistry[N]
+    ? [props: ExtensionPointProps<N>]
+    : [props?: Record<string, unknown>]
+
+/**
+ * A point name that is *not* in the registry, which is what the loose evaluate
+ * overloads accept. Resolving a registered name to `never` keeps it out of
+ * them: they otherwise match whenever the typed overload doesn't, so a call
+ * that omitted a required `props` or passed the wrong `extendee` fell through
+ * and compiled. Plugin-defined points, and any name that isn't a literal, are
+ * unaffected.
+ */
+export type UnregisteredPointName<S extends string> =
+  S extends ExtensionPointName ? never : S
+
+/**
  * metadata related to the instance of this plugin. `isCore` is set when the
  * plugin was loaded as part of the "core" set of plugins for this application,
  * and `url` records the resolved location it was loaded from. The index
@@ -317,9 +339,7 @@ export default class PluginManager {
 
   constructor(
     initialPlugins: (
-      | Plugin
-      | PluginLoadRecord
-      | RuntimePluginLoadRecord
+      Plugin | PluginLoadRecord | RuntimePluginLoadRecord
     )[] = [],
   ) {
     // add the core plugin
@@ -786,10 +806,10 @@ export default class PluginManager {
   evaluateExtensionPoint<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,
-    props?: ExtensionPointProps<N>,
+    ...props: ExtensionPointPropsArgs<N>
   ): ExtensionPointResult<N>
-  evaluateExtensionPoint(
-    extensionPointName: string,
+  evaluateExtensionPoint<S extends string>(
+    extensionPointName: UnregisteredPointName<S>,
     extendee: unknown,
     props?: Record<string, unknown>,
   ): unknown
@@ -830,7 +850,7 @@ export default class PluginManager {
   evaluateComponentExtensionPoint<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,
-    props?: ExtensionPointProps<N>,
+    ...props: ExtensionPointPropsArgs<N>
   ): ExtensionPointResult<N>
   evaluateComponentExtensionPoint(
     extensionPointName: string,
@@ -874,10 +894,10 @@ export default class PluginManager {
   evaluateAsyncExtensionPoint<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,
-    props?: ExtensionPointProps<N>,
+    ...props: ExtensionPointPropsArgs<N>
   ): Promise<ExtensionPointResult<N>>
-  evaluateAsyncExtensionPoint(
-    extensionPointName: string,
+  evaluateAsyncExtensionPoint<S extends string>(
+    extensionPointName: UnregisteredPointName<S>,
     extendee: unknown,
     props?: Record<string, unknown>,
   ): Promise<unknown>
@@ -912,10 +932,10 @@ export default class PluginManager {
   evaluateAsyncExtensionPointStrict<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,
-    props?: ExtensionPointProps<N>,
+    ...props: ExtensionPointPropsArgs<N>
   ): Promise<ExtensionPointResult<N>>
-  evaluateAsyncExtensionPointStrict(
-    extensionPointName: string,
+  evaluateAsyncExtensionPointStrict<S extends string>(
+    extensionPointName: UnregisteredPointName<S>,
     extendee: unknown,
     props?: Record<string, unknown>,
   ): Promise<unknown>

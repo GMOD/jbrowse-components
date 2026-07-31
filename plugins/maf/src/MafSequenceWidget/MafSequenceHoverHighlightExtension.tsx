@@ -1,3 +1,5 @@
+import { addExtensionElement } from '@jbrowse/core/ui'
+
 import MafSequenceHoverHighlight from './MafSequenceHoverHighlight.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -5,14 +7,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function MafSequenceHoverHighlightExtensionF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'LinearGenomeView-TracksContainerComponent',
-    (rest, { model }) => [
-      ...rest,
-      <MafSequenceHoverHighlight
-        key="maf-sequence-hover-highlight"
-        model={model}
-      />,
-    ],
+    MafSequenceHoverHighlight,
   )
 }

@@ -5,6 +5,7 @@ import type {
   ExtensionPointArgs,
   ExtensionPointName,
   ExtensionPointProps,
+  ExtensionPointPropsArgs,
 } from '../PluginManager'
 import type React from 'react'
 
@@ -33,12 +34,13 @@ const PluggableComponent = observer(function PluggableComponent<
     | React.LazyExoticComponent<React.ComponentType<P>>
   props: P & ExtensionPointProps<N>
 }) {
-  // the result is the point's declared component type; TS can't narrow that
-  // through the generic key, so it is restated here
+  // the result is the point's declared component type, and `props` satisfies
+  // the point's declared props by the signature above. TS can't narrow either
+  // through the generic key, so both are restated here
   const Component = pluginManager.evaluateComponentExtensionPoint(
     name,
     DefaultComponent as ExtensionPointArgs<N>,
-    props,
+    ...([props] as ExtensionPointPropsArgs<N>),
   ) as React.ComponentType<P>
   return <Component {...props} />
 })

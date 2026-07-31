@@ -55,6 +55,22 @@ test('a point started with undefined does not warn', () => {
   warn.mockRestore()
 })
 
+// typecheck-only: a point that declares props must be given them, or every
+// callback destructures undefined. Unused @ts-expect-error fails `pnpm
+// typecheck`, so this is a real assertion despite running nothing
+test('a point that declares props requires them at the fire site', () => {
+  const pm = new PluginManager([])
+  const Widget = () => null
+  // @ts-expect-error Core-replaceWidget declares props, so they are required
+  pm.evaluateExtensionPoint('Core-replaceWidget', Widget)
+  expect(
+    pm.evaluateExtensionPoint('Core-replaceWidget', Widget, {
+      model: { type: 'W' },
+      session: {},
+    }),
+  ).toBe(Widget)
+})
+
 test('an unregistered point returns the args untouched', () => {
   expect(new PluginManager([]).evaluateExtensionPoint(POINT, 'unchanged')).toBe(
     'unchanged',

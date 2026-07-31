@@ -98,6 +98,8 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 // re-export alone held that dependency on the startup path. Every consumer
 // deep-imports '@jbrowse/core/ui/BaseTooltip' instead.
 export { default as PluggableComponent } from './PluggableComponent.tsx'
+export { addExtensionElement } from './addExtensionElement.tsx'
+export type { ElementExtensionPointName } from './addExtensionElement.tsx'
 export {
   addReplaceWidget,
   addWidgetWrapper,

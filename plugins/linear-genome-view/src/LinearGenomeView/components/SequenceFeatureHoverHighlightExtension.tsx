@@ -1,3 +1,5 @@
+import { addExtensionElement } from '@jbrowse/core/ui'
+
 import SequenceFeatureHoverHighlight from './SequenceFeatureHoverHighlight.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -5,14 +7,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function SequenceFeatureHoverHighlightExtensionF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
+  addExtensionElement(
+    pluginManager,
     'LinearGenomeView-TracksContainerComponent',
-    (rest, { model }) => [
-      ...rest,
-      <SequenceFeatureHoverHighlight
-        key="feature-sequence-hover-highlight"
-        model={model}
-      />,
-    ],
+    SequenceFeatureHoverHighlight,
   )
 }
