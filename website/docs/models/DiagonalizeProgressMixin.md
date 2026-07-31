@@ -43,7 +43,7 @@ cancel, and gate identically.
 | Member | Description |
 | --- | --- |
 | <span id="action-setawaitingautodiagonalize">**setAwaitingAutoDiagonalize**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setautodiagonalizerequested">**setAutoDiagonalizeRequested**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-beginautodiagonalize">**beginAutoDiagonalize**</span><br><code>(requested: boolean) =&gt; void</code> | Re-declare the gate at the top of one init apply pass: a reorder is pending iff THIS init asked for one, and nothing is complete until this pass completes it.<br><br>The pair has to move together, which is why this is one action rather than two setters. A superseded init that set `requested` and then skipped its reorder would otherwise leave the flag true with nothing coming, wedging `diagonalizeSettled` (and so `settled`) forever; and a previous init's `complete` would satisfy the gate for the next one's un-reordered view, which is the same capture bug the flags exist to prevent, in the other direction. |
 | <span id="action-setautodiagonalizecomplete">**setAutoDiagonalizeComplete**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setdiagonalizestatus">**setDiagonalizeStatus**</span><br><code>(arg?: RpcStatus &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setdiagonalizestoptoken">**setDiagonalizeStopToken**</span><br><code>(arg?: StopToken &#124; undefined) =&gt; void</code> |  |

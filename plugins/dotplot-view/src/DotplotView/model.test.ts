@@ -103,12 +103,33 @@ test('settled gates on autoDiagonalize completion when requested', () => {
 
   // an init-time reorder is requested: the plot is NOT done until it completes,
   // so a screenshot/browser-test can't capture the pre-diagonalize plot
-  model.setAutoDiagonalizeRequested(true)
+  model.beginAutoDiagonalize(true)
   expect(model.settled).toBe(false)
 
   // reorder resolved successfully: settled is released
   model.setAutoDiagonalizeComplete(true)
   expect(model.settled).toBe(true)
+})
+
+// Each init apply re-declares the pair. Without that, a superseded init that
+// requested a reorder and then skipped it leaves `requested` true with nothing
+// coming, and `settled` never fires again — a capture hangs instead of failing.
+test('a following init re-declares the autoDiagonalize gate', () => {
+  const model = setup()
+  model.markCanvasDrawn()
+
+  model.beginAutoDiagonalize(true)
+  expect(model.settled).toBe(false)
+
+  // superseded by an init that wants no reorder: the request is withdrawn
+  model.beginAutoDiagonalize(false)
+  expect(model.settled).toBe(true)
+
+  // and a completed pass can't satisfy the gate for the next requesting init,
+  // which would let a capture commit the new, un-reordered plot
+  model.setAutoDiagonalizeComplete(true)
+  model.beginAutoDiagonalize(true)
+  expect(model.settled).toBe(false)
 })
 
 test('highlight actions add/remove and toggle visibility', () => {

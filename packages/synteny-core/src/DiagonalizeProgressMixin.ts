@@ -77,9 +77,21 @@ export function DiagonalizeProgressMixin() {
       },
       /**
        * #action
+       * Re-declare the gate at the top of one init apply pass: a reorder is
+       * pending iff THIS init asked for one, and nothing is complete until this
+       * pass completes it.
+       *
+       * The pair has to move together, which is why this is one action rather
+       * than two setters. A superseded init that set `requested` and then
+       * skipped its reorder would otherwise leave the flag true with nothing
+       * coming, wedging `diagonalizeSettled` (and so `settled`) forever; and a
+       * previous init's `complete` would satisfy the gate for the next one's
+       * un-reordered view, which is the same capture bug the flags exist to
+       * prevent, in the other direction.
        */
-      setAutoDiagonalizeRequested(arg: boolean) {
-        self.autoDiagonalizeRequested = arg
+      beginAutoDiagonalize(requested: boolean) {
+        self.autoDiagonalizeRequested = requested
+        self.autoDiagonalizeComplete = false
       },
       /**
        * #action

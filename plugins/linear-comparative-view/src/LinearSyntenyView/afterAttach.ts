@@ -155,9 +155,7 @@ async function applyInit(
   // (→ synteny_canvas_done) can't fire on the pre-diagonalize hairball during
   // the view-building await window below (before awaitingAutoDiagonalize flips
   // the canvas off)
-  if (init.autoDiagonalize) {
-    self.setAutoDiagonalizeRequested(true)
-  }
+  self.beginAutoDiagonalize(!!init.autoDiagonalize)
   await buildViews(self, init, superseded)
   await applyInitViewLocsAndTracks(self, init)
   applyInitSyntenyTracks(self, init)

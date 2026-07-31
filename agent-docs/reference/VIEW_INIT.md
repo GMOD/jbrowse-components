@@ -195,6 +195,16 @@ reports itself (an assembly failure lands in `error` and the import form's
 banner; a supersede is the next init taking over), so the caller re-checks its
 own precondition and skips quietly rather than notifying.
 
+Making supersede reachable has a second consequence worth knowing before you add
+a step: **anything `apply` sets up front must be re-declared by the next pass,
+not inherited.** A superseded apply can now stop between its first write and the
+step that resolves it. The comparative views set `autoDiagonalizeRequested`
+before any render can paint, so a supersede would strand it true with no reorder
+coming and wedge `settled` — hence `beginAutoDiagonalize(requested)`, which
+declares both halves of that gate for the current init instead of only ever
+raising the flag. Early-set state belongs in one action that states it, not in a
+conditional that raises it.
+
 **One timer survives, and it is not an oversight.** LGV's `openTracklist` waits
 1s for the width change that opening the drawer causes. The rule that condemns
 the others acquits this one: they waited on state that either arrives or turns

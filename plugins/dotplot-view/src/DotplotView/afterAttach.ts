@@ -268,9 +268,7 @@ async function applyInit(
     const [target, query] = init.views.map(v => v.assembly)
     // flag the pending reorder before any track render can paint, so `settled`
     // (→ dotplot_webgl_canvas_done) can't fire on the pre-diagonalize plot
-    if (init.autoDiagonalize) {
-      self.setAutoDiagonalizeRequested(true)
-    }
+    self.beginAutoDiagonalize(!!init.autoDiagonalize)
     self.setAssemblyNames(target!, query!)
     applyInitTracks(self, init)
     applyInitDisplaySettings(self, init)
