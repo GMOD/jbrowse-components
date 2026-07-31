@@ -61,7 +61,8 @@ accidental.
 
 | Concern | File |
 | --- | --- |
-| Read-time resolver (`resolveSlot`, `isUsableValue`) + the `ResolvableDisplay` / `PromotableDisplay` shapes | `packages/core/src/configuration/promotableResolve.ts` |
+| Read-time resolver (`resolveSlot`) + the `ResolvableDisplay` / `PromotableDisplay` shapes | `packages/core/src/configuration/promotableResolve.ts` |
+| The usable-value gate (`isUsableValue`, `SHAPE_CHECKS`), shared by the resolver and by `ConfigSlot`'s `promotedBase` guard | `packages/core/src/configuration/slotShape.ts` |
 | Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
 | Control builders + share/worker helpers (`make*Control`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
@@ -214,12 +215,16 @@ still casts (`confNode(self)` in `HeightModeMixin` / `WiggleScoreConfigMixin`) �
 that's the mixin not seeing props the concrete display declares, and the cast
 target names exactly what the cascade reads.
 
-`isUsableValue` is the single gate **both** tiers pass a candidate through — a
-promoted default and a track's own saved value — composing four checks: set at
-all, not a raw `jexl:` string ([No callbacks](#no-callbacks-jexl)), JS shape fits
-the slot (`SHAPE_CHECKS`: a `maybeStringEnum` choice, a *finite* `maybeNumber`,
-else `promotedBase`'s object/array kind or `typeof`), and the slot's optional
-semantic `validate` hook. A value failing any check is dropped so the getter, the
+`isUsableValue` (`slotShape.ts`) is the single gate **both** tiers pass a
+candidate through — a promoted default and a track's own saved value —
+composing four checks: set at all, not a raw `jexl:` string
+([No callbacks](#no-callbacks-jexl)), JS shape fits the slot (`SHAPE_CHECKS`: a
+`maybeStringEnum` choice, a *finite* `maybeNumber`, else `promotedBase`'s
+object/array kind or `typeof`), and the slot's optional semantic `validate`
+hook. **`ConfigSlot` runs the same gate over `promotedBase` at construction**,
+so the tier every other tier falls back to can't itself be unusable — a base
+outside the slot's own vocabulary would otherwise be returned by every read with
+nothing thrown anywhere. A value failing any check is dropped so the getter, the
 pin, and the badge all fall back in lockstep — no consumer guards on its own.
 `colorBy` uses `validate` so a
 `.type` naming a since-removed color scheme — customized or promoted — degrades
@@ -408,11 +413,16 @@ jbrowse-web `ShareDialog` and jbrowse-desktop `ExportToWebDialog`) returns a dee
 copy of the snapshot in which, for every **open** display:
 
 - each slot it *inherits* from a promoted default (`getDisplayTypeDefaultChanges`
-  — non-customized, differs from base) is written into the track config layer: a
-  user-added track's `sessionTracks` config, else a `trackConfigDeltas` entry
-  against the admin base. Only genuinely-inherited non-base values are baked —
-  customized slots already live in the config, at-base slots need nothing — so no
-  spurious "edited" badge appears on the recipient side for an untouched slot.
+  — non-customized, differs from base) is written into the track config layer:
+  the track's own config when it has one (a user-added `sessionTracks` entry, or
+  an opened connection track's `connectionTrackConfigs` config), else a
+  `trackConfigDeltas` entry against the admin base. The connection case is not
+  cosmetic — deltas are merged over `jbrowse.tracks` alone, so a delta written
+  for a connection track resolves nowhere while its display still carries
+  `ignorePromotedDefaults`, and the recipient renders the base value. Only
+  genuinely-inherited non-base values are baked — customized slots already live
+  in the config, at-base slots need nothing — so no spurious "edited" badge
+  appears on the recipient side for an untouched slot.
 - the display state is marked `ignorePromotedDefaults` (see below).
 
 Tracks the sender never opened carry no display state to resolve, so they're

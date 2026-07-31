@@ -1224,6 +1224,54 @@ describe('promotable slot authoring guards', () => {
     expect(() => resolveConf(display, 'size')).toThrow(/not promotable/)
   })
 
+  // the base is the bottom of the cascade — every other tier falls back to it —
+  // so an unusable base is a value every read of the slot returns and nothing
+  // else in the system checks
+  test('rejects a promotedBase outside the slot enumeration', () => {
+    expect(() =>
+      ConfigurationSchema('BogusBase', {
+        mode: {
+          type: 'maybeStringEnum',
+          model: types.enumeration('BogusBaseMode', ['normal', 'compact']),
+          defaultValue: undefined,
+          promotedBase: 'noSuchMode',
+          promotable: true,
+        },
+      }),
+    ).toThrow(/must be a value the slot can hold/)
+  })
+
+  test('rejects a non-finite numeric promotedBase', () => {
+    expect(() =>
+      ConfigurationSchema('NaNBase', {
+        size: {
+          type: 'maybeNumber',
+          defaultValue: undefined,
+          promotedBase: Number.NaN,
+          promotable: true,
+        },
+      }),
+    ).toThrow(/must be a value the slot can hold/)
+  })
+
+  test('rejects a promotedBase its own validate hook refuses', () => {
+    expect(() =>
+      ConfigurationSchema('UnvalidatedBase', {
+        colorBy: {
+          type: 'maybeFrozen',
+          defaultValue: undefined,
+          promotedBase: { type: 'retiredScheme' },
+          promotable: true,
+          validate: (value: unknown) =>
+            typeof value === 'object' &&
+            value !== null &&
+            'type' in value &&
+            value.type === 'normal',
+        },
+      }),
+    ).toThrow(/must be a value the slot can hold/)
+  })
+
   test('rejects a concrete defaultValue on a maybe slot', () => {
     expect(() =>
       ConfigurationSchema('ConcreteDefault', {

@@ -46,9 +46,10 @@ interface Bake {
  *
  *   - every slot an open display *inherits* from a promoted default (i.e.
  *     `getDisplayTypeDefaultChanges` — non-customized, differs from base) is
- *     baked into that track's config layer (`sessionTracks` for a user-added
- *     track, else a `trackConfigDeltas` entry against the admin base), so the
- *     concrete value travels with the document;
+ *     baked into that track's config layer (its own config for a user-added or
+ *     connection track, else a `trackConfigDeltas` entry against the admin
+ *     base — see `ownTrackConfig`), so the concrete value travels with the
+ *     document;
  *   - every open display is marked `ignorePromotedDefaults`, so the *recipient's*
  *     own promoted defaults can't repaint what the sender saw — including the
  *     case a baked value coincides with the schema default and would otherwise
@@ -130,8 +131,32 @@ function markIgnorePromotedDefaults(
   }
 }
 
+// The track's own full config in the snapshot, when it has one: a user-added
+// track's `sessionTracks` entry, or an opened connection track's persisted
+// `connectionTrackConfigs` config. Everything else is an admin-base track,
+// which carries only a delta.
+//
+// The connection case is not optional. `trackConfigDeltas` is merged over
+// `jbrowse.tracks` alone, so a delta written for a connection track resolves
+// nowhere while its display still gets stamped `ignorePromotedDefaults` — the
+// recipient would render the base value, which is the exact failure the bake
+// exists to prevent. `updateTrackConfiguration` splits on the same line.
+function ownTrackConfig(snap: Record<string, unknown>, trackId: string) {
+  const sessionTrack = asArray(snap.sessionTracks).find(
+    t => isRecord(t) && t.trackId === trackId,
+  )
+  const connectionEntry = isRecord(snap.connectionTrackConfigs)
+    ? snap.connectionTrackConfigs[trackId]
+    : undefined
+  return isRecord(sessionTrack)
+    ? sessionTrack
+    : isRecord(connectionEntry) && isRecord(connectionEntry.config)
+      ? connectionEntry.config
+      : undefined
+}
+
 // Bake one display's inherited values into the config layer: into the matching
-// `sessionTracks` display for a user-added track, else merged as a
+// display of the track's own config when it has one, else merged as a
 // `trackConfigDeltas` entry against the admin base.
 function bakeValues(snap: Record<string, unknown>, bake: Bake) {
   const partialDisplay = {
@@ -139,18 +164,16 @@ function bakeValues(snap: Record<string, unknown>, bake: Bake) {
     displayId: bake.displayId,
     ...bake.values,
   }
-  const sessionTrack = asArray(snap.sessionTracks).find(
-    t => isRecord(t) && t.trackId === bake.trackId,
-  )
-  if (isRecord(sessionTrack)) {
-    const displays = asArray(sessionTrack.displays)
+  const ownConfig = ownTrackConfig(snap, bake.trackId)
+  if (ownConfig) {
+    const displays = asArray(ownConfig.displays)
     const target = displays.find(
       d => isRecord(d) && d.displayId === bake.displayId,
     )
     if (isRecord(target)) {
       Object.assign(target, bake.values)
     } else {
-      sessionTrack.displays = [...displays, partialDisplay]
+      ownConfig.displays = [...displays, partialDisplay]
     }
   } else {
     const deltas = isRecord(snap.trackConfigDeltas)

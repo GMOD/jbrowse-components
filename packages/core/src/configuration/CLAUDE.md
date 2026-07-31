@@ -16,7 +16,9 @@ something auto-detection has to prevent. (Never paper that error over with
 
 **Authoring a promotable slot:** it must be a `maybe*` type
 (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/`maybeFrozen`),
-must leave `defaultValue` undefined, and must declare `promotedBase`.
+must leave `defaultValue` undefined, and must declare a `promotedBase` that
+passes the slot's own `isUsableValue` gate (an enum member actually in `model`,
+a finite number, whatever `validate` accepts).
 `ConfigSlot` throws otherwise, so `undefined` is the only inherit sentinel and
 `isUsableValue`'s first check is a bare `value !== undefined`
 ([ADR-047](../../../../agent-docs/architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)).
@@ -41,8 +43,11 @@ mutated in place, since every track at base shares one object: `freezeDeep` at
 both sources (`ConfigSlot`, `setPreferenceOverride`) makes that throw instead of
 silently repainting every other track. Build a modified value by copying.
 
-Layering: `util.ts` (`promotableSlotNames`, the type-cached per-schema slot
-list, shared by the enumerating callers and by `fullConfSnapshot`'s
+Layering: `slotShape.ts` (`isUsableValue`, the one gate a candidate value passes
+— applied by the resolver to both cascade tiers **and** by `ConfigSlot` to
+`promotedBase` at construction, so the tier everything falls back to is usable
+by construction) + `util.ts` (`promotableSlotNames`, the type-cached per-schema
+slot list, shared by the enumerating callers and by `fullConfSnapshot`'s
 nested-schema guard) ← `promotableResolve.ts` (resolver) ← `getConf.ts` (reader)
 ← `promotableDefaults.ts` (control builders + share/worker helpers +
 `openPromotableDisplays`, the one open-display walk). Every public entry point

@@ -33,18 +33,19 @@ export function DefaultForAllAdornment({
 }: {
   control: DisplayTypeDefaultControl
   // the setting this pin promotes (e.g. a preset name); names it in the
-  // tooltip/aria-label so screen readers and tests can tell sibling pins apart
-  label?: string
+  // tooltip/aria-label so screen readers and tests can tell sibling pins apart.
+  // Required: every row builder has a label to hand, and a pin that can't name
+  // what it promotes reads as a bug rather than a generic control
+  label: string
 }) {
   const { classes } = useStyles()
-  const what = label ?? 'this'
   const isDefault = control.active
   return (
     <Tooltip
       title={
         isDefault
-          ? `${what} is the default for all tracks of this type (click to clear)`
-          : `Make ${what} the default for all tracks of this type`
+          ? `${label} is the default for all tracks of this type (click to clear)`
+          : `Make ${label} the default for all tracks of this type`
       }
     >
       <ToggleButton
@@ -53,7 +54,7 @@ export function DefaultForAllAdornment({
         selected={isDefault}
         color="primary"
         size="small"
-        aria-label={`make ${what} the default for all tracks`}
+        aria-label={`make ${label} the default for all tracks`}
         onChange={e => {
           e.stopPropagation()
           control.toggle()

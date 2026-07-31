@@ -207,6 +207,60 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
   ).toBeUndefined()
 })
 
+test('an opened connection track bakes into its persisted config, not a dead delta', () => {
+  // a connection track lives in neither jbrowse.tracks nor sessionTracks: its
+  // config is persisted under connectionTrackConfigs, and trackConfigDeltas is
+  // only ever merged over an admin base. A delta written for one is inert, so
+  // the recipient — whose display is stamped ignorePromotedDefaults — would
+  // render the base value instead of what the sender saw.
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession & {
+    connectionTrackConfigs: Record<
+      string,
+      { connectionId: string; config: Record<string, unknown> }
+    >
+    setConnectionTrackConfig: (
+      trackId: string,
+      connectionId: string,
+      config: Record<string, unknown>,
+    ) => void
+  }
+  const view = session.views[0]!
+
+  view.showTrack(TRACK_ID)
+  const base = getSnapshot(
+    view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
+  ) as { trackId: string; displays: { type: string; displayId: string }[] }
+  const clone = structuredClone(base)
+  clone.trackId += '-conn'
+  for (const d of clone.displays) {
+    d.displayId = `${clone.trackId}-${d.type}`
+  }
+  session.setConnectionTrackConfig(clone.trackId, 'testConnection', clone)
+  view.showTrack(clone.trackId)
+
+  session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
+
+  const snap = bakePromotedDefaultsIntoSnapshot(
+    session as never,
+    getSnapshot(rootModel.session),
+  )
+
+  const entry = (
+    snap.connectionTrackConfigs as Record<
+      string,
+      { config: { displays: Record<string, unknown>[] } }
+    >
+  )[clone.trackId]
+  expect(entry).toBeDefined()
+  const baked = entry!.config.displays.find(d => d.type === DISPLAY_TYPE)!
+  expect(baked[SLOT]).toBe(PROMOTED)
+  // and no inert delta is left behind for a track that has no admin base
+  expect(
+    (snap.trackConfigDeltas as Record<string, unknown>)[clone.trackId],
+  ).toBeUndefined()
+})
+
 test('a promoted default merges into an existing delta without clobbering a prior edit', () => {
   const { rootModel, session, display } = openVcfDisplay()
   const s = session as unknown as TestSession & {

@@ -390,7 +390,7 @@ export function BaseSessionModel<
        * set the global scroll-to-zoom preference (see the `scrollZoom` getter)
        */
       setScrollZoom(flag: boolean) {
-        self.preferencesOverrides.set('scrollZoom', flag)
+        this.setPreferenceOverride('scrollZoom', flag)
       },
       /**
        * #action

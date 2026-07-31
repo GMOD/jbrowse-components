@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { freezeDeep } from '../util/freezeDeep.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
+import { isUsableValue } from './slotShape.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -163,13 +164,8 @@ export interface ConfigSlotDefinition {
  * (a WeakMap keyed by the MST type, see schemaRegistry.ts); jexl callbacks are
  * evaluated on read by `readConfObject`.
  */
-export default function ConfigSlot({
-  model,
-  type,
-  defaultValue,
-  promotable,
-  promotedBase,
-}: ConfigSlotDefinition) {
+export default function ConfigSlot(definition: ConfigSlotDefinition) {
+  const { model, type, defaultValue, promotable, promotedBase } = definition
   if (!type) {
     throw new Error('type name required')
   }
@@ -205,6 +201,17 @@ export default function ConfigSlot({
     if (promotedBase === undefined) {
       throw new Error(
         "a 'promotable' slot requires 'promotedBase' (the value its inherit sentinel resolves to)",
+      )
+    }
+    // The base is the bottom of the cascade: every other tier that fails
+    // `isUsableValue` falls back to it, so a base that would itself fail has
+    // nowhere left to fall and every read of the slot returns a value no
+    // consumer handles — with nothing thrown anywhere. The typo this catches is
+    // a `promotedBase` outside the slot's own vocabulary (an enum member not in
+    // `model`, a non-finite number), which nothing else in the system checks.
+    if (!isUsableValue(definition, promotedBase)) {
+      throw new Error(
+        `a 'promotable' slot's 'promotedBase' must be a value the slot can hold: ${JSON.stringify(promotedBase)} is not a valid "${type}"`,
       )
     }
     // The resolver hands `promotedBase` out by reference, so an object-valued one

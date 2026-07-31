@@ -16,7 +16,7 @@ function fakeControl(
   return { active, toggle }
 }
 
-function renderAdornment(control: DisplayTypeDefaultControl, label?: string) {
+function renderAdornment(control: DisplayTypeDefaultControl, label = 'this') {
   return render(
     <ThemeProvider theme={theme}>
       <DefaultForAllAdornment control={control} label={label} />
@@ -60,7 +60,7 @@ describe('DefaultForAllAdornment', () => {
             rowClick()
           }}
         >
-          <DefaultForAllAdornment control={fakeControl(false)} />
+          <DefaultForAllAdornment control={fakeControl(false)} label="this" />
         </div>
       </ThemeProvider>,
     )

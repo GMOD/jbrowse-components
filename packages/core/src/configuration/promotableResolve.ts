@@ -16,14 +16,16 @@
  * an object-valued slot (`maybeFrozen`, e.g. alignments `colorBy`) reconstructs a
  * fresh value out of MST that is never `===` its stored twin, so `===` would read
  * it as permanently differing and no pin would ever light up.
+ *
+ * The gate a candidate value passes to count at all is `isUsableValue`, in
+ * `slotShape.ts` — shared with `ConfigSlot`, which applies it to `promotedBase`
+ * at construction so the tier this file falls back to is usable by construction.
  */
 import { deepEqual } from '../util/deepEqual.ts'
 import { getSession } from '../util/index.ts'
-import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { isCallbackValue } from './slotValueUtils.ts'
+import { isUsableValue } from './slotShape.ts'
 
-import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -107,76 +109,6 @@ export function storedSlotValue(
   slot: string,
 ): unknown {
   return config[slot]
-}
-
-/**
- * Whether a stored value could really be a value of this slot — the single gate
- * both cascade tiers pass a candidate through: a session-wide promoted default,
- * and a track's own value read from an untyped saved snapshot. An unusable value
- * is dropped, so the getter, the pin and the badge all fall back in lockstep.
- *
- * The `jexl:` check is the only place the subsystem handles a callback, and it
- * handles it by refusing it. Nothing in the app can author one, but a
- * hand-edited config or default store is untyped, and a `jexl:` string would
- * otherwise sail through `maybeColor`'s bare `typeof === 'string'` and reach a
- * renderer as a literal color. DISPLAY_TYPE_DEFAULTS.md §"No callbacks".
- */
-function isUsableValue(def: ConfigSlotDefinition, value: unknown): boolean {
-  const { validate } = def
-  return (
-    value !== undefined &&
-    !isCallbackValue(value) &&
-    matchesSlotShape(def, value) &&
-    (!validate || validate(value))
-  )
-}
-
-// Per-slot-type JS shape checks, for the slot types whose value needs more than
-// a `typeof` against `promotedBase`. Only the `maybe*` types appear, because
-// `ConfigSlot` admits nothing else as promotable and this table is only ever
-// consulted for a promotable slot. Any type absent here (`maybeBoolean`,
-// `maybeColor`, `maybeFrozen`) falls through to the `promotedBase`-derived check
-// in `matchesSlotShape`.
-const SHAPE_CHECKS: Record<
-  string,
-  (value: unknown, def: ConfigSlotDefinition) => boolean
-> = {
-  // a bare `typeof value === 'number'` would admit `NaN`/`±Infinity`, which no
-  // slot legitimately holds
-  maybeNumber: value => Number.isFinite(value),
-  // a `maybeStringEnum` with no `model` can't be membership-checked; reject
-  // rather than admit any string. `def.model` is the author's plain enumeration
-  // (ConfigSlot adds the nullability), so this reads the real vocabulary.
-  maybeStringEnum: (value, def) =>
-    !!def.model &&
-    typeof value === 'string' &&
-    getEnumerationValues(def.model).includes(value),
-}
-
-// Whether `value` has a JS shape this slot could hold. Guards the untyped
-// session store / saved snapshot against garbage; not a full validation
-// (`validate` layers semantics on top).
-//
-// Keyed off `promotedBase` because that is the only concrete specimen of the
-// slot's value space a promotable slot declares — `defaultValue` is always the
-// inherit sentinel, so keying off it would demand `typeof value === 'undefined'`.
-//
-// Can't delegate to the slot's MST `model.is(value)`: too permissive exactly
-// where this guard matters — `types.number.is(NaN)` and
-// `types.frozen().is('any-string')` are both `true`.
-function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
-  const { promotedBase } = def
-  const check = SHAPE_CHECKS[def.type]
-  return check
-    ? check(value, def)
-    : typeof promotedBase === 'object' && promotedBase !== null
-      ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness —
-        // a bare `typeof` compare would admit `null` (typeof null === 'object')
-        // and an array against an object base
-        typeof value === 'object' &&
-        value !== null &&
-        Array.isArray(value) === Array.isArray(promotedBase)
-      : typeof value === typeof promotedBase
 }
 
 /**

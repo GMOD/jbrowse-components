@@ -248,7 +248,10 @@ function displaysInView(view: object): PromotableDisplay[] {
  * only ever reached through this branch, so don't flatten the recursion away.
  * `hasChildViews` names the one composite shape it does not cover.
  *
- * Views showing no tracks (e.g. dotplot) drop out via the structural guards.
+ * A view holding neither (e.g. spreadsheet) drops out via the structural guards.
+ * A view whose displays declare no promotable slot (e.g. dotplot, which does
+ * hold tracks) is walked and contributes nothing — harmless, and cheaper than
+ * asking each display whether it has anything to promote.
  */
 export function openPromotableDisplays(
   session: AbstractSessionModel,
@@ -274,7 +277,11 @@ function openDisplaysOfType(self: ResolvableDisplay): PromotableDisplay[] {
  * click, and that opt-out only exists to stop defaults applying *silently*.
  * Without this the reset would strand such a display on its base value —
  * cleared of its own value, yet still refusing the default it was just told to
- * follow.
+ * follow. The flag is per *display*, not per slot, so this opts that display
+ * back into the cascade for every promotable slot it has — a second promoted
+ * default can move with the one the user clicked. Per-slot opt-out would mean a
+ * set of slot names on every display state node to spare that case; the flag
+ * exists for received sessions, and re-opting in is an explicit gesture.
  *
  * Dead displays are skipped rather than trusted: the "apply to open tracks"
  * snackbar can outlive a track the user closes in the meantime, and both reads
