@@ -395,11 +395,11 @@ const renderSynteny: ModeRenderer = async ctx => {
 function circularTrackIds(model: Model, tracks: Track[]) {
   const { pluginManager } = getEnv(model)
   const supported = new Set(
-    pluginManager.getViewType('CircularView')?.displayTypes.map(d => d.name),
+    pluginManager.getViewType('CircularView').displayTypes.map(d => d.name),
   )
   const compatible = tracks.filter(track => {
-    const displays = pluginManager.getTrackType(trackType(track))?.displayTypes
-    const ok = !!displays?.some(d => supported.has(d.name))
+    const { displayTypes } = pluginManager.getTrackType(trackType(track))
+    const ok = displayTypes.some(d => supported.has(d.name))
     if (!ok) {
       console.warn(
         `Warning: skipping track "${track.trackId}" (${trackType(track)}) — it has no display the circular view can render`,

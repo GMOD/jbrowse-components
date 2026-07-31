@@ -63,7 +63,7 @@ async function ensureAssembly(
     // which fetch resolves against the page, so resolve the same way here
     // rather than letting `new URL` throw on a relative one.
     const { uri } = resolveUriLocation(assemblyConfigLocation)
-    const configUrl = new URL(uri, globalThis.location?.href)
+    const configUrl = new URL(uri, globalThis.location.href)
     const configJson: unknown = JSON.parse(
       await openLocation(assemblyConfigLocation).readFile('utf8'),
     )
