@@ -62,7 +62,7 @@ surface.
 | Slot | Description | From |
 | --- | --- | --- |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |  |
-| <span id="slot-colorscheme">**colorScheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fall, juicebox, viridis) = <code>'juicebox'</code> | color ramp used to render contact intensity |  |
+| <span id="slot-colorscheme">**colorScheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (juicebox, fall, viridis) = <code>'juicebox'</code> | color ramp used to render contact intensity |  |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend |  |
 | <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an absolute binsize) keeps the intent valid across zoom. |  |
 | <span id="slot-uselogscale">**useLogScale**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | map contact counts to color on a log2 scale |  |

@@ -53,17 +53,26 @@ function viridisRgbaFromHex(): RGBA[] {
 
 const VIRIDIS_FULL_STOPS: ColorStops = { stops: viridisRgbaFromHex() }
 
-// One source of truth for the scheme names and the default: the config schema's
-// `types.enumeration` spreads this list and its slot reads the constant, so
+// One source of truth for the scheme names, their menu labels and the default:
+// the config schema's `types.enumeration` spreads the value list, the track menu
+// builds its radios off the same table, and its slot reads the constant — so
 // adding a scheme is one edit here. `Record<HicColorScheme, …>` below makes that
-// addition a type error until its stops exist.
+// addition a type error until its stops exist. Order is menu order.
 //
 // The track menu's default entry writes DEFAULT_HIC_COLOR_SCHEME and relies on
 // stripDefault omitting it (so picking it doesn't mark the track edited), which
 // holds by construction now that the slot default *is* this constant.
-export const HIC_COLOR_SCHEMES = ['fall', 'juicebox', 'viridis'] as const
+export const HIC_COLOR_SCHEME_OPTIONS = [
+  ['juicebox', 'Juicebox'],
+  ['fall', 'Fall'],
+  ['viridis', 'Viridis'],
+] as const
 
-export type HicColorScheme = (typeof HIC_COLOR_SCHEMES)[number]
+export type HicColorScheme = (typeof HIC_COLOR_SCHEME_OPTIONS)[number][0]
+
+export const HIC_COLOR_SCHEMES = HIC_COLOR_SCHEME_OPTIONS.map(
+  ([value]) => value,
+)
 
 export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 

@@ -1,10 +1,16 @@
+import { checkboxItem, radioItems } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core'
+import { fitToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
+import {
+  makeRadioSubMenu,
+  makeResolutionSubMenuItem,
+} from '@jbrowse/wiggle-core'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
+import TuneIcon from '@mui/icons-material/Tune'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { DEFAULT_HIC_COLOR_SCHEME } from './components/colorRamp.ts'
+import { HIC_COLOR_SCHEME_OPTIONS } from './components/colorRamp.ts'
 
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -16,11 +22,12 @@ interface HicMenuSelf {
   showResolutionControls: boolean
   fitToHeight: boolean
   colorScheme: HicColorScheme
-  availableResolutions: number[] | undefined
+  hasResolutions: boolean
+  canStepResolutionFiner: boolean
+  canStepResolutionCoarser: boolean
   availableNormalizations: string[] | undefined
   activeNormalization: string
   effectiveResolution: number | undefined
-  effectiveResolutionIdx: number
   resolutionBias: number
   setUseLogScale: (f: boolean) => void
   setUseColorPercentile: (f: boolean) => void
@@ -29,7 +36,7 @@ interface HicMenuSelf {
   setFitToHeight: (f: boolean) => void
   setColorScheme: (s: HicColorScheme) => void
   setActiveNormalization: (s: string) => void
-  setResolution: (binSize: number) => void
+  stepResolution: (delta: number) => void
   resetResolutionBias: () => void
 }
 
@@ -44,149 +51,123 @@ const NORM_HELP: Record<string, string> = {
   NONE: 'Raw observed contact counts, with no normalization applied.',
 }
 
-export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
-  const avail = self.availableResolutions
-  return [
-    // Resolution sits at the top level (not buried behind the on-figure overlay
-    // toggle) for discoverability — binsize is the primary Hi-C control. The
-    // "Show resolution controls" checkbox below is a separate, opt-in on-figure
-    // dropdown for baking a chosen binsize into a screenshot/figure.
-    ...(avail?.length
-      ? [
-          makeResolutionSubMenuItem({
-            icon: GridOnIcon,
-            getState: () => ({
-              label:
-                self.effectiveResolution === undefined
-                  ? ''
-                  : getBpDisplayStr(self.effectiveResolution),
-              finerDisabled: self.effectiveResolutionIdx <= 0,
-              coarserDisabled: self.effectiveResolutionIdx >= avail.length - 1,
-              resetDisabled: self.resolutionBias === 0,
-            }),
-            onFiner: () => {
-              self.setResolution(avail[self.effectiveResolutionIdx - 1]!)
-            },
-            onCoarser: () => {
-              self.setResolution(avail[self.effectiveResolutionIdx + 1]!)
-            },
-            onReset: () => {
-              self.resetResolutionBias()
-            },
-            resetTitle: 'Back to auto (tracks zoom)',
+// Resolution sits at the top level (not buried behind the on-figure overlay
+// toggle) for discoverability — binsize is the primary Hi-C control. The
+// "Show resolution controls" checkbox in the Show menu is a separate, opt-in
+// on-figure dropdown for baking a chosen binsize into a screenshot/figure.
+function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
+  return self.hasResolutions
+    ? [
+        makeResolutionSubMenuItem({
+          icon: GridOnIcon,
+          getState: () => ({
+            label:
+              self.effectiveResolution === undefined
+                ? ''
+                : getBpDisplayStr(self.effectiveResolution),
+            finerDisabled: !self.canStepResolutionFiner,
+            coarserDisabled: !self.canStepResolutionCoarser,
+            resetDisabled: self.resolutionBias === 0,
           }),
+          onFiner: () => {
+            self.stepResolution(-1)
+          },
+          onCoarser: () => {
+            self.stepResolution(1)
+          },
+          onReset: () => {
+            self.resetResolutionBias()
+          },
+          resetTitle: 'Back to auto (tracks zoom)',
+        }),
+      ]
+    : []
+}
+
+function showMenuItems(self: HicMenuSelf): MenuItem[] {
+  return [
+    checkboxItem('Show legend', self.showLegend, () => {
+      self.setShowLegend(!self.showLegend)
+    }),
+    ...(self.hasResolutions
+      ? [
+          checkboxItem(
+            'Show resolution controls',
+            self.showResolutionControls,
+            () => {
+              self.setShowResolutionControls(!self.showResolutionControls)
+            },
+            {
+              helpText:
+                'Show an on-figure binsize dropdown in the track overlay, e.g. to bake a chosen resolution into a screenshot.',
+            },
+          ),
         ]
       : []),
+    fitToHeightCheckboxItem(self),
+    checkboxItem('Log scale', self.useLogScale, () => {
+      self.setUseLogScale(!self.useLogScale)
+    }),
+    checkboxItem(
+      'Show faint contacts (95th percentile)',
+      self.useColorPercentile,
+      () => {
+        self.setUseColorPercentile(!self.useColorPercentile)
+      },
+      {
+        helpText:
+          'Saturate the color scale at the 95th percentile of counts instead of the max, so faint off-diagonal contacts read more strongly.',
+      },
+    ),
+  ]
+}
+
+// Only the schemes the file actually offers, so the radios can't check a
+// normalization hic-straw would silently answer with NONE. `activeNormalization`
+// — not the raw config slot — drives the tick, so a file lacking the user's
+// pick shows the scheme it really used.
+function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
+  const avail = self.availableNormalizations
+  return avail?.length
+    ? [
+        {
+          label: 'Normalization',
+          icon: TuneIcon,
+          subMenu: radioItems(
+            avail.map(norm => ({
+              value: norm,
+              label: norm,
+              helpText:
+                NORM_HELP[norm] ??
+                'Matrix normalization scheme provided by this .hic file.',
+            })),
+            self.activeNormalization,
+            norm => {
+              self.setActiveNormalization(norm)
+            },
+          ),
+        },
+      ]
+    : []
+}
+
+export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
+  return [
+    ...resolutionMenuItems(self),
     {
       label: 'Show...',
       icon: VisibilityIcon,
-      type: 'subMenu',
-      subMenu: [
-        {
-          label: 'Show legend',
-          type: 'checkbox',
-          checked: self.showLegend,
-          onClick: () => {
-            self.setShowLegend(!self.showLegend)
-          },
-        },
-        ...(avail?.length
-          ? [
-              {
-                label: 'Show resolution controls',
-                helpText:
-                  'Show an on-figure binsize dropdown in the track overlay, e.g. to bake a chosen resolution into a screenshot.',
-                type: 'checkbox' as const,
-                checked: self.showResolutionControls,
-                onClick: () => {
-                  self.setShowResolutionControls(!self.showResolutionControls)
-                },
-              },
-            ]
-          : []),
-        {
-          label: 'Fit to display height',
-          helpText:
-            'Squash the triangle vertically to fill the display height instead of drawing square bins at its natural half-width height.',
-          type: 'checkbox',
-          checked: self.fitToHeight,
-          onClick: () => {
-            self.setFitToHeight(!self.fitToHeight)
-          },
-        },
-        {
-          label: 'Log scale',
-          helpText:
-            'Map contact counts to color on a log2 scale, compressing the dynamic range so weaker contacts stay visible.',
-          type: 'checkbox',
-          checked: self.useLogScale,
-          onClick: () => {
-            self.setUseLogScale(!self.useLogScale)
-          },
-        },
-        {
-          label: 'Show faint contacts (95th percentile)',
-          helpText:
-            'Saturate the color scale at the 95th percentile of counts instead of the max, so faint off-diagonal contacts read more strongly.',
-          type: 'checkbox',
-          checked: self.useColorPercentile,
-          onClick: () => {
-            self.setUseColorPercentile(!self.useColorPercentile)
-          },
-        },
-      ],
+      subMenu: showMenuItems(self),
     },
-    {
+    makeRadioSubMenu({
       label: 'Color scheme',
       icon: PaletteIcon,
-      type: 'subMenu',
-      subMenu: [
-        {
-          label: 'Juicebox (default)',
-          type: 'radio',
-          checked: self.colorScheme === DEFAULT_HIC_COLOR_SCHEME,
-          onClick: () => {
-            self.setColorScheme(DEFAULT_HIC_COLOR_SCHEME)
-          },
-        },
-        {
-          label: 'Fall',
-          type: 'radio',
-          checked: self.colorScheme === 'fall',
-          onClick: () => {
-            self.setColorScheme('fall')
-          },
-        },
-        {
-          label: 'Viridis',
-          type: 'radio',
-          checked: self.colorScheme === 'viridis',
-          onClick: () => {
-            self.setColorScheme('viridis')
-          },
-        },
-      ],
-    },
-    ...(self.availableNormalizations
-      ? [
-          {
-            label: 'Normalization',
-            type: 'subMenu' as const,
-            subMenu: self.availableNormalizations.map(
-              (norm): MenuItem => ({
-                label: norm,
-                type: 'radio',
-                checked: norm === self.activeNormalization,
-                helpText:
-                  NORM_HELP[norm] ??
-                  'Matrix normalization scheme provided by this .hic file.',
-                onClick: () => {
-                  self.setActiveNormalization(norm)
-                },
-              }),
-            ),
-          },
-        ]
-      : []),
+      value: self.colorScheme,
+      onChange: scheme => {
+        self.setColorScheme(scheme)
+      },
+      options: HIC_COLOR_SCHEME_OPTIONS,
+    }),
+    ...normalizationMenuItems(self),
   ]
 }

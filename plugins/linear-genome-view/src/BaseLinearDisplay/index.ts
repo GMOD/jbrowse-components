@@ -47,6 +47,7 @@ export {
   default as FetchMixin,
 } from './models/FetchMixin.ts'
 export { default as StaleViewportRescaleMixin } from './models/StaleViewportRescaleMixin.ts'
+export { fitToHeightCheckboxItem } from './models/fitToHeightMenuItem.ts'
 export {
   computeRenderTransform,
   computeTriangleYScalar,

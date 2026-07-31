@@ -4,7 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
+import { GRADIENT_LEGEND_SVG_AREA_WIDTH, checkboxItem } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getRpcSessionId,
@@ -16,6 +16,7 @@ import {
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
+  fitToHeightCheckboxItem,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -611,6 +612,7 @@ export default function sharedModelFactory(
                   label: 'R² (squared correlation)',
                   type: 'radio',
                   checked: self.effectiveLdMetric === 'r2',
+                  keepMenuOpen: true,
                   helpText: `Squared correlation between the two variants (0-1). ${computeNote}${plinkNote}`,
                   onClick: () => {
                     self.setLDMetric('r2')
@@ -620,6 +622,7 @@ export default function sharedModelFactory(
                   label: "D' (normalized D)",
                   type: 'radio',
                   checked: self.effectiveLdMetric === 'dprime',
+                  keepMenuOpen: true,
                   disabled: !self.dprimeAvailable,
                   helpText: self.dprimeAvailable
                     ? `Lewontin's normalized D (0-1). ${computeNote}${
@@ -638,16 +641,17 @@ export default function sharedModelFactory(
                 ...(self.isPrecomputedLD
                   ? []
                   : [
-                      {
-                        label: 'Show signed LD values (-1 to 1)',
-                        helpText:
-                          "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
-                        type: 'checkbox',
-                        checked: self.signedLD,
-                        onClick: () => {
+                      checkboxItem(
+                        'Show signed LD values (-1 to 1)',
+                        self.signedLD,
+                        () => {
                           self.setSignedLD(!self.signedLD)
                         },
-                      },
+                        {
+                          helpText:
+                            "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
+                        },
+                      ),
                     ]),
               ],
             },
@@ -656,72 +660,50 @@ export default function sharedModelFactory(
               icon: VisibilityIcon,
               type: 'subMenu',
               subMenu: [
-                {
-                  label: 'Show LD triangle',
-                  type: 'checkbox',
-                  checked: self.showLDTriangle,
-                  onClick: () => {
-                    self.setShowLDTriangle(!self.showLDTriangle)
-                  },
-                },
-                {
-                  label: 'Show recombination track',
-                  helpText:
-                    'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
-                  type: 'checkbox',
-                  checked: self.showRecombination,
-                  onClick: () => {
+                checkboxItem('Show LD triangle', self.showLDTriangle, () => {
+                  self.setShowLDTriangle(!self.showLDTriangle)
+                }),
+                checkboxItem(
+                  'Show recombination track',
+                  self.showRecombination,
+                  () => {
                     self.setShowRecombination(!self.showRecombination)
                   },
-                },
-                {
-                  label: 'Show legend',
-                  type: 'checkbox',
-                  checked: self.showLegend,
-                  onClick: () => {
-                    self.setShowLegend(!self.showLegend)
+                  {
+                    helpText:
+                      'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
                   },
-                },
-                {
-                  label: 'Show variant labels',
-                  type: 'checkbox',
-                  checked: self.showLabels,
-                  onClick: () => {
-                    self.setShowLabels(!self.showLabels)
-                  },
-                },
-                {
-                  label: 'Show vertical guides on hover',
-                  type: 'checkbox',
-                  checked: self.showVerticalGuides,
-                  onClick: () => {
+                ),
+                checkboxItem('Show legend', self.showLegend, () => {
+                  self.setShowLegend(!self.showLegend)
+                }),
+                checkboxItem('Show variant labels', self.showLabels, () => {
+                  self.setShowLabels(!self.showLabels)
+                }),
+                checkboxItem(
+                  'Show vertical guides on hover',
+                  self.showVerticalGuides,
+                  () => {
                     self.setShowVerticalGuides(!self.showVerticalGuides)
                   },
-                },
+                ),
                 // Layout toggles live alongside the visibility toggles in
                 // this submenu, matching the Hi-C triangular display's
                 // "Show..." grouping (plugins/hic trackMenuItems.ts) so the
-                // two contact-map displays stay consistent.
-                {
-                  label: 'Fit to display height',
-                  helpText:
-                    'Vertically squash the triangle to fill the display height instead of drawing it at its natural half-width height.',
-                  type: 'checkbox',
-                  checked: self.fitToHeight,
-                  onClick: () => {
-                    self.setFitToHeight(!self.fitToHeight)
-                  },
-                },
-                {
-                  label: 'Show cells with genome proportions',
-                  helpText:
-                    'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
-                  type: 'checkbox',
-                  checked: self.useGenomicPositions,
-                  onClick: () => {
+                // two contact-map displays stay consistent — the fit-to-height
+                // row is literally the same builder they share.
+                fitToHeightCheckboxItem(self),
+                checkboxItem(
+                  'Show cells with genome proportions',
+                  self.useGenomicPositions,
+                  () => {
                     self.setUseGenomicPositions(!self.useGenomicPositions)
                   },
-                },
+                  {
+                    helpText:
+                      'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
+                  },
+                ),
               ],
             },
             // Filter menu only available for VCF-computed LD, not pre-computed

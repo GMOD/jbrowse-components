@@ -119,6 +119,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * Whether the `.hic` file's binsize list has arrived (it comes from the
+       * async CoreGetInfo call in afterAttach). Every resolution control — the
+       * track-menu stepper, the on-figure dropdown and its enabling checkbox —
+       * is gated on this rather than re-deriving `availableResolutions?.length`.
+       */
+      get hasResolutions(): boolean {
+        return !!self.availableResolutions?.length
+      },
+      /**
+       * #getter
        */
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useLogScale(): boolean {
@@ -284,6 +294,25 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       get effectiveResolution(): number | undefined {
         const avail = self.availableResolutions
         return avail?.length ? avail[this.effectiveResolutionIdx]! : undefined
+      },
+      /**
+       * #getter
+       * Whether a finer binsize exists to step to. The stepper controls read
+       * this rather than compare indices themselves, so the edges of the file's
+       * binsize list are described in one place.
+       */
+      get canStepResolutionFiner(): boolean {
+        return this.effectiveResolutionIdx > 0
+      },
+      /**
+       * #getter
+       * Whether a coarser binsize exists to step to.
+       */
+      get canStepResolutionCoarser(): boolean {
+        const avail = self.availableResolutions
+        return (
+          avail !== undefined && this.effectiveResolutionIdx < avail.length - 1
+        )
       },
     }))
     .views(self => ({
@@ -483,6 +512,25 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const avail = self.availableResolutions
         const idx = avail ? avail.indexOf(binSize) : -1
         if (idx !== -1) {
+          setConf(self, 'resolutionBias', idx - self.autoResolutionIdx)
+        }
+      },
+      /**
+       * #action
+       * Step one entry finer (negative delta) or coarser (positive) from the
+       * binsize currently in effect, again as a bias off the auto pick. Clamped
+       * to what the file offers, so a step at either edge no-ops instead of
+       * indexing out of bounds — the menu's stepper disables there, and this
+       * keeps that from being the only thing standing between a bad index and
+       * a fetch.
+       */
+      stepResolution(delta: number) {
+        const avail = self.availableResolutions
+        if (avail?.length) {
+          const idx = Math.max(
+            0,
+            Math.min(avail.length - 1, self.effectiveResolutionIdx + delta),
+          )
           setConf(self, 'resolutionBias', idx - self.autoResolutionIdx)
         }
       },

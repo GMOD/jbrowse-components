@@ -25,9 +25,9 @@ describe('colorScheme slot', () => {
     expect(readConfObject(conf, 'colorScheme')).toBe(scheme)
   })
 
-  // The track menu's "Juicebox (default)" entry writes the default value rather
-  // than the old `undefined` reset, which only avoids marking the track edited
-  // because stripDefault omits a slot equal to its default. That holds solely
+  // The track menu's Juicebox radio writes the default value rather than the
+  // old `undefined` reset, which only avoids marking the track edited because
+  // stripDefault omits a slot equal to its default. That holds solely
   // while the slot default and DEFAULT_HIC_COLOR_SCHEME agree — which is why the
   // schema now reads the constant instead of repeating the literal.
   test('picking the default writes no config delta', () => {
