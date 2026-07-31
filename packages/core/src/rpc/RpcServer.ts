@@ -1,4 +1,5 @@
 import { isRpcResult } from '../util/rpc.ts'
+import { markStopTokenStopped } from '../util/stopToken.ts'
 import { serializeError } from './serializeError/index.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
@@ -58,6 +59,10 @@ interface RpcMessageData {
   uid: string
   libRpc?: true
   data: unknown
+  // a stop-token notification rather than a call: the id of a token the main
+  // thread has stopped. Carries no method or uid — it is not scoped to one
+  // call, because a token can be in flight on several at once.
+  stopToken?: string
 }
 
 export default class RpcServer {
@@ -77,8 +82,17 @@ export default class RpcServer {
   }
 
   handler(e: MessageEvent<RpcMessageData>) {
-    const { libRpc, method, uid, data } = e.data
+    const { libRpc, method, uid, data, stopToken } = e.data
     if (!libRpc) {
+      return
+    }
+    if (stopToken !== undefined) {
+      // Every in-flight method holding this token now sees it as stopped at its
+      // next await boundary, and any AbortSignal taken against it aborts, so a
+      // canceled read drops off the socket. Handled ahead of the method lookup:
+      // this frame has no method name and would otherwise land in the unknown
+      // method branch with no uid to reply to.
+      markStopTokenStopped(stopToken)
       return
     }
     const methodFn = Object.hasOwn(this.methods, method)

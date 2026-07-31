@@ -4,7 +4,7 @@ import {
   computeConsensusVariants,
 } from '@jbrowse/alignments-core'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import { isMismatchFeature } from '../shared/extractCigarFeatures.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
@@ -95,7 +95,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
 
     // Last chance to bail before the tally and the two walks, which are
     // synchronous over the whole region and can't be interrupted once started.
-    checkStopToken2(stopTokenCheck)
+    checkStopTokenThrottled(stopTokenCheck)
 
     const reference = regionSequence.slice(region.start - regionSequenceStart)
 

@@ -1,3 +1,4 @@
+import { isStopped } from '../util/stopToken.ts'
 import RpcClient from './RpcClient.ts'
 import RpcServer, { rpcResult, rpcResultWithArrayBuffers } from './RpcServer.ts'
 
@@ -121,6 +122,31 @@ describe('RpcServer.handler()', () => {
     })
     await flushPromises()
     expect((sent[0]?.data as any)?.data).toEqual({ x: 1 })
+    restore()
+  })
+})
+
+describe('RpcServer stop-token notifications', () => {
+  test('applies a posted stopped id, so running calls see it', async () => {
+    const { sent, restore } = mockPostMessage()
+    const server = makeServer({})
+    const token = 'server-applied-token'
+    expect(isStopped(token)).toBe(false)
+    sendMessage(server, { stopToken: token, libRpc: true })
+    await flushPromises()
+    expect(isStopped(token)).toBe(true)
+    // it is not a call: nothing is replied, and in particular it must not land
+    // in the unknown-method branch with no uid to answer
+    expect(sent).toHaveLength(0)
+    restore()
+  })
+
+  test('ignores a stop-token frame without the libRpc tag', async () => {
+    const { restore } = mockPostMessage()
+    const server = makeServer({})
+    sendMessage(server, { stopToken: 'untagged-token' })
+    await flushPromises()
+    expect(isStopped('untagged-token')).toBe(false)
     restore()
   })
 })

@@ -6,9 +6,10 @@ import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   checkStopToken,
   createStopTokenChecker,
+  withStopTokenSignal,
 } from '@jbrowse/core/util/stopToken'
 import { unzip } from '@jbrowse/core/util/unzip'
 
@@ -161,34 +162,37 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       )
       const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
-      await downloadStatus('Downloading features', statusCallback, onProgress =>
-        this.bed.getLines(query.refName, query.start, query.end, {
-          lineCallback: (line, fileOffset) => {
-            checkStopToken2(stopTokenCheck)
-            const splitLine = line.split('\t')
-            observer.next(
-              new SimpleFeature(
-                featureData({
-                  splitLine,
-                  ...bedFeatureLocus({
+      await withStopTokenSignal(stopToken, signal =>
+        downloadStatus('Downloading features', statusCallback, onProgress =>
+          this.bed.getLines(query.refName, query.start, query.end, {
+            lineCallback: (line, fileOffset) => {
+              checkStopTokenThrottled(stopTokenCheck)
+              const splitLine = line.split('\t')
+              observer.next(
+                new SimpleFeature(
+                  featureData({
                     splitLine,
-                    colRef,
-                    colStart,
-                    colEnd,
-                    oneBased,
-                    hasEndColumn,
+                    ...bedFeatureLocus({
+                      splitLine,
+                      colRef,
+                      colStart,
+                      colEnd,
+                      oneBased,
+                      hasEndColumn,
+                    }),
+                    scoreColumn,
+                    parser: this.parser,
+                    uniqueId: `${this.id}-${fileOffset}`,
+                    names,
+                    disableGeneHeuristic,
                   }),
-                  scoreColumn,
-                  parser: this.parser,
-                  uniqueId: `${this.id}-${fileOffset}`,
-                  names,
-                  disableGeneHeuristic,
-                }),
-              ),
-            )
-          },
-          onProgress,
-        }),
+                ),
+              )
+            },
+            onProgress,
+            signal,
+          }),
+        ),
       )
       observer.complete()
     }, stopToken)

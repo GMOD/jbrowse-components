@@ -2,7 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
@@ -66,7 +66,7 @@ export async function executeRenderWiggleData({
     () => fetchRegionRaws(dataAdapter, regions, fetchOpts),
   )
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   const results: WiggleDataResult[] = raws.map(raw => ({
     sources: [

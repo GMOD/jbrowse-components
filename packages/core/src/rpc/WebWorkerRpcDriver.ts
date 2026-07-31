@@ -39,6 +39,10 @@ class WebWorkerHandle {
     this.client.on('error', callback)
   }
 
+  notifyStopToken(id: string) {
+    this.client.notifyStopToken(id)
+  }
+
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${nanoid()}`

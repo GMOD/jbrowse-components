@@ -2,7 +2,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
@@ -74,7 +74,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         i < residues.length - halfWindowSize;
         i += windowDelta
       ) {
-        checkStopToken2(stopTokenCheck)
+        checkStopTokenThrottled(stopTokenCheck)
 
         const winEnd = i + rightHalf
         while (hi < winEnd) {

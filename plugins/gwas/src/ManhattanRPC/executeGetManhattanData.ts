@@ -4,7 +4,7 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { isLDRecordSource } from '@jbrowse/ld-core'
@@ -151,7 +151,7 @@ async function makeEvaluators({
     const ld = await updateStatus('Downloading LD data', statusCallback, () =>
       buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
     )
-    checkStopToken2(stopTokenCheck)
+    checkStopTokenThrottled(stopTokenCheck)
     return {
       ...makeLdEvaluator(ld, indexSnp, region.refName),
       indexFound: ld.indexFound,
@@ -197,7 +197,7 @@ export async function executeGetManhattanData({
     () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   const { indexFound, ...evaluators } = await makeEvaluators({
     pluginManager,

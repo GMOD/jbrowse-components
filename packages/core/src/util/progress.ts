@@ -1,8 +1,9 @@
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   checkStopToken,
   createStopTokenChecker,
 } from './stopToken.ts'
+import { createTimeGate } from './timeGate.ts'
 
 import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
@@ -246,7 +247,7 @@ export type ProgressReporter = (current?: number) => void
  * returned `report(current)` is called once per outer-loop iteration and does
  * two throttled jobs on each call:
  *
- * - checks the stop token via the existing throttled {@link checkStopToken2}
+ * - checks the stop token via the existing throttled {@link checkStopTokenThrottled}
  *   machinery, so cancellation interrupts the loop within milliseconds instead
  *   of only at phase boundaries, and
  * - emits a {@link StatusWithProgress} through `statusCallback` at most once per
@@ -255,20 +256,17 @@ export type ProgressReporter = (current?: number) => void
  *
  * Both jobs are optional: with no `statusCallback`/`total` this is purely a
  * throttled cancellation tick (the replacement for calling {@link
- * checkStopToken2} directly in a loop), so a loop has exactly one inner
+ * checkStopTokenThrottled} directly in a loop), so a loop has exactly one inner
  * callback whether or not it drives the progress UI.
  *
- * Emission is gated purely on wall-clock time (`throttleMs`), not a call
- * counter. Every caller invokes `report()` at the outer loop granularity — once
- * per feature/record, never per cell — so reading the clock each call is
- * negligible next to the per-item work, and the time gate alone caps emits at
- * ~1/throttleMs. An earlier call-count mask (only read the clock every 1024
- * calls) froze the bar at 0% for any phase with fewer items than the mask but
- * heavy per-item work — e.g. a multi-sample VCF region with a few hundred sites
- * but thousands of samples each never reached 1024 `report()` calls, so it only
- * ever emitted the initial tick. Keep the loop a plain `for`; just call
- * `report()` once per item (it owns the counter) — or `report(n)` to report an
- * explicit position.
+ * Emission is gated on wall-clock time (`throttleMs`) through {@link
+ * createTimeGate}, which caps emits at ~1/throttleMs. This used to read the
+ * clock on every call, reasoning that it was negligible next to the per-item
+ * work; at a 666k-read pileup that measured ~28ms, so the gate now thins the
+ * clock reads too — see createTimeGate for why its stride is learned rather
+ * than fixed (a fixed one froze this bar at 0% for low-count/heavy phases).
+ * Keep the loop a plain `for`; just call `report()` once per item (it owns the
+ * counter) — or `report(n)` to report an explicit position.
  *
  * Reuses {@link createStopTokenChecker}, matching the cancellation convention
  * already used across the variant/alignments/gwas RPC paths.
@@ -289,17 +287,17 @@ export function createProgressReporter({
   throttleMs?: number
 }): ProgressReporter {
   const checker = stopTokenCheck ?? createStopTokenChecker(stopToken)
-  let lastReport = 0
+  const emitDue = createTimeGate()
   let count = 0
   return (current = count) => {
     count = current + 1
-    checkStopToken2(checker)
-    if (statusCallback !== undefined && total !== undefined) {
-      const now = Date.now()
-      if (now - lastReport >= throttleMs) {
-        lastReport = now
-        statusCallback({ message: label, current, total })
-      }
+    checkStopTokenThrottled(checker)
+    if (
+      statusCallback !== undefined &&
+      total !== undefined &&
+      emitDue(throttleMs)
+    ) {
+      statusCallback({ message: label, current, total })
     }
   }
 }

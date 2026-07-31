@@ -1,3 +1,4 @@
+import { createStopToken, stopStopToken } from '../util/stopToken.ts'
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
@@ -87,6 +88,30 @@ describe('BaseRpcDriver.call envelope', () => {
     await expect(
       driver.call(pluginManager, '', 'SomeMethod', {}),
     ).rejects.toThrow('sessionId is required')
+  })
+
+  test('refuses to dispatch a call whose stop token is already stopped', async () => {
+    const driver = new CapturingDriver()
+    const stopToken = createStopToken()
+    stopStopToken(stopToken)
+    await expect(
+      driver.call(pluginManager, 'sid', 'SomeMethod', {
+        sessionId: 'sid',
+        stopToken,
+      }),
+    ).rejects.toThrow('aborted')
+    // nothing serialized, no worker woken, and no stop notification racing the
+    // call it was meant to cancel
+    expect(driver.transportCalls).toHaveLength(0)
+  })
+
+  test('dispatches normally for a live stop token', async () => {
+    const driver = new CapturingDriver()
+    await driver.call(pluginManager, 'sid', 'SomeMethod', {
+      sessionId: 'sid',
+      stopToken: createStopToken(),
+    })
+    expect(driver.transportCalls).toHaveLength(1)
   })
 
   test('freeSession and destroy are no-ops by default', () => {

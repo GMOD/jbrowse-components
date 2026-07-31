@@ -261,7 +261,7 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const stopTokenChecker = createStopTokenChecker(stopToken)
   // report() runs the throttled stop-token check itself, so it replaces the
-  // per-feature checkStopToken2 while also advancing the bar over whole-genome
+  // per-feature checkStopTokenThrottled while also advancing the bar over whole-genome
   // PAF (potentially millions of features).
   const report = createProgressReporter({
     label: 'Computing synteny positions',

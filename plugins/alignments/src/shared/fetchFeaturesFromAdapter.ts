@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
@@ -60,7 +60,7 @@ export async function fetchFeaturesFromAdapter({
     dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
   )
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   return {
     featuresArray,

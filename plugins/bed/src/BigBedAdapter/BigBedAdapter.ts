@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { featureData } from '../util.ts'
@@ -159,13 +160,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     const aggregateField = this.getConf('aggregateField')
     const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
     const { parser, bigbed } = await this.configure(opts)
-    const feats = await updateStatus(
-      'Downloading features',
-      statusCallback,
-      () =>
+    const feats = await withStopTokenSignal(opts.stopToken, signal =>
+      updateStatus('Downloading features', statusCallback, () =>
         bigbed.getFeatures(query.refName, query.start, query.end, {
           basesPerSpan: query.end - query.start,
+          signal,
         }),
+      ),
     )
 
     await updateStatus('Processing features', statusCallback, async () => {

@@ -17,6 +17,14 @@ interface PendingChunk {
   chunk: Promise<Uint8Array>
 }
 
+interface InFlightChunk {
+  chunk: Promise<Uint8Array>
+  // the signal of the read that opened this fetch, so a joiner can tell that
+  // read's cancellation apart from a real failure. Typed off RequestInit, which
+  // is where it comes from and which admits an explicit null.
+  signal: RequestInit['signal']
+}
+
 let cache = new Map<string, Uint8Array>()
 // File size is cached at the module level (keyed by URL), parallel to the chunk
 // cache. Per-instance state can't be used: a cache-hit serving bytes from a
@@ -28,10 +36,10 @@ let sizeCache = new Map<string, number>()
 // the same bytes again: concurrent reads over adjacent genomic blocks routinely
 // land in one 256 KiB chunk, and each duplicate also burns one of the
 // MAX_CONCURRENT slots. A failed fetch rejects every waiter, which is what each
-// would have gotten on its own — and no waiter can cancel a fetch out from under
-// the others, because in-tree cancellation is stopToken-based rather than
-// AbortSignal-based (see BaseOptions.signal).
-let inFlight = new Map<string, Promise<Uint8Array>>()
+// would have gotten on its own — except for a *cancellation*, which belongs to
+// the reader that issued it and says nothing about anyone joined to its fetch.
+// That is why the owning signal is recorded here; see joinChunk.
+let inFlight = new Map<string, InFlightChunk>()
 let activeCount = 0
 const queue: (() => void)[] = []
 
@@ -67,7 +75,7 @@ export function clearCache() {
   sizeCache = new Map<string, number>()
   // A leaked fetch that settles after this still removes its own entry from the
   // new map only if it is still the owner, so dropping the old map is safe.
-  inFlight = new Map<string, Promise<Uint8Array>>()
+  inFlight = new Map<string, InFlightChunk>()
   // Reset concurrency state too. A leaked async fetch from a prior test that
   // resolves after clearCache will still decrement activeCount in its finally
   // block — so this can momentarily push activeCount negative, which is
@@ -253,11 +261,12 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         putCached(key, copy)
         return copy
       })
-      inFlight.set(key, chunk)
+      const entry = { chunk, signal: init?.signal }
+      inFlight.set(key, entry)
       const forget = () => {
         // only if still the owner: clearCache, or a later run for the same
         // chunk, may have replaced this entry
-        if (inFlight.get(key) === chunk) {
+        if (inFlight.get(key) === entry) {
           inFlight.delete(key)
         }
       }
@@ -267,6 +276,47 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       pending.push({ index, chunk })
     }
     return pending
+  }
+
+  /**
+   * Await a chunk fetch another read already had in flight, and re-issue it if
+   * that read was canceled out from under us.
+   *
+   * Sharing one fetch between reads is what makes a row of adjacent genomic
+   * blocks cheap, but it also means another reader's `AbortSignal` can reject a
+   * chunk this read still needs — a failure that says nothing about this read.
+   * Our own abort, and every other error, propagates untouched. `@gmod/bam`
+   * applies the same retry to its own chunk cache one layer up.
+   *
+   * Retried exactly once, then propagated: the re-issue prefers the cache or a
+   * live sibling, and bounding it means the pathological case is one duplicate
+   * 256 KiB fetch rather than a recursion whose depth depends on how the aborts
+   * interleave.
+   */
+  private async joinChunk(
+    url: string,
+    index: number,
+    flight: InFlightChunk,
+    init?: RequestInit,
+  ) {
+    try {
+      return await flight.chunk
+    } catch (e) {
+      if (flight.signal?.aborted !== true || init?.signal?.aborted === true) {
+        throw e
+      }
+      // a sibling joiner may have re-opened this chunk already; its owner is a
+      // live reader in every case but another interleaved abort, which is what
+      // the single-retry bound covers
+      const key = cacheKey(url, index)
+      const cached = getCached(key)
+      const sibling = inFlight.get(key)
+      return cached === undefined
+        ? sibling !== undefined && sibling !== flight
+          ? sibling.chunk
+          : this.fetchRun(url, { start: index, end: index }, init)[0]!.chunk
+        : cached
+    }
   }
 
   private async getCachedRange(
@@ -319,7 +369,10 @@ export class RemoteFileWithRangeCache extends RemoteFile {
             runs.push({ start: index, end: index })
           }
         } else {
-          pending.push({ index, chunk: flight })
+          pending.push({
+            index,
+            chunk: this.joinChunk(url, index, flight, init),
+          })
         }
       } else {
         chunks.set(index, cached)

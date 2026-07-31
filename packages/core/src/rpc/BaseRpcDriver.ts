@@ -1,3 +1,5 @@
+import { checkStopToken, isStopToken } from '../util/stopToken.ts'
+
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
@@ -33,6 +35,14 @@ export default abstract class BaseRpcDriver {
   ) {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
+    }
+
+    // A call whose token was already stopped has nothing to deliver to: refuse
+    // it here rather than serializing args, waking a worker and racing a stop
+    // notification against the call it means to cancel. Callers already treat
+    // an abort as the ordinary outcome of a superseded fetch.
+    if (isStopToken(args.stopToken)) {
+      checkStopToken(args.stopToken)
     }
 
     const rpcMethod = pluginManager.getRpcMethodType(functionName)

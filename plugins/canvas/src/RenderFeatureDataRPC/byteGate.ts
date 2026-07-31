@@ -1,4 +1,4 @@
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -43,7 +43,7 @@ export async function measureRegionBytes({
     stopToken,
     statusCallback,
   })
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
   return bytes !== undefined && bytes > byteLimit
     ? { bytes, tooLarge: { regionTooLarge: true, bytes } }
     : { bytes }

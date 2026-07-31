@@ -1,7 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { clusterMatrix } from '@jbrowse/tree-sidebar'
@@ -47,7 +47,7 @@ export async function executeMultiRowClusterFeatures({
       statusCallback,
       () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
     )
-    checkStopToken2(stopTokenCheck)
+    checkStopTokenThrottled(stopTokenCheck)
     // dedup by feature id (mirrors the get-features RPC): a duplicate would
     // double-count coverage in the clustering matrix and skew the row order
     const seen = new Set<string>()

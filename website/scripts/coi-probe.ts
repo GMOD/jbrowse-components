@@ -1,7 +1,8 @@
 // Does the SharedArrayBuffer stop-token fast path actually engage when the page
 // IS cross-origin isolated? Serves the build with COOP/COEP so
 // crossOriginIsolated becomes true, then checks the observable consequences:
-//   - main thread: createStopToken should allocate NO blob URLs
+//   - main thread: createStopToken should allocate NO blob URLs (it no longer
+//     mints them on any path, so this is a regression check both ways)
 //   - worker: no synchronous XHR to a blob: URL
 //   - the session still loads (SAB has to survive the RPC arg serialization)
 import http from 'node:http'

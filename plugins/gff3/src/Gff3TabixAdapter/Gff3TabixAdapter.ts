@@ -78,6 +78,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
             region.start,
             region.end,
             opts.statusCallback,
+            opts.stopToken,
           )
 
         let lines = await fetchLines(query)

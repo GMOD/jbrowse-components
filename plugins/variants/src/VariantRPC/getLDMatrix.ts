@@ -2,7 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import {
@@ -489,7 +489,7 @@ export async function getLDMatrix({
       snpIdx++
     }
 
-    checkStopToken2(stopTokenCheck)
+    checkStopTokenThrottled(stopTokenCheck)
   }
 
   const n = snps.length

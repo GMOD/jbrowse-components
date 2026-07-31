@@ -1,16 +1,22 @@
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
+import { registerStopTokenBroadcaster } from '../util/stopToken.ts'
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { StatusCallback } from '../util/progress.ts'
+import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 
 export interface WorkerHandle {
   destroy(): void
   // fires when the worker dies, so the pool can drop and re-boot the slot;
   // drivers with no such failure mode omit it
   onError?(callback: () => void): void
+  // forwards a stopped stop-token id so calls running there can abort; a
+  // transport with no out-of-band channel omits it and keeps whatever
+  // cancellation its calls already have
+  notifyStopToken?(id: string): void
   call(
     functionName: string,
     args?: unknown,
@@ -76,6 +82,21 @@ class LazyWorker {
       .catch(() => {})
     this.workerP = undefined
   }
+
+  /**
+   * Forward a stopped token id, but never boot a worker to do it: an unbooted
+   * slot is running nothing to cancel. Routed through the same promise the
+   * dispatching call awaits, so a stop issued while this slot is still booting
+   * still lands after the call it means to cancel rather than ahead of the
+   * worker's message listener existing.
+   */
+  notifyStopToken(id: string) {
+    this.workerP
+      ?.then(worker => {
+        worker.notifyStopToken?.(id)
+      })
+      .catch(() => {})
+  }
 }
 
 /**
@@ -91,6 +112,21 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
+  // a stopped token has to reach the thread actually running the work, and this
+  // is the seam that carries it. Broadcast rather than routed per call: one
+  // token is commonly in flight on several calls at once, and a worker holding
+  // nothing under that id ignores the frame.
+  private unregisterBroadcaster: () => void
+
+  constructor(args: RpcDriverConstructorArgs) {
+    super(args)
+    this.unregisterBroadcaster = registerStopTokenBroadcaster(id => {
+      for (const worker of this.workerPool ?? []) {
+        worker.notifyStopToken(id)
+      }
+    })
+  }
+
   abstract makeWorker(): Promise<WorkerHandle>
 
   // dead in production: only CoreFreeResources reaches this, and nothing calls
@@ -102,6 +138,7 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   // terminate every pooled worker and reset assignment bookkeeping; call when
   // discarding the driver so its worker threads don't outlive it
   override destroy() {
+    this.unregisterBroadcaster()
     for (const worker of this.workerPool ?? []) {
       worker.destroy()
     }

@@ -5,7 +5,10 @@ import {
   fetchAndMaybeUnzipText,
 } from '@jbrowse/core/util'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopTokenThrottled,
+  withStopTokenSignal,
+} from '@jbrowse/core/util/stopToken'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
 import { panSNMatchesPrefix, panSNPrefixes } from './pansn.ts'
@@ -303,6 +306,7 @@ interface PifLineSource {
     opts: {
       lineCallback: (line: string, fileOffset: number) => void
       onProgress?: (bytesDownloaded: number, totalBytes?: number) => void
+      signal?: AbortSignal
     },
   ): Promise<void>
 }
@@ -331,14 +335,19 @@ export function readPifLines({
   stopTokenCheck: StopTokenChecker
   lineCallback: (line: PifLine, fileOffset: number) => void
 }) {
-  return downloadStatus('Downloading features', statusCallback, onProgress =>
-    pif.getLines(seqid, start, end, {
-      onProgress,
-      lineCallback: (line, fileOffset) => {
-        checkStopToken2(stopTokenCheck)
-        lineCallback(parsePifLine(line), fileOffset)
-      },
-    }),
+  // the signal comes off the checker's own token, so the caller passes one
+  // cancellation handle rather than two that could disagree
+  return withStopTokenSignal(stopTokenCheck.stopToken, signal =>
+    downloadStatus('Downloading features', statusCallback, onProgress =>
+      pif.getLines(seqid, start, end, {
+        onProgress,
+        lineCallback: (line, fileOffset) => {
+          checkStopTokenThrottled(stopTokenCheck)
+          lineCallback(parsePifLine(line), fileOffset)
+        },
+        signal,
+      }),
+    ),
   )
 }
 

@@ -126,6 +126,16 @@ export default class RpcClient {
     }
   }
 
+  /**
+   * Tell this worker that a stop token has been stopped, so the calls running
+   * there see it at their next await boundary and drop their in-flight reads.
+   * Fire-and-forget: it settles no pending call, and a worker holding nothing
+   * under that id ignores it.
+   */
+  notifyStopToken(id: string) {
+    this.worker.postMessage({ stopToken: id, libRpc: true })
+  }
+
   call(
     method: string,
     data: unknown,

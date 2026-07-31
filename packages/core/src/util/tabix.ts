@@ -1,6 +1,8 @@
 import { downloadStatus } from './progress.ts'
+import { withStopTokenSignal } from './stopToken.ts'
 
 import type { StatusCallback } from './progress.ts'
+import type { StopToken } from './stopToken.ts'
 
 /**
  * A raw tabix line paired with the metadata the GFF3/GTF adapters need before
@@ -38,6 +40,7 @@ interface TabixLineSource {
         end: number,
       ) => void
       onProgress?: (bytesDownloaded: number, totalBytes?: number) => void
+      signal?: AbortSignal
     },
   ): Promise<void>
 }
@@ -57,6 +60,12 @@ function extractType(line: string) {
  * Fetch the tabix lines for a region under a "Downloading features" progress
  * label, capturing each line's byte offset, indexed start/end, and feature type
  * into a {@link TabixLine}. Shared by the GFF3 and GTF tabix adapters.
+ *
+ * The stop token becomes the read's `AbortSignal`, so a cancelled fetch drops
+ * its block reads at the socket instead of downloading them and discarding the
+ * lines. @gmod/tabix aborts a block shared between callers only once every
+ * joined caller has aborted (`AggregateAbortController`), so this can't cancel a
+ * chunk another region still needs.
  */
 export function readTabixLines(
   gff: TabixLineSource,
@@ -64,14 +73,24 @@ export function readTabixLines(
   start: number,
   end: number,
   statusCallback?: StatusCallback,
+  stopToken?: StopToken,
 ): Promise<TabixLine[]> {
   const lines: TabixLine[] = []
-  return downloadStatus('Downloading features', statusCallback, onProgress =>
-    gff.getLines(refName, start, end, {
-      lineCallback: (line, offset, s, e) => {
-        lines.push({ line, offset, start: s, end: e, type: extractType(line) })
-      },
-      onProgress,
-    }),
+  return withStopTokenSignal(stopToken, signal =>
+    downloadStatus('Downloading features', statusCallback, onProgress =>
+      gff.getLines(refName, start, end, {
+        lineCallback: (line, offset, s, e) => {
+          lines.push({
+            line,
+            offset,
+            start: s,
+            end: e,
+            type: extractType(line),
+          })
+        },
+        onProgress,
+        signal,
+      }),
+    ),
   ).then(() => lines)
 }

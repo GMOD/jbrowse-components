@@ -1,5 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
+import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
@@ -49,15 +50,18 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
 
     const records: PlinkLDRecord[] = []
 
-    await ld.getLines(refName, start, end, {
-      lineCallback: (line: string) => {
-        const record = parsePlinkLDLine(line, header)
-        if (record) {
-          records.push(record)
-        }
-      },
-      ...opts,
-    })
+    await withStopTokenSignal(opts.stopToken, signal =>
+      ld.getLines(refName, start, end, {
+        lineCallback: (line: string) => {
+          const record = parsePlinkLDLine(line, header)
+          if (record) {
+            records.push(record)
+          }
+        },
+        ...opts,
+        signal,
+      }),
+    )
 
     return records
   }

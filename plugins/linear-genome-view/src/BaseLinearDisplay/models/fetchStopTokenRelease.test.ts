@@ -5,10 +5,12 @@ import FetchMixin from './FetchMixin.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 
-// The leak this guards against — a blob-URL stop token (the non-SAB fallback)
-// never revoked when a fetch ends — is invisible functionally, so assert the
+// The leak this guards against — a stop token never released when a fetch ends,
+// so the token keeps holding the AbortSignal controllers taken against it until
+// some later fetch supersedes it — is invisible functionally, so assert the
 // release call directly. Wrap the real stopStopToken so behavior is unchanged
-// and only observable.
+// and only observable. (Before the message path this was a blob-URL leak; the
+// release is still required, for a different resource.)
 jest.mock('@jbrowse/core/util/stopToken', () => {
   const actual = jest.requireActual('@jbrowse/core/util/stopToken')
   return {
@@ -25,7 +27,7 @@ beforeEach(() => released.mockClear())
 const TestModel = types.compose('Test', FetchMixin(), types.model({}))
 const tick = () => Promise.resolve()
 
-describe('FetchMixin: stop-token release (blob-URL leak guard)', () => {
+describe('FetchMixin: stop-token release', () => {
   it('releases the stop token when a fetch completes normally', async () => {
     const m = TestModel.create({})
     let token: unknown

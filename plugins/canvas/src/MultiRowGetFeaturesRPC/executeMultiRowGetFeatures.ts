@@ -2,7 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
@@ -59,7 +59,7 @@ export async function executeMultiRowGetFeatures({
     statusCallback,
     () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   // Dedup by feature id: multiple adapter passes can yield the same feature id
   // (mirrors the feature-render RPC), which would otherwise double-count the

@@ -269,6 +269,36 @@ author who lands on a behavior change can find the sentence that explains it.
   and this is the same convention MST already applies to every snapshot it hands
   out (there gated to dev mode; here unconditional, see `freezeDeep`).
 
+- **A `promotable` slot's `promotedBase` is checked against its own slot at
+  schema build** (`isUsableValue` from `configuration/slotShape.ts`, called by
+  `ConfigSlot`). The base is the bottom of the cascade — every other tier falls
+  back to it — so a base the slot could not hold was returned by *every* read
+  with nothing thrown anywhere: an enum member absent from `model`, a non-finite
+  `maybeNumber`, or a value the slot's own `validate` hook rejects. All three now
+  throw at construction, naming the slot and the value. Two consequences for a
+  plugin. A schema with a typo'd `promotedBase` fails at install rather than
+  rendering wrong. And a `validate` hook now runs at *schema build* as well as at
+  read time, so a hook that consults state its plugin registers later in
+  `install()` can throw on a base that is actually fine — the fix is to make the
+  hook depend on module-level data (which is what `isRegisteredColorScheme` and
+  its `COLOR_SCHEMES` const do), not to reorder installation. **Opt-out: none**
+  — every in-tree base passes, and a base that fails is broken for every track
+  of that display type.
+
+- **Loop callbacks no longer read the clock on every call** (`createTimeGate`,
+  `util/timeGate.ts`, used by `checkStopTokenThrottled` and `createProgressReporter`).
+  Both used to call `Date.now()` per invocation; at a 666k-read pileup that
+  measured ~28 ms per callsite. They now consult the clock on a stride learned
+  from the observed call rate. A plugin's own worker loops inherit this through
+  the shared helpers: progress emits and cancellation checks can
+  now land up to ~1/8 of an interval later than before, and after a *sudden*
+  mid-loop slowdown (per-item cost jumping ~1000x) one further interval late,
+  since the stride is an extrapolation. Cancellation correctness is unchanged —
+  the check still fires, and a loop that is slow throughout measures a low rate
+  and keeps a stride of 1, which is why a *fixed* stride was wrong here.
+  **Opt-out: none** — call `checkStopToken` (the one-shot form) directly at a
+  point that must not be thinned.
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably

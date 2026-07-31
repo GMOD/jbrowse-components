@@ -3,6 +3,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
@@ -96,46 +97,49 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
       const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
-      await downloadStatus(
-        'Downloading features',
-        opts.statusCallback,
-        onProgress =>
-          bedGraph.getLines(
-            query.refName,
-            query.start + (same ? -1 : 0),
-            query.end,
-            {
-              lineCallback: (line, fileOffset) => {
-                const cols = line.split('\t')
-                const refName = cols[colRef]!
-                const start = +cols[colStart]!
-                const end = +(same ? start + 1 : cols[colEnd]!)
-                const rest = cols.slice(colEnd + 1)
-                if (Number.isNaN(start) || Number.isNaN(end)) {
-                  throw new Error(
-                    `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
-                  )
-                }
-
-                for (let j = 0; j < rest.length; j++) {
-                  const feat = makeBedGraphFeature({
-                    uniqueId: `${this.id}-${fileOffset}-${j}`,
-                    refName,
-                    start,
-                    end,
-                    names,
-                    j,
-                    value: rest[j]!,
-                  })
-                  if (feat) {
-                    observer.next(feat)
+      await withStopTokenSignal(opts.stopToken, signal =>
+        downloadStatus(
+          'Downloading features',
+          opts.statusCallback,
+          onProgress =>
+            bedGraph.getLines(
+              query.refName,
+              query.start + (same ? -1 : 0),
+              query.end,
+              {
+                lineCallback: (line, fileOffset) => {
+                  const cols = line.split('\t')
+                  const refName = cols[colRef]!
+                  const start = +cols[colStart]!
+                  const end = +(same ? start + 1 : cols[colEnd]!)
+                  const rest = cols.slice(colEnd + 1)
+                  if (Number.isNaN(start) || Number.isNaN(end)) {
+                    throw new Error(
+                      `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
+                    )
                   }
-                }
+
+                  for (let j = 0; j < rest.length; j++) {
+                    const feat = makeBedGraphFeature({
+                      uniqueId: `${this.id}-${fileOffset}-${j}`,
+                      refName,
+                      start,
+                      end,
+                      names,
+                      j,
+                      value: rest[j]!,
+                    })
+                    if (feat) {
+                      observer.next(feat)
+                    }
+                  }
+                },
+                ...opts,
+                onProgress,
+                signal,
               },
-              ...opts,
-              onProgress,
-            },
-          ),
+            ),
+        ),
       )
       observer.complete()
     }, opts.stopToken)

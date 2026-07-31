@@ -49,7 +49,9 @@ export default function ErrorMessageStackTraceDialog({
   const gpuInfo = graphicsCapabilities?.gpuVendor
     ? `GPU: ${graphicsCapabilities.gpuVendor}${graphicsCapabilities.gpuArchitecture ? ` (${graphicsCapabilities.gpuArchitecture})` : ''}`
     : ''
-  const sabInfo = `Worker abort: ${hasSharedArrayBuffer ? 'SharedArrayBuffer' : 'XHR fallback'}`
+  // Both paths cancel at await boundaries by posted message; SharedArrayBuffer
+  // additionally interrupts a synchronous worker loop mid-run.
+  const sabInfo = `Worker abort: postMessage${hasSharedArrayBuffer ? ' + SharedArrayBuffer' : ''}`
 
   const session = (window as unknown as { JBrowseSession?: SessionGlobal })
     .JBrowseSession

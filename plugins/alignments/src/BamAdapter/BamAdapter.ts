@@ -3,7 +3,10 @@ import { packReference } from '@jbrowse/cigar-utils'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken,
+  withStopTokenSignal,
+} from '@jbrowse/core/util/stopToken'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
@@ -71,11 +74,14 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       // wipe the header/index caches — those are memoized in setup() and only
       // invalidated on a setup failure. Re-downloading them on every dropped
       // data chunk would force a full re-download on the next pan.
-      const records = await downloadStatus(
-        'Downloading alignments',
-        statusCallback,
-        onProgress =>
-          bam.getRecordsForRange(refName, start, end, { onProgress }),
+      //
+      // The signal is what makes cancellation reach the socket: without it a
+      // canceled navigation stops *processing* the reads but downloads every
+      // byte of the range to completion first.
+      const records = await withStopTokenSignal(stopToken, signal =>
+        downloadStatus('Downloading alignments', statusCallback, onProgress =>
+          bam.getRecordsForRange(refName, start, end, { onProgress, signal }),
+        ),
       )
       checkStopToken(stopToken)
 

@@ -3,7 +3,7 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   checkStopToken,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
@@ -183,7 +183,7 @@ async function indexDriver({
       outDir,
       featureTypesToExclude,
       checkAbort: () => {
-        checkStopToken2(checker)
+        checkStopTokenThrottled(checker)
       },
       makeProgress: () => {
         let trackTotal = 0

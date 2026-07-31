@@ -4,7 +4,7 @@ import {
   computeSNPCoverage,
 } from '@jbrowse/alignments-core'
 import { updateStatus } from '@jbrowse/core/util'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import {
   computeBisulfiteCoverage,
@@ -86,7 +86,7 @@ export async function runCoveragePipeline({
       computeCoverage(features, gaps, regionStart, regionEnd, showCoverage),
   )
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   // Frequencies read the full per-bp depth sweep at each event position and feed
   // the pileup's low-frequency mismatch/indel fade. They are computed BEFORE the

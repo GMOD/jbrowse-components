@@ -1383,130 +1383,140 @@ synchronous saved-session hydration of a code-split view but needs every
 persisted prop hoisted to the thin base plus a render-path loading gate. Revisit
 only after the interaction-surface approach is proven.
 
-## Aborting in-flight network requests (proposal, not implemented)
+## Aborting in-flight network requests (mechanism landed; rollout partial)
 
-Cancel today (`FetchMixin.cancelFetchByUser` → `stopStopToken`) interrupts
-**processing**, not the **socket**. The `stopToken` is checked at await
-boundaries and inside sync worker loops, so on cancel we stop computing and
-discard the result — but any HTTP read already on the wire keeps downloading
-until it resolves. For a large BAM/CRAM range or a whole-file BigWig read,
-that's wasted bandwidth and a connection-pool slot held to completion.
+Cancel used to interrupt **processing**, not the **socket**: the `stopToken` was
+checked at await boundaries and inside sync worker loops, so on cancel we
+stopped computing and discarded the result while any HTTP read already on the
+wire downloaded to completion. `BaseOptions.signal` existed but was dead —
+present only for structural assignability to the gmod `Options { signal? }`
+interfaces.
 
-The bottom of the stack is already abort-ready and unused above it:
+### What landed
 
-- `BaseOptions.signal?: AbortSignal` **exists but is dead** — present only for
-  structural assignability to gmod `Options { signal? }` interfaces, never
-  populated. `VcfTabixAdapter` / `SplitVcfTabixAdapter` forward `opts.signal` to
-  readers, but it's always `undefined`.
-- `RemoteFileWithRangeCache.fetchRange(url, start, end, init?: RequestInit)`
-  forwards the whole `init` — signal included — to `fetch`, and every caller
-  down to `RemoteFileWithRangeCache.fetch` threads it. So the plumbing is there,
-  and the missing piece is entirely upstream: producing a signal wired to cancel.
+Cancellation is now two mechanisms behind one token, split by what a worker can
+actually observe (`packages/core/src/util/stopToken.ts` header has the full
+statement):
 
-### Why not "derive a signal from the stopToken" (SAB / `Atomics.waitAsync`)
+- **Await boundaries** — `stopStopToken` records the token's id locally and
+  posts it to every booted worker; `RpcServer` applies it via
+  `markStopTokenStopped`, and `checkStopToken` is a set lookup. Free, exact, and
+  independent of the deployment. This replaced a synchronous XHR at all ~25
+  one-shot check sites, and it gives `MainThreadRpcDriver` working cancellation
+  for the first time (its work shares the module instance, so it needs no
+  message at all; the old string path was gated on `isWebWorker()` and was a
+  silent no-op there).
+- **Synchronous loops** — a loop that never yields can never be told anything,
+  so this needs a *synchronous* read: the SAB atomic flag where the page is
+  isolated, else the throttled blob-URL sync-XHR probe. **Both retained.** The
+  blob probe was briefly deleted after `cancel-bench` measured it at zero (median
+  513 ms settle either way on the 2000x BAM burst) and then restored: that
+  measurement was sound but scoped to the alignments path, where every loop is
+  already chunked by awaits at region granularity. `getLDMatrix.ts`'s O(n²)
+  Float32Array fill is the counter-example — millions of pair computations with no
+  await anywhere, where the probe is the only thing that can stop the work, and
+  which that bench never exercises. Re-deleting it needs a cancel measurement on
+  an await-free workload.
 
-Tempting: the `stopToken` already crosses `postMessage`; on the worker side wrap
-the `SharedArrayBuffer` in `Atomics.waitAsync(view, 0, CLEAR).then(abort)` (plus
-an `Atomics.notify` added to `stopStopToken`) and you get a worker-local
-`AbortSignal` for free, no protocol change.
+`stopTokenSignal(stopToken)` bridges a token to an `AbortSignal` — string tokens
+off the same posted id, SAB tokens off `Atomics.waitAsync` (woken by an
+`Atomics.notify` added to `stopStopToken`), no polling either way. `BaseRpcDriver.call`
+also now refuses to dispatch a call whose token is already stopped, which closes
+the race between a stop notification and the call it means to cancel.
 
-**It can't be the general solution, because SAB isn't available by default.**
-SAB requires the page to be `crossOriginIsolated`, which requires two HTTP
-response headers on the **top-level document** (`Cross-Origin-Opener-Policy:
-same-origin` + `Cross-Origin-Embedder-Policy: require-corp`). Those are
-server-side, set by whoever serves the HTML. JBrowse is mostly a client-side
-library, and the embedded products (`@jbrowse/react-linear-genome-view` etc.)
-run inside *someone else's* top-level document whose headers we don't control.
-So we cannot assume isolation. The repo confirms it: there are no COOP/COEP
-headers anywhere, and `stopToken.ts` is built around the XHR/blob fallback being
-a real, common path (`ErrorMessageStackTraceDialog` reports `Worker abort:
-SharedArrayBuffer | XHR fallback` as a diagnostic). `coi-serviceworker` can
-force isolation without server config but reloads on first load, registers a SW
-on every host page, and `COEP: require-corp` breaks cross-origin subresources —
-unacceptable for an embeddable component. **Conclusion:** abort must work
-*without* SAB; `Atomics.waitAsync` stays an opportunistic fast-path for the rare
-isolated deployment, never a dependency.
+`withStopTokenSignal(stopToken, signal => …)` is the shape to use at a read call
+— it releases the signal however the read settles. Wired through every adapter
+whose reader accepts a signal:
 
-### Design: one fused cancel primitive, three sinks
+| Reader | Adapters |
+| --- | --- |
+| `@gmod/bam` | BAM |
+| `@gmod/tabix` | GFF3-tabix, GTF-tabix (via `core/util/tabix.ts`), BED-tabix, bedGraph-tabix, VCF-tabix + split-VCF (via `shared/vcfAdapterUtils`), Plink LD, indexed PIF (via `comparative-adapters/util.ts`) |
+| `@gmod/bbi` | BigWig (single + multi-region), BigBed |
 
-```ts
-// packages/core/src/util/stopToken.ts (or a new cancellation.ts)
-interface Cancellation {
-  stopToken: StopToken   // crosses postMessage; interrupts SYNC worker loops (today)
-  signal: AbortSignal    // aborts MAIN-thread fetches at the socket, directly
-  cancel(): void         // trips the token, aborts the signal, AND posts the abort message
-}
-function createCancellation(): Cancellation
-```
+**Two readers can't be wired**, and neither is our code to fix:
 
-`AbortSignal` is **not** structured-cloneable, so it can't ride `postMessage`
-into the worker. The fusion is conceptual: `cancel()` on the main thread drives
-(a) the stopToken (sync-loop interruption in the worker, exactly as today, on
-both SAB and XHR paths); (b) the local `signal` for fetches that run on the
-**main thread** (`MainThreadRpcDriver` executes methods in-thread, so the real
-signal flows straight into the adapter); (c) an out-of-band abort message for
-fetches in a **worker**, where the socket lives across the boundary.
+- `@gmod/cram` takes a signal on `IndexOpts` (the .crai read) but **not** on
+  `getRecordsForRange`, so CRAM record reads have no abort seam. Needs an
+  upstream change.
+- `@gmod/indexedfasta` declares `signal` in its types but never forwards it —
+  0 references in the built JS. Passing one would typecheck and do nothing, which
+  is worse than not passing it.
 
-The worker path (the common, load-bearing case) reuses the uid-keyed RPC channel
-`statusCallback` already rides on:
+Also unwired by choice: `@gmod/hic`, and the VCF *export* path (user-initiated,
+not cancel-sensitive).
 
-- **`RpcServer`**: keep a `Map<uid, AbortController>`. On a method call, create
-  the controller, inject its `signal` into the deserialized args, store it. On
-  an incoming `{ abort: uid, libRpc: true }` message, `controller.abort()` and
-  delete. Clean up the entry in `reply`/`throw` so the map can't leak.
-- **`RpcClient`**: expose `abort(uid)` → `postMessage({ abort: uid, libRpc:
-  true })`. `call()` already mints the `uid`; surface it so the driver can tie it
-  to a stopToken.
-- **Driver / `RpcManager`**: record `(stopToken → uid[])` at call time; the same
-  main-thread `cancel()` that trips the token fans out `client.abort(uid)`.
-- **Injection seam**: args are reconstructed worker-side in
-  `RpcMethodType.deserializeArguments`, but the `uid` lives at the
-  `RpcServer.handler` level — attach the controller's `signal` at the
-  server/worker-glue layer where the uid is known (or thread `uid` down).
+The shared-fetch hazard is handled at every layer, and mostly not by us:
+`@gmod/tabix` and `@gmod/bbi` both route block reads through
+`@gmod/abortable-promise-cache`, whose `AggregateAbortController` fires only once
+**every** joined consumer has aborted — ref-counted by construction. `@gmod/bam`
+retries its chunk joins on a foreign abort. Only our own
+`RemoteFileWithRangeCache` needed the fix described below.
 
-### The correctness trap: range-cache coalescing
+### Why the uid-keyed abort protocol was not needed
 
-`RemoteFileWithRangeCache` coalesces chunk fetches (256 KiB-aligned). If two
-logical reads share one coalesced underlying fetch and one aborts, a naive abort
-tears down the fetch the other read still needs. Mitigations, preferred first:
+An earlier version of this proposal specified a `Map<uid, AbortController>` in
+`RpcServer`, an `{abort: uid}` frame, `RpcClient.abort(uid)`, and driver-side
+`stopToken → uid[]` bookkeeping. Broadcasting the stopped **token id** instead
+of routing per call is strictly simpler and handles more: one token is commonly
+in flight on several calls at once, a worker holding nothing under that id
+ignores the frame, and there is no "route the abort to the same worker the call
+landed on" problem to solve. `WorkerPoolRpcDriver` registers a broadcaster and
+never boots a worker just to notify it.
 
-- **Abort at call (uid) granularity, not chunk granularity.** One RPC call = one
-  `AbortController` = all that call's reads abandoned together. A whole
-  `RenderFeatureData` aborting is coherent.
-- For the residual cross-call collision: **ref-counted abort** in the range
-  cache — track consumers per in-flight chunk fetch, only abort the underlying
-  `fetch` when the last consumer aborts.
-- Acceptable interim: don't abort shared chunk fetches at all (let them complete
-  into cache); only abort single-consumer fetches. Bounds the waste without a
-  correctness regression.
+### The coalescing trap, and where it is handled
 
-This trap is the main reason to **prototype one path before a broad rollout.**
+Two layers share one fetch between logical reads, and both had to answer "one
+sharer aborted, the others did not":
 
-### Suggested phasing
+- `@gmod/bam` ≥7.6.0 already retries its own chunk-cache joins when the read
+  they joined aborted and theirs did not (`bamFile.js` `_cachedChunkFeatures`).
+  Nothing to do.
+- `RemoteFileWithRangeCache` coalesces 256 KiB chunk fetches and did **not** —
+  its `inFlight` comment used to record precisely the assumption this work
+  breaks ("no waiter can cancel a fetch out from under the others, because
+  in-tree cancellation is stopToken-based"). It now records the owning signal
+  and `joinChunk` re-issues, once, on a foreign abort. Covered by three tests in
+  `RemoteFileWithRangeCache.test.ts`, verified to fail without the retry.
 
-- **Phase 0 — prototype one path.** Fused primitive + RPC abort message +
-  per-uid controller, wired through **one** adapter end-to-end (BAM
-  `getRecordsForRange` is the highest-value target). Verify in a browser that a
-  slow range read's `fetch` actually aborts (devtools network → "(canceled)")
-  and the overlay lands in "Loading canceled". Decide the coalescing policy here.
-- **Phase 1 — central injection.** Move signal injection to the worker glue so
-  every RPC method gets it without per-adapter edits.
-- **Phase 2 — range-cache ref-counting** if Phase 0 shows shared-chunk aborts
-  matter in practice.
-- **Phase 3 — optional SAB fast-path** (`waitAsync`) for isolated deployments.
+Ref-counting was not needed: a single bounded retry makes the pathological case
+one duplicate 256 KiB fetch rather than a recursion whose depth depends on how
+the aborts interleave.
 
-**Don't:** make SAB / `crossOriginIsolated` a *requirement* (can't guarantee
+**Don't:** make SAB / `crossOriginIsolated` a requirement (can't guarantee
 COOP/COEP from a client-side/embedded library); try to send an `AbortSignal`
-across `postMessage` (doesn't clone); abort at chunk granularity over a
-coalescing cache without ref-counting; or remove the `stopToken` (it's the only
-thing that interrupts *synchronous* worker loops — the two are complementary).
+across `postMessage` (doesn't clone); add a synchronous probe at an *await*
+boundary (pointless — the message is already there); or remove the
+`stopToken` (it is still the only thing that
+interrupts *synchronous* worker loops).
 
-**Open questions:** exact seam for signal injection given `uid` lives above
-`deserializeArguments`; `WorkerPoolRpcDriver` must route the abort to the *same*
-worker the call landed on (reuse the reply routing); whether to abort on
-*internal* `cancelFetch` (viewport change / settings invalidate) too, or only
-user cancel; and whether the wasted-bandwidth problem is big enough outside
-large alignment/whole-file reads to justify Phases 1–2 (index reads are short).
+### How much the socket abort is actually worth (measured)
+
+The earlier open question here guessed the wasted-bandwidth problem might be too
+small to justify the work, on the reasoning that "index reads are short". That is
+backwards, because **our own chunk coalescing makes each range request large**:
+`RemoteFileWithRangeCache` merges a contiguous run of missing 256 KiB chunks into
+one request, so a single 4 kb viewport over the 2000x BAM issues one **6.5 MiB**
+range read (26 chunks).
+
+Measured on a 4-hop pan burst over that fixture, throttled to 50 KiB/s: 6 range
+requests issued, 3 aborted ~1.6 s in having transferred only ~80 KiB each. So
+each cancelled navigation abandoned ~6.5 MiB that would otherwise have been
+downloaded in full and discarded — **~19.5 MiB across the burst**.
+
+The saving is `range size − (rate × time-to-cancel)`, so it shrinks on a fast
+link: at 50 Mbps sustained a 6.5 MiB read completes inside a ~1 s pan interval and
+there is little left in flight to cancel. But the range size is large regardless
+of link speed, so on any connection slow enough for a user to out-pace a read —
+which is most of them — this is real bandwidth, not a rounding error.
+
+That number is also what justifies the `joinChunk` retry below: the coalescing
+hazard exists *because* of the signal, and a 6.5 MiB-per-cancel saving pays for a
+small retry path in shared I/O code.
+
+**Open:** CRAM and IndexedFasta need upstream signal support before they can join
+(above); whether to abort on *internal* `cancelFetch` (viewport change / settings
+invalidate) as well as user cancel.
 
 ## Search / misc
 

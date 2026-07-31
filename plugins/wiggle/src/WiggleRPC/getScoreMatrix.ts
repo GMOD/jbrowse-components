@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { groupBy } from '@jbrowse/core/util'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -68,7 +68,7 @@ export async function getScoreMatrix({
           arr[colOffset + x] = score
         }
       }
-      checkStopToken2(stopTokenCheck)
+      checkStopTokenThrottled(stopTokenCheck)
     }
   }
 

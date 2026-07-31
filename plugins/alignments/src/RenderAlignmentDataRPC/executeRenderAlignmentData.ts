@@ -11,7 +11,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 import {
   detectSimplexModifications,
   getTag,
@@ -345,7 +345,7 @@ async function buildGroupResult(
     statusCallback,
   })
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   // IGV-style per-strand read-base pileup at the modified columns, computed from
   // the reads themselves — the modBAM mod-coverage denominator, no reference
@@ -576,7 +576,7 @@ export async function executeRenderAlignmentData({
     extractions.map(e => e.features),
   )
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   // Modification color modes (pileup only) draw mod coverage + track per-base
   // strands; chain omits them so runCoveragePipeline skips mod-coverage.

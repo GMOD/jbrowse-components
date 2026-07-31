@@ -1,5 +1,5 @@
 import { calculateFeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -94,7 +94,7 @@ export async function samplePreFetchDensity({
     (r, o) => dataAdapter.getFeatures(r, o),
     { stopToken, statusCallback },
   )
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
   return densityTooLargeResult(
     featureDensity,
     region,

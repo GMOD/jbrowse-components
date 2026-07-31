@@ -51,7 +51,8 @@ plausible JS-level explanations were each measured and **refuted** before the
 right tool was used:
 
 - stop-token sync-XHR fallback (`checkStopToken`) — 0.3s, and forcing the
-  `SharedArrayBuffer` path changed nothing
+  `SharedArrayBuffer` path changed nothing (cancellation now travels by posted
+  message; the sync probe remains, throttled, for loops that never yield)
 - structured clone of `featureNames` / `featureIds` (the two non-transferable
   string arrays in `packMultiRowFeatures`) — `postMessage` totals 0.15s
 - Chrome background/timer throttling and IPC flood protection — the anti-throttling

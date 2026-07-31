@@ -8,6 +8,7 @@ import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { calcStdFromSums } from '@jbrowse/core/util/stats'
+import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
@@ -155,15 +156,15 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
 
     const { bigwig } = await this.setup(opts)
 
-    const arrays = await downloadStatus(
-      'Downloading wiggle data',
-      statusCallback,
-      onProgress =>
+    const arrays = await withStopTokenSignal(opts.stopToken, signal =>
+      downloadStatus('Downloading wiggle data', statusCallback, onProgress =>
         bigwig.getFeaturesAsArrays(refName, start, end, {
           ...opts,
           basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
           onProgress,
+          signal,
         }),
+      ),
     )
 
     return new ArrayFeatureView(arrays, source, refName)
@@ -202,10 +203,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
     const { bigwig } = await this.setup(opts)
 
-    const res = await downloadStatus(
-      'Downloading wiggle data',
-      statusCallback,
-      onProgress =>
+    const res = await withStopTokenSignal(opts.stopToken, signal =>
+      downloadStatus('Downloading wiggle data', statusCallback, onProgress =>
         bigwig.getFeaturesAsArraysMulti(
           regions.map(r => ({
             refName: r.refName,
@@ -216,8 +215,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
             ...opts,
             basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
             onProgress,
+            signal,
           },
         ),
+      ),
     )
 
     const { starts, ends, scores, regionOffsets } = res

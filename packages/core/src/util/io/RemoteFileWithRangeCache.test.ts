@@ -715,3 +715,103 @@ describe('RemoteFileWithRangeCache', () => {
     })
   })
 })
+
+// A gated fetch: each request hangs until released, and rejects with an
+// AbortError if its own signal aborts first. Lets two reads share one in-flight
+// chunk and cancel independently.
+function createGatedFetch() {
+  const calls: { start: number; end: number }[] = []
+  const gates: (() => void)[] = []
+  const mockFetch = async (
+    _url: string | URL | Request,
+    init?: RequestInit,
+  ) => {
+    const range = new Headers(init?.headers).get('range')
+    const m = range ? /bytes=(\d+)-(\d+)/.exec(range) : null
+    if (m) {
+      const start = Number(m[1])
+      const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+      calls.push({ start, end })
+      await new Promise<void>((resolve, reject) => {
+        gates.push(resolve)
+        init?.signal?.addEventListener('abort', () => {
+          reject(new DOMException('aborted', 'AbortError'))
+        })
+      })
+      return new Response(slice(start, end), { status: 206 })
+    }
+    return new Response('', { status: 200 })
+  }
+  return {
+    calls,
+    mockFetch,
+    release: () => {
+      for (const gate of gates.splice(0)) {
+        gate()
+      }
+    },
+  }
+}
+
+describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
+  test('re-fetches a shared chunk when the read that opened it aborts', async () => {
+    const { calls, mockFetch, release } = createGatedFetch()
+    const file = makeFile(mockFetch)
+    const controller = new AbortController()
+
+    // the owner opens the chunk fetch, the joiner shares it rather than asking
+    // for the same 256 KiB again
+    const owner = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=0-99' },
+      signal: controller.signal,
+    })
+    const joiner = fetchRange(file, 100, 199)
+    expect(calls).toHaveLength(1)
+
+    controller.abort()
+    await expect(owner).rejects.toThrow(/abort/i)
+
+    // the joiner never asked to be canceled, so it re-issues under its own
+    // request instead of inheriting the owner's abort
+    await Promise.resolve()
+    release()
+    expect(await joiner).toEqual(slice(100, 199))
+    expect(calls).toHaveLength(2)
+  })
+
+  test('propagates the abort to a joiner that was itself canceled', async () => {
+    const { mockFetch } = createGatedFetch()
+    const file = makeFile(mockFetch)
+    const owner = new AbortController()
+    const both = new AbortController()
+
+    const ownerRead = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=0-99' },
+      signal: owner.signal,
+    })
+    const joinerRead = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=100-199' },
+      signal: both.signal,
+    })
+
+    both.abort()
+    owner.abort()
+    await expect(ownerRead).rejects.toThrow(/abort/i)
+    await expect(joinerRead).rejects.toThrow(/abort/i)
+  })
+
+  test('a non-abort failure still rejects every sharer', async () => {
+    const calls: number[] = []
+    const failingFetch = async () => {
+      calls.push(1)
+      return new Response('', { status: 500 })
+    }
+    const file = makeFile(failingFetch)
+    const first = fetchRange(file, 0, 99)
+    const second = fetchRange(file, 100, 199)
+    await expect(first).rejects.toThrow(/HTTP 500/)
+    await expect(second).rejects.toThrow(/HTTP 500/)
+    // no retry: the failure is real, and each read would have gotten it alone
+    expect(calls).toHaveLength(1)
+  })
+})

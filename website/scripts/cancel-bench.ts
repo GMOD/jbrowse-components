@@ -3,11 +3,18 @@
 // The light-load comparison in coi-probe.ts says no, but that workload has
 // almost nothing to cancel. Stop tokens exist for the opposite case: a worker
 // deep in a long feature-processing loop that the user interrupts by navigating
-// away. On the blob-URL fallback the worker only notices via a synchronous XHR
-// whose interval backs off to 500 ms; on the SAB path it is an atomic read every
-// 10 iterations. This drives an ultra-deep (~2000x) BAM through a burst of rapid
-// navigations — each one cancelling the last — and measures how long the view
-// takes to settle afterwards.
+// away. Both paths cancel at await boundaries off a posted token id; SAB adds an
+// atomic read every 10 iterations, which is the only way to interrupt a loop
+// that never yields. This drives an ultra-deep (~2000x) BAM through a burst of
+// rapid navigations — each one cancelling the last — and measures how long the
+// view takes to settle afterwards.
+//
+// This bench once measured the blob-URL/sync-XHR probe at zero (513 ms either
+// way with the message path in) and it was deleted on that basis, then restored:
+// every loop on the alignments path already yields at region granularity, so
+// nothing here exercises intra-loop cancellation. getLDMatrix's await-free O(n^2)
+// fill does, and this workload never reaches it. Pick the workload for its loop
+// shape before concluding anything about the probe.
 //
 //   node scripts/cancel-bench.ts [--coi] [--runs=3] [--hops=6]
 import http from 'node:http'
@@ -83,7 +90,7 @@ const WINDOWS = [
 async function once(browser: Browser) {
   const page = await browser.newPage()
   await page.evaluateOnNewDocument(() => {
-    const p = { blobUrls: 0, sabs: 0 }
+    const p = { blobUrls: 0, sabs: 0, stopFrames: 0 }
     ;(window as unknown as { __c: typeof p }).__c = p
     const orig = URL.createObjectURL
     URL.createObjectURL = function (o: Blob | MediaSource) {
@@ -110,6 +117,16 @@ async function once(browser: Browser) {
         }
       }
       walk(msg, 0)
+      // the stop-token notification frame: this is what actually cancels a
+      // superseded fetch, so a burst that reports 0 of these means cancellation
+      // is silently doing nothing
+      if (
+        msg !== null &&
+        typeof msg === 'object' &&
+        typeof (msg as { stopToken?: unknown }).stopToken === 'string'
+      ) {
+        p.stopFrames++
+      }
       // eslint-disable-next-line prefer-spread
       send.apply(this, [msg, ...r] as Parameters<typeof send>)
     } as typeof send
@@ -149,7 +166,11 @@ async function once(browser: Browser) {
 
   const probe = await page.evaluate(
     () =>
-      (window as unknown as { __c: { blobUrls: number; sabs: number } }).__c,
+      (
+        window as unknown as {
+          __c: { blobUrls: number; sabs: number; stopFrames: number }
+        }
+      ).__c,
   )
   const isolated = await page.evaluate(() => self.crossOriginIsolated)
   await page.close()
@@ -183,6 +204,7 @@ process.stderr.write(
   `${[
     `COOP/COEP: ${coi}  crossOriginIsolated: ${out[0]!.isolated}`,
     `stop tokens: ${out[0]!.blobUrls} blob URLs, ${out[0]!.sabs} SharedArrayBuffers`,
+    `stop-token frames posted to workers: ${out.map(r => r.stopFrames).join(' ')}`,
     `settle after last of ${hops} hops: median ${median(out.map(r => r.settleAfterLastNav))} ms  ${out.map(r => r.settleAfterLastNav).join(' ')}`,
     `whole burst:              median ${median(out.map(r => r.total))} ms  ${out.map(r => r.total).join(' ')}`,
   ].join('\n')}\n`,

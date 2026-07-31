@@ -75,6 +75,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
             region.start,
             region.end,
             opts.statusCallback,
+            opts.stopToken,
           )
 
         let lines = await fetchLines(query)

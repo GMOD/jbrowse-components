@@ -1,5 +1,6 @@
 import { downloadStatus, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { parseSamplesTsv } from './parseSamplesTsv.ts'
@@ -51,10 +52,8 @@ export async function streamVcfFeatures(
   const { refName, start, end } = query
   // downloadStatus shows the label and clears when done; the onProgress it hands
   // back upgrades the in-between status to a determinate bar as blocks download
-  await downloadStatus(
-    'Downloading variants',
-    opts.statusCallback,
-    onProgress =>
+  await withStopTokenSignal(opts.stopToken, signal =>
+    downloadStatus('Downloading variants', opts.statusCallback, onProgress =>
       vcf.getLines(refName, start, end, {
         lineCallback: (line, fileOffset) => {
           observer.next(
@@ -66,7 +65,9 @@ export async function streamVcfFeatures(
           )
         },
         onProgress,
+        signal,
       }),
+    ),
   )
   observer.complete()
 }

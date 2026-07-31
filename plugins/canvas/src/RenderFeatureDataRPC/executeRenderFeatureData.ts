@@ -3,7 +3,7 @@ import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
-  checkStopToken2,
+  checkStopTokenThrottled,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
@@ -116,13 +116,13 @@ export async function executeRenderFeatureData({
   // pass statusCallback + stopToken so the adapter's own determinate download/
   // processing progress reaches the display (overriding the "Downloading features"
   // fallback label) and so a long fetch is interruptible mid-flight, not just at
-  // the checkStopToken2 below
+  // the checkStopTokenThrottled below
   const featuresArray = await updateStatus(
     'Downloading features',
     statusCallback,
     () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   // region.start / region.end are integer bp by contract — see
   // RenderFeatureDataArgs.region. No defensive rounding here.
@@ -183,7 +183,7 @@ export async function executeRenderFeatureData({
       return records
     },
   )
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (
@@ -208,7 +208,7 @@ export async function executeRenderFeatureData({
     )
   }
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   const packed = await updateStatus(
     'Collecting render data',
@@ -226,7 +226,7 @@ export async function executeRenderFeatureData({
       ),
   )
 
-  checkStopToken2(stopTokenCheck)
+  checkStopTokenThrottled(stopTokenCheck)
 
   const result: FeatureDataResult = {
     ...packed,

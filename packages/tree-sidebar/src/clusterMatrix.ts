@@ -1,5 +1,5 @@
 import { clusterObject, toNewick } from '@gmod/hclust'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
 
@@ -31,7 +31,7 @@ export async function clusterMatrix({
       statusCallback?.(clusterProgressStatus(p))
     },
     checkCancellation: () => {
-      checkStopToken2(stopTokenCheck)
+      checkStopTokenThrottled(stopTokenCheck)
     },
   })
   return { order: result.order, tree: toNewick(result.tree) }
