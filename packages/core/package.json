@@ -149,7 +149,6 @@
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
-    "./util/pointerPresence": "./src/util/pointerPresence.ts",
     "./util/range": "./src/util/range.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/setStackTraceLimit": "./src/util/setStackTraceLimit.ts",
@@ -167,6 +166,7 @@
     "./util/useFetch": "./src/util/useFetch.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
+    "./util/virtualRange": "./src/util/virtualRange.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts"
   },
   "files": [
@@ -733,10 +733,6 @@
         "types": "./esm/util/parseLineByLine.d.ts",
         "import": "./esm/util/parseLineByLine.js"
       },
-      "./util/pointerPresence": {
-        "types": "./esm/util/pointerPresence.d.ts",
-        "import": "./esm/util/pointerPresence.js"
-      },
       "./util/range": {
         "types": "./esm/util/range.d.ts",
         "import": "./esm/util/range.js"
@@ -804,6 +800,10 @@
       "./util/useVirtualScrollWheel": {
         "types": "./esm/util/useVirtualScrollWheel.d.ts",
         "import": "./esm/util/useVirtualScrollWheel.js"
+      },
+      "./util/virtualRange": {
+        "types": "./esm/util/virtualRange.d.ts",
+        "import": "./esm/util/virtualRange.js"
       },
       "./util/wheelZoom": {
         "types": "./esm/util/wheelZoom.d.ts",
@@ -1199,9 +1199,6 @@
         "util/parseLineByLine": [
           "esm/util/parseLineByLine.d.ts"
         ],
-        "util/pointerPresence": [
-          "esm/util/pointerPresence.d.ts"
-        ],
         "util/range": [
           "esm/util/range.d.ts"
         ],
@@ -1252,6 +1249,9 @@
         ],
         "util/useVirtualScrollWheel": [
           "esm/util/useVirtualScrollWheel.d.ts"
+        ],
+        "util/virtualRange": [
+          "esm/util/virtualRange.d.ts"
         ],
         "util/wheelZoom": [
           "esm/util/wheelZoom.d.ts"

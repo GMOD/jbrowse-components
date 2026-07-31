@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 
+import { virtualRange } from '@jbrowse/core/util/virtualRange'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { useTheme } from '@mui/material'
 
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
 import { drawSequenceGrid } from './drawSequenceGrid.ts'
-import { virtualRange } from './virtualRange.ts'
 
 import type { Sample } from '../types.ts'
 

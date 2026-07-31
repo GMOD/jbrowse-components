@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 
+import { virtualRange } from '@jbrowse/core/util/virtualRange'
+
 /**
  * Minimal fixed-height row virtualization. Tracks the scroll container's
- * scrollTop/clientHeight and returns the slice of row indices to render plus
- * the spacer heights that offset that window from the top/bottom.
+ * scrollTop/clientHeight and hands them to the shared `virtualRange` (which
+ * owns the clamping, including the shrunk-list case the reset effect below
+ * races), returning the row indices to render plus the spacer heights that
+ * offset that window from the top/bottom.
  */
 export function useVirtualRows(
   parentRef: React.RefObject<HTMLDivElement | null>,
@@ -47,16 +51,13 @@ export function useVirtualRows(
   }, [count, parentRef])
 
   const { scrollTop, clientHeight } = scrollState
-  // clamp to count so a stale (too-large) scrollTop from a shrunk list can't
-  // push the window past the end and render nothing before the reset effect runs
-  const startIdx = Math.min(
-    count,
-    Math.max(0, Math.floor(scrollTop / rowHeight) - overscan),
-  )
-  const endIdx = Math.min(
-    count,
-    Math.ceil((scrollTop + clientHeight) / rowHeight) + overscan,
-  )
+  const { start: startIdx, end: endIdx } = virtualRange({
+    scroll: scrollTop,
+    cellSize: rowHeight,
+    viewport: clientHeight,
+    overscan,
+    total: count,
+  })
 
   const items = []
   for (let i = startIdx; i < endIdx; i++) {
