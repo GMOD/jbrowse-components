@@ -7,6 +7,26 @@ export const DEFAULTS = {
   // freshly loaded track bounds itself to the track height regardless of how
   // many species it has; the "Normal" preset switches to this px value.
   rowHeight: 15,
+  /**
+   * Ceiling on the height a freshly loaded track sizes itself to, before any
+   * drag. Past it, fit-to-display-height keeps shrinking the rows rather than
+   * growing the track — a deep alignment lands as a dense, whole-on-screen
+   * band instead of a canvas several screens tall.
+   *
+   * Sizing purely to content (`nrow * rowHeight`) put a 100-way multiz at
+   * 1545px and a 447-way cactus at 4141px by default. The rows area is not one
+   * canvas but a stack of them — the GPU cells plus every mounted Canvas2D
+   * overlay (labels, insertions, deletions, codons, frames, inversions,
+   * summary bars, e-lines) — so at dpr 2 that 447-way costs ~98MB *per
+   * mounted overlay*, and `maxRowsHeight` only stops it at the point the
+   * backing store would throw.
+   *
+   * 600 keeps every common multiz (hg38 30-way, ce11 26-way — anything up to
+   * 40 species) at exactly the height it has today, since those never reach
+   * the ceiling. A drag past it is still honored: this bounds the default, not
+   * the user.
+   */
+  maxAutoFitHeight: 600,
   rowProportion: 0.8,
   showAllLetters: false,
   mismatchRendering: true,

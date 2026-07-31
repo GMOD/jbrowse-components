@@ -37,7 +37,8 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       height: {
         type: 'maybeNumber',
-        description: 'display height in pixels; unset fits rows to content',
+        description:
+          'display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen',
         defaultValue: undefined,
       },
       /**

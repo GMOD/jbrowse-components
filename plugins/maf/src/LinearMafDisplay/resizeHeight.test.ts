@@ -16,6 +16,7 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaF from './configSchema.ts'
+import { DEFAULTS } from './displayDefaults.ts'
 import stateModelFactory from './stateModel.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -195,6 +196,53 @@ test('uncapped: drag still tracks the cursor in both directions', () => {
   const mid = display.height
   display.resizeHeight(-60)
   expect(display.height - mid).toBeCloseTo(-60)
+})
+
+// A freshly loaded track sizes itself from the species count, which without a
+// bound scaled the default height (and every full-height overlay canvas over
+// the rows) linearly with it. `maxAutoFitHeight` is the policy bound; the
+// `maxRowsHeight` cap exercised above stays as the backing-store crash guard.
+describe('default fit-to-display-height ceiling', () => {
+  // rowHeight 0 is the shipped default: fit rows to the track height.
+  const fit = (n: number) => setup(n, 0)
+
+  it('leaves a typical multiz exactly where it was', () => {
+    // 30 * 15 + 45px coverage band = 495, under the ceiling, so nothing binds
+    const display = fit(30)
+    expect(display.effectiveRowHeight).toBe(DEFAULTS.rowHeight)
+    expect(display.height).toBe(30 * DEFAULTS.rowHeight + 45)
+  })
+
+  // `height` is `nrow * ((ceiling - bands) / nrow)`, so it lands within a float
+  // epsilon of the ceiling rather than exactly on it — hence toBeCloseTo here
+  // and the epsilon in the loop below.
+  it('shrinks the rows of a deep alignment instead of growing the track', () => {
+    const display = fit(447)
+    expect(display.height).toBeCloseTo(DEFAULTS.maxAutoFitHeight)
+    // every row still drawn, just dense
+    expect(display.effectiveRowHeight).toBeCloseTo(
+      (DEFAULTS.maxAutoFitHeight - 45) / 447,
+    )
+    expect(display.effectiveRowHeight).toBeLessThan(DEFAULTS.rowHeight)
+  })
+
+  it('never grows past the ceiling however many species arrive', () => {
+    for (const n of [40, 100, 447, 2000]) {
+      expect(fit(n).height).toBeLessThan(DEFAULTS.maxAutoFitHeight + 0.001)
+    }
+  })
+
+  it('bounds the default, not the user: an explicit height still wins', () => {
+    const display = fit(447)
+    display.configuration.setSlot('height', 2000)
+    expect(display.height).toBeCloseTo(2000)
+  })
+
+  it('a drag past the ceiling is honored', () => {
+    const display = fit(447)
+    display.resizeHeight(+400)
+    expect(display.height).toBeCloseTo(DEFAULTS.maxAutoFitHeight + 400)
+  })
 })
 
 // The bands drag by delta, so the floor has to be expressed in terms of the

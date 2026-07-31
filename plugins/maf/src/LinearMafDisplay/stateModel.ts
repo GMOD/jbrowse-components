@@ -799,15 +799,25 @@ export default function stateModelFactory(
         /**
          * #getter
          * The track height that fit-to-height mode divides among rows. Once the
-         * user drags, the explicit `height` config slot wins; before any
-         * drag we size to show every row at the default px height, so a typical
-         * alignment looks exactly like fixed mode. Huge alignments are bounded by
-         * the `rowHeight` cap, not here, so this needs no cap of its own.
+         * user drags, the explicit `height` config slot wins; before any drag we
+         * size to show every row at the default px height, so a typical
+         * alignment looks exactly like fixed mode.
+         *
+         * Bounded by `DEFAULTS.maxAutoFitHeight`, past which the rows shrink
+         * instead of the track growing. Sizing purely to content made the
+         * default height scale with the species count — 4141px for a 447-way,
+         * across a stack of full-height overlay canvases — and left
+         * `maxRowsHeight` (a crash guard, at the backing-store limit) as the
+         * only thing bounding it. This is the *policy* bound; that one stays as
+         * the hard floor under a deliberate drag.
          */
         get fitTargetHeight(): number {
           return (
             getConf(self, 'height') ??
-            self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset
+            Math.min(
+              self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset,
+              DEFAULTS.maxAutoFitHeight,
+            )
           )
         },
       }))
@@ -816,12 +826,18 @@ export default function stateModelFactory(
          * #getter
          * Per-row height in fit-to-height mode: the rows area (track height minus
          * the fixed bands) split evenly across rows.
+         *
+         * Deliberately NOT floored at 1px. A sub-pixel row is the legitimate
+         * answer for more species than the track has pixels, and flooring it
+         * made the rows area taller than the height it was asked to fit inside
+         * — which defeated `fitTargetHeight`'s own ceiling past ~555 species
+         * (2000 species floored to 1px re-grew the track to 2045px). The
+         * non-positive guard belongs in `effectiveRowHeight`, which is the
+         * resolved value consumers divide by. Same rule, and same regression,
+         * as the multi-sample variant display's `autoRowHeight`.
          */
         get autoRowHeight() {
-          return Math.max(
-            1,
-            (self.fitTargetHeight - self.rowsTopOffset) / self.nrow,
-          )
+          return (self.fitTargetHeight - self.rowsTopOffset) / self.nrow
         },
       }))
       .views(self => ({
@@ -838,10 +854,15 @@ export default function stateModelFactory(
          * The cap shrinks rows to fit instead of crashing (or clipping); fit mode
          * already stays small so it never engages there. Bands have their own
          * small canvases, so the rows-only ceiling is the whole limit.
+         *
+         * Floored only when non-positive — a resolved getter must never hand
+         * back 0 (consumers divide by it: `rowAtY`, the renderers). A genuine
+         * sub-pixel fit height passes through; see `autoRowHeight`.
          */
         get effectiveRowHeight() {
           const raw = self.rowHeight === 0 ? self.autoRowHeight : self.rowHeight
-          return Math.min(raw, self.maxRowsHeight / self.nrow)
+          const capped = Math.min(raw, self.maxRowsHeight / self.nrow)
+          return capped > 0 ? capped : 1
         },
       }))
       .views(self => ({
