@@ -14,16 +14,17 @@ import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   DEFAULT_WIDTH,
   buildHelp,
-  cigarModes,
   comparativeOptionNames,
   getBoolean,
-  getEnum,
+  getCigarMode,
+  getColorBy,
   getNumber,
   getNumberList,
   getOptionalNumber,
   getString,
-  themeNames,
-  trackLabelModes,
+  getThemeName,
+  getTrackLabels,
+  ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
 
@@ -112,6 +113,19 @@ async function main() {
       console.warn(
         'Warning: comparative options (e.g. --fasta2, --loc2) have no effect without the dotplot or synteny subcommand',
       )
+    } else if (mode) {
+      // Under a comparative subcommand, the flags the OTHER comparative mode
+      // owns are still parsed but never reach that view's init (a dotplot has no
+      // ribbon shape, so --drawCurves/--cigarMode/--alpha/--levelHeights do
+      // nothing there). Name them instead of dropping them silently.
+      const ignored = ignoredComparativeOptions(mode).filter(
+        name => name in rest,
+      )
+      if (ignored.length) {
+        console.warn(
+          `Warning: ${ignored.map(name => `--${name}`).join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${modeDescriptors[mode].subcommand} view`,
+        )
+      }
     }
 
     const width = getNumber(rest, 'width', DEFAULT_WIDTH)
@@ -129,20 +143,20 @@ async function main() {
       defaultSession: getBoolean(rest, 'defaultSession'),
       tracks: getString(rest, 'tracks'),
       cytobands: getString(rest, 'cytobands'),
-      themeName: getEnum(rest, 'themeName', themeNames),
+      themeName: getThemeName(rest),
       fontFamily: getString(rest, 'fontFamily'),
       showGridlines: getBoolean(rest, 'showGridlines'),
-      trackLabels: getEnum(rest, 'trackLabels', trackLabelModes),
+      trackLabels: getTrackLabels(rest),
       refseq: getBoolean(rest, 'refseq'),
       mode,
       argv: parsed,
       autoDiagonalize: getBoolean(rest, 'autoDiagonalize'),
       drawCurves: getBoolean(rest, 'drawCurves'),
       minAlignmentLength: getOptionalNumber(rest, 'minAlignmentLength'),
-      colorBy: getString(rest, 'colorBy'),
+      colorBy: getColorBy(rest),
       alpha: getOptionalNumber(rest, 'alpha'),
       levelHeights: getNumberList(rest, 'levelHeights'),
-      cigarMode: getEnum(rest, 'cigarMode', cigarModes),
+      cigarMode: getCigarMode(rest),
       showColorLegend: getBoolean(rest, 'showColorLegend'),
       spec: getString(rest, 'spec'),
       trackList,

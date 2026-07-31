@@ -10,7 +10,6 @@ import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
-import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
 
@@ -20,12 +19,19 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 export type { LinearSyntenyImportFormSyntenyOption } from './LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx'
 export { renderToSvg } from './LinearSyntenyView/svgcomponents/SVGLinearSyntenyView.tsx'
 export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
+// The view's `init` snapshot contract, so a programmatic caller (jbrowse-img,
+// an embedded host) builds it against the same type applyInitSettings reads
+// rather than a hand-copied shape.
+export type {
+  CigarMode,
+  FadeThinMode,
+  LinearSyntenyViewInit,
+} from './LinearSyntenyView/types.ts'
 
 export default class LinearComparativeViewPlugin extends Plugin {
   name = 'LinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
-    LinearSyntenyViewHelperF(pluginManager)
     LinearSyntenyViewF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)

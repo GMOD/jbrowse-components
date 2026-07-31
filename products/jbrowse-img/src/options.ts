@@ -1,12 +1,22 @@
 import { modeDescriptors, viewModes } from './modes.ts'
 
 import type { ViewMode } from './modes.ts'
+import type { AssertNever } from './types.ts'
+import type { defaultThemes } from '@jbrowse/core/ui/theme'
+import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export interface OptionDef {
   name: string
   description: string
   default?: number | boolean | string
+  // Comparative modes that actually read this flag; absent means all of them.
+  // The dotplot has no ribbon shape and no levels, so its init interface carries
+  // none of drawCurves/cigarMode/alpha/levelHeights — listing them under
+  // `dotplot --help` documented flags that then silently did nothing. One table
+  // drives both the per-subcommand help and the warning in main.ts.
+  modes?: ViewMode[]
 }
 
 // Default output width in pixels, shared by the --width help default, the CLI
@@ -17,6 +27,77 @@ export const DEFAULT_WIDTH = 1500
 // the renderRegion library default (applied in baseSvgOpts) so the CLI and
 // library agree and the value lives in one place.
 export const DEFAULT_FONT_FAMILY = 'serif'
+
+// "a, b, or c" — builds the help text of an enum-valued flag from its value list
+// so the two can't drift.
+function orList(values: readonly string[]) {
+  return `${values.slice(0, -1).join(', ')}, or ${values.at(-1)}`
+}
+
+// The fixed value sets of the enum-valued flags. Each is pinned to the union the
+// consuming plugin/package actually accepts, in both directions:
+//  - `satisfies` rejects a value the union no longer has (renamed or removed
+//    upstream), which would otherwise leave the CLI accepting a dead value
+//  - AssertCovers rejects a value the union GAINED, which would otherwise leave
+//    the CLI warning on a mode that now works
+// `as const` keeps the literal types, so each getter returns a narrow union
+// rather than string, and the help text below is generated from the same list.
+const trackLabelModes = [
+  'offset',
+  'overlay',
+  'left',
+  'none',
+] as const satisfies readonly TrackLabelMode[]
+
+export const cigarModes = [
+  'off',
+  'matches',
+  'full',
+] as const satisfies readonly CigarMode[]
+
+// Synteny ribbon coloring, the `colorBy` slot of the comparative views' init.
+// Validated rather than passed through as a bare string: the view coerces an
+// unknown mode back to 'default' (coerceColorBy), so a typo like `--colorBy
+// quary` silently rendered the default red instead of reporting itself.
+const syntenyColorByModes = [
+  'default',
+  'strand',
+  'query',
+  'target',
+  'reference',
+  'identity',
+  'meanQueryIdentity',
+  'mappingQuality',
+] as const satisfies readonly SyntenyColorBy[]
+
+// The built-in theme names, pinned to core's own defaultThemes registry so a
+// theme added or renamed there fails the build here rather than leaving the CLI
+// silently rejecting (or offering) a theme that no longer matches.
+type ThemeName = keyof typeof defaultThemes
+
+export const themeNames = [
+  'default',
+  'lightStock',
+  'lightMinimal',
+  'darkStock',
+  'darkMinimal',
+] as const satisfies readonly ThemeName[]
+
+// A value the upstream union has but the list above lacks makes the Exclude
+// non-never and fails the build. Collected into one alias, and exported, because
+// a type alias referenced nowhere is a lint error — the same reason
+// AssertSnapshotKeysExist is exported from applyTrackOpts.ts.
+type AssertCovers<
+  Upstream extends string,
+  List extends readonly string[],
+> = AssertNever<Exclude<Upstream, List[number]>>
+
+export type AssertEnumListsCoverUpstream = [
+  AssertCovers<TrackLabelMode, typeof trackLabelModes>,
+  AssertCovers<CigarMode, typeof cigarModes>,
+  AssertCovers<SyntenyColorBy, typeof syntenyColorByModes>,
+  AssertCovers<ThemeName, typeof themeNames>,
+]
 
 export const optionDefs: OptionDef[] = [
   { name: 'fasta', description: 'Path to indexed FASTA file' },
@@ -67,8 +148,7 @@ export const optionDefs: OptionDef[] = [
   { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
     name: 'themeName',
-    description:
-      'Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal',
+    description: `Theme for rendering: ${orList(themeNames)}`,
   },
   {
     name: 'fontFamily',
@@ -83,7 +163,7 @@ export const optionDefs: OptionDef[] = [
   },
   {
     name: 'trackLabels',
-    description: 'Track label position: offset, overlay, left, or none',
+    description: `Track label position: ${orList(trackLabelModes)}`,
   },
   {
     name: 'refseq',
@@ -116,6 +196,7 @@ const comparativeOptionDefs: OptionDef[] = [
     name: 'drawCurves',
     description: 'Draw synteny ribbons as bezier curves instead of trapezoids',
     default: false,
+    modes: ['synteny'],
   },
   {
     name: 'minAlignmentLength',
@@ -123,19 +204,24 @@ const comparativeOptionDefs: OptionDef[] = [
   },
   {
     name: 'colorBy',
-    description:
-      'Color synteny ribbons, e.g. "query" tints by query chromosome',
+    description: `Color synteny ribbons (e.g. "query" tints by query chromosome): ${orList(syntenyColorByModes)}`,
   },
-  { name: 'alpha', description: 'Ribbon opacity 0-1 (lower reveals density)' },
+  {
+    name: 'alpha',
+    description: 'Ribbon opacity 0-1 (lower reveals density)',
+    modes: ['synteny'],
+  },
   {
     name: 'levelHeights',
     description:
       'Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)',
+    modes: ['synteny'],
   },
   {
     name: 'cigarMode',
     description:
       "CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]",
+    modes: ['synteny'],
   },
   {
     name: 'showColorLegend',
@@ -147,6 +233,22 @@ const comparativeOptionDefs: OptionDef[] = [
 // Comparative options accepted only by the dotplot/synteny subcommands; exposed
 // so the CLI can warn when they're passed without a comparative subcommand.
 export const comparativeOptionNames = comparativeOptionDefs.map(o => o.name)
+
+// The comparative options this mode actually honors. A flag whose `modes` list
+// excludes the mode is neither shown in that subcommand's help nor silently
+// accepted by it — main.ts warns instead.
+function comparativeOptionsFor(mode: ViewMode) {
+  return comparativeOptionDefs.filter(o => !o.modes || o.modes.includes(mode))
+}
+
+// Comparative flags the given mode ignores, so the CLI can say so rather than
+// drop them. Empty for a non-comparative mode: there the blanket "no effect
+// without the dotplot or synteny subcommand" warning already covers every one.
+export function ignoredComparativeOptions(mode: ViewMode) {
+  return comparativeOptionDefs
+    .filter(o => o.modes && !o.modes.includes(mode))
+    .map(o => o.name)
+}
 
 const examples: [string, string][] = [
   [
@@ -248,7 +350,7 @@ export function getNumber(
 // silently falling back to the default) when a present value isn't one of them —
 // a typo like `--cigarMode ful` or `--trackLabels lft` should be reported, the
 // same way an unknown option name is.
-export function getEnum<T extends string>(
+function getEnum<T extends string>(
   rest: Record<string, unknown>,
   key: string,
   allowed: readonly T[],
@@ -277,18 +379,24 @@ export function getNumberList(rest: Record<string, unknown>, key: string) {
   return list.length ? list : undefined
 }
 
-export const trackLabelModes = ['offset', 'overlay', 'left', 'none'] as const
-export const cigarModes = ['off', 'matches', 'full'] as const
-// The built-in theme names (see packages/core/src/ui/theme.ts). Kept in sync
-// with the --themeName help text; validated so a misspelled theme warns instead
-// of silently rendering the default.
-export const themeNames = [
-  'default',
-  'lightStock',
-  'lightMinimal',
-  'darkStock',
-  'darkMinimal',
-] as const
+// One getter per enum-valued flag, so the flag name and its allowed-value list
+// are bound in one place — a bare getEnum(rest, key, allowed) call site can pair
+// the wrong list with a key and still compile.
+export function getTrackLabels(rest: Record<string, unknown>) {
+  return getEnum(rest, 'trackLabels', trackLabelModes)
+}
+
+export function getCigarMode(rest: Record<string, unknown>) {
+  return getEnum(rest, 'cigarMode', cigarModes)
+}
+
+export function getThemeName(rest: Record<string, unknown>) {
+  return getEnum(rest, 'themeName', themeNames)
+}
+
+export function getColorBy(rest: Record<string, unknown>) {
+  return getEnum(rest, 'colorBy', syntenyColorByModes)
+}
 
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),
@@ -326,7 +434,7 @@ function buildSubcommandHelp(
 ) {
   const { comparative } = modeDescriptors[mode]
   const defs = comparative
-    ? [...optionDefs, ...comparativeOptionDefs]
+    ? [...optionDefs, ...comparativeOptionsFor(mode)]
     : optionDefs
   const pad = Math.max(...defs.map(o => o.name.length))
   return [

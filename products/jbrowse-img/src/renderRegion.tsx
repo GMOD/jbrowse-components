@@ -17,20 +17,29 @@ import {
   configTrackCategory,
   resolveTrackId,
 } from './applyTrackOpts.ts'
+import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
-import { pairSyntenyTrackIds, syntenyTrackLevels } from './syntenyTracks.ts'
 import { trackType } from './trackFields.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, Opts, Track } from './types.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
-import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
-import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
+import type {
+  CircularViewInit,
+  CircularViewModel,
+} from '@jbrowse/plugin-circular-view'
+import type {
+  DotplotViewInit,
+  DotplotViewModel,
+} from '@jbrowse/plugin-dotplot-view'
+import type {
+  LinearSyntenyViewInit,
+  LinearSyntenyViewModel,
+} from '@jbrowse/plugin-linear-comparative-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // react-app2 hosts every view type and accepts multiple assemblies, where the
@@ -236,10 +245,18 @@ async function whenViewReady(view: InitView, session: RenderErrorSources) {
 // add the view from its frozen `init` snapshot, size it, then wait for the init
 // autorun to clear `init` before renderToSvg rasterizes via the global node
 // canvas (setupEnv).
+//
+// `init` is the view's own init interface (DotplotViewInit and friends) or, on
+// the --spec path, the user's JSON — which is unvalidated by construction, so
+// that branch stays a loose record. Each CLI-built init goes through a typed
+// builder below, so a field the view no longer reads fails the build rather than
+// silently doing nothing.
+type SpecInit = Record<string, unknown>
+
 async function addInitView<T extends InitView>(
   ctx: ModeContext,
   viewType: string,
-  init: unknown,
+  init: SpecInit | DotplotViewInit | LinearSyntenyViewInit | CircularViewInit,
 ) {
   const view = ctx.model.session.addView(viewType, { init }) as T
   view.setWidth(ctx.width)
@@ -338,79 +355,20 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   return svg
 }
 
-// Build a sub-view spec per assembly in [query, target, …] order: the first
-// --fasta/--chromSizes is the query (top in synteny, x-axis in dotplot).
-// Comparative views render adjacent assembly pairs as stacked levels, so this
-// supports an arbitrary number of assemblies (a-vs-b is the common case). Each
-// assembly's optional location comes from data.assemblyLocs (a `loc:` modifier
-// or the legacy --loc/--loc2); the rest show their whole genome.
-function comparativeViews({ data }: ModeContext) {
-  const { assemblies, assemblyLocs = [] } = data
-  if (assemblies.length < 2) {
-    throw new Error(
-      'comparative mode requires at least two assemblies (repeat --fasta/--chromSizes, or use --fasta2)',
-    )
-  }
-  return assemblies.map((asm, i) =>
-    assemblyLocs[i]
-      ? { assembly: asm.name, loc: assemblyLocs[i] }
-      : { assembly: asm.name },
-  )
-}
-
 const renderDotplot: ModeRenderer = async ctx => {
-  // Dotplot is pairwise (x vs y), so it takes only the first two assemblies even
-  // if a config supplies more — and only the comparisons between those two.
-  // init.tracks is a flat list of comparison ids.
-  const [x, y] = ctx.data.assemblies
-  const tracks = x && y ? pairSyntenyTrackIds(ctx.data, x.name, y.name) : []
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
-    : {
-        views: comparativeViews(ctx).slice(0, 2),
-        tracks,
-        ...(ctx.opts.autoDiagonalize ? { autoDiagonalize: true } : {}),
-        ...(ctx.opts.showColorLegend ? { showColorLegend: true } : {}),
-      }
+    : dotplotInit(ctx.data, ctx.opts)
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
   const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
   throwOnDisplayError(view.tracks)
   return svg
 }
 
-// View-level synteny settings from CLI flags, included only when set so they
-// don't clobber the view's own defaults. The full set lives in --spec; these are
-// the busy-comparison knobs the simple subcommand exposes directly.
-function syntenyViewKnobs(opts: Opts) {
-  const {
-    autoDiagonalize,
-    drawCurves,
-    minAlignmentLength,
-    colorBy,
-    alpha,
-    cigarMode,
-    showColorLegend,
-  } = opts
-  return {
-    ...(autoDiagonalize ? { autoDiagonalize: true } : {}),
-    ...(drawCurves ? { drawCurves: true } : {}),
-    ...(minAlignmentLength === undefined ? {} : { minAlignmentLength }),
-    ...(colorBy ? { colorBy } : {}),
-    ...(alpha === undefined ? {} : { alpha }),
-    ...(opts.levelHeights ? { levelHeights: opts.levelHeights } : {}),
-    ...(cigarMode ? { cigarMode } : {}),
-    ...(showColorLegend ? { showColorLegend: true } : {}),
-  }
-}
-
 const renderSynteny: ModeRenderer = async ctx => {
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
-    : {
-        views: comparativeViews(ctx),
-        tracks: syntenyTrackLevels(ctx.data),
-        ...syntenyViewKnobs(ctx.opts),
-      }
+    : syntenyInit(ctx.data, ctx.opts)
   const view = await addInitView<LinearSyntenyViewModel>(
     ctx,
     'LinearSyntenyView',
@@ -453,14 +411,19 @@ function circularTrackIds(model: Model, tracks: Track[]) {
 }
 
 // Circular renders one assembly's chord tracks (e.g. a VCF of structural
-// variants). The view picks each track's chord display automatically.
+// variants); the view picks each track's chord display automatically. Unlike the
+// comparative builders this needs the model (circularTrackIds asks the
+// pluginManager which tracks the view can open), so it stays here rather than in
+// comparativeInit.ts.
+function circularInit(ctx: ModeContext): CircularViewInit {
+  return {
+    assembly: ctx.data.assembly.name,
+    tracks: circularTrackIds(ctx.model, ctx.data.tracks),
+  }
+}
+
 const renderCircular: ModeRenderer = async ctx => {
-  const init = ctx.spec
-    ? initFromSpec(ctx.spec)
-    : {
-        assembly: ctx.data.assembly.name,
-        tracks: circularTrackIds(ctx.model, ctx.data.tracks),
-      }
+  const init = ctx.spec ? initFromSpec(ctx.spec) : circularInit(ctx)
   const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
   const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
   throwOnDisplayError(view.tracks)

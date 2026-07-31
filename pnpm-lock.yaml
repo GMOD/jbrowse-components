@@ -2092,6 +2092,9 @@ importers:
       '@jbrowse/plugin-wiggle':
         specifier: workspace:^
         version: link:../../plugins/wiggle
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
 
   products/jbrowse-react-app:
     dependencies:

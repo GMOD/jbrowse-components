@@ -1,6 +1,14 @@
 import type { ViewMode } from './modes.ts'
+import type { themeNames } from './options.ts'
 import type { Entry } from './parseArgv.ts'
+import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+
+// Compile-time assertion that a type is empty. Used with `Exclude<...>` to prove
+// a hand-written list covers every member of an upstream union: a member added
+// there makes the Exclude non-never and fails the build.
+export type AssertNever<T extends never> = T
 
 export interface Opts {
   noRasterize?: boolean
@@ -20,7 +28,7 @@ export interface Opts {
   defaultSession?: boolean
   trackList?: Entry[]
   tracks?: string
-  themeName?: string
+  themeName?: (typeof themeNames)[number]
   // Font family applied to the whole SVG root so every <text> (ruler, track
   // labels, and SvgCanvas feature labels) renders in one consistent font
   // instead of relying on each SVG viewer's default. Defaults to serif.
@@ -39,10 +47,10 @@ export interface Opts {
   autoDiagonalize?: boolean
   drawCurves?: boolean
   minAlignmentLength?: number
-  colorBy?: string
+  colorBy?: SyntenyColorBy
   alpha?: number
   levelHeights?: number[]
-  cigarMode?: 'off' | 'matches' | 'full'
+  cigarMode?: CigarMode
   showColorLegend?: boolean
   // N-way comparative views: a session-spec JSON (inline or path to .json,
   // the same shape as the web's `&session=spec-`) that supplies the view's

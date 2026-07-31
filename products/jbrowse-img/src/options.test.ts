@@ -1,14 +1,15 @@
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
   buildHelp,
-  cigarModes,
   getBoolean,
   getBooleanValue,
-  getEnum,
+  getCigarMode,
+  getColorBy,
   getNumber,
   getString,
-  themeNames,
-  trackLabelModes,
+  getThemeName,
+  getTrackLabels,
+  ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
 import { parseArgv, standardizeArgv } from './parseArgv.ts'
@@ -38,12 +39,8 @@ test('applies fallbacks when options are absent', () => {
 test('validates trackLabels against the allowed modes', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(
-      getEnum(parse('--trackLabels offset'), 'trackLabels', trackLabelModes),
-    ).toBe('offset')
-    expect(
-      getEnum(parse('--trackLabels bogus'), 'trackLabels', trackLabelModes),
-    ).toBeUndefined()
+    expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
+    expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
   } finally {
     warn.mockRestore()
   }
@@ -52,18 +49,30 @@ test('validates trackLabels against the allowed modes', () => {
 test('warns on an invalid enum value instead of silently defaulting', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getEnum(parse('--cigarMode full'), 'cigarMode', cigarModes)).toBe(
-      'full',
-    )
-    expect(
-      getEnum(parse('--themeName darkStock'), 'themeName', themeNames),
-    ).toBe('darkStock')
+    expect(getCigarMode(parse('--cigarMode full'))).toBe('full')
+    expect(getThemeName(parse('--themeName darkStock'))).toBe('darkStock')
     expect(warn).not.toHaveBeenCalled()
 
-    expect(getEnum(parse('--cigarMode ful'), 'cigarMode', cigarModes)).toBeUndefined()
-    expect(getEnum(parse('--themeName drakStock'), 'themeName', themeNames)).toBeUndefined()
-    expect(getEnum(parse('--trackLabels lft'), 'trackLabels', trackLabelModes)).toBeUndefined()
+    expect(getCigarMode(parse('--cigarMode ful'))).toBeUndefined()
+    expect(getThemeName(parse('--themeName drakStock'))).toBeUndefined()
+    expect(getTrackLabels(parse('--trackLabels lft'))).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(3)
+  } finally {
+    warn.mockRestore()
+  }
+})
+
+test('validates colorBy, which the view would silently coerce to default', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    expect(getColorBy(parse('--colorBy query'))).toBe('query')
+    expect(getColorBy(parse('--colorBy meanQueryIdentity'))).toBe(
+      'meanQueryIdentity',
+    )
+    expect(warn).not.toHaveBeenCalled()
+
+    expect(getColorBy(parse('--colorBy quary'))).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(1)
   } finally {
     warn.mockRestore()
   }
@@ -72,12 +81,8 @@ test('warns on an invalid enum value instead of silently defaulting', () => {
 test('absent enum flags return undefined without warning', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(
-      getEnum(parse('--loc chr1'), 'cigarMode', cigarModes),
-    ).toBeUndefined()
-    expect(
-      getEnum(parse('--loc chr1'), 'themeName', themeNames),
-    ).toBeUndefined()
+    expect(getCigarMode(parse('--loc chr1'))).toBeUndefined()
+    expect(getThemeName(parse('--loc chr1'))).toBeUndefined()
     expect(warn).not.toHaveBeenCalled()
   } finally {
     warn.mockRestore()
@@ -131,4 +136,55 @@ test('subcommand help lists comparison track options', () => {
   expect(help).toContain('Usage: jb2export dotplot')
   expect(help).toContain('--fasta2')
   expect(help).toContain('Comparison track options: --paf')
+})
+
+describe('comparative options are scoped to the modes that read them', () => {
+  const dotplot = buildHelp(
+    'jb2export',
+    trackTypes,
+    syntenyTrackTypes,
+    'dotplot',
+  )
+  const synteny = buildHelp(
+    'jb2export',
+    trackTypes,
+    syntenyTrackTypes,
+    'synteny',
+  )
+
+  test('the ribbon-shape flags appear only under synteny', () => {
+    // a dotplot has no ribbon shape and no levels, so its init carries none of
+    // these — listing them documented flags that silently did nothing
+    for (const flag of [
+      '--drawCurves',
+      '--cigarMode',
+      '--alpha',
+      '--levelHeights',
+    ]) {
+      expect(synteny).toContain(flag)
+      expect(dotplot).not.toContain(flag)
+    }
+  })
+
+  test('the shared comparative flags appear under both', () => {
+    for (const flag of [
+      '--autoDiagonalize',
+      '--colorBy',
+      '--minAlignmentLength',
+      '--showColorLegend',
+    ]) {
+      expect(dotplot).toContain(flag)
+      expect(synteny).toContain(flag)
+    }
+  })
+
+  test('ignoredComparativeOptions names what a mode drops', () => {
+    expect(ignoredComparativeOptions('dotplot')).toEqual([
+      'drawCurves',
+      'alpha',
+      'levelHeights',
+      'cigarMode',
+    ])
+    expect(ignoredComparativeOptions('synteny')).toEqual([])
+  })
 })

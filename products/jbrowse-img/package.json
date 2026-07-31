@@ -60,7 +60,8 @@
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
-    "@jbrowse/plugin-wiggle": "workspace:^"
+    "@jbrowse/plugin-wiggle": "workspace:^",
+    "@jbrowse/synteny-core": "workspace:^"
   },
   "publishConfig": {
     "access": "public"

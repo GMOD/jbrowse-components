@@ -4,7 +4,7 @@ import { getBooleanValue } from './options.ts'
 import { trackMatches, trackName } from './trackFields.ts'
 
 import type { Entry } from './parseArgv.ts'
-import type { Track } from './types.ts'
+import type { AssertNever, Track } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
@@ -219,7 +219,6 @@ type DisplayKeys =
   | WiggleConfigSlotKey
   | BaseConfigSlotKey
 
-type AssertNever<T extends never> = T
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
 export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
 
@@ -251,12 +250,12 @@ const sortTypeAliases: Record<string, string> = {
 }
 
 // Parse a modifier's numeric argument, failing loudly on a typo instead of
-// writing NaN into the snapshot (which renders as a blank/broken track). Mirrors
-// the validation featureHeight/heightMode already do for their numeric args.
-function parseNum(prefix: string, val: string) {
+// writing NaN into the snapshot (which renders as a blank/broken track).
+// `expected` names the wider grammar for the modifiers that also accept keywords.
+function parseNum(prefix: string, val: string, expected = 'a number') {
   const n = +val
   if (Number.isNaN(n)) {
-    throw new Error(`Invalid ${prefix} value "${val}". Expected a number.`)
+    throw new Error(`Invalid ${prefix} value "${val}". Expected ${expected}.`)
   }
   return n
 }
@@ -388,8 +387,9 @@ function applyModifier(
         }
       } else if (val1 && hasFeatureSize) {
         snap.featureHeight = parseNum(
-          'featureHeight (use normal, compact, super-compact, or a number)',
+          'featureHeight',
           val1,
+          'normal, compact, super-compact, or a number',
         )
       }
       break
@@ -496,6 +496,9 @@ function applyModifier(
       }
       break
     }
+    // `index:` (the .bai/.csi/.tbi location) and `name:` (the display name) are
+    // consumed at config-build time in readData, so there's nothing to write to
+    // the display snapshot — listed only so they aren't warned about as typos.
     case 'index':
     case 'name': {
       break
@@ -510,8 +513,7 @@ function applyModifier(
 // Parse a track's modifier list into a declarative display snapshot. snpcov is
 // applied last because it reads the resolved height. Pure (no view/display), so
 // it's unit-testable; the center-line sort is returned as an intent for the
-// caller to resolve against the view. Note: `index:` and `name:` modifiers are
-// consumed at config-build time (readData) and are silently ignored here.
+// caller to resolve against the view.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {} }
   const apply = (opt: string) => {

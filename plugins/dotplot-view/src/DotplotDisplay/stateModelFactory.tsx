@@ -278,7 +278,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setError(error: unknown) {
-        console.error(error)
+        // `setError(undefined)` is the clear-the-error path every fetch runs
+        // through before it starts (installComparativeFetchAutorun), so logging
+        // unconditionally printed a bare "undefined" to stderr on each
+        // successful fetch — noise that a headless caller (jbrowse-img) reports
+        // as if the render had a problem
+        if (error !== undefined) {
+          console.error(error)
+        }
         self.error = error
         self.fetching = false
         self.statusMessage = undefined

@@ -20,6 +20,9 @@ export type {
   DotplotViewModel,
   DotplotViewStateModel,
 } from './DotplotView/model.ts'
+// The view's `init` snapshot contract, so a programmatic caller (jbrowse-img, an
+// embedded host) builds it against the same type the init autorun reads.
+export type { DotplotViewInit } from './DotplotView/types.ts'
 
 export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
