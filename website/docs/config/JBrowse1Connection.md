@@ -23,8 +23,9 @@ configuration contributes are listed here too, so this table is the whole
 surface.
 
 <!-- prettier-ignore -->
-| Slot | Description | From |
-| --- | --- | --- |
-| <span id="slot-datadirlocation">**dataDirLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLocation' }</code></pre></dialog></span> | the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/ |  |
-| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | name of the assembly the connection belongs to, should be a single entry |  |
-| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'nameOfConnection'</code> | a unique name for this connection | [BaseConnection](../baseconnection) |
+| Slot | Description |
+| --- | --- |
+| <span id="slot-datadirlocation">**dataDirLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLocation' }</code></pre></dialog></span> | the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/ |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | name of the assembly the connection belongs to, should be a single entry |
+| <span class="slot-group">Inherited from [BaseConnection](../baseconnection)</span> | <span class="slot-group-count">1 slot</span> |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'nameOfConnection'</code> | a unique name for this connection |

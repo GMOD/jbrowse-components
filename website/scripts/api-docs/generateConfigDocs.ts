@@ -199,6 +199,13 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 // one row apiece, so a reader configuring this track sees the whole surface in
 // one scan without chasing links.
 //
+// Each base's slots sit under a header row naming it rather than repeating the
+// base link in a "From" column of their own: LinearBasicDisplay printed the
+// same LinearCanvasBaseDisplay link on 21 consecutive rows, spending a column's
+// width to say once per row what one row can say for the run. The header also
+// gives the run a boundary, so a reader who only wants this config's slots can
+// stop at the first one.
+//
 // The seen-by-name set makes a slot the config (or a closer base) redeclares
 // skip every farther base — otherwise an override (e.g. LGVSyntenyDisplay's
 // `colorBy`, which moves `promotedBase` to `strand`) also lists the shadowed
@@ -208,24 +215,25 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 function slotsTable(ownSlots: Item[], bases: ConfigWithHeader[]) {
   const seen = new Set<string>()
   const groups = [
-    { slots: filterUnseenByName(seen, ownSlots), definedBy: '' },
+    { slots: filterUnseenByName(seen, ownSlots), from: undefined },
     ...bases.map(config => ({
       slots: filterUnseenByName(seen, config.slots),
-      definedBy: `[${config.header.name}](../${config.header.id})`,
+      from: `[${config.header.name}](../${config.header.id})`,
     })),
   ]
   const all = groups.flatMap(g => g.slots)
-  // the "Defined by" column only earns its width on a config that has a base
-  const inherited = groups.slice(1).some(g => g.slots.length > 0)
-  const rows = groups.flatMap(({ slots, definedBy }) =>
-    slots
-      .filter(s => !isContainerSlot(s, slotMetaFor(s).meta, all))
-      .map(s => slotRow(s, inherited ? definedBy : undefined)),
-  )
-  return markdownTable(
-    ['Slot', 'Description', ...(inherited ? ['From'] : [])],
-    rows,
-  )
+  const rows = groups.flatMap(({ slots, from }) => {
+    const visible = slots.filter(
+      s => !isContainerSlot(s, slotMetaFor(s).meta, all),
+    )
+    return visible.length
+      ? [
+          ...(from === undefined ? [] : [slotGroupRow(from, visible.length)]),
+          ...visible.map(s => slotRow(s)),
+        ]
+      : []
+  })
+  return markdownTable(['Slot', 'Description'], rows)
 }
 
 // Name-suffix heuristic for a config's sidebar category, checked in order.
@@ -980,15 +988,19 @@ function isContainerSlot(item: Item, meta: SlotMeta, all: Item[]) {
   )
 }
 
-// `definedBy` is undefined on a config with no base (no "From" column at all),
-// and empty for the config's own slots when the column is there.
-//
+// The header row introducing a base's run of inherited slots (see slotsTable).
+// The count tells a reader how much of the table they can skip; `slot-group` is
+// what the stylesheet hangs the row's shading off.
+function slotGroupRow(from: string, count: number) {
+  return `| <span class="slot-group">Inherited from ${from}</span> | <span class="slot-group-count">${count} ${count === 1 ? 'slot' : 'slots'}</span> |`
+}
+
 // Name, type and default share one cell — `name` over `string = 'foo'` — rather
 // than taking a column each. They are short and read as one fact ("what this
 // slot is"), while the description is the column that actually needs the width;
 // as three columns they squeezed a paragraph of prose into a quarter of the
 // table.
-function slotRow(item: Item, definedBy: string | undefined) {
+function slotRow(item: Item) {
   const { meta } = slotMetaFor(item)
   const type = slotTypeCell(meta)
   const dflt = slotDefaultCell(meta)
@@ -1000,7 +1012,6 @@ function slotRow(item: Item, definedBy: string | undefined) {
       .filter(Boolean)
       .join('<br>'),
     slotDescriptionCell(item, meta),
-    ...(definedBy === undefined ? [] : [definedBy]),
   ]
   return `| ${cells.join(' | ')} |`
 }

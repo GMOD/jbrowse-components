@@ -23,11 +23,12 @@ configuration contributes are listed here too, so this table is the whole
 surface.
 
 <!-- prettier-ignore -->
-| Slot | Description | From |
-| --- | --- | --- |
-| <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Basic'</code> | a custom name for a token to include in the header |  |
-| <span id="slot-validatewithhead">**validateWithHEAD**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | validate the token with a HEAD request before using it |  |
-| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the internet account | [BaseInternetAccount](../baseinternetaccount) |
-| <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the internet account | [BaseInternetAccount](../baseinternetaccount) |
-| <span id="slot-authheader">**authHeader**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Authorization'</code> | request header for credentials | [BaseInternetAccount](../baseinternetaccount) |
-| <span id="slot-domains">**domains**</span><br>`stringArray` = <code>[]</code> | array of valid domains the url can contain to use this account | [BaseInternetAccount](../baseinternetaccount) |
+| Slot | Description |
+| --- | --- |
+| <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Basic'</code> | a custom name for a token to include in the header |
+| <span id="slot-validatewithhead">**validateWithHEAD**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | validate the token with a HEAD request before using it |
+| <span class="slot-group">Inherited from [BaseInternetAccount](../baseinternetaccount)</span> | <span class="slot-group-count">4 slots</span> |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the internet account |
+| <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the internet account |
+| <span id="slot-authheader">**authHeader**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Authorization'</code> | request header for credentials |
+| <span id="slot-domains">**domains**</span><br>`stringArray` = <code>[]</code> | array of valid domains the url can contain to use this account |
