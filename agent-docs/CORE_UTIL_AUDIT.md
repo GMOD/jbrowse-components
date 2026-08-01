@@ -58,6 +58,26 @@ Every item that was under "Open: reachable bugs" landed, plus most of
 - `mergeIntervals`/`gatherOverlaps`'s `w` is renamed `padding` and documented as
   per-side (so the default merge window is 10kb, not 5kb). Not halved: three
   callers depend on today's spacing.
+- `getTrackAssemblyNames`' permanent WeakMap is gone — every caller reads it from
+  a reactive getter or autorun, so the memo meant editing `assemblyNames` in the
+  config editor never invalidated. MobX's own computed caching covers it.
+- `showTrack` no longer builds and discards a whole config node to validate a
+  conf that is already a state tree node (MST validated it on creation, and
+  `configSchema.create`'s preProcessSnapshot re-ran `Core-preProcessTrackConfig`
+  on a snapshot `showTrack` had just preprocessed). An inline conf still gets it.
+
+Outside `util/` but found on the way:
+
+- `BaseSession.setSelection` unwraps a `jexlFeatureProxy`. `isFeature` accepts a
+  proxy, but the `Feature` it narrows to promises a callable `id()` and on a
+  proxy `id` is a data field — five readers doing
+  `isFeature(selection) ? selection.id() : …` threw once one reached the
+  selection, which `SVInspector` does through `defaultOnChordClick`.
+- `jbrowse add-track x.gtf.gz` wrote a `GtfAdapter` (whole-file) for a file with
+  a tabix index beside it; the CLI guesser now routes it to `GtfTabixAdapter`
+  like the browser, and knows bedGraph. The AllVsAll / MCScanBlocks /
+  BlastTabular entries the audit wanted are hint-only in the browser too, by
+  design — `--adapterType` is the intended path, not an extension guess.
 
 ## Fixed in the first pass
 
@@ -99,26 +119,23 @@ Every item that was under "Open: reachable bugs" landed, plus most of
 
 ## Open: latent / typing / contract
 
-Most of this section landed in the second pass (see above). What is left:
+Most of this section landed. What is left:
 
 - `renameRegions.ts:18` returns a dead MST node typed as a live `Region`. Every
   caller then reads properties off it, which MST refuses. Not reproduced in
   practice — a worker gets plain objects, so `isStateTreeNode` is false there —
   and fixing it means deciding whether the region is dropped (changing the
   returned array's length, which positional callers rely on) or replaced.
-- `renderToStaticMarkup.ts:26` strips alpha from every `rgba()` with no
-  explanation and no test; `CrossHatches.tsx:26` and
-  `MultiWiggleOverlayLines.tsx:49` both carry workaround comments for it.
+- `renderToStaticMarkup` drops rgba alpha rather than converting it. Now
+  explained and pinned by tests; rewriting `fill="rgba(r,g,b,a)"` into
+  `fill="rgb(r,g,b)" fill-opacity="a"` would preserve the appearance and let
+  `CrossHatches` / `MultiWiggleOverlayLines` drop their workarounds, but it
+  changes exported pixels, so it needs a visual pass before regenerating
+  snapshots.
 - `io/RemoteFileWithRangeCache.ts` — `joinChunk`'s comment promises one
   duplicate fetch where the retry issues one per joined chunk.
 - `fileHandleStore.ts` has no delete path, so handles accumulate forever. (The
   permanently-cached rejected `openDB` is fixed.)
-- `tracks.ts:44 getTrackAssemblyNames` WeakMap is permanent and non-reactive but
-  read inside reactive getters, so editing `assemblyNames` in the config editor
-  does not invalidate it.
-- `tracks.ts:678` runs `Core-preProcessTrackConfig` three times per `showTrack`
-  and discards the result (line 720 uses `inlineConf ?? trackId`); skip the
-  throwaway `configSchema.create` validation when `isStateTreeNode(rawConf)`.
 - `ResizeHandle.tsx:49` hand-rolls rAF coalescing with no unmount cleanup,
   duplicating `useRafCommit` from the same directory.
 - `useFocusOnInteraction` is bubble-phase, so a child's `stopPropagation`
@@ -126,12 +143,16 @@ Most of this section landed in the second pass (see above). What is left:
   Switching it to `{ capture: true }` would make focus survive those and let
   `ResizeHandle` drop its `data-gesture-owner` accommodation — a deliberate
   behavior change, not a bug fix, so it was left alone.
-- Two value cycles through the util barrel (rollup TDZ shape):
-  `offscreenCanvasPonyfill.ts:5` and `openFeatureWidget.ts:1` both import values
-  from `./index.ts`, which re-exports them. `io/index.ts:3` imports
-  `isElectron, isNode` from `../index.ts`, dragging the whole barrel into
+- Value cycles through the util barrel (rollup TDZ shape): `openFeatureWidget.ts`
+  imports values from `./index.ts`, which re-exports it, and `io/index.ts`
+  imports `isElectron, isNode` from `../index.ts`, dragging the whole barrel into
   anything importing `@jbrowse/core/util/io`. Moving `isElectron`/`isNode`/`rIC`
-  into a small `environment.ts` next to `isWebWorker.ts` breaks all three.
+  into a small `environment.ts` next to `isWebWorker.ts` breaks both. (The
+  `offscreenCanvasPonyfill` leg is gone with its dead code.) **These are not
+  theoretical** — `tracks.ts` re-exporting `getFileName` after its
+  `../configuration` import produced exactly this failure
+  (`Cannot read properties of undefined`), fixed by ordering the re-export first
+  and guarded by `FileHandleRestoreBanner.test.tsx`.
 
 ## Dead code: deleted in the second pass
 
@@ -201,8 +222,12 @@ collision where the exported one is unused.
   `ncbiGeneticCodes` entries were spot-checked against NCBI `gc.prt` and are
   correct, so `seqUtils.defaultCodonTable`/`codonTable` can be defined as
   `getGeneticCode(1).codonTable`, deleting a 65-line literal (keep the
-  `codonTable` name, 11 non-test consumers). Three unrelated `shorten()`s. Five
-  re-parsing `cssColorTo*` wrappers. (The `getFileName` copies are down to the
+  `codonTable` name, 11 non-test consumers). **Tried and backed out**:
+  `geneticCodes.ts` already imports `seqUtils.ts`, so defining `codonTable` from
+  `getGeneticCode(1)` makes a module-level const depend on a cycle — the exact
+  load-order failure the `tracks.ts` re-export just produced. `geneticCodes.test.ts`
+  already asserts the two tables are equal, so the drift risk is covered.
+  Three unrelated `shorten()`s. Five re-parsing `cssColorTo*` wrappers. (The `getFileName` copies are down to the
   two that are not actually duplicates: `LocalFileChooser`'s shows the *full*
   local path and returns `undefined` for "no file", and `plugins/wiggle`'s takes
   a string.)
