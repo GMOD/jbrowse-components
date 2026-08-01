@@ -118,32 +118,12 @@ Three choices there:
   and color rows by. Nothing groups until you ask for it, below.
 
 [`height`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-height) is
-worth setting explicitly at this row count. Rows auto-fit by dividing the
+worth setting generously at this row count. Rows auto-fit by dividing the
 display height, and unlike the multi-row feature display they are allowed to go
 below a pixel: at 979 tumors in a short display, a mutation carried by one tumor
-paints a fraction of a pixel and effectively disappears.
-
-## Read it
-
-Run **Clustering → Cluster rows by genotype...** from the track menu before
-reading anything off a cohort this deep (see [](/docs/user_guides/clustering)
-for the mechanic). Somatic mutations are sparse, so in barcode order a carrier
-is one 1px row wherever its tumor happens to sort, and even a hotspot draws as a
-dashed streak. Clustering makes the carriers contiguous, which turns the same
-column into a solid bar.
-
-<Figure caption="PIK3CA across 979 TCGA-BRCA primary tumors, clustered by genotype. Each column is one distinct somatic mutation, each row one tumor, and every alt-carrying cell takes its mutation's VEP impact color. Three columns are solid bars in the block of carriers at the top, and the tumors with nothing here are the empty field below." src="/img/tcga/mutations_pik3ca.png" />
-
-Those three columns are the canonical PIK3CA hotspots, H1047R in the kinase
-domain and E542K/E545K in the helical domain
-([TCGA 2012](https://doi.org/10.1038/nature11412)). Hovering a column in the
-live view names its mutation and its consequence, and clicking one opens the
-variant popup with the per-tumor read counts.
-
-The rest of the picture is the shape of somatic mutation data: most columns are
-one tumor wide. That is why the whole-genome view of this track is not worth
-opening, and why the figures here are all gene-scale. The GDC's open mutation
-calls are exome only, so there is no intergenic signal to see.
+paints a fraction of a pixel and effectively disappears. The figures below give
+each tumor about two pixels, which is what makes one band's mutation density
+comparable to another's by eye.
 
 ## Group the rows by clinical annotation
 
@@ -160,14 +140,40 @@ than being unexplained row ranges. Both are also in the track menu.
   "displays": [
     {
       "type": "LinearMultiSampleVariantMatrixDisplay",
-      "height": 1010,
+      "height": 1900,
       "featureColor": "jexl:impactColor(feature)",
-      "groupBy": "histology",
-      "colorBy": "histology"
+      "groupBy": "subtype",
+      "colorBy": "subtype"
     }
   ]
 }
 ```
+
+<Figure caption="PIK3CA across 979 TCGA-BRCA primary tumors, rows grouped and colored by receptor subtype. Each column is one distinct somatic mutation and each row one tumor. Two things read at once: three columns are dense stripes where every other column is a tumor or two wide, and those stripes sit in the HR+/HER2- band rather than the triple-negative one below it." src="/img/tcga/mutations_pik3ca.png" />
+
+The three stripes are the canonical PIK3CA hotspots, H1047R in the kinase domain
+and E542K/E545K in the helical domain
+([TCGA 2012](https://doi.org/10.1038/nature11412)). Hovering a column in the
+live view names its mutation and its consequence, and clicking one opens the
+variant popup with the per-tumor read counts.
+
+The rest of the picture is the shape of somatic mutation data: most columns are
+one tumor wide. That is why the whole-genome view of this track is not worth
+opening, and why the figures here are all gene-scale. The GDC's open mutation
+calls are exome only, so there is no intergenic signal to see.
+
+## The same mechanic on other genes and other columns
+
+TP53 on the same subtype grouping puts the density in the other band:
+
+<Figure caption="TP53's coding exons with rows grouped and colored by receptor subtype. The triple-negative band is dense with mutations while the HR+/HER2- band, the cohort's largest, stays sparse, which is the opposite of what PIK3CA does on the same rows." src="/img/tcga/mutations_tp53_subtype.png" />
+
+The bottom band is `unknown`, the tumors whose receptor calls do not resolve a
+subtype. It is a gap in the annotation rather than a fourth subtype, which is
+worth knowing before reading anything into how dense it looks.
+
+Point the two slots at `histology` instead and the rows band by how the tumor
+was called under the microscope:
 
 <Figure caption="CDH1 with rows grouped and colored by histology. The truncating (HIGH impact) cells crowd into the lobular band, leaving the much larger ductal band nearly empty, and the connector fan ties each column to the exon it was called in." src="/img/tcga/mutations_cdh1_histology.png" />
 
@@ -181,17 +187,18 @@ That figure also drags the connector band open
 or the handle under the band), which is worth doing wherever _where_ a mutation
 sits is part of the reading. A tumor suppressor is inactivated by any truncating
 call anywhere in the coding sequence, so the fan lands across the whole
-transcript; PIK3CA's three hotspot bars come off three codons, and at the
-default band that difference is not in either picture.
+transcript; PIK3CA's stripes come off three codons, and at the default band that
+difference is not in either picture.
 
-Point the same two slots at `subtype` and the same mechanic reads a different
-axis:
+## Clustering instead of grouping
 
-<Figure caption="TP53's coding exons with rows grouped and colored by receptor subtype. The triple-negative band is dense with mutations while the HR+/HER2- band, the cohort's largest, stays sparse." src="/img/tcga/mutations_tp53_subtype.png" />
-
-The bottom band is `unknown`, the tumors whose receptor calls do not resolve a
-subtype. It is a gap in the annotation rather than a fourth subtype, which is
-worth knowing before reading anything into how dense it looks.
+**Clustering → Cluster rows by genotype...** in the track menu is the other
+arrangement (see [](/docs/user_guides/clustering) for the mechanic). It orders
+the rows by their genotypes rather than by an annotation, which gathers every
+carrier into one block and turns a hotspot column into a solid bar. It replaces
+the clinical bands while it is on, so the two readings are alternatives: use it
+when the question is which tumors share a mutation, and `groupBy` when the
+question is which clinical group carries it.
 
 ## Thinning the matrix down to recurrent mutations
 

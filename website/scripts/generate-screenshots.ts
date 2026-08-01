@@ -807,6 +807,9 @@ async function renderSpecToTemp(
   return renderPath
 }
 
+// Gutter between the panels of a `stageColumns` grid, in captured (2x) pixels.
+const GRID_GUTTER_PX = 24
+
 // Capture each stage of a multi-stage figure to its own temp file, then stack
 // them top-to-bottom with ImageMagick (`convert f0 f1 -append`) into
 // `renderPath` — the same composition the hand-made two-stage teaching figures
@@ -830,7 +833,21 @@ async function captureStages(
       // rows of `cols` frames, then the rows stacked. A trailing partial row is
       // padded on the right to the full row width rather than centered, so the
       // frames stay on a grid a reader can scan down a column of.
+      //
+      // Each frame takes a white border first, so the panels are separated by a
+      // gutter instead of abutting: two app windows sharing an edge read as one
+      // window with a seam down it.
       const rows: string[] = []
+      for (const f of stageFiles) {
+        execFileSync(IM, [
+          f,
+          '-bordercolor',
+          'white',
+          '-border',
+          `${GRID_GUTTER_PX / 2}`,
+          f,
+        ])
+      }
       for (let i = 0; i < stageFiles.length; i += cols) {
         const row = rowFiles[rows.length]!
         execFileSync(IM, [...stageFiles.slice(i, i + cols), '+append', row])

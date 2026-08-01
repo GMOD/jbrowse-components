@@ -131,8 +131,8 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   scrna_pseudobulk: {
     // the pseudobulk rows from the track header down, so the card carries the
-    // nine cell-type labels beside the one row that has the pile
-    src: 'scrna/ms4a1_bcell.png',
+    // nine cell-type labels beside the rows that have the pile
+    src: 'scrna/lyz_monocyte.png',
     band: [0.4, 1],
     position: 'left',
   },

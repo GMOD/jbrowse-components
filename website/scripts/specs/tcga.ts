@@ -271,6 +271,18 @@ function mutationTrack({
 // each capture on real completion rather than on a duration guess.
 const MATRIX_DONE = '[data-testid="variant-matrix-display-done"]'
 
+// Display height for the 979-row cohort matrices, i.e. about 2px per tumor.
+// Rows auto-fit by dividing the height and are allowed below a pixel, and at
+// 1px a somatic call is a hairline dash: the density difference between two
+// clinical bands (measured 78% of triple-negative tumors against 19% of
+// HR+/HER2- at TP53) is in the pixels but not legible. Rendered at both heights
+// before picking this one.
+const MATRIX_ROWS_HEIGHT = 1900
+
+// The gene track, the view's own chrome and the connector band above the rows,
+// on top of the display height.
+const MATRIX_CHROME_HEIGHT = 330
+
 // MANE gives one transcript per gene, so the lane names the gene in a single row
 // instead of an isoform stack. 84px is two rows' worth: content starts ~4px in
 // and the row pitch is 40px.
@@ -284,14 +296,12 @@ function mutationFigure({
   loc,
   groupBy = '',
   colorBy = '',
-  cluster = false,
   height = 1010,
   lineZoneHeight = 20,
 }: {
   loc: string
   groupBy?: string
   colorBy?: string
-  cluster?: boolean
   height?: number
   lineZoneHeight?: number
 }) {
@@ -310,7 +320,6 @@ function mutationFigure({
           {
             trackId: 'tcga_brca_mutations',
             type: 'LinearMultiSampleVariantMatrixDisplay',
-            ...(cluster ? { runClustering: true } : {}),
           },
         ],
       },
@@ -528,22 +537,16 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tcga/mutations_pik3ca',
-    url: mutationFigure({ loc: '3:179,148,000-179,240,500', cluster: true }),
-    // clustering, not the plain matrix. Unclustered, a carrier is one 1px row
-    // wherever its tumor happens to sort, so even a hotspot carried by a large
-    // share of the cohort draws as a dashed streak. Clustering by genotype makes
-    // the carriers contiguous and the same column becomes a solid bar, with the
-    // tumors carrying nothing here as one clean block below. Measured on the two
-    // renders, not assumed.
-    //
-    // The tree sidebar only mounts once the clustering RPC has landed, so this
-    // waits on the dendrogram rather than on the matrix canvas.
-    readySelector: CLUSTERED,
+    url: mutationFigure({
+      loc: '3:179,148,000-179,240,500',
+      groupBy: 'subtype',
+      colorBy: 'subtype',
+      height: MATRIX_ROWS_HEIGHT,
+    }),
+    readySelector: MATRIX_DONE,
     readyTimeout: 300000,
     viewportWidth: 1500,
-    // the 1010px display plus the gene track and the view's own chrome, with
-    // room for the last group band: the generator reported 91px clipped at 1240
-    viewportHeight: 1340,
+    viewportHeight: MATRIX_ROWS_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 15000,
   },
 
@@ -573,12 +576,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       groupBy: 'histology',
       colorBy: 'histology',
       lineZoneHeight: 130,
-      height: 1120,
+      height: MATRIX_ROWS_HEIGHT + 130,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
     viewportWidth: 1500,
-    viewportHeight: 1450,
+    viewportHeight: MATRIX_ROWS_HEIGHT + 130 + MATRIX_CHROME_HEIGHT,
     settleMs: 10000,
   },
 
@@ -597,11 +600,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       loc: '17:7,673,000-7,677,000',
       groupBy: 'subtype',
       colorBy: 'subtype',
+      height: MATRIX_ROWS_HEIGHT,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
     viewportWidth: 1500,
-    viewportHeight: 1340,
+    viewportHeight: MATRIX_ROWS_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 10000,
   },
 ]

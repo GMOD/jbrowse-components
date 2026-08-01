@@ -28,7 +28,7 @@ A UMAP answers how much of a gene each cell type made. It cannot show where in
 the gene the reads landed, and that is the part a browser puts back: which end,
 which exons, which annotated transcript the pile actually agrees with.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset over MS4A1, loaded as one MultiQuantitativeTrack. Only the B row carries the pile, and it sits at the 3' end of the gene rather than across it." src="/img/scrna/ms4a1_bcell.png" />
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset over LYZ, loaded as one MultiQuantitativeTrack. The two monocyte rows and the cDC row carry the pile, the lymphocyte rows are flat, and the pile sits at the 3' end of the gene rather than across it." src="/img/scrna/lyz_monocyte.png" />
 
 The pile at one end is not a defect. 10x 3' chemistry sequences the 3' end of
 each transcript, so a coverage track of that library is a spike near the
@@ -37,8 +37,6 @@ the heights of those spikes across rows, which is the same comparison a dot plot
 makes, drawn on the coordinate where the reads actually are. Full-length
 chemistries (Smart-seq, and 5' kits to a lesser degree) spread coverage over the
 gene body instead, and the rest of this page applies unchanged.
-
-<Figure caption="LYZ, where the two monocyte rows and the cDC row carry the signal and the lymphocyte rows are flat. Same track, same settings, a different lineage." src="/img/scrna/lyz_monocyte.png" />
 
 ## Generating per-cell-type BigWigs
 
@@ -96,6 +94,8 @@ smooth curve. The cells themselves can go under it, one row each, read from a
 cells-by-bins Zarr matrix instead of one file per cell.
 
 <Figure caption="The nine pseudobulk rows at LYZ above the 4390 cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
+
+<Figure caption="The same store at MS4A1, on a lower pinned maximum. The block that carried LYZ is empty and the B block is the one that fills, so the pattern moves with the lineage rather than being a property of one window." src="/img/scrna/percell_ms4a1.png" />
 
 The speckle is the point. Above, the lymphocyte rows look like a low flat line
 next to the monocyte peak, which reads as silence. Per cell it is not silence: a

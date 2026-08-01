@@ -23,32 +23,6 @@ const genes = {
 }
 
 export const scrnaSpecs: ScreenshotSpec[] = [
-  // MS4A1 is the B-cell marker: of the nine rows only B carries the pile, and
-  // the pile sits at the 3' end because 10x 3' chemistry sequences that end.
-  {
-    mode: 'url',
-    name: 'scrna/ms4a1_bcell',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          assembly: 'hg38',
-          loc: 'chr11:60,452,000-60,475,000',
-          type: 'LinearGenomeView',
-          tracks: [
-            genes,
-            {
-              trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
-              height: 330,
-            },
-          ],
-        },
-      ],
-    }),
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 630,
-  },
   // The same PBMCs through two assays. The RNA rows measure how much of the
   // transcript each cell type made; the ATAC rows below measure whether the
   // locus is open in that cell type at all.
@@ -69,9 +43,13 @@ export const scrnaSpecs: ScreenshotSpec[] = [
               height: 300,
             },
             {
+              // 12 subadapters, so 480 is 40px a row. At the 380 this had, the
+              // accessibility peaks were a few px tall and the last row was cut
+              // by the frame, which is what made the ATAC half unreadable next
+              // to the RNA half.
               trackId: 'pbmc5k_scatac_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
-              height: 380,
+              height: 480,
             },
           ],
         },
@@ -79,7 +57,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 1015,
+    viewportHeight: 1115,
   },
   // The pseudobulk row above its own cells: nine curves, then the 4390 rows they
   // are a sum over. The pinned low maximum is what makes the single-UMI cells in
@@ -106,6 +84,45 @@ export const scrnaSpecs: ScreenshotSpec[] = [
               type: 'MultiLinearWiggleDisplay',
               minScore: 0,
               maxScore: 4,
+              height: 430,
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    settleMs: 20000,
+    viewportHeight: 1005,
+  },
+  // The same per-cell store at the other marker, so the block moves with the
+  // lineage rather than being a property of one window: MS4A1 fills the B block
+  // and the monocyte block that carried LYZ is empty here. The Zarr covers one
+  // window per chromosome and this is the chr11 one.
+  //
+  // maxScore 2 rather than LYZ's 4. A B cell carries fewer MS4A1 UMIs than a
+  // monocyte carries LYZ, so at 4 the home block is mid-ramp and reads like the
+  // ambient speckle around it.
+  {
+    mode: 'url',
+    name: 'scrna/percell_ms4a1',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          assembly: 'hg38',
+          loc: 'chr11:60,452,000-60,475,000',
+          type: 'LinearGenomeView',
+          tracks: [
+            genes,
+            {
+              trackId: 'pbmc5k_scrna_pseudobulk_hg38',
+              type: 'MultiLinearWiggleDisplay',
+              height: 240,
+            },
+            {
+              trackId: 'pbmc5k_scrna_percell_hg38',
+              type: 'MultiLinearWiggleDisplay',
+              minScore: 0,
+              maxScore: 1,
               height: 430,
             },
           ],

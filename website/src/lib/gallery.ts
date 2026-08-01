@@ -396,11 +396,11 @@ export const gallerySections: readonly GallerySection[] = [
           'CATlas single-cell ATAC pseudobulk around the INS locus: cell-type BigWigs gathered into one multi-quantitative track, one labeled row each on a shared scale, rather than separate tracks to line up by hand.',
       },
       {
-        label: 'Single-cell RNA pseudobulk',
-        spec: 'scrna/ms4a1_bcell',
+        label: 'Single cells under their pseudobulk',
+        spec: 'scrna/percell_lyz',
         guide: 'tutorials/scrna_pseudobulk',
         description:
-          'A 10x PBMC experiment pooled by cell type into one coverage BigWig each and loaded as a single track. At a B-cell marker only the B row carries the pile, and it sits at the 3’ end of the gene, where 3’ chemistry puts the reads.',
+          'A 10x PBMC experiment pooled by cell type into nine coverage BigWigs, above the 4390 cells they are a sum over, read one row per cell from a cells-by-bins Zarr matrix. The monocyte block is solid at LYZ and the lymphocyte blocks are speckle, one ambient UMI per cell.',
       },
       {
         label: 'Hi-C contact matrix',
