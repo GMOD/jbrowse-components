@@ -7,7 +7,8 @@ bugs are left open — what remains is latent/typing, dead code, and structural.
 
 ## Fixed in the second pass (2026-07-31)
 
-Every item that was under "Open: reachable bugs" landed, with tests:
+Every item that was under "Open: reachable bugs" landed, plus most of
+"latent / typing / contract", all with tests:
 
 - `assemblyConfigUtils.getFilename` deleted; `tracks.getFileName` moved to its
   own `getFileName.ts` (dependency-free, so the pure form helpers can use it
@@ -38,6 +39,23 @@ Every item that was under "Open: reachable bugs" landed, with tests:
 - `isAuthNeededException` checks only the name.
 - `markStopTokenStopped` deletes before re-setting, so the TTL sweep can't be
   permanently short-circuited.
+- `RemoteFileWithRangeCache.clearCache` resumes its queued waiters instead of
+  dropping them (a dropped resolver is a hang, not a cancellation), and `stat()`
+  goes through `limitConcurrency`.
+- `resolvePlugin` returns an undefined `definition` instead of throwing when a
+  per-version-only entry matches nothing; `PluginCard` leaves Install disabled.
+- `getContentBlocksPxSpan` passes each block's `displayedRegionIndex` through.
+- `updateStatus` / `withProgress` / `parseLineByLine` clear their status label in
+  a `finally`.
+- `namedColorToHex` / `isNamedColor` use `Object.hasOwn`.
+- `renameRegionsIfNeeded`'s `Object.fromEntries` is annotated, so `refNameMap`
+  and `getSeqAdapterRefName` are checked.
+- `fileHandleStore` drops a rejected `openDB` promise rather than caching it.
+- `springAnimate` guards its `cancelAnimationFrame`, honors an explicit
+  `precision: 0`, and its dropped-frame comment matches the code.
+- `mergeIntervals`/`gatherOverlaps`'s `w` is renamed `padding` and documented as
+  per-side (so the default merge window is 10kb, not 5kb). Not halved: three
+  callers depend on today's spacing.
 
 ## Fixed in the first pass
 
@@ -79,61 +97,33 @@ Every item that was under "Open: reachable bugs" landed, with tests:
 
 ## Open: latent / typing / contract
 
-- `renameRegions.ts:81` — `Object.fromEntries` over a non-tuple array selects the
-  `any` overload, so `refNameMap` and `getSeqAdapterRefName` are unchecked
-  (verified with a standalone strict repro). Use `as const` on the pair or a
-  `Map`. `:18` also returns a dead MST node typed as a live `Region`.
-- `types/index.ts:704 isAuthNeededException` returns true for any error carrying
-  a `url` property, routing ordinary fetch errors into `RpcManager`'s auth-retry
-  path (spurious login prompt). The `name === 'AuthNeededError'` check alone
-  already covers the cross-realm case.
-- `color/cssColorsLevel4.ts:154` — bare-object indexing:
-  `namedColorToHex('constructor')` returns a function typed `string`, and
-  `isNamedColor('toString')` is true. Use `Object.hasOwn` or a `Map`.
-- `intervals.ts:22` — the merge window is `2w`, so `gatherOverlaps`' documented
-  5kb default merges within 10kb. Three callers take the default. Halve the
-  constant or rename the parameter to say it is a per-side pad.
-- `Base1DUtils.ts:294,337` drop the `displayedRegionIndex` the ContentBlock
-  already carries, so duplicate/overlapping regions point the overview rect at
-  the wrong copy.
-- `io/RemoteFileWithRangeCache.ts:85` — `clearCache()` does `queue.length = 0`,
-  stranding queued reads with no resolve *or* reject (a plausible source of test
-  teardown hangs above 20 in-flight reads). `stat()` also bypasses
-  `limitConcurrency`; the sizeCache comment at `:216` contradicts the `if
-  (!sizeCache.has(url))` below it; `joinChunk`'s comment promises one duplicate
-  fetch where the retry issues one per joined chunk.
+Most of this section landed in the second pass (see above). What is left:
+
+- `renameRegions.ts:18` returns a dead MST node typed as a live `Region`. Every
+  caller then reads properties off it, which MST refuses. Not reproduced in
+  practice — a worker gets plain objects, so `isStateTreeNode` is false there —
+  and fixing it means deciding whether the region is dropped (changing the
+  returned array's length, which positional callers rely on) or replaced.
 - `renderToStaticMarkup.ts:26` strips alpha from every `rgba()` with no
   explanation and no test; `CrossHatches.tsx:26` and
   `MultiWiggleOverlayLines.tsx:49` both carry workaround comments for it.
-- `fileHandleStore.ts:30` caches a rejected `openDB` promise permanently, and
-  there is no delete path so handles accumulate forever.
+- `io/RemoteFileWithRangeCache.ts` — `joinChunk`'s comment promises one
+  duplicate fetch where the retry issues one per joined chunk.
+- `fileHandleStore.ts` has no delete path, so handles accumulate forever. (The
+  permanently-cached rejected `openDB` is fixed.)
 - `tracks.ts:44 getTrackAssemblyNames` WeakMap is permanent and non-reactive but
   read inside reactive getters, so editing `assemblyNames` in the config editor
   does not invalidate it.
 - `tracks.ts:678` runs `Core-preProcessTrackConfig` three times per `showTrack`
   and discards the result (line 720 uses `inlineConf ?? trackId`); skip the
   throwaway `configSchema.create` validation when `isStateTreeNode(rawConf)`.
-- `progress.ts:15,310` and `parseLineByLine.ts:133` leave the last status label
-  on the channel when `fn` throws — no `try/finally`.
-- `stopToken.ts:111` — `stoppedIds.set` on an existing key does not reorder the
-  Map, so the TTL sweep's `break` at the first in-window entry can be
-  permanently short-circuited. `delete` before `set`.
-- `pluginStore.ts:60 resolvePlugin` throws for a v2 entry with only per-version
-  urls when no range matches, taking out the whole plugin-store list instead of
-  rendering the `compatible === false` message. `definition` is unused when
-  incompatible, so make it lazy.
-- `springAnimate.ts:42` — `let animationFrameId: number` is never initialized, so
-  the returned canceller can call `cancelAnimationFrame(undefined)`
-  (`LinearGenomeView/model.ts:1473`). `:72` also skips elapsed time where its
-  comment says it jumps to the end, and `eps = precision || ...` makes an
-  explicit `precision: 0` unusable.
 - `ResizeHandle.tsx:49` hand-rolls rAF coalescing with no unmount cleanup,
   duplicating `useRafCommit` from the same directory.
-- `hooks.ts:9` — the comment says the document listener survives a child's
-  `stopPropagation`, but it is registered bubble-phase so it does not;
-  `ResizeHandle.tsx:85` states the opposite (correctly). `CascadingMenu.tsx:130`,
-  `ErrorBar.tsx:36`, `BlockMsg.tsx:38` all suppress focus-on-interaction as a
-  result. Either add `{ capture: true }` or drop the comment.
+- `useFocusOnInteraction` is bubble-phase, so a child's `stopPropagation`
+  suppresses focus-on-click (menus, error bars). The comment now says so.
+  Switching it to `{ capture: true }` would make focus survive those and let
+  `ResizeHandle` drop its `data-gesture-owner` accommodation — a deliberate
+  behavior change, not a bug fix, so it was left alone.
 - Two value cycles through the util barrel (rollup TDZ shape):
   `offscreenCanvasPonyfill.ts:5` and `openFeatureWidget.ts:1` both import values
   from `./index.ts`, which re-exports them. `io/index.ts:3` imports
