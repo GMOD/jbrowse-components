@@ -593,7 +593,7 @@ cat > paths_track.json <<JSON
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "strain",
       "lengthField": "delta",
-      "rowOrder": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/\$/"/')],
+      "rowOrder": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
       "legend": [
         { "label": "reference path", "color": "rgb(204,204,204)" },
         { "label": "insertion", "color": "rgb(192,0,192)" },

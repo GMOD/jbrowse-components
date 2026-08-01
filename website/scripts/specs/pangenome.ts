@@ -220,7 +220,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: 'graph complexity',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 560,
+    // two 200px wiggle lanes plus their axes and the view chrome. Measured
+    // against the rebuilt demo, where 560 cut 77px off the bottom of the degree
+    // lane, so the second curve was clipped in a figure that is about comparing
+    // the two.
+    viewportHeight: 640,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
