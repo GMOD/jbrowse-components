@@ -100,7 +100,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               //
               // No jexl length filter any more. It was here to hide the snarl
               // tree's wide parent records, which drew over the fine layer they
-              // were decomposed from; `pggb -V K12:100000` pops those in the
+              // were decomposed from; `pggb -V K12:10000` pops those in the
               // pipeline (vcfbub | vcfwave) so the track loads an already-flat
               // tier. Keeping the filter would now drop real indels instead.
               trackId: 'ecoli_pggb_variants',
@@ -171,8 +171,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // graph is for.
   //
   // No jexl length filter, unlike the MAF figure. That filter existed to hide
-  // the snarl tree's wide parent records, and `pggb -V K12:100000` pops them in
-  // the pipeline instead (vcfbub -l 0 -a 100000 | vcfwave), so the track loads
+  // the snarl tree's wide parent records, and `pggb -V K12:10000` pops them in
+  // the pipeline instead (vcfbub -l 0 -a 10000 | vcfwave), so the track loads
   // an already-flat tier and the display needs nothing said to it.
   //
   // The same 60 kb window the MAF figure uses, picked from the odgi pav bigWigs

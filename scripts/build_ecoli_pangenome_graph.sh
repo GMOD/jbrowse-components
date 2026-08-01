@@ -69,12 +69,27 @@ REF=K12   # the strain the VCF and MAF are projected onto
 # reproduces the same graph. Bump this to a newer tag deliberately, not silently.
 # odgi ships inside this image, so the depth projection below reuses it.
 #
-# The image's build date is not its tools' date. This one is 2026-07-24 and
-# carries smoothxg 0ea0470, which is from 2026-03-31 and 14 commits behind
-# smoothxg master -- so it does NOT include pangenome/smoothxg#223, the fix for
-# the POA padding that reroot_maf.py crops around below. Check
-# `smoothxg --version` against that commit before assuming the crop is dead code.
-PGGB_IMAGE=ghcr.io/pangenome/pggb:202607241950514225c6
+# The image's build date is not its tools' date, and a newer image is not
+# automatically a better graph. Two findings, both measured on this dataset:
+#
+# 1. DO NOT bump to 202607241950514225c6 (2026-07-24) without re-checking the
+#    collapse. That image builds an E. coli graph that is barely collapsed at
+#    all: 22.12 Mb of graph sequence from 25.6 Mb of input, against 7.63 Mb
+#    from 20.3 Mb here, so most of the reference is traversed by its own path
+#    only (7,385 of ~9,280 depth windows read 1, where this image plateaus at
+#    the strain count). It is not a parameter difference -- the params.yml are
+#    identical apart from versions -- and not the mapping, whose PAF is LARGER
+#    (8.7 MB vs 5.3 MB). The seqwish intermediate is already 22.27 Mb before
+#    smoothxg runs, so it is seqwish (v0.7.11-9 -> v0.7.11-35) or what wfmash
+#    now hands it. `odgi similarity` is the one-command check: sibling E. coli
+#    should share most of their sequence, and there they share about a fifth.
+#
+# 2. That image carries smoothxg 0ea0470, from 2026-03-31 and 14 commits behind
+#    master, so it does NOT include pangenome/smoothxg#223 either -- the fix for
+#    the POA padding reroot_maf.py crops around below. No published pggb image
+#    does. Check `smoothxg --version` against that commit before assuming the
+#    crop is dead code.
+PGGB_IMAGE=ghcr.io/pangenome/pggb:202603141454453ade6b
 in_pggb() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$PGGB_IMAGE" "$@"; }
 
 # minigraph and gfatools build the rGFA counterpart of the graph (see the

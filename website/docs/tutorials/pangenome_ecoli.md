@@ -67,7 +67,7 @@ bgzip all.fa
 samtools faidx all.fa.gz
 ```
 
-Then run pggb. `-V K12:100000` decomposes the graph into a VCF against the K12
+Then run pggb. `-V K12:10000` decomposes the graph into a VCF against the K12
 path, and `-M` writes the multiple alignment as a MAF. The image also carries
 [odgi](https://github.com/pangenome/odgi), which the untangle, depth, presence,
 complexity and subgraph sections below reuse, so wrap the `docker run` once and
@@ -76,11 +76,11 @@ call it `in_pggb`:
 ```bash
 in_pggb() {
   docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-    ghcr.io/pangenome/pggb:202607241950514225c6 "$@"
+    ghcr.io/pangenome/pggb:202603141454453ade6b "$@"
 }
 
 in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
-  -n 5 -c 4 -p 90 -s 5000 -V K12:100000 -M -t "$(nproc)"
+  -n 5 -c 4 -p 90 -s 5000 -V K12:10000 -M -t "$(nproc)"
 ```
 
 Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
