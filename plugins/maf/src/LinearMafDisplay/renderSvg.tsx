@@ -80,7 +80,8 @@ function MafSvgBody({
     showConservation,
     codonConservationActive,
     conservationHeight,
-    activeRowRendering,
+    rowsCanvas2dMode,
+    basesRenderingActive,
     rowProportion,
     scrollTop,
   } = model
@@ -144,36 +145,29 @@ function MafSvgBody({
           height={rowsHeight}
           opts={opts}
           paint={ctx => {
-            // One rows rendering at a time (see activeRowRendering): the codon
-            // view and the per-row identity plot each replace the base SNP
-            // rendering; codon cells are drawn by drawMafCodons below.
-            if (activeRowRendering === 'codon') {
-              // codon cells drawn below; no base/identity rendering
-            } else if (activeRowRendering === 'sourceChrom') {
-              if (sources?.length) {
-                drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
-                  rowHeight: effectiveRowHeight,
-                  rowProportion,
-                  nRows: sources.length,
-                  canvasWidth: width,
-                  canvasHeight: rowsHeight,
-                  scrollTop,
-                  ranks: model.sourceChromRanks.ranks,
-                })
-              }
-            } else if (activeRowRendering !== 'bases') {
-              if (sources?.length) {
-                drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
-                  rowHeight: effectiveRowHeight,
-                  rowProportion,
-                  nRows: sources.length,
-                  canvasWidth: width,
-                  canvasHeight: rowsHeight,
-                  scrollTop,
-                  mode: activeRowRendering,
-                })
-              }
-            } else {
+            // One rows rendering at a time, and which one is the model's
+            // decision — `rowsCanvas2dMode` is what MafRowsCanvas paints from,
+            // so the export can't disagree with the screen. Codon cells are
+            // drawn by drawMafCodons below, so that mode paints nothing here.
+            const canvas2dState = {
+              rowHeight: effectiveRowHeight,
+              rowProportion,
+              nRows: sources?.length ?? 0,
+              canvasWidth: width,
+              canvasHeight: rowsHeight,
+              scrollTop,
+            }
+            if (rowsCanvas2dMode === 'sourceChrom') {
+              drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
+                ...canvas2dState,
+                ranks: model.sourceChromRanks.ranks,
+              })
+            } else if (rowsCanvas2dMode !== undefined) {
+              drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
+                ...canvas2dState,
+                mode: rowsCanvas2dMode,
+              })
+            } else if (basesRenderingActive) {
               drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
             }
             drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
@@ -183,7 +177,7 @@ function MafSvgBody({
             // positioned markers the on-screen overlays use, so export matches
             // the screen. Insertions are base-level only (gated like the live
             // InsertionsOverlay); deletion labels draw in every mode.
-            if (activeRowRendering === 'bases') {
+            if (basesRenderingActive) {
               drawMafInsertions(
                 ctx,
                 model.visibleInsertions,

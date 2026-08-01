@@ -22,17 +22,13 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
   model: LinearMafDisplayModel
 }) {
   const {
-    activeRowRendering,
+    rowsCanvas2dMode: mode,
     rowsHeight,
     effectiveRowHeight,
     rowProportion,
     scrollTop,
     sources,
   } = model
-  const mode =
-    activeRowRendering === 'bases' || activeRowRendering === 'codon'
-      ? undefined
-      : activeRowRendering
   const nRows = sources?.length ?? 0
   return (
     <TrackBandCanvas

@@ -4,6 +4,8 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { paintedBpRange } from './paintedBpRange.ts'
+
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { CodonConservationBar } from './computeVisibleCodons.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -124,12 +126,7 @@ export function drawConservation(
     const coverage = regions.get(block.displayedRegionIndex)?.coverage
     const clip = coverage ? clipBlockForCanvas(block, canvasWidth) : null
     if (coverage && clip) {
-      // A base outside the block's own genomic span can still touch the block's
-      // edge pixel, because `clampBlockScissor` floors/ceils the screen span —
-      // so widen by a pixel's worth of bp. `[block.start, block.end)` is the
-      // same interval whichever way the block is oriented, so this bound needs
-      // no reversed case.
-      const slack = Math.ceil(clip.bpLength / clip.fullBlockWidth) + 1
+      const { bpLo, bpHi } = paintedBpRange(block, clip)
       accumulateConservation(
         sum,
         count,
@@ -138,8 +135,8 @@ export function drawConservation(
         makeBpMapper(block),
         clip.scissorX,
         clip.scissorX + clip.scissorW,
-        block.start - slack,
-        block.end + slack,
+        bpLo,
+        bpHi,
       )
     }
   }

@@ -139,8 +139,7 @@ const MafBody = observer(function MafBody({
   // Pointer cursor when an insertion marker is clickable under the cursor.
   // Matches the click gate in openInsertionWidgetOnClick: bases mode only.
   const overInsertion =
-    model.activeRowRendering === 'bases' &&
-    pointer?.hit.hover?.kind === 'insertion'
+    model.basesRenderingActive && pointer?.hit.hover?.kind === 'insertion'
 
   return (
     <>
@@ -194,7 +193,7 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
         />
-        {model.activeRowRendering === 'bases' ? (
+        {model.basesRenderingActive ? (
           <InsertionsOverlay
             markers={model.visibleInsertions}
             width={width}

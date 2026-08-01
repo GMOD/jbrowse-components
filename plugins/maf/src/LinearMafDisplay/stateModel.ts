@@ -1515,15 +1515,45 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The GPU base canvas owns the rows: per-base SNP cells are what's
+         * painted, so the per-base letters draw, insertion markers are live
+         * (drawn, hoverable, clickable), and the encode autorun has a buffer
+         * worth building.
+         *
+         * Named once here because it is the question six consumers ask —
+         * the encode and render callbacks, the insertion overlay and its cursor,
+         * the insertion click, and SVG export — and a mode added to
+         * `activeRowRendering` has to reach all six or the markers keep drawing
+         * over a rendering that isn't theirs.
+         */
+        get basesRenderingActive() {
+          return self.activeRowRendering === 'bases'
+        },
+        /**
+         * #getter
+         * Which rendering the sibling Canvas2D rows layer paints, or undefined
+         * when it paints nothing (`bases` is the GPU canvas, `codon` is its own
+         * overlay). The on-screen canvas and SVG export both branch on this
+         * rather than re-deriving the same cascade, which is what let the export
+         * grow a four-branch chain against the canvas's two.
+         */
+        get rowsCanvas2dMode(): 'sourceChrom' | RowIdentityMode | undefined {
+          const rendering = self.activeRowRendering
+          return rendering === 'bases' || rendering === 'codon'
+            ? undefined
+            : rendering
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Positioned per-base SNP/sequence letters. Suppressed in any non-base
          * rendering (the identity plot and codon view both replace the letters).
          */
         get visibleLabels() {
           // Suppressed in any non-base rendering (identity plot / codon view both
           // replace the per-base letters).
-          return self.rowsVisible &&
-            !self.resizing &&
-            self.activeRowRendering === 'bases'
+          return self.rowsVisible && !self.resizing && self.basesRenderingActive
             ? computeVisibleLabels({
                 view: self.lgv,
                 rpcDataMap: self.rpcDataMap,
@@ -1820,7 +1850,7 @@ export default function stateModelFactory(
               // the encode *and* releases the GPU buffer (uploadRegion routes
               // count 0 to deleteRegion); the autorun stays subscribed, so
               // flipping back to `bases` re-encodes immediately.
-              if (self.activeRowRendering !== 'bases') {
+              if (!self.basesRenderingActive) {
                 return { instanceBuffer: new Uint32Array(0), instanceCount: 0 }
               }
               const { buffer, count } = buildInstanceBuffer({
@@ -1835,7 +1865,7 @@ export default function stateModelFactory(
               // over a loaded region is NOT this state — see renderState.
               const hasFetched = !!self.sources || self.loadedRegions.size > 0
               if (hasFetched) {
-                if (self.activeRowRendering === 'bases') {
+                if (self.basesRenderingActive) {
                   return b.renderBlocks(
                     self.renderBlocks,
                     self.rpcDataMap,

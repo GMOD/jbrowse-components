@@ -1,4 +1,14 @@
-import { IdentityColumns, identityColor } from './drawRowIdentity.ts'
+import {
+  IdentityColumns,
+  drawRowIdentity,
+  identityColor,
+} from './drawRowIdentity.ts'
+
+import type {
+  MafBlock,
+  MafRegionData,
+} from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // test only
 // eslint-disable-next-line  @typescript-eslint/no-misused-spread
@@ -220,4 +230,89 @@ test('identityColor ramps from divergent red through grey to conserved blue', ()
 test('identityColor clamps out-of-range input', () => {
   expect(identityColor(-1)).toEqual([199, 67, 56])
   expect(identityColor(2)).toEqual([47, 102, 176])
+})
+
+// The fetched region is the *buffered* one — roughly twice the visible span —
+// so `drawRowIdentity` skips MAF blocks outside the render block's painted bp
+// range instead of walking their columns and letting the clamp discard them.
+// The skip is a fast path, so the picture it produces has to be identical to
+// the one the unskipped walk produced: a block the render block can't paint
+// must contribute nothing either way. An over-tight bound would silently drop
+// the edge blocks that DO touch the block's first/last pixel.
+describe('off-block MAF blocks cannot change the picture', () => {
+  const WIDTH = 100
+  const REGION_INDEX = 0
+
+  function block(startBp: number, refSeq: string, alnSeq: string): MafBlock {
+    return {
+      startBp,
+      endBp: startBp + refSeq.length,
+      refSeqBytes: bytes(refSeq),
+      rows: [{ rowIndex: 0, alignmentBytes: bytes(alnSeq) }],
+      empties: [],
+    }
+  }
+
+  // Records what actually reached the canvas, so the assertion is over pixels
+  // rather than over the internal accumulators.
+  function paint(blocks: MafBlock[]) {
+    const calls: string[] = []
+    let currentFill = ''
+    const ctx = {
+      set fillStyle(v: string) {
+        currentFill = v
+      },
+      get fillStyle() {
+        return currentFill
+      },
+      fillRect(x: number, y: number, w: number, h: number) {
+        calls.push(`${currentFill} ${x},${y} ${w}x${h}`)
+      },
+    } as unknown as Ctx2D
+    drawRowIdentity(
+      ctx,
+      [
+        {
+          displayedRegionIndex: REGION_INDEX,
+          start: 1000,
+          end: 1100,
+          screenStartPx: 0,
+          screenEndPx: WIDTH,
+          reversed: false,
+        },
+      ],
+      new Map([
+        [REGION_INDEX, { blocks, coverage: undefined as never }],
+      ]) as ReadonlyMap<number, MafRegionData>,
+      {
+        rowHeight: 10,
+        rowProportion: 0.8,
+        nRows: 1,
+        canvasWidth: WIDTH,
+        canvasHeight: 10,
+        scrollTop: 0,
+        mode: 'heatmap',
+      },
+    )
+    return calls
+  }
+
+  const inView = block(1040, 'ACGTACGTAC', 'ACGTACGAAC')
+
+  test('a block far outside the painted range contributes nothing', () => {
+    expect(paint([inView, block(500_000, 'ACGT', 'TTTT')])).toEqual(
+      paint([inView]),
+    )
+  })
+
+  test('a block straddling the render block start is still painted', () => {
+    // Begins before the painted range and runs into it — MAF blocks do not
+    // align to view edges, so this is the ordinary case at every pan. A bound
+    // testing the block's *start* rather than its end against `bpLo` would drop
+    // it, blanking the leading pixels of every row.
+    const straddling = block(995, 'ACGTACGTAC', 'TTTTTTTTTT')
+    expect(paint([straddling, inView]).length).toBeGreaterThan(
+      paint([inView]).length,
+    )
+  })
 })

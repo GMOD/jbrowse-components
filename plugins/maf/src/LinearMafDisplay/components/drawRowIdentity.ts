@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../../util/asciiBytes.ts'
+import { paintedBpRange } from './paintedBpRange.ts'
 import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -243,22 +244,30 @@ export function drawRowIdentity(
     const clip = region ? clipBlockForCanvas(block, canvasWidth) : null
     if (region && clip) {
       const bpToX = makeBpMapper(block)
+      // Blocks the render block can't paint are skipped whole, rather than
+      // walked column by column and then discarded by the clamp in `build`.
+      // The fetched region is the buffered one, so on a typical view that is
+      // about half of them — measured 2x on the ce11 26-way shape, and after
+      // it every column the walk visits survives.
+      const { bpLo, bpHi } = paintedBpRange(block, clip)
       for (const mafBlock of region.blocks) {
-        columns.build(
-          mafBlock.refSeqBytes,
-          mafBlock.startBp,
-          bpToX,
-          clip.scissorX,
-          clip.scissorX + clip.scissorW,
-        )
-        for (const row of mafBlock.rows) {
-          if (row.rowIndex >= firstRow && row.rowIndex < lastRow) {
-            columns.accumulate(
-              matchSum,
-              classCount,
-              (row.rowIndex - firstRow) * width,
-              row.alignmentBytes,
-            )
+        if (mafBlock.endBp > bpLo && mafBlock.startBp < bpHi) {
+          columns.build(
+            mafBlock.refSeqBytes,
+            mafBlock.startBp,
+            bpToX,
+            clip.scissorX,
+            clip.scissorX + clip.scissorW,
+          )
+          for (const row of mafBlock.rows) {
+            if (row.rowIndex >= firstRow && row.rowIndex < lastRow) {
+              columns.accumulate(
+                matchSum,
+                classCount,
+                (row.rowIndex - firstRow) * width,
+                row.alignmentBytes,
+              )
+            }
           }
         }
       }

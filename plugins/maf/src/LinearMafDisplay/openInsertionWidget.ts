@@ -19,7 +19,7 @@ export function openInsertionWidgetOnClick(
   mouseX: number,
   mouseY: number,
 ) {
-  if (model.activeRowRendering === 'bases') {
+  if (model.basesRenderingActive) {
     const hover = resolveMafRowHover(model, mouseX, mouseY)
     if (hover?.kind === 'insertion') {
       const { length, sequence, chr, pos, strand, sampleLabel } = hover
