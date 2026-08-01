@@ -177,7 +177,7 @@ const Demo = observer(function Demo() {
                 setPicked(name || undefined)
                 const at = cells.genes.indexOf(name)
                 if (at !== -1) {
-                  view.navToLocString(cells.geneLoc[at]!)
+                  void view.navToLocString(cells.geneLoc[at]!)
                 }
               }}
             >

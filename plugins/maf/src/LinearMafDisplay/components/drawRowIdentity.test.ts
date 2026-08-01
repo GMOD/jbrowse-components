@@ -4,10 +4,7 @@ import {
   identityColor,
 } from './drawRowIdentity.ts'
 
-import type {
-  MafBlock,
-  MafRegionData,
-} from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafBlock } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // test only
