@@ -2,10 +2,12 @@
 
 Audit of `packages/core/src/util/` (2026-07-31), six parallel read-only passes
 over disjoint subsets. Everything below was verified by reading the code and
-grepping call sites. No reachable bugs are left open, and most of the
-latent/typing items and the unambiguous dead code have landed. What remains is a
-short latent list, the dead code that sits behind the runtime-plugin ABI
-surface, and the structural section.
+grepping call sites.
+
+**No reachable bugs are left open.** The latent/typing list, the unambiguous
+dead code, and the structural split have all landed. What remains: a short
+latent list, the dead code that sits behind the runtime-plugin ABI surface (a
+decision, not a reachability question), and two structural nits.
 
 ## Fixed in the second pass (2026-07-31)
 
@@ -209,38 +211,47 @@ exports, `geneticCodes.ncbiGeneticCodes`, the remaining ~13 unused
 under the same name as the live `Base1DUtils.bpToPx` — a public-surface
 collision where the exported one is unused.
 
+## Structural: done
+
+- `util/index.ts` is 443 lines, from 657. Split out: `environment.ts`
+  (`isElectron`/`isNode`/`rIC`), `objectUtils.ts` (`isObject`), `getStr.ts`,
+  `dataGridUtils.ts` (`measureGridWidth`/`resolveSelectedIds` — the barrel's only
+  reason to reach `@mui/x-data-grid`, in a barrel worker code imports),
+  `reorder.ts`, and `revlist.ts`. `pluralize`/`capitalizeFirst` moved to
+  `stringUtils.ts`, `stringify` to `locString.ts` beside `assembleLocString`.
+- The duplicate codon table is gone. It could not be collapsed the obvious way —
+  `geneticCodes.ts` imported `generateCodonTable`/`revlist` FROM `seqUtils.ts`,
+  so defining `codonTable` from `getGeneticCode(1)` there makes a module-level
+  const depend on a cycle. The dependency was inverted instead: `revlist` to its
+  own module, `generateCodonTable` into `geneticCodes.ts` where its only caller
+  lives, and `codonTable` defined there as `getGeneticCode(1).codonTable`.
+  `geneticCodes.ts` now imports nothing from `seqUtils.ts`, which is back to 89
+  lines of sequence-string helpers. `defaultStarts` deliberately stays `['ATG']`
+  rather than table 1's `['TTG','CTG','ATG']` — it drives sequence-track
+  highlighting, where marking every TTG would be noise.
+- The value cycles: the `offscreenCanvasPonyfill` and `openFeatureWidget` legs
+  are gone, and `util/io` no longer imports the barrel directly. `util/io` still
+  reaches it transitively through `tracks.ts` and `types/index.ts` — a bigger
+  untangling than this pass.
+- The CLI guesser is realigned (`.gtf.gz`, bedGraph). The AllVsAll /
+  MCScanBlocks / BlastTabular entries the audit wanted are hint-only in the
+  browser too, by design.
+
 ## Open: structural
 
-- `util/index.ts` is a 657-line grab-bag. `reorder` + `ReorderDirection` already
-  have their own `reorder.test.ts`; `pluralize`/`capitalizeFirst` belong in
-  `stringUtils.ts`; `measureGridWidth`/`resolveSelectedIds`/`getStr` are MUI
-  DataGrid helpers that drag an `@mui/x-data-grid` import into the barrel;
-  `stringify` belongs next to `assembleLocString` in `locString.ts`;
-  `isElectron`/`isNode`/`rIC` belong in `environment.ts` (see the cycle item —
-  one of its three legs is already gone with the ponyfill trim).
-- Duplication to collapse: two standard codon tables — all 27
-  `ncbiGeneticCodes` entries were spot-checked against NCBI `gc.prt` and are
-  correct, so `seqUtils.defaultCodonTable`/`codonTable` can be defined as
-  `getGeneticCode(1).codonTable`, deleting a 65-line literal (keep the
-  `codonTable` name, 11 non-test consumers). **Tried and backed out**:
-  `geneticCodes.ts` already imports `seqUtils.ts`, so defining `codonTable` from
-  `getGeneticCode(1)` makes a module-level const depend on a cycle — the exact
-  load-order failure the `tracks.ts` re-export just produced. `geneticCodes.test.ts`
-  already asserts the two tables are equal, so the drift risk is covered.
-  Three unrelated `shorten()`s. Five re-parsing `cssColorTo*` wrappers. (The `getFileName` copies are down to the
-  two that are not actually duplicates: `LocalFileChooser`'s shows the *full*
-  local path and returns `undefined` for "no file", and `plugins/wiggle`'s takes
-  a string.)
 - `getRed/getGreen/getBlue/getAlpha` (0xRRGGBBAA) and
   `abgrRed/abgrGreen/abgrBlue/abgrAlpha` (ABGR u32) are both
-  `(c: number) => number` exported from one barrel; every current call site is
-  correct, but the wrong pair silently swaps R and B with no type error. A
-  branded type or an `rgbaRed…` rename removes the footgun.
-- `products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts` is a
-  separate guesser table that has drifted: no bedGraph, `BlastTabularAdapter`,
-  `GWASAdapter`, `Ldmat`/`PlinkLD*`, `MCScanBlocksAdapter`,
-  `StarFusionAdapter`, `AllVsAll*PAFAdapter`, and it routes `.gtf.gz` to
-  `GtfAdapter` where the browser uses `GtfTabixAdapter`.
+  `(c: number) => number`; every call site is correct, but the wrong pair
+  silently swaps R and B. Both families now cross-reference each other in
+  comments. **A branded type was considered and rejected**: ABGR values are read
+  back out of `Uint32Array`s, where indexing yields `number`, so every read would
+  need the cast that defeats the brand. An `rgbaRed…` rename is still available
+  but touches ~200 call sites in the vendored `color-bits`, where upstream names
+  have sync value.
+- Three unrelated `shorten()`s. Five re-parsing `cssColorTo*` wrappers. (The
+  `getFileName` copies are down to the two that are not actually duplicates:
+  `LocalFileChooser`'s shows the *full* local path and returns `undefined` for
+  "no file", and `plugins/wiggle`'s takes a string.)
 
 ## Verified clean (do not re-investigate)
 
