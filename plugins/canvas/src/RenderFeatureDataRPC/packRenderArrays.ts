@@ -33,6 +33,24 @@ export interface ArrowData {
   flatbushIdx: number
 }
 
+// Whether a [start,end] span is in the visible window. Half-open for a real
+// span, but CLOSED at both ends for a degenerate one (start === end): those are
+// points, not spans — a CRISPR cut site or a motif cut tick, which the rect
+// shader widens to MIN_RECT_WIDTH_PX — and the half-open test rejects a point
+// sitting exactly on either boundary, so a cut landing on a displayed-region seam
+// silently never packed. Same reasoning as the arrow window below, which is a
+// point test for the same reason.
+function spanInWindow(
+  start: number,
+  end: number,
+  regionStart: number,
+  regionEnd: number,
+) {
+  return start === end
+    ? start >= regionStart && start <= regionEnd
+    : end > regionStart && start < regionEnd
+}
+
 // Filters a per-feature accumulator down to the visible bp window and packs
 // into the parallel typed arrays the GPU/Canvas2D renderers consume. Color
 // is already a packed RGBA32 u32 on the producer side — copied straight to
@@ -65,11 +83,11 @@ export function packRenderArrays(
   | 'arrowColors'
   | 'arrowFeatureIndices'
 > {
-  const visibleRects = rects.filter(
-    r => r.end > regionStart && r.start < regionEnd,
+  const visibleRects = rects.filter(r =>
+    spanInWindow(r.start, r.end, regionStart, regionEnd),
   )
-  const visibleLines = lines.filter(
-    l => l.end > regionStart && l.start < regionEnd,
+  const visibleLines = lines.filter(l =>
+    spanInWindow(l.start, l.end, regionStart, regionEnd),
   )
   // Arrows are points, so the window test is closed at both ends to match the
   // rects' half-open overlap test. An exclusive upper bound dropped the arrow of

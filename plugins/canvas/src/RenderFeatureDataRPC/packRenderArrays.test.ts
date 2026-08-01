@@ -66,3 +66,28 @@ test('rect/line use half-open spans; arrows keep both endpoints', () => {
 
   expect(Array.from(packed.arrowXs)).toEqual([100, 150, 199, 200])
 })
+
+// A zero-width rect is a point, not a span: a CRISPR cut site or a motif cut
+// tick, which the rect shader widens to MIN_RECT_WIDTH_PX. Under the half-open
+// span test one landing exactly on a boundary satisfied neither `end > start` nor
+// `start < end`, so a cut sitting on a displayed-region seam silently never
+// packed — the same failure the arrow window above already accounts for.
+test('zero-width rects keep both endpoints, like arrows', () => {
+  const packed = packRenderArrays(
+    [
+      rect(99, 99), // before -> excluded
+      rect(100, 100), // at regionStart -> included
+      rect(150, 150), // inside -> included
+      rect(200, 200), // at regionEnd -> included
+      rect(201, 201), // after -> excluded
+    ],
+    [],
+    [],
+    100,
+    200,
+  )
+
+  expect(Array.from(packed.rectPositions)).toEqual([
+    100, 100, 150, 150, 200, 200,
+  ])
+})
