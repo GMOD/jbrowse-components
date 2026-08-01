@@ -1,4 +1,4 @@
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import corePlugins from '../corePlugins.ts'
@@ -7,7 +7,7 @@ import RootModel from './rootModel.ts'
 
 import type { WebSessionModel } from '../sessionModel/index.ts'
 import type Plugin from '@jbrowse/core/Plugin'
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export function createTestSession(args?: {
   adminMode?: boolean

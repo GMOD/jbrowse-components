@@ -1,62 +1,59 @@
 import ReExports from './ReExports/index.ts'
+import {
+  isCJSPluginDefinition,
+  isESMPluginDefinition,
+  isUMDPluginDefinition,
+  pluginDescriptionString,
+} from './pluginDefinitions.ts'
 import { isElectron } from './util/index.ts'
 
 import type { PluginConstructor } from './Plugin.ts'
+import type {
+  CJSPluginDefinition,
+  ESMPluginDefinition,
+  LegacyUMDPluginDefinition,
+  PluginDefinition,
+  UMDPluginDefinition,
+} from './pluginDefinitions.ts'
 
-export interface UMDLocPluginDefinition {
-  umdLoc: {
-    uri: string
-    baseUri?: string
+/**
+ * A definition names exactly one loader. More than one is malformed — no real
+ * config declares a plugin twice — and it is the shape that lets "the url we
+ * vetted" and "the url we run" drift apart, so refuse it rather than pick a
+ * winner. That keeps them the same string by construction, instead of by every
+ * url-based inspection of a definition remembering to match loadPlugin's order.
+ */
+function assertSingleKind(def: PluginDefinition) {
+  const kinds = [
+    isCJSPluginDefinition(def) ? 'CJS' : undefined,
+    isESMPluginDefinition(def) ? 'ESM' : undefined,
+    isUMDPluginDefinition(def) ? 'UMD' : undefined,
+  ].filter(kind => kind !== undefined)
+  if (kinds.length > 1) {
+    throw new Error(
+      `Plugin definition names more than one plugin type (${kinds.join(', ')}), refusing to load: ${JSON.stringify(def)}`,
+    )
   }
-  name: string
-  integrity?: string
 }
 
-export interface UMDUrlPluginDefinition {
-  umdUrl: string
-  name: string
-  integrity?: string
+// What a definition *is* — its types, guards, url/name accessors, and
+// same-plugin comparison — lives in pluginDefinitions.ts, which stays free of
+// the ReExports graph this module pulls in. Import from there to inspect a
+// definition; import here to run one.
+
+export interface PluginRecord {
+  plugin: PluginConstructor
+  definition: PluginDefinition
 }
 
-export interface LegacyUMDPluginDefinition {
-  url: string
-  name: string
-  integrity?: string
+export interface LoadedPlugin {
+  default: PluginConstructor
 }
 
-type UMDPluginDefinition = UMDLocPluginDefinition | UMDUrlPluginDefinition
-
-export function isUMDPluginDefinition(
-  def: PluginDefinition,
-): def is UMDPluginDefinition | LegacyUMDPluginDefinition {
-  return 'umdUrl' in def || 'url' in def || 'umdLoc' in def
-}
-
-export interface ESMLocPluginDefinition {
-  esmLoc: {
-    uri: string
-    baseUri?: string
-  }
-  name?: string
-}
-export interface ESMUrlPluginDefinition {
-  esmUrl: string
-  name?: string
-}
-
-export type ESMPluginDefinition =
-  | ESMLocPluginDefinition
-  | ESMUrlPluginDefinition
-
-export function isESMPluginDefinition(
-  def: PluginDefinition,
-): def is ESMPluginDefinition {
-  return 'esmUrl' in def || 'esmLoc' in def
-}
-
-export interface CJSPluginDefinition {
-  cjsUrl: string
-  name?: string
+/** A definition that could not be loaded, kept with the reason it failed */
+export interface PluginLoadFailure {
+  definition: PluginDefinition
+  error: unknown
 }
 
 function promisifiedLoadScript(src: string, integrity?: string) {
@@ -99,115 +96,6 @@ async function loadScript(scriptUrl: string, integrity?: string) {
   } else {
     throw new Error(
       'cannot figure out how to load external JS scripts in this environment',
-    )
-  }
-}
-
-export function isCJSPluginDefinition(
-  def: PluginDefinition,
-): def is CJSPluginDefinition {
-  return 'cjsUrl' in def
-}
-
-export type PluginDefinition =
-  | UMDUrlPluginDefinition
-  | UMDLocPluginDefinition
-  | LegacyUMDPluginDefinition
-  | ESMLocPluginDefinition
-  | ESMUrlPluginDefinition
-  | CJSPluginDefinition
-
-// Plugins that used to ship as external config `plugins[]` entries but are now
-// bundled into the jbrowse-web/desktop core build. Remote configs on jbrowse.org
-// still list them, so we drop those entries before loading: core already
-// registers the same elements (and wins, since core plugins register first), and
-// skipping the external copy avoids a redundant network fetch plus a flurry of
-// "already registered" console warnings. Matched on the config-level `name`
-// (the external plugin's UMD-global name, e.g. "MafViewer"/"GWAS"), not the core
-// class name. Apply only in products whose core bundle actually vendors these —
-// not globally — so CLI indexing, @jbrowse/img, and react-circular (which don't
-// bundle them) still load the external plugin. Also drives the plugin store,
-// which hides these so a user can't install a colliding second copy.
-export const vendoredPluginNames = new Set(['MafViewer', 'GWAS'])
-
-/**
- * `alsoVendored` is for a plugin one product bundles and another does not, which
- * the shared set above cannot express: Desktop vendors Blat (so a hub config
- * naming it must be dropped, or its menu items are appended twice — once by the
- * core copy, once by the downloaded one), while Web does not and has to load
- * exactly that entry to have BLAT at all.
- */
-export function dropVendoredPlugins(
-  defs: PluginDefinition[],
-  alsoVendored: Iterable<string> = [],
-) {
-  const vendored = new Set([...vendoredPluginNames, ...alsoVendored])
-  return defs.filter(d => !(isUMDPluginDefinition(d) && vendored.has(d.name)))
-}
-
-export interface PluginRecord {
-  plugin: PluginConstructor
-  definition: PluginDefinition
-}
-
-export interface LoadedPlugin {
-  default: PluginConstructor
-}
-
-/** A definition that could not be loaded, kept with the reason it failed */
-export interface PluginLoadFailure {
-  definition: PluginDefinition
-  error: unknown
-}
-
-// The two functions below describe a definition by picking the one url it will
-// be loaded from, so both dispatch in loadPlugin's order — CJS, then ESM, then
-// UMD. Keep them in step with it: they are what the plugin trust gate
-// (checkPlugins) reads and what the untrusted-plugin prompt shows, so an order
-// that disagrees with the loader's vets one url and executes another. They once
-// did disagree, and a definition carrying both `umdUrl` and `cjsUrl` was
-// approved on its jbrowse.org umd url while loadPlugin require()d its cjs one.
-// assertSingleKind now rejects such a definition outright; this order is the
-// second half of that guarantee, since the gate runs before the loader does.
-export function pluginDescriptionString(d: PluginDefinition) {
-  if (isCJSPluginDefinition(d)) {
-    return `CJS plugin ${d.cjsUrl}`
-  } else if (isESMPluginDefinition(d)) {
-    return `ESM plugin ${'esmUrl' in d ? d.esmUrl : d.esmLoc.uri}`
-  } else if (isUMDPluginDefinition(d)) {
-    return `UMD plugin ${d.name}`
-  } else {
-    return 'unknown plugin'
-  }
-}
-export function pluginUrl(d: PluginDefinition) {
-  if (isCJSPluginDefinition(d)) {
-    return d.cjsUrl
-  } else if (isESMPluginDefinition(d)) {
-    return 'esmUrl' in d ? d.esmUrl : d.esmLoc.uri
-  } else if (isUMDPluginDefinition(d)) {
-    return 'umdLoc' in d ? d.umdLoc.uri : 'umdUrl' in d ? d.umdUrl : d.url
-  } else {
-    return 'unknown url'
-  }
-}
-
-/**
- * A definition names exactly one loader. More than one is malformed — no real
- * config declares a plugin twice — and it is the shape that lets "the url we
- * vetted" and "the url we run" drift apart, so refuse it rather than pick a
- * winner. That keeps them the same string by construction, instead of by every
- * url-based inspection of a definition remembering to match loadPlugin's order.
- */
-function assertSingleKind(def: PluginDefinition) {
-  const kinds = [
-    isCJSPluginDefinition(def) ? 'CJS' : undefined,
-    isESMPluginDefinition(def) ? 'ESM' : undefined,
-    isUMDPluginDefinition(def) ? 'UMD' : undefined,
-  ].filter(kind => kind !== undefined)
-  if (kinds.length > 1) {
-    throw new Error(
-      `Plugin definition names more than one plugin type (${kinds.join(', ')}), refusing to load: ${JSON.stringify(def)}`,
     )
   }
 }
@@ -298,8 +186,7 @@ export default class PluginLoader {
     )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
-      | { default: PluginConstructor }
-      | undefined
+      { default: PluginConstructor } | undefined
     if (!plugin) {
       throw new Error(
         `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,

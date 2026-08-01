@@ -1,45 +1,17 @@
 import { useState } from 'react'
 
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
-import { ExternalLink } from '@jbrowse/core/ui'
+import PluginStoreCard from '@jbrowse/core/ui/PluginStoreCard'
 import {
   getEnv,
   getSession,
-  installedVersionFromUrl,
+  isPluginInstalled,
   resolvePlugin,
 } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
-import AddIcon from '@mui/icons-material/Add'
-import CheckIcon from '@mui/icons-material/Check'
-import PersonIcon from '@mui/icons-material/Person'
-import {
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Typography,
-} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { PluginStoreModel } from '../model.ts'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
-
-const useStyles = makeStyles()({
-  card: {
-    margin: '0.5em',
-  },
-  bold: {
-    fontWeight: 600,
-  },
-  dataField: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  mr: {
-    marginRight: '0.5em',
-  },
-})
 
 const PluginCard = observer(function PluginCard({
   plugin,
@@ -48,7 +20,6 @@ const PluginCard = observer(function PluginCard({
   plugin: JBrowsePlugin
   model: PluginStoreModel
 }) {
-  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { runtimePluginDefinitions } = pluginManager
@@ -58,71 +29,34 @@ const PluginCard = observer(function PluginCard({
   // A store entry whose urls are all per-version has no definition at all once
   // no version matched — the card renders, the Install button just stays off.
   const resolved = resolvePlugin(plugin, session.version)
-  const { definition } = resolved
-  const installDef =
-    resolved.compatible && definition !== undefined
-      ? { ...definition, name: plugin.name }
-      : undefined
 
-  // installed-check is by packageName, not the resolved url: once a newer
-  // compatible version is published the resolved url changes, and a url match
-  // would flip the card back to "Install" and let the user add a second copy of
-  // the same plugin (same UMD global name) alongside the one already installed,
-  // which fails to load with duplicate pluggable-element registrations. Moving
-  // to a newer version is handled separately in the installed-plugins list.
-  const { packageName } = plugin
-  const isInstalled = runtimePluginDefinitions.some(d =>
-    packageName === undefined
-      ? installDef !== undefined && pluginUrl(d) === pluginUrl(installDef)
-      : installedVersionFromUrl(pluginUrl(d), packageName) !== undefined,
+  const installed = isPluginInstalled(
+    plugin,
+    resolved,
+    runtimePluginDefinitions,
   )
   const [tempDisabled, setTempDisabled] = useState(false)
   const { adminMode, jbrowse } = session
-  const { authors, description } = plugin
   return (
-    <Card variant="outlined" className={classes.card}>
-      <CardContent>
-        <Typography variant="h5">
-          <ExternalLink href={`${plugin.location}#readme`}>
-            {plugin.name}
-            {resolved.pluginVersion ? ` (v${resolved.pluginVersion})` : ''}
-          </ExternalLink>
-        </Typography>
-        <div className={classes.dataField}>
-          <PersonIcon className={classes.mr} />
-          <Typography>{authors.join(', ')}</Typography>
-        </div>
-        <Typography className={classes.bold}>Description:</Typography>
-        <Typography>{description}</Typography>
-        {resolved.compatible ? null : (
-          <Typography color="error">
-            Not compatible with this version of JBrowse (requires JBrowse{' '}
-            {resolved.supportedRanges.join(' or ')})
-          </Typography>
-        )}
-      </CardContent>
-      <CardActions>
-        <Button
-          variant="contained"
-          disabled={isInstalled || tempDisabled || installDef === undefined}
-          startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
-          onClick={() => {
-            if (installDef !== undefined) {
-              if (adminMode) {
-                jbrowse.addPlugin(installDef)
-              } else if (isSessionWithSessionPlugins(session)) {
-                session.addSessionPlugin(installDef)
-              } else {
-                session.notify('No way to install plugin')
-              }
-              setTempDisabled(true)
-            }
-          }}
-        >
-          {isInstalled ? 'Installed' : 'Install'}
-        </Button>
-      </CardActions>
-    </Card>
+    <PluginStoreCard
+      plugin={plugin}
+      resolved={resolved}
+      installed={installed}
+      disabled={tempDisabled}
+      onInstall={definition => {
+        // the store's name (the UMD global) is what the definition must be
+        // installed under, not the runtime Plugin class name
+        const installDef = { ...definition, name: plugin.name }
+        if (adminMode) {
+          jbrowse.addPlugin(installDef)
+        } else if (isSessionWithSessionPlugins(session)) {
+          session.addSessionPlugin(installDef)
+        } else {
+          session.notify('No way to install plugin')
+        }
+        setTempDisabled(true)
+      }}
+    />
   )
 })
 

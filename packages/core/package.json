@@ -64,6 +64,7 @@
     "./pluggableElementTypes/models/HighlightsMixin": "./src/pluggableElementTypes/models/HighlightsMixin.ts",
     "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
+    "./pluginDefinitions": "./src/pluginDefinitions.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
     "./svg/SvgExport": "./src/svg/SvgExport.tsx",
@@ -71,6 +72,7 @@
     "./svg/svgReady": "./src/svg/svgReady.ts",
     "./svg/wrapSvgExport": "./src/svg/wrapSvgExport.tsx",
     "./ui": "./src/ui/index.ts",
+    "./ui/AddCustomPluginDialog": "./src/ui/AddCustomPluginDialog.tsx",
     "./ui/AddGenomePane": "./src/ui/AddGenomePane.tsx",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
@@ -89,6 +91,7 @@
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
+    "./ui/PluginStoreCard": "./src/ui/PluginStoreCard.tsx",
     "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
@@ -164,6 +167,7 @@
     "./util/unzip": "./src/util/unzip.ts",
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useFetch": "./src/util/useFetch.ts",
+    "./util/useFetchPlugins": "./src/util/useFetchPlugins.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
@@ -393,6 +397,10 @@
         "types": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
         "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js"
       },
+      "./pluginDefinitions": {
+        "types": "./esm/pluginDefinitions.d.ts",
+        "import": "./esm/pluginDefinitions.js"
+      },
       "./rpc/RpcManager": {
         "types": "./esm/rpc/RpcManager.d.ts",
         "import": "./esm/rpc/RpcManager.js"
@@ -420,6 +428,10 @@
       "./ui": {
         "types": "./esm/ui/index.d.ts",
         "import": "./esm/ui/index.js"
+      },
+      "./ui/AddCustomPluginDialog": {
+        "types": "./esm/ui/AddCustomPluginDialog.d.ts",
+        "import": "./esm/ui/AddCustomPluginDialog.js"
       },
       "./ui/AddGenomePane": {
         "types": "./esm/ui/AddGenomePane.d.ts",
@@ -492,6 +504,10 @@
       "./ui/Menu": {
         "types": "./esm/ui/Menu.d.ts",
         "import": "./esm/ui/Menu.js"
+      },
+      "./ui/PluginStoreCard": {
+        "types": "./esm/ui/PluginStoreCard.d.ts",
+        "import": "./esm/ui/PluginStoreCard.js"
       },
       "./ui/PopoverPicker": {
         "types": "./esm/ui/PopoverPicker.d.ts",
@@ -793,6 +809,10 @@
         "types": "./esm/util/useFetch.d.ts",
         "import": "./esm/util/useFetch.js"
       },
+      "./util/useFetchPlugins": {
+        "types": "./esm/util/useFetchPlugins.d.ts",
+        "import": "./esm/util/useFetchPlugins.js"
+      },
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
@@ -944,6 +964,9 @@
         "pluggableElementTypes/renderers/util/serializableFilterChain": [
           "esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts"
         ],
+        "pluginDefinitions": [
+          "esm/pluginDefinitions.d.ts"
+        ],
         "rpc/RpcManager": [
           "esm/rpc/RpcManager.d.ts"
         ],
@@ -964,6 +987,9 @@
         ],
         "ui": [
           "esm/ui/index.d.ts"
+        ],
+        "ui/AddCustomPluginDialog": [
+          "esm/ui/AddCustomPluginDialog.d.ts"
         ],
         "ui/AddGenomePane": [
           "esm/ui/AddGenomePane.d.ts"
@@ -1018,6 +1044,9 @@
         ],
         "ui/Menu": [
           "esm/ui/Menu.d.ts"
+        ],
+        "ui/PluginStoreCard": [
+          "esm/ui/PluginStoreCard.d.ts"
         ],
         "ui/PopoverPicker": [
           "esm/ui/PopoverPicker.d.ts"
@@ -1243,6 +1272,9 @@
         ],
         "util/useFetch": [
           "esm/util/useFetch.d.ts"
+        ],
+        "util/useFetchPlugins": [
+          "esm/util/useFetchPlugins.d.ts"
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"

@@ -33,7 +33,7 @@ import { autorun } from 'mobx'
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
 import type { AbstractWebRootModel } from '../WebRootModel.ts'
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'

@@ -3,7 +3,7 @@ import {
   assertPluginsTrusted,
 } from './assertPluginsTrusted.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 const untrusted: PluginDefinition[] = [
   { name: 'Evil', umdUrl: 'https://evil.example/p.js' },

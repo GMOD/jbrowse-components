@@ -1,8 +1,12 @@
-import PluginLoader, {
+import PluginLoader from '@jbrowse/core/PluginLoader'
+import {
+  dedupePlugins,
   dropVendoredPlugins,
+  pluginDefinitionMetadata,
   pluginDescriptionString,
   pluginUrl,
-} from '@jbrowse/core/PluginLoader'
+  samePlugin,
+} from '@jbrowse/core/pluginDefinitions'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { dedupe } from '@jbrowse/core/util'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
@@ -15,17 +19,85 @@ import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
 import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 import { fetchConfig } from './fetchConfig.ts'
+import {
+  getGlobalPlugins,
+  markGlobalPluginLoadSucceeded,
+} from './globalPlugins.ts'
 import { launchFromLink } from './launchFromLink.ts'
 import { newSessionName, resolveSessionName } from './sessionName.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfig } from './types.ts'
+import type {
+  PluginLoadFailure,
+  PluginRecord,
+} from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
 
 const { ipcRenderer } = window.require('electron')
+
+function makePluginLoader(definitions: PluginDefinition[]) {
+  return new PluginLoader(dropVendoredPlugins(definitions, DESKTOP_VENDORED), {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+    fetchCJS,
+  }).installGlobalReExports(window)
+}
+
+function pluginRecords(
+  runtimePlugins: PluginRecord[],
+  isGlobal: (definition: PluginDefinition) => boolean,
+) {
+  return [
+    ...corePlugins.map(P => ({
+      plugin: new P(),
+      metadata: {
+        isCore: true,
+      },
+    })),
+    ...runtimePlugins.map(({ plugin: P, definition }) => ({
+      plugin: new P(),
+      definition,
+      metadata: {
+        ...pluginDefinitionMetadata(definition),
+        // the in-session plugin store reads this to lock a global plugin: it
+        // is in every session's plugin list but in no session's config, so an
+        // uninstall there would filter a list it isn't in
+        isGlobal: isGlobal(definition),
+      },
+    })),
+  ]
+}
+
+export interface StartScreenPluginManager {
+  pluginManager: PluginManager
+  failures: PluginLoadFailure[]
+}
+
+// A manager built from the global plugins alone, so the start screen — which
+// has no session, and therefore no session plugin manager — can still fire the
+// extension points a global plugin contributes to.
+export async function createStartScreenPluginManager(): Promise<StartScreenPluginManager> {
+  const pluginLoader = makePluginLoader(await getGlobalPlugins())
+  // settled for the same reason the session loader is: one unloadable global
+  // plugin must not cost the user their start screen
+  const { records, failures } = await pluginLoader.loadSettled(
+    window.location.href,
+  )
+  const pluginManager = new PluginManager(pluginRecords(records, () => true))
+  pluginManager.createPluggableElements()
+  // no root model to configure against, which every plugin's configure()
+  // already guards for (isAbstractMenuManager), but extension points a plugin
+  // registers there have to be in place before the start screen renders
+  pluginManager.configure()
+  // whatever the global plugins were going to do to this launch, they have now
+  // done it, so the next one need not suspect them
+  markGlobalPluginLoadSucceeded()
+  return { pluginManager, failures }
+}
 
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
@@ -70,39 +142,34 @@ export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
-  const pluginLoader = new PluginLoader(
-    dropVendoredPlugins(configSnapshot.plugins ?? [], DESKTOP_VENDORED),
-    {
-      fetchESM: url => import(/* webpackIgnore:true */ url),
-      fetchCJS,
-    },
-  )
-  pluginLoader.installGlobalReExports(window)
+  // Global plugins load in every session, so they join the config's own list
+  // before the loader runs. The config's entry wins a name/url collision (it is
+  // version-pinned to what this session was built against), which is what
+  // dedupePlugins keeping the first occurrence means here.
+  const globalPlugins = await getGlobalPlugins()
+  const merged = dedupePlugins([
+    ...(configSnapshot.plugins ?? []),
+    ...globalPlugins,
+  ])
+  // which entries the global list, rather than the config, is responsible for.
+  // Identity works here (dedupePlugins keeps the objects it was given) but not
+  // downstream: PluginLoader deep-clones its definitions, so the loaded records
+  // are matched back by samePlugin below. A global plugin the config also
+  // declares isn't in here — dedupe kept the config's own entry, which the
+  // session can remove for itself.
+  const globalOnly = merged.filter(d => globalPlugins.includes(d))
+  const pluginLoader = makePluginLoader(merged)
   // Settled, not all-or-nothing: Desktop opens remote hub configs whose plugin
   // urls it has no control over, and one that 404s or needs a newer host than
   // this install used to leave the user with a dead app instead of a session
   // missing one feature. Reported below, once there is a session to report on.
   const { records: runtimePlugins, failures: pluginLoadFailures } =
     await pluginLoader.loadSettled(window.location.href)
-  const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({
-      plugin: new P(),
-      metadata: {
-        isCore: true,
-      },
-    })),
-    ...runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        url: 'url' in definition ? definition.url : undefined,
-        esmUrl: 'esmUrl' in definition ? definition.esmUrl : undefined,
-        umdUrl: 'umdUrl' in definition ? definition.umdUrl : undefined,
-        cjsUrl: 'cjsUrl' in definition ? definition.cjsUrl : undefined,
-      },
-    })),
-  ])
+  const pluginManager = new PluginManager(
+    pluginRecords(runtimePlugins, d => globalOnly.some(g => samePlugin(g, d))),
+  )
   pluginManager.createPluggableElements()
+  markGlobalPluginLoadSucceeded()
 
   const JBrowseRootModel = JBrowseRootModelFactory({
     pluginManager,

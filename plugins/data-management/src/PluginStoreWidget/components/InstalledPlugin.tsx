@@ -1,6 +1,6 @@
 import { lazy, useState } from 'react'
 
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   getEnv,
   getPluginUpdate,
@@ -24,7 +24,7 @@ import { observer } from 'mobx-react'
 import { isSessionPlugin } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { PluginUpdate } from '@jbrowse/core/util'
 import type { BasePlugin, JBrowsePlugin } from '@jbrowse/core/util/types'
 
@@ -40,13 +40,10 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function LockedPluginIconButton() {
+function LockedPluginIconButton({ title }: { title: string }) {
   const { classes } = useStyles()
   return (
-    <Tooltip
-      className={classes.iconMargin}
-      title="This plugin was installed by an administrator, you cannot remove it."
-    >
+    <Tooltip className={classes.iconMargin} title={title}>
       <span>
         <IconButton disabled>
           <LockIcon />
@@ -159,7 +156,11 @@ const InstalledPlugin = observer(function InstalledPlugin({
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { adminMode } = session
-  const updatable = adminMode || isSessionPlugin(plugin, session)
+  // a global plugin (Desktop) is in every session's plugin list but in no
+  // session's config, so removing it here would filter a list it isn't in and
+  // then ask for a reload that brings it straight back
+  const isGlobal = pluginManager.pluginMetadata[plugin.name]?.isGlobal
+  const updatable = !isGlobal && (adminMode || isSessionPlugin(plugin, session))
 
   // the install url is recorded in the plugin metadata at load time; the matching
   // runtime definition is the concrete, version-pinned thing we remove/replace
@@ -186,7 +187,13 @@ const InstalledPlugin = observer(function InstalledPlugin({
           definition={definition}
         />
       ) : (
-        <LockedPluginIconButton />
+        <LockedPluginIconButton
+          title={
+            isGlobal
+              ? 'This plugin is installed globally, remove it from the start screen’s "Global plugins" dialog.'
+              : 'This plugin was installed by an administrator, you cannot remove it.'
+          }
+        />
       )}
       <Typography className={classes.name}>
         {/* prefer the store's display name (the UMD global, e.g. "GWAS") over

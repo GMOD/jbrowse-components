@@ -5,7 +5,8 @@ import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { RpcStatus } from '@jbrowse/core/util'
 
 declare global {
@@ -42,7 +43,6 @@ async function getPluginManager(
   corePlugins: PluginConstructor[],
   opts: { fetchESM?: (url: string) => Promise<LoadedPlugin> },
 ) {
-  // Load runtime plugins
   const config = await receiveConfiguration()
   // this realm formats its own strings — a jexl `mouseover` slot renders a
   // tooltip against the full feature here rather than shipping it back — so it

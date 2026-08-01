@@ -1,27 +1,9 @@
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
-import {
-  fetchJson,
-  getEnv,
-  isSessionWithSessionPlugins,
-} from '@jbrowse/core/util'
-import { useFetch } from '@jbrowse/core/util/useFetch'
+import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { getEnv, isSessionWithSessionPlugins } from '@jbrowse/core/util'
 
-import type {
-  AbstractSessionModel,
-  BasePlugin,
-  JBrowsePlugin,
-} from '@jbrowse/core/util/types'
+import type { AbstractSessionModel, BasePlugin } from '@jbrowse/core/util/types'
 
-export function useFetchPlugins() {
-  // v2 manifest adds per-version JBrowse compatibility ranges + integrity hashes;
-  // the v1 plugins.json remains served for older clients that predate this.
-  const { data, error } = useFetch('jbrowse-plugin-store-v2', () =>
-    fetchJson<{ plugins: JBrowsePlugin[] }>(
-      'https://jbrowse.org/plugin-store/v2/plugins.json',
-    ),
-  )
-  return { plugins: data?.plugins, error }
-}
+export { useFetchPlugins } from '@jbrowse/core/util/useFetchPlugins'
 
 export function isSessionPlugin(
   plugin: BasePlugin,

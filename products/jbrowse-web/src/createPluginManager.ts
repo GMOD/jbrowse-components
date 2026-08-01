@@ -1,5 +1,9 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
-import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
+import { pluginDefinitionMetadata } from '@jbrowse/core/pluginDefinitions'
+import {
+  pluginDescriptionString,
+  pluginUrl,
+} from '@jbrowse/core/pluginDefinitions'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
@@ -40,7 +44,7 @@ function asPluginRecord({ plugin: P, definition }: PluginRecord) {
   return {
     plugin: new P(),
     definition,
-    metadata: { url: pluginUrl(definition) },
+    metadata: pluginDefinitionMetadata(definition),
   }
 }
 

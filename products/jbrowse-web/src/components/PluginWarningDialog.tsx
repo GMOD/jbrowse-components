@@ -1,10 +1,13 @@
 import { useState } from 'react'
 
-import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
+import {
+  pluginDescriptionString,
+  pluginUrl,
+} from '@jbrowse/core/pluginDefinitions'
 import { ConfirmDialog, LabeledCheckbox } from '@jbrowse/core/ui'
 import { Alert, Button } from '@mui/material'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 const text = {
   config: {

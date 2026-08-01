@@ -27,6 +27,8 @@ export const INVOKABLE_CHANNELS = [
   'getQuickstart',
   'deleteQuickstart',
   'renameQuickstart',
+  'getGlobalPlugins',
+  'setGlobalPlugins',
   'openAuthWindow',
   'confirmUntrustedPlugins',
   'openBlatChallenge',

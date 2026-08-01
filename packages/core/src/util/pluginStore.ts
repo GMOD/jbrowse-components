@@ -1,6 +1,8 @@
 import { compareVersions, satisfies } from 'compare-versions'
 
-import type { PluginDefinition } from '../PluginLoader.ts'
+import { pluginUrl, samePlugin } from '../pluginDefinitions.ts'
+
+import type { PluginDefinition } from '../pluginDefinitions.ts'
 import type { JBrowsePlugin, JBrowsePluginVersion } from './types/index.ts'
 
 // The url-bearing fields shared by a JBrowsePlugin and a JBrowsePluginVersion.
@@ -133,6 +135,30 @@ export function installedVersionFromUrl(
     }
   }
   return version
+}
+
+/**
+ * Whether a store entry is already among `installed`.
+ *
+ * Matched by packageName rather than by the resolved url wherever the store
+ * publishes one: once a newer compatible version appears the resolved url
+ * changes, and a url match would report "not installed" and let the user add a
+ * second copy of the same plugin (same UMD global name) alongside the one
+ * already there, which then fails to load with duplicate pluggable-element
+ * registrations. Moving to a newer version is a separate, explicit action.
+ */
+export function isPluginInstalled(
+  plugin: JBrowsePlugin,
+  resolved: ResolvedPlugin,
+  installed: PluginDefinition[],
+) {
+  const { packageName } = plugin
+  const { definition } = resolved
+  return installed.some(d =>
+    packageName === undefined
+      ? definition !== undefined && samePlugin(d, definition)
+      : installedVersionFromUrl(pluginUrl(d), packageName) !== undefined,
+  )
 }
 
 // Given the store entry for an already-installed plugin and the version it is

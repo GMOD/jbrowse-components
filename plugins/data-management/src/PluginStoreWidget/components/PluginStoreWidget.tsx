@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { vendoredPluginNames } from '@jbrowse/core/PluginLoader'
+import { vendoredPluginNames } from '@jbrowse/core/pluginDefinitions'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'

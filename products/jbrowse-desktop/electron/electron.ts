@@ -9,6 +9,7 @@ import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
 import { registerBlatHandlers } from './ipc/blatHandlers.ts'
 import { registerFileHandlers } from './ipc/fileHandlers.ts'
+import { registerGlobalPluginHandlers } from './ipc/globalPluginHandlers.ts'
 import { registerPluginHandlers } from './ipc/pluginHandlers.ts'
 import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
@@ -239,6 +240,7 @@ function runApp() {
       registerSessionHandlers(paths, () => wm.current)
       registerQuickstartHandlers(paths)
       registerFileHandlers(paths)
+      registerGlobalPluginHandlers(paths)
       registerAuthHandlers()
       registerBlatHandlers()
       registerPluginHandlers()

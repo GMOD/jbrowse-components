@@ -2,11 +2,11 @@ import {
   dropVendoredPlugins,
   pluginDescriptionString,
   pluginUrl,
-} from '@jbrowse/core/PluginLoader'
+} from '@jbrowse/core/pluginDefinitions'
 
 import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export class UntrustedPluginsError extends Error {
   constructor() {

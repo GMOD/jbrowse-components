@@ -52,6 +52,10 @@ export interface IpcChannels {
   getQuickstart: { args: [name: string]; return: unknown }
   deleteQuickstart: { args: [name: string]; return: void }
   renameQuickstart: { args: [oldName: string, newName: string]; return: void }
+  // plugins the user installs for every session, merged into each config's own
+  // plugin list at load time
+  getGlobalPlugins: { args: []; return: unknown[] }
+  setGlobalPlugins: { args: [plugins: unknown[]]; return: void }
   openAuthWindow: {
     args: [params: AuthWindowParams]
     return: string | undefined

@@ -1,4 +1,5 @@
-import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
+import PluginLoader from '@jbrowse/core/PluginLoader'
+import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 
