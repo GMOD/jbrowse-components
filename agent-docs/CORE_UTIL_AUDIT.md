@@ -2,10 +2,44 @@
 
 Audit of `packages/core/src/util/` (2026-07-31), six parallel read-only passes
 over disjoint subsets. Everything below was verified by reading the code and
-grepping call sites; each item says whether it is reachable today. Items marked
-**FIXED** landed in this pass, the rest are open.
+grepping call sites; each item says whether it is reachable today. No reachable
+bugs are left open — what remains is latent/typing, dead code, and structural.
 
-## Fixed in this pass
+## Fixed in the second pass (2026-07-31)
+
+Every item that was under "Open: reachable bugs" landed, with tests:
+
+- `assemblyConfigUtils.getFilename` deleted; `tracks.getFileName` moved to its
+  own `getFileName.ts` (dependency-free, so the pure form helpers can use it
+  without dragging in MST) and re-exported from `tracks.ts`. Its extension table
+  now shares three named constants with the sequence plugin's guessers, so
+  `.fas`, `.mfa`, `.FA` and `.fa.bgz` place. `LocalFileChooser`'s and
+  `plugins/wiggle`'s copies were deliberately left: the first shows the *full*
+  local path and returns `undefined` for "no file", the second takes a string.
+- `addAndShowTrack` only shows the track when `addTrackConf` returned a conf.
+- `ObservableCreate` errors its subscriber with an abort error when the stop
+  token stops (it cannot interrupt `func`; a long synchronous body still needs
+  its own `checkStopToken` ticks).
+- `fetchAndMaybeUnzip` passes `opts.statusCallback` through instead of
+  defaulting it, restoring generic-filehandle2's `res.arrayBuffer()` path, and
+  bridges `opts.stopToken` to the read's signal.
+- `parseHex` validates; `parseCssColor`'s magenta sentinel is now reachable for
+  `#`-prefixed garbage.
+- `tabix.extractType` and `groupLinesByRef` no longer lose a line's last
+  character to a `-1` end offset. A tab-free line is skipped rather than
+  published through `getRefNames`.
+- `useFetch` seeds `isLoading` from the key, and `mutate` is synchronous (the
+  promise resolved before the refetch it scheduled, so awaiting it was a lie).
+  `GetSequenceDialog` now reads `isLoading` instead of hand-rolling it.
+  `RefNameInfoDialog`'s `refNames === undefined` stays — it is narrowing, not a
+  workaround.
+- the jexl `alpha`/`hsl`/`colorString` functions take and return CSS color
+  strings, so the published catalog examples work and compose.
+- `isAuthNeededException` checks only the name.
+- `markStopTokenStopped` deletes before re-setting, so the TTL sweep can't be
+  permanently short-circuited.
+
+## Fixed in the first pass
 
 - `numericUtils.ts toLocale` grouped separators from the end of the whole
   string, so any non-integer >= 1000 was corrupted (`2345.67` -> `"2,345,.67"`,
@@ -42,66 +76,6 @@ grepping call sites; each item says whether it is reachable today. Items marked
   38/40 hang on a `#b0b0b0` paper, 39/40 on `#a0a0a0`; best reachable ratio
   there is ~2.2. Latent only because default MUI papers are `#fff`/`#121212`,
   and `Ruler.tsx`'s `try/catch` cannot catch a spin.
-
-## Entangled with another agent's uncommitted work — resolve before committing
-
-A concurrent refactor extracting `packages/core/src/ui/useCopyToClipboard.ts`
-(untracked) was already in the worktree. These files hold both that refactor and
-my clipboard change, so they were deliberately left uncommitted:
-
-- `packages/core/src/ui/useCopyToClipboard.ts` (untracked) — `copy` made async;
-  the "copied" label now flashes only after the write lands.
-- `packages/core/src/ui/CopyToClipboardButton.tsx`,
-  `packages/core/src/BaseFeatureWidget/BaseFeatureDetail/Formatter.tsx` — `void`
-  added to the now-async `copy(...)` call.
-- `packages/core/src/ui/index.ts`, `CopyToClipboardButton.test.tsx` — not mine.
-
-## Open: reachable bugs
-
-- `assemblyConfigUtils.ts:266 getFilename` inspects only `uri`/`localPath`, so it
-  returns `''` for BlobLocation and FileHandleLocation. On jbrowse-web every
-  dropped file therefore lands in `unrecognized` and the warning reads
-  `Couldn't place: , ,`. `tracks.ts:391 getFileName` already handles all four
-  location types (and Windows backslashes) — delete this copy and use it. There
-  are four copies total (`LocalFileChooser.tsx:58`, `plugins/wiggle/util.ts:282`).
-  Its extension table has also drifted: `/\.(fa|fasta|fna)\.gz$/` vs. the
-  canonical `/\.(fa|fasta|fas|fna|mfa)(\.b?gz)?$/i`, so `.fas`, `.mfa`, `.FA` and
-  `.fa.bgz` all fail in the add-genome pane while loading fine everywhere else.
-  Same drift in `getAssemblyNameFromFilename`, `detectAdapterType`,
-  `classifyFilename`.
-- `addAndShowTrack.ts:17` calls `view?.showTrack(conf.trackId)` even when
-  `addTrackConf` returned `undefined` after notifying, producing a second
-  `Could not resolve identifier` snackbar. Needs `if (added)`. 7 call sites.
-- `rxjs.ts:14` — `ObservableCreate`'s `_stopToken` is discarded while its
-  docstring advertises "aborting support", and ~17 adapters pass `opts.stopToken`
-  into it, so cancellation looks wired at all of them and is not. Either delete
-  the parameter and the 17 call-site arguments, or make it unsubscribe.
-- `fetchAndMaybeUnzip.ts:14` — `statusCallback = () => {}` defeats
-  `downloadStatusReporter`'s no-progress fast path (pinned by
-  `progress.test.ts:315`), forcing every caller onto generic-filehandle2's manual
-  `getReader()` copy loop instead of `res.arrayBuffer()`. Pass
-  `opts.statusCallback` through instead. Same file: `opts.stopToken` is never
-  bridged to a signal, so a cancelled multi-GB GFF3/VCF/PAF whole-file load
-  downloads to completion (every indexed adapter does bridge it).
-- `color-bits/parse.ts:46 parseHex` never validates, so `parseCssColor`'s
-  magenta invalid-color sentinel is unreachable for anything starting with `#`:
-  `#zzzzzz` -> a plausible dark grey, `#ff` -> opaque black. A `>255` nibble
-  intermediate also overflows into the neighbouring channel.
-- `tabix.ts:52 extractType` — `line.slice(t2 + 1, t3)` with `t3 === -1` returns
-  the line minus its last character (`'ctgA\tsrc\tgene'` -> `'gen'`), which then
-  feeds redispatch classification in the GFF3/GTF tabix adapters.
-- `parseLineByLine.ts:33` — `line.slice(0, line.indexOf('\t'))` on a tab-free
-  line yields the line minus its last character as a phantom refName key.
-- `useFetch.ts:83` seeds `isLoading: false`, so the empty/resolved state paints
-  for one frame before the spinner; `RefNameInfoDialog.tsx:95` and
-  `GetSequenceDialog.tsx:82` already carry workarounds, `FileInfoPanel.tsx:47`
-  shows an empty attribute table. Seed from
-  `serializeKey(key) !== null && fetcher !== null`. Also `mutate` returns a
-  `Promise<void>` that resolves before any refetch, and
-  `RecentSessionsPanel.tsx:175` awaits it expecting revalidation.
-- `jexl.ts:145` — `alpha`/`hsl`/`colorString` are typed `(color: Colord)` but a
-  config `jexl:` string can only pass a string, so the published catalog example
-  `alpha('green', 0.5)` throws. Accept `string | Colord` and wrap in `colord()`.
 
 ## Open: latent / typing / contract
 
