@@ -142,8 +142,9 @@ the change did not land.
   `build/` copy is never consulted for it. The tell is a render that reproduces
   the pre-fix behaviour bit-for-bit; confirm by reading a marker off the model
   rather than by re-diffing images.
-- `products/jbrowse-web/build/test_data/` is a gitignored **copy** used for the
-  app's own config, and a pin bump does have to be copied there too.
+- The `build/test_data/` copy under `products/jbrowse-web` is gitignored, is
+  used for the app's own config, and a pin bump does have to be copied there
+  too.
 - The betabuild gate is not optional: it is what catches a bundle importing a
   host global that does not exist.
 
