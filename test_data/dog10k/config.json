@@ -188,6 +188,16 @@
       }
     },
     {
+      "type": "VariantTrack",
+      "trackId": "dog10k_cyp1a2_snvs_positional",
+      "name": "Dog10K SNVs at CYP1A2 (per position)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_cyp1a2_snvs.vcf.gz"
+      }
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "dog10k_cyp1a2_cn",
       "name": "CYP1A2 copy number (read depth, 5 kb windows)",

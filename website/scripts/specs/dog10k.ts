@@ -948,9 +948,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-cyp1a2-nonsense',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      // base-level around the stop codon: a SNV is one base wide however far you
-      // zoom out, so this is the only scale at which a per-sample call reads as
-      // a block rather than a tick
+      // base-level around the stop codon: a SNV is one base wide however far
+      // you zoom out, so this is the only scale at which a per-sample call
+      // reads as a block rather than a tick
       loc: 'chr30:38,261,590-38,261,690',
       // No view highlight on the codon, deliberately. It tints every track it
       // crosses, and over the genotype lane that washes the het/hom blues into
@@ -975,6 +975,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 60,
         },
+        // the same site as a plain variant lane, carrying the description a
+        // reader gets from any other variant track. Same filter as the matrix
+        // below, so the two lanes agree on which column is being described.
+        {
+          trackId: 'dog10k_cyp1a2_snvs_positional',
+          type: 'LinearVariantDisplay',
+          height: 60,
+          // no `jexl:` prefix, unlike the matrix below: this is a canvas
+          // display, whose jexlFilters slot takes bare expressions and adds the
+          // prefix itself (ensureJexlPrefix). Written with one, it parses
+          // `jexl:jexl:...` and the track errors.
+          jexlFilters: ["get(feature,'start') == 38261634"],
+        },
         {
           trackId: 'dog10k_cyp1a2_snvs',
           type: 'LinearMultiSampleVariantDisplay',
@@ -993,8 +1006,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 6000,
     // sequence + gene track plus all 39 sample rows and the genotype legend.
-    // 870 (pre-sequence-track) cut the last wolf row's block against the frame.
-    viewportHeight: 930,
+    // 870 (pre-sequence-track) cut the last wolf row's block against the frame;
+    // the per-position variant lane above the matrix adds its own 60.
+    viewportHeight: 1010,
     // The sequence track puts CGA and its Arg on screen, but three forward
     // frames are drawn and nothing says which is the coding one -- the CDS frame
     // is the bottom row (codons begin at positions == 1 mod 3 here, from the
