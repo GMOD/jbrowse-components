@@ -145,21 +145,40 @@ the change did not land.
 - The betabuild gate is not optional: it is what catches a bundle importing a
   host global that does not exist.
 
+## The two flaky launch-out specs: `closeMenusFirst` was a no-op
+
+`rgfa_launch_out_menu` and `rgfa_strain_launch` failed about one regen round in
+six, always on the second stage's readiness wait (`synteny_canvas_done` /
+`feature-name-clbK`) and never on a click. Those waits were already the right
+shape — a real result, 120s — so the fault was above them, in a click path that
+did nothing and did not say so.
+
+**Escape does not close a JBrowse cascade menu.** Measured on the live page:
+three presses with focus verifiably inside the list (`LI[menuitem]`, then
+`UL[menu]`) leave both levels and both modals standing, while one backdrop click
+takes the whole cascade down. `closeMenusFirst` was `Escape` plus a 300ms delay,
+so a stage that asked for a clean slate got the previous stage's menu. Its first
+action then clicked a control the backdrop covered, where `clickElement`'s
+covered-element fallback dispatches on the node anyway — so nothing errored, and
+what followed was two overlapping copies of the same menu with a `::-p-text()`
+match resolving to whichever it liked. The two specs that set that flag are the
+only two specs in the suite that set it, and they are the two that were flaky.
+
+It now clicks the backdrop of every modal that contains a menu, loops, and
+**throws if a menu is still open**. Both specs re-render byte-stable and pass
+`--check`; the committed figures were the lucky outcome and are now the only
+one.
+
+Two hypotheses were measured and killed on the way here, so nobody re-walks
+them: the cascade row is **not** still moving when puppeteer calls it visible
+(its box is identical across 458ms from the first sample), and the "below ~430px
+the synteny click stops launching anything" floor in that spec's comment is
+**not** a property of the click — opened fresh at that height it launches at
+430, 410 and 350. That floor is about a menu opened before the resize, which is
+what `closeMenusFirst` existed to handle and now actually does.
+
 ## Open
 
-- **The two launch-out specs, if they go flaky again.** `rgfa_launch_out_menu`
-  and `rgfa_strain_launch` failed one regen round of five and passed the other
-  four, always on the second stage's readiness wait
-  (`synteny_canvas_done` / `feature-name-clbK`) rather than on a click. Those
-  waits are already the right shape — a real result, 120s — so the suspect is
-  the click path above them. Stage one clicks the cascade parent, waits for the
-  child row's text, then delays 500ms; **stage two clicks the parent and the
-  child back to back**. `resolveTarget` does wait for the child to be visible,
-  but MUI's Grow transition is visible-and-still-moving, so the click lands at a
-  coordinate the row has left, nothing launches, and the wait below times out
-  looking like a fetch problem. Check that before anything else. The fix is not
-  a `delay` — that is the arbitrary timeout the website guide names as a red
-  flag — it is a settle condition on the menu itself.
 - **The amylase 94.2 kb arc is still a balloon enclosing nothing.** Readable now
   that it is dashed and labelled, so this is cosmetic. A force-layout equivalent
   of PangyPlot's `delLinkForce` was **considered and not attempted**: our force

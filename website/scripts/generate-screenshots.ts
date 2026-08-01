@@ -796,6 +796,59 @@ async function captureStages(
   }
 }
 
+// Dismiss every open menu, and prove it happened.
+//
+// This used to be `Escape` plus a 300ms delay, which is a **no-op** on a JBrowse
+// cascade: measured against `pangenome/rgfa_launch_out_menu`, three presses with
+// focus verifiably inside the list (`LI[menuitem]`, then `UL[menu]`) leave both
+// levels and both modals standing, while a single backdrop click takes the whole
+// cascade down at once. So a stage asking for a clean slate got the previous
+// stage's menu instead, and its first click landed on the backdrop covering the
+// control it named — where `clickElement`'s covered-element fallback dispatches
+// on the node anyway, so nothing errored. What followed was two overlapping
+// copies of the same menu and a `::-p-text()` match that resolved to whichever
+// one it liked. That is the coin flip behind `rgfa_launch_out_menu` and
+// `rgfa_strain_launch` failing about one regen round in six on the readiness
+// wait *below* their click path, with nothing launched and no click error to say
+// why — and those two are the only specs in the suite that set this flag.
+//
+// Only backdrops belonging to a modal that actually contains a menu are clicked,
+// so a dialog a spec deliberately opened is left alone. Looped because a cascade
+// can be more than two deep, and asserted at the end because a silent no-op here
+// is exactly the failure that cost the round: a stage that cannot reach a clean
+// slate should say so, not act on the old one.
+async function closeOpenMenus(page: Page, name: string) {
+  const clickMenuBackdrops = () =>
+    page.evaluate(() => {
+      let clicked = 0
+      for (const modal of document.querySelectorAll('.MuiModal-root')) {
+        const backdrop = modal.querySelector<HTMLElement>('.MuiBackdrop-root')
+        if (modal.querySelector('[role="menu"]') && backdrop) {
+          backdrop.click()
+          clicked++
+        }
+      }
+      return clicked
+    })
+  const openMenus = () =>
+    page.evaluate(
+      () =>
+        [...document.querySelectorAll('[role="menu"]')].filter(el => {
+          const r = el.getBoundingClientRect()
+          return r.width > 0 && r.height > 0
+        }).length,
+    )
+
+  for (let attempt = 0; attempt < 5 && (await openMenus()) > 0; attempt++) {
+    await clickMenuBackdrops()
+    await delay(200)
+  }
+  const left = await openMenus()
+  if (left > 0) {
+    throw new Error(`closeMenusFirst: ${left} menu(s) still open in ${name}`)
+  }
+}
+
 // Drive each stage and leave its frame in the matching stageFiles entry.
 async function captureEachStage(
   page: Page,
@@ -808,8 +861,7 @@ async function captureEachStage(
     // hit the layout they are captured against. Width is left alone — the
     // frames stack with `-append`.
     if (stage.closeMenusFirst) {
-      await page.keyboard.press('Escape')
-      await delay(300)
+      await closeOpenMenus(page, spec.name)
     }
     // drop the previous stage's annotation overlay before this stage acts on
     // the page, so its SVG callout text can't be matched by a ::-p-text() click
