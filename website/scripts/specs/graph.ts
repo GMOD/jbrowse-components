@@ -1440,6 +1440,54 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportHeight: 323,
     hideTooltip: true,
   },
+  // A collapsed repeat, which is a shape a linear reference cannot hold: pggb
+  // folds 908 bp inside K12's 16S rRNA gene (rrsB, chr:4,166,659-4,168,200)
+  // onto six segments that nine separate locations walk. Two apiece in Sakai,
+  // CFT073, NCTC86 and IAI39, one in K12. Not every rRNA copy in the five
+  // genomes — the bounded cut below returns the nine that reach this window,
+  // and the figure claims no more than that.
+  //
+  // The ribbons are what makes it readable rather than merely true: eight of
+  // the nine take the same side of the middle 1 bp bubble and CFT073's copy at
+  // 4,442,932 takes the other, which is a base that differs between two operon
+  // copies of one genome. Depth or node length would colour all six segments
+  // identically and say none of it.
+  //
+  // FORCE, and this is the one figure where force beats the anchored layouts
+  // rather than being their foil. Nine paths all anchor onto K12's single copy,
+  // so anchored draws every ribbon at one x; and with six well-separated nodes
+  // the edges are long, which is exactly the case the ribbon fan needs (it is
+  // confetti wherever pggb's nodes abut).
+  //
+  // Cut with `-d 500`, not the `-E` the other subgraphs use: `-E` follows the
+  // collapsed segments out to every copy in every genome and returns 32,353
+  // segments for this 500 bp window. The bounded walk is what keeps a repeat
+  // cuttable at all.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_collapsed_repeat',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'GraphGenomeView',
+          gfaLocation: { uri: `${DATA}/ecoli_pggb_rrna.gfa` },
+          layoutMode: 'force',
+          colorScheme: 'grey',
+          drawPaths: true,
+        },
+      ],
+    }),
+    // perf-stats rather than a row label: force draws no rows to label
+    readySelector: `body:has([data-testid="graph-path-legend"]) [data-testid="graph-perf-stats"]`,
+    readyTimeout: 90000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    // the force pane runs to its 600px cap here, and the nine-row legend needs
+    // all of it
+    viewportHeight: 763,
+    hideTooltip: true,
+  },
   ...graphResolutionPartSpecs(),
   {
     mode: 'compose',

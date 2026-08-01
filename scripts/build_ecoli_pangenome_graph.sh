@@ -347,6 +347,17 @@ in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
 
+# A collapsed repeat, inside the 16S rRNA gene rrsB. -E is the wrong tool here
+# and expensively so: these segments are shared by rRNA copies right across the
+# five chromosomes, so following every node between the first and last in the
+# range walks out to all of them and returns >32,000 segments for a 500 bp
+# window. -d bounds the walk by bp instead, which is what keeps a repeat
+# cuttable. The cut is nine path intervals over five sequences -- odgi names
+# each visit for where it starts, so the repeat copies are distinguishable.
+in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:4166800-4167300 -d 500 -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_rrna.gfa
+
 # That subgraph's nodes on the reference axis, so the graph view and a linear
 # view of the same locus are one picture rather than two colorings. Walking the
 # REF P line assigns every node it visits a REF span; `score` is the node's
@@ -733,5 +744,7 @@ echo "Open config.json or .jbrowse file... (the same session, no re-adding track
 echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz); pggb wrote its"
 echo "own 1D and 2D visualizations into pggb/ as well."
 echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window),"
-echo "ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on K12 coordinates),"
-echo "or ecoli_paa_subgraph.gfa (the paa island and the four paths around it)."
+echo "ecoli_pggb_rrna.gfa (the collapsed 16S rRNA repeat, nine copies on one"
+echo "run of graph), ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on"
+echo "K12 coordinates), or ecoli_paa_subgraph.gfa (the paa island and the four"
+echo "paths around it)."

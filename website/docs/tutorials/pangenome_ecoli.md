@@ -704,6 +704,32 @@ links only.
 
 <Figure caption="The same subgraph anchored on K12, nodes grey and the strain paths drawn. Every arc down to an alternate allele is colored by the strains that take it: IAI39 across the left half, CFT073 through the middle cluster, Sakai on the right. K12 has no arc by definition and NCTC86 has almost none, both walking the backbone here." src="/img/pangenome/pggb_haplotype_paths.png" />
 
+### A collapsed repeat
+
+Where a sequence repeats, the graph folds the copies onto one run of segments,
+and a path walks that run once per copy. `odgi extract` then returns one path
+interval per visit, named for where the visit starts, so the copies stay
+distinguishable.
+
+Cut the 16S rRNA gene `rrsB` with `-d`, which expands by bp, rather than the
+`-E` used above. `-E` takes every node between the first and last in the range,
+and these segments are shared by rRNA copies across all five chromosomes, so it
+walks out to every one of them and returns tens of thousands of segments for a
+500 bp window:
+
+```bash
+og=$(ls pggb/*.smooth.final.og)
+in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_rrna.gfa
+```
+
+Use the force-directed layout here. The anchored layouts put x on the reference,
+and every copy anchors onto the single K12 one, so they draw the whole cut at one
+x.
+
+<Figure caption="Six segments of the 16S rRNA gene, walked by nine locations across the five chromosomes: two copies each in Sakai, CFT073, NCTC86 and IAI39, one in K12. Each edge carries all nine strokes, and at the middle 1 bp bubble eight take one side while CFT073's copy at 4,442,932 takes the other, a base that differs between two rRNA copies of one genome." src="/img/pangenome/pggb_collapsed_repeat.png" />
+
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
