@@ -42,7 +42,14 @@ export function registerFileHandlers(paths: AppPaths) {
     const stream = await getFileStream(location)
     const write = Writable.toWeb(fs.createWriteStream(faiPath))
 
-    await generateFastaIndex(write, stream)
+    try {
+      await generateFastaIndex(write, stream)
+    } catch (e) {
+      // a rejected index (e.g. ragged line widths) has already written part of
+      // the .fai; leaving it would litter faiDir with files that look valid
+      await fs.promises.rm(faiPath, { force: true })
+      throw e
+    }
     return faiPath
   })
 
