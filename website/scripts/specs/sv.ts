@@ -5,6 +5,7 @@ import {
   HG002_NANOPORE_HP_TRACK,
   HG008_BAF_TRACK,
   HG008_DEPTH_TRACK,
+  HG008_T_PACBIO_BAM,
   VOLVOX,
   cascadeBoxes,
   cgiabUrl,
@@ -716,11 +717,10 @@ export const svSpecs: ScreenshotSpec[] = [
   // (compact VCF lane) above the 116x tumor PacBio HiFi reads in Super-compact
   // mode (featureHeight 1 / spacing 0, reviewer). showIntraviewLinks draws the
   // black splines between reads that map partially to each side of the junction.
-  // The PacBio BAM is the full 118 GB NCBI ftp-trace file (no rehosted slice
-  // exists for this locus), so the ~26 MB BAI index downloads on every fresh-tab
-  // capture — hence the long readyTimeout. forceLoad lifts the fetch-size
-  // gate so the reads auto-load headless instead of sitting on a force-load
-  // prompt.
+  // The PacBio BAM is HG008_T_PACBIO_BAM, a rehosted slice carrying these two
+  // windows: the NCBI original is 118 GB and its ~26 MB BAI downloaded on every
+  // fresh-tab capture. forceLoad lifts the fetch-size gate so the reads
+  // auto-load headless instead of sitting on a force-load prompt.
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_breakpoint_split',
@@ -1222,13 +1222,13 @@ export const svSpecs: ScreenshotSpec[] = [
             type: 'BamAdapter',
             fetchSizeLimit: 30_000_000,
             bamLocation: {
-              uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam',
+              uri: HG008_T_PACBIO_BAM,
               locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai',
+                uri: `${HG008_T_PACBIO_BAM}.bai`,
                 locationType: 'UriLocation',
               },
             },

@@ -24,11 +24,18 @@ export const VOLVOX_SV_CRAM_ADAPTER = {
     locationType: 'UriLocation',
   },
 }
-// HG002 ultralong ONT BAM (the same NCBI GIAB file the DEMO_CONFIG
-// hg002_nanopore track points at). Used to build the two HP-grouped session
-// subtracks the smalldel group-by figure renders.
+// HG002 ultralong ONT BAM (the same file the DEMO_CONFIG hg002_nanopore track
+// points at). Used to build the two HP-grouped session subtracks the smalldel
+// group-by figure renders.
+//
+// A rehosted slice of GIAB's HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam, not
+// the NCBI original: ftp-trace throttles concurrent range requests and answered
+// one with a 503 mid-run, which fails a capture on infrastructure rather than on
+// anything the figure is about. The slice carries the three hs37d5 windows every
+// HG002 figure uses (1:55.69-55.72Mb, 1:62.99-63.02Mb, 1:161.155-161.2Mb), so a
+// spec that pans outside them sees no reads.
 export const HG002_NANOPORE_BAM =
-  'https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam'
+  'https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam'
 export const HG002_NANOPORE_ADAPTER = {
   type: 'BamAdapter',
   bamLocation: { uri: HG002_NANOPORE_BAM, locationType: 'UriLocation' },
@@ -37,6 +44,13 @@ export const HG002_NANOPORE_ADAPTER = {
     indexType: 'BAI',
   },
 }
+// HG008-T tumor PacBio HiFi Revio reads, the same rehosted slice the hosted
+// cgiab config's own reads track points at. Same reasoning as
+// HG002_NANOPORE_BAM: the NCBI original is 118 GB with a ~26 MB BAI that
+// downloaded on every fresh-tab capture. The slice covers the SV_20
+// translocation windows (chr3 / chr13) and CDKN2A (chr9) and nothing else.
+export const HG008_T_PACBIO_BAM =
+  'https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam'
 // The HP-grouped HG002 ONT session track shared by the haplotype / groupby /
 // smalldel figures (session tracks don't inherit the config, so it carries its
 // own adapter). Referenced as a const so all three encode byte-identically.
@@ -958,13 +972,13 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // group:tag:HP splits the pileup into one sub-track per haplotype. HG002
-  // ultralong ONT (hg19) streamed from the GIAB FTP; the het deletion sits in
-  // one haplotype only.
+  // ultralong ONT (hg19), the same rehosted slice HG002_NANOPORE_BAM names; the
+  // het deletion sits in one haplotype only.
   cliSpec('alignments_haplotype', [
     '--fasta',
     'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
     '--bam',
-    'https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam',
+    HG002_NANOPORE_BAM,
     'group:tag:HP',
     'color:tag:HP',
     'height:400',

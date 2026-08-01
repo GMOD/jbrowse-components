@@ -148,15 +148,15 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // sessionName pins the title bar; without it the capture bakes in a live
     // timestamp and the figure differs on every render.
     url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:18000000-18020000","type":"LinearGenomeView","trackLabels":"offset","tracks":["hg002_dipcall_dip_vcf_t2t",{"trackId":"hg002_dipcall_hap1_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}},{"trackId":"hg002_dipcall_hap2_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}}]}]}&sessionName=Screenshot',
-    // generous because the fetch is huge, not because the server is slow
-    // (ftp-trace.ncbi.nlm.nih.gov serves ~10MB/s): each haplotype BAM is 1GB of
-    // whole-chromosome records, so drawing a 20kb window pulls and decodes a
-    // chromosome-length record per track — the adapters raise fetchSizeLimit to
-    // 300MB to permit it. Only paid on an explicit --filter run.
+    // generous because the fetch is big, not because the server is slow: a
+    // dipcall record is a whole chromosome arm, so drawing a 20kb window still
+    // pulls and decodes one ~57MB record per track (the adapters raise
+    // fetchSizeLimit to 300MB to permit it). That is the rehosted chr1 slice —
+    // the NCBI originals were 1GB per haplotype, which is what heavyNetwork was
+    // for; 57MB is an ordinary remote-data spec, so it renders in a normal run.
     readyTimeout: 600000,
     settleMs: 15000,
     viewportHeight: 500,
-    heavyNetwork: true,
   },
   {
     mode: 'url',

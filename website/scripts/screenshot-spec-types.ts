@@ -172,10 +172,11 @@ export interface BaseSpecFields {
   // can't reproduce; the generator skips it so a regen never clobbers it
   curated?: boolean
   // spec reproduces fine but pulls so much remote data that a routine regen is
-  // more likely to time out than to produce a new image (dipcall's assembly
-  // BAMs, whose single records span whole chromosomes, off ftp-trace.ncbi.nlm
-  // .nih.gov). Skipped in an unfiltered run; still rendered when named in
-  // --filter, so it stays regenerable on purpose rather than by luck.
+  // more likely to time out than to produce a new image. Skipped in an
+  // unfiltered run; still rendered when named in --filter, so it stays
+  // regenerable on purpose rather than by luck. No spec sets it today —
+  // gallery/hg002_dipcall was the last one, and rehosting a slice of the two
+  // 1GB dipcall BAMs was the better fix than skipping it.
   heavyNetwork?: boolean
   // per-spec override of the content-stable diff gate (fraction of pixels in
   // [0,1]). Raise it for specs with irreducible render jitter — remote-data

@@ -1060,19 +1060,19 @@
       "type": "AlignmentsTrack",
       "trackId": "hg002_dipcall_hap1_t2t",
       "name": "HG002 dipcall hap1",
-      "description": "Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
+      "description": "Rehosted slice covering chr1:17,950,000-18,070,000 only; empty elsewhere. Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
       "assemblyNames": ["hg38"],
       "category": ["Assembly alignments"],
       "adapter": {
         "type": "BamAdapter",
         "fetchSizeLimit": 300000000,
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1.bam",
+          "uri": "https://jbrowse.org/demos/hg002/HG002.dipcall.hap1.GRCh38.chr1_18Mb.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1.bam.bai",
+            "uri": "https://jbrowse.org/demos/hg002/HG002.dipcall.hap1.GRCh38.chr1_18Mb.bam.bai",
             "locationType": "UriLocation"
           }
         }
@@ -1089,19 +1089,19 @@
       "type": "AlignmentsTrack",
       "trackId": "hg002_dipcall_hap2_t2t",
       "name": "HG002 dipcall hap2",
-      "description": "Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
+      "description": "Rehosted slice covering chr1:17,950,000-18,070,000 only; empty elsewhere. Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
       "assemblyNames": ["hg38"],
       "category": ["Assembly alignments"],
       "adapter": {
         "type": "BamAdapter",
         "fetchSizeLimit": 300000000,
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap2.bam",
+          "uri": "https://jbrowse.org/demos/hg002/HG002.dipcall.hap2.GRCh38.chr1_18Mb.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap2.bam.bai",
+            "uri": "https://jbrowse.org/demos/hg002/HG002.dipcall.hap2.GRCh38.chr1_18Mb.bam.bai",
             "locationType": "UriLocation"
           }
         }
@@ -1819,16 +1819,17 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam",
+          "uri": "https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam.bai",
+            "uri": "https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam.bai",
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "description": "Rehosted slice of GIAB HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam covering 1:55.69-55.72Mb, 1:62.99-63.02Mb and 1:161.155-161.2Mb only; empty elsewhere. Source: ftp-trace.ncbi.nlm.nih.gov giab/ftp/data/AshkenazimTrio"
     },
     {
       "type": "VariantTrack",
@@ -4325,8 +4326,9 @@
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "BamAdapter",
-        "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam"
-      }
+        "uri": "https://jbrowse.org/demos/hg002/HG002.hs37d5.2x250.demo_slices.bam"
+      },
+      "description": "Rehosted slice of GIAB HG002.hs37d5.2x250.bam covering 1:55.69-55.72Mb, 1:62.99-63.02Mb and 1:161.155-161.2Mb only; empty elsewhere. Source: ftp-trace.ncbi.nlm.nih.gov ReferenceSamples/giab/data/AshkenazimTrio"
     },
     {
       "type": "AlignmentsTrack",
