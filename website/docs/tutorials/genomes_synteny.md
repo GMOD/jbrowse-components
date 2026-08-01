@@ -50,7 +50,7 @@ the whole block's endpoints. A reverse-strand block adds a second checkbox,
 still reads left to right. **Submit** opens a two-panel synteny view on that
 position, with the liftOver track drawn as ribbons between the panels.
 
-<Figure caption="The three steps, from the hg38-to-mm39 liftOver track around SHH to the view it opens: 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, ribbon per chain block. The launched view carries the chain track and nothing else, so each panel starts empty until you add its genes." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the view it opens: 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, ribbon per chain block, then the same view under the two ribbon settings below. The launched view carries the chain track and nothing else, so each panel starts empty until you add its genes." src="/img/genomes_synteny/launch_sequence.png" />
 
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.

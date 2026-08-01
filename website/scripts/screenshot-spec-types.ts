@@ -155,6 +155,11 @@ export interface ScreenshotStage {
   // press Escape before this stage's actions to dismiss a menu/popover the
   // previous stage left open
   closeMenusFirst?: boolean
+  // dismiss the menu cascade after this stage's actions, before its frame is
+  // captured. For a stage whose subject is the RESULT of a menu setting rather
+  // than the menu: a checkbox/radio row leaves its menu standing, so without
+  // this the frame is of the open menu over the thing it just changed.
+  closeMenusAfter?: boolean
   // height for this frame alone, applied after its actions run. The spec's own
   // viewportHeight has to cover the tallest state, which leaves every shorter
   // one padded with page background — an open context menu needs twice the
@@ -198,6 +203,14 @@ export interface CommonSpecFields extends BaseSpecFields {
   annotations?: Annotation[]
   // multi-stage figure: each stage is captured and the frames stacked vertically
   stages?: ScreenshotStage[]
+  // lay the stage frames out in rows of this many instead of one column. A
+  // four-stage walkthrough stacked vertically is four viewport heights of
+  // figure, most of it the same app chrome four times; in rows of two it is a
+  // quarter as tall and the frames are compared side by side. A row is
+  // `+append`ed, so the stages sharing a row have to share a height (a per-stage
+  // `viewportHeight` is fine between rows, and is how a grid trims the blank
+  // under its shorter half).
+  stageColumns?: number
   // suppress the hover/right-click BaseTooltip (which lingers while a context
   // menu is open) so it doesn't clutter the capture
   hideTooltip?: boolean

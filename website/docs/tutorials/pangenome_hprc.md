@@ -524,7 +524,7 @@ segments lane and the genotype matrix in one column, and the reference-position
 ramp gives the graph's alleles at that position the same hue as the segments
 above them.
 
-<Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it shows which of the ten donors' haplotypes carry it, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, which has no coordinate axis to draw the band on, so the ring marks the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it, all 464 haplotypes clustered by genotype, carries it across a whole clade, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, which has no coordinate axis to draw the band on, so the ring marks the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 

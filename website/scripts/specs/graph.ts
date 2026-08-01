@@ -554,32 +554,12 @@ const MHC_CLASSII_REGION = {
   end: 32600000,
 }
 
-// The 10 donors with a non-reference path through the minigraph subgraph over
-// MHC_CLASSII_REGION (`tabix hprc-v2.0-mc-grch38.links.bed.gz
-// 'GRCh38#0#chr6:32510000-32600000'`, every non-GRCh38 column), in the same
-// alphabetical order GraphGenomeView's sample-rows layout sorts by. Passed as
-// the callset display's `layout` (not `runClustering`) so the row SET matches
-// the graph's: both haplotypes of each donor, so a carrier row sits next to
-// its non-carrier sibling rather than the sibling being silently absent.
 // The one event pangenome/hprc_graph_vs_callset marks in both products: a
 // 14,596 bp deletion, the largest record in the window that more than one donor
 // carries. From the callset itself —
 // `tabix hprc-v2.0-mc-grch38.wave.vcf.gz chr6:32510000-32600000`, longest REF
 // among the records the SV filter keeps.
 const MHC_MARKED_DELETION = '6:32,514,842-32,529,438'
-
-const MHC_CALLSET_LAYOUT = [
-  'HG00642',
-  'HG00738',
-  'HG01433',
-  'HG01978',
-  'HG01993',
-  'HG04157',
-  'HG04160',
-  'NA18940',
-  'NA18959',
-  'NA20809',
-].map(name => ({ name }))
 
 // The linear half of the graph view's 'Reference position' color scheme, which
 // is the answer to "if the nodes were rainbow colored in exact same way in
@@ -924,6 +904,20 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           layoutMode: 'force',
           colorScheme: 'reference-position',
           subgraphContext,
+          // review: "the closed bubble is really large which looks odd". It was
+          // the 21.8 kb backbone node, which at Bandage's own proportional scale
+          // draws 5x the mean and curls into a green ring that took a third of
+          // the pane while the 43 bp and 558 bp nodes the figure is about were
+          // specks against it. 'open' floors every node at 2.5x the mean drawn
+          // length, so the ratio across this cut goes from ~500:1 to ~2:1 and
+          // the boxed bubble is the largest thing in the drawing rather than the
+          // backbone it hangs off.
+          bubbleSpread: 'open',
+          // FMMM's iteration budget: 1 is 15 fixed + 10 fine-tuning, 4 is
+          // 120 + 60. Same review round as the sibling graph figures ("are you
+          // sure you can't iterate it more times for better layout?"), and it is
+          // what takes the crossings out of a drawing this size for milliseconds.
+          layoutQuality: 4,
         },
       ],
     }),
@@ -1122,7 +1116,6 @@ const RESOLUTION_LANE_WINDOW = 'chr:2,118,646-2,139,486'
 // the ramp's other end — but only this one is big enough to dominate the pane,
 // so only this one is labelled. The caption names the pair.
 const RESOLUTION_BACKBONE_NODE = 's694'
-const RESOLUTION_SEED_NODE = 's693'
 
 function graphResolutionPartSpecs(): ScreenshotSpec[] {
   const part = ({
@@ -1136,6 +1129,8 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     // braid's top-left arm.
     labelOffset,
     extraAnnotations = [],
+    bubbleSpread = 'auto',
+    layoutQuality = 1,
   }: {
     name: string
     trackId: string
@@ -1143,6 +1138,8 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     label: string
     labelOffset: { dx: number; dy: number }
     extraAnnotations?: Annotation[]
+    bubbleSpread?: 'auto' | 'open' | 'wide'
+    layoutQuality?: number
   }): ScreenshotSpec => ({
     mode: 'url',
     name,
@@ -1187,6 +1184,28 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           // 16.4 kb backbone neighbour magenta and made it read as a giant
           // off-reference allele.
           colorDomain: RESOLUTION_LANE_DOMAIN,
+          // review: "the teal node just doesnt connect to anything". At
+          // Bandage's proportional scale s694's 16.4 kb draws ~15x the mean of
+          // this cut, so it swept the whole pane and its junction with s693 sat
+          // in a corner while its free end ran through the middle of the frame —
+          // the reading the note describes. 'open' floors every node at 2.5x the
+          // mean, which puts s694 at about twice its neighbours instead, so both
+          // of its ends are in the same part of the drawing.
+          //
+          // The minigraph half only, and that asymmetry is measured rather than
+          // an oversight: the floor is a per-node minimum, so on the pggb half's
+          // 521 nodes it inflates the drawing to ~52,000 units, zoom-to-fit
+          // lands at 1.4% and the braid renders as an empty pane. A cut of 7
+          // nodes spanning 6 bp to 16.4 kb and a cut of 521 nodes averaging
+          // ~17 bp cannot share a drawn-length floor, which is the same
+          // resolution difference the figure is about.
+          bubbleSpread,
+          // FMMM's iteration budget (1 = 15+10 iterations, 4 = 120+60), the same
+          // review round's "are you sure you can't iterate it more times". Also
+          // the minigraph half only, and for the same reason: on 521 nodes the
+          // extra iterations spread the braid past what zoom-to-fit can frame
+          // and the pane came back with half a thread in it.
+          layoutQuality,
           // force in both halves. An anchored layout would put the pggb half's
           // hundreds of nodes on one line and hide exactly what is being shown.
           layoutMode: 'force',
@@ -1230,26 +1249,34 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
       sessionTrack: ECOLI_SEGMENTS_SESSION_TRACK,
       label: 'minigraph rGFA\nstructural variation only',
       labelOffset: { dx: -340, dy: -260 },
-      // Both ends of what RESOLUTION_BACKBONE_NODE is: a label on the node
-      // saying it is backbone rather than an allele, and an arrow onto the
-      // segment it joins. Both anchored by segment id through the view's own
-      // nodePositions, so FMMM can put the two of them wherever it likes.
+      bubbleSpread: 'open',
+      layoutQuality: 4,
+      // What RESOLUTION_BACKBONE_NODE is, anchored by segment id through the
+      // view's own nodePositions so FMMM can put it wherever it likes.
+      //
+      // The arrow onto s693 that used to be here is gone with the drawn-length
+      // floor that made it necessary: at the proportional scale s694 arced right
+      // across the pane and its junction was in a corner, so the junction had to
+      // be pointed at. Now the two are collinear and meet at a visible vertex
+      // beside the 88 bp bubble, which an arrow drawn between their midpoints
+      // would run straight down the top of.
       extraAnnotations: [
         {
           type: 'text',
-          text: 'reference backbone (s694),\nthe cyan block above',
+          // Names the node and answers its one loose end in the same pill
+          // (review: "the teal node just doesnt connect to anything ... users
+          // will not understand this if this is just a jbrowse limitation of our
+          // data fetching"). It is not a fetch that stopped short: s694 joins
+          // s693 at the visible vertex below, and its other end is where the
+          // loaded subgraph stops, which every cut of a graph has somewhere.
+          text: 'reference backbone (s694),\nthe cyan block above;\nits far end is the cut edge',
           anchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
-          // left along the node, into the open ground under its arc: at the
-          // midpoint itself the pill ran off the right edge of the pane
+          // left off the node, into the open ground beside it: at the midpoint
+          // itself the pill sits on the node it is naming
           dx: -266,
           dy: -40,
           maxWidth: 240,
           fontSize: 16,
-        },
-        {
-          type: 'arrow',
-          fromAnchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
-          anchor: { view: 1, graphNode: RESOLUTION_SEED_NODE },
         },
       ],
     }),
@@ -2457,10 +2484,19 @@ export const graphSpecs: ScreenshotSpec[] = [
   // bubble rather than a row. What the pair says: the callset names who carries
   // it, the graph names what the alternative sequence is.
   //
-  // MHC_CALLSET_LAYOUT stays, for the reason it was added — 464 rows buries the
-  // ten donors this window has anything to say about. Fixed list rather than
-  // `runClustering`: clustering is free to reorder and to include any of the
-  // 464, so nothing would hold the row set still.
+  // ALL 464 HAPLOTYPES, CLUSTERED (review: "it would be interesting to see to
+  // increase the 'frission' of the figure. Please try it out ... and use
+  // clustering on the track"). The previous pass declined this and the reason it
+  // gave has since expired: `MHC_CALLSET_LAYOUT` cut the callset to the ten
+  // donors so its row list would be the same length as the graph's sample rows,
+  // and the graph in this figure is now the force drawing, which has no rows to
+  // hold still against. With that gone there is nothing to pin, and the banded
+  // deletion reads better across the cohort than across ten donors: clustering
+  // gathers its carriers, so the band crosses a solid block of them instead of
+  // nine scattered rows.
+  //
+  // 520px for the 464 rows, up from 260 for 20 — the aliasing the earlier note
+  // was about is a row height under a pixel, and this is 1.1px per haplotype.
   {
     mode: 'url',
     name: 'pangenome/hprc_graph_vs_callset',
@@ -2483,9 +2519,9 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc2_wave_grch38',
               type: 'LinearMultiSampleVariantDisplay',
-              height: 260,
+              height: 520,
               jexlFilters: SV_FILTER,
-              layout: MHC_CALLSET_LAYOUT,
+              runClustering: true,
             },
           ],
         },
@@ -2497,18 +2533,19 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // two signals, ANDed: the graph drawn, and the callset's own fetch finished
-    // (not just first paint). A bare comma list would be a CSS OR and fire on
-    // whichever landed first.
+    // three signals, ANDed: the graph drawn, the clustering RPC landed (its
+    // dendrogram exists), and the callset's own fetch finished — not just first
+    // paint, which an empty canvas flips on its own. A bare comma list would be
+    // a CSS OR and fire on whichever landed first.
     readySelector:
-      'body:has([data-testid="graph-perf-stats"]):has([data-testid="graph-layout-select"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
+      'body:has([data-testid="graph-perf-stats"]):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,
-    // the gene lane, the segments lane, the 20-row callset, and the graph pane
+    // the gene lane, the segments lane, the 464-row callset, and the graph pane
     // under them — the force drawing is about as tall as it is wide where the
     // row stack was flat
-    viewportHeight: 1340,
+    viewportHeight: 1600,
     hideTooltip: true,
     // The event in the graph as well as in the tracks (review: "i see there is a
     // highlight on the lineargenomeview but no highlight in the graph itself").

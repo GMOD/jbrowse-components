@@ -139,6 +139,15 @@ const CONCURRENCY = Math.max(
   optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 4),
 )
 
+// Plugin urls a hosted demo config may declare, pre-approved for the capture so
+// the cross-origin warning modal never covers the app. See trustCapturePlugins:
+// this is scoped to the capture's own localhost origin and vouches for nothing
+// beyond it. Keep it an explicit list rather than "trust everything", so a
+// config that starts pulling an unexpected plugin still fails loudly.
+const TRUSTED_PLUGIN_URLS = [
+  'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
+]
+
 const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
 
 Usage: pnpm generate-screenshots [options]
@@ -522,6 +531,33 @@ function freezeAnimations(page: Page) {
   })
 }
 
+// Pre-approve the cross-origin plugin warning, which otherwise covers the whole
+// app with a modal and fails every spec whose `?config=` points at a hosted
+// config declaring an `esmUrl` plugin. jbrowse.org/demos/ecoli_pangenome is one:
+// it declares GraphGenomeView so a reader who opens the demo gets the graph
+// tracks, and that is worth keeping rather than stripping the plugin to suit the
+// generator.
+//
+// This grants nothing a person could not: the store is localStorage under the
+// capture's own localhost origin, which the browser partitions, so it cannot
+// vouch for a plugin on jbrowse.org or anywhere else. Written before any app
+// script runs, since SessionLoader reads it during startup.
+function trustCapturePlugins(page: Page) {
+  return page.evaluateOnNewDocument((urls: string[]) => {
+    try {
+      const KEY = 'jbrowse-trusted-plugins'
+      const raw = localStorage.getItem(KEY)
+      const trusted = new Set<string>(raw ? (JSON.parse(raw) as string[]) : [])
+      for (const url of urls) {
+        trusted.add(url)
+      }
+      localStorage.setItem(KEY, JSON.stringify([...trusted]))
+    } catch (e) {
+      console.error(e)
+    }
+  }, TRUSTED_PLUGIN_URLS)
+}
+
 // Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
 // flush pending WebGL frames) then screenshot straight to `file`.
 async function shoot(
@@ -774,7 +810,7 @@ async function renderSpecToTemp(
 // Capture each stage of a multi-stage figure to its own temp file, then stack
 // them top-to-bottom with ImageMagick (`convert f0 f1 -append`) into
 // `renderPath` — the same composition the hand-made two-stage teaching figures
-// used.
+// used — or into rows of `stageColumns` when the spec asks for a grid.
 async function captureStages(
   page: Page,
   spec: BrowserScreenshotSpec,
@@ -784,10 +820,38 @@ async function captureStages(
   const stageFiles = stages.map((_, i) =>
     tempPath('jb-shot', spec.name, `-${i}`),
   )
+  const rowFiles = stageFiles.map((_, i) =>
+    tempPath('jb-row', spec.name, `-${i}`),
+  )
   try {
     await captureEachStage(page, spec, stages, stageFiles)
-    execFileSync(IM, [...stageFiles, '-append', renderPath])
+    const cols = spec.stageColumns ?? 0
+    if (cols > 1) {
+      // rows of `cols` frames, then the rows stacked. A trailing partial row is
+      // padded on the right to the full row width rather than centered, so the
+      // frames stay on a grid a reader can scan down a column of.
+      const rows: string[] = []
+      for (let i = 0; i < stageFiles.length; i += cols) {
+        const row = rowFiles[rows.length]!
+        execFileSync(IM, [...stageFiles.slice(i, i + cols), '+append', row])
+        rows.push(row)
+      }
+      execFileSync(IM, [
+        ...rows,
+        '-background',
+        'white',
+        '-gravity',
+        'west',
+        '-append',
+        renderPath,
+      ])
+    } else {
+      execFileSync(IM, [...stageFiles, '-append', renderPath])
+    }
   } finally {
+    for (const f of rowFiles) {
+      fs.rmSync(f, { force: true })
+    }
     // also on the way out of a failed stage, so a spec that throws mid-figure
     // doesn't leave half its frames behind in tmp
     for (const f of stageFiles) {
@@ -868,6 +932,9 @@ async function captureEachStage(
     // target in this stage's actions
     await clearAnnotations(page)
     await runActions(page, spec.name, stage.actions)
+    if (stage.closeMenusAfter) {
+      await closeOpenMenus(page, spec.name)
+    }
     // Resized after the actions, not before: a stage typically acts on chrome
     // the previous stage opened (a context menu, a popover), which the resize
     // would move or dismiss. Width is left alone — the frames stack with
@@ -1241,6 +1308,7 @@ async function main() {
     try {
       const page = await browser.newPage()
       await freezeAnimations(page)
+      await trustCapturePlugins(page)
       if (spec.viewportHeight || spec.viewportWidth) {
         await page.setViewport({
           width: spec.viewportWidth ?? vpWidth,

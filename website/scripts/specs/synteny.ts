@@ -1223,6 +1223,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[aria-label="View options"]' },
       { type: 'hover', text: 'Show...' },
       { type: 'waitForText', text: 'Show curved lines' },
+      // the submenu popper is settled in the DOM the moment that text appears,
+      // but it is its own compositor layer and swiftshader rasterizes it a frame
+      // or two late: the capture came out with the parent menu painted, the
+      // submenu blank, and the 'Show curved lines' box floating over the track
+      // behind it. Same race as bigwig/whole_genome_coverage, same fix.
+      { type: 'delay', ms: 1000 },
     ],
     // box the two controls the section asks the reader to change, rather than
     // labelling the frame "As it opens" (which said nothing about the menu)
@@ -1272,11 +1278,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // for the name the liftOver track references, and the launch menu item is
   // gated on exactly that mate assembly resolving.
   //
-  // Three stages of one spec rather than three specs: a context menu, the dialog
-  // it opens and the view that dialog creates are each reachable only through the
-  // UI, so `compose` over declarative parts can't express them, and the reader
-  // (and the reviewer) sees the sequence as one figure instead of three
-  // near-identical frames.
+  // Four stages of one spec rather than four specs: a context menu, the dialog
+  // it opens, the view that dialog creates and the two ribbon settings applied
+  // to it are each reachable only through the UI, so `compose` over declarative
+  // parts can't express them, and the reader (and the reviewer) sees the
+  // sequence as one figure instead of four near-identical frames.
+  //
+  // In a 2x2 grid (`stageColumns`), not a column: stacked, four frames of the
+  // same app chrome ran 4320px tall and a reader scrolled past the launch to
+  // reach its result. The panels carry their step number, since a grid has two
+  // reading orders and the numbers pick one.
   //
   // Human vs MOUSE, not human vs T2T (reviewer): between two assemblies of the
   // same species every block is near-identical and the launched view says
@@ -1319,12 +1330,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    viewportWidth: 1200,
+    // 900, not the 1200 the column version used: two of these side by side is
+    // the composed width, and the frame still holds the launch dialog (~500px)
+    // and the context menu.
+    viewportWidth: 900,
     // tall enough for the whole context menu in stage 1 (the binding frame) —
     // the menu opens below the clicked block, so the boxed "Launch synteny
     // view" item is its last line — and, in stage 3, the collapsed LGV header
     // plus the launched synteny view.
     viewportHeight: 540,
+    stageColumns: 2,
     hideTooltip: true,
     readySelector: '[data-testid="pileup-display-done"]',
     // the UCSC hub config is ~570 tracks and pulls three remote plugins
@@ -1333,7 +1348,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'rightclick', from: { x: 890, y: 331 } },
+          { type: 'rightclick', from: { x: 666, y: 331 } },
           { type: 'waitForText', text: 'Open feature details' },
           // leave the item the reader is being pointed at under the cursor, so
           // it carries the menu's own hover highlight as well as the box below
@@ -1346,7 +1361,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             x: 24,
             y: 56,
             fontSize: 20,
-            text: 'Right-click a chain block',
+            text: '(1) Right-click a chain block',
           },
           {
             type: 'box',
@@ -1371,7 +1386,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             x: 24,
             y: 56,
             fontSize: 20,
-            text: 'Confirm how each panel is framed',
+            text: '(2) Confirm how each panel is framed',
           },
         ],
       },
@@ -1391,13 +1406,54 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // the launched view's own bpPerPx, both after the canvas first paints
           { type: 'delay', ms: 10000 },
         ],
+        // the launched view is shorter than the context menu of stage 1, so the
+        // bottom row of the grid takes its own height rather than carrying 82px
+        // of page background under both of its panels
+        viewportHeight: 458,
         annotations: [
           {
             type: 'text',
             x: 24,
             y: 56,
             fontSize: 20,
-            text: 'The synteny view it opens',
+            text: '(3) The synteny view it opens',
+          },
+        ],
+      },
+      // The two ribbon settings the tutorial's other figure teaches, on the view
+      // this launch just made: 'Transparent indels' takes the color out of the
+      // CIGAR wedges so strand is the only thing painting a ribbon, and curved
+      // lines trace where each block lands instead of shearing across the gap.
+      // Both live on the comparative view's own header button, which the
+      // minimized LGV above has no counterpart for, so the selector is
+      // unambiguous.
+      //
+      // A radio/checkbox row leaves its menu standing (that is what makes a
+      // settings menu usable), so the stage closes the cascade before its frame
+      // — the subject here is the ribbons, not the menu.
+      {
+        actions: [
+          { type: 'click', selector: '[aria-label="View options"]' },
+          { type: 'hover', text: 'CIGAR display mode' },
+          { type: 'waitForText', text: 'Transparent indels' },
+          // same submenu-rasterization race as genomes_synteny/ribbons_default
+          { type: 'delay', ms: 1000 },
+          { type: 'click', text: 'Transparent indels' },
+          { type: 'hover', text: 'Show...' },
+          { type: 'waitForText', text: 'Show curved lines' },
+          { type: 'delay', ms: 1000 },
+          { type: 'click', text: 'Show curved lines' },
+          { type: 'delay', ms: 1000 },
+        ],
+        closeMenusAfter: true,
+        viewportHeight: 458,
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 56,
+            fontSize: 20,
+            text: '(4) Curved lines + transparent indels',
           },
         ],
       },
