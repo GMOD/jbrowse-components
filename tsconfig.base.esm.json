@@ -4,11 +4,8 @@
 // *extending* config, so the paths below land in each package, not here.
 {
   "extends": "./tsconfig.json",
-  "include": ["${configDir}/src/**/*.ts*", "${configDir}/src/**/*.js*"],
-  "exclude": [
-    "${configDir}/src/**/*.test.ts*",
-    "${configDir}/src/**/*.test.js*"
-  ],
+  "include": ["${configDir}/src/**/*.ts*"],
+  "exclude": ["${configDir}/src/**/*.test.ts*"],
   "compilerOptions": {
     "outDir": "${configDir}/esm",
     "rootDir": "${configDir}/src",
