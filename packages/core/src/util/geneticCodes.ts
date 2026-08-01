@@ -396,7 +396,9 @@ export function generateCodonTable(table: Record<string, string>) {
   return tempCodonTable
 }
 
-function buildGeneticCode(id: number): GeneticCode {
+// The uppercase-only codon -> amino acid map for a table, plus its start
+// codons. `generateCodonTable` case-expands the map; this is the input to that.
+function buildRawTable(id: number) {
   const def = ncbiCodeById.get(id)
   if (!def && id !== 1) {
     console.warn(
@@ -417,6 +419,11 @@ function buildGeneticCode(id: number): GeneticCode {
       starts.push(codon)
     }
   }
+  return { id: resolvedId, name, table, starts }
+}
+
+function buildGeneticCode(id: number): GeneticCode {
+  const { id: resolvedId, name, table, starts } = buildRawTable(id)
   return { id: resolvedId, name, codonTable: generateCodonTable(table), starts }
 }
 
@@ -449,3 +456,14 @@ export function getGeneticCode(id = 1): GeneticCode {
  * made the two modules mutually dependent and the const load-order sensitive.
  */
 export const codonTable = getGeneticCode(1).codonTable
+
+/**
+ * The standard genetic code as a raw uppercase map, i.e. the input
+ * {@link generateCodonTable} case-expands into {@link codonTable}. Nothing in
+ * this repo needs it — it stays exported because the `@jbrowse/core/util` barrel
+ * is the runtime ABI external plugins link against, and jbrowse-plugin-protein3d
+ * calls `generateCodonTable(defaultCodonTable)` itself. Dropping it turned that
+ * into `Object.keys(undefined)` inside the published plugin, which surfaced as
+ * "Could not launch protein view: TypeError".
+ */
+export const defaultCodonTable = buildRawTable(1).table

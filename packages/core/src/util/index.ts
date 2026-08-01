@@ -271,7 +271,11 @@ export {
   stitch,
 } from './seqUtils.ts'
 export { revlist } from './revlist.ts'
-export { codonTable, generateCodonTable } from './geneticCodes.ts'
+export {
+  codonTable,
+  defaultCodonTable,
+  generateCodonTable,
+} from './geneticCodes.ts'
 export {
   IUPAC_MOTIF_REGEX,
   isPalindromic,
