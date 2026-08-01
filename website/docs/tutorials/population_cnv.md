@@ -131,16 +131,33 @@ Where the variation does fit the representation, they agree:
 ## Scaling past one population
 
 The track above stops at 104 individuals because that is about where one BigWig
-per sample stops being pleasant, and size is not the reason. Reading this
-tutorial's window out of the hosted files:
+per sample stops being pleasant, and size is not the reason.
+[`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
+counts what filling this tutorial's window costs each way, by wrapping `fetch`
+around the same readers the browser uses:
 
-- one BigWig is under 600 KB for the whole genome at 1 kb bins, and the window
-  is a couple of kilobytes of that
-- filling it takes 625 requests, six per file. A BigWig reads its header, its
-  chrom B-tree and its R-tree index before it knows where a region's values
-  live, and each of those waits on the one before it
-- a range request to the host costs about 210 ms, so the cost is latency times
-  file count rather than bandwidth, and the full panel is 24 times the files
+```bash
+node scripts/measure_signal_latency.ts \
+  --region chr17:36,080,000-36,270,000 \
+  --config test_data/config_demo.json --track pur_copynumber_1000g \
+  --zarr https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/qm2_cn_1kb.zarr
+```
+
+```
+104 BigWigs                     625 requests     2.01 MB     1.8 s
+                             6.0 requests per file
+                             median range request 25 ms
+
+Zarr store, 2504 samples          3 requests     0.22 MB     0.2 s
+                             2 metadata + 1 chunk of 2504 x 256
+```
+
+Two megabytes is not the problem. The request count is, and it is six per file
+whatever the window: a BigWig reads its header, its chrom B-tree and its R-tree
+index before it knows where a region's values live, and each of those waits on
+the one before it. So the cost is a round trip times the file count, the full
+panel is 24 times the files, and the times above scale with whatever that round
+trip is on your own network.
 
 The fix is a format that answers the same question in a couple of requests: one
 array of samples by bins, chunked so that a chunk holds every sample over a span
@@ -192,19 +209,15 @@ hosted, so it loads from any config today (see
 
 The adapter config is the store's location and nothing else: the sample list,
 the bin size and the resolution levels are attributes of the store, written by
-the converter.
+the converter. A relative `uri` resolves against the config that holds it, so a
+store sitting beside `config.json` needs no absolute URL.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Every population is present, so the classes the 104-sample figure hints at are filled in." src="/img/cnv1000g/zarr_cohort.png" />
 
-Filling that window for all 2504 individuals:
-
-- One BigWig each: roughly 15,000 requests, a minute or so. Scaled up from the
-  104-sample track, which took 625 requests and 3 seconds against the same host.
-- One Zarr store: 3 requests, under a second. The group metadata, the array
-  metadata, and one chunk, at the 210 ms round trip above.
-
-The three do not change with the cohort, because the sample axis is inside the
-chunk.
+That figure is the whole panel, and it cost the three requests measured above:
+the group metadata, the array metadata, and one chunk. One BigWig per sample
+would be six requests each, about 15,000 for the panel. The three do not grow
+with the cohort, because the sample axis is inside the chunk.
 
 ## Build the store
 
@@ -223,8 +236,8 @@ node scripts/build_signal_zarr.ts \
 ```
 
 Omit `--region` to convert whole genomes. The example above is the store this
-tutorial's figures use: 2504 samples over 3.5 Mb, which is 35 MB of float32
-before compression and 1.4 MB on disk after, built in about 30 seconds. Copy
+tutorial's figures use, 2504 samples over 3.5 Mb, and the converter reports its
+own sizes as it writes: 35 MB of float32 uncompressed, 1.4 MB on disk. Copy
 number compresses well because most of it is the same number.
 
 Three choices in the output are what make the reads cheap.
@@ -315,5 +328,8 @@ bash scripts/build_1000g_cnv_zarr.sh --whole-genome # every main contig
   hub these files come from, and
   [KiddLab/QuicK-mer2](https://github.com/KiddLab/QuicK-mer2), the caller that
   produced them
+- [The QuicK-mer2 tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md),
+  one sample from CRAM to copy number, with the lab's own output to check
+  against
 - [1000 Genomes phase 3 integrated SV map](https://doi.org/10.1038/nature15394)
 - [Zarr v3 specification](https://zarr-specs.readthedocs.io/en/latest/v3/core/index.html)
