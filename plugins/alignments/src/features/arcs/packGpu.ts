@@ -54,36 +54,29 @@ export function packArcLines(data: ArcsUploadData): ArrayBuffer {
   )
 }
 
-// Two endpoint-square markers per flat (read-cloud) arc — one at each end. Regular
-// curved arcs carry no markers (their endpoints sit on the baseline). Allocates
-// the worst case (2 per arc) and fills+counts in a single pass; `packInstances`
-// only reads the first `count` entries, so the tail is ignored. `count` is 0
-// when no arc is flat, so the caller skips the upload entirely.
-export function packArcMarkers(data: ArcsUploadData): {
-  buffer: ArrayBuffer
-  count: number
-} {
-  const maxCount = data.numArcs * 2
-  const position = new Uint32Array(maxCount)
-  const colorType = new Uint8Array(maxCount)
-  const yBp = new Uint32Array(maxCount)
-  let count = 0
+// Two endpoint-square markers per flat (read-cloud) arc — one at each end.
+// Regular curved arcs carry no markers (their endpoints sit on the baseline),
+// so in arc mode `numFlatArcs` is 0 and the caller skips this entirely rather
+// than scanning every arc to discover there is nothing to draw.
+export function packArcMarkers(data: ArcsUploadData): ArrayBuffer {
+  const count = data.numFlatArcs * 2
+  const position = new Uint32Array(count)
+  const colorType = new Uint8Array(count)
+  const yBp = new Uint32Array(count)
+  let n = 0
   for (let i = 0; i < data.numArcs; i++) {
     if (isFlatArcShape(data.arcShapeTypes[i]!)) {
       const c = data.arcColorTypes[i]!
       const y = data.arcYBp[i]!
-      position[count] = data.arcX1[i]!
-      colorType[count] = c
-      yBp[count] = y
-      count++
-      position[count] = data.arcX2[i]!
-      colorType[count] = c
-      yBp[count] = y
-      count++
+      position[n] = data.arcX1[i]!
+      colorType[n] = c
+      yBp[n] = y
+      n++
+      position[n] = data.arcX2[i]!
+      colorType[n] = c
+      yBp[n] = y
+      n++
     }
   }
-  return {
-    buffer: arcMarkerShader.packInstances({ position, colorType, yBp }, count),
-    count,
-  }
+  return arcMarkerShader.packInstances({ position, colorType, yBp }, count)
 }

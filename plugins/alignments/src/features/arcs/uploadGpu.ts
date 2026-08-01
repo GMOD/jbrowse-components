@@ -23,12 +23,12 @@ export function uploadArcs(
       data.numArcs,
     )
   }
-  const { buffer: markerBuffer, count: markerCount } = packArcMarkers(data)
+  const markerCount = data.numFlatArcs * 2
   if (markerCount > 0) {
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_ARC_MARKER,
-      markerBuffer,
+      packArcMarkers(data),
       markerCount,
     )
   }

@@ -1,7 +1,6 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { bpToScreenX } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
-  ARC_HEIGHT_MARGIN,
   arcColorPalette,
   arcMarkerColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
@@ -11,7 +10,7 @@ import {
   ARC_FLAT_MIN_PX,
 } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
-import { arcYFraction } from './arcYScale.ts'
+import { arcAvailH, arcYOffsetPx, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
 import type {
@@ -105,7 +104,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   // sits at the bottom of the band; pointing-down sits at the top. Matches
   // the GPU shader and the right-side insert-size scalebar.
   const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
-  const availH = arcsH - ARC_HEIGHT_MARGIN
+  const availH = arcAvailH(arcsH)
 
   ctx.lineWidth = lineWidth
   for (let i = 0; i < data.numArcs; i++) {
@@ -117,10 +116,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
 
     const sx1 = bpToScreenX(x1Bp)
     const sx2 = bpToScreenX(x2Bp)
-    const arcH = Math.min(
-      arcYFraction(yBp, arcsYDomainBp, arcsYLog) * availH,
-      availH,
-    )
+    const arcH = arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
     const isFlat = isFlatArcShape(shape)
@@ -166,17 +162,17 @@ export function drawArcs(
   pairedArcsDown: boolean,
   screenWidthPx: number,
 ) {
-  // Read cloud autoscales via state.arcsYDomainBp; arc mode falls back to the
-  // bp-span that fits availH at the current zoom. availH must match the value
-  // used in drawArcsToCtx (and the GPU's fillArcUniforms) or the fallback
-  // domain scales arcs to a different height than they're plotted into.
-  const availH = arcsH - ARC_HEIGHT_MARGIN
-  const pxPerBp = fullBlockWidth / bpLength
-  const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
+  // Same domain rule the GPU's fillArcUniforms applies, off the same availH —
+  // a mismatch would scale arcs to a different height than they're plotted into.
+  const { domainBp, log } = arcYScale(
+    state.arcsYDomainBp,
+    arcAvailH(arcsH),
+    fullBlockWidth / bpLength,
+  )
   drawArcsToCtx(ctx, region, {
     bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
-    arcsYDomainBp: state.arcsYDomainBp ?? fallbackDomain,
-    arcsYLog: state.arcsYDomainBp !== undefined,
+    arcsYDomainBp: domainBp,
+    arcsYLog: log,
     arcsTop,
     arcsH,
     pairedArcsDown,

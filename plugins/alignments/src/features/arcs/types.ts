@@ -7,8 +7,12 @@ export interface ArcsUploadData {
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
   numArcs: number
-  // Max `arcYBp` across flat (read-cloud) arcs. Precomputed so the `arcsYDomainBp`
-  // view reduces over regions, not over every arc.
+  // How many of `numArcs` are flat (read-cloud) shapes, and the max `arcYBp`
+  // across them. Both precomputed in the pass that builds the arrays, so the
+  // `arcsYDomainBp` view reduces over regions rather than over every arc and
+  // `packArcMarkers` sizes its buffer exactly — in arc mode the count is 0 and
+  // the whole endpoint-marker pass is skipped.
+  numFlatArcs: number
   maxFlatArcYBp: number
   // One entry per connector tick (interchromosomal breakpoint marker). The tick
   // spans the full arc band, so no Y is stored — see arcLine.slang.
@@ -38,6 +42,7 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcShapeTypes: new Uint8Array(0),
     arcYBp: new Uint32Array(0),
     numArcs: 0,
+    numFlatArcs: 0,
     maxFlatArcYBp: 0,
     arcLinePositions: new Uint32Array(0),
     arcLineColorTypes: new Uint8Array(0),

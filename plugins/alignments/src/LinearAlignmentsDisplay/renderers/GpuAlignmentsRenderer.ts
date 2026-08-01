@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
 import {
   ARC_LINE_PASS,
   ARC_MARKER_PASS,
@@ -93,11 +94,7 @@ import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
-import {
-  ARC_HEIGHT_MARGIN,
-  arcColorPalette,
-  linkedReadColorPalette,
-} from '../shaders/palettes.ts'
+import { arcColorPalette, linkedReadColorPalette } from '../shaders/palettes.ts'
 import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
@@ -251,17 +248,18 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // device px, so the floor is below it and the look is unchanged.
   f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
   f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
-  // Read cloud picks its own domain (autoscaled |tlen|); arc mode defaults to
-  // the bp-span that fits availH at the current zoom, reproducing the prior
-  // `yBp * pxPerBp` math.
-  const availH = arcBandH - ARC_HEIGHT_MARGIN
+  // Same domain rule the Canvas2D/SVG draw applies (arcYScale): read cloud
+  // picks its own autoscaled |tlen| domain on a base-2 log axis, arc mode falls
+  // back to the bp-span that fits availH at the current zoom and stays linear.
   const pxPerBp = blockW / (block.end - block.start)
+  const { domainBp, log } = arcYScale(
+    state.arcsYDomainBp,
+    arcAvailH(arcBandH),
+    pxPerBp,
+  )
   f[U.pxPerBp] = pxPerBp
-  f[U.arcsYDomainBp] =
-    state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
-  // Read cloud is the only mode that sets arcsYDomainBp; it maps
-  // yBp=|tlen| with a base-2 log scale. Arc mode stays linear.
-  f[U.arcsYLog] = state.arcsYDomainBp !== undefined ? 1 : 0
+  f[U.arcsYDomainBp] = domainBp
+  f[U.arcsYLog] = log ? 1 : 0
 }
 
 // Which ColorPalette entry backs each shader color uniform. A table rather

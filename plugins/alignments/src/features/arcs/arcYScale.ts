@@ -1,3 +1,5 @@
+import { ARC_HEIGHT_MARGIN } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+
 // Single source of truth for the arcs band's yBp→vertical-fraction mapping,
 // shared by the Canvas2D/SVG draw (drawCanvas.ts) and the insert-size ruler
 // ticks (insertSizeTicks.ts) so the plotted lines and the tick labels can't
@@ -19,4 +21,38 @@ export function arcYFraction(
     : arcsYDomainBp > 0
       ? yBp / arcsYDomainBp
       : 0
+}
+
+// Plottable height of the band: the drawn height less the apex padding.
+export function arcAvailH(bandH: number) {
+  return bandH - ARC_HEIGHT_MARGIN
+}
+
+// The band's Y scale for one draw. Read cloud supplies an autoscaled |tlen|
+// domain and reads it on a base-2 log axis; arc mode supplies none and falls
+// back to the bp span that fits `availH` at the current zoom, which reproduces
+// a plain `yBp * pxPerBp` linear mapping. Shared by the Canvas2D/SVG draw and
+// `fillArcUniforms` so the two renderers can't pick different domains.
+export function arcYScale(
+  arcsYDomainBp: number | undefined,
+  availH: number,
+  pxPerBp: number,
+) {
+  return {
+    domainBp: arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1),
+    log: arcsYDomainBp !== undefined,
+  }
+}
+
+// Distance from the band's zero anchor to where `yBp` plots, clamped to the
+// band. Mirrors arcBandDestY in alignmentsUniforms.slang; shared by the arc
+// draw and the insert-size ruler so a tick lands on the apex of the arc
+// plotting its value.
+export function arcYOffsetPx(
+  yBp: number,
+  domainBp: number,
+  log: boolean,
+  availH: number,
+) {
+  return Math.min(arcYFraction(yBp, domainBp, log) * availH, availH)
 }

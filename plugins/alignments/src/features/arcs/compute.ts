@@ -2,7 +2,6 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
-  SAM_FLAG_SECONDARY,
   splitJunctionKind,
 } from '@jbrowse/alignments-core'
 import {
@@ -322,29 +321,30 @@ function pairJitter01(p1Bp: number, p2Bp: number) {
 // link plots at Y=|tlen|; a split junction (no tlen) at the full breakpoint gap
 // |p2Bp−p1Bp| — NOT half of it, so a split-supported SV lands on the same
 // insertSizeTicks ruler height as the equivalent-span discordant pair (and isn't
-// mislabeled at half its real size). Otherwise it's the single curved ARC shape
-// (the renderer chooses dome vs vertical-lines by zoom); Y is the genomic radius.
+// mislabeled at half its real size). A pair whose TLEN is *unset* (0 — the SAM
+// "information unavailable" encoding, which discordant and supplementary records
+// often carry) falls back to that same breakpoint gap, for the reason
+// getArcColorType already distrusts TLEN there: plotting it at |0| would park
+// exactly the reads read cloud exists to surface on the baseline. Otherwise it's
+// the single curved ARC shape (the renderer chooses dome vs vertical-lines by
+// zoom); Y is the genomic radius.
 function computeArcShape({
   cloud,
-  isSplit,
+  arc,
   absrad,
-  tlen,
-  p1Bp,
-  p2Bp,
 }: {
   cloud: boolean
-  isSplit: boolean
+  arc: PendingArc
   absrad: number
-  tlen: number | undefined
-  p1Bp: number
-  p2Bp: number
 }) {
+  const { isSplit, p1Bp, p2Bp } = arc
   if (cloud) {
-    const baseY = tlen !== undefined ? Math.abs(tlen) : Math.abs(p2Bp - p1Bp)
+    const tlen = isSplit ? 0 : Math.abs(arc.tlen)
+    const spanBp = tlen > 0 ? tlen : Math.abs(p2Bp - p1Bp)
     const jitter = 1 + CLOUD_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
       shapeType: isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
-      yBp: Math.round(baseY * jitter),
+      yBp: Math.round(spanBp * jitter),
     }
   }
   return { shapeType: ARC_SHAPE_ARC, yBp: absrad }
@@ -454,31 +454,6 @@ interface ArcChainContext {
   canonicalRefName: (refName: string) => string
 }
 
-// A lone read whose mate is mapped elsewhere: connect its own outer (5') edge —
-// the true fragment boundary TLEN measures from — to the recorded mate
-// position. Only PNEXT (the mate's leftmost/5' base) is known off-screen — the
-// mate's CIGAR/length isn't — so for a forward-strand mate the endpoint lands
-// at its 5' edge rather than its true 3' end (off by one read length).
-// Negligible at arc-view zoom; exact resolution would need the off-screen
-// mate's alignment.
-function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
-  const { data, readIdx, refName } = entry
-  const strand = entryStrand(entry)
-  const { start, end } = entrySpan(entry)
-  const mateRef = data.readNextRefs?.[readIdx] ?? ''
-  return {
-    p1Ref: refName,
-    p1Bp: readLeadingBp(strand, start, end),
-    p1Strand: strand,
-    p2Ref: mateRef ? ctx.canonicalRefName(mateRef) : refName,
-    p2Bp: data.readNextPositions?.[readIdx] ?? 0,
-    p2Strand: entryFlags(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
-    pairOrientationNum: data.readPairOrientations[readIdx]!,
-    tlen: data.readInsertSizes[readIdx]!,
-    isSplit: false,
-  }
-}
-
 function entrySeg(entry: ReadEntry): SegAln {
   return {
     refName: entry.refName,
@@ -487,10 +462,6 @@ function entrySeg(entry: ReadEntry): SegAln {
     clipAtStart: entry.data.readClipAtStart?.[entry.readIdx] ?? 0,
     onScreen: true,
   }
-}
-
-function isSecondaryEntry(e: ReadEntry) {
-  return (entryFlags(e) & SAM_FLAG_SECONDARY) !== 0
 }
 
 // Locus identity of a segment — the dedup key that collapses a fetched segment
@@ -532,20 +503,18 @@ function saSegments(entry: ReadEntry, ctx: ArcChainContext): SegAln[] {
 // deduplicated by locus and sorted into read order by clip-at-start-of-read.
 // That single canonical chain is what lets a connector step through an
 // off-screen segment and keeps a same-chr split junction from reading as
-// inter-chromosomal.
+// inter-chromosomal. `entries` arrives already deduped by readId and stripped of
+// secondary alignments — resolveReadGroup's partition owns both rules.
 function unpairedReadChain(
   entries: ReadEntry[],
   ctx: ArcChainContext,
 ): SegAln[] {
-  // Secondary alignments are alternate mappings, not part of the read's split
-  // chain — dropped along with their SA tags, as every other path does.
-  const own = entries.filter(e => !isSecondaryEntry(e))
   const byPos = new Map<string, SegAln>()
   // On-screen segments first, so a segment described by BOTH a fetched record
   // and a sibling's SA tag keeps the on-screen record (first writer wins).
   for (const seg of [
-    ...own.map(entrySeg),
-    ...own.flatMap(e => saSegments(e, ctx)),
+    ...entries.map(entrySeg),
+    ...entries.flatMap(e => saSegments(e, ctx)),
   ]) {
     const key = segLocusKey(seg)
     if (!byPos.has(key)) {
@@ -656,13 +625,43 @@ function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
 // The link to a mate that isn't on screen: only RNEXT/PNEXT locate it, so this
 // is the one connection kind the bezier overlay can't draw and the arc path can.
 // Gated on `drawLongRange` (the "show off-screen mate connections" setting) and
-// skipped for a mate that is unmapped, which has no locus at all.
+// on the mate actually having a locus — an unmapped mate has none, and neither
+// does a record that claims a mapped mate while naming RNEXT `*` / PNEXT 0
+// (BAM next_refid -1). Substituting this read's own refName and bp 0 there drew
+// a full-chromosome arc down to the origin.
+//
+// The arc connects the read's own outer (5') edge — the fragment boundary TLEN
+// measures from — to the recorded mate position. Only PNEXT (the mate's
+// leftmost/5' base) is known off-screen, not the mate's CIGAR/length, so for a
+// forward-strand mate the far endpoint lands at its 5' edge rather than its true
+// 3' end (off by one read length). Negligible at arc-view zoom; exact resolution
+// would need the off-screen mate's alignment.
 function offScreenMateArcs(
   entry: ReadEntry,
   ctx: ArcChainContext,
 ): PendingArc[] {
+  const { data, readIdx, refName } = entry
+  const mateRef = data.readNextRefs?.[readIdx]
+  const mateBp = data.readNextPositions?.[readIdx]
   const mateUnmapped = (entryFlags(entry) & SAM_FLAG_MATE_UNMAPPED) !== 0
-  return ctx.drawLongRange && !mateUnmapped ? [mateArc(entry, ctx)] : []
+  if (!ctx.drawLongRange || mateUnmapped || !mateRef || !mateBp) {
+    return []
+  }
+  const strand = entryStrand(entry)
+  const { start, end } = entrySpan(entry)
+  return [
+    {
+      p1Ref: refName,
+      p1Bp: readLeadingBp(strand, start, end),
+      p1Strand: strand,
+      p2Ref: ctx.canonicalRefName(mateRef),
+      p2Bp: mateBp,
+      p2Strand: entryFlags(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
+      pairOrientationNum: data.readPairOrientations[readIdx]!,
+      tlen: data.readInsertSizes[readIdx]!,
+      isSplit: false,
+    },
+  ]
 }
 
 // Every QNAME group resolves the same way — the bezier overlay's group
@@ -799,14 +798,7 @@ function resolveArcs(
       largeInsert,
       stats,
     })
-    const { shapeType, yBp } = computeArcShape({
-      cloud,
-      isSplit: arc.isSplit,
-      absrad,
-      tlen: arc.isSplit ? undefined : arc.tlen,
-      p1Bp,
-      p2Bp,
-    })
+    const { shapeType, yBp } = computeArcShape({ cloud, arc, absrad })
 
     arcs.push({
       p1: { refName: p1Ref, bp: p1Bp },
@@ -848,6 +840,7 @@ export function arcsToRegionResult(
   const arcShapeTypes = new Uint8Array(regionArcs.length)
   const arcYBp = new Uint32Array(regionArcs.length)
 
+  let numFlatArcs = 0
   let maxFlatArcYBp = 0
   for (let i = 0; i < regionArcs.length; i++) {
     const arc = regionArcs[i]!
@@ -856,8 +849,11 @@ export function arcsToRegionResult(
     arcColorTypes[i] = arc.colorType
     arcShapeTypes[i] = arc.shapeType
     arcYBp[i] = arc.yBp
-    if (isFlatArcShape(arc.shapeType) && arc.yBp > maxFlatArcYBp) {
-      maxFlatArcYBp = arc.yBp
+    if (isFlatArcShape(arc.shapeType)) {
+      numFlatArcs++
+      if (arc.yBp > maxFlatArcYBp) {
+        maxFlatArcYBp = arc.yBp
+      }
     }
   }
 
@@ -878,6 +874,7 @@ export function arcsToRegionResult(
     arcShapeTypes,
     arcYBp,
     numArcs: regionArcs.length,
+    numFlatArcs,
     maxFlatArcYBp,
     arcLinePositions,
     arcLineColorTypes,

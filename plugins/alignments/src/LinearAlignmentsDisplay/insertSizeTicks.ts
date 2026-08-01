@@ -1,5 +1,4 @@
-import { arcYFraction } from '../features/arcs/arcYScale.ts'
-import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
+import { arcAvailH, arcYOffsetPx } from '../features/arcs/arcYScale.ts'
 
 import type { ArcBand } from './renderers/rendererTypes.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
@@ -60,7 +59,7 @@ export function computeInsertSizeTicks({
   band: ArcBand
   arcsYDomainBp: number
 }): YScaleTicks | undefined {
-  const availH = band.height - ARC_HEIGHT_MARGIN
+  const availH = arcAvailH(band.height)
   if (availH <= 0 || arcsYDomainBp <= 0) {
     return undefined
   }
@@ -72,10 +71,7 @@ export function computeInsertSizeTicks({
 
   const items: YScaleTicks['items'] = []
   for (const v of logTickValues(arcsYDomainBp, maxTicks)) {
-    const offset = Math.min(
-      arcYFraction(v, arcsYDomainBp, true) * availH,
-      availH,
-    )
+    const offset = arcYOffsetPx(v, arcsYDomainBp, true, availH)
     const y = band.down ? anchor + offset : anchor - offset
     items.push({ value: v, y, label: formatBp(v) })
   }

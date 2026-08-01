@@ -724,6 +724,66 @@ describe('computeArcsFromPileupData', () => {
     ).toHaveLength(1)
   })
 
+  test('read cloud plots an unset-TLEN pair at its genomic span, not on the baseline', () => {
+    // TLEN 0 is SAM's "information unavailable" encoding, which discordant and
+    // supplementary records routinely carry. Trusting it parked exactly the
+    // pairs read cloud exists to surface at Y=0 — flat on the axis origin,
+    // indistinguishable from a 1bp insert. The span is the trustworthy signal,
+    // the same reason getArcColorType prefers it for the long-insert override.
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([9000]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      cloud: true,
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
+    // 8000bp span, ±8% jitter — well clear of the baseline either way.
+    expect(arcs[0]!.yBp).toBeGreaterThan(8000 * 0.9)
+    expect(arcs[0]!.yBp).toBeLessThan(8000 * 1.1)
+  })
+
+  test('a lone paired read with no recorded mate locus draws no arc', () => {
+    // RNEXT `*` / PNEXT 0 (BAM next_refid -1) on a record that still claims a
+    // mapped mate: nothing locates the other end. Substituting this read's own
+    // refName and bp 0 drew a full-chromosome arc down to the origin.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: [''],
+      readNextPositions: new Uint32Array([0]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
+    ]
+    const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: true,
+      drawLongRange: true,
+    })
+    expect(result.arcs).toEqual([])
+    expect(result.lines).toEqual([])
+  })
+
   test('read cloud SA-tag arcs color by strand like arcs (inversion→7, same-strand→8)', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
