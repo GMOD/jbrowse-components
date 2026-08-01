@@ -595,8 +595,8 @@ importers:
         specifier: workspace:^
         version: link:../text-indexing-core
       ixixx:
-        specifier: ^3.0.10
-        version: 3.0.10
+        specifier: ^3.0.11
+        version: 3.0.11
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -699,11 +699,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.6.1
-        version: 7.6.1
+        specifier: ^7.6.2
+        version: 7.6.2
       '@gmod/cram':
-        specifier: ^10.1.0
-        version: 10.1.0
+        specifier: ^10.2.0
+        version: 10.2.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -820,8 +820,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1
       '@gmod/bed':
-        specifier: ^2.2.7
-        version: 2.2.7
+        specifier: ^2.2.9
+        version: 2.2.9
       '@gmod/tabix':
         specifier: ^3.5.2
         version: 3.5.2
@@ -1566,8 +1566,8 @@ importers:
         specifier: ^5.0.9
         version: 5.0.9
       '@gmod/twobit':
-        specifier: ^6.0.10
-        version: 6.0.10
+        specifier: ^6.0.11
+        version: 6.0.11
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1689,8 +1689,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.18
-        version: 3.0.18
+        specifier: ^3.0.19
+        version: 3.0.19
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1827,8 +1827,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1(supports-color@8.1.1)
       ixixx:
-        specifier: ^3.0.10
-        version: 3.0.10
+        specifier: ^3.0.11
+        version: 3.0.11
       tmp:
         specifier: ^0.2.7
         version: 0.2.7
@@ -2727,8 +2727,8 @@ importers:
         specifier: ^0.35.3
         version: 0.35.3(@types/node@26.1.2)
       shiki:
-        specifier: ^4.3.1
-        version: 4.3.1
+        specifier: ^4.4.1
+        version: 4.4.1
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -4196,20 +4196,20 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.6.1':
-    resolution: {integrity: sha512-rbIxjvw9QvNhxvvDhrXTdI9gFfeMtoUOr6GgefLzz0TqAZLY2EnLyXgGpvn5j3D0IF8vSCZ3xG4JIYtnhAwq5A==}
+  '@gmod/bam@7.6.2':
+    resolution: {integrity: sha512-ijAJ4WFO20nvjjxhFRoJTA7RBGKOC+ApHT7G9FKPRx4U8/hVwQjjsZZMcMNs5RWq8utIXaTrMx+UXD6mE6TX6A==}
 
   '@gmod/bbi@10.0.1':
     resolution: {integrity: sha512-pMhKd3HQPNBXrY1XwW5M1IHoXBa6PzM1/YMVtMB9E8I/hkUHJxcvpvj8xwZYBPc/vjzaLRrFek7FNAX009GcbQ==}
 
-  '@gmod/bed@2.2.7':
-    resolution: {integrity: sha512-HPbrSxu9THDtFNgfzz6l9LPQj2abhYKrjsYYoZhh4cRRFlf6opoSdCCc3L2Rz0CzYZypeNfKzx6UbfEtnVtiKg==}
+  '@gmod/bed@2.2.9':
+    resolution: {integrity: sha512-+vtkTtwdcA7nSy/tEJlAsZtjUmopVDszXCgA0JBGSyEYq/inL//rt7Zaz+cTFEfGNivCGGKV0crLc5hliKrlrA==}
 
   '@gmod/bgzf-filehandle@6.3.1':
     resolution: {integrity: sha512-gmRZCyn3ZiffeAGVhf9sgVO3PZlVpI5RBDj/ypzgCa311PkYoQiVaW5AARMGKKLjJLFlAycSI1Jgs3gByVZ2sQ==}
 
-  '@gmod/cram@10.1.0':
-    resolution: {integrity: sha512-PUB9FJDnUnH0jPb4MAgxFiBY2LBKlXCViSTkBWCYYPHrfxgWOJK8+GN9uwwD23e+W5gWa0ozoF/+w596Vgebbg==}
+  '@gmod/cram@10.2.0':
+    resolution: {integrity: sha512-hurl6SW/qqJ0WEjFuWdVb4MG1C89vTWaTmn15OT94Ueuko1NM8HJCMwzrRQ9j33/1NT6NFAckeAUUZoJSroFgQ==}
 
   '@gmod/faidx@3.0.0':
     resolution: {integrity: sha512-3fgxkx8y87Fn4IBgRfovSzCn/kcs4Z0G1bEIzNN2gIDUVW0c1ISH2AvBa3jXlH5NGG26vpKRvLRguB6AsSrS6Q==}
@@ -4226,11 +4226,11 @@ packages:
   '@gmod/tabix@3.5.2':
     resolution: {integrity: sha512-1Rnv4ol/f1LoMo6RfBRdfOTKuCyo7STyU5NtbPW0T2WQZ6MwxMZemJuiB04Q3EQr9uv6KLPye0cj4C2w5fCBJg==}
 
-  '@gmod/trix@3.0.18':
-    resolution: {integrity: sha512-xHtQ7Ah7SO9xRxYLOONvuCcL0T5nPGzhGQ2dEDIkgzERQGa2yZDPU/TGtN+SBUmztg+MHVfO9gSayNoXYOtHKA==}
+  '@gmod/trix@3.0.19':
+    resolution: {integrity: sha512-QUNgi7n7cJ82RrS9Rhdo5W16XNB7PcdEoMr9UReOrbKR0MlmleaJaNvmlqR05UopNgBszKWb3aJe4bUi4Uz/Hw==}
 
-  '@gmod/twobit@6.0.10':
-    resolution: {integrity: sha512-beHN6cDhVX5pu5QoRTHw8edC8ysKqv18Fclf8KXb4P/ymdXNThu4b6tGvh8DDiEbqReQm+BVMKMIIXUVZxNr1g==}
+  '@gmod/twobit@6.0.11':
+    resolution: {integrity: sha512-jMpENrwKTMMmufoZaO1YQyhHieG6ji6fcaaWqBOO7kFZt+6WGhqWEjFQHtNYrIE/Me6IyVSEEYizqB17l3BDPw==}
 
   '@gmod/ucsc-hub@2.0.12':
     resolution: {integrity: sha512-IxEdfQLoo5MPqVzosSh8CCutbZM5vS9wVJqwCLLY4bNfFENUYdTJm4cYMySn3B0KR12+V0kHIa3V3AcVEIQuug==}
@@ -5328,28 +5328,56 @@ packages:
     resolution: {integrity: sha512-ANMDxuaPsNMdDC1m4vfvhlDmJweMwkE5XitTwrq2rWHx5jM+dlm4MmHt2PP6t0uejfR77SuhrhJ0zEijIF/uhA==}
     engines: {node: '>=20'}
 
+  '@shikijs/core@4.4.1':
+    resolution: {integrity: sha512-VeR2CY6Nn9/WbisoYLOQZ7HZOnwTrpBuOw4wExjqLnBCi62BNWynBUO6K2uPIASPFJwAv7cX1fUu+LrPlSstcw==}
+    engines: {node: '>=20'}
+
   '@shikijs/engine-javascript@4.3.1':
     resolution: {integrity: sha512-JBItcnPuYq7jVJdZo/vMj94r+szT7XEjHFX+mvFDGSEIbVAXAGyHAHzhbWzpGOwYidCZrErJLLgn2PVeiokHnQ==}
+    engines: {node: '>=20'}
+
+  '@shikijs/engine-javascript@4.4.1':
+    resolution: {integrity: sha512-6U4lJBh8LTvIkEVqRHv/rr3ruwtO6IweFQt1ME1ntHJMGHS+6N86vfYGO1o8c/DtOCTia2lfhdQBtBrps1sDfQ==}
     engines: {node: '>=20'}
 
   '@shikijs/engine-oniguruma@4.3.1':
     resolution: {integrity: sha512-OXyNMzg0pews+msMj4cHeqT4xiYKKvbnn6VbdAXxfoFl3SSx4fJTc8FadECuc5/H9p3BzhNAoAUXKwAu9rWYhg==}
     engines: {node: '>=20'}
 
+  '@shikijs/engine-oniguruma@4.4.1':
+    resolution: {integrity: sha512-p23RugMKss0r5DAtRJW1yAXUDl60JvhQYV20yuxei//26JyDSJefV3umyWzzwep2weblMnJGDYahuti6XkcMgA==}
+    engines: {node: '>=20'}
+
   '@shikijs/langs@4.3.1':
     resolution: {integrity: sha512-m0l9nsDqgBHvbZbk7A0/kXz/impK3uB/c6rAn6Gpg/uPtdZRQ+alsN/17MU5thb68XTj/4DxkZAotrM0GGSpDQ==}
+    engines: {node: '>=20'}
+
+  '@shikijs/langs@4.4.1':
+    resolution: {integrity: sha512-xb2kCMloBCIraIy2fS5MW0t/BxVY3q2nDyQKBoeSeq6KNrQbShHetCFlw2n35fGIJ6t3+hXDLQogP5ir9O9bvA==}
     engines: {node: '>=20'}
 
   '@shikijs/primitive@4.3.1':
     resolution: {integrity: sha512-CXQRQOYy1leqQ8ceTeJdmXv/bsUY++6QyLpXJ94LZAAYj5X2SKRdc5ipguv4NPyGVKItB2PPwUpRNe0Sjh5S1A==}
     engines: {node: '>=20'}
 
+  '@shikijs/primitive@4.4.1':
+    resolution: {integrity: sha512-ko2OfDoG89YuQ7xL5LtcQiWKb7NIv1Ephb7g48TVU198OzAMLC8lXVEwaJGHK4sUMYrfAGJDqYmNLOLiW/Kz8w==}
+    engines: {node: '>=20'}
+
   '@shikijs/themes@4.3.1':
     resolution: {integrity: sha512-dgpoJ4WqNi2yTmizQHBJ5zcX6j2lE6icN/0yt4l1kkf16jrY/pwPLoTb1ETsWMz0OBLf9ZNvwmxft+cH+N9qSA==}
     engines: {node: '>=20'}
 
+  '@shikijs/themes@4.4.1':
+    resolution: {integrity: sha512-wudOaoFro+/Zl9gQv2W1Ur5XlVduqvTuYLI483Xi0wgc1A+cy1hfB2r6ac6ufBgF+ID7KJEW7L41MHrzQ4wH+w==}
+    engines: {node: '>=20'}
+
   '@shikijs/types@4.3.1':
     resolution: {integrity: sha512-CHFxE0jztBIZRHH6gxXE7DXUCFXjReEGxZ/j0rfSLGKZuwp2xBYycEP14875DSa9KLL/6700oxIq6oO6ef9K2g==}
+    engines: {node: '>=20'}
+
+  '@shikijs/types@4.4.1':
+    resolution: {integrity: sha512-GOwCLQDHM5EjGUWNPrhzJbr6JP8V/Dx/CDVkWvbZ1Avw5JFnNUckrgbLmE07qtg4WlW7Q7QFndhjIkeU9XMPvw==}
     engines: {node: '>=20'}
 
   '@shikijs/vscode-textmate@10.0.2':
@@ -7812,8 +7840,8 @@ packages:
     resolution: {integrity: sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==}
     engines: {node: '>=8'}
 
-  ixixx@3.0.10:
-    resolution: {integrity: sha512-+/fAuZaGvNnEsT//MojnmfzNlla2E0N4w+oLxvZ1ZDJ3+1bRu+OyAl13SmYkc+gr4oGAYzxoEtBbpCx7g1V7Vw==}
+  ixixx@3.0.11:
+    resolution: {integrity: sha512-kIYpjwqV7mSBmeKHKdGFlBYxpNUdlkbtIshvIGBJ4vwYJ0XfXF/ZR5yTP33UIT3cOKKyczUDvGhQUICTfyiFMw==}
     hasBin: true
 
   jackspeak@3.4.3:
@@ -9432,6 +9460,10 @@ packages:
 
   shiki@4.3.1:
     resolution: {integrity: sha512-oR+qDVi2OjX1tmDpyv+3KviX01KzO6Af+0NNnKnsp9491UEGz2YpxTuJboS/6VhYpTdqzmuJBuiTlrAWWJAssw==}
+    engines: {node: '>=20'}
+
+  shiki@4.4.1:
+    resolution: {integrity: sha512-rFP+iYKzjLEIqiMiKANhARqiAbk4deDhWnBtnUO/K0D0dPxMGDH4N0FVfBY/VeI+lPrV4wNGCHQZp7EOr7NNBw==}
     engines: {node: '>=20'}
 
   side-channel-list@1.0.1:
@@ -12117,7 +12149,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.6.1':
+  '@gmod/bam@7.6.2':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.1
       '@jbrowse/quick-lru': 7.3.5
@@ -12132,14 +12164,14 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.1
 
-  '@gmod/bed@2.2.7': {}
+  '@gmod/bed@2.2.9': {}
 
   '@gmod/bgzf-filehandle@6.3.1':
     dependencies:
       generic-filehandle2: 2.2.1
       pako-esm2: 2.0.2
 
-  '@gmod/cram@10.1.0':
+  '@gmod/cram@10.2.0':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -12171,9 +12203,9 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.1
 
-  '@gmod/trix@3.0.18': {}
+  '@gmod/trix@3.0.19': {}
 
-  '@gmod/twobit@6.0.10':
+  '@gmod/twobit@6.0.11':
     dependencies:
       generic-filehandle2: 2.2.1
 
@@ -13200,9 +13232,23 @@ snapshots:
       '@types/hast': 3.0.5
       hast-util-to-html: 9.0.5
 
+  '@shikijs/core@4.4.1':
+    dependencies:
+      '@shikijs/primitive': 4.4.1
+      '@shikijs/types': 4.4.1
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+      hast-util-to-html: 9.0.5
+
   '@shikijs/engine-javascript@4.3.1':
     dependencies:
       '@shikijs/types': 4.3.1
+      '@shikijs/vscode-textmate': 10.0.2
+      oniguruma-to-es: 4.3.6
+
+  '@shikijs/engine-javascript@4.4.1':
+    dependencies:
+      '@shikijs/types': 4.4.1
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 4.3.6
 
@@ -13211,9 +13257,18 @@ snapshots:
       '@shikijs/types': 4.3.1
       '@shikijs/vscode-textmate': 10.0.2
 
+  '@shikijs/engine-oniguruma@4.4.1':
+    dependencies:
+      '@shikijs/types': 4.4.1
+      '@shikijs/vscode-textmate': 10.0.2
+
   '@shikijs/langs@4.3.1':
     dependencies:
       '@shikijs/types': 4.3.1
+
+  '@shikijs/langs@4.4.1':
+    dependencies:
+      '@shikijs/types': 4.4.1
 
   '@shikijs/primitive@4.3.1':
     dependencies:
@@ -13221,11 +13276,26 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.5
 
+  '@shikijs/primitive@4.4.1':
+    dependencies:
+      '@shikijs/types': 4.4.1
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+
   '@shikijs/themes@4.3.1':
     dependencies:
       '@shikijs/types': 4.3.1
 
+  '@shikijs/themes@4.4.1':
+    dependencies:
+      '@shikijs/types': 4.4.1
+
   '@shikijs/types@4.3.1':
+    dependencies:
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+
+  '@shikijs/types@4.4.1':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.5
@@ -15984,7 +16054,7 @@ snapshots:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
 
-  ixixx@3.0.10:
+  ixixx@3.0.11:
     dependencies:
       split2: 4.2.0
 
@@ -18078,6 +18148,17 @@ snapshots:
       '@shikijs/langs': 4.3.1
       '@shikijs/themes': 4.3.1
       '@shikijs/types': 4.3.1
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+
+  shiki@4.4.1:
+    dependencies:
+      '@shikijs/core': 4.4.1
+      '@shikijs/engine-javascript': 4.4.1
+      '@shikijs/engine-oniguruma': 4.4.1
+      '@shikijs/langs': 4.4.1
+      '@shikijs/themes': 4.4.1
+      '@shikijs/types': 4.4.1
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.5
 
