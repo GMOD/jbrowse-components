@@ -32,7 +32,7 @@ const GREY = '#d8dbe0'
 
 // Values for one gene, unpacked from the sparse blob: three bytes per
 // expressing cell, a uint16 cell index and a byte of expression.
-export function geneValues(cells: Cells, expr: Uint8Array, gene: string) {
+function geneValues(cells: Cells, expr: Uint8Array, gene: string) {
   const g = cells.genes.indexOf(gene)
   const out = new Uint8Array(cells.x.length)
   if (g !== -1) {
@@ -68,7 +68,7 @@ export default function UmapScatter({
   selected: string[]
   onPick: (cellType: string) => void
 }) {
-  const canvas = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
   const ref = useRef<HTMLCanvasElement>(null)
 
   // an imperative canvas repaint whenever the inputs change
@@ -112,7 +112,7 @@ export default function UmapScatter({
   }, [cells, expr, gene, selected])
 
   return (
-    <div ref={canvas}>
+    <div ref={canvasRef}>
       <canvas
         ref={ref}
         width={WIDTH * 2}

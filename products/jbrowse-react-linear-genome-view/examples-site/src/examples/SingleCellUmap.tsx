@@ -74,7 +74,7 @@ function tracks(cells: Cells) {
           name: type.name,
           group: type.group,
           color: type.color,
-          uri: `${BASE}/${type.name.replace(/ /g, '_')}.bw`,
+          uri: `${BASE}/${type.name.replaceAll(' ', '_')}.bw`,
         })),
       },
       displayDefaults: { defaultRendering: 'multirowxy', height: 330 },

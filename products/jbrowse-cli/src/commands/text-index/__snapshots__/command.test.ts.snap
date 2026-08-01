@@ -20,7 +20,7 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes a local gz gff3 file 3`] = `12254`;
+exports[`indexes a local gz gff3 file 3`] = `12201`;
 
 exports[`indexes a local gz gff3 file 4`] = `
 "agt220000000000
@@ -81,12 +81,12 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes a remote and a local file 3`] = `134774`;
+exports[`indexes a remote and a local file 3`] = `134721`;
 
 exports[`indexes a remote and a local file 4`] = `
 "agt220000000000
 au9.g000000044E
-seg090000020139
+seg090000020104
 "
 `;
 
@@ -104,7 +104,7 @@ exports[`indexes a remote gz gff3 file 2`] = `
 "
 `;
 
-exports[`indexes a remote gz gff3 file 3`] = `13815`;
+exports[`indexes a remote gz gff3 file 3`] = `13755`;
 
 exports[`indexes a remote gz gff3 file 4`] = `
 "agt220000000000
@@ -207,7 +207,7 @@ seg15 ["ctgA%3A39265..39361"|"noAttributes"|"seg15"],1 ["ctgA%3A39753..40034"|"n
 "
 `;
 
-exports[`indexes a track with no attributes in the config 3`] = `11585`;
+exports[`indexes a track with no attributes in the config 3`] = `11535`;
 
 exports[`indexes a track with no attributes in the config 4`] = `
 "agt220000000000
@@ -230,7 +230,7 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes multiple local gff3 files 3`] = `125702`;
+exports[`indexes multiple local gff3 files 3`] = `125649`;
 
 exports[`indexes multiple local gff3 files 4`] = `
 "agt220000000000
@@ -252,12 +252,12 @@ exports[`indexes multiple remote gff3 file 2`] = `
 "
 `;
 
-exports[`indexes multiple remote gff3 file 3`] = `136335`;
+exports[`indexes multiple remote gff3 file 3`] = `136275`;
 
 exports[`indexes multiple remote gff3 file 4`] = `
 "agt220000000000
 au9.g00000004CC
-seg080000020289
+seg08000002024D
 "
 `;
 
@@ -276,7 +276,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`indexes with  single per-file arg 3`] = `13274`;
+exports[`indexes with  single per-file arg 3`] = `13217`;
 
 exports[`indexes with  single per-file arg 4`] = `
 "agt220000000000
@@ -298,7 +298,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`indexes with multiple per-file args 3`] = `13274`;
+exports[`indexes with multiple per-file args 3`] = `13217`;
 
 exports[`indexes with multiple per-file args 4`] = `
 "agt220000000000
@@ -321,7 +321,7 @@ seg15 ["ctgA%3A39265..39361"|"remote_gff3_gz"|"seg15"],1 ["ctgA%3A39753..40034"|
 "
 `;
 
-exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 3`] = `12031`;
+exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 3`] = `11979`;
 
 exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 4`] = `
 "agt220000000000

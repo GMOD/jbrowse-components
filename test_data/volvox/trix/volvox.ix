@@ -71,13 +71,13 @@ gene3 ["ctgA%3A2201..2500"|"single_exon_gene"|"gene3"],1
 gene:hga ["ctgA%3A1100..2000"|"gff3tabix_genes"|"Gene%3Ahga"],1
 gene:hgb ["ctgA%3A1600..3000"|"gff3tabix_genes"|"Gene%3Ahgb"],1
 get ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
-helix ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],1 ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],2
+helix ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],1
 hox ["ctgA%3A28332..30033"|"gff3tabix_genes"|"m02"|"HOX"],1
 i ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 ig-like ["ctgA%3A33325..35791"|"gff3tabix_genes"|"m04"|"Ig-like"],1
 inv133 ["ctgA%3A1..1000"|"volvox.inv.vcf"|"inv133"],1
 inv134 ["ctgA%3A2700..10000"|"volvox.inv.vcf"|"inv134"],1
-inv135 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],1 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],2
+inv135 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],1
 inv136 ["ctgA%3A19848..30074"|"volvox.inv.vcf"|"inv136"],1
 inv9000 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv9000"],1
 is ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],4 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],5
@@ -111,7 +111,7 @@ mrna ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with
 mrna1 ["ctgA%3A1201..1500"|"single_exon_gene"|"mRNA1"],1
 mrna2 ["ctgA%3A1201..3902"|"single_exon_gene"|"mRNA2"],1
 no ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],1 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],2
-ok! ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1 ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],2
+ok! ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 protein ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1
 protein:hga ["ctgA%3A1200..1900"|"gff3tabix_genes"|"Protein%3AHGA"],1
 protein:hgb ["ctgA%3A1800..2900"|"gff3tabix_genes"|"Protein%3AHGB"],1
@@ -178,7 +178,7 @@ seg03 ["ctgA%3A6885..7241"|"gff3tabix_genes"|"seg03"],1 ["ctgA%3A7410..7737"|"gf
 seg04 ["ctgA%3A5233..5302"|"gff3tabix_genes"|"seg04"],1 ["ctgA%3A5800..6101"|"gff3tabix_genes"|"seg04"],2 ["ctgA%3A6442..6854"|"gff3tabix_genes"|"seg04"],3 ["ctgA%3A7106..7211"|"gff3tabix_genes"|"seg04"],4 ["ctgA%3A7695..8177"|"gff3tabix_genes"|"seg04"],5 ["ctgA%3A8545..8783"|"gff3tabix_genes"|"seg04"],6 ["ctgA%3A8869..8935"|"gff3tabix_genes"|"seg04"],7 ["ctgA%3A9404..9825"|"gff3tabix_genes"|"seg04"],8
 seg05 ["ctgA%3A26503..26799"|"gff3tabix_genes"|"seg05"],1 ["ctgA%3A27172..27185"|"gff3tabix_genes"|"seg05"],2 ["ctgA%3A27448..27860"|"gff3tabix_genes"|"seg05"],3 ["ctgA%3A27887..28076"|"gff3tabix_genes"|"seg05"],4 ["ctgA%3A28225..28316"|"gff3tabix_genes"|"seg05"],5 ["ctgA%3A28777..29058"|"gff3tabix_genes"|"seg05"],6 ["ctgA%3A29513..29647"|"gff3tabix_genes"|"seg05"],7 ["ctgA%3A30108..30216"|"gff3tabix_genes"|"seg05"],8 ["ctgA%3A30465..30798"|"gff3tabix_genes"|"seg05"],9 ["ctgA%3A31232..31236"|"gff3tabix_genes"|"seg05"],10 ["ctgA%3A31421..31817"|"gff3tabix_genes"|"seg05"],11 ["ctgA%3A32010..32057"|"gff3tabix_genes"|"seg05"],12 ["ctgA%3A32208..32680"|"gff3tabix_genes"|"seg05"],13 ["ctgA%3A33053..33325"|"gff3tabix_genes"|"seg05"],14 ["ctgA%3A33438..33868"|"gff3tabix_genes"|"seg05"],15 ["ctgA%3A34244..34313"|"gff3tabix_genes"|"seg05"],16 ["ctgA%3A34605..34983"|"gff3tabix_genes"|"seg05"],17 ["ctgA%3A35333..35507"|"gff3tabix_genes"|"seg05"],18 ["ctgA%3A35642..35904"|"gff3tabix_genes"|"seg05"],19
 seg06 ["ctgA%3A19249..19559"|"gff3tabix_genes"|"seg06"],1 ["ctgA%3A19975..20260"|"gff3tabix_genes"|"seg06"],2 ["ctgA%3A20379..20491"|"gff3tabix_genes"|"seg06"],3 ["ctgA%3A20533..21005"|"gff3tabix_genes"|"seg06"],4 ["ctgA%3A21122..21331"|"gff3tabix_genes"|"seg06"],5 ["ctgA%3A21682..22176"|"gff3tabix_genes"|"seg06"],6 ["ctgA%3A22374..22570"|"gff3tabix_genes"|"seg06"],7 ["ctgA%3A23025..23427"|"gff3tabix_genes"|"seg06"],8
-seg07 ["ctgA%3A44191..44514"|"gff3tabix_genes"|"seg07"],1 ["ctgA%3A44552..45043"|"gff3tabix_genes"|"seg07"],2 ["ctgA%3A45373..45600"|"gff3tabix_genes"|"seg07"],3 ["ctgA%3A45897..46315"|"gff3tabix_genes"|"seg07"],4 ["ctgA%3A46491..46890"|"gff3tabix_genes"|"seg07"],5 ["ctgA%3A47126..47297"|"gff3tabix_genes"|"seg07"],6 ["ctgA%3A47735..47983"|"gff3tabix_genes"|"seg07"],7 ["ctgA%3A48447..48709"|"gff3tabix_genes"|"seg07"],8 ["ctgA%3A48931..49186"|"gff3tabix_genes"|"seg07"],9 ["ctgA%3A49472..49699"|"gff3tabix_genes"|"seg07"],10 ["ctgA%3A49957..50000"|"gff3tabix_genes"|"seg07"],11 ["ctgA%3A49957..50000"|"gff3tabix_genes"|"seg07"],12
+seg07 ["ctgA%3A44191..44514"|"gff3tabix_genes"|"seg07"],1 ["ctgA%3A44552..45043"|"gff3tabix_genes"|"seg07"],2 ["ctgA%3A45373..45600"|"gff3tabix_genes"|"seg07"],3 ["ctgA%3A45897..46315"|"gff3tabix_genes"|"seg07"],4 ["ctgA%3A46491..46890"|"gff3tabix_genes"|"seg07"],5 ["ctgA%3A47126..47297"|"gff3tabix_genes"|"seg07"],6 ["ctgA%3A47735..47983"|"gff3tabix_genes"|"seg07"],7 ["ctgA%3A48447..48709"|"gff3tabix_genes"|"seg07"],8 ["ctgA%3A48931..49186"|"gff3tabix_genes"|"seg07"],9 ["ctgA%3A49472..49699"|"gff3tabix_genes"|"seg07"],10 ["ctgA%3A49957..50000"|"gff3tabix_genes"|"seg07"],11
 seg08 ["ctgA%3A18509..18985"|"gff3tabix_genes"|"seg08"],1 ["ctgA%3A18989..19388"|"gff3tabix_genes"|"seg08"],2 ["ctgA%3A19496..19962"|"gff3tabix_genes"|"seg08"],3 ["ctgA%3A20093..20580"|"gff3tabix_genes"|"seg08"],4 ["ctgA%3A20970..21052"|"gff3tabix_genes"|"seg08"],5 ["ctgA%3A21270..21277"|"gff3tabix_genes"|"seg08"],6 ["ctgA%3A21685..22168"|"gff3tabix_genes"|"seg08"],7 ["ctgA%3A22564..22869"|"gff3tabix_genes"|"seg08"],8 ["ctgA%3A22958..23298"|"gff3tabix_genes"|"seg08"],9 ["ctgA%3A23412..23469"|"gff3tabix_genes"|"seg08"],10 ["ctgA%3A23932..23932"|"gff3tabix_genes"|"seg08"],11 ["ctgA%3A24328..24787"|"gff3tabix_genes"|"seg08"],12 ["ctgA%3A25228..25367"|"gff3tabix_genes"|"seg08"],13
 seg09 ["ctgA%3A36616..37057"|"gff3tabix_genes"|"seg09"],1 ["ctgA%3A37208..37227"|"gff3tabix_genes"|"seg09"],2
 seg10 ["ctgA%3A29771..29942"|"gff3tabix_genes"|"seg10"],1 ["ctgA%3A30042..30340"|"gff3tabix_genes"|"seg10"],2 ["ctgA%3A30810..31307"|"gff3tabix_genes"|"seg10"],3 ["ctgA%3A31761..31984"|"gff3tabix_genes"|"seg10"],4 ["ctgA%3A32374..32937"|"gff3tabix_genes"|"seg10"],5
