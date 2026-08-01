@@ -128,6 +128,23 @@ documents only what bites when editing _this package_.
   fills per-base _cells_ (`makeCellLeftMapper`, caller owns width) or a two-edge
   _span_ widened to a floor (`spanLeft`). MAF's cell painter is the former,
   wiggle/multi-row/canvas-rect the latter.
+- **A strand/direction crossing the worker boundary is _genomic_; flip it before
+  it places anything on screen.** The worker cannot know `reversed` — it packs
+  the feature's own strand — so every renderer that turns one into a left/right
+  decision owes it a `block.reversed ? -d : d` (Canvas2D) or `flipX(d, u)`
+  (shader). Third member of the family above, and the nastiest to catch: both
+  backends read the same field, so getting it wrong in one place usually means
+  getting it wrong identically in both, and the Canvas2D-vs-GPU parity gate sees
+  nothing. The canvas plugin flipped `lineDirections` and `arrowDirections` but
+  not `rectStrands`, so on a flipped region a + gene's continuation markers
+  pointed opposite the strand arrows on the same glyph. Two ways to be safe by
+  construction, both in alignments: build the geometry unflipped and `flipX` the
+  final position (`read.slang` — mirroring the shape mirrors its direction, and
+  note this requires `bpLen` stay POSITIVE rather than baking reversal into the
+  bp range as canvas does), or derive the sign from screen x's you already have
+  (`chevronApexX`'s `Math.sign(tipX - otherX)`). A strand used only to pick a
+  _color_ (arcs' inversion/deletion junction kinds) or a symmetric glyph
+  (variants' shapes) needs no flip — say so where it isn't obvious.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`, never a
   hand-rolled `save`/`clip`/`restore` loop.** It is the Canvas2D twin of
   `GpuPerRegionRenderingBackend.renderBlocks`' per-block scissor, and it owns
@@ -160,11 +177,11 @@ documents only what bites when editing _this package_.
   delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
   data from the model's map passed into `renderBlocks(blocks, regions, state)`.
   The one sanctioned exception is a cache written **exclusively by the upload
-  callback** and never patched in place (alignments' `sync(sources)`, on both its
-  GPU and Canvas2D backends): `RenderLifecycleMixin` bumps `renderTick` after
-  every upload, so the render autorun re-fires and the cache cannot stale. Still
-  forbidden: a cache populated from anywhere else, or one whose entries are
-  mutated. ARCHITECTURE.md "What not to do" carries the same rule.
+  callback** and never patched in place (alignments' `sync(sources)`, on both
+  its GPU and Canvas2D backends): `RenderLifecycleMixin` bumps `renderTick`
+  after every upload, so the render autorun re-fires and the cache cannot stale.
+  Still forbidden: a cache populated from anywhere else, or one whose entries
+  are mutated. ARCHITECTURE.md "What not to do" carries the same rule.
 - **Upload memos are helpers, not hand-rolled `let`s.** The mixin gives a
   display one upload autorun, so every observable any upload reads re-fires all
   of them. Per-region maps diff through `createRegionUploadSync`; a monolithic
