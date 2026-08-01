@@ -267,12 +267,14 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
           showCytobands,
           showCenterLine,
           colorByCDS,
+          showAminoAcids,
           showTrackOutlines,
           trackLabels,
         } = self
         localStorageSetItem('lgv-showCytobands', s(showCytobands))
         localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
         localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+        localStorageSetItem('lgv-showAminoAcids', s(showAminoAcids))
         localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
         // skip writing the empty default — otherwise reads later round-trip to
         // '' instead of null, hiding the config-fallback path

@@ -1,12 +1,20 @@
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
+import { of } from 'rxjs'
 
 import {
+  fetchPeptideData,
   findTranscriptsWithCDS,
   processTranscriptFromSeq,
   transcriptGeneticCodeId,
 } from './peptideUtils.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Feature, Region } from '@jbrowse/core/util'
+
+jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
+  getFeatureAdapterOrThrow: jest.fn(),
+}))
 
 const standardCode = getGeneticCode(1)
 const vertebrateMitoCode = getGeneticCode(2)
@@ -496,5 +504,148 @@ describe('processTranscriptFromSeq', () => {
     expect(result?.protein).toBe('MUK')
     // codon index 1 (the TGA->U) is reported so the overlay can highlight it
     expect([...(result?.translExceptIndices ?? [])]).toEqual([1])
+  })
+})
+
+describe('fetchPeptideData', () => {
+  const CONTIG_LENGTH = 250_000
+
+  // Bases only at the coding positions; everywhere else is a base that would
+  // frameshift the protein if it ever leaked into a codon.
+  function makeGenome(codingBases: Map<number, string>) {
+    const genome = new Array<string>(CONTIG_LENGTH).fill('C')
+    for (const [start, bases] of codingBases) {
+      for (let i = 0; i < bases.length; i++) {
+        genome[start + i] = bases.charAt(i)
+      }
+    }
+    return genome.join('')
+  }
+
+  // Records what the sequence adapter was actually asked for, which is the point
+  // of the exercise: the fetched ranges should track the CDS, not the span.
+  // ranges are fetched concurrently, so callers compare against this sorted
+  function installSequenceAdapter(genome: string, { fail = false } = {}) {
+    const requested: { start: number; end: number }[] = []
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeatures: (region: Region) => {
+        requested.push({ start: region.start, end: region.end })
+        return of({
+          get: (key: string) =>
+            key === 'seq' && !fail
+              ? genome.slice(region.start, region.end)
+              : undefined,
+        })
+      },
+    } as unknown as Awaited<ReturnType<typeof getFeatureAdapterOrThrow>>)
+    return {
+      get sorted() {
+        return [...requested].sort((a, b) => a.start - b.start)
+      },
+    }
+  }
+
+  function transcriptWithCDS(exons: { start: number; end: number }[]) {
+    const starts = exons.map(e => e.start)
+    const ends = exons.map(e => e.end)
+    return createCoordFeature({
+      type: 'mRNA',
+      start: Math.min(...starts),
+      end: Math.max(...ends),
+      strand: 1,
+      subfeatures: exons.map(e =>
+        createCoordFeature({ type: 'CDS', start: e.start, end: e.end }),
+      ),
+    })
+  }
+
+  async function translate(transcript: Feature) {
+    const map = await fetchPeptideData(
+      {} as PluginManager,
+      {
+        sessionId: 'test',
+        sequenceAdapter: { type: 'IndexedFastaAdapter' },
+        regions: [
+          {
+            refName: 'chr1',
+            start: 0,
+            end: CONTIG_LENGTH,
+            assemblyName: 'volvox',
+          },
+        ],
+      },
+      new Map([['t1', transcript]]),
+    )
+    return map.get(transcript.id())?.protein
+  }
+
+  beforeEach(() => {
+    jest.mocked(getFeatureAdapterOrThrow).mockReset()
+  })
+
+  it('fetches the coding stretches rather than the whole transcript span', async () => {
+    // ATGAAA + TTTGGG -> MKFG, split across an 8.9kb intron
+    const genome = makeGenome(
+      new Map([
+        [100, 'ATGAAA'],
+        [9000, 'TTTGGG'],
+      ]),
+    )
+    const requested = installSequenceAdapter(genome)
+    const protein = await translate(
+      transcriptWithCDS([
+        { start: 100, end: 106 },
+        { start: 9000, end: 9006 },
+      ]),
+    )
+
+    expect(protein).toBe('MKFG')
+    expect(requested.sorted).toEqual([
+      { start: 100, end: 106 },
+      { start: 9000, end: 9006 },
+    ])
+  })
+
+  it('reads through an intron too small to be worth a second request', async () => {
+    const genome = makeGenome(
+      new Map([
+        [100, 'ATGAAA'],
+        [1000, 'TTTGGG'],
+      ]),
+    )
+    const requested = installSequenceAdapter(genome)
+    const protein = await translate(
+      transcriptWithCDS([
+        { start: 100, end: 106 },
+        { start: 1000, end: 1006 },
+      ]),
+    )
+
+    expect(protein).toBe('MKFG')
+    expect(requested.sorted).toEqual([{ start: 100, end: 1006 }])
+  })
+
+  it('caps the request count on a many-exon gene without changing the protein', async () => {
+    // 20 single-codon exons, each separated by an intron far wider than the
+    // merge threshold — the cap has to close some of those gaps anyway
+    const exons = Array.from({ length: 20 }, (_, i) => ({
+      start: 1000 + i * 10_000,
+      end: 1000 + i * 10_000 + 3,
+    }))
+    const genome = makeGenome(new Map(exons.map(e => [e.start, 'ATG'])))
+    const requested = installSequenceAdapter(genome)
+    const protein = await translate(transcriptWithCDS(exons))
+
+    expect(protein).toBe('M'.repeat(20))
+    expect(requested.sorted.length).toBeLessThanOrEqual(12)
+    expect(requested.sorted.length).toBeGreaterThan(1)
+  })
+
+  it('yields no peptides when a range fails, rather than translating a hole', async () => {
+    const genome = makeGenome(new Map([[100, 'ATGAAA']]))
+    installSequenceAdapter(genome, { fail: true })
+    expect(await translate(transcriptWithCDS([{ start: 100, end: 106 }]))).toBe(
+      undefined,
+    )
   })
 })

@@ -137,6 +137,7 @@ the whole surface.
 | <span id="getter-effectiveshowdescriptions">**effectiveShowDescriptions**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-effectiveshowdescriptions) |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-selectedfeatureid) |
 | <span id="getter-colorbycds">**colorByCDS**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-colorbycds) |
+| <span id="getter-showaminoacids">**showAminoAcids**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-showaminoacids) |
 | <span id="getter-sequenceadapter">**sequenceAdapter**</span><br><code>any</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-sequenceadapter) |
 | <span id="getter-regionkeys">**regionKeys**</span><br><code>Map&lt;number, string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-regionkeys) |
 | <span id="getter-reversedregions">**reversedRegions**</span><br><code>Set&lt;number&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-reversedregions) |
@@ -229,7 +230,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { displayConfig: {…}; ... 5 more ...; theme: Serializable…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { displayConfig: {…}; ... 5 more ...; theme: SerializableThemeArgs &#124; undefined; }</code></pre></dialog></span> |  | LinearBasicDisplay |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { displayConfig: {…}; ... 6 more ...; theme: Serializable…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { displayConfig: {…}; ... 6 more ...; theme: SerializableThemeArgs &#124; undefined; }</code></pre></dialog></span> |  | LinearBasicDisplay |
 | <span id="method-hasfeaturefilters">**hasFeatureFilters**</span><br><code>() =&gt; boolean</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |

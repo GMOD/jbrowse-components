@@ -85,7 +85,7 @@ interface InitState {
   highlight?: (string | HighlightType)[] // genomic regions to highlight
   showCenterLine?: boolean // show the center line
   trackLabels?: 'overlapping' | 'offset' | 'hidden' // track-label placement mode
-  colorByCDS?: boolean // color CDS by reading frame + draw amino acid lettering
+  colorByCDS?: boolean // color CDS segments by reading frame
 }
 ```
 

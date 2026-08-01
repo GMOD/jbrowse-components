@@ -55,25 +55,29 @@ Several track-menu toggles tune how gene glyphs are drawn:
 
 ## Color by CDS
 
-By default CDS segments use the track's feature color. Turning on **Color by
-CDS** instead tints each CDS segment by its reading frame, so frameshifts and
+By default CDS segments use the track's feature color. Turning on **Color CDS by
+reading frame** instead tints each CDS segment by its frame, so frameshifts and
 the phase relationship between exons are visible at a glance.
 
-Enable it from the linear genome view's hamburger menu → **Color by CDS and draw
-amino acids**. The setting applies to every gene track in that view and is
-remembered across sessions.
+Enable it from the linear genome view's hamburger menu → **Color CDS by reading
+frame**. The setting applies to every gene track in that view and is remembered
+across sessions.
 
-<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color by CDS and draw amino acids' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
 
 ## Peptide lettering
 
-The same menu option also draws the translated protein. As you zoom in, the
-amino acids are first drawn as a colored background band over the CDS, and once
-you are zoomed in far enough (roughly base-pair resolution) the single-letter
-amino acid code is drawn over each codon, as in the lower frame of the figure
-above. The letters line up with the codons in the reference sequence track, so
-you can read the genomic sequence, the codons, and the resulting peptide in
-register. The translation uses the standard genetic code (NCBI table 1).
+The translated protein is drawn on coding features by default, independently of
+the frame coloring above. As you zoom in, the amino acids are first drawn as an
+alternating per-codon shading over the CDS, and once you are zoomed in far
+enough (roughly base-pair resolution) the single-letter amino acid code is drawn
+over each codon, as in the lower frame of the figure above. The letters line up
+with the codons in the reference sequence track, so you can read the genomic
+sequence, the codons, and the resulting peptide in register. The translation
+uses the standard genetic code (NCBI table 1).
+
+Translating needs the reference sequence, so if you would rather the view not
+fetch it, turn off **Draw amino acids when zoomed in** in the same menu.
 
 The translation follows the transcript's strand and CDS phase, and codons that
 straddle an exon boundary are split across the two exons. When a CDS carries a

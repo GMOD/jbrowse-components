@@ -62,7 +62,8 @@ export type TrackInit =
 // resolution/conversion and have no direct MST representation — `loc` (→
 // offsetPx/bpPerPx once the assembly loads), tracks (→ showTrack), highlight (→
 // coercion), etc. — and is discarded once applied. Plain persisted view props
-// (showCenterLine, trackLabels, colorByCDS, showHighlightChips) are NOT init:
+// (showCenterLine, trackLabels, colorByCDS, showAminoAcids, showHighlightChips)
+// are NOT init:
 // LaunchView sets them directly on the view snapshot, where MST restores them
 // natively and they round-trip on save. Add a resolution field here + a case in
 // afterAttach's applyInit + an entry in its knownInitKeyMap; add a plain prop to
@@ -96,9 +97,13 @@ export interface LinearGenomeViewLaunchProps {
   // track-label placement mode, matching the view's setTrackLabels action (not
   // the ExportSvg TrackLabelMode enum)
   trackLabels?: 'overlapping' | 'offset' | 'hidden'
-  // color CDS segments by reading frame and draw amino acid lettering on gene
-  // tracks (matches the view's setColorByCDS action)
+  // color CDS segments by reading frame on gene tracks (matches the view's
+  // setColorByCDS action)
   colorByCDS?: boolean
+  // draw per-codon shading and amino acid lettering on coding features once
+  // zoomed in far enough (matches the view's setShowAminoAcids action). On by
+  // default, so a spec only ever sets this to false
+  showAminoAcids?: boolean
   // draw the interactive link-icon chip on each highlight band (chips are
   // otherwise off by default, leaving a bare colored band)
   showHighlightChips?: boolean

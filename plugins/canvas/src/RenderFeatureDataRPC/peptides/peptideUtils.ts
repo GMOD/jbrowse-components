@@ -30,6 +30,86 @@ export interface PeptideFetchProps {
   regions: (Region & { originalRefName?: string })[]
 }
 
+// Below this gap, reading straight through an intron costs less than a second
+// request for the exon on the far side.
+const MERGE_GAP_BP = 5000
+
+// Round-trip ceiling per region, so a 79-exon gene with megabase introns can't
+// become 79 requests. Merging always closes the smallest gap first, making the
+// bases the cap costs the cheapest ones on offer.
+const MAX_SEQUENCE_RANGES = 12
+
+interface BpRange {
+  start: number
+  end: number
+}
+
+function mergeSequenceRanges(ranges: BpRange[]) {
+  const merged: BpRange[] = []
+  for (const range of [...ranges].sort((a, b) => a.start - b.start)) {
+    const last = merged.at(-1)
+    if (last && range.start - last.end < MERGE_GAP_BP) {
+      last.end = Math.max(last.end, range.end)
+    } else {
+      merged.push({ start: range.start, end: range.end })
+    }
+  }
+  const gapBefore = (i: number) => merged[i]!.start - merged[i - 1]!.end
+  while (merged.length > MAX_SEQUENCE_RANGES) {
+    let smallest = 1
+    for (let i = 2; i < merged.length; i++) {
+      if (gapBefore(i) < gapBefore(smallest)) {
+        smallest = i
+      }
+    }
+    merged[smallest - 1]!.end = merged[smallest]!.end
+    merged.splice(smallest, 1)
+  }
+  return merged
+}
+
+// A single buffer spanning [bufferStart, bufferEnd) carrying real bases inside
+// the fetched ranges and N everywhere else. The N never reaches a codon: the
+// ranges are the same dedupedSortedCDS segments the translation reads, and
+// nothing downstream looks at an intron or a UTR. Undefined when any range
+// failed, so a partial buffer can never translate into wrong residues.
+async function fetchCodingSequenceBuffer(
+  pluginManager: PluginManager,
+  props: PeptideFetchProps,
+  ranges: BpRange[],
+  bufferStart: number,
+  bufferEnd: number,
+) {
+  const baseRegion = props.regions[0]!
+  const fetched = await Promise.all(
+    ranges.map(async range => ({
+      start: range.start,
+      seq: await fetchSequence(pluginManager, props, {
+        ...baseRegion,
+        ...range,
+      }),
+    })),
+  )
+  const parts: { start: number; seq: string }[] = []
+  for (const { start, seq } of fetched) {
+    if (seq !== undefined) {
+      parts.push({ start, seq })
+    }
+  }
+  let buffer: string | undefined
+  if (parts.length === ranges.length) {
+    const pieces: string[] = []
+    let cursor = bufferStart
+    for (const { start, seq } of parts) {
+      pieces.push('N'.repeat(Math.max(0, start - cursor)), seq)
+      cursor = Math.max(cursor, start + seq.length)
+    }
+    pieces.push('N'.repeat(Math.max(0, bufferEnd - cursor)))
+    buffer = pieces.join('')
+  }
+  return buffer
+}
+
 async function fetchSequence(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
@@ -209,20 +289,27 @@ export async function fetchPeptideData(
 
   // RenderFeatureData runs per-region, so props.regions is single-element and
   // every transcript here was fetched from that region — they all share its
-  // refName. One bulk sequence fetch spanning all transcripts (rather than one
-  // per transcript) is therefore safe and avoids N round trips.
-  const baseRegion = props.regions[0]!
+  // refName. The transcripts therefore share one coordinate frame, and one
+  // buffer spanning all of them (rather than one fetch per transcript) avoids N
+  // round trips.
+  //
+  // Only CDS bases are ever translated, so the buffer is filled from the coding
+  // stretches rather than the whole span: DMD spans 2.2Mb around 11kb of CDS,
+  // and fetching the span downloaded and decompressed every intron to read none
+  // of it.
   const bulkStart = Math.max(
     0,
     Math.min(...transcripts.map(t => t.get('start'))),
   )
   const bulkEnd = Math.max(...transcripts.map(t => t.get('end')))
 
-  const wholeSeq = await fetchSequence(pluginManager, props, {
-    ...baseRegion,
-    start: bulkStart,
-    end: bulkEnd,
-  })
+  const wholeSeq = await fetchCodingSequenceBuffer(
+    pluginManager,
+    props,
+    mergeSequenceRanges(transcripts.flatMap(t => dedupedSortedCDS(t))),
+    bulkStart,
+    bulkEnd,
+  )
   if (!wholeSeq) {
     return peptideDataMap
   }

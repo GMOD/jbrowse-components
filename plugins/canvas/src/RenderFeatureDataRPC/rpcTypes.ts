@@ -29,7 +29,14 @@ export interface RenderFeatureDataArgs {
     originalRefName?: string
   }
   bpPerPx: number
+  // recolor CDS segments by reading frame. Purely a color choice — the codon
+  // shading and amino acid letters are showAminoAcids' doing, so a track can
+  // have either, both, or neither.
   colorByCDS?: boolean
+  // translate coding features and emit the per-codon rects + amino acid overlay
+  // (subject to the bpPerPx thresholds in zoomThresholds). The sequence fetch
+  // this implies is the reason it's a separate flag from colorByCDS.
+  showAminoAcids?: boolean
   // NCBI genetic-code id for this region, resolved from the assembly's
   // geneticCodes config (e.g. a mitochondrial contig = 2). Used as the
   // translation-table fallback for transcripts whose features lack a

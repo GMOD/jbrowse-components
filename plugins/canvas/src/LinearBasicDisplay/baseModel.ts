@@ -670,6 +670,14 @@ export default function baseStateModelFactory(
         },
 
         /**
+         * #getter
+         */
+        get showAminoAcids() {
+          const view = getView(self)
+          return view.showAminoAcids
+        },
+
+        /**
          * #method
          * The filters actually applied, as `jexl:`-prefixed expressions. The
          * runtime override shadows the config slot when set; otherwise the
@@ -951,6 +959,7 @@ export default function baseStateModelFactory(
             } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
+            showAminoAcids: self.showAminoAcids,
             // Only isolate once the collection is applied; collecting (ctrl+
             // click) leaves this undefined so building the set doesn't refetch
             // or hide anything. Reading both here makes them RPC cache keys, so

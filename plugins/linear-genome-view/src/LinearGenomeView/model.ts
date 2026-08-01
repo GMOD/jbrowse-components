@@ -272,7 +272,8 @@ function openTrackSelectorWidget(self: IAnyStateTreeNode) {
  * ```
  * `init` holds only keys that need on-attach resolution — also `tracklist`,
  * `nav`, `highlight` (see the `init` property below). Plain view props like
- * `colorByCDS`, `showCenterLine`, `trackLabels`, `showHighlightChips` are set
+ * `colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`,
+ * `showHighlightChips` are set
  * directly on the view (MST restores them natively).
  * At runtime the same model is driven imperatively — every property and action
  * below is reachable on `viewState.session.views[0]`:
@@ -403,10 +404,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * color by CDS
+         * color CDS segments by reading frame
          */
         colorByCDS: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-colorByCDS', false),
+        ),
+
+        /**
+         * #property
+         * draw translated codons on coding features once zoomed in far enough:
+         * an alternating per-codon shading, and the amino acid letters on top of
+         * it at base-level zoom. Independent of `colorByCDS`, which only recolors
+         * the segments by frame.
+         */
+        showAminoAcids: types.optional(types.boolean, () =>
+          localStorageGetBoolean('lgv-showAminoAcids', true),
         ),
 
         /**
@@ -977,6 +989,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setColorByCDS(flag: boolean) {
         self.colorByCDS = flag
+      },
+      /**
+       * #action
+       */
+      setShowAminoAcids(flag: boolean) {
+        self.showAminoAcids = flag
       },
       /**
        * #action
@@ -2347,6 +2365,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         showCytobands,
         trackLabels,
         colorByCDS,
+        showAminoAcids,
         showTrackOutlines,
         ...rest
       } = snap
@@ -2363,6 +2382,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(!showCytobands ? { showCytobands } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
+        ...(!showAminoAcids ? { showAminoAcids } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
       }
     })

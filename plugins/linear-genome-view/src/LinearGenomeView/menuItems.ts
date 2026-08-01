@@ -109,12 +109,21 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
     },
     {
-      label: 'Color by CDS and draw amino acids',
+      label: 'Color CDS by reading frame',
       type: 'checkbox',
       checked: self.colorByCDS,
       icon: PaletteIcon,
       onClick: () => {
         self.setColorByCDS(!self.colorByCDS)
+      },
+    },
+    {
+      label: 'Draw amino acids when zoomed in',
+      type: 'checkbox',
+      checked: self.showAminoAcids,
+      icon: PaletteIcon,
+      onClick: () => {
+        self.setShowAminoAcids(!self.showAminoAcids)
       },
     },
     {

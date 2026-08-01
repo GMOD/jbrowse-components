@@ -224,11 +224,12 @@ const suite: TestSuite = {
       name: 'exports SVG with gene track (peptide labels)',
       fn: async page => {
         const downloadDir = await setupDownloadInterception(page)
-        // Navigate to app first to establish origin, then enable colorByCDS
-        // so amino acid overlays are rendered in SVG
+        // Navigate to app first to establish origin, then pin showAminoAcids
+        // on (its default) so the export carries the amino acid overlay even if
+        // a stale profile turned it off
         await page.goto(`http://localhost:${PORT}/`)
         await page.evaluate(() => {
-          localStorage.setItem('lgv-colorByCDS', 'true')
+          localStorage.setItem('lgv-showAminoAcids', 'true')
         })
         await navigateWithSessionSpec(page, {
           views: [
@@ -270,7 +271,7 @@ const suite: TestSuite = {
         const downloadDir = await setupDownloadInterception(page)
         await page.goto(`http://localhost:${PORT}/`)
         await page.evaluate(() => {
-          localStorage.setItem('lgv-colorByCDS', 'true')
+          localStorage.setItem('lgv-showAminoAcids', 'true')
         })
         await navigateWithSessionSpec(page, {
           views: [

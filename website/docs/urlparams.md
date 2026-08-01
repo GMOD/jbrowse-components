@@ -314,8 +314,9 @@ showing only its two contigs, order reversed:
 ```
 
 A `LinearGenomeView` view object accepts the same fields as the simple params
-above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`, and
-`trackLabels` (`"overlapping"`, `"offset"`, or `"hidden"`).
+above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`,
+`showAminoAcids`, and `trackLabels` (`"overlapping"`, `"offset"`, or
+`"hidden"`).
 
 A top-level `sessionTracks` array can dynamically register tracks into the
 session before the views open, equivalent to combining `&sessionTracks=` with a

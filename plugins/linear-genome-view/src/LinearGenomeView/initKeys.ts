@@ -17,6 +17,7 @@ const knownLaunchPropMap: Record<keyof LinearGenomeViewLaunchProps, true> = {
   showCenterLine: true,
   trackLabels: true,
   colorByCDS: true,
+  showAminoAcids: true,
   showHighlightChips: true,
 }
 const knownInitKeys = new Set(Object.keys(knownInitKeyMap))

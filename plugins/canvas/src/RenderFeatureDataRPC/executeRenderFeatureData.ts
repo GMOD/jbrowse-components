@@ -38,6 +38,7 @@ export async function executeRenderFeatureData({
     region,
     bpPerPx: requestedBpPerPx,
     colorByCDS,
+    showAminoAcids,
     geneticCodeId,
     sequenceAdapter,
     showOnlyGenes,
@@ -187,7 +188,7 @@ export async function executeRenderFeatureData({
 
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (
-    colorByCDS &&
+    showAminoAcids &&
     sequenceAdapter &&
     shouldRenderPeptideBackground(requestedBpPerPx)
   ) {
