@@ -1,91 +1,36 @@
-// Linear-synteny edge pass — curved (bezier ribbon) mode. Draws a 1px
-// antialiased outline around the currently-clicked alignment, tessellating
-// each top/bottom edge into NUM_SEGMENTS pieces and expanding ±STROKE_EXPAND_PX
-// along the edge normal — a 2px-wide quad carrying the 1px stroke's AA ramp.
+// Linear-synteny clicked-outline pass — curved (bezier ribbon) mode. Draws a
+// 1px antialiased outline on both edges of the currently-clicked alignment
+// (every other instance early-outs to a degenerate vertex).
+//
+// Same geometry as syntenyFillCurve, widened by STROKE_PERP_PX so the stroke's
+// outer half isn't cropped; only the fragment differs. That is the whole point:
+// this pass used to tessellate each edge into 16 chords and stroke those, which
+// sat up to 11.7px off the analytic bezier the fill draws (see strokeFs).
+// Sharing the fill's polygon and clipping analytically makes the outline exact
+// at any segment count — and costs 48 verts/instance instead of 192.
 //! targets: wgsl, glsl
 
 import syntenyTypes;
 
-// Higher than fill-curve's 8 segments: a thin stroke exposes bezier-vs-chord
-// deviation that the fill pass's perpendicular pad otherwise absorbs.
-public static const uint NUM_SEGMENTS = 16u;
-public static const uint VERTS_PER_INSTANCE = 2u * NUM_SEGMENTS * 6u;
-static const float STROKE_EXPAND_PX = 1.0;
-
+// SYNC: CURVE_SEGMENTS (8) * 6 verts. The codegen parses this constant out of
+// the source and cannot resolve an imported identifier, so the segment count is
+// spelled literally here; syntenyCurveSegments.test.ts pins the two together.
+public static const uint VERTS_PER_INSTANCE = 48u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-struct VsOut {
-  float4 position : SV_Position;
-  float  dist     : COLOR0;
-};
-
-// Hermite ease-in-out: (edge0, edge1, y) at parameter t along the ribbon.
-float3 hermiteEdges(Corners c, float t) {
-  float s = sBlend(t);
-  return float3(
-    lerp(c.x1, c.x4, s),
-    lerp(c.x2, c.x3, s),
-    u.yTop + u.height * yCurve(t)
-  );
-}
-
-// Tangent at t for an edge whose top-to-bottom horizontal delta is `dx`.
-// sBlendDeriv scales dx; dy comes from the y-curve derivative.
-float2 edgeTangent(float dx, float t) {
-  return float2(sBlendDeriv(t) * dx, u.height * yCurveDeriv(t));
-}
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
-  o.dist = 0.0;
-
-  // Only outline the clicked feature's BASE silhouette — never per-CIGAR-tile
-  // instances (kind >= 3.0, would outline every M/I/D/N tile) nor KIND_MARKER
-  // context ticks (interior lines, not part of the silhouette).
-  bool isClicked = u.clickedFeatureId > 0.0 && abs(inst.featureId - u.clickedFeatureId) < 0.5;
-  if (!isClicked || isCigarKind(inst.kind) || isMarkerKind(inst.kind)) {
-    o.position = float4(0.0);
-    return o;
+FillVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  FillVsOut o;
+  Corners c;
+  if (fillVsBegin(inst, u, o, c) && isClickedSilhouette(inst, u)) {
+    curveGeometry(o, c, vid, STROKE_PERP_PX, u);
   }
-
-  Corners c = computeCorners(inst, u);
-  if (isCulled(c, inst.alignmentLength, u)) {
-    o.position = float4(0.0);
-    return o;
-  }
-
-  uint vertsPerEdge = NUM_SEGMENTS * 6u;
-  uint edgeIdx = vid / vertsPerEdge;
-  uint vidInEdge = vid % vertsPerEdge;
-  uint seg = vidInEdge / 6u;
-  uint vertInSeg = vidInEdge % 6u;
-  float t0 = float(seg) / float(NUM_SEGMENTS);
-  float t1 = float(seg + 1u) / float(NUM_SEGMENTS);
-
-  float t, side;
-  switch (vertInSeg) {
-    case 0u: { t = t0; side = -1.0; break; }
-    case 1u: { t = t0; side =  1.0; break; }
-    case 2u: { t = t1; side = -1.0; break; }
-    case 3u: { t = t1; side = -1.0; break; }
-    case 4u: { t = t0; side =  1.0; break; }
-    case 5u: { t = t1; side =  1.0; break; }
-    default: { t = 0.0; side = 0.0; break; }
-  }
-
-  float3 e = hermiteEdges(c, t);
-  float edgeX = edgeIdx == 1u ? e.y : e.x;
-  float rawDx = edgeIdx == 1u ? c.x3 - c.x2 : c.x4 - c.x1;
-  float2 normal = edgeNormal(edgeTangent(rawDx, t));
-
-  float2 pos = float2(edgeX, e.z) + normal * side * STROKE_EXPAND_PX;
-  o.dist = side * STROKE_EXPAND_PX;
-  o.position = screenToClip(pos, u.resolution);
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
-  return edgeStrokeColor(fragIn.dist);
+float4 fs_main(FillVsOut fragIn) : SV_Target {
+  float t = curveParamAtY(fragIn.localPos.y, u);
+  return strokeFs(fragIn, sBlend(t), sBlendDeriv(t),
+                  u.height * yCurveDeriv(t), u);
 }

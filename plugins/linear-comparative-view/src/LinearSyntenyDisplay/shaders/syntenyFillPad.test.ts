@@ -89,23 +89,55 @@ function curvePerpFactor(c: Corners, h: number, seg: number) {
 const bulgeX = (c: Corners) =>
   Math.max(Math.abs(c.x4 - c.x1), Math.abs(c.x3 - c.x2)) * invN * invN * 0.75
 
-const straightPad: PadFn = (c, height) => {
-  const h = Math.max(height, 1)
-  const pf = straightPerpFactor(c, h)
-  return pf * 0.5 + padExtra(pf, c) + 1
-}
+// `extraPerpPx` mirrors the geometry functions' parameter: 0 for the fill
+// passes, STROKE_PERP_PX for the clicked-outline passes, whose stroke reaches a
+// full perpendicular pixel OUTSIDE each edge.
+const STROKE_PERP_PX = 1
 
-const curvePad: PadFn = (c, height, seg) => {
-  const h = Math.max(height, 1)
-  const pf = curvePerpFactor(c, h, seg)
-  return pf * 0.5 + padExtra(pf, c) + bulgeX(c) + 1
+const straightPad =
+  (extraPerpPx = 0): PadFn =>
+  (c, height) => {
+    const pf = straightPerpFactor(c, Math.max(height, 1))
+    return pf * (0.5 + extraPerpPx) + padExtra(pf, c) + 1
+  }
+
+const curvePad =
+  (extraPerpPx = 0): PadFn =>
+  (c, height, seg) => {
+    const pf = curvePerpFactor(c, Math.max(height, 1), seg)
+    return pf * (0.5 + extraPerpPx) + padExtra(pf, c) + bulgeX(c) + 1
+  }
+
+// What the polygon has to contain. The fill needs perpCoverage's footprint; the
+// outline needs the ±STROKE_PERP_PX band strokeFs ramps across, on both edges.
+type FootprintFn = (
+  c: Corners,
+  h: number,
+  t: number,
+  curve: boolean,
+) => { left: number; right: number }
+
+const strokeFootprint: FootprintFn = (c, h, t, curve) => {
+  const { e0, e1, pf0, pf1 } = edgesAt(c, h, t, curve)
+  const pfL = e0 <= e1 ? pf0 : pf1
+  const pfR = e0 <= e1 ? pf1 : pf0
+  return {
+    left: Math.min(e0, e1) - pfL * STROKE_PERP_PX,
+    right: Math.max(e0, e1) + pfR * STROKE_PERP_PX,
+  }
 }
 
 const SAMPLES = 400
 
-// Worst px of coverage the padded geometry crops away, over every segment and
-// SAMPLES rows within each. Zero means the polygon contains the whole footprint.
-function worstCrop(c: Corners, height: number, curve: boolean, padFn: PadFn) {
+// Worst px the padded geometry crops away, over every segment and SAMPLES rows
+// within each. Zero means the polygon contains the whole footprint.
+function worstCrop(
+  c: Corners,
+  height: number,
+  curve: boolean,
+  padFn: PadFn,
+  footprintFn: FootprintFn = footprint,
+) {
   const h = Math.max(height, 1)
   let worst = 0
   for (let seg = 0; seg < (curve ? NUM_SEGMENTS : 1); seg++) {
@@ -124,7 +156,7 @@ function worstCrop(c: Corners, height: number, curve: boolean, padFn: PadFn) {
       // The quad's rows sit at y(t0)/y(t1) and its sides are straight lines
       // between them, so x interpolates linearly in SCREEN Y — not in t.
       const f = (yAt(t) - yAt(t0)) / (yAt(t1) - yAt(t0))
-      const fp = footprint(c, h, t, curve)
+      const fp = footprintFn(c, h, t, curve)
       worst = Math.max(
         worst,
         aL - pad + (bL - aL) * f - fp.left,
@@ -135,9 +167,9 @@ function worstCrop(c: Corners, height: number, curve: boolean, padFn: PadFn) {
   return worst
 }
 
-const cropStraight = (c: Corners, h: number, padFn = straightPad) =>
+const cropStraight = (c: Corners, h: number, padFn = straightPad()) =>
   worstCrop(c, h, false, padFn)
-const cropCurve = (c: Corners, h: number, padFn = curvePad) =>
+const cropCurve = (c: Corners, h: number, padFn = curvePad()) =>
   worstCrop(c, h, true, padFn)
 
 const shapes: [string, Corners, number][] = [
@@ -266,12 +298,64 @@ describe('curve-fill vertex pad', () => {
     for (const [c, h] of parallelograms) {
       const wide = ribbonWidePad(c, h)
       for (let seg = 0; seg < NUM_SEGMENTS; seg++) {
-        expect(curvePad(c, h, seg)).toBeLessThanOrEqual(wide)
+        expect(curvePad()(c, h, seg)).toBeLessThanOrEqual(wide)
       }
       // and the end segments, where the x-curve is near-vertical, save the most
-      expect(curvePad(c, h, 0)).toBeLessThan(wide)
-      expect(curvePad(c, h, NUM_SEGMENTS - 1)).toBeLessThan(wide)
+      expect(curvePad()(c, h, 0)).toBeLessThan(wide)
+      expect(curvePad()(c, h, NUM_SEGMENTS - 1)).toBeLessThan(wide)
     }
+  })
+})
+
+describe('clicked-outline geometry', () => {
+  // The outline passes draw the fill's polygon widened by STROKE_PERP_PX and
+  // clip analytically, so the outline traces the fill by construction. That only
+  // holds if the widened polygon contains the whole ±STROKE_PERP_PX band —
+  // otherwise the stroke's outer half is cropped and the hairline thins.
+  test.each(shapes)(
+    'contains the full stroke band (straight): %s',
+    (_n, c, h) => {
+      expect(
+        worstCrop(c, h, false, straightPad(STROKE_PERP_PX), strokeFootprint),
+      ).toBe(0)
+    },
+  )
+
+  test.each(shapes)('contains the full stroke band (curve): %s', (_n, c, h) => {
+    expect(
+      worstCrop(c, h, true, curvePad(STROKE_PERP_PX), strokeFootprint),
+    ).toBe(0)
+  })
+
+  test('holds across a randomized sweep', () => {
+    let ws = 0
+    let wc = 0
+    for (const [c, h] of sweep(4000)) {
+      ws = Math.max(
+        ws,
+        worstCrop(c, h, false, straightPad(STROKE_PERP_PX), strokeFootprint),
+      )
+      wc = Math.max(
+        wc,
+        worstCrop(c, h, true, curvePad(STROKE_PERP_PX), strokeFootprint),
+      )
+    }
+    expect(ws).toBe(0)
+    expect(wc).toBe(0)
+  })
+
+  test('the fill pad alone would crop the stroke (why extraPerpPx exists)', () => {
+    // The fill pad guarantees only ~0.5 perpendicular px outside each edge, so
+    // reusing it unwidened for the outline eats the stroke's outer half on a
+    // slanted ribbon. Curve mode crops less on the same corners only because
+    // its bulge term happens to pad in the same direction — still not enough.
+    const c = { x1: 100, x2: 200, x3: 1000, x4: 900 }
+    expect(
+      worstCrop(c, 100, false, straightPad(), strokeFootprint),
+    ).toBeGreaterThan(2)
+    expect(
+      worstCrop(c, 100, true, curvePad(), strokeFootprint),
+    ).toBeGreaterThan(0)
   })
 })
 

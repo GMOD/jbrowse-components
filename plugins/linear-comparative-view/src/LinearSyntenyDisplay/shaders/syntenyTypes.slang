@@ -273,30 +273,11 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
   return float4(rgb, finalAlpha * coverage);
 }
 
-// Edge-pass fragment output: 1px antialiased black stroke at 0.4 alpha. `dist`
-// is the signed perpendicular distance from the edge centerline in px; the
-// geometry expands ±STROKE_EXPAND_PX (±1px) around a 0.5px half-width, so the
-// analytic ramp reaches zero exactly at the quad boundary.
-//
-// Analytic SDF coverage (mirrors wiggle center-line, commit 06ea37ff44):
-// measure the edge distance in units of its true gradient magnitude rather than
-// fwidth, and bias by +0.5 so the core stays fully opaque. That gradient is a
-// constant 1: dist runs ±STROKE_EXPAND_PX across a quad that is exactly
-// 2·STROKE_EXPAND_PX wide perpendicular to the edge. The old fwidth +
-// symmetric-smoothstep form put half-coverage ~0.75px out (a blurry ~1.5px
-// stroke) and widened on diagonals.
-public float4 edgeStrokeColor(float dist) {
-  return float4(0.0, 0.0, 0.0, clamp(1.0 - abs(dist), 0.0, 1.0) * 0.4);
-}
-
-// Unit normal to an edge tangent (perpendicular in screen space), shared by
-// both edge passes. The stroke is symmetric (±side expansion, abs(dist) in the
-// fragment), so the sign is irrelevant — only the perpendicular direction
-// matters. Degenerate (zero-length) tangents fall back to vertical.
-public float2 edgeNormal(float2 tangent) {
-  float len = length(tangent);
-  return len > 0.001 ? float2(-tangent.y, tangent.x) / len : float2(0.0, 1.0);
-}
+// The clicked-feature outline reaches this far perpendicular to each ribbon
+// edge: alpha ramps from 1 on the edge to 0 at STROKE_PERP_PX, so the stroke
+// reads as a 1px line (FWHM) with an antialiased falloff.
+public static const float STROKE_PERP_PX = 1.0;
+static const float STROKE_ALPHA = 0.4;
 
 // Extra horizontal vertex pad (px) covering perpCoverage's `expand` term, which
 // pushes both edges outward by up to 0.5 PERPENDICULAR px — i.e. up to
@@ -391,4 +372,192 @@ public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
     discard;
   }
   return shadeFill(i.color, i.featureId, coverage, i.kind, u);
+}
+
+// Clicked-feature outline: a 1px antialiased black stroke on BOTH ribbon edges,
+// measured against the SAME analytic edges fillFs clips to, from the SAME
+// geometry. The outline therefore cannot drift from the shape it outlines.
+//
+// It used to stroke a chord approximation instead: each edge tessellated into
+// 16 straight pieces, expanded along the chord normal. Straight ribbons were
+// exact, but on a curve the chords sit off the analytic bezier by up to 11.7px
+// (worst over a 3000-case sweep of run/height; 3.7px on a 1400px-run, 400px-tall
+// track), so the hairline visibly cut the corner across the ribbon it marked.
+// Reparametrising the tessellation to cluster segments where |s''| peaks only
+// got that to 3.65px — the chords were the wrong primitive, not badly placed.
+//
+// Both edges in one pass over the ribbon geometry: no per-edge tessellation, no
+// chord normals, and 48 verts/instance in curve mode instead of 192.
+public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
+  FillEdges e = fillEdges(i.corners, s, sd, dydt);
+  // True perpendicular distance to each edge (see perpCoverage — dividing by
+  // the edge's own foreshortening is what makes 1.0 mean one on-screen pixel at
+  // every slope).
+  float d0 = abs(i.localPos.x - e.edge0) / e.pf0;
+  float d1 = abs(i.localPos.x - e.edge1) / e.pf1;
+  float band = max(clamp(STROKE_PERP_PX - d0, 0.0, 1.0),
+                   clamp(STROKE_PERP_PX - d1, 0.0, 1.0));
+  // Cap the stroke at the ribbon's top and bottom, matching fillCoverage's
+  // vertical AA so the outline ends exactly where the fill does.
+  float cy = smoothstep(-0.5, 0.5, i.localPos.y)
+           - smoothstep(u.height - 0.5, u.height + 0.5, i.localPos.y);
+  float alpha = band * cy * STROKE_ALPHA;
+  if (alpha <= 0.0) {
+    discard;
+  }
+  return float4(0.0, 0.0, 0.0, alpha);
+}
+
+// Only the clicked feature's BASE silhouette is outlined — never per-CIGAR-tile
+// instances (kind >= 3.0, would outline every M/I/D/N tile) nor KIND_MARKER
+// context ticks (interior lines, not part of the silhouette).
+public bool isClickedSilhouette(Instance inst, Uniforms u) {
+  return u.clickedFeatureId > 0.0
+    && abs(inst.featureId - u.clickedFeatureId) < 0.5
+    && !isCigarKind(inst.kind)
+    && !isMarkerKind(inst.kind);
+}
+
+// ---------------------------------------------------------------------------
+// Ribbon geometry. Two functions, one per mode — no `isCurve` branch. Each is
+// shared by that mode's fill pass and its clicked-outline pass, which draw the
+// SAME polygon and differ only in the fragment; that is what guarantees the
+// outline traces the fill.
+//
+// `extraPerpPx` widens the polygon by that many PERPENDICULAR px on each side.
+// The fill passes 0 (the pad already covers coverage's own footprint); the
+// outline passes STROKE_PERP_PX, because its stroke reaches a full perpendicular
+// pixel OUTSIDE each edge while the fill pad only guarantees ~0.5 there.
+// ---------------------------------------------------------------------------
+
+public static const uint CURVE_SEGMENTS = 8u;
+
+// One quad (6 verts). Vert layout: 0=TL, 1=TR, 2=BL, 3=BL, 4=TR, 5=BR;
+// triangles (TL, TR, BL) and (BL, TR, BR).
+public void straightGeometry(inout FillVsOut o, Corners c, uint vid,
+                             float extraPerpPx, Uniforms u) {
+  bool isTop = (vid == 0u || vid == 1u || vid == 4u);
+  bool isRight = (vid == 1u || vid == 4u || vid == 5u);
+
+  // The ribbon's left/right x at this end of the trapezoid (s=0 top, s=1
+  // bottom), ordered so a crossed ribbon still gets a forward-facing quad.
+  float2 span = edgeSpan(c, isTop ? 0.0 : 1.0);
+
+  // Perpendicular pad (in horizontal pixels). Accommodates:
+  //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5.
+  //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
+  //       ribbon wider than perpFactor px.
+  //   (3) the caller's extraPerpPx, projected onto x at this slope.
+  //   (4) AA fade at the boundary: 1 px.
+  //
+  // Term (1) scales with the slope of the STEEPER edge, not the centerline
+  // average. The average under-pads whichever edge travels further on a
+  // width-changing ribbon (measured: 0.94px of the AA ramp cropped on corners
+  // (100, 900, 1200, 1180) at h=100, 4.5px on a crossed steep one), which is
+  // the same reasoning that put maxEdgeDx in the curve pad below.
+  //
+  // CIGAR indel tiles use the same padded polygon as BASE — they share the
+  // analytic edge + smoothstep AA path (fillCoverage), so their perpendicular
+  // edges antialiase against the base block instead of stair-stepping.
+  float slope = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2)) / u.height;
+  float perpFactor = sqrt(1.0 + slope * slope);
+  float pad = perpFactor * (0.5 + extraPerpPx) + thinRibbonPad(perpFactor, c)
+            + 1.0;
+
+  fillVsEmit(o,
+             isRight ? span.y + pad : span.x - pad,
+             isTop ? -1.0 : u.height + 1.0,
+             u);
+}
+
+// CURVE_SEGMENTS trapezoids (6 verts each) hugging the local bezier strip. The
+// fragment clips to the true bezier analytically, so the visible edge is the
+// smooth curve regardless of the segment count — 8 is plenty. (An earlier
+// attempt drew indel tiles from the raw chord geometry to get MSAA seam-tiling,
+// but the chords visibly faceted slanted ribbons, so indels went back on the
+// analytic curve.) Halving to 4 makes the bulge term dominate the pad; doubling
+// to 16 gives diminishing returns.
+public void curveGeometry(inout FillVsOut o, Corners c, uint vid,
+                          float extraPerpPx, Uniforms u) {
+  uint seg = vid / 6u;
+  uint vertInSeg = vid % 6u;
+  bool isTop = (vertInSeg == 0u || vertInSeg == 1u || vertInSeg == 4u);
+  bool isRight = (vertInSeg == 1u || vertInSeg == 4u || vertInSeg == 5u);
+
+  float invN = 1.0 / float(CURVE_SEGMENTS);
+  float t0 = float(seg) * invN;
+  float t1 = float(seg + 1u) * invN;
+  float t = isTop ? t0 : t1;
+
+  float2 span = edgeSpan(c, sBlend(t));
+  float y = u.height * yCurve(t);
+
+  // Perpendicular pad (in horizontal pixels). Accommodates:
+  //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5, at THIS
+  //       segment's steepest slope.
+  //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
+  //       ribbon wider than perpFactor px, so it costs the common case nothing.
+  //   (3) the caller's extraPerpPx, projected onto x at this segment's slope.
+  //   (4) bezier bulge within the segment: max|s''|·dt²/8 in s-units, scaled
+  //       by max edge Δ.
+  //   (5) AA fade at the boundary: 1 px.
+  //
+  // Term (1) is per-segment. It used to use the ribbon-wide maximum, which
+  // over-pads every segment but the middle one: local dx/dy peaks at 2× the
+  // chord slope only near t=0.5, and falls to 0 at the ends where the x-curve
+  // is momentarily vertical. Bounding it per segment is exact (the ratio below
+  // is unimodal, so its max over the segment is a single evaluation) and cuts
+  // the rasterized-then-discarded area of a thin steep ribbon by a measured
+  // 10-17% (`syntenyFillPad.test.ts` computes both).
+  //
+  // Term (4) is deliberately still the ribbon-wide bound. Do NOT try to make it
+  // per-segment via |s''(t)| = |6-12t| (which is 0 at t=0.5, so it looks like
+  // free savings): that bounds the curve's deviation from its chord in *t*, but
+  // this quad interpolates x linearly in *screen y*, and y(t) is itself
+  // nonlinear, so the y-reparameterization adds deviation the t-chord bound
+  // misses. It under-pads for real — corners (0, 300, 1400, 1500) at h=400
+  // clip the analytic edge by 0.27px. The test pins that counterexample.
+  //
+  // CIGAR indel tiles use the same pad as BASE — they clip to the smooth
+  // analytic curve in the fragment, not to this trapezoid geometry.
+  //
+  // The pad protects the EDGES, so it scales with the larger edge Δ, not the
+  // centerline's (they differ on a width-changing ribbon, where the centerline
+  // average under-pads the wider edge).
+  float maxEdgeDx = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2));
+  // dx/dy = (Δ/h)·sBlendDeriv(t)/yCurveDeriv(t). That ratio is unimodal with
+  // its peak of 2.0 at t=0.5, so its maximum over the segment is at whichever
+  // in-range t sits closest to 0.5.
+  float tPeak = clamp(0.5, t0, t1);
+  float segSlope = maxEdgeDx / u.height * sBlendDeriv(tPeak)
+                 / yCurveDeriv(tPeak);
+  float perpFactor = sqrt(1.0 + segSlope * segSlope);
+  float bulgeX = maxEdgeDx * invN * invN * 0.75;
+  float pad = perpFactor * (0.5 + extraPerpPx) + thinRibbonPad(perpFactor, c)
+            + bulgeX + 1.0;
+
+  // AA y-pad only at the first segment's top and last segment's bottom; the
+  // shared boundaries between adjacent segments must match exactly.
+  if (seg == 0u && isTop) { y -= 1.0; }
+  if (seg == CURVE_SEGMENTS - 1u && !isTop) { y += 1.0; }
+
+  fillVsEmit(o, isRight ? span.y + pad : span.x - pad, y, u);
+}
+
+// Recover the bezier parameter t from a fragment's vertical position. 2 Newton
+// iterations on the strictly-monotonic y(t) = h·(t³ − 1.5t² + 1.5t) converge to
+// sub-pixel accuracy from t₀ = yFrac (f' ≥ 0.75 on [0,1]). Measured: 1 iteration
+// leaves 5.8px of x error on a 3000px-run ribbon, 2 leaves 0.01px, 3 gains
+// nothing. Do NOT replace this with a t varying interpolated between the
+// segment's t0/t1 — t is nonlinear in screen y, and at 8 segments that is 17px
+// out. (`s = 3t − 2·yFrac` is an exact identity here, but feeding it the
+// approximate t triples the residual, where sBlend(t) only multiplies it by
+// sBlendDeriv ≤ 1.5.)
+public float curveParamAtY(float yLocal, Uniforms u) {
+  float yFrac = clamp(yLocal / u.height, 0.0, 1.0);
+  float t = yFrac;
+  for (int i = 0; i < 2; i++) {
+    t = t - (yCurve(t) - yFrac) / yCurveDeriv(t);
+  }
+  return clamp(t, 0.0, 1.0);
 }

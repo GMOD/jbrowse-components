@@ -7,13 +7,24 @@
 - Shared types (the per-instance vertex layout, the `Uniforms` cbuffer,
   `computeCorners` and `isCulled`) live in `shaders/syntenyTypes.slang`. Every
   shader imports from this module so layouts stay in sync.
-- The two fill passes differ **only** in geometry — one quad vs 8 tessellated
-  bezier segments. `syntenyTypes` owns everything else: the `FillVsOut`
-  varyings, the `fillVsBegin`/`fillVsEmit` vertex prologue/epilogue, and the
-  whole fragment (`fillFs`), which each pass calls with its own `(s, sd, dydt)`
-  basis. Same split as render-core's `rowRect`. Put new shared work there, not
-  in a second copy. New module functions go at the END of the file — inserting
-  mid-module reshuffles every importer's generated `#line` numbers.
+- **All four passes draw one of two polygons, and `syntenyTypes` owns both.**
+  `straightGeometry` (one quad) and `curveGeometry` (`CURVE_SEGMENTS`
+  tessellated bezier segments) are each shared by that mode's fill pass and its
+  clicked-outline pass; the passes differ only in the fragment (`fillFs` vs
+  `strokeFs`) and in the `extraPerpPx` they widen the polygon by. That sharing
+  is load-bearing: it is why the outline traces the fill exactly instead of
+  approximating it. The module also owns the `FillVsOut` varyings, the
+  `fillVsBegin`/`fillVsEmit` prologue/epilogue, and `curveParamAtY`. Same split
+  as render-core's `rowRect`. Put new shared work there, not in a second copy.
+  New module functions go at the END of the file — inserting mid-module
+  reshuffles every importer's generated `#line` numbers.
+- The ribbon is the exact cubic bezier with both control points at mid-height;
+  `sBlend`/`yCurve` are its two components, and `Canvas2DSyntenyRenderer` draws
+  the same curve with `bezierCurveTo`. Don't approximate it with chords — the
+  outline pass used to, and sat up to 11.7px off.
+- `VERTS_PER_INSTANCE` in the curve passes is a literal (the codegen can't
+  resolve an imported constant); `syntenyPassGeometry.test.ts` pins it to
+  `CURVE_SEGMENTS` and pins the two passes of a mode to one instance layout.
 - `u.height` is floored at 1 by `writeUniforms`, not by each shader.
 - The vertex pads are pinned by `shaders/syntenyFillPad.test.ts`, which mirrors
   both `pad` blocks plus `perpCoverage`'s footprint and asserts the padded

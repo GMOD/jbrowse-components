@@ -140,7 +140,9 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       if (params.clickedFeatureId > 0) {
         // Edge pass only outlines the clicked feature's BASE silhouette
         // (CIGAR tiles are culled in-shader via the `kind >= 3.0` check);
-        // it reads the active fill pass's instance buffer.
+        // it reads the active fill pass's instance buffer and re-draws that
+        // pass's own polygon, so the outline traces the fill exactly. Drawn
+        // after the fill so it layers above it.
         const edgePass = params.drawCurves
           ? PASS_EDGE_CURVE
           : PASS_EDGE_STRAIGHT

@@ -3,7 +3,7 @@
 
 import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
-export const VERTS_PER_INSTANCE = 192
+export const VERTS_PER_INSTANCE = 48
 
 export const UNIFORMS_SIZE_BYTES = 64
 

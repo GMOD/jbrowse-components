@@ -1,67 +1,30 @@
-// Linear-synteny edge pass — straight-line mode. Draws a 1px antialiased
-// outline around the currently-clicked alignment (skips all other instances
-// via early-out). Each edge is a single straight line from
-// (top-corner, yTop) to (bottom-corner, yBottom), expanded ±STROKE_EXPAND_PX
-// along the edge normal — a 2px-wide quad carrying the 1px stroke's AA ramp.
-// No tessellation needed.
+// Linear-synteny clicked-outline pass — straight-line mode. Draws a 1px
+// antialiased outline on both edges of the currently-clicked alignment (every
+// other instance early-outs to a degenerate vertex).
+//
+// Same geometry as syntenyFillStraight, widened by STROKE_PERP_PX so the
+// stroke's outer half isn't cropped; only the fragment differs. Drawing the
+// ribbon polygon rather than two per-edge line quads is what lets strokeFs
+// measure against the same analytic edges the fill clips to.
 //! targets: wgsl, glsl
 
 import syntenyTypes;
 
-// 2 edges × 6 verts each (single line-quad per edge).
-public static const uint VERTS_PER_INSTANCE = 12u;
-static const float STROKE_EXPAND_PX = 1.0;
-
+public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-struct VsOut {
-  float4 position : SV_Position;
-  float  dist     : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
-  o.dist = 0.0;
-
-  // Only outline the clicked feature's BASE silhouette — never per-CIGAR-tile
-  // instances (kind >= 3.0, would outline every M/I/D/N tile) nor KIND_MARKER
-  // context ticks (interior lines, not part of the silhouette).
-  bool isClicked = u.clickedFeatureId > 0.0 && abs(inst.featureId - u.clickedFeatureId) < 0.5;
-  if (!isClicked || isCigarKind(inst.kind) || isMarkerKind(inst.kind)) {
-    o.position = float4(0.0);
-    return o;
+FillVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  FillVsOut o;
+  Corners c;
+  if (fillVsBegin(inst, u, o, c) && isClickedSilhouette(inst, u)) {
+    straightGeometry(o, c, vid, STROKE_PERP_PX, u);
   }
-
-  Corners c = computeCorners(inst, u);
-  if (isCulled(c, inst.alignmentLength, u)) {
-    o.position = float4(0.0);
-    return o;
-  }
-
-  uint edgeIdx = vid / 6u;
-  uint vertInQuad = vid % 6u;
-  // Quad layout: (t0,-) (t0,+) (t1,-) (t1,-) (t0,+) (t1,+).
-  bool atBottom = (vertInQuad == 2u || vertInQuad == 3u || vertInQuad == 5u);
-  bool sidePos  = (vertInQuad == 1u || vertInQuad == 4u || vertInQuad == 5u);
-  float side = sidePos ? 1.0 : -1.0;
-
-  // Edge 0: c.x1 (top) → c.x4 (bottom). Edge 1: c.x2 → c.x3.
-  float xTop = edgeIdx == 1u ? c.x2 : c.x1;
-  float xBot = edgeIdx == 1u ? c.x3 : c.x4;
-  float edgeX = atBottom ? xBot : xTop;
-  float edgeY = u.yTop + (atBottom ? u.height : 0.0);
-
-  // Normal to the line (xTop, yTop) → (xBot, yBottom); see edgeNormal.
-  float2 normal = edgeNormal(float2(xBot - xTop, u.height));
-
-  float2 pos = float2(edgeX, edgeY) + normal * side * STROKE_EXPAND_PX;
-  o.dist = side * STROKE_EXPAND_PX;
-  o.position = screenToClip(pos, u.resolution);
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
-  return edgeStrokeColor(fragIn.dist);
+float4 fs_main(FillVsOut fragIn) : SV_Target {
+  float t = clamp(fragIn.localPos.y / u.height, 0.0, 1.0);
+  return strokeFs(fragIn, t, 1.0, u.height, u);
 }
