@@ -60,6 +60,69 @@ describe('computeVariantMatrixCells phased genotypes', () => {
   })
 })
 
+// Same two phased-mode rules computeVariantCells.test.ts pins, since both cell
+// loops share getPhasedColor and the gate in front of it.
+describe('computeVariantMatrixCells phased mode ploidy', () => {
+  test('haploid calls color by allele, never the unphased fill', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { BLACK_ABGR, PRIMARY_ALT_COLOR, REFERENCE_COLOR } =
+      await import('../../shared/constants.ts')
+    const feature = makeFeature({
+      genotypes: { S1: '1|0', S2: '1', S3: '0' },
+      FORMAT: [],
+      ALT: ['A'],
+      REF: 'G',
+      name: 'v1',
+      description: '',
+      start: 100,
+      end: 101,
+    })
+    const result = computeVariantMatrixCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources: [
+        { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+        { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+        { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+        { name: 'S3 HP0', sampleName: 'S3', HP: 0 },
+      ],
+      renderingMode: 'phased',
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    const byRow = new Map<number, number>()
+    for (let i = 0; i < result.numCells; i++) {
+      byRow.set(result.cellRowIndices[i]!, result.cellColors[i]!)
+    }
+    expect(byRow.get(2)).toBe(getCachedABGR(PRIMARY_ALT_COLOR)) // S2: 1
+    expect(byRow.get(3)).toBe(getCachedABGR(REFERENCE_COLOR)) // S3: 0
+    expect([...byRow.values()]).not.toContain(BLACK_ABGR)
+  })
+
+  test('a haplotype row the sample does not have draws no cell', () => {
+    const feature = makeFeature({
+      genotypes: { S1: '0|1|1', S2: '0|1' },
+      FORMAT: [],
+      ALT: ['A'],
+      REF: 'G',
+      name: 'v1',
+      description: '',
+      start: 100,
+      end: 101,
+    })
+    const result = computeVariantMatrixCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources: ['S1', 'S2'].flatMap(s => [
+        { name: `${s} HP0`, sampleName: s, HP: 0 },
+        { name: `${s} HP1`, sampleName: s, HP: 1 },
+        { name: `${s} HP2`, sampleName: s, HP: 2 },
+      ]),
+      renderingMode: 'phased',
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    const rows = [...result.cellRowIndices.slice(0, result.numCells)].sort()
+    expect(rows).toEqual([0, 1, 2, 3, 4])
+  })
+})
+
 // The cells are written from both ends of one buffer set — reference forward from
 // 0, non-reference backward from the end — so the two paint buckets share an
 // allocation. Two properties come out of that and the renderers rely on both:

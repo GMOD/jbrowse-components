@@ -11,6 +11,7 @@ import {
   featureHasPhaseSet,
   getPhasedColor,
   isNoCall,
+  isPhasedOrHaploid,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
@@ -252,7 +253,7 @@ export function computeVariantCells({
         // Costs nothing on the wire — `genotypeCodes` is a fixed
         // Uint16Array(numSamples) either way.
         sourceGenotypes[sampleName] = genotype
-        if (genotype.includes('|')) {
+        if (isPhasedOrHaploid(genotype)) {
           const c = getPhasedColor(
             splitPhasedAlleles(genotype),
             HP!,

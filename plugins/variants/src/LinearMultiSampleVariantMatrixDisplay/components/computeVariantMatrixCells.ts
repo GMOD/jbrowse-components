@@ -9,6 +9,7 @@ import {
   featureHasPhaseSet,
   getPhasedColor,
   isNoCall,
+  isPhasedOrHaploid,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
@@ -190,7 +191,7 @@ export function computeVariantMatrixCells({
         if (!genotype) {
           continue
         }
-        if (genotype.includes('|')) {
+        if (isPhasedOrHaploid(genotype)) {
           const c = getPhasedColor(
             splitPhasedAlleles(genotype),
             HP!,

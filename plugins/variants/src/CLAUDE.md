@@ -331,3 +331,23 @@ resolved `sampleName`, so a source whose render name differs from its sample
 name got diploid rows the pasted cluster order couldn't be lined up against.
 `HP` is non-optional on the returned `HaplotypeSource`, so a caller indexing by
 haplotype takes it from the type instead of restating a `?? 2` of its own.
+
+Two things follow from expansion being **per-sample max ploidy**, and both cell
+loops have to honour them (`getPhasedColor` + the gate in front of it):
+
+- **Ploidy is per file, rows are per sample.** One triploid sample gives *every*
+  sample three rows, so a diploid one has no allele for its HP2. `getPhasedColor`
+  takes `alleles[HP]` as possibly-`undefined` and draws nothing there, same as a
+  sample with no genotype at the site. It used to read past the end and paint the
+  `undefined` as `SECONDARY_ALT_COLOR` — a phantom "other alt allele" on a
+  haplotype that doesn't exist.
+- **Haploid is phased.** A single-allele call (`1`, `23`) has nothing left to
+  phase and gets exactly one expanded row, so it colors by its allele:
+  `isPhasedOrHaploid` (no `/`), not `includes('|')`. Pangenome callsets are
+  haploid per assembly path, and a file mixing those with diploid samples — or
+  chrY/chrM in a human callset — carries both. The old gate painted them with the
+  black "Unphased" fill, which the legend didn't even claim: `hasUnphased` counts
+  only a *called* `/` genotype, so those cells had no key entry at all.
+
+Both are pinned in `computeVariantCells.test.ts` and
+`computeVariantMatrixCells.test.ts`.

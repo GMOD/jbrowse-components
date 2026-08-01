@@ -24,11 +24,27 @@ export function featureHasPhaseSet(format: string | undefined) {
 
 // Fast-path diploid genotype split. The 3-char form "a|b" hits on the vast
 // majority of human VCFs; the general split handles polyploid or multi-digit
-// allele indices ("10|0").
+// allele indices ("10|0") and haploid calls ("1", "23"), which come back as a
+// one-element list.
 export function splitPhasedAlleles(genotype: string) {
   return genotype.length === 3
     ? [genotype[0]!, genotype[2]!]
     : genotype.split('|')
+}
+
+// Whether a genotype belongs on the phased haplotype rows: it carries no `/`, so
+// it is either explicitly phased ("0|1") or haploid ("1", "23") — a single allele
+// has nothing left to phase, and phased expansion gives that sample exactly one
+// row to draw it on.
+//
+// The haploid half is not a corner case. Pangenome callsets are haploid per
+// assembly path (pggb / `vg deconstruct` writes bare "0"/"1"/"23"), and any file
+// mixing those with diploid samples — or an ordinary human callset on chrY /
+// chrM — carries both. Gating on `includes('|')` painted every haploid call with
+// the black "Unphased" fill, which the legend did not even claim: `hasUnphased`
+// counts only a *called* `/` genotype, so those cells had no key entry at all.
+export function isPhasedOrHaploid(genotype: string) {
+  return !genotype.includes('/')
 }
 
 // A genotype is a no-call when it carries no called allele — every position is
@@ -57,7 +73,18 @@ export function getPhasedColor(
   PS?: string,
   drawReference = true,
 ) {
-  const allele = alleles[HP]!
+  const allele = alleles[HP]
+  // The sample has no allele at this haplotype index. Phased expansion gives
+  // every sample `maxPloidy` rows, so in a mixed-ploidy file — a pangenome
+  // mixing haploid assembly paths with diploid samples, or chrX/chrY — a
+  // diploid sample gets an HP2 row it has nothing to draw on. Draw nothing
+  // there, exactly as for a sample with no genotype at the site at all. It used
+  // to read past the end and paint the resulting `undefined` as
+  // SECONDARY_ALT_COLOR, i.e. a phantom "other alt allele" on a haplotype the
+  // sample does not have.
+  if (allele === undefined) {
+    return ''
+  }
   if (allele === '.') {
     return NO_CALL_COLOR
   }

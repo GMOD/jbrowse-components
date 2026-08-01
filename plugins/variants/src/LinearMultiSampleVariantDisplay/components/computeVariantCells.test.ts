@@ -107,6 +107,92 @@ describe('computeVariantCells phased no-call vs unphased', () => {
   })
 })
 
+describe('computeVariantCells haploid genotypes in phased mode', () => {
+  // A haploid call has one allele and nothing left to phase, so it draws on the
+  // sample's single haplotype row by its allele — not as the black "Unphased"
+  // fill, which the legend does not even claim for it (hasUnphased counts only a
+  // called `/` genotype). Reachable whenever a file mixes haploid with phased
+  // diploid calls: pangenome callsets are haploid per assembly path, and chrY /
+  // chrM are haploid in an ordinary human callset.
+  const feature = makeFeature({
+    genotypes: { S1: '1|0', S2: '1', S3: '0', S4: '.' },
+    FORMAT: [],
+    ALT: ['A'],
+    REF: 'G',
+    name: 'v1',
+    description: '',
+    type: 'SNV',
+    start: 100,
+    end: 101,
+  })
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+    { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+    { name: 'S3 HP0', sampleName: 'S3', HP: 0 },
+    { name: 'S4 HP0', sampleName: 'S4', HP: 0 },
+  ]
+
+  test('haploid calls color by allele, never the unphased fill', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { BLACK_ABGR, NO_CALL_COLOR, PRIMARY_ALT_COLOR, REFERENCE_COLOR } =
+      await import('../../shared/constants.ts')
+    const result = computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'draw',
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    const byRow = new Map<number, number>()
+    for (let i = 0; i < result.numCells; i++) {
+      byRow.set(result.cellRowIndices[i]!, result.cellColors[i]!)
+    }
+    expect(byRow.get(0)).toBe(getCachedABGR(PRIMARY_ALT_COLOR)) // S1 HP0: 1|0
+    expect(byRow.get(1)).toBe(getCachedABGR(REFERENCE_COLOR)) // S1 HP1: 1|0
+    expect(byRow.get(2)).toBe(getCachedABGR(PRIMARY_ALT_COLOR)) // S2: 1
+    expect(byRow.get(3)).toBe(getCachedABGR(REFERENCE_COLOR)) // S3: 0
+    expect(byRow.get(4)).toBe(getCachedABGR(NO_CALL_COLOR)) // S4: .
+    expect([...byRow.values()]).not.toContain(BLACK_ABGR)
+  })
+})
+
+describe('computeVariantCells mixed ploidy in phased mode', () => {
+  // A triploid sample raises maxPloidy to 3, so phased expansion gives every
+  // sample three haplotype rows. The diploid sample has nothing to draw on its
+  // third — it must paint no cell there rather than reading past the end of its
+  // allele list and flagging the `undefined` as an "other alt allele".
+  const feature = makeFeature({
+    genotypes: { S1: '0|1|1', S2: '0|1' },
+    FORMAT: [],
+    ALT: ['A'],
+    REF: 'G',
+    name: 'v1',
+    description: '',
+    type: 'SNV',
+    start: 100,
+    end: 101,
+  })
+  const sources: ProcessedSource[] = ['S1', 'S2'].flatMap(s => [
+    { name: `${s} HP0`, sampleName: s, HP: 0 },
+    { name: `${s} HP1`, sampleName: s, HP: 1 },
+    { name: `${s} HP2`, sampleName: s, HP: 2 },
+  ])
+
+  test('a haplotype row the sample does not have draws no cell', () => {
+    const result = computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'draw',
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    const rows = [...result.cellRowIndices.slice(0, result.numCells)].sort()
+    // S1 rows 0,1,2 and S2 rows 3,4 — never row 5 (S2 HP2).
+    expect(rows).toEqual([0, 1, 2, 3, 4])
+  })
+})
+
 describe('computeVariantCells insertion bounds', () => {
   const sources: ProcessedSource[] = [{ name: 'S1', sampleName: 'S1', HP: 0 }]
 
