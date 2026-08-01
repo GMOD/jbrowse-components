@@ -131,7 +131,7 @@ under a megabyte.
 
 Because the rows are just BigWigs, an RNA set and an ATAC set stack in one view.
 
-<Figure caption="The RNA rows above the CATlas-style scATAC rows at MS4A1, both from PBMCs. The RNA rows say which cell types transcribed the gene; the ATAC rows say where the locus is open, including the promoter that the RNA spike is nowhere near." src="/img/scrna/rna_atac_ms4a1.png" />
+<Figure caption="The RNA rows above the scATAC rows at MS4A1, both from the same PBMCs. The RNA rows say which cell types transcribed the gene; the ATAC rows say where the locus is open, including the promoter that the RNA spike is nowhere near." src="/img/scrna/rna_atac_ms4a1.png" />
 
 The two assays disagree about where the interesting coordinate is, which is the
 point of looking at them together: accessibility marks the promoter and the

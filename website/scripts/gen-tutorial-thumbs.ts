@@ -137,6 +137,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.25, 1],
     position: 'left',
   },
+  scrna_pseudobulk: {
+    // the pseudobulk rows from the track header down, so the card carries the
+    // nine cell-type labels beside the one row that has the pile
+    src: 'scrna/ms4a1_bcell.png',
+    band: [0.4, 1],
+    position: 'left',
+  },
   linkage_disequilibrium: {
     // The LD triangle, starting past the figure's callout box at its left edge.
     src: 'ld/lct_lactase.png',

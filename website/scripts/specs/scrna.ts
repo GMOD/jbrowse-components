@@ -47,7 +47,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 560,
+    viewportHeight: 630,
   },
   // The same PBMCs through two assays. The RNA rows measure how much of the
   // transcript each cell type made; the ATAC rows below measure whether the
@@ -79,7 +79,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 900,
+    viewportHeight: 1015,
   },
   // The pseudobulk row above its own cells: nine curves, then the 4390 rows they
   // are a sum over. The pinned low maximum is what makes the single-UMI cells in
@@ -114,7 +114,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 20000,
-    viewportHeight: 860,
+    viewportHeight: 1005,
   },
   // LYZ, so the pattern reads as general rather than one lucky gene: the two
   // monocyte rows and the cDC row carry it, and the lymphocyte rows are flat.
@@ -140,6 +140,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 560,
+    viewportHeight: 630,
   },
 ]
