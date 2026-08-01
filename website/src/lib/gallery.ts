@@ -181,7 +181,7 @@ export const gallerySections: readonly GallerySection[] = [
           'An SKBR3 translocation with each side in its own panel and the connections drawn across them: supporting reads as black curves, the variant call in green with feet showing directionality.',
       },
       {
-        label: 'Multi-sample SV genotypes',
+        label: '1000 Genomes SV genotypes',
         spec: 'multisv',
         guide: 'tutorials/sv_multisamples',
         description:
@@ -263,14 +263,14 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Variants and populations',
     items: [
       {
-        label: 'Trio coverage and SV calls',
+        label: '1000 Genomes trio SV coverage',
         spec: 'multi-sv-trio',
         guide: 'tutorials/sv_multisamples',
         description:
           'Coverage for a 1000 Genomes trio (mother, child, father) beneath the ensemble structural-variant VCF.',
       },
       {
-        label: 'Phased genotype matrix',
+        label: '1000 Genomes phased trio matrix',
         spec: 'trio-matrix-phased-clean',
         guide: 'tutorials/analyze_trio',
         description:
@@ -280,35 +280,35 @@ export const gallerySections: readonly GallerySection[] = [
         // The mutation matrix, not the copy-number painting the "Coverage"
         // section already carries for this cohort: different assay, different
         // display, and the grouping is what the picture is about.
-        label: 'Tumor cohort mutations by histology',
+        label: 'TCGA mutations by histology',
         spec: 'tcga/mutations_cdh1_histology',
         guide: 'tutorials/tcga_cohort_mutations',
         description:
           'Somatic mutations in CDH1 across a TCGA breast cohort, one column per mutation and one row per tumor, with the rows grouped by histology. The truncating mutations fall almost entirely in the lobular band.',
       },
       {
-        label: 'Wolfdog local ancestry',
+        label: 'Dog10K wolfdog ancestry',
         spec: 'dog10k-wolfdog-ancestry',
         guide: 'tutorials/local_ancestry',
         description:
           'Dog10K haplotypes painted by FLARE against gray wolf and breed-dog panels, two rows per animal: wolf blocks tile the wolfdog breeds and are absent from the German Shepherds.',
       },
       {
-        label: 'Collie eye anomaly deletion',
+        label: 'Dog10K Collie eye deletion',
         spec: 'dog10k-nhej1-cea-deletion',
         guide: 'tutorials/dog10k_svs',
         description:
           'A 7.8 kb deletion in an NHEJ1 intron genotyped across dog breeds from the Dog10K structural-variant callset: carried by Collies and relatives, absent from other breeds and from wolves.',
       },
       {
-        label: 'Dog body size haplotype',
+        label: 'Dog10K body size haplotype',
         spec: 'dog10k-igf1-haplotype',
         guide: 'tutorials/dog10k_selection',
         description:
           'Dog10K SNVs across IGF1 for whole toy and giant breeds, clustered by genotype, with size class as the sidebar swatch.',
       },
       {
-        label: 'Dog CYP1A2 nonsense allele',
+        label: 'Dog10K CYP1A2 nonsense allele',
         spec: 'dog10k-cyp1a2-nonsense',
         guide: 'tutorials/dog10k_lof',
         description:
@@ -335,14 +335,14 @@ export const gallerySections: readonly GallerySection[] = [
           'Haplotypic r² from phased 1000 Genomes genotypes, with a red block of high linkage in the middle and lower values to either side.',
       },
       {
-        label: 'QTL scan with haplotype painting',
+        label: 'BXD QTL with haplotype painting',
         spec: 'qtl/bxd_tyrp1_locus',
         guide: 'tutorials/bxd_qtl',
         description:
           'A BXD mouse coat-color QTL scan with the strain haplotype painting below it. Sorting the rows by genotype at the peak over Tyrp1 separates the mixed block into B (red) above D (blue), directly under the Manhattan peak.',
       },
       {
-        label: 'Population genomics (Fst)',
+        label: 'Drosophila inversion Fst',
         spec: 'popgen/fst_in2lt_2L',
         guide: 'tutorials/population_genomics',
         description:

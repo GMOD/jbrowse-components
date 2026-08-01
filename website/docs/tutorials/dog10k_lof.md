@@ -81,9 +81,7 @@ Greek gray wolves.
 
 ## Loading it with breed labels
 
-The multi-sample variant display draws one row per sample. As in the other
-Dog10K tutorials, the VCF keeps its own sample IDs and the display's `layout`
-supplies the reading labels and a per-group swatch:
+An SNV VCF loads as an ordinary `VariantTrack`:
 
 ```json addtrack
 {
@@ -97,6 +95,14 @@ supplies the reading labels and a per-group swatch:
   }
 }
 ```
+
+The multi-sample variant display draws one row per sample, and the rows keep the
+Dog10K IDs, which are the data's identity but say nothing to a reader. As in the
+other Dog10K tutorials, either mechanism relabels them without touching the VCF:
+the display's `layout` array for a handful of named animals (see
+[](/docs/tutorials/dog10k_svs)), or a `samplesTsvLocation` on the adapter for a
+panel large enough that a per-animal entry is not worth writing (see
+[Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 
 Framing matters here. A SNV is one base wide however far you zoom out, so a
 whole-gene view of 490 of them is a field of ticks in which the interesting one
@@ -239,8 +245,7 @@ against the numbers that produced them.
 ## See also
 
 - [](/docs/tutorials/dog10k_svs),
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection),
-  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene) and
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
   [](/docs/tutorials/local_ancestry), the other Dog10K tutorials, on the same
   assembly
 - [](/docs/user_guides/multivariant_track)

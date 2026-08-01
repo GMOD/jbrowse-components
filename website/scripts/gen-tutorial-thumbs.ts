@@ -85,14 +85,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 1],
     position: 'left',
   },
-  dog10k_retrogene: {
-    // the gene model and the two blocks sitting in its intron gaps, with the
-    // breed labels; drops the empty right half of the window and the legends
-    src: 'dog10k-fgf4-retrogene-synteny.png',
-    band: [0.25, 0.6],
-    xband: [0, 0.52],
-    position: 'left',
-  },
   dog10k_svs: {
     // the Collie rows carrying the deletion: the breed labels on the left and
     // the genotype blocks, dropping the empty right margin past them

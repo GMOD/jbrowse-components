@@ -83,7 +83,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/tutorials/dog10k_lof)
 - [](/docs/tutorials/dog10k_selection)
-- [](/docs/tutorials/dog10k_retrogene)
 - [](/docs/tutorials/local_ancestry)
 - [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/dog10k_svs)

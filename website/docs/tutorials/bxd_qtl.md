@@ -1,5 +1,6 @@
 ---
-title: QTL visualization example
+title: QTL mapping (BXD mice)
+sidebar_label: QTL mapping (BXD)
 description:
   Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 guide_category: Tutorials
@@ -255,7 +256,7 @@ your `PATH`.
 
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/analyze_trio)
-- [Population genomics](/docs/tutorials/population_genomics)
+- [](/docs/tutorials/population_genomics)
 - [](/docs/user_guides/gwas_track)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [jexl](/docs/config_guides/jexl)

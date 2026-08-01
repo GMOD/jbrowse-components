@@ -214,8 +214,7 @@ numerically as well as read from the figure.
 ## See also
 
 - [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
-  [SVs (Dog10K)](/docs/tutorials/dog10k_svs),
-  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene) and
+  [SVs (Dog10K)](/docs/tutorials/dog10k_svs) and
   [](/docs/tutorials/local_ancestry), the other Dog10K tutorials, on the same
   assembly
 - [](/docs/user_guides/multivariant_track)

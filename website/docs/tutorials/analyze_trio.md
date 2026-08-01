@@ -1,5 +1,6 @@
 ---
-title: Phased trio analysis
+title: Phased trio analysis (1000 Genomes)
+sidebar_label: Phased trio (1000 Genomes)
 description: Examine inheritance patterns and variant phasing in a trio dataset
 guide_category: Tutorials
 tutorial_category: Population genomics
@@ -263,7 +264,7 @@ serving anything.
 ## See also
 
 - [](/docs/tutorials/local_ancestry)
-- [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)
+- [](/docs/tutorials/bxd_qtl), the same display partitioned by strain
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [](/docs/user_guides/multivariant_track)
 - [Variant track config](/docs/config_guides/variant_track)

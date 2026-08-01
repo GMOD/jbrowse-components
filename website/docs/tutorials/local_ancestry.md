@@ -219,27 +219,34 @@ long founder haplotypes because recombination has had few generations to break
 them up.
 
 The German Shepherd row is the check. Same panel, same FLARE run, same
-references, and on this chromosome it takes one 104 kb wolf block in total, so
-the orange elsewhere is signal rather than an artifact of the panels.
+references, and it takes almost no wolf on this chromosome, so the orange
+elsewhere is signal rather than an artifact of the panels.
 
 ### What the two wolf-like breeds do
 
-The Tamaskan behaves like a dog that merely looks like a wolf: its wolf
-assignments are 27 short flecks, median 85 kb, none longer than about a
-megabase, which is the same noise floor the German Shepherd sits on. Appearance
+Read the rows on block length as well as on colored fraction. The build script
+prints both, one line per animal, as a count of wolf blocks with their median
+and longest:
+
+```
+Wolf blocks per animal on chr1 (count, median kb, longest kb):
+```
+
+The Tamaskan behaves like a dog that merely looks like a wolf. Its wolf
+assignments are short flecks on the same noise floor the German Shepherd sits
+on, with nothing approaching the length a recent cross would leave. Appearance
 carries no ancestry.
 
-The Shiloh Shepherd does not. It takes 23 wolf blocks with a median around 1.5
-Mb and a longest of nearly 10 Mb, a length distribution much closer to a
-Czechoslovakian Wolfdog than to the Tamaskan. Stated carefully: it agrees with
-the Dog10K paper's observation that this individual shares more doubleton sites
-with wolves than any other breed dog, but the same paper's D-statistics find no
-significant excess of wolf allele sharing over German Shepherd Dogs. Only one
-Shiloh Shepherd exists in the collection, and both a single sample and a single
-chromosome are thin evidence. Read it as a lead to follow, not a settled result,
-and note the shape of the disagreement: a genome-wide sharing fraction and a
-block-length distribution are different measurements, and this is the sort of
-case where they diverge.
+The Shiloh Shepherd does not. Its wolf blocks run to megabases, a length
+distribution much closer to a Czechoslovakian Wolfdog than to the Tamaskan.
+Stated carefully: it agrees with the Dog10K paper's observation that this
+individual shares more doubleton sites with wolves than any other breed dog, but
+the same paper's D-statistics find no significant excess of wolf allele sharing
+over German Shepherd Dogs. Only one Shiloh Shepherd exists in the collection,
+and both a single sample and a single chromosome are thin evidence. Read it as a
+lead to follow, not a settled result, and note the shape of the disagreement: a
+genome-wide sharing fraction and a block-length distribution are different
+measurements, and this is the sort of case where they diverge.
 
 ## Checking a block against the genotypes
 
@@ -277,20 +284,20 @@ bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 
 It downloads the Dog10K sample table, derives the panel and target lists, slices
 that chromosome out of the phased panel, generates the map, runs FLARE, prints
-the per-sample summary, and writes the painted BED
+the per-sample ancestry fractions and the wolf-block length distribution behind
+the reading above, and writes the painted BED
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
 plus its index and the genotype slice the second figure uses.
 
 ## See also
 
 - [](/docs/tutorials/dog10k_svs),
-  [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
-  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene), the other Dog10K
-  tutorials, on the same assembly
+  [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof) and
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection), the other
+  Dog10K tutorials, on the same assembly
 - [](/docs/tutorials/analyze_trio), the same display painted from hap-ibd
   inheritance blocks
-- [QTL visualization example (strain painting)](/docs/tutorials/bxd_qtl)
+- [](/docs/tutorials/bxd_qtl), the same display partitioned by strain
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/multivariant_track)
 

@@ -2,23 +2,26 @@
 title: Structural variants (Dog10K)
 sidebar_label: SVs (Dog10K)
 description:
-  Genotype a published structural variant across dog breeds and read it against
-  the gene it sits in
+  Genotype four classes of structural variant across dog breeds and read each
+  against the gene it sits in
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** slice one locus out of the 5.9 GB Dog10K structural-variant genotype
-VCF over HTTP, load it as a `VariantTrack` in the multi-sample variant display
-with breed labels, and read a deletion's genotype across breeds against the gene
-model above it.
+**TL;DR:** slice a locus out of the Dog10K structural-variant callsets over
+HTTP, load it as a `VariantTrack` in the multi-sample variant display with breed
+labels, and read the genotypes against the gene model above it. Four loci, one
+recipe, and each is a different class of variant that has to be read a different
+way.
 
 ## Prerequisites
 
-To build the track:
+To build the tracks:
 
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4)
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
+- `minimap2` and `samtools`, for the
+  [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
 
 ## The variant
 
@@ -235,10 +238,233 @@ distribution is the context. The white column inside it is a window the whole
 collection reads below two copies, which is a property of the reference rather
 than of any dog, so it is dropped instead of painted.
 
+## A variant that is not there, at FGF4
+
+The three loci above are all variants at the locus you are looking at. This one
+is not: the variant is an insertion somewhere else in the genome, and what the
+callset holds here is its shadow.
+
+[Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
+breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
+the _FGF4_ transcript reinserted elsewhere. Processed means it was made from the
+spliced mRNA, so the copy has no introns, and that is what makes it findable
+without knowing where it landed. Short reads from the retrocopy map to the
+parent gene, because the parent's exons are the sequence they match, and they
+stop at each splice site. A short-read caller reading that pileup sees exon
+coverage continuing past where the reference's exons end, and calls a deletion
+of each intron.
+
+Nothing is deleted. That reading comes from Parker et al. rather than from the
+callset, which cannot tell a retrocopy's footprint from a real deletion on its
+own.
+
+### The records are the introns
+
+_FGF4_ has two introns, so a retrocopy should leave two records, each spanning
+one intron end to end. That is checkable rather than assumed, so
+[`build_dog10k_fgf4_retrogene.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_retrogene.sh)
+derives the introns from the RefSeq annotation and asserts each record against
+them before it writes any track, allowing one base of slack at each breakpoint:
+
+```
+FGF4 RefSeq exons:  48869443-48869782, 48870315-48870418, 48870953-48873311
+FGF4 RefSeq introns: 48869783-48870314 (532 bp),  48870419-48870952 (534 bp)
+
+intron 48869783-48870314: called as a DEL of 532 bp at 48869783-48870314
+intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
+```
+
+A callset or annotation update that moved either one would fail the script
+rather than quietly redraw the figure.
+
+### Slicing the two records out
+
+This locus comes from the Michigan aggregate Manta callset rather than the
+Zenodo Paragraph set the deletions above use. It is 1.08 GB over the same
+collection, and unlike the Paragraph set it carries `DUP` and `INV` records.
+Selecting on `POS` keeps the two intron records and drops everything else called
+nearby:
+
+```bash
+SHARE=https://kiddlabshare.med.umich.edu/dog10K
+SV=$SHARE/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
+bcftools view -r chr18:48865000-48876000 -S fgf4.samples --force-samples \
+  -i 'POS=48869782 || POS=48870417' \
+  -Oz -o dog10k_fgf4_svs.vcf.gz "$SV"
+tabix -p vcf dog10k_fgf4_svs.vcf.gz
+```
+
+`fgf4.samples` is whole breeds, not a few animals each: three breeds whose short
+legs are the trait Parker et al. mapped, two spaniel breeds, two
+standard-proportioned breeds with no reported association, and the Greek gray
+wolves.
+
+This panel is whole breeds rather than the handful of named animals the `layout`
+above relabels, so point the adapter at a samples TSV instead: its first column
+is the sample name and every other column is an attribute, and `colorBy` names
+the one that paints the sidebar swatch.
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "dog10k_fgf4_svs",
+  "name": "Dog10K structural variants at FGF4 (named breeds)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "dog10k_fgf4_svs.vcf.gz",
+    "samplesTsvLocation": { "uri": "dog10k_fgf4_samples.tsv" }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "colorBy": "group",
+      "height": 690
+    }
+  ]
+}
+```
+
+This figure needs the positional display rather than a clustered matrix: the
+whole claim is where the two blocks sit relative to the exons, and a matrix
+spaces one even column per record, which throws that geometry away. The two
+blocks fall in the two gaps of the gene model above them, which is the reason to
+draw this at a locus rather than as a table. An intron-shaped call is a
+retrocopy's footprint, and an intron-shaped call is something you can see.
+
+Every carrier is heterozygous. The parent gene's introns are still on both
+chromosomes, so the pileup a carrier produces is always a mixture and the caller
+never sees the homozygous loss a real deletion would give it.
+
+### What one record cannot tell you
+
+Two _FGF4_ retrocopies are known in dogs. Parker et al. tied one to short legs;
+[Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114) tied a second, on
+a different chromosome, to chondrodystrophy and intervertebral disc disease,
+which is why breeds of ordinary proportions carry a copy too.
+
+Both are copies of the same transcript, so both leave the same footprint at the
+parent gene, and one record cannot say which. That is why the swatch says what a
+breed looks like rather than what it carries: the spaniels are exactly the rows
+where the two disagree, and a swatch keyed on the genotype would have hidden
+them. Placing either insertion needs the other side of the junction, reads
+spanning retrocopy into flanking sequence, which is a different query against a
+different callset.
+
+### The retrocopy itself, as sequence {#the-retrocopy-itself-as-sequence}
+
+Everything above is the caller's response to a retrocopy rather than the
+retrocopy. For this locus the retrocopy is also available directly: both copies
+were amplified and Sanger-sequenced and both are deposited, as
+[MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
+insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
+CFA12 one. That is unusual. Most candidate retrocopies have no sequenced insert,
+which is why the callset footprint above is the method that generalizes and this
+is a check available here rather than a recipe.
+
+Align with `minimap2 -x splice -c`. `-c` is what writes a base-level CIGAR into
+the PAF, and without it the ribbon is one block per alignment with no gaps in
+it. The query is a spliced transcript's worth of sequence and the reference has
+introns in the middle of it, so no genomic preset chains across the gaps
+(`asm5`, `asm10` and `asm20` all return the 3' exon alone). The default preset
+does chain across them, and puts the second gap a base off the annotated intron;
+`splice` scores the canonical splice sites and lands both on it.
+
+A splice preset calls those gaps `N`, meaning an intron removed by splicing from
+a transcript. This is genomic sequence against a genomic locus, so the build
+script rewrites them to `D`: those bases really are absent from the retrocopy.
+Load each retrocopy as a one-contig assembly and its alignment as a
+`SyntenyTrack`:
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "dog10k_fgf4_retro_cfa12",
+  "name": "FGF4 CFA12 retrocopy (MF040221) vs its parent gene",
+  "assemblyNames": ["FGF4retro-CFA12", "UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "dog10k_fgf4_retro_cfa12.paf",
+    "queryAssembly": "FGF4retro-CFA12",
+    "targetAssembly": "UU_Cfam_GSD_1.0"
+  }
+}
+```
+
+`assemblyNames` is ordered `[query, target]`, which is the reverse of the order
+minimap2 takes its inputs.
+
+Each GenBank record is titled "complete cds" and carries a feature table, so the
+gene model on a retrocopy row is the submitters' annotation rather than a
+prediction. The build script writes it out as GFF3 and requires the CDS to be a
+single interval: a `join(...)` would mean the deposited copy has introns, which
+is the one thing a processed retrocopy cannot have. Loaded as an ordinary
+`FeatureTrack` per retrocopy, it states what the alignment does in a form that
+needs no reading of ribbons, since the parent's CDS is three boxes and a
+processed copy's is one.
+
+Put the parent gene between the two retrocopies rather than beside them. Both
+align to the same three exons, so as two regions of one row their ribbons cross
+through each other; from above and below they close on the gene instead, and
+each intron is one gap seen twice.
+
+<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the per-breed sample rows between the two ribbons. Each retrocopy's CDS is one box against the parent's three, and each ribbon gap sits over a record the chondrodysplastic breeds and both spaniels carry and the Labradors, German Shepherds and Greek wolves do not." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+
+The window stops where the CFA18 alignment does, so that retrocopy is on screen
+end to end and the CFA12 ribbon runs on past it. The sample rows are the same
+track described above, in the same coordinates, so a block edge can be read
+against both the intron boundary above it and the breeds carrying it.
+
+Set the synteny view's indel drawing to **Transparent indels** rather than the
+default **Colored indels**. Colored indels name each CIGAR operation, and which
+name an operation gets depends on which side the alignment is read from: each
+gap is drawn as a deletion above the parent row and as an insertion below it, so
+one event takes two colors according to stacking order. Unpainted is the same on
+both sides.
+
+The two records agree at 207 codons but their spans against chr18 differ, so the
+two retrocopies took the same coding sequence and different amounts of UTR. This
+still does not place either insertion: a retrocopy's deposited sequence is the
+insert, ending in its poly(A) tail, so it carries no flank to align anywhere
+else.
+
+### Across the collection
+
+The same two records genotyped over every canid the callset carries, printed by
+the build script:
+
+```
+Genotype counts per group, at the intron 1 record (chr18:48869782):
+  Breed_Dogs     1575 canids: 1177 hom ref, 381 het, 12 no call, 5 hom alt
+  Mixed/Other      12 canids: 10 hom ref, 2 het
+  Village_Dogs    237 canids: 198 hom ref, 39 het
+  Wolf             55 canids: 55 hom ref
+
+  of 290 breeds with two or more animals: 52 carry it in every animal, 198 in none
+
+  1831 of 1879 canids get the same call from both: 97.4%
+  most common (intron 1, intron 2) pairs: (0/0, 0/0) x1422  (0/1, 0/1) x409
+```
+
+No wolf in the collection carries it, which the wolf rows in the figure already
+show for the panel and this extends to all of them. Manta called the two introns
+independently, so the agreement between them is a check on the reading rather
+than a restatement of it: one retrocopy takes both introns out of the pileup at
+once, and a caller responding to noise would have no reason to put the same
+animals on both records.
+
+The whole-collection track is in the config as `dog10k_fgf4_cohort_svs` if you
+want the lane, but it is not drawn here: 1,879 rows in a few hundred pixels puts
+each row well under a pixel, where rows alias and the stripe density stops being
+the carrier rate.
+
 ## Where to go next
 
 The same recipe reaches every other variant in the callset. Schall and Kidd's
-table of clade-associated SVs is the place to pick the next locus.
+table of clade-associated SVs is the place to pick the next locus. For the
+retrogene shape specifically, any gene whose introns are all called deleted in
+some animals and not others is a candidate, and the check is the one the script
+runs: do the records match the annotated introns to the base.
 
 ## Reproduce it end to end
 
@@ -260,16 +486,36 @@ number over the duplication. Its first route needs only `bcftools`; the second
 re-measures six of those animals from their SRA runs, which needs an aligner and
 about 35 GB of scratch.
 
+Two more build the _FGF4_ locus:
+
+```bash
+BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
+curl -fO $BASE/build_dog10k_fgf4_retrogene.sh
+curl -fO $BASE/build_dog10k_fgf4_synteny.sh
+bash build_dog10k_fgf4_retrogene.sh   # writes ./dog10k_fgf4_build/
+bash build_dog10k_fgf4_synteny.sh     # writes ./dog10k_fgf4_synteny_build/
+```
+
+[`build_dog10k_fgf4_retrogene.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_retrogene.sh)
+derives the panel and the label TSV from the sample table, checks both records
+against the RefSeq introns, slices them out of the callset for the panel and for
+the whole collection, and prints the genotype counts quoted above.
+[`build_dog10k_fgf4_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_synteny.sh)
+fetches both GenBank records and the parent locus, writes each record's feature
+table out as GFF3, aligns each retrocopy, and rewrites the PAF into absolute
+`chr18` coordinates. It exits non-zero unless every gap in both alignments lands
+on an annotated _FGF4_ intron and each deposited CDS is a single interval.
+
 ## See also
 
 - [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection),
-  [Retrogene (Dog10K)](/docs/tutorials/dog10k_retrogene) and
+  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
   [](/docs/tutorials/local_ancestry), the other Dog10K tutorials, on the same
   assembly
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 - [](/docs/user_guides/sv_visualization)
+- [](/docs/user_guides/linear_synteny_view)
 
 ## References
 
@@ -280,3 +526,15 @@ _Genome Biology and Evolution_, _17_(10), evaf173.
 Parker, H. G., Kukekova, A. V., Akey, D. T., et al. (2007).
 [Breed relationships facilitate fine-mapping studies: a 7.8-kb deletion cosegregates with Collie eye anomaly across multiple dog breeds](https://doi.org/10.1101/gr.6086307).
 _Genome Research_, _17_(11), 1562-1571.
+
+Parker, H. G., VonHoldt, B. M., Quignon, P., et al. (2009).
+[An expressed fgf4 retrogene is associated with breed-defining chondrodysplasia in domestic dogs](https://doi.org/10.1126/science.1173275).
+_Science_, _325_(5943), 995-998.
+
+Brown, E. A., Dickinson, P. J., Mansour, T., et al. (2017).
+[FGF4 retrogene on CFA12 is responsible for chondrodystrophy and intervertebral disc disease in dogs](https://doi.org/10.1073/pnas.1709082114).
+_PNAS_, _114_(43), 11476-11481.
+
+Meadows, J. R. S., Kidd, J. M., Wang, G.-D., et al. (2023).
+[Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7).
+_Genome Biology_, _24_(1), 187.

@@ -2,8 +2,8 @@ import { lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the five Dog10K tutorials (local_ancestry.md, dog10k_svs.md,
-// dog10k_lof.md, dog10k_selection.md, dog10k_retrogene.md). All read
+// Figures for the four Dog10K tutorials (local_ancestry.md, dog10k_svs.md,
+// dog10k_lof.md, dog10k_selection.md). All read
 // test_data/dog10k/config.json, whose data is built by the scripts/build_dog10k_*
 // scripts: _wolfdog_ancestry, _nhej1_sv, _cyp1a2, _cyp1a2_cn, _slc28a3_cn,
 // _igf1, _size_fst, _fgf4_retrogene and _fgf4_synteny.

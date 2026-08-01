@@ -145,6 +145,32 @@ echo
 echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (plus its .tbi)."
 echo "Load it with the track JSON in the local ancestry tutorial."
 
+# Wolf-block length distribution per animal. The tutorial's claim that the
+# breeds separate on block LENGTH and not only on total wolf fraction rests on
+# these numbers, so they are printed rather than measured off the figure: a
+# recent cross leaves long founder haplotypes, so a wolf-like dog with only
+# short flecks is a different result from one with megabase blocks. Both
+# haplotype rows of an animal are pooled, since the label column is
+# "<animal> hapN" and the distribution is a property of the animal.
+echo
+echo "Wolf blocks per animal on $CHROM (count, median kb, longest kb):"
+awk -F'\t' '$11=="Wolf" {
+    split($10, a, " hap"); len[a[1]] = len[a[1]] " " ($3-$2)
+  }
+  END {
+    for (animal in len) {
+      n = split(len[animal], v, " ")
+      # split() leaves v[1] empty from the leading separator; compact it
+      m = 0; for (i = 1; i <= n; i++) if (v[i] != "") w[++m] = v[i] + 0
+      for (i = 2; i <= m; i++) { x = w[i]; j = i - 1
+        while (j > 0 && w[j] > x) { w[j+1] = w[j]; j-- }
+        w[j+1] = x }
+      med = (m % 2) ? w[(m+1)/2] : (w[m/2] + w[m/2+1]) / 2
+      printf "  %-28s %4d  %8.0f  %8.0f\n", animal, m, med/1000, w[m]/1000
+      delete w; m = 0
+    }
+  }' "dog10k_wolfdog_ancestry.$CHROM.bed" | sort -k2,2nr
+
 # ── Genotype slice behind the second tutorial figure ────────────────────────
 # A 200 kb window at chr1:107.9-108.1 Mb, inside blocks the painting calls Wolf
 # on five of the sixteen wolfdog haplotypes and Dog on the other eleven. That

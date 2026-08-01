@@ -297,7 +297,7 @@ for more.
 - [](/docs/tutorials/cli_desktop)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Cancer structural variants](/docs/tutorials/sv_visualization_cgiab)
-- [Population genomics](/docs/tutorials/population_genomics)
+- [](/docs/tutorials/population_genomics)
 - [Long-read methylation](/docs/tutorials/methylation)
 - [RNA-seq](/docs/tutorials/rnaseq)
 - [All tutorials](/docs/tutorials)
