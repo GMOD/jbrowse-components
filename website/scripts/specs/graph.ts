@@ -1,3 +1,6 @@
+import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -36,8 +39,34 @@ const TOOLBAR_READY =
 // server (checked by `pnpm check-live-configs`). Iterate against a local plugin
 // build by setting GRAPH_PLUGIN_LOCAL=1, and switch back before committing
 // figures.
+//
+// The sibling is WRITTEN here rather than kept by hand, because a gitignored
+// copy of a tracked config drifts and nothing notices: `hprc_local.json` was
+// made before the two CFHR gene tracks were added to `hprc.json`, so under
+// GRAPH_PLUGIN_LOCAL those tracks were simply absent and
+// `pangenome/hprc_cfhr_deletion` failed on annotation anchors that resolved to
+// nothing. That reads as a regression in whatever you are testing, which is the
+// worst possible failure for the one switch you flip only when hunting one.
+const localEsmUrl =
+  '/test_data/graphgenomeview/_localdist/jbrowse-plugin-graphgenomeviewer.esm.js'
+// Repo root, off this module rather than off cwd: the spec paths are stated
+// relative to the root and this file is imported by more than the generator.
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const local = process.env.GRAPH_PLUGIN_LOCAL
-  ? (name: string) => name.replace(/\.json$/, '_local.json')
+  ? (name: string) => {
+      const derived = name.replace(/\.json$/, '_local.json')
+      const config = JSON.parse(readFileSync(`${repoRoot}${name}`, 'utf8')) as {
+        plugins: { esmUrl: string }[]
+      }
+      for (const plugin of config.plugins) {
+        plugin.esmUrl = localEsmUrl
+      }
+      writeFileSync(
+        `${repoRoot}${derived}`,
+        `${JSON.stringify(config, null, 2)}\n`,
+      )
+      return derived
+    }
   : (name: string) => name
 const CONFIG = local('test_data/graphgenomeview/config.json')
 // The only fixture loading the graph's contributing strains as assemblies,
@@ -870,13 +899,11 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
-        (graphNode): Annotation => ({
-          type: 'box',
-          anchor: { view: 1, graphNode },
-          strokeWidth: 3,
-        }),
-      ),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
+        type: 'box',
+        anchor: { view: 1, graphNode },
+        strokeWidth: 3,
+      })),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
