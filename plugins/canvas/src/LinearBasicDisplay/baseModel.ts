@@ -889,17 +889,40 @@ export default function baseStateModelFactory(
           // getConfigSnapshotWithPromotables hands the worker concrete values for
           // every promotable slot (chevrons, subfeatureLabels, ...) instead of
           // their raw inherit sentinels — so a new promotable worker-slot needs
-          // no rpcProps change here. The excluded slots are display-only (never
-          // sent to the worker): showLabels/showDescriptions gate label
-          // visibility on the main thread, displayMode drives compact/
-          // superCompact height scaling and collapsed single-row packing there,
-          // and heightMode is a pure main-thread track-height/layout strategy, so
-          // excluding them keeps toggling those off the RPC cache key.
+          // no rpcProps change here.
+          //
+          // The cost of that convenience is that it snapshots EVERY slot,
+          // including main-thread-only ones, and this payload is the RPC cache
+          // key (see rpcPropsCacheKey) — so a slot listed neither in
+          // `DisplayConfig` nor below is a silent refetch trigger. `height` was
+          // the expensive one: the resize handle writes it on every drag frame
+          // (TrackContainer -> resizeHeight -> setConf), so dragging a track
+          // taller re-ran the whole worker pipeline. Every name here is absent
+          // from `DisplayConfig` and unread by the worker:
+          //   showLabels/showDescriptions  main-thread label visibility
+          //   displayMode                  compact height scaling + collapsed
+          //                                single-row packing, applied in layout
+          //   heightMode/height/maxHeight/growMaxHeight
+          //                                track-height strategy and its bounds
+          //   maxLabelFeatureDensity       the main-thread `showLabels` auto gate
+          //   maxFeatureScreenDensity      reaches the worker as the separate
+          //                                `maxFeatureDensity` field below, which
+          //                                is undefined while nothing gates — so
+          //                                that field, not this slot, is the
+          //                                honest cache axis
+          // fetchSizeLimit/forceLoad deliberately STAY: the byte budget itself
+          // (`resolvedByteLimit()`) is added at the call site and so is not a
+          // cache key, leaving these as what makes raising the limit refetch.
           const {
             showLabels: _l,
             showDescriptions: _d,
             displayMode: _dm,
             heightMode: _hm,
+            height: _h,
+            maxHeight: _mh,
+            growMaxHeight: _gmh,
+            maxLabelFeatureDensity: _mlfd,
+            maxFeatureScreenDensity: _mfsd,
             ...rest
           } = getConfigSnapshotWithPromotables(self)
           return {
@@ -1611,25 +1634,23 @@ export default function baseStateModelFactory(
           })
         },
 
-        /**
-         * #action
-         */
-        clearDisplaySpecificData() {
-          // Density stats survive viewport-change clearAllRpcData calls so
-          // the derived `regionTooLarge` banner stays stable across small
-          // zoom or pan moves. pruneRpcDataMapToVisible drops off-screen
-          // entries during fetchNeeded. rpcDataMap is similarly preserved;
-          // when regionTooLarge is true, laidOutDataMap returns empty so no
-          // stale features render through the banner.
-          //
-          // NOTE: scrollTop is intentionally NOT reset here. clearAllRpcData
-          // fires on same-region refetches (zoom/settings), and zeroing scroll
-          // there yanks the viewport to the top on every zoom. The scroll-to-top
-          // reset lives in the displayedRegions-change handler (chromosome nav)
-          // instead; a re-pack that shrinks content is clamped by the layout
-          // autorun's maxScroll clamp).
-        },
-
+        // This display deliberately does NOT override
+        // `clearDisplaySpecificData` (MultiRegionDisplayMixin's no-op default
+        // stands), so a `clearAllRpcData` keeps everything below and the track
+        // stays painted through the refetch window:
+        //
+        // - `rpcDataMap` and the gate's density stats survive, so features stay
+        //   on screen and the derived `regionTooLarge` banner stays stable across
+        //   small zoom/pan moves. `pruneRpcDataMapToVisible` below is what bounds
+        //   them instead, per-region, during fetchNeeded. When regionTooLarge is
+        //   true `laidOutDataMap` returns empty, so no stale features render
+        //   through the banner.
+        // - `scrollTop` survives. clearAllRpcData fires on same-region refetches
+        //   (zoom, settings), and zeroing scroll there yanks the viewport to the
+        //   top on every zoom. The scroll-to-top reset lives in the
+        //   displayedRegions-change handler (chromosome nav) instead, and a
+        //   re-pack that shrinks content is clamped by the layout autorun's
+        //   maxScroll clamp.
         /**
          * #action
          */

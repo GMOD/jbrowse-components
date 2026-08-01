@@ -1228,6 +1228,17 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     ['showDescriptions', false],
     ['heightMode', 'grow'],
     ['displayMode', 'compact'],
+    // The track-height slots and their bounds. `height` is the expensive one:
+    // the resize handle writes it on every drag frame (TrackContainer ->
+    // resizeHeight -> setConf), so before it was excluded from the payload,
+    // dragging a track taller re-ran the entire worker pipeline once the drag
+    // settled.
+    ['height', 456],
+    ['maxHeight', 2400],
+    ['growMaxHeight', 900],
+    // the main-thread `showLabels` auto gate — layout reserves label rows from
+    // it, the worker never sees it
+    ['maxLabelFeatureDensity', 0.05],
   ])('a main-thread-only %s change does not refetch', async (slot, value) => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
@@ -1238,6 +1249,39 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     expect(display.loadedRegions.size).toBe(1)
+  })
+
+  // `maxFeatureScreenDensity` is excluded from displayConfig, but it must still
+  // invalidate — it reaches the worker as the separate `maxFeatureDensity`
+  // field, which is `undefined` while nothing gates. That field, not the raw
+  // slot, is the honest cache axis: excluding the slot without it would silently
+  // strand a track at a density budget the user just raised.
+  it('a density-budget change still refetches while the gate is active', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeFeatureData())
+    const { display, view } = createDisplay()
+    // zoomed out past AUTO_FORCE_LOAD_BP, so the density axis has an opinion at
+    // all (below the floor `maxFeatureDensity` is undefined by design)
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 500_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(1000)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    expect(display.maxFeatureDensity).not.toBeUndefined()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot('maxFeatureScreenDensity', 0.5)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
+      maxFeatureDensity: 0.5,
+    })
   })
 
   it('a worker-visible change still refetches', async () => {
