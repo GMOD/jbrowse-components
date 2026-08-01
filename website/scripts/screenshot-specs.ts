@@ -36,6 +36,7 @@ import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { scatacSpecs } from './specs/scatac.ts'
+import { scrnaSpecs } from './specs/scrna.ts'
 import { svSpecs } from './specs/sv.ts'
 import { syntenySpecs } from './specs/synteny.ts'
 import { tcgaSpecs } from './specs/tcga.ts'
@@ -57,6 +58,7 @@ export const specs: ScreenshotSpec[] = [
   ...ldSpecs,
   ...popgenSpecs,
   ...scatacSpecs,
+  ...scrnaSpecs,
   ...svSpecs,
   ...tcgaSpecs,
   ...cnv1000gSpecs,
