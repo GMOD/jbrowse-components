@@ -15,6 +15,8 @@ Plugin, published as `demos/graphgenomeviewer/4cfdc394380b/`:
 - `3b670fe` fit an anchored drawing to the region it was cut for
 - `f0e9a1b` scale it against that region too
 - `cb3db85` tether a deletion label too wide for the arc it names
+- `901ddb4` bow a deletion arc around the reference it skips (published as
+  `demos/graphgenomeviewer/a22cdaf2f74c/`, which is the current pin)
 
 Here: the three `test_data/graphgenomeview/*.json` configs pin that prefix, all
 25 graph figures are regenerated against it, and the prose that the hop-default
@@ -177,13 +179,49 @@ the synteny click stops launching anything" floor in that spec's comment is
 430, 410 and 350. That floor is about a menu opened before the resize, which is
 what `closeMenusFirst` existed to handle and now actually does.
 
+## The amylase balloon was a sign, not a layout problem
+
+This was carried as "cosmetic, and the only fix is a PangyPlot-style
+`delLinkForce`, which for OGDF FMMM in WASM means a post-pass moving backbone
+nodes shared with the whole thread". **No layout change was needed.** Probing the
+live drawing said so in one run: the bypassed reference reached 739 units to one
+side of a 16-unit chord while the arc bowed 719 units to the other.
+
+Both halves of the bow were wrong.
+
+- **The side was hardcoded** (`bulgeX = -uy * bulge`, always). Whether an arc
+  landed on the reference it names or in the empty half of the drawing was down
+  to which way the simulation happened to throw that run. The two arcs in the
+  same figure that read correctly were the two whose runs fell on the hardcoded
+  side — so the figure looked like one bad arc among good ones rather than like
+  a coin flip, which is why it read as a layout problem.
+- **The size came from summed drawn path length** (`0.35 *` it), which is not
+  spatial reach. A chain that snakes, as an FMMM chain does, sizes an arc far
+  past where its own nodes are.
+
+Both now come from where the run lies relative to the edge's own chord.
+Perpendicular reach to the farthest point gives the side and the clearance; the
+run's extent **along** the chord carries the collinear case at the same 0.35.
+That second term is not optional: in an anchored layout the backbone is a
+straight line, so the run lies ON the chord and reaches nowhere off it, and
+clearance alone collapses every anchored arc back into the stub at a joint the
+bulge exists to prevent. The unit tests caught exactly that, and the anchored
+figures are byte-stable because of it.
+
+The computation moved **into** `computeEdgeCurves`, which now takes the bypassed
+nodes rather than a precomputed number: turning a run into a bow needs the chord,
+and only that function knows which ends the edge attaches to. Three callers build
+this curve — the drawing, the hit index, and the label that rides it — and a
+second derivation is a second thing to keep in step.
+
+One knock-on, worth knowing because it will recur: arcs that grow can newly clear
+`MIN_DELETION_LABEL_PX` and acquire a label they never had. The MHC force
+layout's 1.5 kb arc did, and shipped it clipped against the left edge as
+`…ips 1.5 kb of reference`, because the label cull keeps any box that merely
+*overlaps* the canvas. A tethered label now slides back into the frame with its
+leader redrawn to follow.
+
 ## Open
 
-- **The amylase 94.2 kb arc is still a balloon enclosing nothing.** Readable now
-  that it is dashed and labelled, so this is cosmetic. A force-layout equivalent
-  of PangyPlot's `delLinkForce` was **considered and not attempted**: our force
-  layout is OGDF FMMM in WASM, so the only equivalent is a post-pass moving
-  backbone nodes shared with the whole thread. `bubbleCrossing.test.ts` is the
-  guard if anyone tries.
 - **A deletion-arc LGV track** off the link index: rejected, see the reference
   doc.

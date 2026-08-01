@@ -257,7 +257,7 @@ on that haplotype's assembly.
 Chromosome size does not enter into any of this. The amylase locus sits on chr1,
 the longest human chromosome, and the graph holds 464 haplotypes of it:
 
-<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The graph is cut from two tabix indexes, so 248 Mb of chromosome costs nothing: this window is 78 nodes. The dashed arcs are deletions, each labelled on its own curve with the reference it skips; the short arms off the thread are alleles whose interiors sit outside the cut. Colors are reference position in both panels, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_amylase_graph.png" />
+<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The graph is cut from two tabix indexes, so 248 Mb of chromosome costs nothing: this window is 78 nodes. The dashed arcs are deletions, each bowed around the reference it skips and labelled with how much that is, on a leader where the arc is too small to carry the words; the short arms off the thread are alleles whose interiors sit outside the cut. Colors are reference position in both panels, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_amylase_graph.png" />
 
 The graph's own bubble index says what that window holds, and tabix reads it
 over HTTP without the browser. The bubble spanning AMY1A and AMY1B is the first
