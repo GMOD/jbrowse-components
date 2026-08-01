@@ -6,7 +6,6 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "types": ["jest", "node"],
     "noEmit": false,
     "composite": true
   },

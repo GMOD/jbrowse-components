@@ -4,8 +4,10 @@
     "verbatimModuleSyntax": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "rootDir": "./",
-    "outDir": "dist",
     "noEmit": true,
+    // Whole-repo `--noEmit` is ~25s cold, ~1s warm. `*.tsbuildinfo` is
+    // gitignored; the composite build projects keep writing their own.
+    "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
@@ -13,7 +15,9 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "module": "esnext",
-    "removeComments": true,
+    // Jest and vite both transpile file-by-file, so the repo already lives
+    // under these semantics — assert it rather than rely on it.
+    "isolatedModules": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
@@ -21,8 +25,7 @@
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    "types": ["jest"],
-    "typeRoots": ["./node_modules/@types", "."]
+    "types": ["jest"]
   },
   "exclude": [
     "products/aws/",
@@ -31,7 +34,6 @@
     "**/dist/",
     "**/esm/",
     "**/config/jest/",
-    "**/embedded_demos/",
     "**/component_tests/",
     "**/examples-site/",
     "**/website",
