@@ -94,9 +94,17 @@ const formats: { regex: RegExp; spec: AdapterSpec }[] = [
     },
   },
   {
-    // GtfAdapter unzips through the same gtfLocation slot, so there is no
-    // tabix sibling to route .gtf.gz to
-    regex: /\.gtf(\.b?gz)?$/i,
+    regex: /\.gtf\.b?gz$/i,
+    spec: {
+      kind: 'indexed',
+      adapterType: 'GtfTabixAdapter',
+      locField: 'gtfGzLocation',
+      suffix: '.tbi',
+      indexType: 'TBI',
+    },
+  },
+  {
+    regex: /\.gtf$/i,
     spec: {
       kind: 'single',
       adapterType: 'GtfAdapter',
@@ -138,6 +146,24 @@ const formats: { regex: RegExp; spec: AdapterSpec }[] = [
       locField: 'bedGzLocation',
       suffix: '.tbi',
       indexType: 'TBI',
+    },
+  },
+  {
+    regex: /\.bg\.b?gz$/i,
+    spec: {
+      kind: 'indexed',
+      adapterType: 'BedGraphTabixAdapter',
+      locField: 'bedGraphGzLocation',
+      suffix: '.tbi',
+      indexType: 'TBI',
+    },
+  },
+  {
+    regex: /\.bg$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'BedGraphAdapter',
+      locField: 'bedGraphLocation',
     },
   },
   {
@@ -458,6 +484,8 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   VcfAdapter: 'VariantTrack',
   BedpeAdapter: 'VariantTrack',
   BedAdapter: 'FeatureTrack',
+  BedGraphAdapter: 'QuantitativeTrack',
+  BedGraphTabixAdapter: 'QuantitativeTrack',
   HicAdapter: 'HicTrack',
   PAFAdapter: 'SyntenyTrack',
   DeltaAdapter: 'SyntenyTrack',
