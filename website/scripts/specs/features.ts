@@ -594,9 +594,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // from just `uniprotId` + `transcriptId` the plugin derives the AlphaFold
   // structure URL, resolves the transcript feature from the hg38-ncbiRefSeq track
   // at `loc`, and translates its CDS to the protein sequence it aligns to the
-  // structure. Loads protein3d pinned to a published jsDelivr version
-  // (PROTEIN3D_CONFIG) against the local build, whose session has the
-  // setPendingMove split API the side-by-side launch needs.
+  // structure. PROTEIN3D_CONFIG loads protein3d against the local build, whose
+  // session has the setPendingMove split API the side-by-side launch needs.
+  //
+  // That config pins the plugin to jbrowse.org/plugins/…/0.8.0/, not `latest/`:
+  // the figure is a picture of a specific plugin's UI, so a release of it
+  // shouldn't be able to change or break the capture without a commit here. Bump
+  // the pin deliberately and re-render. (The comment used to claim a pin that
+  // wasn't there, and pointed at jsDelivr, which is not where this loads from.)
   {
     mode: 'url',
     name: 'protein/connected',
