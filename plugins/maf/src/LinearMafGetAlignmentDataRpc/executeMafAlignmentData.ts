@@ -25,6 +25,14 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
   // is the on-screen row (and coverage is scoped to the set). Undefined on the
   // first fetch — falls back to canonical sample order. Mirrors variants.
   orderedSampleIds?: string[]
+  // The display's subtree filter, for the one fetch that cannot send
+  // `orderedSampleIds`: the row set is discovered BY this fetch, so a session
+  // that arrives with a filter already set (a shared link, a screenshot spec)
+  // has no `sources` to narrow yet. Without it that fetch emits every genome
+  // and the client draws a 26-row payload against 25 labels, one row off, until
+  // something else invalidates the cache. Applied to the canonical set in its
+  // own order, which is the order `sources` filters into on the client.
+  subtreeFilter?: string[]
 }
 
 export interface LinearMafGetAlignmentDataResult {
@@ -39,6 +47,29 @@ export interface LinearMafGetAlignmentDataResult {
    */
   samplesCanonical: boolean
   regionData: MafRegionData
+}
+
+/**
+ * Which sample ids become rows, in row order.
+ *
+ * `orderedSampleIds` is the client's own display order and wins whenever it is
+ * sent. It cannot be sent on the fetch that DISCOVERS the row set, though — the
+ * display has no `sources` until this call returns — so a session that arrives
+ * with a subtree filter already set (a shared link, a screenshot spec) would
+ * otherwise get every genome back and draw an N-row payload against N-k labels,
+ * every row one off. Filtering the canonical set here closes that, and in the
+ * canonical order, which is the order the client's `sources` filters into.
+ */
+export function resolveRowOrder(
+  samples: readonly Sample[],
+  orderedSampleIds: readonly string[] | undefined,
+  subtreeFilter: readonly string[] | undefined,
+): string[] {
+  if (orderedSampleIds?.length) {
+    return [...orderedSampleIds]
+  }
+  const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  return samples.filter(s => !filterSet || filterSet.has(s.id)).map(s => s.id)
 }
 
 /**
@@ -59,7 +90,8 @@ export async function executeMafAlignmentData({
   pluginManager: PluginManager
   args: LinearMafGetAlignmentDataArgs
 }) {
-  const { regions, adapterConfig, sessionId, orderedSampleIds } = args
+  const { regions, adapterConfig, sessionId, orderedSampleIds, subtreeFilter } =
+    args
   const region = regions[0]!
   const {
     adapter,
@@ -121,10 +153,11 @@ export async function executeMafAlignmentData({
   // Block rows are keyed/ordered by the client's display order; samples not in
   // it are dropped. The returned `samples` stays the full canonical set so the
   // sidebar tree + "clear filter" still see every genome.
-  const rowOrder = orderedSampleIds?.length
-    ? orderedSampleIds
-    : samples.map(s => s.id)
-  const sampleToRow = new Map(rowOrder.map((id, i) => [id, i]))
+  const sampleToRow = new Map(
+    resolveRowOrder(samples, orderedSampleIds, subtreeFilter).map(
+      (id, i): [string, number] => [id, i],
+    ),
+  )
 
   // One MAF feature = one alignment block. A single fetched region can contain
   // many disjoint blocks at unrelated genomic anchors.

@@ -351,6 +351,20 @@ const GRAPH_BUBBLE_SPREADS: Record<string, string> = {
   wide: 'Wide bubbles',
 }
 
+// The Layout quality radio, which is FMMM's iteration budget rather than a
+// rendering knob: 0 is 3 fixed + 1 fine-tuning iteration and 4 is 120 + 60
+// (graphlayout.cpp in jbrowse-plugin-graphgenomeview). Labels read off that
+// plugin's own `qualityLabels`; it is a separate repo, so unlike the alignments
+// tables this one cannot be imported and has to be checked against the source
+// when it changes.
+const GRAPH_LAYOUT_QUALITIES: Record<number, string> = {
+  0: 'Lowest',
+  1: 'Low',
+  2: 'Medium',
+  3: 'High',
+  4: 'Highest',
+}
+
 const GRAPH_CONTEXTS: Record<number, string> = {
   0: 'None',
   1: '1 hop',
@@ -434,6 +448,16 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined,
   layoutMode: graphToolbarField('Layout', GRAPH_LAYOUTS),
   colorScheme: graphToolbarField('Color', GRAPH_COLOR_SCHEMES),
+  layoutQuality: value => {
+    const option =
+      typeof value === 'number' ? GRAPH_LAYOUT_QUALITIES[value] : undefined
+    return option
+      ? {
+          path: `${GRAPH_SETTINGS} → Layout quality → ${option}`,
+          note: 'How many iterations the force layout runs. The default is enough for a small graph; raising it is what removes crossings from a drawing that has any.',
+        }
+      : undefined
+  },
   bubbleSpread: graphSettingsField(
     'Bubble spread',
     GRAPH_BUBBLE_SPREADS,

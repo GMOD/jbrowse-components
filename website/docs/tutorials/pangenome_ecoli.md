@@ -151,9 +151,14 @@ maps a record to its strain.
 
 The all-vs-all tutorial draws these same strains from a `minimap2 -c` PAF, and
 the two pictures nearly agree. Two independent pairwise aligners place the
-backbone and IAI39's inversions the same way. Only the grain differs: wfmash
-emits shorter segments than minimap2's `asm20` blocks, so the same
-`minAlignmentLength` leaves a denser band here.
+backbone and IAI39's inversions the same way. What differs is the grain: wfmash
+merges each pair into a few dozen long segments where minimap2 leaves several
+hundred, so the same `minAlignmentLength` cuts far less here.
+
+One thing to know before reusing this file elsewhere: wfmash maps all-to-all in
+both directions, so every pair is in the PAF twice, once as query and once as
+target, over the same spans. A synteny view draws both, and the ribbons come out
+twice as opaque as the same alignment from a one-directional file.
 
 ### The same picture read out of the graph
 
@@ -198,6 +203,24 @@ every record has K12 on one side, where the wfmash PAF is genuinely all-vs-all.
 Put the reference between the strains you want to compare rather than at the top
 of the stack, or the bands between two non-reference rows have nothing to draw.
 
+Whole-genome, the result is the near-colinear diagonals the wfmash figure
+already shows. Where the two files part company is a repeat. Find one by looking
+for a reference span that more than one segment of the same query lands on:
+
+```bash
+zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
+  | cut -f1,3,4,8,9 | sort -k4,4n
+```
+
+In this graph that is `chr:3,941,447-3,946,786` on K12 — the _rrnC_ operon —
+where Sakai, NCTC86 and IAI39 each land twice.
+
+<Figure caption="An rRNA operon in the graph, K12 between NCTC86 and Sakai. Each strain's window holds both of its copies, and both send a ribbon to the one K12 span carrying rrsC, rrlC and rrfC: seqwish collapsed the copies into one set of nodes, so the graph has one place where each genome has two." src="/img/pangenome/pggb_untangle.png" />
+
+A pairwise PAF has no way to say this. Its records are one query interval
+against one target interval, so a collapsed repeat is either dropped or
+arbitrarily assigned to one copy.
+
 Untangle is the slower of the two by a wide margin, because it indexes every
 step of every path rather than reading an alignment off disk. On a base-level
 graph budget for it accordingly, or restrict `-Q` to the paths you need.
@@ -236,7 +259,7 @@ its genomic position:
 }
 ```
 
-<Figure caption="The decomposed variant tier over 60 kb of K12 in the matrix display: one column per site, one row per strain, colored by genotype, with the gene lane above. Blocks of columns where the same strains carry the alternate allele are the accessory stretches the depth and MAF projections show as coverage." src="/img/pangenome/pggb_variants.png" />
+<Figure caption="The decomposed variant tier over 120 kb of K12 in the matrix display: one column per site, one row per strain, colored by genotype, with the gene lane above. Each strain reads differently — IAI39 and CFT073 have long yellow stretches where they do not align to K12 at all, NCTC86 is almost all reference across the whole window, and Sakai differs at sites throughout it." src="/img/pangenome/pggb_variants.png" />
 
 Stack the MAF alignment (below) in the same window and each variant row sits
 above the per-strain alignment it was decomposed from.
@@ -601,7 +624,7 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
 (this selection)** does the same for a window you drag.
 
-<Figure caption="A 1 kb window of the pggb graph, cut from the index rather than from a file prepared beforehand. Both panels are colored by reference position, so the lane above sweeps red to magenta across the window and the graph below sweeps the same hues along its own path: a node's color says where in the window it sits." src="/img/pangenome/pggb_locus_graph.png" />
+<Figure caption="An IS5 element at K12 chr:1,299,499-1,300,693, cut from the index rather than from a file prepared beforehand. The 1.2 kb arm of the bubble is the element, which only K12 carries; the other arm is the edge the other four strains take straight past it. Both panels are colored by reference position, so a node's color says where in the window it sits." src="/img/pangenome/pggb_locus_graph.png" />
 
 Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that actually walks the
@@ -612,7 +635,7 @@ Rows want a narrower window than the sweep above. A row draws what a strain
 takes _instead of_ the reference, so it is read segment by segment, and at 17 bp
 per segment a kilobase leaves each one a few pixels wide.
 
-<Figure caption="460 bp of the same graph in Sample rows, at the ycbF/pyrD boundary. The top row is the K12 backbone with each segment's length on it; below it each strain's marks are the segments it takes instead of the reference, tied by threads to where they attach. Sakai and IAI39 have marks at several places, CFT073 and NCTC86 at one or two." src="/img/pangenome/pggb_locus_sample_rows.png" />
+<Figure caption="460 bp of the same graph in Sample rows, at the ycbF/pyrD boundary, under the MAF lane in the same five rows and the same order. The graph's top row is the K12 backbone with each segment's length on it; below it each strain's marks are the segments it takes instead of the reference, tied by threads to where they attach. The MAF row above says the same thing base by base: CFT073 has columns only where its contig reaches." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 #### Where this stops, and what to do instead
 
@@ -636,7 +659,7 @@ Finally, a segment carried by several assemblies draws on one row: sample rows
 put it on the first path that walks it, and the others are listed in the node
 popup.
 
-<Figure caption="The same 3 kb of K12 at the colanic acid cluster, cut from the two graphs this build produces. Left, the minigraph rGFA: one 4.4 kb backbone segment spans the whole window, four alternate segments of 6-154 bp hang off it, and the red 33 bp and labelled magenta 16.4 kb nodes are the backbone either side of the window, which the one-hop cut reaches. Right, the pggb graph: a node at every variant, and the segments lane above it goes from one green block to hundreds. The node and edge counts are in each header." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
+<Figure caption="The same 3 kb of K12 at the colanic acid cluster, banded on the ruler, cut from the two graphs this build produces. Left, the minigraph rGFA: one 4.4 kb backbone segment spans the whole band, four alternate segments of 6-154 bp hang off it, and the cyan 16.4 kb node is the next backbone segment along, which the one-hop cut reaches. Right, the pggb graph: a node at every variant. Both lanes run over the whole cut rather than the band, and both are colored by reference position, so every node is its own block above it. The node and edge counts are in each header." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
 That is the trade in one picture, and it is why the two graphs are worth
 building side by side: browse the rGFA whole-genome, and open the pggb graph
@@ -700,9 +723,18 @@ arc is a result too, since it walks the window on the backbone.
 
 The setting needs a graph with P or W records. An rGFA has neither, and neither
 does a subgraph cut from the tabix index above, which rebuilds segments and
-links only.
+links only. So this is what the file route is still for: cut the IS5 bubble
+[from earlier](#browsing-the-whole-graph-by-locus) as a file and the P lines
+come with it.
 
-<Figure caption="The same subgraph anchored on K12, nodes grey and the strain paths drawn. Every arc down to an alternate allele is colored by the strains that take it: IAI39 across the left half, CFT073 through the middle cluster, Sakai on the right. K12 has no arc by definition and NCTC86 has almost none, both walking the backbone here." src="/img/pangenome/pggb_haplotype_paths.png" />
+```bash
+og=$(ls pggb/*.smooth.final.og)
+in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_is5.gfa
+```
+
+<Figure caption="The IS5 bubble with the strain paths drawn, nodes grey. One arm is the 1.2 kb element and the other is the edge past it, labelled as the 1.2 kb deletion it is on the reference. Four strokes run along that arc; the missing one is K12, the strain that walks the element." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 ### A collapsed repeat
 
@@ -724,11 +756,13 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -
   | odgi view -i - -g" > ecoli_pggb_rrna.gfa
 ```
 
-Use the force-directed layout here. The anchored layouts put x on the reference,
-and every copy anchors onto the single K12 one, so they draw the whole cut at one
-x.
-
-<Figure caption="Six segments of the 16S rRNA gene, walked by nine locations across the five chromosomes: two copies each in Sakai, CFT073, NCTC86 and IAI39, one in K12. Each edge carries all nine strokes, and at the middle 1 bp bubble eight take one side while CFT073's copy at 4,442,932 takes the other, a base that differs between two rRNA copies of one genome." src="/img/pangenome/pggb_collapsed_repeat.png" />
+The cut is six segments, and `odgi paths -L` on it lists nine path intervals
+over them: two copies each in Sakai, CFT073, NCTC86 and IAI39, one in K12. That
+is the collapse stated directly — nine locations across five chromosomes are one
+run of segments. The picture of it is
+[the untangle figure above](#the-same-picture-read-out-of-the-graph), which is
+the same operon in coordinate space; the graph drawing of a six-node chain adds
+nothing to the list.
 
 ## Reproduce it end to end
 

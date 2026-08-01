@@ -191,16 +191,31 @@ const PGGB_SEGMENTS_SESSION_TRACK = {
   },
 }
 
-// The colanic-acid cluster, where the graph is busiest in this stretch: `tabix ecoli_pggb.links.bed.gz
-// 'K12#1#chr:2120000-2123000'` returns 175 link endpoints on a non-K12 stable
-// sequence, against 24 at the ycbF/pyrD window the local_subgraph figure uses.
+// An IS5 element K12 carries and the other four strains do not (review of the
+// old window: "unfortunately not interesting screenshot. need structural
+// variant"). That window was the colanic-acid cluster, picked for link density —
+// 175 link endpoints in 3 kb — but density is not structure: pggb cuts a segment
+// at every SNP, so a busy window is a long chain of ~17 bp nodes and the drawing
+// is a thread.
+//
+// This one is a bubble, and it was read off the graph rather than found by eye.
+// Segments carried by K12 alone, long enough to be an event rather than an
+// allele, with an all-five segment on each side:
+//
+//   zcat ecoli_pggb.segs.bed.gz | awk -F'\t' '$1 ~ /^K12/' | sort -k2,2n
+//
+// puts K12 chr:1,299,498-1,300,697 (1,199 bp) in that list, and the links file
+// has both arms explicitly: 79945+ -> 79946+ -> 79947+ is K12 through the
+// element, 79945+ -> 79947+ is the edge the other four take past it. The K12
+// GFF names it — `mobile_element_type=insertion sequence:IS5`, carrying the
+// insH21 transposase, so the gene lane labels the arm.
 const PGGB_LOCUS = {
   refName: 'chr',
   assemblyName: 'K12',
-  start: 2121000,
-  end: 2122000,
+  start: 1299300,
+  end: 1300900,
 }
-const PGGB_LOCUS_WINDOW = 'chr:2,121,000-2,122,000'
+const PGGB_LOCUS_WINDOW = 'chr:1,299,300-1,300,900'
 
 // The per-strain window, which cannot be the kilobase above (review of the sample
 // rows figure: "too chaotic. too many tiny segments ... I know it shows the per
@@ -700,12 +715,47 @@ function ecoliHoverSession() {
 // The pggb pair: the same track drawn as a graph and as per-strain rows. Each
 // takes its own window, a kilobase being the right scale for the whole-locus
 // drawing and far too dense for per-strain rows (see PGGB_ROWS_LOCUS).
+// The strain order the graph's sample-row layout puts its rows in, which the
+// MAF lane above it is pinned to so the two stacks are read as one (review: "if
+// there was a maf track of the different samples we could highlight rows in the
+// maf and the graphgenomeview"). Cross-highlighting between the two is not
+// something either display does; what IS available is the same five rows in the
+// same order, one showing the aligned bases and one showing the segments each
+// strain takes, so a row can be read straight down. `layout` costs the MAF's
+// dendrogram, which at five strains carried nothing the row labels do not, and
+// the graph has no tree to agree with anyway.
+const PGGB_STRAIN_ROWS = ['K12', 'CFT073', 'IAI39', 'NCTC86', 'Sakai'].map(
+  name => ({ name }),
+)
+
+// pggb's own `-M` MAF, as a session track: the shared graphgenomeview fixture
+// config carries the K12 assembly and nothing else, so every track in these
+// figures is declared here against the hosted demo's files. Absolute urls, not
+// the hosted config's relative ones — a session track's relative `uri` resolves
+// against the RPC worker's own url.
+const PGGB_MAF_TRACK = 'ecoli_pggb_maf'
+const PGGB_MAF_SESSION_TRACK = {
+  type: 'MafTrack',
+  trackId: PGGB_MAF_TRACK,
+  name: 'pggb graph: whole-genome alignment (MAF, vs K12)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'MafTabixAdapter',
+    samples: ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39'],
+    uri: `${DATA}/ecoli_pggb.maf.bed.gz`,
+  },
+}
+
 function pggbLocusSession(
   layoutMode: 'force' | 'samplerows',
   { region, window }: { region: typeof PGGB_LOCUS; window: string },
 ) {
   return sessionSpec(CONFIG, {
-    sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_SEGMENTS_SESSION_TRACK],
+    sessionTracks: [
+      K12_GENES_SESSION_TRACK,
+      PGGB_SEGMENTS_SESSION_TRACK,
+      ...(layoutMode === 'samplerows' ? [PGGB_MAF_SESSION_TRACK] : []),
+    ],
     views: [
       {
         type: 'LinearGenomeView',
@@ -713,6 +763,17 @@ function pggbLocusSession(
         loc: window,
         tracks: [
           { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          ...(layoutMode === 'samplerows'
+            ? [
+                {
+                  trackId: PGGB_MAF_TRACK,
+                  type: 'LinearMafDisplay',
+                  layout: PGGB_STRAIN_ROWS,
+                  showTree: true,
+                  height: 150,
+                },
+              ]
+            : []),
           {
             trackId: PGGB_SEGMENTS_TRACK,
             type: 'LinearBasicDisplay',
@@ -862,7 +923,6 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           loadedRegion: PAA_REGION,
           layoutMode: 'force',
           colorScheme: 'reference-position',
-          bubbleSpread: 'open',
           subgraphContext,
         },
       ],
@@ -1035,7 +1095,17 @@ const RESOLUTION_REGION = {
   start: 2120000,
   end: 2123000,
 }
-const RESOLUTION_WINDOW = 'chr:2,120,000-2,123,000'
+// What the LINEAR half shows, which is no longer the cut (review: "i see there
+// is an answer but i dont get it. we may want to zoom out more"). The one-hop
+// cut reaches s692 and s694, the backbone segments either side of the 4.4 kb
+// s693 the 3 kb window sits inside, and s694 runs to 2,139,486 — so at a 3 kb
+// LGV the biggest node in the minigraph pane was a segment the reader could not
+// see anywhere else in the frame, and a label saying so is not the same as
+// showing it. This span is the drawn cut's own extent, so every node in either
+// graph pane is a block in the lane above it at the same colour, and the 3 kb
+// that was cut is banded on the ruler.
+const RESOLUTION_LANE_DOMAIN = { start: 2118646, end: 2139486 }
+const RESOLUTION_LANE_WINDOW = 'chr:2,118,646-2,139,486'
 
 // The one node in the minigraph half that is not what it looks like, and the
 // review it drew: "unclear where that pink node in the minigraph rgfa is
@@ -1082,7 +1152,10 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: RESOLUTION_WINDOW,
+          loc: RESOLUTION_LANE_WINDOW,
+          // the 3 kb that was actually cut, banded on the ruler so the lane
+          // says which slice of itself the pane below it is
+          highlight: [{ ...RESOLUTION_REGION, refName: 'chr' }],
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
             {
@@ -1093,7 +1166,14 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
               // same way for the density difference to be the only difference
               showLabels: 'off',
               heightMode: 'grow',
-              color: referencePositionColor(RESOLUTION_REGION),
+              color: referencePositionColor(RESOLUTION_LANE_DOMAIN),
+              // The pggb lane is ~2,400 segments over this span, which is past
+              // the default density gate (1 feature per screen px) and draws the
+              // "Too many features" banner instead of the lane — i.e. the one
+              // half whose density IS the subject would be the half that refused
+              // to draw it. Both halves take the same raised gate so the two
+              // lanes are still drawn the same way.
+              maxFeatureScreenDensity: 20,
             },
           ],
         },
@@ -1101,6 +1181,12 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           type: 'GraphGenomeView',
           loadedTrackId: trackId,
           loadedRegion: RESOLUTION_REGION,
+          // The ramp runs over the LANE's span, not the cut's, so a node and
+          // its block are one colour. On the cut's own 3 kb every node reaching
+          // past it saturates at an end of the ramp, which is what painted the
+          // 16.4 kb backbone neighbour magenta and made it read as a giant
+          // off-reference allele.
+          colorDomain: RESOLUTION_LANE_DOMAIN,
           // force in both halves. An anchored layout would put the pggb half's
           // hundreds of nodes on one line and hide exactly what is being shown.
           layoutMode: 'force',
@@ -1110,7 +1196,6 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           // a bubble land within one node thickness of each other. Without this
           // the pggb half draws as a single 521-node thread with no visible
           // branching, which is the one thing the figure is for.
-          bubbleSpread: 'open',
         },
       ],
     }),
@@ -1152,7 +1237,7 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
       extraAnnotations: [
         {
           type: 'text',
-          text: 'reference backbone (s694),\ncontinues past the window',
+          text: 'reference backbone (s694),\nthe cyan block above',
           anchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
           // left along the node, into the open ground under its arc: at the
           // midpoint itself the pill ran off the right edge of the pane
@@ -1340,7 +1425,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 5000,
     viewportWidth: 1000,
     // the two lanes plus the graph's five rows, and nothing under them
-    viewportHeight: 733,
+    viewportHeight: 895,
     hideTooltip: true,
   },
   // The pggb subgraph, over the linear view of the same locus, in the SAME colors
@@ -1397,12 +1482,24 @@ export const graphSpecs: ScreenshotSpec[] = [
     // only way a graph can be drawn.
     direction: 'horizontal',
   },
-  // The same subgraph and the same anchored layout, with the haplotype paths
-  // drawn: every edge carries one stroke per P record that crosses it, so an
-  // arc down to an alternate allele is coloured by the strains that take it.
-  // That is the one thing the graph states and none of the linear projections
-  // can — carriage of an allele that has no reference coordinate to be
-  // projected onto.
+  // The haplotype paths drawn: every edge carries one stroke per P record that
+  // crosses it, so each arm of a bubble is coloured by the strains that take
+  // it. That is the one thing the graph states and none of the linear
+  // projections can — carriage of an allele that has no reference coordinate
+  // to be projected onto.
+  //
+  // THE IS5 BUBBLE, not the 561 bp window this used to draw (review:
+  // "unfortunately not interesting screenshot"). That window is flat: pggb cuts
+  // a segment at every SNP, so every allele in it is a 1 bp stub and the
+  // coloured strokes were specks on a grey line. Here the two arms are 1,199 bp
+  // and 0 bp, which is a shape rather than a texture, and the four strains that
+  // skip the element are four strokes on one arc.
+  //
+  // It is deliberately the same locus pggb_locus_graph opens from the index,
+  // because that is the section this one answers: the tabix cut rebuilds
+  // segments and links only, so it has no P lines and this setting has nothing
+  // to draw. The file route keeps them. Same bubble, two colourings — reference
+  // position there, carriage here.
   //
   // Nodes go grey, unlike every other figure on the page. Depth is a per-node
   // quantity and carriage is a per-path one, and drawn together the viridis
@@ -1410,9 +1507,26 @@ export const graphSpecs: ScreenshotSpec[] = [
   // systems in one drawing, neither readable. Grey nodes leave the colour to
   // the paths, which is what this figure is about.
   //
-  // A strain with no coloured arc is the finding, not a gap: NCTC86 walks this
-  // window on the backbone, so its stroke is only ever hidden under the
-  // reference tubes, and the same is true of K12 by definition.
+  // K12's stroke is the one missing from the deletion arc, and that is the
+  // finding rather than a gap: it is the strain that walks the element.
+  //
+  // FORCE with bubble spread 'open' and layout quality at its top setting.
+  // Anchored puts x on the reference, and the deletion arc bows out by 0.35x the
+  // drawn length of the backbone it bypasses — 1,199 bp of it here — which is
+  // deeper than the two-row anchored pane, so the arc draws off the bottom of
+  // it. Under FMMM at Bandage's own proportional scale the 1,199 bp node snakes
+  // across the frame and crosses everything; 'open' gives the 1 bp alleles a
+  // floor, which pulls the drawing into a chain of legible lenses with the IS5
+  // bubble the largest of them.
+  //
+  // `layoutQuality: 4` is FMMM's iteration budget (review, on the sibling graph
+  // figures: "are you sure you can't iterate it more times for better layout?").
+  // It is the view's Layout quality setting, and the answer is yes and it
+  // matters: the model default 1 is 15 fixed + 10 fine-tuning iterations, 4 is
+  // 120 + 60 (graphlayout.cpp), and at 1 this drawing had the bubble crossing
+  // three other edges where at 4 it is a clean lens with the small bubbles
+  // strung off it. The cost is milliseconds at this size, which the header's own
+  // layout timing states.
   {
     mode: 'url',
     name: 'pangenome/pggb_haplotype_paths',
@@ -1420,74 +1534,39 @@ export const graphSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'GraphGenomeView',
-          gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
-          layoutMode: 'auto',
+          gfaLocation: { uri: `${DATA}/ecoli_pggb_is5.gfa` },
+          layoutMode: 'force',
+          layoutQuality: 4,
+          bubbleSpread: 'open',
           colorScheme: 'grey',
           referencePath: 'K12',
           drawPaths: true,
         },
       ],
     }),
-    // Both, so the capture cannot land after the rows and before the legend
-    // that names them: the legend is DOM beside the canvas, and the rows are
-    // what the canvas draws.
-    readySelector: `body:has([data-testid="graph-path-legend"]) [data-testid="graph-row-label"]`,
-    readyTimeout: 90000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    viewportWidth: 1000,
-    // the toolbar and the two-row anchored drawing, nothing else
-    viewportHeight: 323,
-    hideTooltip: true,
-  },
-  // A collapsed repeat, which is a shape a linear reference cannot hold: pggb
-  // folds 908 bp inside K12's 16S rRNA gene (rrsB, chr:4,166,659-4,168,200)
-  // onto six segments that nine separate locations walk. Two apiece in Sakai,
-  // CFT073, NCTC86 and IAI39, one in K12. Not every rRNA copy in the five
-  // genomes — the bounded cut below returns the nine that reach this window,
-  // and the figure claims no more than that.
-  //
-  // The ribbons are what makes it readable rather than merely true: eight of
-  // the nine take the same side of the middle 1 bp bubble and CFT073's copy at
-  // 4,442,932 takes the other, which is a base that differs between two operon
-  // copies of one genome. Depth or node length would colour all six segments
-  // identically and say none of it.
-  //
-  // FORCE, and this is the one figure where force beats the anchored layouts
-  // rather than being their foil. Nine paths all anchor onto K12's single copy,
-  // so anchored draws every ribbon at one x; and with six well-separated nodes
-  // the edges are long, which is exactly the case the ribbon fan needs (it is
-  // confetti wherever pggb's nodes abut).
-  //
-  // Cut with `-d 500`, not the `-E` the other subgraphs use: `-E` follows the
-  // collapsed segments out to every copy in every genome and returns 32,353
-  // segments for this 500 bp window. The bounded walk is what keeps a repeat
-  // cuttable at all.
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_collapsed_repeat',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'GraphGenomeView',
-          gfaLocation: { uri: `${DATA}/ecoli_pggb_rrna.gfa` },
-          layoutMode: 'force',
-          colorScheme: 'grey',
-          drawPaths: true,
-        },
-      ],
-    }),
-    // perf-stats rather than a row label: force draws no rows to label
+    // Both, so the capture cannot land after the drawing and before the legend
+    // that names its colours: the legend is DOM beside the canvas, and
+    // perf-stats rather than a row label because force draws no rows.
     readySelector: `body:has([data-testid="graph-path-legend"]) [data-testid="graph-perf-stats"]`,
     readyTimeout: 90000,
     allowUnsettled: true,
     settleMs: 8000,
     viewportWidth: 1000,
-    // the force pane runs to its 600px cap here, and the nine-row legend needs
-    // all of it
+    // the force pane runs to its 600px cap here, and the five-row legend fits
+    // inside it
     viewportHeight: 763,
     hideTooltip: true,
   },
+  // pangenome/pggb_collapsed_repeat was here and is RETIRED (review:
+  // "unfortunately not interesting screenshot"). It drew the rRNA cut
+  // (ecoli_pggb_rrna.gfa) with the paths on, and the graph is a six-node chain
+  // whose three long nodes carry no strokes — drawPaths paints edges, and this
+  // cut's edges are the five joints between them. So the frame was one long
+  // empty grey snake with five specks of colour on it whichever layout drew it,
+  // and the only finding in it (one CFT073 copy taking the other side of a 1 bp
+  // bubble) was a single stub. The rRNA operon collapse is told in coordinate
+  // space by pangenome/pggb_untangle, on the same graph and the same gene, and
+  // the tutorial section keeps the `odgi extract -d` recipe without a figure.
   ...graphResolutionPartSpecs(),
   {
     mode: 'compose',
@@ -2170,7 +2249,6 @@ export const graphSpecs: ScreenshotSpec[] = [
           // drawing faster than it separates the bubbles, so zoom-to-fit takes
           // it to 8% and the lenses close again. 'wide' is for a window of a
           // dozen.
-          bubbleSpread: 'open',
         },
       ],
     }),

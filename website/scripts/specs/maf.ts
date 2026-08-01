@@ -56,6 +56,45 @@ const CE11_GENE_TRACK = {
   },
 }
 
+// The 26-way alignment's rows minus `ce11` itself, for the two figures that
+// show the whole stack (review: "consider removing the ce11 row"). The
+// reference is one of the MAF's own `s` lines, so it draws as a row — and under
+// mismatch rendering a sequence against itself has no mismatches, so that row is
+// a solid grey band that reads as a broken lane rather than as the reference.
+// `subtreeFilter` is the display's own "show these leaves" mechanism and prunes
+// the guide tree to match (pruneNewickToLeaves), so the dendrogram beside the
+// rows stays the tree of what is drawn. Left alone in maf_codon_tooltip, where
+// the reference codon row is what the tooltip is compared against.
+//
+// Names are the leaf labels of test_data/ce11.26way.nh, in its order.
+const CE11_26WAY_NON_REFERENCE = [
+  'caePb3',
+  'caeRem4',
+  'cb4',
+  'caeJap4',
+  'caeSp111',
+  'caeAng2',
+  'caeSp51',
+  'hetBac1',
+  'strRat2',
+  'panRed1',
+  'ancCey1',
+  'necAme1',
+  'haeCon2',
+  'ascSuu1',
+  'priExs1',
+  'priPac3',
+  'melHap1',
+  'melInc2',
+  'burXyl1',
+  'dirImm1',
+  'loaLoa1',
+  'oncVol1',
+  'bruMal2',
+  'triSpi1',
+  'triSui1',
+]
+
 export const mafSpecs: ScreenshotSpec[] = [
   {
     // The UCSC ce11 26-way multiz alignment (real cross-species nematode data):
@@ -93,6 +132,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               type: 'LinearMafDisplay',
               rowHeight: 8,
               rowProportion: 0.9,
+              subtreeFilter: CE11_26WAY_NON_REFERENCE,
             },
           ],
         },
@@ -101,7 +141,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: 'chrI',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 640,
+    viewportHeight: 536,
     settleMs: 18000,
     hideTooltip: true,
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
@@ -191,6 +231,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               rowHeight: 8,
               rowProportion: 0.9,
               colorByChromosome: true,
+              subtreeFilter: CE11_26WAY_NON_REFERENCE,
             },
           ],
         },
@@ -200,7 +241,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
-    viewportHeight: 620,
+    viewportHeight: 546,
     settleMs: 12000,
     hideTooltip: true,
     actions: [

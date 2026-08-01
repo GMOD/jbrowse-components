@@ -12,6 +12,7 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 interface MafFetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
   orderedSampleIds?: string[]
+  subtreeFilter?: readonly string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   fetchRegions: (
@@ -172,6 +173,9 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
         regions: [region],
         // Display row order; the worker keys rowIndex off it (see rpcProps).
         orderedSampleIds: self.orderedSampleIds,
+        // The first fetch has no `sources` yet, so it cannot send the order —
+        // this is how the filter still reaches that fetch.
+        subtreeFilter: self.subtreeFilter?.slice(),
         stopToken: ctx.stopToken,
         statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
       }),

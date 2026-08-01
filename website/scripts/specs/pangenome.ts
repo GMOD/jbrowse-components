@@ -30,10 +30,21 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // pairwise aligner and the graph's own input alignment put the backbone and
   // IAI39's inversions in the same places.
   //
-  // wfmash's segments are shorter than minimap2's asm20 blocks, so the same
-  // 10 kb minAlignmentLength leaves a denser band rather than a few clean
-  // ribbons; that density IS the difference between the two files and is left
-  // alone rather than filtered away.
+  // ALPHA 0.1, half the default, because this file inks every correspondence
+  // TWICE. wfmash maps all-to-all in both directions, so K12->Sakai and
+  // Sakai->K12 are both in the PAF and describe the same spans (measured on the
+  // published pif: 4.379 Mb of the K12 axis from one direction, 4.381 Mb from
+  // the other, block starts within ~100 bp of each other). Two 0.2 ribbons
+  // composite to #FFA3A3 where the minimap2 figure's one draws #FFCCCC, which
+  // is the whole "these polygons are darker than the other synteny figures".
+  // The minimap2 all_vs_all.paf is upper-triangular — each unordered pair once —
+  // so at 0.1 per record the two figures put the same ink on the same
+  // correspondence. If that file is ever rebuilt one-directional, put this back
+  // to the default.
+  //
+  // Not a density difference, whatever this comment used to say: over the
+  // K12/Sakai band past the 10 kb cutoff minimap2 keeps 119 records and wfmash
+  // 41 (21 of them the mirror of the other 20).
   {
     mode: 'url',
     name: 'pangenome/pggb_synteny',
@@ -58,13 +69,18 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           ],
           drawCurves: false,
           colorBy: 'default',
+          alpha: 0.1,
           minAlignmentLength: 10000,
           levelHeights: [110, 110, 110, 110],
+          // same as the minimap2 stack: no row carries a track, so each one
+          // collapses to a bare scalebar instead of a "No tracks active" block
+          collapseEmptyRows: true,
         },
       ],
     }),
-    // five rows and four 110px bands
-    viewportHeight: 1030,
+    // five collapsed scalebar rows and four 110px bands, matching the minimap2
+    // figure's framing so the two are comparable line for line
+    viewportHeight: 715,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -112,7 +128,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '4,560,000',
+    readyText: '540,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band
@@ -127,12 +143,59 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // No `odgi untangle` projection figure: the tutorial teaches building
-  // ecoli_pggb_untangle.paf, but that track is not in the hosted
-  // ecoli_pangenome config, so a spec for it can only capture an empty stack.
-  // Restore one (K12 in the MIDDLE row — untangle is reference-relative, so
-  // two non-reference rows have nothing to draw between them) once the track
-  // is published.
+  // Projection 1b: the ribbons read OUT of the graph by `odgi untangle`, rather
+  // than off the wfmash PAF the graph was induced from.
+  //
+  // Framed on the one thing untangle says that a pairwise PAF cannot, rather
+  // than on another whole-genome stack: a collapsed repeat, where two locations
+  // in a query path come back pointing at the SAME reference span. Whole-genome,
+  // this file draws the same near-colinear diagonals as the wfmash figure above
+  // and the difference between the two projections is invisible.
+  //
+  // The locus is read off the file, not chosen: K12 chr:3,941,447-3,946,786 is
+  // the only span in ecoli_pggb_untangle.pif.gz that more than one segment of a
+  // query lands on, and three of the four strains do it there —
+  //   zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"'
+  // has Sakai at 4,735,016 and 4,975,690, NCTC86 at 4,313,805 and 4,538,509,
+  // IAI39 at 3,134,233 and 4,546,355, all 5.3-5.4 kb and all onto that one K12
+  // span. It is an rRNA operon: seqwish collapsed the copies into one set of
+  // nodes, so the graph has one place where the genome has several.
+  //
+  // Sakai and NCTC86 flank K12 because their two copies are ~230 kb apart and so
+  // fit one window each; IAI39's are 1.4 Mb apart and would need a window wide
+  // enough to make both slivers subpixel. Each flanking row frames both of its
+  // copies and K12 frames the shared span, so each band draws the fan.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_untangle',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            { assembly: 'NCTC86', loc: 'chr:4,310,000-4,548,000' },
+            {
+              assembly: 'K12',
+              loc: 'chr:3,940,800-3,947,400',
+              // the gene lane names the repeat rather than leaving the caption
+              // to assert it: the shared span carries rrsC/rrlC and their tRNAs
+              tracks: [{ trackId: 'K12_genes' }],
+            },
+            { assembly: 'Sakai', loc: 'chr:4,731,000-4,985,000' },
+          ],
+          tracks: [['ecoli_pggb_untangle'], ['ecoli_pggb_untangle']],
+          drawCurves: false,
+          colorBy: 'default',
+          levelHeights: [140, 140],
+        },
+      ],
+    }),
+    // two flanking scalebar rows, the K12 row with its gene lane, two 140px bands
+    viewportHeight: 735,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
 
   // Projection 2: the decomposed variant tier, which had no figure at all while
   // this page's only view of it was the lane riding above the MAF. The matrix
@@ -145,9 +208,17 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // the pipeline instead (vcfbub -l 0 -a 10000 | vcfwave), so the track loads
   // an already-flat tier and the display needs nothing said to it.
   //
-  // The same 60 kb window the MAF figure uses, picked from the odgi pav bigWigs
-  // for "each strain partly present and partly absent", so the matrix has both
-  // shared and strain-specific columns rather than a wall of one color.
+  // 120 kb at chr:480,000, NOT the MAF figure's window (review: "this doesn't
+  // seem like a very interesting screenshot ... can consider deleting also").
+  // That window gave every row the same dense blue barcode, which is a texture
+  // rather than a result. This one is picked on the genotypes themselves —
+  // counting per-strain no-calls per 50 kb over the whole VCF and taking a span
+  // where the four strains disagree about what they are doing — so the four
+  // rows read four different ways: IAI39 and CFT073 have long no-call blocks
+  // where they do not align to K12 at all, NCTC86 is nearly solid
+  // homozygous-reference across the window, and Sakai differs at sites right
+  // through it. That contrast is the thing a genotype matrix over a graph can
+  // state and the coverage projections cannot.
   {
     mode: 'url',
     name: 'pangenome/pggb_variants',
@@ -156,7 +227,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:4,540,000-4,600,000',
+          loc: 'chr:480,000-600,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
@@ -168,7 +239,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '4,560,000',
+    readyText: '540,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // tall enough for the gene lane plus all four non-reference rows: at 480 the

@@ -355,6 +355,15 @@ in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
 
+# The IS5 bubble, cut as a file rather than from the tabix index. The index
+# rebuilds segments and links only, so a subgraph cut from it has no P lines and
+# the view's "Draw paths on edges" has nothing to draw; the file route keeps
+# them, which is what makes carriage visible at this locus -- K12 walks the
+# 1,199 bp element and the other four take the edge past it.
+in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1299400-1300800 -E -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_is5.gfa
+
 # A collapsed repeat, inside the 16S rRNA gene rrsB. -E is the wrong tool here
 # and expensively so: these segments are shared by rRNA copies right across the
 # five chromosomes, so following every node between the first and last in the
@@ -752,6 +761,7 @@ echo "Open config.json or .jbrowse file... (the same session, no re-adding track
 echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz); pggb wrote its"
 echo "own 1D and 2D visualizations into pggb/ as well."
 echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window),"
+echo "ecoli_pggb_is5.gfa (the IS5 bubble, with the paths that carry each arm),"
 echo "ecoli_pggb_rrna.gfa (the collapsed 16S rRNA repeat, nine copies on one"
 echo "run of graph), ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on"
 echo "K12 coordinates), or ecoli_paa_subgraph.gfa (the paa island and the four"

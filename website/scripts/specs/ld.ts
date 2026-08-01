@@ -54,6 +54,14 @@ const lctTrack = (name: string) => ({
       showLegend: true,
       showRecombination: true,
       minorAlleleFrequencyFilter: 0.35,
+      // Cells sized by genomic distance, so the triangle shares the x axis of
+      // the gene lane and the ruler above it (review: "consider also using
+      // useGenomicPositions:true"). Off, x is SNP INDEX, and index density is
+      // not uniform across this window — the block occupied about two thirds of
+      // the frame while spanning about a quarter of the bp, which is why it
+      // read as running off the left edge no matter how far the window zoomed
+      // out. On, its edges land under the coordinates they are at.
+      useGenomicPositions: true,
       // 460 for the triangle (unchanged) + 50 for the recombination zone
       // showRecombination adds above it
       height: 510,
@@ -63,18 +71,25 @@ const lctTrack = (name: string) => ({
 
 // Wider than the block itself so the swept haplotype reads as a bounded block
 // against lower-LD flanks — contrast is what makes it legible as a block rather
-// than a wall of red. The block's own extent is measured, not guessed: within
-// EUR at this MAF floor, r² against rs4988235 stays above 0.5 from 136.49 to
-// 136.82 Mb and collapses to ~0.15 immediately past it.
-const LCT_LOC = 'chr2:136,200,000-137,000,000'
+// than a wall of red.
+//
+// 800 kb -> 2.2 Mb (review: "zoom out even more"). With the triangle drawn on
+// SNP index the 800 kb window looked wide enough and was not: the swept
+// haplotype in this panel reaches ~135.75 Mb, so its left edge was off the
+// frame and the block ran into the corner. On genomic positions with this
+// window it is bounded by white on the left and by the pale long-range corner
+// on the right, and the ClinVar rs4988235 tick sits at its right edge — which
+// is where the causal variant is, upstream of LCT in an MCM6 intron.
+const LCT_LOC = 'chr2:135,300,000-137,500,000'
 
-// The pooled-vs-panel figure takes a wider window than the single-panel one
-// (review: "zoom out more"), so the panel lane's block ends inside the picture
-// on both sides rather than running off the frame. Not wider than this: at 2 Mb
-// a second, larger block upstream of LCT dominates both lanes and the
-// pooled-versus-panel difference stops being the thing the eye lands on, which
-// is the whole subject.
-const LCT_WIDE_LOC = 'chr2:136,000,000-137,200,000'
+// Both LCT figures take the same window, which on genomic positions is the one
+// that bounds the swept haplotype on both sides (see LCT_LOC). The earlier
+// 1.2 Mb was picked against the SNP-index axis, where the block's left edge sat
+// off the frame; the note behind it — that at 2 Mb "a second, larger block
+// upstream of LCT dominates" — was reading that same off-frame left edge as a
+// separate block. On genomic positions there is one block, and this is where it
+// ends.
+const LCT_WIDE_LOC = LCT_LOC
 
 // Band the LCT/MCM6 locus so the reader sees the high-r² block sits right over
 // the lactase gene (the enhancer variant rs4988235 is in an MCM6 intron,
@@ -198,15 +213,14 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
       showRecombination: true,
       minorAlleleFrequencyFilter: 0.35,
       height: 330,
-      // The connector zone is a fan of lines from each SNP down to its column,
-      // and at this window there are enough of them to read as a solid grey
-      // wedge. Review asked for it smaller; 100 is the schema default. Not
-      // smaller than this: with `useGenomicPositions` off, this zone is also
-      // where the recombination curve and its 0..1 axis are drawn
-      // (`effectiveLineZoneHeight` in LDDisplay/shared.ts), and at 40 the tick
-      // labels overlap into a smudge. `recombinationZoneHeight` does NOT get
-      // the space back here, it only applies on the genomic-positions path.
-      lineZoneHeight: 70,
+      // Cells sized by genomic distance (review: "potentially use 'proportional
+      // sizing' for the ld blocks with useGenomicPositions:true"). This also
+      // retires the connector zone the previous round was tuning: the fan of
+      // lines existed to say which column each SNP was, which is only a question
+      // when x is SNP index. On genomic positions the SNP IS its column, the fan
+      // is gone, and the space above the triangle is the recombination curve's
+      // (`effectiveLineZoneHeight` switches to `recombinationZoneHeight` here).
+      useGenomicPositions: true,
     },
   ],
 })

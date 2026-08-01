@@ -37,6 +37,7 @@ jexlFiltersSetting
 layout
 levelHeights
 linkedReads
+maxFeatureScreenDensity
 minAlignmentLength
 negColor
 numStdDev
