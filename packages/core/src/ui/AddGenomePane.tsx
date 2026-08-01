@@ -13,10 +13,10 @@ import {
   classifyFilename,
   clearSequenceFiles,
   formHasSequence,
-  getFilename,
   isBlank,
   urlTextToLocations,
 } from '../util/assemblyConfigUtils.ts'
+import { getFileName } from '../util/getFileName.ts'
 import { fileToLocation } from '../util/index.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import AdvancedOptions from './AdvancedOptions.tsx'
@@ -188,7 +188,7 @@ const RecognitionCard = observer(function RecognitionCard({
       <div className={classes.recognizedRow}>
         <CheckCircleIcon fontSize="small" className={classes.check} />
         <Typography variant="body2" className={classes.filename}>
-          <b>{getFilename(primaryLoc)}</b>
+          <b>{getFileName(primaryLoc)}</b>
           <span className={classes.muted}>
             {' · '}
             {shortAdapterLabels[form.adapterSelection]}
@@ -227,7 +227,7 @@ const RecognitionCard = observer(function RecognitionCard({
           component="div"
           className={classes.extras}
         >
-          Also loading: {extras.map(getFilename).join(', ')}
+          Also loading: {extras.map(loc => getFileName(loc)).join(', ')}
         </Typography>
       ) : null}
 
@@ -352,7 +352,7 @@ const AddGenomePane = observer(function AddGenomePane({
 
   const all = [...dropped, ...urlTextToLocations(urls)]
   const unrecognized = all.filter(
-    loc => classifyFilename(getFilename(loc)) === undefined,
+    loc => classifyFilename(getFileName(loc)) === undefined,
   )
   const hasSequence = formHasSequence(form)
 
@@ -472,7 +472,8 @@ const AddGenomePane = observer(function AddGenomePane({
                 </Button>
               }
             >
-              Couldn't place: {unrecognized.map(getFilename).join(', ')}
+              Couldn't place:{' '}
+              {unrecognized.map(loc => getFileName(loc)).join(', ')}
             </Alert>
           ) : null}
 

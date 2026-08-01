@@ -1,3 +1,4 @@
+import { getFileName } from './getFileName.ts'
 import { isLocalPathLocation, isUriLocation } from './types/index.ts'
 
 import type { FileLocation } from './types/index.ts'
@@ -51,7 +52,7 @@ export function makeSetField(
     }
 }
 
-const blank = { uri: '' } as FileLocation
+const blank: FileLocation = { uri: '', locationType: 'UriLocation' }
 
 export function initialFormState(): FormState {
   return {
@@ -72,7 +73,7 @@ export function applyPrimaryFile(
   state: FormState,
   location: FileLocation,
 ): FormState {
-  const filename = getFilename(location)
+  const filename = getFileName(location)
   const detected = filename ? detectAdapterType(filename) : undefined
   const assemblyName =
     filename && !state.assemblyName
@@ -139,7 +140,7 @@ export function applyTwoBitFile(
   state: FormState,
   location: FileLocation,
 ): FormState {
-  const filename = getFilename(location)
+  const filename = getFileName(location)
   const assemblyName =
     filename && !state.assemblyName
       ? getAssemblyNameFromFilename(filename)
@@ -263,31 +264,27 @@ export function isFormReady(form: FormState) {
   return formHasSequence(form) && !!getAssemblyName(form)
 }
 
-export function getFilename(location: FileLocation) {
-  if ('uri' in location) {
-    return location.uri.split('/').pop() ?? ''
-  }
-  if ('localPath' in location) {
-    return location.localPath.split('/').pop() ?? ''
-  }
-  return ''
-}
+// The FASTA extensions the sequence plugin's adapter guessers accept, so the
+// add-genome pane places exactly the files that load everywhere else. Its own
+// table used to be `(fa|fasta|fna).gz`, case-sensitive, which silently refused
+// .fas, .mfa, .FA and .fa.bgz.
+const FASTA_EXT = /\.(fa|fasta|fas|fna|mfa)$/i
+const FASTA_GZ_EXT = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
+const TWOBIT_EXT = /\.2bit$/i
 
 export function getAssemblyNameFromFilename(filename: string) {
   return filename
-    .replace(/\.(fa|fasta|fna)\.gz$/, '')
-    .replace(/\.(fa|fasta|fna)$/, '')
-    .replace(/\.2bit$/, '')
+    .replace(FASTA_GZ_EXT, '')
+    .replace(FASTA_EXT, '')
+    .replace(TWOBIT_EXT, '')
 }
 
 export function detectAdapterType(filename: string): AdapterType | undefined {
-  if (/\.(fa|fasta|fna)\.gz$/.test(filename)) {
-    return 'BgzipFastaAdapter'
-  }
-  if (filename.endsWith('.2bit')) {
-    return 'TwoBitAdapter'
-  }
-  return undefined
+  return FASTA_GZ_EXT.test(filename)
+    ? 'BgzipFastaAdapter'
+    : TWOBIT_EXT.test(filename)
+      ? 'TwoBitAdapter'
+      : undefined
 }
 
 export type FileRole =
@@ -305,17 +302,17 @@ export type FileRole =
 // sidecars (.fai/.gzi) are checked before the fasta patterns they share a stem
 // with, and the fasta patterns before the looser cytoband/alias name matches.
 export function classifyFilename(filename: string): FileRole | undefined {
-  return filename.endsWith('.fai')
+  return /\.fai$/i.test(filename)
     ? 'fai'
-    : filename.endsWith('.gzi')
+    : /\.gzi$/i.test(filename)
       ? 'gzi'
-      : filename.endsWith('.2bit')
+      : TWOBIT_EXT.test(filename)
         ? 'twoBit'
-        : /\.(fa|fasta|fna)\.gz$/.test(filename)
+        : FASTA_GZ_EXT.test(filename)
           ? 'fastaGz'
-          : /\.(fa|fasta|fna)$/.test(filename)
+          : FASTA_EXT.test(filename)
             ? 'fasta'
-            : filename.endsWith('.chrom.sizes')
+            : /\.chrom\.sizes$/i.test(filename)
               ? 'chromSizes'
               : /cytoband/i.test(filename)
                 ? 'cytobands'
@@ -332,7 +329,7 @@ export function classifyAssemblyFiles(
   const result: Partial<FormState> = {}
   let primaryFilename: string | undefined
   for (const location of locations) {
-    const filename = getFilename(location)
+    const filename = getFileName(location)
     const role = classifyFilename(filename)
     if (role === 'fai') {
       result.faiLocation = location

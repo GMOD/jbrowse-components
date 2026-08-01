@@ -13,7 +13,6 @@ import {
   getAssemblyName,
   getAssemblyNameFromFilename,
   getBaseAssemblyConfig,
-  getFilename,
   initialFormState,
   isBlank,
   isFormReady,
@@ -22,14 +21,35 @@ import {
 
 import type { FileLocation } from './types/index.ts'
 
-const blank = { uri: '' } as FileLocation
-const fasta = { uri: 'https://example.com/hg38.fa' } as FileLocation
-const fastaGz = { uri: 'https://example.com/hg38.fa.gz' } as FileLocation
-const fai = { uri: 'https://example.com/hg38.fa.fai' } as FileLocation
-const gzi = { uri: 'https://example.com/hg38.fa.gz.gzi' } as FileLocation
-const twobit = { uri: 'https://example.com/hg38.2bit' } as FileLocation
-const aliases = { uri: 'https://example.com/aliases.txt' } as FileLocation
-const cytobands = { uri: 'https://example.com/cytobands.txt' } as FileLocation
+const blank = { uri: '', locationType: 'UriLocation' } as FileLocation
+const fasta = {
+  uri: 'https://example.com/hg38.fa',
+  locationType: 'UriLocation',
+} as FileLocation
+const fastaGz = {
+  uri: 'https://example.com/hg38.fa.gz',
+  locationType: 'UriLocation',
+} as FileLocation
+const fai = {
+  uri: 'https://example.com/hg38.fa.fai',
+  locationType: 'UriLocation',
+} as FileLocation
+const gzi = {
+  uri: 'https://example.com/hg38.fa.gz.gzi',
+  locationType: 'UriLocation',
+} as FileLocation
+const twobit = {
+  uri: 'https://example.com/hg38.2bit',
+  locationType: 'UriLocation',
+} as FileLocation
+const aliases = {
+  uri: 'https://example.com/aliases.txt',
+  locationType: 'UriLocation',
+} as FileLocation
+const cytobands = {
+  uri: 'https://example.com/cytobands.txt',
+  locationType: 'UriLocation',
+} as FileLocation
 const local = {
   localPath: '/data/hg38.fa',
   locationType: 'LocalPathLocation',
@@ -84,29 +104,6 @@ describe('formHasSequence', () => {
         fastaLocation: fasta,
       }),
     ).toBe(false)
-  })
-})
-
-describe('getFilename', () => {
-  test('extracts filename from URI', () => {
-    expect(getFilename(fasta)).toBe('hg38.fa')
-  })
-
-  test('extracts filename from local path', () => {
-    expect(getFilename(local)).toBe('hg38.fa')
-  })
-
-  test('returns empty string for blob location', () => {
-    const blob = {
-      blobId: 'abc',
-      name: 'hg38.fa',
-      locationType: 'BlobLocation',
-    } as FileLocation
-    expect(getFilename(blob)).toBe('')
-  })
-
-  test('returns empty string for blank location', () => {
-    expect(getFilename(blank)).toBe('')
   })
 })
 
@@ -301,13 +298,22 @@ describe('applyPrimaryFile', () => {
 
   test('prefills .fai sidecar for indexed fasta URI', () => {
     const s = applyPrimaryFile(initialFormState(), fasta)
-    expect(s.faiLocation).toEqual({ uri: 'https://example.com/hg38.fa.fai' })
+    expect(s.faiLocation).toEqual({
+      uri: 'https://example.com/hg38.fa.fai',
+      locationType: 'UriLocation',
+    })
   })
 
   test('prefills .fai and .gzi sidecars for bgzip fasta URI', () => {
     const s = applyPrimaryFile(initialFormState(), fastaGz)
-    expect(s.faiLocation).toEqual({ uri: 'https://example.com/hg38.fa.gz.fai' })
-    expect(s.gziLocation).toEqual({ uri: 'https://example.com/hg38.fa.gz.gzi' })
+    expect(s.faiLocation).toEqual({
+      uri: 'https://example.com/hg38.fa.gz.fai',
+      locationType: 'UriLocation',
+    })
+    expect(s.gziLocation).toEqual({
+      uri: 'https://example.com/hg38.fa.gz.gzi',
+      locationType: 'UriLocation',
+    })
   })
 
   test('does not overwrite a sidecar the user already set', () => {
@@ -407,6 +413,16 @@ describe('classifyFilename', () => {
     ['hg38.chrom.sizes', 'chromSizes'],
     ['cytoBandIdeo.txt', 'cytobands'],
     ['hg38.chromAlias.txt', 'refNameAliases'],
+    // the extensions the sequence plugin's guessers accept: this table used to
+    // be (fa|fasta|fna).gz and case-sensitive, so these loaded fine as tracks
+    // but could not be placed in the add-genome pane
+    ['hg38.fas', 'fasta'],
+    ['hg38.mfa', 'fasta'],
+    ['hg38.FA', 'fasta'],
+    ['hg38.fa.bgz', 'fastaGz'],
+    ['hg38.FASTA.GZ', 'fastaGz'],
+    ['hg38.2BIT', 'twoBit'],
+    ['hg38.fa.FAI', 'fai'],
   ])('classifies %s as %s', (filename, role) => {
     expect(classifyFilename(filename)).toBe(role)
   })
@@ -421,17 +437,48 @@ describe('classifyFilename', () => {
 })
 
 describe('classifyAssemblyFiles', () => {
+  // getFilename here inspected only uri/localPath, so a dropped file on
+  // jbrowse-web (a BlobLocation) had no name to classify and every one of them
+  // landed in the "Couldn't place" list
+  test('places a dropped Blob by its name', () => {
+    const blob = {
+      blobId: 'abc',
+      name: 'hg38.2bit',
+      locationType: 'BlobLocation',
+    } as FileLocation
+    expect(classifyAssemblyFiles([blob])).toMatchObject({
+      twoBitLocation: blob,
+      adapterSelection: 'TwoBitAdapter',
+      assemblyName: 'hg38',
+    })
+  })
+
   test('sorts a bgzip trio into fields and picks adapter + name', () => {
     expect(
       classifyAssemblyFiles([
-        { uri: 'https://example.com/hg38.fa.gz' },
-        { uri: 'https://example.com/hg38.fa.gz.fai' },
-        { uri: 'https://example.com/hg38.fa.gz.gzi' },
+        { uri: 'https://example.com/hg38.fa.gz', locationType: 'UriLocation' },
+        {
+          uri: 'https://example.com/hg38.fa.gz.fai',
+          locationType: 'UriLocation',
+        },
+        {
+          uri: 'https://example.com/hg38.fa.gz.gzi',
+          locationType: 'UriLocation',
+        },
       ] as FileLocation[]),
     ).toEqual({
-      fastaLocation: { uri: 'https://example.com/hg38.fa.gz' },
-      faiLocation: { uri: 'https://example.com/hg38.fa.gz.fai' },
-      gziLocation: { uri: 'https://example.com/hg38.fa.gz.gzi' },
+      fastaLocation: {
+        uri: 'https://example.com/hg38.fa.gz',
+        locationType: 'UriLocation',
+      },
+      faiLocation: {
+        uri: 'https://example.com/hg38.fa.gz.fai',
+        locationType: 'UriLocation',
+      },
+      gziLocation: {
+        uri: 'https://example.com/hg38.fa.gz.gzi',
+        locationType: 'UriLocation',
+      },
       adapterSelection: 'BgzipFastaAdapter',
       assemblyName: 'hg38',
     })
@@ -464,21 +511,29 @@ describe('classifyAssemblyFiles', () => {
 
   test('places aliases and cytobands', () => {
     const s = classifyAssemblyFiles([
-      { uri: 'https://example.com/hg38.chromAlias.txt' },
-      { uri: 'https://example.com/cytoBandIdeo.txt.gz' },
+      {
+        uri: 'https://example.com/hg38.chromAlias.txt',
+        locationType: 'UriLocation',
+      },
+      {
+        uri: 'https://example.com/cytoBandIdeo.txt.gz',
+        locationType: 'UriLocation',
+      },
     ] as FileLocation[])
     expect(s.refNameAliasesLocation).toEqual({
       uri: 'https://example.com/hg38.chromAlias.txt',
+      locationType: 'UriLocation',
     })
     expect(s.cytobandsLocation).toEqual({
       uri: 'https://example.com/cytoBandIdeo.txt.gz',
+      locationType: 'UriLocation',
     })
   })
 
   test('ignores unrecognized files', () => {
-    expect(classifyAssemblyFiles([{ uri: 'x.bam' } as FileLocation])).toEqual(
-      {},
-    )
+    expect(
+      classifyAssemblyFiles([{ uri: 'x.bam', locationType: 'UriLocation' }]),
+    ).toEqual({})
   })
 })
 

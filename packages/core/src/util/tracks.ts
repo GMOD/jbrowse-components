@@ -16,6 +16,7 @@ import {
   storeFileHandle,
   verifyPermission,
 } from './fileHandleStore.ts'
+import { getFileName } from './getFileName.ts'
 import {
   getContainingView,
   getEnv,
@@ -383,24 +384,8 @@ export function addTrackTypeGuesser(
   )
 }
 
-// Handles both forward slashes and Windows backslashes in file:// URLs
-function filenameFromPath(path: string) {
-  return path.replaceAll('\\', '/').split('/').at(-1) ?? ''
-}
-
-export function getFileName(track: FileLocation) {
-  switch (track.locationType) {
-    case 'BlobLocation':
-    case 'FileHandleLocation':
-      return track.name
-    case 'UriLocation':
-      return filenameFromPath(track.uri)
-    case 'LocalPathLocation':
-      return filenameFromPath(track.localPath)
-    default:
-      return ''
-  }
-}
+// re-exported because `@jbrowse/core/util/tracks` is where plugins import it from
+export { getFileName } from './getFileName.ts'
 
 const COMPRESSION_SUFFIXES = ['.gz', '.bgz', '.bz2', '.zst']
 
