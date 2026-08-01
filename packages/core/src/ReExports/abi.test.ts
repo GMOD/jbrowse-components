@@ -22,6 +22,10 @@ import libs from './modules.ts'
 // every new export a baseline edit would train people to regenerate on autopilot.
 // To remove a name deliberately, delete it from abiBaseline.json in the same
 // commit and say in the message which published plugins were checked.
+//
+// This replaced util/publicApi.test.ts, which snapshotted the same 238 names for
+// the util barrel alone. Reading them off `libs` rather than the source barrel is
+// what the host actually serves, and the other 15 modules were unguarded.
 describe('external plugin ABI', () => {
   const entries = Object.entries(baseline as Record<string, string[]>)
 
