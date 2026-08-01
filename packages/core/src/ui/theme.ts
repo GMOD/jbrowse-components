@@ -416,190 +416,193 @@ const darkModePrimaryIconOverride = {
       : undefined,
 }
 
+// the static half of a JBrowse theme: sizing plus the MUI component defaults
+// and style overrides every theme shares. No palette — that is the caller's,
+// merged over this by createJBrowseBaseTheme.
+const baseThemeOptions: ThemeOptions = {
+  typography: {
+    fontSize: 12,
+  },
+  spacing: 4,
+  components: {
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontSize: 12,
+        },
+      },
+    },
+    MuiButton: {
+      defaultProps: {
+        size: 'small',
+      },
+      // the default button, especially when not using variant=contained, uses
+      // theme.palette.primary.main for text which is very bad with dark
+      // mode+midnight primary
+      styleOverrides: darkModeContrastOverride([], 'primary'),
+    },
+    MuiAccordion: {
+      defaultProps: {
+        disableGutters: true,
+        slotProps: {
+          transition: {
+            timeout: 150,
+            unmountOnExit: true,
+          },
+        },
+      },
+    },
+    MuiFilledInput: {
+      defaultProps: {
+        margin: 'dense',
+      },
+    },
+    MuiFormControl: {
+      defaultProps: {
+        margin: 'dense',
+        size: 'small',
+      },
+    },
+    MuiFormHelperText: {
+      defaultProps: {
+        margin: 'dense',
+      },
+    },
+
+    MuiIconButton: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: darkModePrimaryIconOverride,
+    },
+    MuiSvgIcon: {
+      styleOverrides: darkModePrimaryIconOverride,
+    },
+    MuiInputBase: {
+      defaultProps: {
+        margin: 'dense',
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        size: 'small',
+      },
+    },
+    MuiInputLabel: {
+      defaultProps: {
+        margin: 'dense',
+      },
+    },
+    MuiToolbar: {
+      defaultProps: {
+        variant: 'dense',
+      },
+    },
+    MuiListItem: {
+      defaultProps: {
+        dense: true,
+      },
+    },
+    MuiOutlinedInput: {
+      defaultProps: {
+        margin: 'dense',
+      },
+    },
+    MuiFab: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: {
+        secondary: ({ theme: t }: { theme: Theme }) => ({
+          backgroundColor: t.palette.quaternary.main,
+        }),
+      },
+    },
+    MuiTable: {
+      defaultProps: {
+        size: 'small',
+      },
+    },
+    MuiPopover: {
+      defaultProps: {
+        transitionDuration: 0,
+      },
+    },
+    MuiMenu: {
+      defaultProps: {
+        transitionDuration: 0,
+      },
+    },
+    MuiMenuItem: {
+      defaultProps: {
+        dense: true,
+      },
+    },
+
+    MuiTextField: {
+      defaultProps: {
+        margin: 'dense',
+        variant: 'standard',
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        // the default link color uses theme.palette.primary.main which is
+        // very bad with dark mode+midnight primary. use forest-green
+        // (tertiary) in light mode, but fall back to a text-like color in
+        // dark mode where tertiary has poor contrast on the dark background
+        root: ({ theme }) => ({
+          color:
+            theme.palette.mode === 'dark'
+              ? theme.palette.text.secondary
+              : theme.palette.tertiary.main,
+        }),
+      },
+    },
+    MuiCheckbox: {
+      styleOverrides: darkModeContrastOverride(['&.Mui-checked']),
+    },
+    MuiRadio: {
+      styleOverrides: darkModeContrastOverride(['&.Mui-checked']),
+    },
+    MuiFormLabel: {
+      styleOverrides: darkModeContrastOverride(['&.Mui-focused']),
+    },
+    MuiAccordionSummary: {
+      styleOverrides: {
+        root: ({ theme: t }: { theme: Theme }) => ({
+          backgroundColor: t.palette.tertiary.main,
+        }),
+        content: ({ theme: t }: { theme: Theme }) => ({
+          color: t.palette.tertiary.contrastText,
+        }),
+      },
+    },
+    MuiToggleButtonGroup: {
+      defaultProps: {
+        size: 'small',
+      },
+    },
+    // Speed up ripple animations for snappier feel (default is 550ms)
+    // See https://mui.com/material-ui/api/button-base/
+    // and https://github.com/mui/material-ui/blob/master/packages/mui-material/src/ButtonBase/TouchRipple.js
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '& .MuiTouchRipple-ripple': {
+            animationDuration: '50ms !important',
+          },
+          '& .MuiTouchRipple-child': {
+            animationDuration: '50ms !important',
+          },
+        },
+      },
+    },
+  },
+}
+
 export function createJBrowseBaseTheme(theme: ThemeOptions = {}): ThemeOptions {
-  const themeP: ThemeOptions = {
-    // palette is merged in via the final deepmerge(themeP, theme) below
-    typography: {
-      fontSize: 12,
-    },
-    spacing: 4,
-    components: {
-      MuiTooltip: {
-        styleOverrides: {
-          tooltip: {
-            fontSize: 12,
-          },
-        },
-      },
-      MuiButton: {
-        defaultProps: {
-          size: 'small',
-        },
-        // the default button, especially when not using variant=contained, uses
-        // theme.palette.primary.main for text which is very bad with dark
-        // mode+midnight primary
-        styleOverrides: darkModeContrastOverride([], 'primary'),
-      },
-      MuiAccordion: {
-        defaultProps: {
-          disableGutters: true,
-          slotProps: {
-            transition: {
-              timeout: 150,
-              unmountOnExit: true,
-            },
-          },
-        },
-      },
-      MuiFilledInput: {
-        defaultProps: {
-          margin: 'dense',
-        },
-      },
-      MuiFormControl: {
-        defaultProps: {
-          margin: 'dense',
-          size: 'small',
-        },
-      },
-      MuiFormHelperText: {
-        defaultProps: {
-          margin: 'dense',
-        },
-      },
-
-      MuiIconButton: {
-        defaultProps: {
-          size: 'small',
-        },
-        styleOverrides: darkModePrimaryIconOverride,
-      },
-      MuiSvgIcon: {
-        styleOverrides: darkModePrimaryIconOverride,
-      },
-      MuiInputBase: {
-        defaultProps: {
-          margin: 'dense',
-        },
-      },
-      MuiAutocomplete: {
-        defaultProps: {
-          size: 'small',
-        },
-      },
-      MuiInputLabel: {
-        defaultProps: {
-          margin: 'dense',
-        },
-      },
-      MuiToolbar: {
-        defaultProps: {
-          variant: 'dense',
-        },
-      },
-      MuiListItem: {
-        defaultProps: {
-          dense: true,
-        },
-      },
-      MuiOutlinedInput: {
-        defaultProps: {
-          margin: 'dense',
-        },
-      },
-      MuiFab: {
-        defaultProps: {
-          size: 'small',
-        },
-        styleOverrides: {
-          secondary: ({ theme: t }: { theme: Theme }) => ({
-            backgroundColor: t.palette.quaternary.main,
-          }),
-        },
-      },
-      MuiTable: {
-        defaultProps: {
-          size: 'small',
-        },
-      },
-      MuiPopover: {
-        defaultProps: {
-          transitionDuration: 0,
-        },
-      },
-      MuiMenu: {
-        defaultProps: {
-          transitionDuration: 0,
-        },
-      },
-      MuiMenuItem: {
-        defaultProps: {
-          dense: true,
-        },
-      },
-
-      MuiTextField: {
-        defaultProps: {
-          margin: 'dense',
-          variant: 'standard',
-        },
-      },
-      MuiLink: {
-        styleOverrides: {
-          // the default link color uses theme.palette.primary.main which is
-          // very bad with dark mode+midnight primary. use forest-green
-          // (tertiary) in light mode, but fall back to a text-like color in
-          // dark mode where tertiary has poor contrast on the dark background
-          root: ({ theme }) => ({
-            color:
-              theme.palette.mode === 'dark'
-                ? theme.palette.text.secondary
-                : theme.palette.tertiary.main,
-          }),
-        },
-      },
-      MuiCheckbox: {
-        styleOverrides: darkModeContrastOverride(['&.Mui-checked']),
-      },
-      MuiRadio: {
-        styleOverrides: darkModeContrastOverride(['&.Mui-checked']),
-      },
-      MuiFormLabel: {
-        styleOverrides: darkModeContrastOverride(['&.Mui-focused']),
-      },
-      MuiAccordionSummary: {
-        styleOverrides: {
-          root: ({ theme: t }: { theme: Theme }) => ({
-            backgroundColor: t.palette.tertiary.main,
-          }),
-          content: ({ theme: t }: { theme: Theme }) => ({
-            color: t.palette.tertiary.contrastText,
-          }),
-        },
-      },
-      MuiToggleButtonGroup: {
-        defaultProps: {
-          size: 'small',
-        },
-      },
-      // Speed up ripple animations for snappier feel (default is 550ms)
-      // See https://mui.com/material-ui/api/button-base/
-      // and https://github.com/mui/material-ui/blob/master/packages/mui-material/src/ButtonBase/TouchRipple.js
-      MuiButtonBase: {
-        styleOverrides: {
-          root: {
-            '& .MuiTouchRipple-ripple': {
-              animationDuration: '50ms !important',
-            },
-            '& .MuiTouchRipple-child': {
-              animationDuration: '50ms !important',
-            },
-          },
-        },
-      },
-    },
-  }
-  return deepmerge(themeP, theme, { arrayMerge: overwriteArrayMerge })
+  return deepmerge(baseThemeOptions, theme, { arrayMerge: overwriteArrayMerge })
 }
 
 // themes carry a display `name` (shown in the theme picker) on top of the
