@@ -5,8 +5,10 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "rootDir": "./",
     "noEmit": true,
-    // Whole-repo `--noEmit` is ~25s cold, ~1s warm. `*.tsbuildinfo` is
-    // gitignored; the composite build projects keep writing their own.
+    // Whole-repo `--noEmit` is 27-35s with no cache. With one: ~1.5s when
+    // nothing changed or the edit didn't move a type, up to ~20s after an edit
+    // that fans out from packages/core. `*.tsbuildinfo` is gitignored; the
+    // composite build projects keep writing their own.
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
