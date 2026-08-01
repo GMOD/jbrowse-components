@@ -105,6 +105,7 @@ export {
   type ResolvedPlugin,
   getPluginUpdate,
   installedVersionFromUrl,
+  isPluginInstalled,
   resolvePlugin,
 } from './pluginStore.ts'
 export {

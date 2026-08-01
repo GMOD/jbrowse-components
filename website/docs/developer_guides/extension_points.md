@@ -139,6 +139,9 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
 | `Core-replaceAbout` | sync | single | Replace or wrap a track's About dialog body |
 | `Core-replaceWidget` | sync | single | Replace or wrap the component that renders a widget |
+| `Desktop-StartScreenLaunchPanel` | sync | single | Replace or wrap the "Launch new session" panel |
+| `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen menu |
+| `Desktop-StartScreenRecentSessionsPanel` | sync | single | Replace or wrap the recent sessions panel |
 | `DotplotView-ImportFormSyntenyOptions` | sync | list | Add options to the dotplot view import form |
 | `DotplotView-OverlayHTMLComponent` | sync | single | Add an HTML overlay component to the dotplot view |
 | `DotplotView-OverlaySVGComponent` | sync | list | Add an SVG overlay component to the dotplot view |
@@ -1009,6 +1012,62 @@ interface option {
 
 Register it the same way as `DotplotView-ImportFormSyntenyOptions` above,
 appending your `{ value, label, ReactComponent }` option to the array.
+
+### Desktop-StartScreenMenuItems
+
+type: synchronous
+
+- `args` - `MenuItem[]` - the start screen menu's items
+- `props` - `{ pluginManager, setPluginManager, loadPluginManager }`
+
+Desktop only. The start screen runs before any session exists, so these points
+fire on a plugin manager built from the user's **global plugins** alone (the
+ones in the "Global plugins" dialog) — a plugin listed only in a config is not
+loaded yet and cannot extend this screen.
+
+`loadPluginManager(configPath)` builds a session's plugin manager and
+`setPluginManager` hands it to the app, so a menu item can open a session
+itself:
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'Desktop-StartScreenMenuItems',
+  (items, { setPluginManager, loadPluginManager }) => [
+    ...items,
+    {
+      label: 'Open my thing...',
+      onClick: () => {
+        loadPluginManager(myConfigPath)
+          .then(setPluginManager)
+          .catch(console.error)
+      },
+    },
+  ],
+)
+```
+
+A callback that throws here costs the plugin its menu items only — the start
+screen still renders, so the dialog that can uninstall a misbehaving global
+plugin stays reachable.
+
+### Desktop-StartScreenLaunchPanel
+
+type: synchronous
+
+- `args` - `ComponentType<StartScreenPanelProps>` - the "Launch new session"
+  panel component
+- `props` - `{ setPluginManager, loadPluginManager }`
+
+Desktop only. Replace or wrap the panel, in the same single-component fold as
+`Core-replaceWidget` — return your own component, or one that renders the
+default with extra chrome around it. If it throws while rendering, the start
+screen falls back to the built-in panel and shows an error above it.
+
+### Desktop-StartScreenRecentSessionsPanel
+
+type: synchronous
+
+Same shape as `Desktop-StartScreenLaunchPanel`, for the recent sessions panel.
 
 ### Adding your own extension points
 

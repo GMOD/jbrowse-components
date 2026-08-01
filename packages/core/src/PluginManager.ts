@@ -10,7 +10,7 @@ import {
 import createJexlInstance from './util/jexl.ts'
 
 import type Plugin from './Plugin.ts'
-import type { PluginDefinition } from './PluginLoader.ts'
+import type { PluginDefinition } from './pluginDefinitions.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
 import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
 import type ConnectionType from './pluggableElementTypes/ConnectionType.ts'
@@ -264,6 +264,11 @@ export type UnregisteredPointName<S extends string> =
  */
 export interface PluginMetadata {
   isCore?: boolean
+  // Desktop's global plugins: loaded into every session from the user's global
+  // list rather than from this config, so the in-session plugin store must not
+  // offer to uninstall one — removing it from the config it isn't in silently
+  // does nothing.
+  isGlobal?: boolean
   url?: string
   [key: string]: unknown
 }
@@ -357,9 +362,7 @@ export default class PluginManager {
 
   constructor(
     initialPlugins: (
-      | Plugin
-      | PluginLoadRecord
-      | RuntimePluginLoadRecord
+      Plugin | PluginLoadRecord | RuntimePluginLoadRecord
     )[] = [],
   ) {
     // add the core plugin

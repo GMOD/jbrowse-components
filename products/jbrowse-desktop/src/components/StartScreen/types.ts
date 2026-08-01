@@ -1,4 +1,4 @@
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export interface RecentSessionData {
   path: string

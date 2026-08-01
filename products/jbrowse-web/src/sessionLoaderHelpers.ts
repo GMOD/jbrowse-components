@@ -1,11 +1,12 @@
-import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
+import PluginLoader from '@jbrowse/core/PluginLoader'
+import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { openSessionDB } from './openSessionDB.ts'
 import { addRelativeUris } from './util.ts'
 
 import type { Snap } from './types.ts'
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 
 /**

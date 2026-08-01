@@ -1,6 +1,6 @@
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 // Persisted "Yes, I trust it" decisions from the cross-origin plugin warning
 // dialog, keyed by exact plugin URL. Stored in localStorage, which the browser

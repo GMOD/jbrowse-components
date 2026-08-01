@@ -1,4 +1,4 @@
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { SessionMetadata } from '@jbrowse/web-core'
 import type { DBSchema } from 'idb'
 

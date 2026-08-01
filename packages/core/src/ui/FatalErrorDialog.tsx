@@ -49,11 +49,16 @@ export default function FatalErrorDialog({
   error = 'No error message provided',
   onFactoryReset,
   resetButtonText = 'Factory Reset',
+  extraActions,
 }: {
   componentStack?: string
   error?: unknown
   onFactoryReset: () => void
   resetButtonText?: string
+  // recovery offers narrower than a factory reset, which only some products
+  // have: Desktop puts "Disable global plugins and reload" here, so a plugin
+  // that crashes on load can be undone without discarding the user's sessions
+  extraActions?: React.ReactNode
 }) {
   return (
     <Dialog maxWidth="xl" open>
@@ -65,6 +70,7 @@ export default function FatalErrorDialog({
         ) : null}
       </DialogContent>
       <DialogActions>
+        {extraActions}
         <Button
           color="secondary"
           variant="contained"

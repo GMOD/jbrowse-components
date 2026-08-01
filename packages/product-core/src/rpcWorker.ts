@@ -5,7 +5,8 @@ import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { RpcStatus } from '@jbrowse/core/util'
 
 declare global {
@@ -47,12 +48,10 @@ async function getPluginManager(
   // tooltip against the full feature here rather than shipping it back — so it
   // needs the main thread's display preference before any RPC method runs
   setNumberGrouping(config.numberGrouping)
-  const pluginLoader = new PluginLoader(config.plugins, opts)
-  // the re-exports exist for runtime plugins to import against, so a worker
-  // running only core plugins doesn't publish them
-  if (config.plugins.length > 0) {
-    pluginLoader.installGlobalReExports(self)
-  }
+  const pluginLoader = new PluginLoader(
+    config.plugins,
+    opts,
+  ).installGlobalReExports(self)
   // Keep each runtime plugin's `definition` on its load record (mirroring the
   // main thread's createPluginManager) so PluginManager populates
   // runtimePluginDefinitions. A plugin that resolves a sibling asset from its

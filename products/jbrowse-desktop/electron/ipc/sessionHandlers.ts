@@ -11,6 +11,7 @@ import {
 } from '../paths.ts'
 import { logError } from '../util.ts'
 import { ipcHandle } from './channels.ts'
+import { writeGlobalPlugins } from './globalPluginHandlers.ts'
 import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
 
 import type { AppPaths } from '../paths.ts'
@@ -266,6 +267,10 @@ export function registerSessionHandlers(
     ]
     await Promise.all([
       updateRecentSessions(paths.recentSessionsPath, () => []),
+      // a global plugin loads into every session, so one that crashes on load
+      // makes the app unusable and a reset that left it installed would come
+      // back to the same crash having cost the user their sessions
+      writeGlobalPlugins(paths),
       ...filesToDelete.map(f => unlink(f).catch(logError)),
     ])
   })

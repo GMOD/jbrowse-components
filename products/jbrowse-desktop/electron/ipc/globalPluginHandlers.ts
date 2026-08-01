@@ -5,6 +5,17 @@ import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 
+export async function writeGlobalPlugins(
+  paths: AppPaths,
+  plugins: unknown[] = [],
+) {
+  await fs.promises.writeFile(
+    paths.globalPluginsPath,
+    stringify(plugins),
+    ENCODING,
+  )
+}
+
 // Plugins the user installs for every session, kept outside any one config in
 // globalPlugins.json. initializeFileSystem creates the file, so a read failure
 // here is a real error and is surfaced rather than silently treated as empty.
@@ -16,10 +27,6 @@ export function registerGlobalPluginHandlers(paths: AppPaths) {
   })
 
   ipcHandle('setGlobalPlugins', async (_event, plugins) => {
-    await fs.promises.writeFile(
-      paths.globalPluginsPath,
-      stringify(plugins),
-      ENCODING,
-    )
+    await writeGlobalPlugins(paths, plugins)
   })
 }

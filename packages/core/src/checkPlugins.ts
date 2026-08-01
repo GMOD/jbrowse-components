@@ -1,6 +1,6 @@
-import { pluginUrl } from './PluginLoader.ts'
+import { pluginUrl } from './pluginDefinitions.ts'
 
-import type { PluginDefinition } from './PluginLoader.ts'
+import type { PluginDefinition } from './pluginDefinitions.ts'
 import type { JBrowsePlugin } from './util/types/index.ts'
 
 // Whether a set of plugin definitions is safe to load without asking the user.

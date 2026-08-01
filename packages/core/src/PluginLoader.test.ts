@@ -1,4 +1,5 @@
-import PluginLoader, {
+import PluginLoader from './PluginLoader.ts'
+import {
   dedupePlugins,
   dropVendoredPlugins,
   isCJSPluginDefinition,
@@ -8,9 +9,9 @@ import PluginLoader, {
   pluginDescriptionString,
   pluginLabel,
   pluginUrl,
-} from './PluginLoader.ts'
+} from './pluginDefinitions.ts'
 
-import type { PluginDefinition } from './PluginLoader.ts'
+import type { PluginDefinition } from './pluginDefinitions.ts'
 
 test('drops legacy external plugins now vendored into core', () => {
   const defs: PluginDefinition[] = [

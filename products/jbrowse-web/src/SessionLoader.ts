@@ -1,5 +1,5 @@
 import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
-import { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
+import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -21,10 +21,10 @@ import { checkPlugins, fromUrlSafeB64, readConf } from './util.ts'
 
 import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
 import type {
-  PluginDefinition,
   PluginLoadFailure,
   PluginRecord,
 } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

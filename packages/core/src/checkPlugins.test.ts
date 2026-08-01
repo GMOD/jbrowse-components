@@ -4,7 +4,7 @@ import {
   fetchPlugins,
 } from './checkPlugins.ts'
 
-import type { PluginDefinition } from './PluginLoader.ts'
+import type { PluginDefinition } from './pluginDefinitions.ts'
 import type { JBrowsePlugin } from './util/types/index.ts'
 
 // fills the required JBrowsePlugin metadata so tests can specify just urls
