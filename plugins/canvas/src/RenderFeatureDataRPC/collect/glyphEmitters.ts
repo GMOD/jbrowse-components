@@ -506,8 +506,15 @@ function processMotifLayout(
   if (topCut !== undefined && bottomCut !== undefined) {
     pushCut(topCut, baseTopPx, half)
     pushCut(bottomCut, baseTopPx + half, half)
-  } else if (topCut !== undefined) {
-    pushCut(topCut, baseTopPx, height)
+  } else {
+    // Whichever single cut is pinned gets the full-height tick — keyed on the
+    // cut that exists, not on `cutSite` specifically, so a motif carrying only
+    // `cutSiteBottom` still draws. Testing `topCut` alone silently drew no tick
+    // at all for that feature.
+    const soleCut = topCut ?? bottomCut
+    if (soleCut !== undefined) {
+      pushCut(soleCut, baseTopPx, height)
+    }
   }
 
   emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)

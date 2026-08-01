@@ -83,6 +83,29 @@ test('single known cut draws one full-height tick', () => {
   expect(cut!.height).toBeCloseTo(box!.height)
 })
 
+test('a bottom-strand-only cut still draws its tick', () => {
+  // The single-cut branch keys on whichever cut is pinned, not on `cutSite`
+  // specifically: testing the top cut alone left a motif carrying only
+  // `cutSiteBottom` with no tick at all, which reads as "this enzyme doesn't cut
+  // here" rather than "we only know one side".
+  const { collector } = emit(
+    mockFeature({
+      uniqueId: 'm4',
+      start: 100,
+      end: 106,
+      strand: -1,
+      type: 'motif',
+      name: 'OneSided',
+      cutSiteBottom: 104,
+    }),
+  )
+
+  expect(collector.rects).toHaveLength(2)
+  const [box, cut] = collector.rects
+  expect(cut).toMatchObject({ start: 104, end: 104, color: CUT_SITE_COLOR })
+  expect(cut!.height).toBeCloseTo(box!.height)
+})
+
 test('motif with no cut notation draws the site box alone', () => {
   const { collector } = emit(
     mockFeature({
