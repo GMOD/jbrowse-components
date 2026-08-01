@@ -39,11 +39,21 @@ export function parse(color: string): Color {
   return color.charCodeAt(0) === HASH ? parseHex(color) : parseColor(color)
 }
 
+// The four legal hex forms. Validated up front rather than trusted, because
+// hexValue() maps any character to a number: '#zzzzzz' produced a plausible dark
+// grey and '#ff' opaque black, so parseCssColor's invalid-color sentinel was
+// unreachable for anything starting with '#'. Nibbles above 0xf also overflow
+// into the neighbouring channel once packed.
+const HEX = /^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i
+
 /**
  * Parse hexadecimal CSS color
- * @param color Hex color string: #xxx, #xxxxxx, #xxxxxxxx
+ * @param color Hex color string: #xxx, #xxxx, #xxxxxx, #xxxxxxxx
  */
 export function parseHex(color: string): Color {
+  if (!HEX.test(color)) {
+    throw new Error(`Color.parse(): invalid CSS color: "${color}"`)
+  }
   let r = 0x00
   let g = 0x00
   let b = 0x00

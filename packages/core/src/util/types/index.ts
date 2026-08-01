@@ -101,8 +101,7 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  | React.LazyExoticComponent<React.FC<any>>
-  | React.FC<any>
+  React.LazyExoticComponent<React.FC<any>> | React.FC<any>
 
 /**
  * the slice of a view that track-action menu items need: opening a track, and
@@ -697,28 +696,22 @@ export class AuthNeededError extends Error {
   }
 }
 
+// The name alone, deliberately: this also has to recognize an AuthNeededError
+// that crossed the worker boundary, and serializeError/deserializeError carry
+// `name` through, so the cross-realm case needs no structural fallback. It used
+// to also accept any error carrying a `url` property, which routed ordinary
+// fetch failures into RpcManager's auth-retry path and prompted for a login.
 export function isAuthNeededException(
   exception: unknown,
 ): exception is AuthNeededError {
-  /* oxlint-disable typescript/no-unnecessary-condition -- intentional runtime guard: tsgolint sees these branches as unreachable but the input is genuinely unknown at runtime */
-  return (
-    exception instanceof Error &&
-    // DOMException
-    (exception.name === 'AuthNeededError' ||
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      (exception as AuthNeededError).url !== undefined)
-  )
-  /* oxlint-enable typescript/no-unnecessary-condition */
+  return exception instanceof Error && exception.name === 'AuthNeededError'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation =
-  | LocalPathLocation
-  | UriLocation
-  | BlobLocation
-  | FileHandleLocation
+  LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

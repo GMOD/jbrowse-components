@@ -139,6 +139,23 @@ describe('colorBits helpers', () => {
         expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 255])
       }
     })
+
+    test('malformed hex reaches the sentinel too', () => {
+      // parseHex used to map any character through a nibble trick, so '#zzzzzz'
+      // came out a plausible dark grey and '#ff' opaque black — a wrong color
+      // reads as deliberate, where magenta reads as "your config is broken"
+      for (const bad of [
+        '#zzzzzz',
+        '#ff',
+        '#',
+        '#fffff',
+        '#12345',
+        '#ff00gg',
+      ]) {
+        const c = parseCssColor(bad)
+        expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 255])
+      }
+    })
   })
 
   describe('featureItemRgb', () => {

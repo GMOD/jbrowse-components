@@ -14,6 +14,10 @@ export function addAndShowTrack(
   view?: { showTrack: (trackId: string) => void },
 ) {
   const added = session.addTrackConf(conf)
-  view?.showTrack(conf.trackId)
+  // addTrackConf already notified on an invalid conf; showing a trackId that was
+  // never added would only add a second "Could not resolve identifier" snackbar
+  if (added) {
+    view?.showTrack(conf.trackId)
+  }
   return added
 }

@@ -60,3 +60,27 @@ describe('function string parsing', () => {
     ).toBe(true)
   })
 })
+
+// A config `jexl:` string can only hand these a string, and a color slot can
+// only use a string back — so the published catalog examples must round-trip
+// through parseCssColor, not through a Colord object the config cannot make.
+describe('color functions', () => {
+  const evaluate = (str: string) =>
+    stringToJexlExpression(str, jexl).eval({}) as string
+
+  // alpha is stored as one of 256 steps, so 0.5 comes back as 128/255
+  it.each([
+    [`jexl:alpha('green', 0.5)`, 'rgba(0, 128, 0, 0.502)'],
+    [`jexl:hsl('#ff0000')`, 'hsl(0, 100%, 50%)'],
+    [`jexl:colorString('green')`, '#008000'],
+  ])('%s evaluates to a usable color string', (expr, expected) => {
+    expect(evaluate(expr)).toBe(expected)
+  })
+
+  it('composes, because every color in and out is a string', () => {
+    expect(evaluate(`jexl:colorString(hsl('#ff0000'))`)).toBe('#ff0000')
+    expect(evaluate(`jexl:alpha(colorString('green'), 0.25)`)).toBe(
+      'rgba(0, 128, 0, 0.251)',
+    )
+  })
+})

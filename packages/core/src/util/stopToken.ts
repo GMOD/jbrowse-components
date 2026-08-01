@@ -110,6 +110,10 @@ const signalControllers = new Map<string, Set<AbortController>>()
  */
 export function markStopTokenStopped(id: string) {
   const now = Date.now()
+  // delete first: `set` on an existing key keeps its original insertion
+  // position, so a re-stopped id would sit at the front of the iteration order
+  // carrying a fresh timestamp, and the sweep below would break there forever
+  stoppedIds.delete(id)
   stoppedIds.set(id, now)
   if (stoppedIds.size > STOPPED_ID_SWEEP_AT) {
     // a Map iterates in insertion order, and timestamps only increase, so this

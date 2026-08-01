@@ -4,7 +4,6 @@ import { randomColor } from './color/index.ts'
 import { colord } from './colord.ts'
 import { jexlFeatureProxy, unwrapFeature } from './simpleFeature.ts'
 
-import type { Colord } from './colord.ts'
 import type { Feature } from './simpleFeature.ts'
 
 export default function JexlF(/* config?: any*/) {
@@ -141,12 +140,18 @@ export default function JexlF(/* config?: any*/) {
   // color helpers
   /** #jexlFunction Color functions | randomColor(feature.type) | deterministic color from a string (e.g. a feature type) */
   j.addFunction('randomColor', randomColor)
+  // These take and return CSS color *strings*, not Colord objects: a config
+  // `jexl:` expression has no way to construct a Colord, and a color slot
+  // holding one resolves to the invalid-color sentinel rather than a color. So
+  // both ends are strings, which also keeps them composable with each other.
   /** #jexlFunction Color functions | alpha('green', 0.5) | a color at 50% opacity */
-  j.addFunction('alpha', (color: Colord, n: number) => color.alpha(n))
+  j.addFunction('alpha', (color: string, n: number) =>
+    colord(color).alpha(n).toRgbString(),
+  )
   /** #jexlFunction Color functions | hsl('#ff0000') | converts a color to its HSL form */
-  j.addFunction('hsl', (color: Colord) => colord(color.toHsl()))
+  j.addFunction('hsl', (color: string) => colord(color).toHslString())
   /** #jexlFunction Color functions | colorString('green') | normalizes a color name or value to a hex string */
-  j.addFunction('colorString', (color: Colord) => color.toHex())
+  j.addFunction('colorString', (color: string) => colord(color).toHex())
   // interpolate applies a scale function to a value. It is intentionally not
   // tagged for the jexl catalog: a config `jexl:` string has no way to supply
   // the scale function argument, so it is not usable from config callbacks.

@@ -54,6 +54,34 @@ describe('readTabixLines', () => {
     ])
   })
 
+  // A GFF3/GTF line can be truncated by a partial write, and column 3 has no
+  // trailing tab when it is the last column. Reading to `indexOf('\t') === -1`
+  // as an end offset silently dropped the type's last character, which then fed
+  // the redispatch classification.
+  it.each([
+    ['ctgA\tsrc\tgene', 'gene'],
+    ['ctgA\tsrc\t', ''],
+    ['ctgA\tsrc', ''],
+    ['ctgA', ''],
+    ['', ''],
+  ])('reads the type from a truncated line (%p)', async (line, type) => {
+    const source = {
+      getLines: async (
+        _refName: string,
+        _start: number | undefined,
+        _end: number | undefined,
+        opts: {
+          lineCallback: (l: string, o: number, s: number, e: number) => void
+        },
+      ) => {
+        opts.lineCallback(line, 0, 0, 1)
+        await Promise.resolve()
+      },
+    }
+    const lines = await readTabixLines(source, 'ctgA', 0, 100)
+    expect(lines[0]!.type).toBe(type)
+  })
+
   // Asserted from inside the read, because withStopTokenSignal releases the
   // signal once the read settles — which is the point of the helper, and would
   // make an after-the-fact check pass for a signal that was never wired. A

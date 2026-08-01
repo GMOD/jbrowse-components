@@ -1,4 +1,5 @@
 import {
+  groupLinesByRef,
   makeFeatureIntervalTreeMap,
   parseLineByLine,
 } from './parseLineByLine.ts'
@@ -143,6 +144,27 @@ line3`
     })
 
     expect(lines).toEqual(['single line'])
+  })
+})
+
+describe('groupLinesByRef', () => {
+  const group = (content: string) =>
+    groupLinesByRef(new TextEncoder().encode(content))
+
+  it('splits header lines from feature lines and stops at FASTA', () => {
+    const { headerLines, linesByRef } = group(
+      '##gff-version 3\nctgA\tsrc\tgene\nctgB\tsrc\tgene\n>ctgA\nACGT\n',
+    )
+    expect(headerLines).toEqual(['##gff-version 3'])
+    expect(Object.keys(linesByRef)).toEqual(['ctgA', 'ctgB'])
+  })
+
+  // the refName is column 1, so a line with no tab has no coordinates either;
+  // keying it by its own text published it through getRefNames as a phantom
+  // refName (previously the line minus its last character)
+  it('skips a line with no tab rather than minting a refName from it', () => {
+    const { linesByRef } = group('ctgA\tsrc\tgene\ngarbage\n')
+    expect(Object.keys(linesByRef)).toEqual(['ctgA'])
   })
 })
 

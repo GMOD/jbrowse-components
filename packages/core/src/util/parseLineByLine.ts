@@ -30,8 +30,13 @@ export function groupLinesByRef(
       } else if (line.startsWith('>')) {
         return false
       } else {
-        const refName = line.slice(0, line.indexOf('\t'))
-        ;(linesByRef[refName] ??= []).push(line)
+        // a line with no tab has no coordinate columns either, so it cannot be
+        // a feature line; keying it by its own text would publish it through
+        // getRefNames as a phantom refName
+        const tab = line.indexOf('\t')
+        if (tab !== -1) {
+          ;(linesByRef[line.slice(0, tab)] ??= []).push(line)
+        }
       }
       return true
     },

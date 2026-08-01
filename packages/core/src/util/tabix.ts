@@ -51,9 +51,11 @@ interface TabixLineSource {
  */
 function extractType(line: string) {
   const t1 = line.indexOf('\t')
-  const t2 = line.indexOf('\t', t1 + 1)
-  const t3 = line.indexOf('\t', t2 + 1)
-  return line.slice(t2 + 1, t3)
+  const t2 = t1 === -1 ? -1 : line.indexOf('\t', t1 + 1)
+  const t3 = t2 === -1 ? -1 : line.indexOf('\t', t2 + 1)
+  // a truncated line has no column 3 to read; a final column 3 (no trailing
+  // tab) runs to the end of the line rather than one character short of it
+  return t2 === -1 ? '' : line.slice(t2 + 1, t3 === -1 ? line.length : t3)
 }
 
 /**
