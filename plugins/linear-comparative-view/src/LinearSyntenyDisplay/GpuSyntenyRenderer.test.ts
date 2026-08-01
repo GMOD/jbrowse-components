@@ -167,4 +167,25 @@ describe('GpuSyntenyRenderer window-relative uniforms', () => {
     const screenX = data.bp1[0]! * u[U.bpPerPxInv0]! + u[U.panPx0]!
     expect(screenX).toBeCloseTo((base + 300) / 1 - offsetPx, 2)
   })
+
+  // The shaders size their AA ramps at one OUTPUT pixel, but measure in CSS px,
+  // so they need the ratio between the two (aaHalfPx in syntenyTypes.slang).
+  // It has to be the same getDpr() that `resolution` is divided by, or the
+  // ramps and the geometry disagree about what a pixel is.
+  test.each([1, 2])('writes devicePixelRatio (dpr=%i) with resolution', dpr => {
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: dpr,
+      writable: true,
+    })
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas(800, 100))
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams({})]]))
+
+    const u = hal.getLastUniformsF32()!
+    expect(u[U.devicePixelRatio]).toBe(dpr)
+    // resolution is the CSS-px size the same ratio implies
+    expect(u[U.resolution]).toBe(800 / dpr)
+    expect(u[U.resolution + 1]).toBe(100 / dpr)
+  })
 })

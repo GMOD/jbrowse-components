@@ -250,6 +250,10 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     u[U.clickedFeatureId] = p.clickedFeatureId
     u[U.yTop] = p.yTop
     u[U.fadeThinAlignments] = p.fadeThinAlignments ? 1 : 0
+    // The shaders measure in CSS px but rasterize on the device-px grid, so
+    // they need the ratio to size their AA ramps at one output pixel. Must be
+    // the same getDpr() the resolution above is derived from.
+    u[U.devicePixelRatio] = dpr
     this.hal.writeUniforms(this.uniformData)
   }
 }

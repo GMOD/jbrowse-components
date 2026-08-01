@@ -93,7 +93,26 @@ public struct Uniforms {
   public float  clickedFeatureId;
   public float  yTop;
   public float  fadeThinAlignments;
+  // getDpr() (capped at MAX_DPR), needed because these shaders measure in CSS
+  // px but rasterize on the device-px grid — see aaHalfPx.
+  public float  devicePixelRatio;
 };
+
+// Half-width of every antialiasing ramp in these shaders, in CSS px.
+//
+// The HAL sizes the backing store by getDpr() and sets the viewport to
+// canvas.width/height (DEVICE px), while `resolution` and every coordinate here
+// are CSS px. So one output sample spans 1/dpr CSS px, and a ramp that should
+// cover exactly one output pixel is 1/dpr CSS px wide — not 1.
+//
+// This used to arrive implicitly: ddx/ddy differentiate against the device-px
+// grid, so `length(ddx(d), ddy(d))` on a CSS-px distance returned 1/dpr and the
+// ramp came out one device pixel wide for free. That is the ONE thing the
+// derivative was still buying once the distances were perpendicular-normalized
+// (see perpCoverage), so dropping it means supplying the ratio explicitly.
+public float aaHalfPx(Uniforms u) {
+  return 0.5 / u.devicePixelRatio;
+}
 
 public struct Corners {
   public float x1, x2, x3, x4;
@@ -144,8 +163,9 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // smeared across many px (visibly fuzzy in transparent mode; hidden behind the
 // opaque base in colored mode). Measuring each edge's own signed perpendicular
 // distance keeps the transition ~1px on both edges regardless of curvature.
-float perpCoverage(float2 localPos, float edge0, float edge1,
-                   float pf0, float pf1, float kind, float fadeThinAlignments) {
+float perpCoverage(float2 localPos, float edge0, float edge1, float pf0,
+                   float pf1, float kind, float fadeThinAlignments,
+                   float aaHalf) {
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
   float pfL = (edge0 <= edge1) ? pf0 : pf1;
@@ -173,21 +193,22 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
     (isCigarKind(kind) || isMarkerKind(kind) || fadeThinAlignments < 0.5)
       ? 1.0
       : clamp(perpW, WIDTH_FADE_FLOOR, 1.0);
-  // Per-edge AA, 1px each. dL/dR are constructed as TRUE perpendicular
-  // distances (each divided by its own edge's foreshortening), so the length of
-  // their screen-space gradient is analytically 1 at every slope — the AA width
-  // is a constant, not something to measure. NOT fwidth (=|ddx|+|ddy|), which
-  // overshoots by up to √2 on diagonals and softens slanted ribbon edges. See
+  // Per-edge AA, one output pixel each (aaHalf; see aaHalfPx). dL/dR are
+  // constructed as TRUE perpendicular distances — each divided by its own edge's
+  // foreshortening — so the ramp width is a known constant at every slope rather
+  // than something to measure. NOT fwidth (=|ddx|+|ddy|), which overshoots by up
+  // to √2 on diagonals and softens slanted ribbon edges. See
   // drewcassidy.me/2020/06/26/sdf-antialiasing/.
   //
-  // Measuring it with ddx/ddy instead (what this did before) is not merely
-  // redundant — it is wrong in the two places the derivative stops matching the
-  // analytic value. In the ±1px AA rows above/below the ribbon the caller's `t`
-  // clamps, freezing the edges, and the measured gradient collapses to 1/pf
-  // (0.05-0.32 on slanted ribbons) — a near-hard side edge on the ribbon's top
-  // and bottom rows. At a bowtie's pinch the 2x2 quad straddles the edge-identity
-  // swap and reads 0.707. The constant is right in both.
-  return smoothstep(-0.5, 0.5, dL) * smoothstep(-0.5, 0.5, dR) * widthFade;
+  // Measuring it with ddx/ddy (what this did before) is wrong in the two places
+  // the derivative stops matching the analytic value. In the AA rows above and
+  // below the ribbon the caller's `t` clamps, freezing the edges, and the
+  // measured gradient collapses by a further 1/pf (0.05-0.32 of its correct
+  // value on slanted ribbons) — a near-hard side edge on the ribbon's top and
+  // bottom rows. At a bowtie's pinch the 2x2 quad straddles the edge-identity
+  // swap and reads 0.707. aaHalf is right in both.
+  return smoothstep(-aaHalf, aaHalf, dL)
+       * smoothstep(-aaHalf, aaHalf, dR) * widthFade;
 }
 
 // Ribbon edge X positions + per-edge slope foreshortening at a point along the
@@ -223,15 +244,15 @@ FillEdges fillEdges(float4 corners, float s, float sd, float dydt) {
 // width-fade differs.
 float fillCoverage(float2 localPos, float edge0, float edge1,
                    float pf0, float pf1, float kind, float h,
-                   float fadeThinAlignments) {
+                   float fadeThinAlignments, float aaHalf) {
   float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, kind,
-                          fadeThinAlignments);
-  // Half-pixel AA at the top/bottom cuts. Both vertex shaders set
+                          fadeThinAlignments, aaHalf);
+  // One-output-pixel AA at the top/bottom cuts. Both vertex shaders set
   // localPos.y = screenY - u.yTop exactly, so localPos.y is affine in screen y
-  // with unit slope and its gradient length is 1 by construction — no
-  // derivative to take.
-  float cy = smoothstep(-0.5, 0.5, localPos.y)
-           - smoothstep(h - 0.5, h + 0.5, localPos.y);
+  // with unit slope — the ramp is aaHalf wide by construction, no derivative to
+  // take.
+  float cy = smoothstep(-aaHalf, aaHalf, localPos.y)
+           - smoothstep(h - aaHalf, h + aaHalf, localPos.y);
   return cx * cy;
 }
 
@@ -273,9 +294,11 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
   return float4(rgb, finalAlpha * coverage);
 }
 
-// The clicked-feature outline reaches this far perpendicular to each ribbon
-// edge: alpha ramps from 1 on the edge to 0 at STROKE_PERP_PX, so the stroke
-// reads as a 1px line (FWHM) with an antialiased falloff.
+// Clicked-feature outline: a 1 CSS px line, i.e. half-max STROKE_HALF_PX either
+// side of the edge. STROKE_PERP_PX is how far the ramp can reach in the worst
+// case (STROKE_HALF_PX + aaHalf, maximal at dpr=1), and so how much extra room
+// the geometry has to leave — see the geometry functions' extraPerpPx.
+static const float STROKE_HALF_PX = 0.5;
 public static const float STROKE_PERP_PX = 1.0;
 static const float STROKE_ALPHA = 0.4;
 
@@ -367,7 +390,8 @@ public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
 public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   FillEdges e = fillEdges(i.corners, s, sd, dydt);
   float coverage = fillCoverage(i.localPos, e.edge0, e.edge1, e.pf0, e.pf1,
-                                i.kind, u.height, u.fadeThinAlignments);
+                                i.kind, u.height, u.fadeThinAlignments,
+                                aaHalfPx(u));
   if (coverage <= 0.0) {
     discard;
   }
@@ -395,12 +419,17 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   // every slope).
   float d0 = abs(i.localPos.x - e.edge0) / e.pf0;
   float d1 = abs(i.localPos.x - e.edge1) / e.pf1;
-  float band = max(clamp(STROKE_PERP_PX - d0, 0.0, 1.0),
-                   clamp(STROKE_PERP_PX - d1, 0.0, 1.0));
+  // A stroke of fixed CSS width (half-max at STROKE_HALF_PX, so 1 CSS px wide
+  // at any dpr) with a one-output-pixel ramp. The ramp reaches zero at
+  // STROKE_HALF_PX + aaHalf ≤ STROKE_PERP_PX, which is what the geometry's
+  // extraPerpPx guarantees room for.
+  float aaHalf = aaHalfPx(u);
+  float band = max(clamp((STROKE_HALF_PX - d0) / (2.0 * aaHalf) + 0.5, 0.0, 1.0),
+                   clamp((STROKE_HALF_PX - d1) / (2.0 * aaHalf) + 0.5, 0.0, 1.0));
   // Cap the stroke at the ribbon's top and bottom, matching fillCoverage's
   // vertical AA so the outline ends exactly where the fill does.
-  float cy = smoothstep(-0.5, 0.5, i.localPos.y)
-           - smoothstep(u.height - 0.5, u.height + 0.5, i.localPos.y);
+  float cy = smoothstep(-aaHalf, aaHalf, i.localPos.y)
+           - smoothstep(u.height - aaHalf, u.height + aaHalf, i.localPos.y);
   float alpha = band * cy * STROKE_ALPHA;
   if (alpha <= 0.0) {
     discard;
