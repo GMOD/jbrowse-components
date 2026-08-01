@@ -46,19 +46,15 @@ import type {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-// Cache for track assembly names - keyed by track object to avoid
-// repeated track.configuration access which triggers MobX machinery
-const trackAssemblyNamesCache = new WeakMap<IAnyStateTreeNode, string[]>()
-
+// Deliberately uncached. This used to memoize on a permanent WeakMap keyed by
+// track, but every caller reads it from inside a reactive getter or autorun: the
+// memo meant the reaction never subscribed to the config, so editing
+// assemblyNames in the config editor did not invalidate it. The reads are
+// per-view-change, not per-feature, so MobX's own computed caching is enough.
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  let cached = trackAssemblyNamesCache.get(track)
-  if (!cached) {
-    cached = getConfAssemblyNames(track.configuration)
-    trackAssemblyNamesCache.set(track, cached)
-  }
-  return cached
+  return getConfAssemblyNames(track.configuration)
 }
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
@@ -672,12 +668,21 @@ export function showTrackGeneric(
     ) as typeof rawConf
 
     const trackType = pluginManager.getTrackType(conf.type)
-    try {
-      trackType.configSchema.create(conf, getEnv(self))
-    } catch (e) {
-      throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
-        cause: e,
-      })
+    // Validate only a conf that is not already in the tree. `configSchema.create`
+    // here builds an entire config node and throws it away purely to surface a
+    // nice error; its preProcessSnapshot also re-runs Core-preProcessTrackConfig
+    // on a snapshot this function just preprocessed. A conf that is a state tree
+    // node was validated when MST created it, so all of that is pure waste on
+    // the common showTrack path.
+    if (!isStateTreeNode(rawConf)) {
+      try {
+        trackType.configSchema.create(conf, getEnv(self))
+      } catch (e) {
+        throw new Error(
+          `Track "${trackId}" has an invalid configuration: ${e}`,
+          { cause: e },
+        )
+      }
     }
 
     // A track container that isn't itself a view — a synteny level, which owns

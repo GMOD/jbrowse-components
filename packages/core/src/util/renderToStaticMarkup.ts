@@ -23,5 +23,17 @@ export function renderToStaticMarkup(node: React.ReactElement) {
       React.createElement(CacheProvider, { value: cache }, node),
     )
   })
+  // SVG 1.1 presentation attributes (`fill`, `stroke`) take a <color>, which
+  // does not include rgba() — alpha belongs in a separate fill-opacity /
+  // stroke-opacity. Illustrator and older Inkscape drop an element whose fill
+  // they cannot parse, so the alpha is stripped rather than left to break the
+  // whole shape. It is *dropped*, not converted, so a translucent color exports
+  // fully opaque: components that need transparency to survive set a separate
+  // opacity attribute instead (`CrossHatches`, `MultiWiggleOverlayLines`).
+  //
+  // Rewriting `fill="rgba(r,g,b,a)"` into `fill="rgb(r,g,b)" fill-opacity="a"`
+  // would preserve the appearance and let those two drop their workarounds, but
+  // it changes the pixels of every export carrying an rgba color, so it needs a
+  // visual pass before the snapshots are regenerated.
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
