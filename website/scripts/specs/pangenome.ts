@@ -193,6 +193,12 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // near-identical whole-genome curves and the point is where they DISAGREE:
   // depth counts paths present, degree counts branching, so a window can be
   // fully covered and still tangled.
+  //
+  // ecoli_pggb_degree is NOT in the hosted config yet -- it comes from the
+  // rebuilt demo. Until that is uploaded this spec renders the depth lane alone
+  // and `readyText: 'graph complexity'` fails rather than quietly capturing half
+  // the figure, which is the intended behavior. The tutorial's caption describes
+  // the single curve; UPDATE IT when this regenerates with both lanes.
   {
     mode: 'url',
     name: 'pangenome/depth',

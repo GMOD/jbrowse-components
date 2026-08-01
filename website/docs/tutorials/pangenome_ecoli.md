@@ -436,7 +436,7 @@ in_pggb odgi degree -i "/data/$og" -b /data/depth_windows.bed \
 bedGraphToBigWig ecoli_pggb_degree.bedgraph chrom.sizes ecoli_pggb_degree.bw
 ```
 
-<Figure caption="Both curves across all 4.64 Mb of K12: odgi depth on top, sitting near the strain count over core sequence and dropping toward 1 over accessory stretches, and odgi degree below it. The two disagree where a window is fully covered and still branched, which is what a mean node degree above 2 marks." src="/img/pangenome/depth.png" />
+<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near the strain count where every strain traverses the graph, so the sequence is core, and drops toward 1 over the accessory stretches private to fewer strains. The peaks are the collapsed rRNA operons, which each path walks several times." src="/img/pangenome/depth.png" />
 
 ### Per-strain presence
 
