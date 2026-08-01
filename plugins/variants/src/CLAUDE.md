@@ -70,20 +70,46 @@ for the same memory reason: 25 B/cell → 12 B/cell. It always draws ref cells
 
 `featureColor` is the single "what do the alt cells mean" selector, and only one
 answer can be on screen at once. It holds either a jexl expression or one of
-three sentinels the worker special-cases: `CONSEQUENCE_IMPACT_JEXL`,
-`SV_TYPE_COLOR`, `PHASE_SET_COLOR`. Add new cell-coloring modes here rather than
-as sibling toggles — two independent switches would need a precedence rule to
-settle which wins, and the legend would have to guess the same way.
+four sentinels the worker special-cases: `CONSEQUENCE_IMPACT_JEXL`,
+`SV_TYPE_COLOR`, `PHASE_SET_COLOR`, `ALT_ALLELE_COLOR`. Add new cell-coloring
+modes here rather than as sibling toggles — two independent switches would need
+a precedence rule to settle which wins, and the legend would have to guess the
+same way.
 
-`PHASE_SET_COLOR` is the odd one: phase set is a per-**(feature, sample)**
-FORMAT field, not a per-feature color, so `makeFeatureColor` returns no resolver
-for it and the worker passes a `colorByPhaseSet` flag into the cell loops
-instead. It used to have no control at all — any FORMAT carrying PS silently
-switched the alt cells to a hue hash while the legend went on showing "Alt
-allele" / "Other alt allele" swatches that then matched nothing. Being explicit
-is the fix; keep it that way. It only applies in phased mode (the allele-count
-loop never reads PS), so `getVariantLegendSections` falls back to the genotype
-legend outside it rather than describing a scheme that isn't painted.
+Two of them are per-**(feature, sample)**, not per-feature, so
+`makeFeatureColor` returns no resolver and the worker passes an `altColorMode`
+into the cell loops instead (one value, not a flag each — they share the slot
+precisely so only one can be live):
+
+- `PHASE_SET_COLOR` (FORMAT PS). It used to have no control at all — any FORMAT
+  carrying PS silently switched the alt cells to a hue hash while the legend
+  went on showing "Alt allele" / "Other alt allele" swatches that then matched
+  nothing. Being explicit is the fix; keep it that way. It applies only in
+  phased mode (the allele-count loop never reads PS), so
+  `getVariantLegendSections` falls back to the genotype legend outside it rather
+  than describing a scheme that isn't painted.
+- `ALT_ALLELE_COLOR` (which ALT the genotype carries,
+  `shared/altAlleleColor.ts`). The default scheme names one alt and paints every
+  other one flat `OTHER_ALT_COLOR`, which collapses a genuinely multiallelic
+  site: HPRC2 chr1:1007746 lists 18 ALTs and all 18 are carried, so 232 samples
+  draw in **2** distinct colors — 17 under this mode. It reads **GT only**;
+  nothing here parses `AT`, `ORIGIN`, `LV` or any other graph-specific INFO, so
+  it works the same on an HLA callset or a multiallelic CNV panel, and it needs
+  no rendering-mode gate. A genotype carrying two different alts (`1/2`) takes
+  the first — no single fill can say "two alleles", and the tooltip names both.
+
+`ALT_ALLELE_PALETTE` bands 8 categorical hues (category10 minus its grey and
+olive, which collide with the reference and no-call fills) across three
+lightness levels, so allele 9 is a lighter blue than allele 1. That band is not
+decoration: 16+ carried alleles at one site is real at pangenome scale (HPRC2
+chr1:1049115 carries 16 of its 31 ALTs), and two different alleles reading as
+one color is the exact thing the mode exists to fix. Past the palette it cycles
+and the legend says so. It is built once at module load — the per-cell path is
+an array index, never a color computation.
+
+`maxAltCount` (the widest ALT list in view) is what the worker ships for this;
+`hasSecondaryAlt` derives from it as `> 1` rather than being a second field
+carrying the same fact.
 
 ## Genotype maps cross the RPC boundary keyed by `sampleName`
 
@@ -335,19 +361,19 @@ haplotype takes it from the type instead of restating a `?? 2` of its own.
 Two things follow from expansion being **per-sample max ploidy**, and both cell
 loops have to honour them (`getPhasedColor` + the gate in front of it):
 
-- **Ploidy is per file, rows are per sample.** One triploid sample gives *every*
-  sample three rows, so a diploid one has no allele for its HP2. `getPhasedColor`
-  takes `alleles[HP]` as possibly-`undefined` and draws nothing there, same as a
-  sample with no genotype at the site. It used to read past the end and paint the
-  `undefined` as `SECONDARY_ALT_COLOR` — a phantom "other alt allele" on a
-  haplotype that doesn't exist.
+- **Ploidy is per file, rows are per sample.** One triploid sample gives _every_
+  sample three rows, so a diploid one has no allele for its HP2.
+  `getPhasedColor` takes `alleles[HP]` as possibly-`undefined` and draws nothing
+  there, same as a sample with no genotype at the site. It used to read past the
+  end and paint the `undefined` as `SECONDARY_ALT_COLOR` — a phantom "other alt
+  allele" on a haplotype that doesn't exist.
 - **Haploid is phased.** A single-allele call (`1`, `23`) has nothing left to
   phase and gets exactly one expanded row, so it colors by its allele:
   `isPhasedOrHaploid` (no `/`), not `includes('|')`. Pangenome callsets are
   haploid per assembly path, and a file mixing those with diploid samples — or
-  chrY/chrM in a human callset — carries both. The old gate painted them with the
-  black "Unphased" fill, which the legend didn't even claim: `hasUnphased` counts
-  only a *called* `/` genotype, so those cells had no key entry at all.
+  chrY/chrM in a human callset — carries both. The old gate painted them with
+  the black "Unphased" fill, which the legend didn't even claim: `hasUnphased`
+  counts only a _called_ `/` genotype, so those cells had no key entry at all.
 
 Both are pinned in `computeVariantCells.test.ts` and
 `computeVariantMatrixCells.test.ts`.

@@ -416,7 +416,7 @@ export default function MultiSampleVariantBaseModelF(
          * These carry ONLY positional fields (id/start/end/refName/name) — not
          * ALT or genotypes. Don't re-derive feature-level facts from them
          * (`.get('ALT')` etc. returns undefined); summary facts are computed in
-         * the worker and exposed as scalars (hasPhased/hasSecondaryAlt/
+         * the worker and exposed as scalars (hasPhased/maxAltCount/
          * hasUnphased), and per-feature genotype info lives in the cell-data
          * featureGenotypeMap/featureData.
          */
@@ -433,12 +433,23 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Widest ALT list among the visible variants. Computed in the worker
+         * since the simplified features sent to the client don't carry ALT.
+         * Drives how many swatches the ALT-allele legend shows, and gates the
+         * "Color by...→ALT allele" menu entry (which needs a multiallelic site
+         * to be worth anything).
+         */
+        get maxAltCount(): number {
+          return self.cellData?.maxAltCount ?? 0
+        },
+        /**
+         * #getter
          * Whether any visible site is multiallelic (drives the "Other alt
-         * allele" legend entry). Computed in the worker since the simplified
-         * features sent to the client don't carry ALT.
+         * allele" legend entry) — the same fact `maxAltCount` carries, kept as
+         * a named getter because that is how the legend reads it.
          */
         get hasSecondaryAlt() {
-          return self.cellData?.hasSecondaryAlt ?? false
+          return this.maxAltCount > 1
         },
         /**
          * #getter
@@ -1253,6 +1264,7 @@ export default function MultiSampleVariantBaseModelF(
           return getVariantLegendSections({
             renderingMode: self.renderingMode,
             hasSecondaryAlt: self.hasSecondaryAlt,
+            maxAltCount: self.maxAltCount,
             hasUnphased: self.hasUnphased,
             hasNoCall: self.hasNoCall,
             featureColor: self.featureColor,

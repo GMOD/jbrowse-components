@@ -1,3 +1,4 @@
+import { ALT_ALLELE_COLOR, ALT_ALLELE_PALETTE } from './altAlleleColor.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import {
@@ -117,6 +118,7 @@ describe('getVariantLegendSections', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
+      maxAltCount: 1,
       hasUnphased: false,
       hasNoCall: false,
       featureColor: '',
@@ -130,6 +132,7 @@ describe('getVariantLegendSections', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
+      maxAltCount: 1,
       hasUnphased: false,
       hasNoCall: false,
       featureColor: '',
@@ -145,6 +148,7 @@ describe('getVariantLegendSections', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
+      maxAltCount: 1,
       hasUnphased: false,
       hasNoCall: false,
       featureColor: 'jexl:impactColor(feature)',
@@ -164,6 +168,7 @@ describe('getVariantLegendSections', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
+      maxAltCount: 1,
       hasUnphased: false,
       hasNoCall: false,
       featureColor: 'svType',
@@ -183,6 +188,7 @@ describe('getVariantLegendSections', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'phased',
       hasSecondaryAlt: true,
+      maxAltCount: 3,
       hasUnphased: false,
       hasNoCall: true,
       featureColor: '#E69F00',
@@ -203,6 +209,7 @@ describe('getVariantLegendSections', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
+      maxAltCount: 1,
       hasUnphased: false,
       hasNoCall: false,
       featureColor: 'jexl:get(feature,"foo")',
@@ -216,6 +223,7 @@ describe('getVariantLegendSections', () => {
 describe('phase-set legend section', () => {
   const base = {
     hasSecondaryAlt: false,
+    maxAltCount: 1,
     hasUnphased: false,
     hasNoCall: false,
     svTypeColors: {},
@@ -253,5 +261,37 @@ describe('phase-set legend section', () => {
     })
     expect(section!.id).toBe('genotypes')
     expect(section!.items.map(i => i.label)).toContain('Homozygous reference')
+  })
+})
+
+describe('ALT allele legend section', () => {
+  const base = {
+    renderingMode: 'alleleCount',
+    hasSecondaryAlt: true,
+    hasUnphased: false,
+    hasNoCall: false,
+    featureColor: ALT_ALLELE_COLOR,
+    colorBy: '',
+    sources: undefined,
+  }
+
+  test('shows one swatch per ALT present, not the whole palette', () => {
+    const [section] = getVariantLegendSections({ ...base, maxAltCount: 3 })
+    expect(section!.id).toBe('altAllele')
+    expect(section!.items.map(i => i.label)).toEqual([
+      'ALT 1',
+      'ALT 2',
+      'ALT 3',
+      'Reference',
+    ])
+  })
+
+  test('says so when the palette has to repeat', () => {
+    const [section] = getVariantLegendSections({ ...base, maxAltCount: 40 })
+    const labels = section!.items.map(i => i.label)
+    expect(labels).toHaveLength(ALT_ALLELE_PALETTE.length + 2)
+    expect(labels).toContain(
+      `ALT ${ALT_ALLELE_PALETTE.length + 1}+ (colors repeat)`,
+    )
   })
 })

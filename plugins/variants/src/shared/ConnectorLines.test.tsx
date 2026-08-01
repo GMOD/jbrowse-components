@@ -13,7 +13,7 @@ function matrixCellData(starts: number[]): CellDataResult {
     mode: 'matrix',
     sampleInfo: {},
     hasPhased: false,
-    hasSecondaryAlt: false,
+    maxAltCount: 1,
     hasUnphased: false,
     hasNoCall: false,
     hasConsequence: false,

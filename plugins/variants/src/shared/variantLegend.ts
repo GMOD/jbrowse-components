@@ -1,3 +1,4 @@
+import { ALT_ALLELE_COLOR, ALT_ALLELE_PALETTE } from './altAlleleColor.ts'
 import {
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
@@ -123,6 +124,7 @@ function getCellColorSection({
   hasSecondaryAlt,
   hasUnphased,
   hasNoCall,
+  maxAltCount,
   svTypeColors,
 }: {
   cellColorKey: string
@@ -130,6 +132,7 @@ function getCellColorSection({
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
+  maxAltCount: number
   svTypeColors?: Record<string, string>
 }): LegendSection | undefined {
   if (cellColorKey === CONSEQUENCE_IMPACT_JEXL) {
@@ -147,6 +150,27 @@ function getCellColorSection({
         color,
         label: svTypeDisplayLabel(type),
       })),
+    }
+  }
+  if (cellColorKey === ALT_ALLELE_COLOR) {
+    return {
+      id: 'altAllele',
+      title: 'ALT allele',
+      // Capped at the alleles actually present, so a biallelic view doesn't
+      // claim eight swatches it never paints. `maxAltCount` is the widest ALT
+      // list in view, which is the most indices any one cell can spell.
+      items: [
+        ...Array.from(
+          { length: Math.min(maxAltCount, ALT_ALLELE_PALETTE.length) },
+          (_, i) => ({ color: ALT_ALLELE_PALETTE[i]!, label: `ALT ${i + 1}` }),
+        ),
+        ...(maxAltCount > ALT_ALLELE_PALETTE.length
+          ? [{ label: `ALT ${ALT_ALLELE_PALETTE.length + 1}+ (colors repeat)` }]
+          : []),
+        { color: REFERENCE_COLOR, label: 'Reference' },
+        ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
+        ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+      ],
     }
   }
   if (cellColorKey === PHASE_SET_COLOR) {
@@ -194,6 +218,7 @@ export function getVariantLegendSections({
   hasSecondaryAlt,
   hasUnphased,
   hasNoCall,
+  maxAltCount,
   featureColor,
   svTypeColors,
   colorBy,
@@ -203,6 +228,9 @@ export function getVariantLegendSections({
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
+  // Widest ALT list among the variants in view — how many ALT swatches the
+  // alt-allele key can honestly show.
+  maxAltCount: number
   // Per-variant cell color override; '' = default genotype coloring. When set,
   // cells aren't genotype-colored, so the genotype legend is replaced — by the
   // impact-tier key for the consequence preset, the present SV types for the SV-
@@ -232,6 +260,7 @@ export function getVariantLegendSections({
     hasSecondaryAlt,
     hasUnphased,
     hasNoCall,
+    maxAltCount,
     svTypeColors,
   })
   return [

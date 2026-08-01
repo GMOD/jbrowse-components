@@ -5,6 +5,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
+import { ALT_ALLELE_COLOR } from '../shared/altAlleleColor.ts'
 import { internGenotype } from '../shared/genotypeCodec.ts'
 import {
   PHASE_SET_COLOR,
@@ -28,6 +29,7 @@ import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/compone
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type {
+  AltColorMode,
   SampleInfo,
   VariantFeatureGenotypes,
   VariantFeatureInfo,
@@ -55,9 +57,9 @@ function makeFeatureColor(
   if (featureColor === SV_TYPE_COLOR) {
     return feature => svTypeColors[getVariantSvType(feature)]
   }
-  if (featureColor === PHASE_SET_COLOR) {
-    // Per-(feature, sample), not per-feature — the cell loops read PS out of
-    // FORMAT themselves, driven by the `colorByPhaseSet` flag.
+  if (featureColor === PHASE_SET_COLOR || featureColor === ALT_ALLELE_COLOR) {
+    // Per-(feature, sample), not per-feature — the cell loops resolve these
+    // themselves, driven by the `altColorMode` they are handed.
     return undefined
   }
   const cfg = { color: featureColor }
@@ -84,12 +86,14 @@ export interface SimplifiedVariantFeature {
 interface CellDataBase {
   sampleInfo: Record<string, SampleInfo>
   hasPhased: boolean
-  // Whether any variant site is multiallelic (drives the "Other alt allele"
-  // legend entry), whether any genotype call is unphased (drives the "Unphased"
-  // legend entry in phased mode), and whether any genotype is a no-call (drives
-  // the "No call" legend entry in phased mode). Computed here because the
-  // simplified features sent to the client no longer carry ALT/genotypes.
-  hasSecondaryAlt: boolean
+  // Widest ALT list among the variants in view. Drives the alt-allele legend
+  // (how many ALT swatches it can honestly show) and, as `> 1`, the "Other alt
+  // allele" entry — one number rather than a separate hasSecondaryAlt boolean
+  // saying the same thing. Alongside it: whether any genotype call is unphased
+  // (drives the "Unphased" legend entry in phased mode) and whether any is a
+  // no-call (the "No call" entry). Computed here because the simplified features
+  // sent to the client no longer carry ALT/genotypes.
+  maxAltCount: number
   hasUnphased: boolean
   hasNoCall: boolean
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
@@ -187,7 +191,7 @@ function computeSampleInfo(
 ) {
   const sampleInfo: Record<string, SampleInfo> = {}
   let hasPhased = false
-  let hasSecondaryAlt = false
+  let maxAltCount = 0
   let hasUnphased = false
   let hasNoCall = false
   let hasConsequence = false
@@ -205,8 +209,8 @@ function computeSampleInfo(
     const { feature } = filteredVariants[featureIdx]!
     const featureId = feature.id()
     const alt = feature.get('ALT') as string[] | undefined
-    if (alt && alt.length > 1) {
-      hasSecondaryAlt = true
+    if (alt && alt.length > maxAltCount) {
+      maxAltCount = alt.length
     }
     if (!hasConsequence && featureHasConsequence(feature)) {
       hasConsequence = true
@@ -276,7 +280,7 @@ function computeSampleInfo(
   return {
     sampleInfo,
     hasPhased,
-    hasSecondaryAlt,
+    maxAltCount,
     hasUnphased,
     hasNoCall,
     hasConsequence,
@@ -409,7 +413,7 @@ export async function executeVariantCellData({
   const {
     sampleInfo,
     hasPhased,
-    hasSecondaryAlt,
+    maxAltCount,
     hasUnphased,
     hasNoCall,
     hasConsequence,
@@ -446,8 +450,15 @@ export async function executeVariantCellData({
   // the same combination the same way, so the key and the cells agree. Reachable
   // because the two settings are independent: a config can declare both, and
   // switching rendering mode leaves `featureColor` alone.
-  const colorByPhaseSet =
+  //
+  // Alt-allele coloring needs no such gate: both cell loops resolve which ALT a
+  // genotype carries straight from GT, so it applies in either rendering mode.
+  const altColorMode: AltColorMode | undefined =
     featureColor === PHASE_SET_COLOR && renderingMode === 'phased'
+      ? 'phaseSet'
+      : featureColor === ALT_ALLELE_COLOR
+        ? 'altAllele'
+        : undefined
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
   // layout-ordered sources without HP to avoid a circular sampleInfo dependency;
@@ -488,7 +499,7 @@ export async function executeVariantCellData({
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               featureColor: featureColorFn,
-              colorByPhaseSet,
+              altColorMode,
               featureGenotypes,
               report,
             })
@@ -502,7 +513,7 @@ export async function executeVariantCellData({
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             featureColor: featureColorFn,
-            colorByPhaseSet,
+            altColorMode,
             featureGenotypes,
             report,
           }),
@@ -546,7 +557,7 @@ export async function executeVariantCellData({
         mode: 'regular' as const,
         sampleInfo,
         hasPhased,
-        hasSecondaryAlt,
+        maxAltCount,
         hasUnphased,
         hasNoCall,
         hasConsequence,
@@ -573,7 +584,7 @@ export async function executeVariantCellData({
           sources: effectiveSources,
           renderingMode,
           featureColor: featureColorFn,
-          colorByPhaseSet,
+          altColorMode,
           featureGenotypes,
           report,
         }),
@@ -602,7 +613,7 @@ export async function executeVariantCellData({
         mode: 'matrix' as const,
         sampleInfo,
         hasPhased,
-        hasSecondaryAlt,
+        maxAltCount,
         hasUnphased,
         hasNoCall,
         hasConsequence,

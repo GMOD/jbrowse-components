@@ -16,6 +16,7 @@ import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type {
+  AltColorMode,
   ProcessedSource,
   VariantFeatureGenotypes,
 } from '../../shared/types.ts'
@@ -75,7 +76,7 @@ export function computeVariantMatrixCells({
   sources,
   renderingMode,
   featureColor,
-  colorByPhaseSet,
+  altColorMode,
   featureGenotypes,
   report,
 }: {
@@ -84,14 +85,14 @@ export function computeVariantMatrixCells({
   renderingMode: string
   // Optional per-variant color override (see computeVariantCells).
   featureColor?: (feature: Feature) => string | undefined
-  // Color phased alt cells by FORMAT PS instead of by allele (see
-  // computeVariantCells).
-  colorByPhaseSet?: boolean
+  // Which scheme colors the alt cells (see computeVariantCells).
+  altColorMode?: AltColorMode
   // Prepopulated for every filtered variant — see computeVariantCells.
   featureGenotypes: ReadonlyMap<string, Record<string, string>>
   report?: ProgressReporter
 }): MatrixCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
+  const colorByAltAllele = altColorMode === 'altAllele'
   // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
@@ -161,7 +162,7 @@ export function computeVariantMatrixCells({
       // inside the phased branch (as computeVariantCells does) because a phase
       // set is a per-haplotype fact and only this loop paints one.
       const hasPhaseSet =
-        colorByPhaseSet &&
+        altColorMode === 'phaseSet' &&
         featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
       const samp = hasPhaseSet
         ? (feature.get('samples') as Record<string, Record<string, string[]>>)
@@ -197,6 +198,8 @@ export function computeVariantMatrixCells({
             HP!,
             mostFrequentAlt,
             PS,
+            true,
+            colorByAltAllele,
           )
           if (c) {
             const isRefCell = c === REFERENCE_COLOR
@@ -231,6 +234,7 @@ export function computeVariantMatrixCells({
             alleleColorCache,
             true,
             overrideColor,
+            colorByAltAllele,
           )
           if (c) {
             addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
