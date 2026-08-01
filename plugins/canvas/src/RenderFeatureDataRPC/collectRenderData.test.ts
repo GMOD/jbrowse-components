@@ -91,7 +91,9 @@ function twoExonTranscript() {
 describe('collectRenderData peptide overlay', () => {
   it('maps the protein onto CDS exons, splitting a codon at the exon boundary', () => {
     const { layout } = twoExonTranscript()
-    const result = collect(layout, { peptideDataMap: new Map([['tx1', { protein: 'MFK' }]]) })
+    const result = collect(layout, {
+      peptideDataMap: new Map([['tx1', { protein: 'MFK' }]]),
+    })
 
     const overlay = result.aminoAcidOverlay!
     expect(overlay).toBeDefined()
@@ -128,7 +130,11 @@ describe('collectRenderData peptide overlay', () => {
 
   it('flags a transl_except residue in the overlay so it can be highlighted', () => {
     const { layout } = twoExonTranscript()
-    const result = collect(layout, { peptideDataMap: new Map([['tx1', { protein: 'MFK', translExceptIndices: new Set([2]) }]]) })
+    const result = collect(layout, {
+      peptideDataMap: new Map([
+        ['tx1', { protein: 'MFK', translExceptIndices: new Set([2]) }],
+      ]),
+    })
     const overlay = result.aminoAcidOverlay!
     expect(overlay.find(a => a.proteinIndex === 2)!.isTranslExcept).toBe(true)
     expect(
@@ -205,7 +211,10 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       { start: 100, end: 109 },
       { start: 109, end: 118 },
     ])
-    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]) })
+    const result = collect(layout, {
+      colorByCDS: true,
+      peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]),
+    })
 
     const overlay = result.aminoAcidOverlay!
     expect(overlay).toBeDefined()
@@ -224,7 +233,10 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       { start: 100, end: 109 }, // VP4
       { start: 109, end: 118 }, // VP2
     ])
-    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]) })
+    const result = collect(layout, {
+      colorByCDS: true,
+      peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]),
+    })
 
     const overlay = result.aminoAcidOverlay!
     const byRow = (y: number) =>
@@ -241,7 +253,10 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   // the stop is excluded from every row — it is not part of any mature peptide.
   it('excludes the trailing stop codon from every region', () => {
     const { layout } = polyproteinLayout(100, 121, [{ start: 100, end: 118 }])
-    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST*' }]]) })
+    const result = collect(layout, {
+      colorByCDS: true,
+      peptideDataMap: new Map([['cds1', { protein: 'MFKLST*' }]]),
+    })
     const overlay = result.aminoAcidOverlay!
     expect(overlay.map(a => a.aminoAcid).sort()).toEqual([
       'F',
@@ -267,7 +282,10 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       ],
       -1,
     )
-    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]) })
+    const result = collect(layout, {
+      colorByCDS: true,
+      peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]),
+    })
     const byRow = (y: number) =>
       result
         .aminoAcidOverlay!.filter(a => a.topPx === y)
@@ -525,7 +543,10 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
     })
     expect(layout.isoformsCollapsed).toBe(true)
 
-    const result = collect(layout, { regionEnd: Number.MAX_SAFE_INTEGER, config: cfg })
+    const result = collect(layout, {
+      regionEnd: Number.MAX_SAFE_INTEGER,
+      config: cfg,
+    })
 
     const label = result.floatingLabelsData.DPP6
     expect(label).toBeDefined()
@@ -545,7 +566,10 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
     })
     expect(layout.isoformsCollapsed).toBeFalsy()
 
-    const result = collect(layout, { regionEnd: Number.MAX_SAFE_INTEGER, config: cfg })
+    const result = collect(layout, {
+      regionEnd: Number.MAX_SAFE_INTEGER,
+      config: cfg,
+    })
 
     const label = result.floatingLabelsData.DPP6
     expect(label!.minX).toBe(100)
@@ -614,7 +638,6 @@ describe('collectRenderData transcript coords', () => {
       ],
     })
   }
-
 
   it('puts the transcript coords on its subfeature entry under a gene', () => {
     const gene = mockFeature({
