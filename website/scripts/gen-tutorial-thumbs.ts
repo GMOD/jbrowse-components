@@ -88,8 +88,8 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   dog10k_retrogene: {
     // the gene model and the two blocks sitting in its intron gaps, with the
     // breed labels; drops the empty right half of the window and the legends
-    src: 'dog10k-fgf4-retrogene.png',
-    band: [0.14, 0.58],
+    src: 'dog10k-fgf4-retrogene-synteny.png',
+    band: [0.25, 0.6],
     xband: [0, 0.52],
     position: 'left',
   },

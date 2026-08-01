@@ -17,7 +17,7 @@ assembly carries.
 pangenome graph in rGFA or GFA, and the contributing assemblies if you want to
 launch out into them.
 
-<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue at the same bp. The alleles under the backbone take the paler tint of the segment they attach to; they have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue. The alternate alleles take the paler tint of the segment they attach to; they have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -122,7 +122,7 @@ half its length on each side so it opens with context rather than clipped to its
 own ends. Dragging across the ruler and picking **Graph genome view (this
 selection)** does the same for a window you choose, with no track menu involved.
 
-<Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window is the segment plus half its length on each side: blue rank-0 backbone, four short rank-1 alleles in three marks, one rank-2 allele in purple, and one line per graph link." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
+<Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window is the segment plus half its length on each side, colored Rainbow so each of the sixteen segments takes its own hue, with one line per graph link." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
 
 Each line is one graph link, drawn when both of its endpoints are inside the
 cut. Every allele here has two links, one leaving the backbone and one
@@ -154,11 +154,17 @@ whole-genome path simply starts at zero.
 The **Layout** dropdown draws the same subgraph three ways, differing in what
 the axes mean:
 
-| Layout          | x              | y                       |
-| --------------- | -------------- | ----------------------- |
-| Anchored        | reference bp   | one row per stable rank |
-| **Sample rows** | reference bp   | one row per assembly    |
-| Force-directed  | nothing (FMMM) | nothing                 |
+| Layout             | x              | y                       |
+| ------------------ | -------------- | ----------------------- |
+| Anchored           | reference bp   | one row per stable rank |
+| Sample rows        | reference bp   | one row per assembly    |
+| **Force-directed** | nothing (FMMM) | nothing                 |
+
+Force-directed is the default, and the one most of these figures use: an
+anchored drawing flattens both routes through a locus onto the reference axis,
+so an allele reads as a stub hanging under a line rather than as the other side
+of a bubble. The anchored modes are one dropdown click away, and the figures
+that take them are the ones about the axis itself.
 
 Both reference-anchored modes need a backbone, from rGFA tags or from a
 reference path. Only a graph with neither leaves them greyed out, and there
@@ -293,7 +299,7 @@ open, and a location goes into the linear view already beside the graph rather
 than stacking a pane. A launched view carries the session's annotation for the
 assembly it opens on, so a strain arrives with its own genes rather than empty.
 
-<Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window in the sample-rows layout, opened from the view menu boxed in red. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
+<Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window, opened from the view menu boxed in red. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
 Taking the other entry answers a different question. K12's `asnW`/`asnU`/`asnV`
 tRNA genes are the sites E. coli pathogenicity islands integrate at, and in that
@@ -301,7 +307,7 @@ window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
 where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
-<Figure caption="K12 at the asnW/asnU/asnV tRNA cluster, the graph's sample rows below it, and the view the CFT073 entry launches: the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
+<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
 
 ## Building the rGFA these figures use
 

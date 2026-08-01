@@ -175,8 +175,13 @@ PY
 
 # ── Align, rebase, assert ───────────────────────────────────────────────────
 # `-x splice` because the query is a processed transcript's worth of sequence and
-# the reference has introns in the middle of it: no other preset chains across a
-# 532 bp gap, and asm5/asm10/asm20 all return the 3' exon alone.
+# the reference has introns in the middle of it: asm5/asm10/asm20 all return the
+# 3' exon alone. The default preset does chain across both gaps and agrees on the
+# first one, but places the second at 48,870,418-48,870,951, a base left of the
+# RefSeq intron; splice scores the canonical sites and lands on it exactly.
+#
+# `-c` is what emits the CIGAR. Without it the PAF is block-level and the synteny
+# ribbon has no gaps to draw.
 #
 # The N ops it emits are rewritten to D. N means "intron in a transcript
 # alignment", and this is a genomic copy aligned to a genomic locus, so those

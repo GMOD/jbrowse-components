@@ -442,7 +442,7 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
 (this selection)** does the same for a window you drag.
 
-<Figure caption="A 1 kb window of the pggb graph, cut from the index rather than from a file prepared beforehand. Both panels are colored by reference position, so the segment lane above and the backbone below run through the same hues left to right, and each bubble in the graph sits under the stretch of reference it belongs to." src="/img/pangenome/pggb_locus_graph.png" />
+<Figure caption="A 1 kb window of the pggb graph, cut from the index rather than from a file prepared beforehand. Both panels are colored by reference position, so the lane above sweeps red to magenta across the window and the graph below sweeps the same hues along its own path: a node's color says where in the window it sits." src="/img/pangenome/pggb_locus_graph.png" />
 
 Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that actually walks the

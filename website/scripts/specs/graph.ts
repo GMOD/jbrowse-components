@@ -372,11 +372,9 @@ const PAA_ISLAND_HIGHLIGHT = {
 // run over different spans and the shared hue stops meaning anything.
 const PAA_WINDOW = `chr:${PAA_RAMP_DOMAIN.start}-${PAA_RAMP_DOMAIN.end}`
 
-// The synteny rows above the graph. K12's window is PAA_RAMP_DOMAIN opened out a
-// little on the left, so the reader sees the Sakai band ARRIVE at the island's
-// right edge rather than starting at the frame's. The two partner windows are
-// the same span carried across each strain's own alignment to K12 in
-// ecoli_pggb_ava (`tabix ecoli_pggb_ava.pif.gz 'tK12#1#chr:1430000-1490000'`):
+// The synteny rows above the graph. The two partner windows are K12's window
+// carried across each strain's own alignment to K12 in ecoli_pggb_ava
+// (`tabix ecoli_pggb_ava.pif.gz 'tK12#1#chr:1430000-1490000'`):
 //
 //     NCTC86  K12 1,434,958-1,632,337 <-> NCTC86 1,698,328-1,898,776
 //     Sakai   K12 1,474,100-1,632,416 <-> Sakai  1,990,000-2,158,448
@@ -384,9 +382,32 @@ const PAA_WINDOW = `chr:${PAA_RAMP_DOMAIN.start}-${PAA_RAMP_DOMAIN.end}`
 // which is the whole argument in two rows of a file: NCTC86's block starts left
 // of the island and runs straight through it, and Sakai has no block over the
 // island at all — its nearest one starts 6 kb past the island's right edge.
-const PAA_SYNTENY_WINDOW = 'chr:1,432,000-1,482,000'
-const PAA_NCTC86_WINDOW = 'chr:1,695,300-1,746,100'
-const PAA_SAKAI_WINDOW = 'chr:1,945,200-1,998,400'
+// Each partner window is that block's own scale applied to K12's, so the three
+// rows cover the same sequence and the ribbons run level.
+//
+// 100 kb, zoomed out per review from the 50 kb this used to draw. At 50 kb the
+// Sakai band arrived in the last 4% of the row and the rest of it was white,
+// which reads as a row with no data rather than as a strain that lacks the
+// island; at 100 kb its block is half the row and the island is visibly what it
+// stops short of.
+const PAA_SYNTENY_WINDOW = 'chr:1,420,000-1,520,000'
+const PAA_NCTC86_WINDOW = 'chr:1,683,100-1,784,700'
+const PAA_SAKAI_WINDOW = 'chr:1,932,400-2,038,800'
+// One gene lane per strain row, all three the same shape (review: "ideally all
+// three lineargenomeviews would have a gene track"). Genes only, compact and
+// without descriptions, because three of these plus the segments lane sit over
+// two ribbon bands and a full annotation lane is four rows of boxes each.
+function strainGeneLane(trackId: string) {
+  return {
+    trackId,
+    type: 'LinearBasicDisplay',
+    showOnlyGenes: true,
+    displayMode: 'compact',
+    showDescriptions: false,
+    height: 60,
+  }
+}
+
 const ECOLI_AVA_TRACK = 'ecoli_pggb_ava'
 // The launch-out figure's graph view, pinned so its menu and its callout still
 // resolve to it once the launch has added a second view to the page.
@@ -715,12 +736,11 @@ function ecoliHoverSession() {
   })
 }
 
-// The pggb pair: the same track in two anchored layouts. Both name their layout,
-// because the view's own default is the force drawing, and each takes its own
-// window: a kilobase is the right scale for the backbone sweep and far too dense
-// for per-strain rows (see PGGB_ROWS_LOCUS).
+// The pggb pair: the same track drawn as a graph and as per-strain rows. Each
+// takes its own window, a kilobase being the right scale for the whole-locus
+// drawing and far too dense for per-strain rows (see PGGB_ROWS_LOCUS).
 function pggbLocusSession(
-  layoutMode: 'auto' | 'samplerows',
+  layoutMode: 'force' | 'samplerows',
   { region, window }: { region: typeof PGGB_LOCUS; window: string },
 ) {
   return sessionSpec(CONFIG, {
@@ -1011,11 +1031,33 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
+// The two landmark nodes both halves circle, so the pair states its own
+// correspondence instead of asserting it in a caption (review: "IDEALLY this
+// would even circle things in the backbone view that match the force directed
+// bandage view"). One reference node and the longest allele over it, picked off
+// `probe-graph-nodes.ts pangenome/hprc_mhc_layout_force` rather than by eye:
+//
+//   s101145+  12,021 bp  rank 0, GRCh38#0#chr6:32,517,416
+//   s396436+  12,253 bp  rank 5, HG00738.2#2#CM086684.1:32,492,010
+//
+// They are the two longest nodes in the cut, so the graph writes `12 kb` and
+// `12.3 kb` beside them in both layouts and the rings do not have to carry the
+// identification themselves. Anchored by id, so each layout can put them where
+// it likes.
+const MHC_LANDMARK_NODES = ['s101145+', 's396436+']
+
 function mhcLayoutPartSpecs(): ScreenshotSpec[] {
   const part = (
     name: string,
     layoutMode: 'auto' | 'force',
     viewportHeight: number,
+    // Where the half's own caption sits, as an offset from the graph canvas
+    // centre. The two layouts leave their whitespace in different places -- the
+    // force drawing's nodes all sit below the top of its pane, the anchored one
+    // fills its top rows and empties out under the low ranks -- so a single
+    // offset would land on the drawing in one of them.
+    labelOffset: { dx: number; dy: number },
+    label: string,
   ): ScreenshotSpec => ({
     mode: 'url',
     name,
@@ -1060,12 +1102,50 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportWidth: 820,
     viewportHeight,
     hideTooltip: true,
+    annotations: [
+      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
+        type: 'circle',
+        anchor: { view: 1, graphNode },
+        radius: 24,
+        strokeWidth: 3,
+      })),
+      {
+        type: 'text',
+        text: label,
+        anchor: { selector: '[data-testid="graph-genome-canvas"]' },
+        ...labelOffset,
+        maxWidth: 300,
+        fontSize: 20,
+      },
+    ],
   })
   return [
-    part('pangenome/hprc_mhc_layout_force', 'force', 1055),
+    // the top strip of the force pane: its nodes start well below the top of
+    // the canvas, so nothing is covered there
+    part(
+      'pangenome/hprc_mhc_layout_force',
+      'force',
+      1055,
+      {
+        dx: -390,
+        dy: -276,
+      },
+      'The same subgraph, force-directed',
+    ),
     // the one-hop default cut brings in more nodes than the old None cut, so
-    // the anchored pane grew past the 775 this used to need
-    part('pangenome/hprc_mhc_layout_anchored', 'auto', 790),
+    // the anchored pane grew past the 775 this used to need. Its label goes in
+    // the block under the low-rank rows, which carry a label and almost no
+    // nodes, and clear of the row labels' own column.
+    part(
+      'pangenome/hprc_mhc_layout_anchored',
+      'auto',
+      790,
+      {
+        dx: -310,
+        dy: 46,
+      },
+      'The same subgraph, anchored on hg38',
+    ),
   ]
 }
 
@@ -1080,11 +1160,15 @@ export const graphSpecs: ScreenshotSpec[] = [
   // Both panels in the reference-position ramp, which does more here than on a
   // minigraph graph: at ~17 bp per segment the backbone is hundreds of tiny
   // blocks rather than a few long ones, and a solid left-to-right hue sweep is
-  // what says they are consecutive rather than scattered.
+  // what says they are consecutive rather than scattered. It is also what ties
+  // the two panels together now the graph is force-directed rather than anchored
+  // on the K12 path (review: "the backbone graphs are too hard to understand ...
+  // across all our figures"): a block in the lane and its node in the graph are
+  // the same hue at the same bp.
   {
     mode: 'url',
     name: 'pangenome/pggb_locus_graph',
-    url: pggbLocusSession('auto', {
+    url: pggbLocusSession('force', {
       region: PGGB_LOCUS,
       window: PGGB_LOCUS_WINDOW,
     }),
@@ -1092,8 +1176,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     viewportWidth: 1000,
-    // the two lanes plus the graph pane, which sizes itself to two rows here
-    viewportHeight: 634,
+    // the two lanes plus the graph pane, which is about as tall as it is wide
+    // for a force drawing where the anchored one was two rows
+    viewportHeight: 1050,
     hideTooltip: true,
   },
   // The same locus per strain, which is where a path GFA says something an rGFA
@@ -1209,10 +1294,15 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
           loadedRegion: ECOLI_REGION,
-          // stated, unlike a launch taken by hand, which now opens on the force
-          // default: this figure is the shared-axis claim, and the drawing has to
-          // be the one that shares the axis
-          layoutMode: 'auto',
+          // The view's own default, which is what a launch taken by hand opens
+          // on. This used to state `auto` so the graph's backbone lined up under
+          // the segments lane; review took that off every figure whose subject is
+          // not the layout itself ("the backbone graphs are too hard to
+          // understand ... if we wanted linear, we'd use our lineargenomeview"),
+          // and the shared reference-position ramp is what still ties a block in
+          // the lane to its node below. pangenome/local_subgraph is where the two
+          // layouts are drawn side by side.
+          layoutMode: 'force',
           colorScheme: 'reference-position',
         },
       ],
@@ -1221,11 +1311,10 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    // GraphGenomeView takes no `height` through the launch snapshot. It used to
-    // center a wide-and-flat anchored layout in a fixed box, so the frame had to
-    // be 900 to reach it; the pane sizes itself to its drawing now, and the
-    // extra 285px is page background.
-    viewportHeight: 615,
+    // GraphGenomeView takes no `height` through the launch snapshot; the pane
+    // sizes itself to its drawing, and a force drawing is about as tall as it is
+    // wide where the anchored one this used to capture was a few flat rows.
+    viewportHeight: 1000,
     hideTooltip: true,
   },
   // The paa island as a bubble — the graph answer to the all-vs-all synteny
@@ -1243,7 +1332,12 @@ export const graphSpecs: ScreenshotSpec[] = [
   // it said the other strains lack it — that claim lived only in the caption.
   // With NCTC86 above K12 and Sakai below, both bands are against K12 and the
   // two behaviours are side by side in one frame. See PAA_SYNTENY_WINDOW for the
-  // alignment rows the partner windows come from.
+  // alignment rows the partner windows come from, and for the 100 kb this now
+  // draws.
+  //
+  // Every row carries its own genes (strainGeneLane), so a partner row states
+  // what it holds where the island is missing rather than being a bare ruler
+  // under a ribbon.
   //
   // Reference-position colors over PAA_RAMP_DOMAIN, so the segments lane above
   // and the nodes below are the same hue for the same bp: the island is one wide
@@ -1269,24 +1363,18 @@ export const graphSpecs: ScreenshotSpec[] = [
           tracks: [[ECOLI_AVA_TRACK], [ECOLI_AVA_TRACK]],
           drawCurves: true,
           levelHeights: [150, 150],
-          // the two partner rows carry no tracks, and their empty-state block is
-          // a centered button that reads as content
-          collapseEmptyRows: true,
           views: [
-            { assembly: 'NCTC86', loc: PAA_NCTC86_WINDOW },
+            {
+              assembly: 'NCTC86',
+              loc: PAA_NCTC86_WINDOW,
+              tracks: [strainGeneLane('NCTC86_genes')],
+            },
             {
               assembly: 'K12',
               loc: PAA_SYNTENY_WINDOW,
               highlight: [PAA_ISLAND_HIGHLIGHT],
               tracks: [
-                {
-                  trackId: 'K12_genes',
-                  type: 'LinearBasicDisplay',
-                  showOnlyGenes: true,
-                  displayMode: 'compact',
-                  showDescriptions: false,
-                  height: 60,
-                },
+                strainGeneLane('K12_genes'),
                 {
                   trackId: ECOLI_SEGMENTS_TRACK,
                   type: 'LinearBasicDisplay',
@@ -1295,7 +1383,11 @@ export const graphSpecs: ScreenshotSpec[] = [
                 },
               ],
             },
-            { assembly: 'Sakai', loc: PAA_SAKAI_WINDOW },
+            {
+              assembly: 'Sakai',
+              loc: PAA_SAKAI_WINDOW,
+              tracks: [strainGeneLane('Sakai_genes')],
+            },
           ],
         },
         {
@@ -1319,7 +1411,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
     settleMs: 8000,
     viewportWidth: 1000,
-    viewportHeight: 1400,
+    // the three strain rows (a gene lane each, and the segments lane on K12),
+    // the two ribbon bands and the graph pane
+    viewportHeight: 1580,
     hideTooltip: true,
   },
   // The graph read as an alignment: five haplotype rows over 200 kb of K12, one
@@ -1447,9 +1541,9 @@ export const graphSpecs: ScreenshotSpec[] = [
         ],
       },
       // A launch through the menu opens on the view's own defaults, so the graph
-      // arrives in one uniform color; the rank colors the sibling figures were
-      // given declaratively are a Color-dropdown step here, and the tutorials
-      // tell the reader to take it. Driving it keeps the two halves of this
+      // arrives in one uniform color; the colors the sibling figures were given
+      // declaratively are a Color-dropdown step here, and the tutorials tell the
+      // reader to take it. Driving it keeps the two halves of this
       // figure comparable and makes the step itself part of what is documented.
       // The dropdown has no testid, so it goes by its current value, which
       // appears nowhere else on the page.
@@ -1475,7 +1569,14 @@ export const graphSpecs: ScreenshotSpec[] = [
           },
           { type: 'waitForSelector', selector: TOOLBAR_READY },
           { type: 'click', text: 'Uniform' },
-          { type: 'click', text: 'Stable rank' },
+          // Rainbow rather than Stable rank, per review ("consider using rainbow
+          // coloring for the segments?"). Rank is two colors on a 16-node
+          // neighbourhood — reference and not — so the arms all painted alike and
+          // the only thing telling one segment from the next was its length
+          // label. Rainbow gives each segment its own hue, which is what makes
+          // the chain readable as a sequence of distinct segments, and it is
+          // Bandage's own default.
+          { type: 'click', text: 'Rainbow' },
           { type: 'delay', ms: 2000 },
           // close the linear view it was launched from, so this frame is the
           // subgraph rather than mostly its source. The window it cut stays
@@ -2115,6 +2216,35 @@ export const graphSpecs: ScreenshotSpec[] = [
     // row stack was flat
     viewportHeight: 1340,
     hideTooltip: true,
+    // The event in the graph as well as in the tracks (review: "i see there is a
+    // highlight on the lineargenomeview but no highlight in the graph itself").
+    // The view's `highlight` is a band on a coordinate axis and the force
+    // drawing has none, so the graph side is a ring on the node instead.
+    //
+    // s101145+ is the reference node the marked deletion removes most of:
+    // 12,021 bp at GRCh38#0#chr6:32,517,416, ending at 32,529,437 against the
+    // band's 32,529,438. Read out of `probe-graph-nodes.ts`, which also says the
+    // band covers a run of eleven backbone nodes (s101135+ to s101145+) — this
+    // is the one worth ringing, the other ten being a few hundred bp each.
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: 's101145+' },
+        radius: 26,
+        strokeWidth: 3,
+      },
+      {
+        type: 'text',
+        // no length in the words: the 12.3 kb allele sits beside this node and
+        // labels itself, so "12 kb" in a callout would read as that one
+        text: 'The banded deletion, in the graph:\nthe ringed node is the reference it removes',
+        anchor: { selector: '[data-testid="graph-genome-canvas"]' },
+        dx: -470,
+        dy: -270,
+        maxWidth: 300,
+        fontSize: 20,
+      },
+    ],
   },
   // The correspondence, which is the reason to open the two views together:
   // hovering a node in the graph highlights the reference interval it occupies
@@ -2304,29 +2434,39 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
           loadedRegion: LAUNCH_OUT_REGION,
-          layoutMode: 'samplerows',
+          // The view's own default drawing, per review: "we need to just use
+          // force directed bandage graphs. the backbone graphs are too hard to
+          // understand. across all our figures. backbone too complicated. if we
+          // wanted linear, we'd use our lineargenomeview." Sample rows drew this
+          // subgraph as a K12 line with five labelled rows of stubs under it,
+          // which is the linear reading of a graph and the one a linear view
+          // already gives. The menu this figure is about names each strain
+          // itself, so nothing here needed the row labels.
+          layoutMode: 'force',
           colorScheme: 'stable-rank',
         },
       ],
     }),
-    readySelector: '[data-testid="graph-row-label"]',
+    // the row labels went with the sample-rows layout; the toolbar is what says
+    // a force drawing has arrived
+    readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // covers the taller second frame (the graph plus the five-panel synteny view
-    // it launches); the menu frame sets its own below. An exact fit: the bottom
-    // panel is the last row, so nothing is drawn under its ruler
-    viewportHeight: 940,
+    // the taller of the two frames, which is now the graph plus its cascade: a
+    // force drawing is about as tall as it is wide where the five sample rows
+    // were flat. The synteny frame sets its own below.
+    viewportHeight: 820,
     hideTooltip: true,
     stages: [
       {
-        // The graph pane plus the cascade hanging off its menu, and little page
-        // background under them. This is also the viewport stage two ACTS in —
-        // a stage resizes after its own actions — and below ~430 the synteny
-        // item click stops launching anything (verified at 350 and 410: the
-        // debug capture shows the menu dismissed and no view added). Cause not
+        // The graph pane plus the cascade hanging off its menu. This is also the
+        // viewport stage two ACTS in — a stage resizes after its own actions —
+        // and below ~430 the synteny item click stops launching anything
+        // (verified at 350 and 410 against the sample-rows drawing: the debug
+        // capture shows the menu dismissed and no view added). Cause not
         // established; treat 430 as a measured floor rather than a tidy number.
-        viewportHeight: 430,
+        viewportHeight: 820,
         actions: [
           {
             type: 'click',
@@ -2417,6 +2557,13 @@ export const graphSpecs: ScreenshotSpec[] = [
   // carries CFT073's gene track because the launch brings the session's
   // annotation for the assembly it opens on; before that it opened on `No tracks
   // active` and this figure could not have existed.
+  //
+  // Frame two closes the graph pane once the launch has happened, the same as
+  // rgfa_launch_out_menu and for the same reason. It also stopped the figure
+  // failing: a force drawing is 700px where the sample rows were 300, so the
+  // launched view sat at the bottom of the page with its gene track's second row
+  // off-screen, and the floating label the readiness wait keys on is only
+  // emitted for a row the display draws.
   {
     mode: 'url',
     name: 'pangenome/rgfa_strain_launch',
@@ -2429,31 +2576,34 @@ export const graphSpecs: ScreenshotSpec[] = [
           type: 'GraphGenomeView',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
           loadedRegion: PKS_REGION,
-          // one row per strain, which is what makes the 58.6 kb CFT073 row the
-          // thing a reader clicks: the force default draws the same segment as a
-          // long arm with no strain to attribute it to
-          layoutMode: 'samplerows',
+          // The view's own default drawing. This was one row per strain, so that
+          // the 58.6 kb CFT073 arm had a row label saying whose it was; the
+          // review that took the sample rows off rgfa_launch_out_menu applies
+          // here too ("backbone too complicated ... across all our figures"), and
+          // the attribution is not lost — the menu row the figure boxes is
+          // `CFT073 chr:…`, which names the strain and its coordinates.
+          layoutMode: 'force',
           colorScheme: 'stable-rank',
         },
       ],
     }),
-    readySelector: '[data-testid="graph-row-label"]',
+    readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // covers the taller second frame (the graph plus the launched panel, whose
-    // gene track runs two rows deep at this width); the menu frame sets its own
-    viewportHeight: 675,
+    // the taller frame, which is the force drawing plus its cascade
+    viewportHeight: 820,
     hideTooltip: true,
     stages: [
       {
         // The graph pane plus the cascade hanging off its menu. This is also the
-        // height stage two ACTS at (a stage resizes after its own actions), and
-        // 340 -- which would have trimmed the ~99px of blank this leaves under
-        // the cascade -- made the "CFT073 chr:" click launch nothing at all, the
-        // same floor rgfa_launch_out_menu measured at ~430. Treat it as measured
-        // rather than tidy.
-        viewportHeight: 430,
+        // height stage two ACTS at (a stage resizes after its own actions), so
+        // it has to hold the launched view long enough for its gene track to
+        // draw as well; 340 -- which would have trimmed the ~99px of blank the
+        // sample-rows drawing left under the cascade -- made the "CFT073 chr:"
+        // click launch nothing at all, the same floor rgfa_launch_out_menu
+        // measured at ~430. Treat it as measured rather than tidy.
+        viewportHeight: 820,
         actions: [
           {
             type: 'click',
@@ -2487,7 +2637,8 @@ export const graphSpecs: ScreenshotSpec[] = [
         // would be clicked at its old position. Same reason as
         // rgfa_launch_out_menu.
         closeMenusFirst: true,
-        viewportHeight: 675,
+        // the launched view alone, once the graph pane below has gone
+        viewportHeight: 330,
         actions: [
           {
             type: 'click',
@@ -2497,6 +2648,14 @@ export const graphSpecs: ScreenshotSpec[] = [
           { type: 'hover', text: 'Linear genome view' },
           { type: 'waitForText', text: 'CFT073 chr:' },
           { type: 'click', text: 'CFT073 chr:' },
+          { type: 'delay', ms: 3000 },
+          // and now the graph pane goes, leaving the view it opened. Closed
+          // after the launch rather than before it: the menu item lives on the
+          // graph view.
+          {
+            type: 'click',
+            selector: `${PKS_VIEW} [data-testid="close_view"]`,
+          },
           // a gene of the island itself, so the wait cannot pass on a view that
           // opened empty — which is exactly what this figure exists to show it
           // does not do any more. clbK is 6.5 kb, the widest of them, so its

@@ -122,11 +122,11 @@ spaces one even column per record, which throws that geometry away.
 
 ## Reading it
 
-<Figure caption="Two Dog10K structural-variant records over FGF4, one row per canid, with the RefSeq gene model above. Each block lands in one of the gene's two intron gaps. Every Dachshund, Basset Hound, Cardigan Corgi, Cocker Spaniel and English Cocker carries both; the Labradors, German Shepherds and Greek wolves carry neither." src="/img/dog10k-fgf4-retrogene.png" />
-
 The two blocks fall in the two gaps of the gene model above them, which is the
 reason to draw this at a locus rather than as a table: an intron-shaped call is
 a retrocopy's footprint, and an intron-shaped call is something you can see.
+This lane is the middle panel of the figure below, where the retrocopy sequence
+is aligned against it.
 
 Every carrier here is heterozygous. The parent gene's introns are still on both
 chromosomes, so the pileup a carrier produces is always a mixture and the caller
@@ -160,10 +160,19 @@ CFA12 one. That is unusual. Most candidate retrocopies have no sequenced insert,
 which is why the callset footprint above is the method that generalizes and this
 section is a check available here rather than a recipe.
 
-Use `minimap2 -x splice`. The query is a spliced transcript's worth of sequence
-and the reference has introns in the middle of it, so no genomic preset chains
-across the gaps (`asm5`, `asm10` and `asm20` all return the 3' exon alone). Load
-each retrocopy as a one-contig assembly and its alignment as a `SyntenyTrack`:
+Use `minimap2 -x splice -c`. `-c` is what writes a base-level CIGAR into the
+PAF, and without it the ribbon is one block per alignment with no gaps in it.
+The query is a spliced transcript's worth of sequence and the reference has
+introns in the middle of it, so no genomic preset chains across the gaps
+(`asm5`, `asm10` and `asm20` all return the 3' exon alone). The default preset
+does chain across them, and puts the second gap a base off the annotated intron;
+`splice` scores the canonical splice sites and lands both on it.
+
+A splice preset calls those gaps `N`, meaning an intron removed by splicing from
+a transcript. This is genomic sequence against a genomic locus, so the build
+script rewrites them to `D`: those bases really are absent from the retrocopy.
+Load each retrocopy as a one-contig assembly and its alignment as a
+`SyntenyTrack`:
 
 ```json
 {
@@ -232,7 +241,7 @@ align to the same three exons, so as two regions of one row their ribbons cross
 through each other; from above and below they close on the gene instead, and
 each intron is one gap seen twice.
 
-<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the per-breed sample rows between the two ribbons. Each retrocopy's CDS is one box against the parent's three, and each ribbon gap sits over a record whose carriers stop at the Labradors." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the per-breed sample rows between the two ribbons. Each retrocopy's CDS is one box against the parent's three, and each ribbon gap sits over a record the chondrodysplastic breeds and both spaniels carry and the Labradors, German Shepherds and Greek wolves do not." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
 The window stops where the CFA18 alignment does, so that retrocopy is on screen
 end to end and the CFA12 ribbon runs on past it. The sample rows are the same

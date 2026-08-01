@@ -859,8 +859,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // FGF4, and build_dog10k_fgf4_retrogene.sh asserts each one's span against the
   // RefSeq intron it claims before writing anything.
   //
-  // POSITIONAL, not the matrix display, and here that is the figure rather than
-  // a preference: the claim is that the two blue blocks land in the two gaps of
+  // ONE FIGURE FOR THE PAGE, not two. There was a plain LGV figure of the gene
+  // model over the 55 sample rows directly above this one; once this spec took
+  // the same lane at the same window (per review), that figure was a strict
+  // subset of this one's middle panel and was retired
+  // (review: "largely duplicates dog10k-fgf4-retrogene-synteny now").
+  //
+  // POSITIONAL, not the matrix display, and that is the figure rather than a
+  // preference: the claim is that the two blue blocks land in the two gaps of
   // the gene model above them. A matrix spaces one column per record and throws
   // that geometry away.
   //
@@ -875,44 +881,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // is the second insertion (Brown et al. 2017, disc disease rather than short
   // legs). One record cannot tell the two apart, and a swatch keyed on the
   // genotype would have hidden that.
-  {
-    mode: 'url',
-    name: 'dog10k-fgf4-retrogene',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      // FGF4 is chr18:48,869,443-48,873,311; this frames the whole gene with
-      // just enough flank that the reader can see the records stop at the gene.
-      // Wider and the two 532/534 bp blocks shrink to slivers, which is the one
-      // thing this figure cannot afford.
-      loc: 'chr18:48,868,900-48,873,900',
-      tracks: [
-        {
-          trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
-          height: 60,
-        },
-        {
-          trackId: 'dog10k_fgf4_svs',
-          type: 'LinearMultiSampleVariantDisplay',
-          height: 690,
-          colorBy: 'group',
-        },
-      ],
-    }),
-    readyText: 'chr18',
-    readyTimeout: 90000,
-    settleMs: 6000,
-    // gene track plus all 55 sample rows and both legends
-    viewportHeight: 1020,
-  },
-
-  // The same claim as sequence rather than as inference, which is what the figure
-  // above cannot do: it draws a caller's response to a retrocopy, never the
-  // retrocopy. Both dog FGF4 retrocopies were Sanger-sequenced and deposited
-  // (MF040222, the CFA18 insertion of Parker et al. 2009; MF040221, the CFA12
-  // insertion of Brown et al. 2017), so each one can be aligned back to the
-  // parent gene, and build_dog10k_fgf4_synteny.sh asserts that its gaps against
-  // the reference are the annotated introns before writing a PAF.
+  //
+  // The callset is a caller's response to a retrocopy, never the retrocopy, and
+  // the ribbons are what close that gap. Both dog FGF4 retrocopies were
+  // Sanger-sequenced and deposited (MF040222, the CFA18 insertion of Parker et
+  // al. 2009; MF040221, the CFA12 insertion of Brown et al. 2017), so each one
+  // can be aligned back to the parent gene, and build_dog10k_fgf4_synteny.sh
+  // asserts that its gaps against the reference are the annotated introns before
+  // writing a PAF.
   //
   // THREE LEVELS, parent gene in the middle. Both retrocopies align to the same
   // three exons, so as two regions of one row their ribbons would cross through

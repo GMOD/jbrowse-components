@@ -285,7 +285,7 @@ mode the deletion figure above uses, puts x back on GRCh38 and stacks the
 alternate alleles below the backbone by rank. The same MHC class II window drawn
 both ways:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing about it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs below the position it attaches to, stacked by rank. Reference-position colors are on in both, so the segment above and the node below share a color either way, and in the anchored half an x as well." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing about it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs below the position it attaches to, stacked by rank. The rings mark the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it. Reference-position colors are on in both, so the segment above and the node below share a color either way, and in the anchored half an x as well." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is a window small enough to draw:
 
@@ -524,7 +524,7 @@ segments lane and the genotype matrix in one column, and the reference-position
 ramp gives the graph's alleles at that position the same hue as the segments
 above them.
 
-<Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it shows which of the ten donors' haplotypes carry it, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, where the marked event is a bubble rather than a row, in the same hue as the band." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it shows which of the ten donors' haplotypes carry it, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, which has no coordinate axis to draw the band on, so the ring marks the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 
