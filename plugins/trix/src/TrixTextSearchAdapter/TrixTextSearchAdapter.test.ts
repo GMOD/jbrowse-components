@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-import Adapter, { shorten } from './TrixTextSearchAdapter.ts'
+import Adapter, { snippetAround } from './TrixTextSearchAdapter.ts'
 import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 describe('normalizeSnapshot uri shorthand', () => {
@@ -22,30 +22,30 @@ describe('normalizeSnapshot uri shorthand', () => {
   })
 })
 
-describe('shorten', () => {
+describe('snippetAround', () => {
   it('returns string as-is when shorter than 40 chars', () => {
-    expect(shorten('short text', 'text')).toBe('short text')
+    expect(snippetAround('short text', 'text')).toBe('short text')
   })
 
   it('truncates from start when term not found', () => {
-    expect(shorten('a'.repeat(50), 'xyz')).toBe(`${'a'.repeat(40)}...`)
+    expect(snippetAround('a'.repeat(50), 'xyz')).toBe(`${'a'.repeat(40)}...`)
   })
 
   it('shows context window around term in the middle', () => {
-    expect(shorten('the quick brown fox jumped over the lazy dog', 'fox')).toBe(
-      '...he quick brown fox jumped over th...',
-    )
+    expect(
+      snippetAround('the quick brown fox jumped over the lazy dog', 'fox'),
+    ).toBe('...he quick brown fox jumped over th...')
   })
 
   it('no leading ellipsis when term is near the start', () => {
     expect(
-      shorten('foobar jumps over the quick brown lazy dog12', 'foobar'),
+      snippetAround('foobar jumps over the quick brown lazy dog12', 'foobar'),
     ).toBe('foobar jumps over the...')
   })
 
   it('no trailing ellipsis when term is near the end', () => {
     expect(
-      shorten('the quick brown lazy dog jumps over foobar', 'foobar'),
+      snippetAround('the quick brown lazy dog jumps over foobar', 'foobar'),
     ).toBe('...dog jumps over foobar')
   })
 })

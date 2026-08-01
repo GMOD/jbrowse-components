@@ -300,8 +300,9 @@ export class RemoteFileWithRangeCache extends RemoteFile {
    *
    * Retried exactly once, then propagated: the re-issue prefers the cache or a
    * live sibling, and bounding it means the pathological case is one duplicate
-   * 256 KiB fetch rather than a recursion whose depth depends on how the aborts
-   * interleave.
+   * 256 KiB fetch *per joined chunk* — this runs once per chunk, so a read that
+   * joined N chunks of a cancelled owner can re-issue N of them — rather than a
+   * recursion whose depth depends on how the aborts interleave.
    */
   private async joinChunk(
     url: string,

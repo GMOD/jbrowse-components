@@ -124,7 +124,6 @@ export {
   updateStatus,
   withProgress,
 } from './progress.ts'
-export { when } from './when.ts'
 export {
   calculateRedispatchRange,
   doesIntersect2,

@@ -1,4 +1,5 @@
-import { stripTrackIds, when } from '@jbrowse/core/util'
+import { stripTrackIds } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import {
   breakpointBpPerPx,

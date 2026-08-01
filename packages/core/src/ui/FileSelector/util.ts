@@ -12,7 +12,10 @@ export function isAdminMode() {
   )
 }
 
-export function shorten(str: string) {
+// Truncate a file/account label at the tail. Distinct from the core
+// `shorten`, which elides the MIDDLE of a long name to keep both ends legible
+// — here the leading characters are the identifying part.
+export function truncateLabel(str: string) {
   return str.length > MAX_LABEL_LENGTH
     ? `${str.slice(0, MAX_LABEL_LENGTH)}…`
     : str
@@ -22,10 +25,10 @@ export function getAccountLabel(account: BaseInternetAccountModel) {
   const { toggleContents, name } = account
   if (toggleContents) {
     return typeof toggleContents === 'string'
-      ? shorten(toggleContents)
+      ? truncateLabel(toggleContents)
       : toggleContents
   }
-  return shorten(name)
+  return truncateLabel(name)
 }
 
 export function getInitialSourceType(location?: FileLocation) {

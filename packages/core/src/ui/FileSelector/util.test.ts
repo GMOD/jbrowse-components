@@ -4,29 +4,29 @@ import {
   dirFromPath,
   getAccountLabel,
   getInitialSourceType,
-  shorten,
+  truncateLabel,
 } from './util.ts'
 
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
 
-describe('shorten', () => {
+describe('truncateLabel', () => {
   test('returns string unchanged if shorter than MAX_LABEL_LENGTH', () => {
-    expect(shorten('abc')).toBe('abc')
-    expect(shorten('12345')).toBe('12345')
+    expect(truncateLabel('abc')).toBe('abc')
+    expect(truncateLabel('12345')).toBe('12345')
   })
 
   test('truncates and adds ellipsis if longer than MAX_LABEL_LENGTH', () => {
-    expect(shorten('123456')).toBe('12345…')
-    expect(shorten('very long string')).toBe('very …')
+    expect(truncateLabel('123456')).toBe('12345…')
+    expect(truncateLabel('very long string')).toBe('very …')
   })
 
   test('handles empty string', () => {
-    expect(shorten('')).toBe('')
+    expect(truncateLabel('')).toBe('')
   })
 
   test('handles exactly MAX_LABEL_LENGTH', () => {
     const str = 'a'.repeat(MAX_LABEL_LENGTH)
-    expect(shorten(str)).toBe(str)
+    expect(truncateLabel(str)).toBe(str)
   })
 })
 

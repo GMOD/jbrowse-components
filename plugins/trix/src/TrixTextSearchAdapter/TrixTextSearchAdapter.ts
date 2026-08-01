@@ -20,7 +20,10 @@ function decodeURIComponentNoThrow(uri: string) {
   }
 }
 
-export function shorten(str: string, term: string, w = 15) {
+// Build a search-result snippet: a window of `w` characters either side of
+// where `term` matched, ellipsized on whichever side was cut. Nothing like the
+// core `shorten`, which just elides a long name.
+export function snippetAround(str: string, term: string, w = 15) {
   if (str.length < 40) {
     return str
   }
@@ -96,8 +99,10 @@ export default class TrixTextSearchAdapter
         const contextField = attrs.find(f =>
           f.toLowerCase().includes(termLower),
         )
-        const context = contextField ? shorten(contextField, term) : undefined
-        const label = shorten(labelField, term)
+        const context = contextField
+          ? snippetAround(contextField, term)
+          : undefined
+        const label = snippetAround(labelField, term)
 
         const displayString =
           !context || label.toLowerCase() === context.toLowerCase()

@@ -1,9 +1,5 @@
-import {
-  gatherOverlaps,
-  getSession,
-  stripTrackIds,
-  when,
-} from '@jbrowse/core/util'
+import { gatherOverlaps, getSession, stripTrackIds } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import {
   breakpointBpPerPx,
