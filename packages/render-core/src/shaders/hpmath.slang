@@ -51,21 +51,14 @@ public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
 
-// Snap a thin glyph's screen-y to a pixel center before converting to clip
-// space. Shared by arrow/line/chevron so the centering convention lives in one
-// place; rect uses pixel-edge snapping instead (solid fills need exact edges).
-public float snapPixelCenterY(float yScreen, float scrollY, float canvasHeight) {
-  float yPx = floor(yScreen - scrollY + 0.5) + 0.5;
-  return yPxToClipY(yPx, canvasHeight);
-}
-
 // Center a thin glyph on the *drawn* middle row of the box it annotates, given
 // the box's real center `centerY` and height `heightPx`. The box is rasterized
 // with the rect shader's edge snapping (top = floor(top+0.5), height =
 // floor(h+0.5)); reproducing that here lands the line/chevron exactly on the
 // box's center row for odd pixel heights (superCompact) instead of the ~1px
-// bias plain `snapPixelCenterY(centerY)` gives, and stays consistent (just
-// below the seam) for even heights — where a 1px line can't sit dead-center.
+// bias a plain pixel-center snap (`floor(centerY - scrollY + 0.5) + 0.5`) gives,
+// and stays consistent (just below the seam) for even heights — where a 1px line
+// can't sit dead-center.
 public float snapBoxCenterY(
   float centerY, float heightPx, float scrollY, float canvasHeight
 ) {
