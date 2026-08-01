@@ -89,7 +89,10 @@ describe('strokeArc mirrors the half-ellipse arc.slang measures', () => {
     strokeArc(down.ctx, 200, 600, anchorY, anchorY + arcH, true, false)
     // Canvas angles run clockwise on a y-down axis: [PI, 2PI] passes through
     // 3PI/2, which is above the centre; [0, PI] passes through PI/2, below.
-    expect([up.calls[0]!.start, up.calls[0]!.end]).toEqual([Math.PI, 2 * Math.PI])
+    expect([up.calls[0]!.start, up.calls[0]!.end]).toEqual([
+      Math.PI,
+      2 * Math.PI,
+    ])
     expect([down.calls[0]!.start, down.calls[0]!.end]).toEqual([0, Math.PI])
   })
 

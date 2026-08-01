@@ -258,11 +258,11 @@ takes `REF:LEN` rather than a bare `REF`. With a length, pggb additionally runs
 [`vcfwave`](https://github.com/vcflib/vcflib), and writes the result beside the
 raw file as `*.decomposed.vcf`. That is what the track above loads.
 
-What `vcfbub` does is worth stating precisely, because the name of the `-l`
-flag suggests otherwise. It does not reduce the file to level 0. It **pops** any
-site whose alleles run past `LEN`, emitting the nested sites inside it in its
-place, so records with `LV` above 0 are still there, and are there by design.
-The property that matters is the width cap: on this graph the longest reference
+What `vcfbub` does is worth stating precisely, because the name of the `-l` flag
+suggests otherwise. It does not reduce the file to level 0. It **pops** any site
+whose alleles run past `LEN`, emitting the nested sites inside it in its place,
+so records with `LV` above 0 are still there, and are there by design. The
+property that matters is the width cap: on this graph the longest reference
 allele goes from hundreds of kilobases to under `LEN`. Nothing is left wide
 enough to paint over the layer beneath it, which is why the track needs no
 display filter. `vcfwave` then realigns what survives into primitive variants.

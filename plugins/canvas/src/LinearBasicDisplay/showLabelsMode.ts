@@ -23,7 +23,7 @@ export const SHOW_LABELS_MODES = [
 export type ShowLabelsMode = (typeof SHOW_LABELS_MODES)[number]
 
 // Whether the mode admits each label kind at all. 'auto' admits both and defers
-// to the density thresholds; the model ands these with the density gate,
+// to the density thresholds; the model combines these with the density gate,
 // collapsed mode, and the fit ladder.
 export function modeCanShowName(mode: ShowLabelsMode) {
   return mode === 'auto' || mode === 'nameAndDescription' || mode === 'name'

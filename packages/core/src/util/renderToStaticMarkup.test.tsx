@@ -13,7 +13,7 @@ describe('renderToStaticMarkup', () => {
 
   // Pinned because two components (CrossHatches, MultiWiggleOverlayLines) are
   // written around it: SVG 1.1 fill/stroke take a <color>, which excludes
-  // rgba(), so the alpha is dropped rather than risking an unparseable fill.
+  // rgba(), so the alpha is dropped rather than risking an unparsable fill.
   it('strips the alpha from an rgba color', () => {
     expect(
       renderToStaticMarkup(

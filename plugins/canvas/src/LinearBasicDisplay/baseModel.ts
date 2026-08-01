@@ -71,10 +71,7 @@ import {
   maxBottom,
   scaleLaidOutData,
 } from './layout.ts'
-import {
-  modeCanShowDescription,
-  modeCanShowName,
-} from './showLabelsMode.ts'
+import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
   canvasTrackMenuItems,
   colorBySubMenuItems,
@@ -121,7 +118,6 @@ import type { FitStage } from './fitLadder.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'

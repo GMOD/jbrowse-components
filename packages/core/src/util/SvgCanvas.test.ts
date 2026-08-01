@@ -278,7 +278,9 @@ describe('ellipse', () => {
   const pathOf = (ctx: SvgCanvas) =>
     /d="([^"]*)"/
       .exec(ctx.getSerializedSvg())?.[1]
-      ?.replaceAll(/-?\d+\.?\d*(?:e[+-]\d+)?/g, m => String(Number(Number(m).toFixed(6))))
+      ?.replaceAll(/-?\d+\.?\d*(?:e[+-]\d+)?/g, m =>
+        String(Number(Number(m).toFixed(6))),
+      )
 
   // Paired-read arcs stroke a half ellipse; SVG's arc command takes separate
   // radii natively, so the export is the same curve rather than a flattening of
