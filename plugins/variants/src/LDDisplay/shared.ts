@@ -250,8 +250,29 @@ export default function sharedModelFactory(
        * shows a stuck loading spinner whenever the triangle is disabled. If the
        * EmptyState is ever moved outside `DisplayChrome`, revisit together.
        */
+      // reads the slot rather than the sibling `showLDTriangle` getter: that one
+      // lives in this same `.views()` block, where `self` isn't yet typed with
+      // it (see BaseLinearDisplay/CLAUDE.md on block-local `self` typing)
       get rendersCanvas(): boolean {
         return getConf(self, 'showLDTriangle')
+      },
+      /**
+       * #getter
+       * The same toggle, answering the *export* question rather than the scrim
+       * one. With the triangle off `shouldFetch` is false forever, so `rpcData`
+       * stays null and `dataCurrent` can never flip — and `awaitSvgReady` is an
+       * unbounded `when`, so one such track hangs the whole view's SVG export.
+       * Marking it terminal lets the export proceed; `LdSvgBody` already returns
+       * null on absent `rpcData`. Same hook, same reason, as the sequence
+       * display past base resolution.
+       *
+       * Deliberately not spelled `!self.rendersCanvas`: "paints no canvas" and
+       * "will never fetch" are independent axes that merely coincide here, and a
+       * display could well do the first without the second. Keying both on the
+       * slot keeps them independent while making the shared cause obvious.
+       */
+      get svgReadyExtraTerminal(): boolean {
+        return !getConf(self, 'showLDTriangle')
       },
       get isPrecomputedLD() {
         return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(

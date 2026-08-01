@@ -281,6 +281,32 @@ The **sequence** display adds one extra terminal disjunct — it overrides
 base-render threshold it shows a static "zoom in" message and issues no fetch,
 so `svgReady` alone would never resolve.
 
+### Every resting state that never fetches must be terminal
+
+A correct `dataCurrent` is not sufficient. `dataCurrent` answers "is the held
+data current"; it cannot answer "will data ever arrive". So the rule is one
+level up: **if a display can sit indefinitely in a state where its fetch trigger
+is false, that state has to reach `svgReady` some other way** — `error`,
+`regionTooLarge`, or `svgReadyExtraTerminal`. Otherwise one such track hangs the
+whole view's export, because `renderToSvg` awaits every display and
+`awaitSvgReady` has no time bound.
+
+Read a global display's `shouldFetch` and ask what leaves it false forever. Two
+shapes have shipped this bug:
+
+- **A user toggle in the gate.** LD's `shouldFetch` is
+  `showLDTriangle && !regionTooLarge`, so with the triangle off nothing ever
+  loads. It now overrides `svgReadyExtraTerminal` to `!showLDTriangle` — the
+  same hook, and the same reason, as sequence's `zoomedOut`.
+- **A failed prerequisite fetch.** HiC gates on `effectiveResolution`, which
+  exists only once a one-shot `CoreGetInfo` lands. That failure used to go to a
+  session snackbar, leaving `error` unset — permanent loading scrim, permanently
+  unresolved export. A prerequisite whose failure is terminal for the display
+  belongs in `setError`, not `notifyError`, so the display gets the shared error
+  phase and `svgReady` resolves through it. (And if it's retriable, drive it from
+  an autorun on `reloadCounter` so the chrome's retry button re-runs it — a
+  `reload()` that only clears the error drops straight back onto the scrim.)
+
 ### Displays outside the two LGV GPU mixins supply their own `dataCurrent`
 
 They don't track `loadedRegions`/`displayPhase` the same way, but they run the

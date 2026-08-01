@@ -141,6 +141,22 @@ MultiSampleVariant's byte gate went dead when `getByteEstimateConfig` landed in
 an `.actions()` block, and multi-row's `isCacheValid` sat in one for a long
 time, masked.
 
+**A `fetchNeeded` that declines to fetch must be woken by something the autorun
+already tracks.** `FetchVisibleRegions` tests
+`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits — so on a run
+where the block is uncovered, `isCacheValid`'s observables register no
+dependency. That is fine only because an uncovered block always reaches
+`fetchNeeded`, and a fetch bumps `fetchGeneration`, which the autorun tracks. An
+override that returns early **without** fetching breaks that chain and has to
+supply its own wake path from the autorun's existing dependency set
+(`view.visibleRegions`, `fetchGeneration`, `error`, `regionTooLarge`,
+`fetchCanceled`, `track.minimized`, or `rpcPropsCacheKey` via
+`SettingsInvalidate`). Both existing early returns do: sequence's `zoomedOut` is
+a function of `bpPerPx`, so `visibleRegions` moves with it; multi-sample
+variant's `!sourcesBase` clears through `SettingsInvalidate` when sources land,
+because `sourcesBase` is `rpcProps().sources`. This is the per-region twin of
+"the global-fetch trigger list must be read unconditionally" in ARCHITECTURE.md.
+
 **Only these two method-shaped hooks are exposed.** A _getter_ can't regress
 this way — MST throws at instantiation on a getter inside `.actions()` — which
 is one reason the byte gate's opt-in is the boolean getter `byteGateEnabled`
@@ -162,6 +178,18 @@ populated before the backing data exists. `FetchVisibleRegions` checks coverage
 against `view.visibleRegions` but requests `view.bufferedVisibleRegions` (wider,
 for smooth scrolling), so subsequent pans within the buffer require no re-fetch.
 
+`bufferedVisibleRegions` carries `reversed` alongside the widened bounds, and
+that is load-bearing rather than cosmetic: canvas stamps the fetch region's
+orientation onto its `rpcDataMap` entry (`reversedRegions`), which flips the
+label-overhang direction in layout and in the Flatbush hit index. It went
+missing once, when that getter was rewritten from a `{...block}` spread into an
+explicit object literal, and nothing caught it — every unit test in the area
+hands `setRpcData` a region by hand, so they all kept passing. Recording
+orientation at fetch time rather than reading the live view is correct because a
+flip replaces `displayedRegions`, so `DisplayedRegionsChange` refetches anyway.
+Pinned by the `bufferedVisibleRegions` case in the LGV model's
+`displayedRegion.reversed` describe block.
+
 ### Fan-out helpers — don't hand-roll the fetch loop
 
 Three exported helpers cover the shapes a `fetchNeeded` override needs. All keep
@@ -169,16 +197,18 @@ the literal RPC method name at the call site, so its typed args/return survive.
 
 | Helper                                | Shape                                                                               | Staleness guard                                | Users                                                                                                                                |
 | ------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `fetchEachRegion(self, needed, opts)` | one RPC per region, in parallel, wrapped in `fetchRegions`                          | **per region** — an early result still commits | manhattan, multi-row features                                                                                                        |
+| `fetchEachRegion(self, needed, opts)` | one RPC per region, in parallel, wrapped in `fetchRegions`                          | **per region** — an early result still commits | manhattan, multi-row features, sequence                                                                                              |
 | `fetchAllRegions(self, needed, opts)` | one batched RPC for all regions, results aligned to input order                     | one guard around the batch                     | wiggle, multi-wiggle (BigWig coalesces adjacent on-disk blocks across region boundaries, which the per-region fan-out can't exploit) |
-| `callEachRegion(needed, ctx, call)`   | the fan-out **only** — returns `{displayedRegionIndex, result}[]` in `needed` order | none; the caller owns it                       | MAF                                                                                                                                  |
+| `callEachRegion(needed, ctx, call)`   | the fan-out **only** — returns `{displayedRegionIndex, result}[]` in `needed` order | none; the caller owns it                       | MAF, alignments                                                                                                                      |
 
 `callEachRegion` is for a display that must run something _else_ under the same
 stop token, or make a cross-region decision before committing — MAF does both: a
 concurrent CDS-frame annotation fetch, then `pickSamplesResult` over the whole
 array (so it guards once around the batch rather than per region, since a
 partial commit would publish a sample set derived from a superseded viewport).
-Use it inside a `fetchRegions` work callback you already own. Reach for
+Alignments is the second case only: it unions each region's `newTagValues` into
+`colorTagMap` before committing, so it too guards once around the batch. Use it
+inside a `fetchRegions` work callback you already own. Reach for
 `fetchEachRegion` unless you need one of those two things.
 
 Forgetting a `ctx.isStale()` guard is a stale-data write, not just a wasted

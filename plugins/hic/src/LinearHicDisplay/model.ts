@@ -10,7 +10,7 @@ import {
   getRpcSessionId,
   getSession,
 } from '@jbrowse/core/util'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
@@ -19,6 +19,7 @@ import {
   installGlobalFetchAutorun,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
+import { autorun } from 'mobx'
 
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
@@ -613,36 +614,60 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           self.setLastDrawnViewport(offsetPx, bpPerPx)
         })
       },
+      /**
+       * #action
+       * One-shot header read: the file's normalization and binsize lists. Every
+       * contact fetch is gated on it (`shouldFetch` requires
+       * `effectiveResolution`, which only exists once `availableResolutions`
+       * lands), so a failure here is terminal for this display, not a
+       * degradation — hence `setError` rather than a session snackbar. Without
+       * it the display sat on the loading scrim forever with nothing said, and
+       * `svgReady` (which resolves on `error`) never settled, hanging the whole
+       * view's SVG export on an unbounded `awaitSvgReady`.
+       */
+      async fetchHicInfo() {
+        try {
+          const { rpcManager } = getSession(self)
+          const rpcSessionId = getRpcSessionId(self)
+          const { norms, resolutions } = (await rpcManager.call(
+            rpcSessionId,
+            'CoreGetInfo',
+            { adapterConfig: self.adapterConfig },
+          )) as { norms?: string[]; resolutions?: number[] }
+          if (isAlive(self)) {
+            if (norms) {
+              self.setAvailableNormalizations(norms)
+            }
+            if (resolutions) {
+              self.setAvailableResolutions(resolutions)
+              // No initial selection needed — `effectiveResolution` derives
+              // the binsize from bpPerPx + `resolutionBias` on every fetch.
+            }
+          }
+        } catch (e) {
+          console.error(e)
+          if (isAlive(self)) {
+            self.setError(e)
+          }
+        }
+      },
     }))
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { rpcManager } = getSession(self)
-            const rpcSessionId = getRpcSessionId(self)
-            const { norms, resolutions } = (await rpcManager.call(
-              rpcSessionId,
-              'CoreGetInfo',
-              { adapterConfig: self.adapterConfig },
-            )) as { norms?: string[]; resolutions?: number[] }
-            if (isAlive(self)) {
-              if (norms) {
-                self.setAvailableNormalizations(norms)
-              }
-              if (resolutions) {
-                self.setAvailableResolutions(resolutions)
-                // No initial selection needed — `effectiveResolution` derives
-                // the binsize from bpPerPx + `resolutionBias` on every fetch.
-              }
-            }
-          } catch (e) {
-            console.error(e)
-            if (isAlive(self)) {
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }
-        })()
+        // Tracks `reloadCounter` so the chrome's retry button re-reads the
+        // header too: `reload()` clears `error`, and without a re-read the
+        // display would drop straight back onto the permanent scrim.
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              void self.reloadCounter
+              // errors are captured in setError; fire-and-forget is safe
+              void self.fetchHicInfo()
+            },
+            { name: 'LinearHicDisplayInfo' },
+          ),
+        )
 
         installGlobalFetchAutorun(self, {
           // effectiveResolution is undefined until availableResolutions arrives

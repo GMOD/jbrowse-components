@@ -31,6 +31,7 @@ import {
   HeightModeMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  callEachRegion,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
@@ -3356,7 +3357,7 @@ export default function stateModelFactory(
       .actions(self => {
         // One RPC for both pileup and chain modes; the worker branches on
         // `linkedReads` (passed via rpcProps).
-        async function fetchFeaturesForRegion(
+        function fetchFeaturesForRegion(
           adapterConfig: Record<string, unknown>,
           region: Region,
           displayedRegionIndex: number,
@@ -3365,24 +3366,17 @@ export default function stateModelFactory(
           const session = getSession(self)
           const sequenceAdapter = getSequenceAdapter(session, region)
           const sessionId = getRpcSessionId(self)
-          const result = await session.rpcManager.call(
-            sessionId,
-            'RenderAlignmentData',
-            {
-              adapterConfig,
-              sequenceAdapter,
-              regions: [region],
-              ...self.rpcProps(),
-              stopToken,
-              // per-region status so the N parallel collapsed-intron fetches
-              // aggregate into one bar instead of clobbering each other's
-              // progress text (matches every other multi-region display)
-              statusCallback:
-                self.makeRegionStatusCallback(displayedRegionIndex),
-            },
-          )
-
-          return { displayedRegionIndex, result }
+          return session.rpcManager.call(sessionId, 'RenderAlignmentData', {
+            adapterConfig,
+            sequenceAdapter,
+            regions: [region],
+            ...self.rpcProps(),
+            stopToken,
+            // per-region status so the N parallel collapsed-intron fetches
+            // aggregate into one bar instead of clobbering each other's
+            // progress text (matches every other multi-region display)
+            statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
+          })
         }
 
         return {
@@ -3393,15 +3387,20 @@ export default function stateModelFactory(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
             await self.fetchRegions(needed, async (ctx: FetchContext) => {
-              const promises = needed.map(({ region, displayedRegionIndex }) =>
-                fetchFeaturesForRegion(
-                  self.adapterConfig,
-                  region,
-                  displayedRegionIndex,
-                  ctx.stopToken,
-                ),
+              // `callEachRegion` rather than `fetchEachRegion`: the tag-map
+              // union below is a cross-region decision, so this guards once
+              // around the whole batch instead of per region.
+              const results = await callEachRegion(
+                needed,
+                ctx,
+                (region, c, displayedRegionIndex) =>
+                  fetchFeaturesForRegion(
+                    self.adapterConfig,
+                    region,
+                    displayedRegionIndex,
+                    c.stopToken,
+                  ),
               )
-              const results = await Promise.all(promises)
               if (ctx.isStale()) {
                 return
               }

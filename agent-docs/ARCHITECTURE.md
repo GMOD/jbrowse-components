@@ -61,8 +61,9 @@ main:    model.rpcDataMap              (MST node, observable)
 Every canvas-drawing display **must** provide a Canvas2D draw function; the GPU
 shader path is an optional accelerator layered on top. Because SVG export runs
 the Canvas2D path, on-screen and exported pixels can't drift. Arc is the one
-non-canvas class — it paints JSX SVG on both paths; see
-[Display stacks](#display-stacks).
+non-canvas class *among LGV displays* — it paints JSX `<path>` elements on both
+paths (circular view's `ChordVariantDisplay` does the same off this axis
+entirely); see [Display stacks](#display-stacks).
 
 ## Vocabulary
 
@@ -220,6 +221,19 @@ invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
 re-runs the autorun but leaves `shouldFetch` false. `ArcFetchModel.reload()`
 clears `loadedRegionSignature` for exactly this reason (keeping `features`, so
 the stale arcs stay under the loading overlay instead of blanking).
+
+**The per-region twin: a `fetchNeeded` that declines to fetch must be woken by
+something `FetchVisibleRegions` already tracks.** That autorun tests
+`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits, so on a run
+where the block is uncovered `isCacheValid`'s observables register no
+dependency. It's safe only because an uncovered block always reaches
+`fetchNeeded`, and a fetch bumps `fetchGeneration` — which the autorun tracks. An
+override returning early **without** fetching breaks that chain and must supply
+its own wake path from the existing dependency set. Both in-tree cases do:
+sequence's `zoomedOut` moves with `bpPerPx`, so `visibleRegions` re-fires it;
+multi-sample variant's `!sourcesBase` clears through `SettingsInvalidate`,
+because `sourcesBase` *is* `rpcProps().sources`. Same failure mode as the global
+rule above — the autorun settles into a state nothing will wake it from.
 
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
 the backend factory
@@ -431,6 +445,17 @@ contract — the `svgReady`/`settled` freshness gates, the one permitted TypeScr
 narrow, `paintLayer`'s raster-vs-vector dispatch, the JSX-SVG exception classes,
 and model-scoped clip ids — is in
 [reference/SVG_EXPORT.md](reference/SVG_EXPORT.md).
+
+**`awaitSvgReady` has no time bound, so every resting state that never fetches
+must be terminal.** A correct `dataCurrent` says whether held data is current; it
+cannot say whether data will ever arrive. So read a display's fetch gate and ask
+what leaves it false indefinitely — a user toggle inside it (LD's
+`showLDTriangle`), a failed prerequisite whose error went to a session snackbar
+instead of `setError` (HiC's `CoreGetInfo`), a static "zoom in" mode (sequence).
+Each such state has to reach `svgReady` through `error`, `regionTooLarge`, or
+`svgReadyExtraTerminal`, or one track hangs the whole view's export with the
+dialog spinner up and nothing said. Minimized tracks are the one case already
+handled for you — `SVGLinearGenomeView` filters them out.
 
 ## `rpcProps()` / `gpuProps()` pattern
 

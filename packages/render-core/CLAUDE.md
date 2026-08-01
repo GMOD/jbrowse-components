@@ -159,6 +159,12 @@ documents only what bites when editing _this package_.
 - **Renderers stay stateless.** No per-region `Map` on a renderer class —
   delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
   data from the model's map passed into `renderBlocks(blocks, regions, state)`.
+  The one sanctioned exception is a cache written **exclusively by the upload
+  callback** and never patched in place (alignments' `sync(sources)`, on both its
+  GPU and Canvas2D backends): `RenderLifecycleMixin` bumps `renderTick` after
+  every upload, so the render autorun re-fires and the cache cannot stale. Still
+  forbidden: a cache populated from anywhere else, or one whose entries are
+  mutated. ARCHITECTURE.md "What not to do" carries the same rule.
 - **Upload memos are helpers, not hand-rolled `let`s.** The mixin gives a
   display one upload autorun, so every observable any upload reads re-fires all
   of them. Per-region maps diff through `createRegionUploadSync`; a monolithic

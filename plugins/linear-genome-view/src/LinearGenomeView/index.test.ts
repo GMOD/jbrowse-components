@@ -1077,6 +1077,103 @@ describe('displayedRegion.reversed → buildRenderBlocks wiring', () => {
       expect(r.reversed).toBe(!f.reversed)
     })
   })
+
+})
+
+// `bufferedVisibleRegions` is the single join between the view and the fetch
+// path: `MultiRegionDisplayMixin.FetchVisibleRegions` hands exactly these to
+// every per-region display's `fetchNeeded`, and they are what `loadedRegions`
+// records. Every field is load-bearing for some display, so the whole shape is
+// pinned here rather than left to whichever display happens to notice a loss.
+// It had no direct coverage at all until `reversed` went missing in a rewrite
+// (see below) — every display-level test constructs its own regions and so
+// cannot see this getter change under it.
+describe('bufferedVisibleRegions — the fetch-path contract', () => {
+  function viewOn(
+    regions: {
+      refName: string
+      start: number
+      end: number
+      reversed?: boolean
+    }[],
+    id: string,
+  ) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id,
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(
+      regions.map(r => ({ assemblyName: 'volvox', ...r })),
+    )
+    return model
+  }
+
+  it('clamps to the displayedRegion bounds rather than over-reaching it', () => {
+    // whole region on screen: the half-screen buffer has nowhere to go, so the
+    // fetch region is the displayed region exactly. An adapter queried past a
+    // contig end is the failure this prevents.
+    const model = viewOn([{ refName: 'ctgA', start: 1000, end: 2000 }], 'buf-1')
+    expect(model.bufferedVisibleRegions.map(b => b.region)).toEqual([
+      { refName: 'ctgA', start: 1000, end: 2000, assemblyName: 'volvox' },
+    ])
+  })
+
+  it('widens by half a screen on each side when there is room', () => {
+    const model = viewOn([{ refName: 'ctgA', start: 0, end: 50000 }], 'buf-2')
+    model.setNewView(1, 10000) // bpPerPx 1, offsetPx 10000
+    const bufferBp = Math.ceil(model.width * model.bpPerPx * 0.5)
+    expect(bufferBp).toBe(400)
+    const [visible] = model.visibleRegions
+    const [buffered] = model.bufferedVisibleRegions
+    expect(buffered!.region.start).toBe(Math.floor(visible!.start) - bufferBp)
+    expect(buffered!.region.end).toBe(Math.ceil(visible!.end) + bufferBp)
+  })
+
+  it('rounds to integer bounds at fractional bpPerPx', () => {
+    const model = viewOn([{ refName: 'ctgA', start: 0, end: 50000 }], 'buf-3')
+    model.setNewView(1.7, 3333)
+    for (const { region } of model.bufferedVisibleRegions) {
+      expect(Number.isInteger(region.start)).toBe(true)
+      expect(Number.isInteger(region.end)).toBe(true)
+    }
+  })
+
+  it('keeps displayedRegionIndex as the join key across regions', () => {
+    const model = viewOn(
+      [
+        { refName: 'ctgA', start: 0, end: 1000 },
+        { refName: 'ctgB', start: 0, end: 1000 },
+      ],
+      'buf-4',
+    )
+    model.showAllRegions()
+    expect(model.bufferedVisibleRegions.map(b => b.displayedRegionIndex)).toEqual(
+      model.visibleRegions.map(b => b.displayedRegionIndex),
+    )
+  })
+
+  // Orientation has to ride along with the fetch region, not just with the
+  // render blocks: canvas stamps it onto its rpcDataMap entry
+  // (`reversedRegions`), which flips label-overhang packing in layout and in
+  // the Flatbush hit index. It went missing when this getter was rewritten from
+  // a `{...block}` spread into an explicit object literal, and nothing caught
+  // it — every canvas test hands `setRpcData` a region by hand.
+  it('carries reversed, which canvas records as the fetch orientation', () => {
+    const fwd = viewOn([{ refName: 'ctgA', start: 1000, end: 2000 }], 'buf-5')
+    expect(fwd.bufferedVisibleRegions.every(b => !b.region.reversed)).toBe(true)
+
+    const rev = viewOn(
+      [{ refName: 'ctgA', start: 1000, end: 2000, reversed: true }],
+      'buf-6',
+    )
+    expect(rev.bufferedVisibleRegions.length).toBeGreaterThan(0)
+    expect(rev.bufferedVisibleRegions.every(b => b.region.reversed)).toBe(true)
+  })
 })
 
 // determined objectively by looking at

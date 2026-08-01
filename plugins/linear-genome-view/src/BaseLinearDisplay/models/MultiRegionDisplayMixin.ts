@@ -125,41 +125,6 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * This family's answer to the shared freshness question every display
-         * foundation must answer (`dataCurrent`): the held data corresponds to
-         * what is on screen right now. Here that is spatial — every visible block
-         * lies within a fetched region — plus `loadedRegions.size`, which rules
-         * out the vacuously-true empty viewport. Regions stream in one at a time,
-         * so this (not "the first datum arrived") is what keeps a
-         * multi-region/whole-genome export complete.
-         *
-         * Distinct from `viewportWithinLoadedData`, which is the raw coverage
-         * predicate the fetch autorun and the loading overlay use.
-         */
-        get dataCurrent(): boolean {
-          return this.viewportWithinLoadedData && self.loadedRegions.size > 0
-        },
-
-        /**
-         * #getter
-         * true once an off-screen (SVG) export can safely read this display's
-         * data. Policy single-sourced in `computeSvgReady`; this family supplies
-         * only its `dataCurrent` predicate. Off-screen renderers gate on it via
-         * `awaitSvgReady(model)` instead of inlining the condition.
-         */
-        get svgReady(): boolean {
-          return computeSvgReady(
-            {
-              error: self.error,
-              regionTooLarge: self.regionTooLarge,
-              extraTerminal: this.svgReadyExtraTerminal,
-            },
-            () => this.dataCurrent,
-          )
-        },
-
-        /**
-         * #getter
          * Overridable hook (default false): a subclass returns true to mark an
          * extra terminal state where off-screen export can proceed with no loaded
          * data. Sequence sets it when zoomed past base resolution — it renders a
@@ -199,7 +164,50 @@ export default function MultiRegionDisplayMixin() {
           return buildRenderBlocks(view.visibleRegions)
         },
       }))
+      // `dataCurrent` and `svgReady` sit in their own blocks, after everything
+      // they read, so each reads its siblings off `self` rather than `this`.
+      // Same shape as `GlobalFetchMixin`, and for the reason in CLAUDE.md ("a
+      // super-captured view is called bare"): a subclass that captures one of
+      // these and calls it with no receiver would get `undefined` for a `this`
+      // sibling. Nothing captures them today; the split is what keeps that true
+      // by construction instead of by luck.
       .views(self => ({
+        /**
+         * #getter
+         * This family's answer to the shared freshness question every display
+         * foundation must answer (`dataCurrent`): the held data corresponds to
+         * what is on screen right now. Here that is spatial — every visible block
+         * lies within a fetched region — plus `loadedRegions.size`, which rules
+         * out the vacuously-true empty viewport. Regions stream in one at a time,
+         * so this (not "the first datum arrived") is what keeps a
+         * multi-region/whole-genome export complete.
+         *
+         * Distinct from `viewportWithinLoadedData`, which is the raw coverage
+         * predicate the fetch autorun and the loading overlay use.
+         */
+        get dataCurrent(): boolean {
+          return self.viewportWithinLoadedData && self.loadedRegions.size > 0
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * true once an off-screen (SVG) export can safely read this display's
+         * data. Policy single-sourced in `computeSvgReady`; this family supplies
+         * only its `dataCurrent` predicate. Off-screen renderers gate on it via
+         * `awaitSvgReady(model)` instead of inlining the condition.
+         */
+        get svgReady(): boolean {
+          return computeSvgReady(
+            {
+              error: self.error,
+              regionTooLarge: self.regionTooLarge,
+              extraTerminal: self.svgReadyExtraTerminal,
+            },
+            () => self.dataCurrent,
+          )
+        },
+
         /**
          * #getter
          * The display's mutually-exclusive visual state, precedence single-sourced
@@ -447,6 +455,20 @@ export default function MultiRegionDisplayMixin() {
                 const loaded = untracked(() =>
                   self.loadedRegions.get(block.displayedRegionIndex),
                 )
+                // `&&` short-circuits, so on a run where the block is NOT
+                // covered `isCacheValid`'s observables go untracked — the same
+                // shape as the gated-trigger hazard in
+                // `installGlobalFetchAutorun`. It is safe here for a reason
+                // worth stating rather than rediscovering: an uncovered block
+                // always reaches `fetchNeeded` below, and every way that can
+                // end re-wakes this autorun through something it already
+                // tracks — a fetch bumps `fetchGeneration`, and the two
+                // displays whose `fetchNeeded` can decline (sequence on
+                // `zoomedOut`, variants before `sourcesBase` arrives) are woken
+                // by `view.visibleRegions` and by `SettingsInvalidate`
+                // respectively. A new early return in a `fetchNeeded` override
+                // has to satisfy that or the display wedges: see CLAUDE.md,
+                // "`isCacheValid` and `rpcProps` are views, not actions".
                 if (
                   isBlockCovered(loaded, block) &&
                   self.isCacheValid(block.displayedRegionIndex)

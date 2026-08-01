@@ -95,6 +95,24 @@ not `canvasDrawn`) are arc-local, so precedence and visuals stay single-sourced.
 Arc's fetch autorun is `error`-gated, so its `reload()` clears `error` to re-fire
 it. Without that override the shared error bar's retry would be dead.
 
+**The retry affordance is a contract, and `reload()` is the display's half of
+it.** `DisplayErrorBar`'s only action is `model.reload()`, so every state that
+can raise the error bar must be one `reload()` actually undoes — otherwise the
+button is present, looks live, and does nothing. Two shapes have failed it:
+
+- **A gate `reload()` doesn't clear.** Arc, above: `shouldFetch` is
+  `!regionTooLarge && !dataCurrent`, so the base `reload()`'s `reloadCounter`
+  bump refires the autorun into a no-op until `loadedRegionSignature` is dropped
+  too.
+- **Work `reload()` never re-runs.** HiC's normalization/binsize header read was
+  a bare `afterAttach` IIFE, so a retry cleared the error and dropped straight
+  back onto the permanent scrim — the header was never re-read. It now runs from
+  an autorun tracking `reloadCounter`, which is what makes the button real.
+  Pinned by `LinearHicDisplay/infoFetchFailure.test.ts`.
+
+The check when adding a display: raise each error it can produce, press retry,
+and confirm the display can actually leave that state.
+
 **Not on DisplayChrome, by design (non-LGV views).** Two distinct reasons, not to
 be conflated:
 

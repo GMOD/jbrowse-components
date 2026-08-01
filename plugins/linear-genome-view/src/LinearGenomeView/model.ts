@@ -1886,6 +1886,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 start: Math.max(dr.start, Math.floor(vr.start) - bufferBp),
                 end: Math.min(dr.end, Math.ceil(vr.end) + bufferBp),
                 assemblyName: vr.assemblyName,
+                // orientation rides along with the fetch region, not just with
+                // the render blocks: canvas records it on the rpcDataMap entry
+                // (`reversedRegions`) because label overhang packs toward lower
+                // bp in a flipped region. A flip mutates `displayedRegions`, so
+                // DisplayedRegionsChange refetches and the recorded flag can't
+                // go stale.
+                reversed: vr.reversed,
               },
               displayedRegionIndex: vr.displayedRegionIndex,
             }
