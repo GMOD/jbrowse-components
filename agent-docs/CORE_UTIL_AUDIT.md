@@ -121,7 +121,7 @@ Outside `util/` but found on the way:
 
 ## Open: latent / typing / contract
 
-Most of this section landed. What is left:
+Nearly all of this landed. What is genuinely left:
 
 - `renameRegions.ts:18` returns a dead MST node typed as a live `Region`. Every
   caller then reads properties off it, which MST refuses. Not reproduced in
@@ -134,23 +134,17 @@ Most of this section landed. What is left:
   `CrossHatches` / `MultiWiggleOverlayLines` drop their workarounds, but it
   changes exported pixels, so it needs a visual pass before regenerating
   snapshots.
-- `io/RemoteFileWithRangeCache.ts` — `joinChunk`'s comment promises one
-  duplicate fetch where the retry issues one per joined chunk.
-- `fileHandleStore.ts` has no delete path, so handles accumulate forever. (The
-  permanently-cached rejected `openDB` is fixed.)
-- `ResizeHandle.tsx:49` hand-rolls rAF coalescing with no unmount cleanup,
-  duplicating `useRafCommit` from the same directory.
+- `fileHandleStore.ts` has no delete path, so handles accumulate in IndexedDB
+  forever. Wiring deletion to a lifecycle (track removal? session close?) is a
+  design decision, not a mechanical fix. (The permanently-cached rejected
+  `openDB` is fixed.)
 - `useFocusOnInteraction` is bubble-phase, so a child's `stopPropagation`
   suppresses focus-on-click (menus, error bars). The comment now says so.
   Switching it to `{ capture: true }` would make focus survive those and let
   `ResizeHandle` drop its `data-gesture-owner` accommodation — a deliberate
   behavior change, not a bug fix, so it was left alone.
-- Value cycles through the util barrel (rollup TDZ shape): `openFeatureWidget.ts`
-  imports values from `./index.ts`, which re-exports it, and `io/index.ts`
-  imports `isElectron, isNode` from `../index.ts`, dragging the whole barrel into
-  anything importing `@jbrowse/core/util/io`. Moving `isElectron`/`isNode`/`rIC`
-  into a small `environment.ts` next to `isWebWorker.ts` breaks both. (The
-  `offscreenCanvasPonyfill` leg is gone with its dead code.) **These are not
+- `util/io` no longer imports the barrel directly, but still reaches it
+  transitively through `tracks.ts` and `types/index.ts`. **Cycles here are not
   theoretical** — `tracks.ts` re-exporting `getFileName` after its
   `../configuration` import produced exactly this failure
   (`Cannot read properties of undefined`), fixed by ordering the re-export first
@@ -236,6 +230,13 @@ collision where the exported one is unused.
 - The CLI guesser is realigned (`.gtf.gz`, bedGraph). The AllVsAll /
   MCScanBlocks / BlastTabular entries the audit wanted are hint-only in the
   browser too, by design.
+- `ResizeHandle` uses `useRafCommit` instead of hand-rolling rAF coalescing
+  without unmount cleanup, and has tests — which needed `config/jest/pointerEvents.js`,
+  since jsdom has neither a `PointerEvent` constructor (so `fireEvent.pointerMove`
+  drops clientX/clientY) nor `setPointerCapture`. Any other pointer-drag surface
+  is testable now.
+- `util/when.ts` is gone: a one-line re-export of mobx's `when`, and mobx is
+  already in `ReExports/list.ts`, so plugins got the host singleton anyway.
 
 ## Open: structural
 
@@ -248,10 +249,16 @@ collision where the exported one is unused.
   need the cast that defeats the brand. An `rgbaRed…` rename is still available
   but touches ~200 call sites in the vendored `color-bits`, where upstream names
   have sync value.
-- Three unrelated `shorten()`s. Five re-parsing `cssColorTo*` wrappers. (The
-  `getFileName` copies are down to the two that are not actually duplicates:
-  `LocalFileChooser`'s shows the *full* local path and returns `undefined` for
-  "no file", and `plugins/wiggle`'s takes a string.)
+- The five `cssColorTo*` wrappers each parse once and destructure differently;
+  they are five purpose-named functions over one shared parse, not duplication.
+  Only worth collapsing if a hot path is found calling two of them on the same
+  string — none was.
+
+Resolved from this section: the three `shorten()`s were a name collision, not
+duplication (now `truncateLabel` and `snippetAround`), and the `getFileName`
+copies are down to the two that are not duplicates — `LocalFileChooser`'s shows
+the *full* local path and returns `undefined` for "no file", `plugins/wiggle`'s
+takes a string.
 
 ## Verified clean (do not re-investigate)
 
