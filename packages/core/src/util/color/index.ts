@@ -9,20 +9,6 @@ import {
 import { namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
- * Algorithmically pick a contrasting text color that will
- * be visible on top of the given background color. Either
- * black or white.
- *
- * @param color - CSS color, i.e. one of: #nnn, #nnnnnn, rgb(), rgba(),
- *  hsl(), hsla(), or named color
- * @returns 'black' or 'white'
- */
-export function contrastingTextColor(color: string): string {
-  const luminance = getLuminance(color)
-  return luminance > 0.5 ? 'black' : 'white'
-}
-
-/**
  * The relative brightness of any point in a color space,
  * normalized to 0 for darkest black and 1 for lightest white.
  * Uses MUI's `getLuminance`, but adds support for named colors

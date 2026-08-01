@@ -165,18 +165,6 @@ export function assembleLocStringRaw(region: ParsedLocString) {
   return assembleLocStringWith(region)
 }
 
-/**
- * @deprecated renamed to {@link assembleLocStringRaw}. "Fast" named the reason
- * (skipping the formatter) rather than the contract (never display-formatted),
- * which read as an invitation to use it anywhere hot.
- */
-export function assembleLocStringFast(
-  region: ParsedLocString,
-  cb = (n: number): string | number => n,
-) {
-  return assembleLocStringWith(region, cb)
-}
-
 function assembleLocStringWith(
   region: ParsedLocString,
   cb = (n: number): string | number => n,

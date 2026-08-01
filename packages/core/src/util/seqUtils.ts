@@ -81,7 +81,6 @@ export function getFrame(
 }
 
 export const defaultStarts = ['ATG']
-export const defaultStops = ['TAA', 'TAG', 'TGA']
 export const defaultCodonTable = {
   TCA: 'S',
   TCC: 'S',

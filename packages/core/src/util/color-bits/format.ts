@@ -60,24 +60,6 @@ export function toHSLA(color: Color) {
   return { h, s, l, a }
 }
 
-export function formatHWBA(color: Color) {
-  rgbToHWB(getRed(color), getGreen(color), getBlue(color))
-  const h = buffer[0]
-  const w = buffer[1]
-  const b = buffer[2]
-  const a = getAlpha(color) / 255
-  return `hsla(${h} ${w}% ${b}% / ${a})`
-}
-
-export function toHWBA(color: Color) {
-  rgbToHWB(getRed(color), getGreen(color), getBlue(color))
-  const h = buffer[0]
-  const w = buffer[1]
-  const b = buffer[2]
-  const a = getAlpha(color) / 255
-  return { h, w, b, a }
-}
-
 /**
  * Returns [r, g, b] as floats in 0-1 range, suitable for GPU shader uniforms.
  */
@@ -118,22 +100,3 @@ function rgbToHSL(r: number, g: number, b: number) {
 }
 
 // https://stackoverflow.com/a/29463581/3112706
-function rgbToHWB(r: number, g: number, b: number) {
-  r /= 255
-  g /= 255
-  b /= 255
-  const w = Math.min(r, g, b)
-  const v = Math.max(r, g, b)
-  const black = 1 - v
-  if (v === w) {
-    buffer[0] = 0
-    buffer[1] = w
-    buffer[2] = black
-    return
-  }
-  const f = r === w ? g - b : g === w ? b - r : r - g
-  const i = r === w ? 3 : g === w ? 5 : 1
-  buffer[0] = (i - f / (v - w)) / 6
-  buffer[1] = w
-  buffer[2] = black
-}

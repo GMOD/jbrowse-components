@@ -438,8 +438,5 @@ export function checkStopTokenThrottled(checker?: StopTokenChecker) {
   }
 }
 
-/** @deprecated use {@link checkStopTokenThrottled} */
-export const checkStopToken2 = checkStopTokenThrottled
-
 // Keep old name as alias for backwards compatibility in external consumers
 export type LastStopTokenCheck = StopTokenChecker

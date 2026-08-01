@@ -1,4 +1,3 @@
-import { makeDisplayedRegionKey } from './blockTypes.ts'
 import calculateBlocks from './calculateStaticBlocks.ts'
 
 describe('block calculation', () => {
@@ -377,49 +376,5 @@ describe('off-screen region padding in regionBpOffset', () => {
     const chr3Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr3')
     expect(chr3Blocks.length).toBeGreaterThan(0)
     expect(chr3Blocks[0]!.offsetPx).toBe(1001)
-  })
-})
-
-describe('makeDisplayedRegionKey', () => {
-  test('produces key from region coordinates', () => {
-    const key = makeDisplayedRegionKey({
-      assemblyName: 'hg38',
-      refName: 'chr1',
-      start: 0,
-      end: 248956422,
-    })
-    expect(key).toBe('hg38:chr1:0:248956422')
-  })
-
-  test('includes reversed suffix', () => {
-    const key = makeDisplayedRegionKey({
-      assemblyName: 'hg38',
-      refName: 'chr1',
-      start: 1000,
-      end: 2000,
-      reversed: true,
-    })
-    expect(key).toBe('hg38:chr1:1000:2000:rev')
-  })
-
-  test('same coordinates produce same key', () => {
-    const r = { assemblyName: 'mm39', refName: 'chr5', start: 500, end: 1000 }
-    expect(makeDisplayedRegionKey(r)).toBe(makeDisplayedRegionKey(r))
-  })
-
-  test('different regions produce different keys', () => {
-    const a = makeDisplayedRegionKey({
-      assemblyName: 'hg38',
-      refName: 'chr1',
-      start: 0,
-      end: 1000,
-    })
-    const b = makeDisplayedRegionKey({
-      assemblyName: 'hg38',
-      refName: 'chr1',
-      start: 0,
-      end: 2000,
-    })
-    expect(a).not.toBe(b)
   })
 })

@@ -1,13 +1,3 @@
-export function makeDisplayedRegionKey(r: {
-  assemblyName: string
-  refName: string
-  start: number
-  end: number
-  reversed?: boolean
-}) {
-  return `${r.assemblyName}:${r.refName}:${r.start}:${r.end}${r.reversed ? ':rev' : ''}`
-}
-
 interface BlockData {
   key: string
   offsetPx: number
@@ -40,16 +30,6 @@ export interface InterRegionPaddingBlock extends BlockData {
 }
 
 export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
-
-export function blockToRegion(b: ContentBlock) {
-  return {
-    refName: b.refName,
-    start: b.start,
-    end: b.end,
-    assemblyName: b.assemblyName,
-    reversed: b.reversed,
-  }
-}
 
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 

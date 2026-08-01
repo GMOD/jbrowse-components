@@ -22,11 +22,9 @@ export {
   formatHEX,
   formatHEXA,
   formatHSLA,
-  formatHWBA,
   formatRGBA,
   toGLrgb,
   toHSLA,
-  toHWBA,
   toRGBA,
 } from './format.ts'
 export { alpha, blend, darken, getLuminance, lighten } from './functions.ts'

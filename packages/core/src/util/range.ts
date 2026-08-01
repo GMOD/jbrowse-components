@@ -55,23 +55,6 @@ export function doesIntersect2(
 }
 
 /**
- * Return whether the first region is completely contained within the second region
- *
- * @param left1 - candidate inner region left
- * @param right1 - candidate inner region right
- * @param left2 - candidate outer region left
- * @param right2 - candidate outer region right
- */
-export function isContainedWithin(
-  left1: number,
-  right1: number,
-  left2: number,
-  right2: number,
-) {
-  return left2 <= left1 && right2 >= right1
-}
-
-/**
  * Compute the expanded fetch range a tabix adapter must "redispatch" to when
  * features found in a query extend past the requested window. Returns the union
  * of the query with the bounds of every feature whose type is not in

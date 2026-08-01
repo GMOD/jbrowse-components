@@ -75,7 +75,7 @@ export async function toUrlSafeB64(str: string) {
 /**
  * writes the encrypted session, current datetime, and referer to DynamoDB
  */
-export async function shareSessionToDynamo(
+async function shareSessionToDynamo(
   session: unknown,
   url: string,
   referer: string,

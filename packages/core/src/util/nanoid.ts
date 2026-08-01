@@ -1,63 +1,6 @@
-// This file replaces `index.js` in bundlers like webpack or Rollup,
-// according to `browser` config in `package.json`.
-
-// This alphabet uses `A-Za-z0-9_-` symbols.
-// The order of characters is optimized for better gzip and brotli compression.
-// Same as in non-secure/index.js
-export const urlAlphabet =
-  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
-
-export const random = (bytes: number) =>
-  crypto.getRandomValues(new Uint8Array(bytes))
-
-export const customRandom = (
-  alphabet: string,
-  defaultSize: number,
-  getRandom: (bytes: number) => Uint8Array,
-) => {
-  // First, a bitmask is necessary to generate the ID. The bitmask makes bytes
-  // values closer to the alphabet size. The bitmask calculates the closest
-  // `2^31 - 1` number, which exceeds the alphabet size.
-  // For example, the bitmask for the alphabet size 30 is 31 (00011111).
-  // `Math.clz32` is not used, because it is not available in browsers.
-  const mask = (2 << (Math.log(alphabet.length - 1) / Math.LN2)) - 1
-  // Though, the bitmask solution is not perfect since the bytes exceeding
-  // the alphabet size are refused. Therefore, to reliably generate the ID,
-  // the random bytes redundancy has to be satisfied.
-
-  // Note: every hardware random generator call is performance expensive,
-  // because the system call for entropy collection takes a lot of time.
-  // So, to avoid additional system calls, extra bytes are requested in advance.
-
-  // Next, a step determines how many random bytes to generate.
-  // The number of random bytes gets decided upon the ID size, mask,
-  // alphabet size, and magic number 1.6 (using 1.6 peaks at performance
-  // according to benchmarks).
-
-  // `-~f => Math.ceil(f)` if f is a float
-  // `-~i => i + 1` if i is an integer
-  const step = -~((1.6 * mask * defaultSize) / alphabet.length)
-
-  return (size = defaultSize) => {
-    let id = ''
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    while (true) {
-      const bytes = getRandom(step)
-      // A compact alternative for `for (var i = 0; i < step; i++)`.
-      let j = step
-      while (j--) {
-        // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
-        id += alphabet[bytes[j]! & mask] || ''
-        if (id.length === size) {
-          return id
-        }
-      }
-    }
-  }
-}
-
-export const customAlphabet = (alphabet: string, size = 21) =>
-  customRandom(alphabet, size, random)
+// The web-crypto branch of nanoid (https://github.com/ai/nanoid, MIT), reduced
+// to the one generator we call. The custom-alphabet machinery was carried along
+// unused; restore it from upstream if a non-default alphabet is ever needed.
 
 export const nanoid = (size = 21) =>
   crypto.getRandomValues(new Uint8Array(size)).reduce((id, byte) => {

@@ -128,7 +128,6 @@ export {
   calculateRedispatchRange,
   doesIntersect2,
   intersection2,
-  isContainedWithin,
 } from './range.ts'
 export { dedupe } from './dedupe.ts'
 export { selectNamedRegions } from './selectNamedRegions.ts'
@@ -142,7 +141,6 @@ export {
   encodeSessionParam,
   fromUrlSafeB64,
   readSessionFromDynamo,
-  shareSessionToDynamo,
   toUrlSafeB64,
 } from './sessionSharing.ts'
 export { coarseStripHTML } from './coarseStripHTML.ts'
@@ -205,14 +203,7 @@ export { addAndShowTrack } from './addAndShowTrack.ts'
 export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'
 
-export {
-  collectTransferables,
-  createCanvas,
-  createImageBitmap,
-  drawImageOntoCanvasContext,
-  isDetachedBuffer,
-  isImageBitmap,
-} from './offscreenCanvasPonyfill.ts'
+export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
 export { isRpcResult } from './rpc.ts'
 export {
   aesDecrypt,
@@ -238,21 +229,6 @@ export {
   hashCode,
   objectHash,
 } from './mstUtils.ts'
-
-// do an array map of an iterable
-export function iterMap<T, U>(
-  iter: Iterable<T>,
-  func: (arg: T) => U,
-  sizeHint?: number,
-) {
-  const results = Array.from<U>({ length: sizeHint ?? 0 })
-  let counter = 0
-  for (const item of iter) {
-    results[counter] = func(item)
-    counter += 1
-  }
-  return results
-}
 
 export function stringify(
   {
@@ -324,7 +300,6 @@ export {
   complementTable,
   defaultCodonTable,
   defaultStarts,
-  defaultStops,
   generateCodonTable,
   getFrame,
   revcom,
@@ -374,17 +349,7 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
-export function getLayoutId({
-  sessionId,
-  trackInstanceId,
-}: {
-  sessionId: string
-  trackInstanceId: string
-}) {
-  return `${sessionId}-${trackInstanceId}`
-}
-
-export function getUriLink(value: { uri: string; baseUri?: string }) {
+function getUriLink(value: { uri: string; baseUri?: string }) {
   const { uri, baseUri = '' } = value
   let href: string
   try {
@@ -535,7 +500,6 @@ export {
   isFeature,
 } from './simpleFeature.ts'
 
-export { blobToDataURL } from './blobToDataURL.ts'
 export { saveAs } from './FileSaver/index.ts'
 export {
   type SaveSvgAsImageOptions,
@@ -548,19 +512,12 @@ export {
 } from './createStopTokenRotation.ts'
 export { createSharedSetup } from './createSharedSetup.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
-export {
-  abortBreakPoint,
-  checkAbortSignal,
-  isAbortException,
-  makeAbortError,
-  observeAbortSignal,
-} from './aborting.ts'
+export { isAbortException, makeAbortError } from './aborting.ts'
 export { linkify } from './linkify.ts'
 export {
   type ParsedLocString,
   UnknownRefNameError,
   assembleLocString,
-  assembleLocStringFast,
   assembleLocStringRaw,
   compareLocStrings,
   compareLocs,
@@ -573,7 +530,6 @@ export {
   type StopTokenChecker,
   type StopTokenSignal,
   checkStopToken,
-  checkStopToken2,
   checkStopTokenThrottled,
   createStopToken,
   createStopTokenChecker,
@@ -638,7 +594,6 @@ export {
   verifyPermission,
 } from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
-export { makeDisplayedRegionKey } from './blockTypes.ts'
 export { cmpStr } from './cmpStr.ts'
 export {
   diffTrackConfig,

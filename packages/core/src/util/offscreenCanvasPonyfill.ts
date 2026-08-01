@@ -1,16 +1,10 @@
-// This file is a ponyfill for the HTML5 OffscreenCanvas API.
-
 import { CanvasSequence } from 'canvas-sequencer-ts'
 
-import { isNode } from './index.ts'
-
-// Re-export transferable utilities for convenience
-export { collectTransferables, isDetachedBuffer } from './transferables.ts'
-
-export function isImageBitmap(value: unknown): value is ImageBitmap {
-  return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap
-}
-
+/**
+ * Paint a worker-produced image onto a 2d context: either a real
+ * ImageBitmap/canvas, or the serialized canvas-sequencer command list a worker
+ * without OffscreenCanvas sends instead.
+ */
 export function drawImageOntoCanvasContext(
   imageData: any,
   context: CanvasRenderingContext2D,
@@ -20,47 +14,5 @@ export function drawImageOntoCanvasContext(
     seq.execute(context)
   } else {
     context.drawImage(imageData as CanvasImageSource, 0, 0)
-  }
-}
-
-export function createCanvas(width: number, height: number) {
-  if (typeof OffscreenCanvas === 'function') {
-    return new OffscreenCanvas(width, height)
-  } else if (isNode) {
-    // @ts-expect-error
-    return nodeCreateCanvas(width, height)
-  } else {
-    const context = new CanvasSequence()
-    return {
-      width,
-      height,
-      getContext() {
-        return context
-      },
-    }
-  }
-}
-
-export async function createImageBitmap(canvas: any) {
-  if (typeof OffscreenCanvas === 'function') {
-    return (canvas as OffscreenCanvas).transferToImageBitmap()
-  } else if (isNode) {
-    const dataUri = canvas.toDataURL()
-    // @ts-expect-error
-    const img = new nodeImage()
-    return new Promise((resolve, reject) => {
-      img.onload = () => {
-        resolve(img)
-      }
-      img.onerror = reject
-      img.src = dataUri
-    })
-  } else {
-    const ctx = canvas.getContext('2d')
-    return {
-      height: canvas.height,
-      width: canvas.width,
-      serializedCommands: ctx.toJSON(),
-    }
   }
 }

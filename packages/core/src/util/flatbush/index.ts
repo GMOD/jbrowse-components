@@ -2,10 +2,8 @@
 //
 // JBrowse-local adaptations:
 // - TypeScript type annotations
-// - FlatQueue imported from our vendored copy
 // - detached-ArrayBuffer check in `from` with a helpful error message (worker
 //   transferables leave buffers detached)
-import FlatQueue from '../flatqueue/index.ts'
 
 type TypedArrayConstructor =
   | Int8ArrayConstructor
@@ -67,7 +65,6 @@ export default class Flatbush {
   private _boxes: TypedArray
   private _indices: IndexArray
   private _pos: number
-  private _queue: FlatQueue<number>
 
   /**
    * Recreate a Flatbush index from raw `ArrayBuffer` data.
@@ -184,9 +181,6 @@ export default class Flatbush {
       new Uint16Array(newData, 2, 1)[0] = nodeSize
       new Uint32Array(newData, 4, 1)[0] = numItems
     }
-
-    // a priority queue for k-nearest-neighbors queries
-    this._queue = new FlatQueue()
   }
 
   /**
@@ -431,107 +425,6 @@ export default class Flatbush {
       }
     }
   }
-
-  /**
-   * Search items in order of distance from the given point.
-   * @param filterFn An optional function for filtering the results.
-   * @returns An array of indices of items found.
-   */
-  neighbors(
-    x: number,
-    y: number,
-    maxResults = Infinity,
-    maxDistance = Infinity,
-    filterFn?: (index: number) => boolean,
-  ): number[] {
-    if (this._pos !== this._boxes.length) {
-      throw new Error('Data not yet indexed - call index.finish().')
-    }
-    const boxes = this._boxes
-    const levelBounds = this._levelBounds
-    const indices = this._indices
-    const q = this._queue
-    const nodeSize = this.nodeSize
-    const numItems4 = this.numItems * 4
-    const nodeSize4 = nodeSize * 4
-    const results: number[] = []
-    const maxDistSquared = maxDistance * maxDistance
-
-    // For a single nearest neighbor (maxResults === 1), track the closest leaf seen so far and use
-    // it as a tightened distance bound, skipping pushes of nodes/leaves that can't beat it
-    const trackNearest = maxResults === 1
-    let bound = maxDistSquared
-
-    // Tree nodes and leaves share the queue; encode leaves with LSB = 1 so we can tell them
-    // apart with `& 1`. Seed with the root node — any priority works since the queue is empty.
-    q.push((boxes.length - 4) << 1, 0)
-
-    while (q.length) {
-      const top = q.ids[0]!
-      // if the closest queued entry is a leaf, it's the next result in distance order
-      if (top & 1) {
-        q.pop()
-        results.push(top >> 1)
-        if (results.length === maxResults) {
-          break
-        }
-        continue
-      }
-
-      q.pop()
-      const nodeIndex = top >> 1
-      const isLeafLevel = nodeIndex < numItems4
-      const end = Math.min(
-        nodeIndex + nodeSize4,
-        upperBound(nodeIndex, levelBounds),
-      )
-
-      for (let pos = nodeIndex; pos < end; pos += 4) {
-        const minX = boxes[pos]!
-        const minY = boxes[pos + 1]!
-        const maxX = boxes[pos + 2]!
-        const maxY = boxes[pos + 3]!
-        const dx = Math.max(minX - x, x - maxX, 0)
-        const dy = Math.max(minY - y, y - maxY, 0)
-        const dist = dx * dx + dy * dy
-        if (dist > bound) {
-          continue
-        }
-
-        const childIndex = indices[pos >> 2]! | 0
-        if (isLeafLevel) {
-          if (filterFn === undefined || filterFn(childIndex)) {
-            q.push((childIndex << 1) | 1, dist) // leaf item (odd id)
-            if (trackNearest && dist < bound) {
-              bound = dist // tighten bound to the closest leaf so far
-            }
-          }
-        } else {
-          q.push(childIndex << 1, dist) // node (even id)
-        }
-      }
-    }
-
-    q.clear()
-    return results
-  }
-}
-
-/**
- * Binary search for the first value in the array bigger than the given.
- */
-function upperBound(value: number, arr: number[]): number {
-  let i = 0
-  let j = arr.length - 1
-  while (i < j) {
-    const m = (i + j) >> 1
-    if (arr[m]! > value) {
-      j = m
-    } else {
-      i = m + 1
-    }
-  }
-  return arr[i]!
 }
 
 /**
