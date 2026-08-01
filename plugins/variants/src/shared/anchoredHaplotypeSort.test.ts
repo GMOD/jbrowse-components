@@ -275,3 +275,59 @@ describe('sortSourcesAroundVariant', () => {
     expect(names(sorted)!.toSorted()).toEqual(names(sources)!.toSorted())
   })
 })
+
+// The third consumer of a haploid genotype, after the render loops and the
+// clustering matrix. All three have to agree that a bare "1" is a real allele on
+// HP0 and says nothing about HP1 — the render loops didn't, and nothing here
+// pinned it. 1000G chrX non-PAR is the canonical shape: haploid males beside
+// phased diploid females.
+describe('sortSourcesAroundVariant mixed ploidy', () => {
+  // Females expand to two haplotype rows, males to one — but maxPloidy is per
+  // file, so a male still gets an HP1 row with nothing to draw on it.
+  const sources: ProcessedSource[] = [
+    { name: 'FEMALE HP0', sampleName: 'FEMALE', HP: 0 },
+    { name: 'FEMALE HP1', sampleName: 'FEMALE', HP: 1 },
+    { name: 'MALE_ALT HP0', sampleName: 'MALE_ALT', HP: 0 },
+    { name: 'MALE_ALT HP1', sampleName: 'MALE_ALT', HP: 1 },
+    { name: 'MALE_REF HP0', sampleName: 'MALE_REF', HP: 0 },
+    { name: 'MALE_REF HP1', sampleName: 'MALE_REF', HP: 1 },
+  ]
+
+  test('a haploid alt outranks a haploid ref, and its absent haplotype sorts last', () => {
+    const payload = makePayload({
+      v1: { FEMALE: '1|0', MALE_ALT: '1', MALE_REF: '0' },
+    })
+    const sorted = sortSourcesAroundVariant({
+      ...payload,
+      sources,
+      anchorFeatureId: 'v1',
+      phased: true,
+    })
+    const order = names(sorted)!
+    // alt-carrying haplotypes lead: FEMALE HP0 (1) and MALE_ALT HP0 (1)
+    expect(order.slice(0, 2).sort()).toEqual(['FEMALE HP0', 'MALE_ALT HP0'])
+    // the reference haplotypes come next
+    expect(order.slice(2, 4).sort()).toEqual(['FEMALE HP1', 'MALE_REF HP0'])
+    // haplotypes the samples don't have rank last, with the no-calls
+    expect(order.slice(4).sort()).toEqual(['MALE_ALT HP1', 'MALE_REF HP1'])
+  })
+
+  test('a haploid call is not read as unphased', () => {
+    // An unphased call assigns no allele to either row, so it must rank below a
+    // haploid alt rather than beside it.
+    const payload = makePayload({
+      v1: { FEMALE: '0/1', MALE_ALT: '1', MALE_REF: '0' },
+    })
+    const sorted = sortSourcesAroundVariant({
+      ...payload,
+      sources,
+      anchorFeatureId: 'v1',
+      phased: true,
+    })
+    const order = names(sorted)!
+    expect(order[0]).toBe('MALE_ALT HP0')
+    expect(order.indexOf('MALE_REF HP0')).toBeLessThan(
+      order.indexOf('FEMALE HP0'),
+    )
+  })
+})

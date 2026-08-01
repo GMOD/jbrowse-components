@@ -178,3 +178,45 @@ describe('getPhasedGenotypeMatrix', () => {
     expect([...rows['HG001 HP1']!]).toEqual([1, 1, 1])
   })
 })
+
+// Mixed ploidy is the shape that broke the render loops (they painted a haploid
+// call as the black "Unphased" fill and invented an alt on the HP1 row a haploid
+// sample doesn't have). This path was already correct — but nothing pinned it,
+// which is exactly how the three consumers of a haploid genotype were free to
+// disagree. 1000G chrX non-PAR is the canonical instance: haploid males beside
+// phased diploid females.
+describe('getPhasedGenotypeMatrix mixed ploidy', () => {
+  const haploid = { isPhased: true, maxPloidy: 1 }
+
+  test('a haploid call fills its one haplotype row and no other', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { FEMALE: '0|1', MALE: '1' })],
+      sources: [
+        { name: 'FEMALE HP0', sampleName: 'FEMALE', HP: 0 },
+        { name: 'FEMALE HP1', sampleName: 'FEMALE', HP: 1 },
+        { name: 'MALE HP0', sampleName: 'MALE', HP: 0 },
+        { name: 'MALE HP1', sampleName: 'MALE', HP: 1 },
+      ],
+      sampleInfo: { FEMALE: diploid, MALE: haploid },
+    })
+    expect(rows['FEMALE HP0']![0]).toBe(0)
+    expect(rows['FEMALE HP1']![0]).toBe(1)
+    // the haploid call is real data on HP0 — not missing, and not unphased
+    expect(rows['MALE HP0']![0]).toBe(1)
+    // and says nothing about a haplotype the sample does not have
+    expect(rows['MALE HP1']![0]).toBeNaN()
+  })
+
+  test('a haploid reference call is 0, distinct from missing', async () => {
+    const rows = await build({
+      features: [makeFeature('v1', { MALE: '0', OTHER: '.' })],
+      sources: [
+        { name: 'MALE HP0', sampleName: 'MALE', HP: 0 },
+        { name: 'OTHER HP0', sampleName: 'OTHER', HP: 0 },
+      ],
+      sampleInfo: { MALE: haploid, OTHER: haploid },
+    })
+    expect(rows['MALE HP0']![0]).toBe(0)
+    expect(rows['OTHER HP0']![0]).toBeNaN()
+  })
+})

@@ -332,22 +332,45 @@ name got diploid rows the pasted cluster order couldn't be lined up against.
 `HP` is non-optional on the returned `HaplotypeSource`, so a caller indexing by
 haplotype takes it from the type instead of restating a `?? 2` of its own.
 
-Two things follow from expansion being **per-sample max ploidy**, and both cell
-loops have to honour them (`getPhasedColor` + the gate in front of it):
+### Mixed ploidy: four consumers, one contract
 
-- **Ploidy is per file, rows are per sample.** One triploid sample gives *every*
-  sample three rows, so a diploid one has no allele for its HP2. `getPhasedColor`
-  takes `alleles[HP]` as possibly-`undefined` and draws nothing there, same as a
-  sample with no genotype at the site. It used to read past the end and paint the
-  `undefined` as `SECONDARY_ALT_COLOR` — a phantom "other alt allele" on a
-  haplotype that doesn't exist.
+Expansion is **per-sample max ploidy**, so a file whose samples disagree about
+ploidy is the shape everything phased has to survive. It is not exotic: 1000
+Genomes chrX non-PAR carries **1233 haploid male genotypes beside 1271 phased
+diploid female ones**, per record.
+
+Two rules follow, and **four** places have to agree on them — the two cell
+loops, `readPhasedAlleleIndicators` (clustering), and `buildValueTable` (the
+anchored sort). Only the cell loops ever got them wrong; the other two were
+right but untested, which is precisely how the four were free to drift:
+
+- **Ploidy is per file, rows are per sample.** One triploid sample gives _every_
+  sample three rows, so a diploid one has no allele for its HP2.
+  `getPhasedColor` takes `alleles[HP]` as possibly-`undefined` and draws nothing
+  there, same as a sample with no genotype at the site. It used to read past the
+  end and paint the `undefined` as `SECONDARY_ALT_COLOR` — a phantom "other alt
+  allele" on a haplotype that doesn't exist.
 - **Haploid is phased.** A single-allele call (`1`, `23`) has nothing left to
   phase and gets exactly one expanded row, so it colors by its allele:
   `isPhasedOrHaploid` (no `/`), not `includes('|')`. Pangenome callsets are
   haploid per assembly path, and a file mixing those with diploid samples — or
-  chrY/chrM in a human callset — carries both. The old gate painted them with the
-  black "Unphased" fill, which the legend didn't even claim: `hasUnphased` counts
-  only a *called* `/` genotype, so those cells had no key entry at all.
+  chrY/chrM in a human callset — carries both. The old gate painted them with
+  the black "Unphased" fill, which the legend didn't even claim: `hasUnphased`
+  counts only a _called_ `/` genotype, so those cells had no key entry at all.
 
-Both are pinned in `computeVariantCells.test.ts` and
-`computeVariantMatrixCells.test.ts`.
+Pinned in all four: `computeVariantCells.test.ts`,
+`computeVariantMatrixCells.test.ts`, `getPhasedGenotypeMatrix.test.ts`, and
+`anchoredHaplotypeSort.test.ts` (each has a `mixed ploidy` block). Each block
+was checked against a knockout of its own path — the `includes('|')` gate for
+the three that have one, `started && hp > 0` for the char scan in
+`readPhasedAlleleIndicators` — and fails. Note the anchored sort is right twice
+over: dropping `hp < alleles.length` from `buildValueTable` still passes,
+because the table is prefilled `MISSING_VALUE` and `+undefined` is NaN, which
+falls through. That is belt-and-braces, not dead code. **A new fixture for
+anything phased should mix ploidies** — every fixture in the plugin was
+uniform-ploidy before this, which is the whole reason a bug this visible (half
+the rows on 1000G chrX) went unnoticed.
+
+LD reaches the same answer independently (`fillEncoded` in `getLDMatrix.ts`),
+coding a hemizygous call as dosage 2 while still counting it as the one allele
+it is — the comment there explains why dosage and allele totals part ways.
