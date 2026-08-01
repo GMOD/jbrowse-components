@@ -271,6 +271,15 @@ export {
   stitch,
 } from './seqUtils.ts'
 export { revlist } from './revlist.ts'
+// Part of the published ABI at v4.0.0 and v4.3.0 and dropped by a barrel
+// split, which is the same way `defaultCodonTable` went (ac47890743). Nothing in
+// this repo imports them from here, but the barrel is what external plugins
+// resolve against at runtime: jbrowse-plugin-msaview and jbrowse-plugin-mafviewer
+// both `import { useLocalStorage } from '@jbrowse/core/util'`, and on a host
+// without it that is `(0, PR.useLocalStorage) is not a function` when the panel
+// renders. The implementations never went anywhere -- only these lines did.
+export { useDebounce, useLocalStorage, useWidthSetter } from './hooks.ts'
+export { renderToStaticMarkup } from './renderToStaticMarkup.ts'
 export {
   codonTable,
   defaultCodonTable,
