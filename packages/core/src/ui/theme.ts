@@ -10,16 +10,19 @@ import type {
   ThemeOptions,
 } from '@mui/material/styles'
 
-type MaybePaletteColor = PaletteColor | undefined
-type Frames = [
+// [null, f1, f2, f3, f-3, f-2, f-1] — slot 0 unused so positive frames read as
+// .at(1/2/3) and negative frames fall out of JS negative-index semantics
+type FrameTuple<T> = [
   null,
-  MaybePaletteColor,
-  MaybePaletteColor,
-  MaybePaletteColor,
-  MaybePaletteColor,
-  MaybePaletteColor,
-  MaybePaletteColor,
+  T | undefined,
+  T | undefined,
+  T | undefined,
+  T | undefined,
+  T | undefined,
+  T | undefined,
 ]
+type Frames = FrameTuple<PaletteColor>
+type FramesOptions = FrameTuple<PaletteColorOptions>
 // plain '#rrggbb' string colors present (required) on Palette and (optional) on
 // PaletteOptions — declared once here and reused on both via the interfaces
 // below, so a new string color is added in a single place
@@ -80,8 +83,8 @@ declare module '@mui/material/styles' {
       T?: PaletteColorOptions
       N?: PaletteColorOptions
     }
-    framesCDS?: Frames
-    frames?: Frames
+    framesCDS?: FramesOptions
+    frames?: FramesOptions
     alignmentFill?: {
       pairLR?: string
       pairRL?: string
@@ -270,11 +273,11 @@ const alignmentFill = {
   pairRR: colorPairRR,
 }
 
-// plain-string domain colors. shared between `defaults` and `addMissingColors`
-// so a new color only needs adding here (plus the Palette interfaces) — these
-// can all be layered as a deepmerge base since a user theme's string value
-// cleanly overrides rather than partially merging
-const stringColorDefaults = {
+// plain-string domain colors, layered in by `addMissingColors` so a new color
+// only needs adding here (plus JBrowseStringColors) — these can all be layered
+// as a deepmerge base since a user theme's string value cleanly overrides
+// rather than partially merging
+const stringColorDefaults: JBrowseStringColors = {
   stopCodon,
   startCodon,
   codonNonsynonymous,
@@ -298,6 +301,10 @@ const stringColorDefaults = {
   featureDescription,
 }
 
+// the JBrowse-branded palette colors. Deliberately does NOT carry the string
+// colors or alignmentFill: those have light and dark variants, and
+// addMissingColors picks the right set off `palette.mode`. Baking the light
+// ones in here would shadow the dark set for any theme built on top of this.
 const defaults = {
   primary: midnight,
   secondary: grape,
@@ -305,17 +312,15 @@ const defaults = {
   quaternary: mandarin,
   highlight: mandarin,
   textHighlight,
-  ...stringColorDefaults,
   bases,
   frames,
   framesCDS,
-  alignmentFill,
 }
 
 // string color defaults that differ in dark mode (gentler gridlines/hover,
 // darker coverage). Layered under any dark theme — built-in or config-defined —
 // by addMissingColors so a custom dark theme inherits the dark-tuned values.
-const darkStringColorDefaults = {
+const darkStringColorDefaults: Partial<JBrowseStringColors> = {
   coverage: grey[700],
   gridlineMinor: gridlineMinorDark,
   gridlineMajor: gridlineMajorDark,
@@ -332,13 +337,6 @@ const darkStringColorDefaults = {
 // as glaring near-white blocks on a dark track)
 const darkAlignmentFill = { ...alignmentFill, pairLR: colorPairLRDark }
 
-// palette entries that differ in dark mode, shared by the dark themes
-const darkPalette = {
-  mode: 'dark' as const,
-  ...darkStringColorDefaults,
-  alignmentFill: darkAlignmentFill,
-}
-
 const stock = { palette: defaults }
 
 export const defaultThemes = {
@@ -353,11 +351,13 @@ export const defaultThemes = {
       tertiary: { main: grey[900] },
     },
   },
+  // the dark presets only declare `mode`; addMissingColors resolves the
+  // dark-tuned gridlines/hover/coverage/alignmentFill off it
   darkMinimal: {
     name: 'Dark (minimal)',
     palette: {
       ...defaults,
-      ...darkPalette,
+      mode: 'dark' as const,
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
       tertiary: { main: grey[900] },
@@ -367,7 +367,7 @@ export const defaultThemes = {
     name: 'Dark (stock)',
     palette: {
       ...defaults,
-      ...darkPalette,
+      mode: 'dark' as const,
     },
     components: {
       // enableColorOnDark keeps the AppBar tinted with primary.main in dark
@@ -409,16 +409,14 @@ function darkModeContrastOverride(
 // toolbars, so swap color="primary" icons and icon buttons to a text color in
 // dark mode. Targets the colorPrimary slot only, leaving default/secondary/
 // error icons untouched.
-function darkModePrimaryIconOverride() {
-  return {
-    colorPrimary: ({ theme }: { theme: Theme }) =>
-      theme.palette.mode === 'dark'
-        ? { color: theme.palette.text.primary }
-        : undefined,
-  }
+const darkModePrimaryIconOverride = {
+  colorPrimary: ({ theme }: { theme: Theme }) =>
+    theme.palette.mode === 'dark'
+      ? { color: theme.palette.text.primary }
+      : undefined,
 }
 
-export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
+export function createJBrowseBaseTheme(theme: ThemeOptions = {}): ThemeOptions {
   const themeP: ThemeOptions = {
     // palette is merged in via the final deepmerge(themeP, theme) below
     typography: {
@@ -474,10 +472,10 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
         defaultProps: {
           size: 'small',
         },
-        styleOverrides: darkModePrimaryIconOverride(),
+        styleOverrides: darkModePrimaryIconOverride,
       },
       MuiSvgIcon: {
-        styleOverrides: darkModePrimaryIconOverride(),
+        styleOverrides: darkModePrimaryIconOverride,
       },
       MuiInputBase: {
         defaultProps: {
@@ -601,7 +599,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
     },
   }
-  return deepmerge(themeP, theme ?? {}, { arrayMerge: overwriteArrayMerge })
+  return deepmerge(themeP, theme, { arrayMerge: overwriteArrayMerge })
 }
 
 // themes carry a display `name` (shown in the theme picker) on top of the
@@ -640,8 +638,7 @@ export function createJBrowseThemeFromArgs(args: SerializableThemeArgs = {}) {
 // every canvas render), where there is no MobX/React memoization — the
 // main-thread session `theme` getter is already an MST view. Bounded in
 // practice: the key space is (config theme × selected preset), a handful of
-// entries. Assumes JSON-serializable inputs — config themes carry no functions,
-// so JSON.stringify keying is stable.
+// entries.
 const themeCache = new Map<string, Theme>()
 
 function getThemeCacheKey(
@@ -650,8 +647,19 @@ function getThemeCacheKey(
   themeName: string,
 ): string {
   // key on the single selected theme definition, not the whole themes map,
-  // so configurable extraThemes that reuse a name still bust the cache
-  return JSON.stringify({ configTheme, selectedTheme, themeName })
+  // so configurable extraThemes that reuse a name still bust the cache.
+  // configTheme only participates on the 'default' path that reads it
+  return JSON.stringify(
+    {
+      configTheme: themeName === 'default' ? configTheme : undefined,
+      selectedTheme,
+      themeName,
+    },
+    // a plugin-supplied theme can carry style-override callbacks, which
+    // JSON.stringify drops — two such themes would otherwise share a key
+    (_key, value: unknown) =>
+      typeof value === 'function' ? value.toString() : value,
+  )
 }
 
 export function createJBrowseTheme(
@@ -665,17 +673,19 @@ export function createJBrowseTheme(
     return cached
   }
 
-  const theme = createTheme(
-    createJBrowseBaseTheme(
-      // only the 'default' theme draws from configTheme — the named themes are
-      // fixed presets and intentionally ignore config palette/spacing/etc
-      themeName === 'default'
-        ? deepmerge(themes.default!, augmentThemeColors(configTheme), {
-            arrayMerge: overwriteArrayMerge,
-          })
-        : addMissingColors(themes[themeName] ?? themes.default),
-    ),
-  )
+  const selected: ThemeOptions =
+    themes[themeName] ?? themes.default ?? defaultThemes.default
+  // only the 'default' theme draws from configTheme — the named themes are
+  // fixed presets and intentionally ignore config palette/spacing/etc. the
+  // config palette is augmented before merging so a bare `{main}` replaces the
+  // default's PaletteColor wholesale rather than splicing onto its light/dark
+  const merged =
+    themeName === 'default'
+      ? deepmerge(selected, augmentThemeColors(configTheme), {
+          arrayMerge: overwriteArrayMerge,
+        })
+      : selected
+  const theme = createTheme(createJBrowseBaseTheme(addMissingColors(merged)))
 
   themeCache.set(cacheKey, theme)
   return theme
@@ -694,11 +704,30 @@ const augmentableColorKeys = [
 
 const baseKeys = ['A', 'C', 'G', 'T', 'N'] as const
 
+// a theme's frame tuple replaces the default wholesale (deepmerge would splice
+// entry-by-entry onto stale shades), so slots it leaves out are filled from the
+// default here rather than left as holes — consumers index the tuple by frame
+// number and assume every slot resolves
+function augmentFrames(entry: FramesOptions, fallback: Frames): Frames {
+  const [, e1, e2, e3, e4, e5, e6] = entry
+  const [, d1, d2, d3, d4, d5, d6] = fallback
+  return [
+    null,
+    e1 ? augment(e1) : d1,
+    e2 ? augment(e2) : d2,
+    e3 ? augment(e3) : d3,
+    e4 ? augment(e4) : d4,
+    e5 ? augment(e5) : d5,
+    e6 ? augment(e6) : d6,
+  ]
+}
+
 // MUI by default allows strings like '#f00' for primary and secondary and
 // augments them to have light and dark variants but not for anything else, so
-// we augment them here. `bases` is augmented per-key too, so a config theme that
-// overrides only a base's `main` still gets a consistent contrastText rather
-// than inheriting the default green/blue/etc. shades it replaced (or undefined).
+// we augment them here. `bases` and the frame tuples are augmented per-entry
+// too, so a config theme that overrides only one entry's `main` still gets a
+// consistent contrastText rather than inheriting the shades it replaced (or
+// undefined).
 function augmentThemeColors(theme: ThemeOptions = {}) {
   const overlay: PaletteOptions = {}
   for (const key of augmentableColorKeys) {
@@ -718,21 +747,37 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
     }
     overlay.bases = resolvedBases
   }
+  const framesEntry = theme.palette?.frames
+  const framesCDSEntry = theme.palette?.framesCDS
+  if (framesEntry) {
+    overlay.frames = augmentFrames(framesEntry, frames)
+  }
+  if (framesCDSEntry) {
+    overlay.framesCDS = augmentFrames(framesCDSEntry, framesCDS)
+  }
+  // overwrite (don't concatenate) the frame tuples, which are present on both
+  // sides whenever the theme declares them
   return Object.keys(overlay).length > 0
-    ? deepmerge(theme, { palette: overlay })
+    ? deepmerge(
+        theme,
+        { palette: overlay },
+        { arrayMerge: overwriteArrayMerge },
+      )
     : theme
 }
 
-// fills in JBrowse-specific colors a user/config theme omits. string colors and
-// arrays layer underneath via deepmerge (the theme cleanly overrides them);
-// PaletteColor entries (tertiary/quaternary/highlight/textHighlight) and the
-// per-key `bases`/`alignmentFill` maps are resolved wholesale, since a deep
-// merge would splice the theme's `main` onto stale light/dark shades. primary/
-// secondary are intentionally left to MUI.
+// fills in JBrowse-specific colors a theme omits. Every theme goes through
+// here — built-in preset, config `extraThemes` entry, or the config `theme`
+// merged over the default — so the light/dark resolution below has one home.
+// string colors and arrays layer underneath via deepmerge (the theme cleanly
+// overrides them); PaletteColor entries (tertiary/quaternary/highlight/
+// textHighlight) and the per-key `bases`/`alignmentFill` maps are resolved
+// wholesale, since a deep merge would splice the theme's `main` onto stale
+// light/dark shades. primary/secondary are intentionally left to MUI.
 function addMissingColors(theme: ThemeOptions = {}) {
   const { palette } = theme
-  // a config-defined theme can opt into dark mode without spreading the built-in
-  // darkPalette, so pick the dark-tuned defaults off its declared mode
+  // a theme opts into dark mode by declaring only `mode`; the dark-tuned
+  // gridlines/hover/coverage/alignmentFill follow from it
   const isDark = palette?.mode === 'dark'
   const resolved = deepmerge(
     theme,

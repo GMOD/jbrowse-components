@@ -146,7 +146,7 @@ test('config-defined dark theme inherits dark-tuned color defaults', () => {
     {
       myDark: {
         name: 'My Dark',
-        // opts into dark mode without spreading the built-in darkPalette
+        // declares only `mode`, no dark-tuned colors of its own
         palette: { mode: 'dark', primary: { main: '#abcdef' } },
       },
     },
@@ -161,6 +161,95 @@ test('config-defined dark theme inherits dark-tuned color defaults', () => {
   expect(fromArgs.palette.alignmentFill.pairLR).toBe(
     customDark.palette.alignmentFill.pairLR,
   )
+})
+
+test('top-level config theme opting into dark mode gets dark-tuned defaults', () => {
+  const light = createJBrowseTheme()
+  const darkStock = createJBrowseTheme({}, undefined, 'darkStock')
+  const configDark = createJBrowseTheme({ palette: { mode: 'dark' } })
+  const { palette } = configDark
+  expect(palette.mode).toBe('dark')
+  expect(palette.coverage).toBe(darkStock.palette.coverage)
+  expect(palette.gridlineMinor).toBe(darkStock.palette.gridlineMinor)
+  expect(palette.featureHover).toBe(darkStock.palette.featureHover)
+  expect(palette.deletion).toBe(darkStock.palette.deletion)
+  expect(palette.alignmentFill.pairLR).toBe(
+    darkStock.palette.alignmentFill.pairLR,
+  )
+  expect(palette.gridlineMinor).not.toBe(light.palette.gridlineMinor)
+})
+
+test('config theme can still override an individual dark string color', () => {
+  const theme = createJBrowseTheme({
+    palette: { mode: 'dark', coverage: '#ff0000' },
+  })
+  expect(theme.palette.coverage).toBe('#ff0000')
+})
+
+// SVG export rebuilds the theme by passing the *named* theme's raw options as
+// configTheme, leaving themeName at 'default' — so it has to resolve the same
+// colors the on-screen theme did
+test('svg-export rebuild of a config dark theme matches the on-screen theme', () => {
+  const myDark = {
+    name: 'My Dark',
+    palette: { mode: 'dark' as const, primary: { main: '#abcdef' } },
+  }
+  const onScreen = createJBrowseTheme(
+    {},
+    { ...defaultThemes, myDark },
+    'myDark',
+  )
+  const svg = createJBrowseTheme(myDark)
+  expect(svg.palette.gridlineMinor).toBe(onScreen.palette.gridlineMinor)
+  expect(svg.palette.coverage).toBe(onScreen.palette.coverage)
+  expect(svg.palette.alignmentFill.pairLR).toBe(
+    onScreen.palette.alignmentFill.pairLR,
+  )
+})
+
+// a config `extraThemes` entry may be named 'default', replacing the built-in
+// one; it still has to come out with the JBrowse palette extensions renderers
+// read unconditionally (theme.palette.framesCDS.map(...) etc)
+test('a themes map whose default lacks jbrowse colors still resolves them', () => {
+  const theme = createJBrowseTheme(
+    {},
+    { default: { name: 'Bare', palette: { primary: { main: '#abcdef' } } } },
+  )
+  const { palette } = theme
+  expect(palette.primary.main).toBe('#abcdef')
+  expect(palette.frames).toHaveLength(7)
+  expect(palette.framesCDS).toHaveLength(7)
+  expect(palette.bases.A.main).toBeTruthy()
+  expect(palette.coverage).toBeTruthy()
+  expect(palette.alignmentFill.pairRR).toBeTruthy()
+})
+
+test('augments a custom frame color and keeps the tuple length', () => {
+  const stock = createJBrowseTheme()
+  const theme = createJBrowseTheme({
+    palette: {
+      framesCDS: [
+        null,
+        { main: '#123456' },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      ],
+    },
+  })
+  const { framesCDS, frames } = theme.palette
+  expect(framesCDS).toHaveLength(7)
+  expect(framesCDS[1]!.main).toBe('#123456')
+  expect(framesCDS[1]!.contrastText).toBeTruthy()
+  // slots the override left out fall back to the default rather than a hole,
+  // since consumers index the tuple by frame number and assume every slot
+  // resolves
+  expect(framesCDS[2]!.main).toBe(stock.palette.framesCDS[2]!.main)
+  expect(framesCDS[6]!.main).toBe(stock.palette.framesCDS[6]!.main)
+  // the untouched tuple keeps its defaults
+  expect(frames[1]!.main).toBe(stock.palette.frames[1]!.main)
 })
 
 test('orientation alignmentFill colors present for named themes', () => {
