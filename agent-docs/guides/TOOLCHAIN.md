@@ -34,9 +34,13 @@ itself to 7.
 
 # Project references
 
-Every `tsconfig.build.esm.json` is `composite: true` and carries a `references`
-array mirroring its package.json `workspace:` deps. `tsconfig.build.json` at the
-root is the solution file listing all 52 projects.
+Every `tsconfig.build.esm.json` is `extends` plus a `references` array mirroring
+its package.json `workspace:` deps — nothing else. The compiler options live in
+`tsconfig.base.esm.json` at the root, which uses `${configDir}` so `outDir`,
+`rootDir`, `include`, and `exclude` resolve against the extending package rather
+than the root. The two packages that run in node and import `node:*` extend
+`tsconfig.base.esm.node.json` instead; the generator decides which.
+`tsconfig.build.json` at the root is the solution file listing all 53 projects.
 
 Without references each package resolves its workspace deps to **source**
 (package.json `main` is `src/index.ts`), so `tsc` re-parses and re-checks each
@@ -44,8 +48,10 @@ dependency's whole source tree once per dependent — `plugins/gccontent` has 14
 source files of its own and used to load 2784. A cold whole-repo build went from
 **93.7s wall / 813s CPU** to **14.2s / 96s**.
 
-Don't hand-edit the `references` arrays — run `pnpm gen-tsconfig-refs`, which
-derives them from package.json. CI runs it with `--check`.
+Don't hand-edit those files at all — `pnpm gen-tsconfig-refs` writes each one
+whole from package.json, so anything added by hand is dropped on the next run.
+CI runs it with `--check`. A per-package compiler option belongs in one of the
+two base configs.
 
 ## Module augmentations must be reachable from the package entry
 

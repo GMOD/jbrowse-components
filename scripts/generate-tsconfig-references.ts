@@ -7,6 +7,9 @@
 // re-checks each dependency's entire source tree once per dependent. References
 // make it consume the dependency's emitted `.d.ts` instead.
 //
+// Everything else in those files lives in `tsconfig.base.esm.json`, so a
+// package config is `extends` plus the array below and nothing can drift.
+//
 // Run with `--check` in CI to fail on drift instead of rewriting.
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -16,6 +19,13 @@ import { format } from 'prettier'
 const check = process.argv.includes('--check')
 const root = join(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'plugins', 'products', 'example-plugins']
+
+// Packages that run in node and import `node:*`, so they need @types/node in
+// their build program. Everything else builds for the browser.
+const nodePackages = new Set([
+  '@jbrowse/text-indexing-core',
+  '@jbrowse/text-indexing',
+])
 
 interface PackageJson {
   name?: string
@@ -45,7 +55,9 @@ for (const workspaceDir of workspaceDirs) {
 }
 
 const problems: string[] = []
-for (const dir of [...dirByPackageName.values()].sort()) {
+for (const [packageName, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
+  a.localeCompare(b),
+)) {
   const pkg = readJson<PackageJson>(join(root, dir, 'package.json'))
   const references = Object.entries({
     ...pkg.dependencies,
@@ -58,18 +70,20 @@ for (const dir of [...dirByPackageName.values()].sort()) {
     .sort()
     .map(path => ({ path: `${path}/tsconfig.build.esm.json` }))
 
-  const configPath = join(root, dir, 'tsconfig.build.esm.json')
-  const current = readFileSync(configPath, 'utf8')
-  const config = JSON.parse(current) as {
-    compilerOptions: Record<string, unknown>
-    references?: { path: string }[]
+  // Written whole, not patched: the only per-package content is `references`,
+  // so anything hand-added here is drift and gets dropped.
+  const base = nodePackages.has(packageName)
+    ? 'tsconfig.base.esm.node.json'
+    : 'tsconfig.base.esm.json'
+  const config: { extends: string; references?: { path: string }[] } = {
+    extends: `${relative(dir, '.')}/${base}`,
   }
-  config.compilerOptions.composite = true
   if (references.length > 0) {
     config.references = references
-  } else {
-    delete config.references
   }
+
+  const configPath = join(root, dir, 'tsconfig.build.esm.json')
+  const current = readFileSync(configPath, 'utf8')
   const updated = await format(JSON.stringify(config), {
     filepath: configPath,
   })

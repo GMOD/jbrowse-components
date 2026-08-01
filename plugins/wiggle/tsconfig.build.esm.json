@@ -1,14 +1,5 @@
 {
-  "extends": "../../tsconfig",
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
-  "include": ["src/**/*.ts*", "src/**/*.js*"],
-  "compilerOptions": {
-    "outDir": "esm",
-    "rootDir": "src",
-    "paths": {},
-    "noEmit": false,
-    "composite": true
-  },
+  "extends": "../../tsconfig.base.esm.json",
   "references": [
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },

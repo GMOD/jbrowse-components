@@ -1,0 +1,18 @@
+// Shared by every package's `tsconfig.build.esm.json`, which then carries
+// nothing but its generated `references` array (see
+// scripts/generate-tsconfig-references.ts). `${configDir}` resolves against the
+// *extending* config, so the paths below land in each package, not here.
+{
+  "extends": "./tsconfig.json",
+  "include": ["${configDir}/src/**/*.ts*", "${configDir}/src/**/*.js*"],
+  "exclude": [
+    "${configDir}/src/**/*.test.ts*",
+    "${configDir}/src/**/*.test.js*"
+  ],
+  "compilerOptions": {
+    "outDir": "${configDir}/esm",
+    "rootDir": "${configDir}/src",
+    "noEmit": false,
+    "composite": true
+  }
+}

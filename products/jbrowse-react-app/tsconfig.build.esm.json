@@ -1,11 +1,5 @@
 {
-  "extends": "./tsconfig",
-  "compilerOptions": {
-    "outDir": "esm",
-    "paths": {},
-    "noEmit": false,
-    "composite": true
-  },
+  "extends": "../../tsconfig.base.esm.json",
   "references": [
     { "path": "../../packages/app-core/tsconfig.build.esm.json" },
     { "path": "../../packages/core/tsconfig.build.esm.json" },

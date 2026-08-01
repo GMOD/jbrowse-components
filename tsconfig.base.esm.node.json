@@ -1,0 +1,10 @@
+// For the packages that run in node rather than the browser and import `node:*`
+// modules. Which packages extend this is decided in
+// scripts/generate-tsconfig-references.ts; a package that starts importing
+// `node:*` without being listed there fails its build with TS2591.
+{
+  "extends": "./tsconfig.base.esm.json",
+  "compilerOptions": {
+    "types": ["jest", "node"]
+  }
+}

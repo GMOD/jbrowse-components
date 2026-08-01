@@ -1,15 +1,5 @@
 {
-  "extends": "../../tsconfig",
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
-  "include": ["src/**/*.ts*", "src/**/*.js*"],
-  "compilerOptions": {
-    "types": ["node", "jest"],
-    "outDir": "esm",
-    "rootDir": "src",
-    "paths": {},
-    "noEmit": false,
-    "composite": true
-  },
+  "extends": "../../tsconfig.base.esm.json",
   "references": [
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/text-indexing/tsconfig.build.esm.json" }
