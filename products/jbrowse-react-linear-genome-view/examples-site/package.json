@@ -18,6 +18,7 @@
     "@jbrowse/core": "workspace:*",
     "@jbrowse/mobx-state-tree": "^6.0.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:*",
+    "@jbrowse/plugin-wiggle": "workspace:*",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
     "@r2wc/react-to-web-component": "^2.1.1",
     "astro": "^7.1.6",

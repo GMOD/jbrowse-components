@@ -2496,6 +2496,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:*
         version: link:../../../plugins/linear-genome-view
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:*
+        version: link:../../../plugins/wiggle
       '@jbrowse/react-linear-genome-view2':
         specifier: workspace:*
         version: link:..

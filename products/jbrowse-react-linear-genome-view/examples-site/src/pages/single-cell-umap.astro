@@ -1,0 +1,15 @@
+---
+import Example from '../examples/SingleCellUmap.tsx'
+import code from '../examples/SingleCellUmap.tsx?raw'
+import { getPage } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('single-cell-umap')
+---
+
+<Layout page={page}>
+  <Section slug="single-cell-umap" code={code}>
+    <Example client:only="react" />
+  </Section>
+</Layout>

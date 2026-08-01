@@ -419,6 +419,19 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'single-cell-umap',
+    title: 'Single-cell UMAP',
+    description:
+      'A UMAP of 5k PBMCs beside per-cell-type coverage. Selecting clusters filters the coverage rows, and clicking a gene colors the cells by its expression.',
+    group: 'Real-world demos',
+    sections: [
+      {
+        slug: 'single-cell-umap',
+        title: 'Single-cell UMAP linked to coverage',
+      },
+    ],
+  },
+  {
     slug: 'pan-ukb-gwas',
     title: 'Pan-UKB GWAS',
     description:

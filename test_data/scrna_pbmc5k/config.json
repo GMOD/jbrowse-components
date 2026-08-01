@@ -1,0 +1,291 @@
+{
+  "plugins": [
+    {
+      "name": "Zarr",
+      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": [
+        "GRCh38"
+      ],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "P6R5xbRqRr",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "ncbi_refseq_hg38",
+      "name": "NCBI RefSeq genes",
+      "category": [
+        "Annotation"
+      ],
+      "type": "FeatureTrack",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "trackId": "pbmc5k_scrna_pseudobulk_hg38",
+      "name": "scRNA pseudobulk by cell type (10x 5k PBMC)",
+      "type": "MultiQuantitativeTrack",
+      "category": [
+        "Single cell"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 T",
+            "group": "T cell",
+            "color": "#1f77b4",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 T",
+            "group": "T cell",
+            "color": "#279e68",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "NK",
+            "color": "#d62728",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/NK.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "B",
+            "group": "B cell",
+            "color": "#ff7f0e",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/B.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD14 Mono",
+            "group": "Monocyte",
+            "color": "#8c564b",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD14_Mono.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD16 Mono",
+            "group": "Monocyte",
+            "color": "#e377c2",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD16_Mono.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "cDC",
+            "group": "Dendritic",
+            "color": "#9467bd",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/cDC.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "pDC",
+            "group": "Dendritic",
+            "color": "#17becf",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/pDC.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Platelet",
+            "group": "Platelet",
+            "color": "#7f7f7f",
+            "uri": "https://jbrowse.org/demos/scrna_pbmc5k/Platelet.bw"
+          }
+        ]
+      },
+      "displayDefaults": {
+        "defaultRendering": "multirowxy",
+        "height": 330
+      }
+    },
+    {
+      "trackId": "pbmc5k_scrna_percell_hg38",
+      "name": "Per-cell coverage, 4390 cells (marker loci)",
+      "type": "MultiQuantitativeTrack",
+      "category": [
+        "Single cell"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "adapter": {
+        "type": "MultiWiggleZarrAdapter",
+        "uri": "https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr"
+      },
+      "displayDefaults": {
+        "defaultRendering": "multirowdensity",
+        "minScore": 0,
+        "maxScore": 4,
+        "height": 420
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "pbmc5k_scatac_pseudobulk_hg38",
+      "name": "Single-cell ATAC pseudobulk by cell type (10x 5k PBMC, SnapATAC2)",
+      "category": [
+        "Single cell",
+        "Chromatin accessibility"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Memory",
+            "group": "T cell",
+            "color": "#1f77b4",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Memory.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 Naive",
+            "group": "T cell",
+            "color": "#ff7f0e",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Naive.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Memory",
+            "group": "T cell",
+            "color": "#279e68",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 Naive",
+            "group": "T cell",
+            "color": "#d62728",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD14 Mono",
+            "group": "Myeloid",
+            "color": "#aa40fc",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD16 Mono",
+            "group": "Myeloid",
+            "color": "#8c564b",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "MAIT",
+            "group": "T cell",
+            "color": "#e377c2",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/MAIT.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Memory B",
+            "group": "B cell",
+            "color": "#b5bd61",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Memory_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK",
+            "group": "NK",
+            "color": "#17becf",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/NK.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Naive B",
+            "group": "B cell",
+            "color": "#aec7e8",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "cDC",
+            "group": "Myeloid",
+            "color": "#ffbb78",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/cDC.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "pDC",
+            "group": "Myeloid",
+            "color": "#98df8a",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/pDC.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "displayId": "pbmc5k_scatac_pseudobulk_hg38-MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowxy",
+          "height": 400
+        }
+      ]
+    }
+  ]
+}

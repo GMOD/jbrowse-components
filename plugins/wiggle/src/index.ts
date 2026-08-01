@@ -109,6 +109,7 @@ export type {
 } from './shared/WiggleFamilySvg.tsx'
 export { useWiggleMouseHandlers } from './shared/useWiggleMouseHandlers.ts'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
+export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'
 
 export type {
   SourceRenderData,
