@@ -433,6 +433,15 @@ export const viewFields: Record<string, FieldRecipe> = {
     GRAPH_BUBBLE_SPREADS,
     'Sets a floor on how long a node is drawn in the force layout, so a short allele is a visible arm rather than a speck. Does nothing in the anchored layouts, which place a node from its coordinates.',
   ),
+  // a switch rather than a select, so it states its own state instead of naming
+  // an option
+  drawPaths: value =>
+    typeof value === 'boolean'
+      ? {
+          path: `${GRAPH_SETTINGS} → Draw paths on edges (${value ? 'on' : 'off'})`,
+          note: 'Draws one stroke per P/W record across every edge it crosses, keyed by sample. Needs a GFA that states its paths: an rGFA and an indexed cut both carry segments and links only.',
+        }
+      : undefined,
   // the select lists the GFA's own path names, so the figure's value IS the
   // option a reader picks
   referencePath: value =>

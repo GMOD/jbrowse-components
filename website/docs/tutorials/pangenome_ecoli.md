@@ -636,7 +636,7 @@ Finally, a segment carried by several assemblies draws on one row: sample rows
 put it on the first path that walks it, and the others are listed in the node
 popup.
 
-<Figure caption="The same 3 kb of K12 at the colanic acid cluster, cut from the two graphs this build produces. Left, the minigraph rGFA: one backbone segment under the whole window and one 16.4 kb allele leaving it. Right, the pggb graph: a node at every variant, and the segments lane above it goes from one green block to hundreds. The node and edge counts are in each header." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
+<Figure caption="The same 3 kb of K12 at the colanic acid cluster, cut from the two graphs this build produces. Left, the minigraph rGFA: one 4.4 kb backbone segment spans the whole window, four alternate segments of 6-154 bp hang off it, and the red 33 bp and labelled magenta 16.4 kb nodes are the backbone either side of the window, which the one-hop cut reaches. Right, the pggb graph: a node at every variant, and the segments lane above it goes from one green block to hundreds. The node and edge counts are in each header." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
 That is the trade in one picture, and it is why the two graphs are worth
 building side by side: browse the rGFA whole-genome, and open the pggb graph
@@ -684,6 +684,25 @@ Nodes the reference path never visits are the alternate alleles. They have no
 K12 position, so they are absent from the linear track.
 
 <Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the backbone row is the node strip above it and the green-to-yellow step, where the fifth strain rejoins the shared sequence, is at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis. The alternate alleles have no K12 coordinate either way, and their drawn width is a visibility floor rather than their length in bp, which the node tooltip gives." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
+
+### Drawing the haplotype paths
+
+A P line is a walk: the ordered list of segments one strain takes through the
+graph. **View menu → Settings → Draw paths on edges** draws them, one stroke per
+path across every edge the path crosses, with a color key naming the strain each
+stroke belongs to. Set **Color** to **Grey** first, so the only colors in the
+drawing are the paths.
+
+This is carriage, which is the one thing the graph states and none of the
+projections above can: an alternate allele has no reference coordinate, so
+nothing that flattens onto K12 can say who carries it. A strain with no colored
+arc is a result too, since it walks the window on the backbone.
+
+The setting needs a graph with P or W records. An rGFA has neither, and neither
+does a subgraph cut from the tabix index above, which rebuilds segments and
+links only.
+
+<Figure caption="The same subgraph anchored on K12, nodes grey and the strain paths drawn. Every arc down to an alternate allele is colored by the strains that take it: IAI39 across the left half, CFT073 through the middle cluster, Sakai on the right. K12 has no arc by definition and NCTC86 has almost none, both walking the backbone here." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 ## Reproduce it end to end
 

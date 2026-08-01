@@ -251,12 +251,17 @@ const ECOLI_PATHS_SESSION_TRACK = {
       // three magenta blocks abut into one mass; the gap is what makes them read
       // as three haplotypes
       rowProportion: 0.85,
+      // Three classes, not the five build_minigraph_paths.sh can emit. Review:
+      // "dont add legend items for things that are not displayed" — over
+      // PATHS_WINDOW_WIDE the file carries only ref, ins and del
+      // (`tabix ecoli_minigraph_paths.bed.gz chr:1000000-1200000 | cut -f11 |
+      // sort -u`), and its 18 `sub` and 25 `nocall` rows are all elsewhere in
+      // the genome, so a five-row key spent two rows on swatches with nothing
+      // in the frame to match them to.
       legend: [
         { label: 'reference path', color: 'rgb(204,204,204)' },
         { label: 'insertion', color: 'rgb(192,0,192)' },
         { label: 'deletion', color: 'rgb(128,128,128)' },
-        { label: 'same length, different path', color: 'rgb(0,154,138)' },
-        { label: 'no call', color: 'rgb(191,170,64)' },
       ],
     },
   ],
@@ -1091,13 +1096,43 @@ const RESOLUTION_REGION = {
 }
 const RESOLUTION_WINDOW = 'chr:2,120,000-2,123,000'
 
+// The one node in the minigraph half that is not what it looks like, and the
+// review it drew: "unclear where that pink node in the minigraph rgfa is
+// connected to?". It is s694, K12 chr:2,123,069-2,139,486 (rank 0 in
+// `ecoli_minigraph.segs.bed.gz`) — the reference backbone segment immediately
+// downstream, brought in by the one-hop cut off the 4.4 kb s693 the window sits
+// inside, and painted at the magenta end of the reference-position ramp because
+// it starts past the loaded 3 kb. So it reads as a giant off-reference allele
+// while being neither off-reference nor inside the window. It joins s693 at the
+// window's right edge and its far end is loose because its other neighbour,
+// s695, is outside the cut.
+//
+// The cut reaches the backbone on both sides — s692 is the 33 bp red node at
+// the ramp's other end — but only this one is big enough to dominate the pane,
+// so only this one is labelled. The caption names the pair.
+const RESOLUTION_BACKBONE_NODE = 's694'
+const RESOLUTION_SEED_NODE = 's693'
+
 function graphResolutionPartSpecs(): ScreenshotSpec[] {
-  const part = (
-    name: string,
-    trackId: string,
-    sessionTrack: object,
-    label: string,
-  ): ScreenshotSpec => ({
+  const part = ({
+    name,
+    trackId,
+    sessionTrack,
+    label,
+    // Where the half's own caption sits, as an offset from the graph canvas
+    // centre. Not shared: the minigraph half needs its right side clear for the
+    // s693/s694 junction, and the same offset in the pggb half would sit on the
+    // braid's top-left arm.
+    labelOffset,
+    extraAnnotations = [],
+  }: {
+    name: string
+    trackId: string
+    sessionTrack: object
+    label: string
+    labelOffset: { dx: number; dy: number }
+    extraAnnotations?: Annotation[]
+  }): ScreenshotSpec => ({
     mode: 'url',
     name,
     url: sessionSpec(CONFIG, {
@@ -1149,26 +1184,50 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
         type: 'text',
         text: label,
         anchor: { selector: '[data-testid="graph-genome-canvas"]' },
-        dx: 110,
-        dy: -250,
+        ...labelOffset,
         maxWidth: 205,
         fontSize: 18,
       },
+      ...extraAnnotations,
     ],
   })
   return [
-    part(
-      'pangenome/graph_resolution_minigraph',
-      ECOLI_SEGMENTS_TRACK,
-      ECOLI_SEGMENTS_SESSION_TRACK,
-      'minigraph rGFA\nstructural variation only',
-    ),
-    part(
-      'pangenome/graph_resolution_pggb',
-      PGGB_SEGMENTS_TRACK,
-      PGGB_SEGMENTS_SESSION_TRACK,
-      'pggb\na node at every variant',
-    ),
+    part({
+      name: 'pangenome/graph_resolution_minigraph',
+      trackId: ECOLI_SEGMENTS_TRACK,
+      sessionTrack: ECOLI_SEGMENTS_SESSION_TRACK,
+      label: 'minigraph rGFA\nstructural variation only',
+      labelOffset: { dx: -340, dy: -260 },
+      // Both ends of what RESOLUTION_BACKBONE_NODE is: a label on the node
+      // saying it is backbone rather than an allele, and an arrow onto the
+      // segment it joins. Both anchored by segment id through the view's own
+      // nodePositions, so FMMM can put the two of them wherever it likes.
+      extraAnnotations: [
+        {
+          type: 'text',
+          text: 'reference backbone (s694),\ncontinues past the window',
+          anchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
+          // left along the node, into the open ground under its arc: at the
+          // midpoint itself the pill ran off the right edge of the pane
+          dx: -266,
+          dy: -40,
+          maxWidth: 240,
+          fontSize: 16,
+        },
+        {
+          type: 'arrow',
+          fromAnchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
+          anchor: { view: 1, graphNode: RESOLUTION_SEED_NODE },
+        },
+      ],
+    }),
+    part({
+      name: 'pangenome/graph_resolution_pggb',
+      trackId: PGGB_SEGMENTS_TRACK,
+      sessionTrack: PGGB_SEGMENTS_SESSION_TRACK,
+      label: 'pggb\na node at every variant',
+      labelOffset: { dx: 110, dy: -250 },
+    }),
   ]
 }
 
@@ -1390,6 +1449,49 @@ export const graphSpecs: ScreenshotSpec[] = [
     // is what says the axis in the other half is a real thing rather than the
     // only way a graph can be drawn.
     direction: 'horizontal',
+  },
+  // The same subgraph and the same anchored layout, with the haplotype paths
+  // drawn: every edge carries one stroke per P record that crosses it, so an
+  // arc down to an alternate allele is coloured by the strains that take it.
+  // That is the one thing the graph states and none of the linear projections
+  // can — carriage of an allele that has no reference coordinate to be
+  // projected onto.
+  //
+  // Nodes go grey, unlike every other figure on the page. Depth is a per-node
+  // quantity and carriage is a per-path one, and drawn together the viridis
+  // ramp's green is a strain colour and its purple is another: two colour
+  // systems in one drawing, neither readable. Grey nodes leave the colour to
+  // the paths, which is what this figure is about.
+  //
+  // A strain with no coloured arc is the finding, not a gap: NCTC86 walks this
+  // window on the backbone, so its stroke is only ever hidden under the
+  // reference tubes, and the same is true of K12 by definition.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_haplotype_paths',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'GraphGenomeView',
+          gfaLocation: { uri: `${DATA}/ecoli_pggb_subgraph.gfa` },
+          layoutMode: 'auto',
+          colorScheme: 'grey',
+          referencePath: 'K12',
+          drawPaths: true,
+        },
+      ],
+    }),
+    // Both, so the capture cannot land after the rows and before the legend
+    // that names them: the legend is DOM beside the canvas, and the rows are
+    // what the canvas draws.
+    readySelector: `body:has([data-testid="graph-path-legend"]) [data-testid="graph-row-label"]`,
+    readyTimeout: 90000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    // the toolbar and the two-row anchored drawing, nothing else
+    viewportHeight: 323,
+    hideTooltip: true,
   },
   ...graphResolutionPartSpecs(),
   {
@@ -2447,6 +2549,23 @@ export const graphSpecs: ScreenshotSpec[] = [
         type: 'circle',
         anchor: { view: 1, graphNode: HOVERED_ALLELE },
         radius: 22,
+      },
+      // What the ring is around, which the frame did not say: the tooltip gives
+      // the node's own length and CFT073 offset, and the band gives the K12
+      // interval, but nothing put the two side by side, so review asked "is
+      // this a 65kb 'non reference insertion'?". It is. Both numbers are the
+      // graph's, not arithmetic on a picture: s2037 is 65,410 bp
+      // (`ecoli_minigraph.segs.bed.gz`), and it attaches to s402 and s405,
+      // which leaves K12 chr:1,095,502-1,097,564 between them — the same
+      // 2,062 bp the hover band is drawing.
+      {
+        type: 'text',
+        text: 'CFT073 insertion: 65.4 kb\nwhere K12 has 2.1 kb',
+        anchor: { view: 1, graphNode: HOVERED_ALLELE },
+        dx: -130,
+        dy: 90,
+        maxWidth: 210,
+        fontSize: 16,
       },
     ],
   },
