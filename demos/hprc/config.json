@@ -1,0 +1,86 @@
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/5e1c0d4f42b5/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_minigraph_bubbles",
+      "name": "HPRC release 2 bubbles",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
+        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+      },
+      "displayDefaults": {
+        "color": "rgb(130,130,130)"
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hprc_minigraph_alleles",
+      "name": "HPRC release 2 graph: allele inventory",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc2_wave_grch38",
+      "name": "HPRC2 pangenome callset (464 haplotypes)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "hprc2_wave_grch38_regular",
+          "renderingMode": "phased"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_minigraph_segments",
+      "name": "HPRC release 2 graph (rGFA segments)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+      },
+      "displayDefaults": {
+        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+      }
+    }
+  ]
+}

@@ -1,0 +1,649 @@
+{
+  "assemblies": [
+    {
+      "name": "K12",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "K12-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "K12.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "K12.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "K12.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sakai",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sakai-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "Sakai.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "Sakai.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "Sakai.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "CFT073",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "CFT073-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "CFT073.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "CFT073.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "CFT073.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "NCTC86",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "NCTC86-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "NCTC86.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "NCTC86.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "NCTC86.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "IAI39",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IAI39-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "IAI39.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "IAI39.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "IAI39.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "E. coli pangenome graph",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "init": {
+          "views": [
+            {
+              "assembly": "K12"
+            },
+            {
+              "assembly": "Sakai"
+            },
+            {
+              "assembly": "CFT073"
+            },
+            {
+              "assembly": "NCTC86"
+            },
+            {
+              "assembly": "IAI39"
+            }
+          ],
+          "tracks": [
+            ["ecoli_pggb_ava"],
+            ["ecoli_pggb_ava"],
+            ["ecoli_pggb_ava"],
+            ["ecoli_pggb_ava"]
+          ],
+          "drawCurves": false,
+          "minAlignmentLength": 10000
+        }
+      },
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "K12",
+          "loc": "chr:1,000,000-1,010,000",
+          "tracks": [
+            "K12_genes",
+            "ecoli_pggb_depth",
+            "ecoli_pggb_degree",
+            "ecoli_pggb_pav",
+            "ecoli_pggb_variants",
+            "ecoli_pggb_maf"
+          ]
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "K12_genes",
+      "name": "K12 genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "K12.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "K12.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["K12"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sakai_genes",
+      "name": "Sakai genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Sakai.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Sakai.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["Sakai"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "CFT073_genes",
+      "name": "CFT073 genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "CFT073.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "CFT073.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["CFT073"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "NCTC86_genes",
+      "name": "NCTC86 genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "NCTC86.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "NCTC86.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["NCTC86"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IAI39_genes",
+      "name": "IAI39 genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "IAI39.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "IAI39.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["IAI39"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ecoli_ava",
+      "name": "E. coli pangenome (all-vs-all PAF)",
+      "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+      "adapter": {
+        "type": "AllVsAllPAFAdapter",
+        "pafLocation": {
+          "uri": "all_vs_all.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ecoli_pggb_ava",
+      "name": "pggb graph: all-vs-all synteny (wfmash)",
+      "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+      "adapter": {
+        "type": "AllVsAllIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "ecoli_pggb_ava.pif.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "ecoli_pggb_ava.pif.gz.tbi"
+          }
+        },
+        "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ecoli_pggb_untangle",
+      "name": "pggb graph: synteny from the graph (odgi untangle)",
+      "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+      "adapter": {
+        "type": "AllVsAllIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "ecoli_pggb_untangle.pif.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "ecoli_pggb_untangle.pif.gz.tbi"
+          }
+        },
+        "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "ecoli_pggb_variants",
+      "name": "pggb graph: pangenome variants (vs K12)",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "ecoli_pggb.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ecoli_pggb.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["K12"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "ecoli_pggb_snarls",
+      "name": "pggb graph: raw snarl tree (nested, vs K12)",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "ecoli_pggb_snarls.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ecoli_pggb_snarls.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["K12"]
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "ecoli_pggb_maf",
+      "name": "pggb graph: whole-genome alignment (MAF, vs K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+        "nhLocation": {
+          "uri": "ecoli_pggb.nh"
+        },
+        "uri": "ecoli_pggb.maf.bed.gz"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "ecoli_pggb_depth",
+      "name": "pggb graph: pangenome depth (paths over K12)",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "ecoli_pggb_depth.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["K12"]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "ecoli_pggb_degree",
+      "name": "pggb graph: graph complexity (mean node degree over K12)",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "ecoli_pggb_degree.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["K12"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ecoli_pggb_pav",
+      "name": "pggb graph: per-strain presence (odgi pav, vs K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Sakai",
+            "bigWigLocation": {
+              "uri": "ecoli_pggb_pav_Sakai.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CFT073",
+            "bigWigLocation": {
+              "uri": "ecoli_pggb_pav_CFT073.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NCTC86",
+            "bigWigLocation": {
+              "uri": "ecoli_pggb_pav_NCTC86.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "IAI39",
+            "bigWigLocation": {
+              "uri": "ecoli_pggb_pav_IAI39.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_minigraph_segments",
+      "name": "minigraph graph: rGFA segments (browsable by locus)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "ecoli_minigraph"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_minigraph_paths",
+      "name": "minigraph graph: per-strain path through each bubble",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "ecoli_minigraph_paths.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "partitionField": "strain",
+          "lengthField": "delta",
+          "rowOrder": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+          "legend": [
+            {
+              "label": "reference path",
+              "color": "rgb(204,204,204)"
+            },
+            {
+              "label": "insertion",
+              "color": "rgb(192,0,192)"
+            },
+            {
+              "label": "deletion",
+              "color": "rgb(128,128,128)"
+            },
+            {
+              "label": "same length, different path",
+              "color": "rgb(0,154,138)"
+            },
+            {
+              "label": "no call",
+              "color": "rgb(191,170,64)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "ecoli_minigraph_alleles",
+      "name": "minigraph graph: allele inventory (from the rGFA alone)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "ecoli_minigraph.alleles.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_pggb_subgraph_nodes",
+      "name": "pggb subgraph: nodes on K12, colored by depth",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "ecoli_pggb_subgraph_nodes.bed.gz",
+        "columnNames": [
+          "chrom",
+          "start",
+          "end",
+          "name",
+          "depth",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb"
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayMode": "collapsed"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_pggb_segments",
+      "name": "pggb graph segments (whole graph, by locus)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "ecoli_pggb"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showLabels": false
+        }
+      ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ecoli_cactus_ava",
+      "name": "MC graph: all-vs-all synteny (halSynteny)",
+      "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+      "adapter": {
+        "type": "AllVsAllIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "ecoli_cactus_ava.pif.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "ecoli_cactus_ava.pif.gz.tbi"
+          }
+        },
+        "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "ecoli_cactus_variants",
+      "name": "MC graph: pangenome variants (vs K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "ecoli_cactus.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "ecoli_cactus.vcf.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantMatrixDisplay",
+          "displayId": "ecoli_cactus_variants-matrix"
+        }
+      ]
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "ecoli_cactus_maf",
+      "name": "MC graph: whole-genome alignment (MAF, vs K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+        "uri": "ecoli_cactus.maf.bed.gz"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "ecoli_cactus_depth",
+      "name": "MC graph: pangenome depth (paths over K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "ecoli_cactus_depth.bw"
+        }
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ecoli_cactus_pav",
+      "name": "MC graph: per-strain presence (odgi pav, vs K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Sakai",
+            "bigWigLocation": {
+              "uri": "ecoli_cactus_pav_Sakai.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CFT073",
+            "bigWigLocation": {
+              "uri": "ecoli_cactus_pav_CFT073.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NCTC86",
+            "bigWigLocation": {
+              "uri": "ecoli_cactus_pav_NCTC86.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "IAI39",
+            "bigWigLocation": {
+              "uri": "ecoli_cactus_pav_IAI39.bw"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ]
+}

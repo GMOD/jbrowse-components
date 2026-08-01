@@ -63,6 +63,29 @@ reactivity. The `function F(){}; observer(F)` form DOES get compiled and can
 stale a MobX read (memoizes on stable identity); avoid it, or add
 `'use no memo'`. See `agent-docs/reference/COMPILER_TERNARY_FINDING.md`.
 
+## Hosted demo configs (`demos/`)
+
+The configs behind `jbrowse.org/demos/<name>/config.json` are checked in under
+`demos/<name>/config.json`. Edit that copy, commit it, then
+`scripts/deploy-demo.sh <name>/config.json` (upload + CloudFront invalidation;
+it refuses a local file that differs from the repo copy). Never `aws s3 cp` a
+config assembled somewhere else: the bucket has no versioning, so an overwrite
+that silently drops a track is both invisible in review and unrecoverable — that
+is how `ecoli_pangenome` lost `ecoli_ava` and four figures started failing with
+"Could not resolve identifier".
+
+`node scripts/check-demo-configs.ts` diffs repo against live and names the
+tracks/assemblies each side is missing; `--fix` pulls live into the repo. It
+needs the network and reports on state no commit controls, so it is manual
+rather than a CI gate — run it before editing a demo config and after deploying
+one.
+
+`@jbrowse/core/util`'s export list is snapshotted by
+`packages/core/src/util/publicApi.test.ts`, because that barrel is the runtime
+ABI published external plugins resolve against. Removing an export typechecks
+and passes every test here while breaking a plugin we don't build. Update the
+snapshot deliberately, in the same commit, and say which plugins you checked.
+
 ## Tooling
 
 - Run `pnpm test <directory>`, not the full suite.

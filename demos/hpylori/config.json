@@ -1,0 +1,252 @@
+{
+  "assemblies": [
+    {
+      "name": "hpylori_26695",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hpylori_26695-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "hpylori_26695.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "hpylori_26695.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "hpylori_j99",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hpylori_j99-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "hpylori_j99.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "hpylori_j99.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "hpylori_chc155",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hpylori_chc155-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "hpylori_chc155.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "hpylori_chc155.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "H. pylori demo",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "loc": "NC_018939.1:391,180..408,961",
+          "assembly": "hpylori_26695",
+          "tracklist": true,
+          "tracks": ["hpylori_26695.gff", "26695_vs_j99.pif"]
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "26695_vs_j99.pif",
+      "name": "26695_vs_j99.pif",
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "26695_vs_j99.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "26695_vs_j99.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["hpylori_j99", "hpylori_26695"]
+      },
+      "assemblyNames": ["hpylori_j99", "hpylori_26695"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "26695_vs_chc155.pif",
+      "name": "26695_vs_chc155.pif",
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "26695_vs_chc155.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "26695_vs_chc155.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["hpylori_chc155", "hpylori_26695"]
+      },
+      "assemblyNames": ["hpylori_chc155", "hpylori_26695"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "chc155_vs_j99.pif",
+      "name": "chc155_vs_j99.pif",
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "chc155_vs_j99.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "chc155_vs_j99.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["hpylori_j99", "hpylori_chc155"]
+      },
+      "assemblyNames": ["hpylori_j99", "hpylori_chc155"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hpylori_26695.gff",
+      "name": "hpylori_26695.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "hpylori_26695.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "hpylori_26695.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hpylori_26695"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hpylori_j99.gff",
+      "name": "hpylori_j99.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "hpylori_j99.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "hpylori_j99.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hpylori_j99"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hpylori_chc155.gff",
+      "name": "hpylori_chc155.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "hpylori_chc155.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "hpylori_chc155.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hpylori_chc155"]
+    }
+  ],
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hpylori_26695-index",
+      "ixFilePath": {
+        "uri": "trix/hpylori_26695.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix/hpylori_26695.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix/hpylori_26695_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["hpylori_26695"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hpylori_j99-index",
+      "ixFilePath": {
+        "uri": "trix/hpylori_j99.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix/hpylori_j99.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix/hpylori_j99_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["hpylori_j99"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hpylori_chc155-index",
+      "ixFilePath": {
+        "uri": "trix/hpylori_chc155.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix/hpylori_chc155.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix/hpylori_chc155_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["hpylori_chc155"]
+    }
+  ]
+}

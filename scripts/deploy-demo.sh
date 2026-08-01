@@ -9,18 +9,47 @@
 # identifier <newTrackId>" because the cached config predates the new track.
 # Invalidating the exact path right after upload avoids that footgun.
 #
+# A config that has a checked-in copy under demos/ must be deployed FROM that
+# copy. Uploading a config assembled in a scratch directory is how
+# ecoli_pangenome lost its `ecoli_ava` track: nothing in review saw the
+# deletion, and the bucket has no versioning to restore from. Edit
+# demos/<path>, commit, then deploy. DEPLOY_DEMO_ALLOW_UNTRACKED=1 overrides,
+# for a one-off asset that genuinely has no repo copy.
+#
 # Usage: scripts/deploy-demo.sh <local-file> <demos-relative-path>
-#   scripts/deploy-demo.sh config.json grape_peach_cacao/config.json
+#   scripts/deploy-demo.sh demos/grape_peach_cacao/config.json grape_peach_cacao/config.json
+#   scripts/deploy-demo.sh grape_peach_cacao/config.json    # same, path inferred
 set -euo pipefail
 
-if [ "$#" -ne 2 ]; then
-  echo "usage: $0 <local-file> <demos-relative-path>" >&2
-  echo "  e.g. $0 config.json grape_peach_cacao/config.json" >&2
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+  echo "usage: $0 [<local-file>] <demos-relative-path>" >&2
+  echo "  e.g. $0 grape_peach_cacao/config.json" >&2
   exit 1
 fi
 
-local_file="$1"
-demo_path="$2"
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [ "$#" -eq 1 ]; then
+  demo_path="$1"
+  local_file="$repo_root/demos/$demo_path"
+  if [ ! -f "$local_file" ]; then
+    echo "no repo copy at demos/$demo_path — pass the local file explicitly" >&2
+    exit 1
+  fi
+else
+  local_file="$1"
+  demo_path="$2"
+fi
+
+tracked="$repo_root/demos/$demo_path"
+if [ -f "$tracked" ] && ! cmp -s "$local_file" "$tracked"; then
+  echo "refusing: $local_file differs from the checked-in demos/$demo_path" >&2
+  echo "  edit and commit demos/$demo_path, then deploy that — or set" >&2
+  echo "  DEPLOY_DEMO_ALLOW_UNTRACKED=1 to override." >&2
+  [ "${DEPLOY_DEMO_ALLOW_UNTRACKED:-}" = "1" ] || exit 1
+  echo "  DEPLOY_DEMO_ALLOW_UNTRACKED=1 set, continuing" >&2
+fi
+
 distribution_id="E13LGELJOT4GQO" # jbrowse.org / www.jbrowse.org
 s3_key="demos/${demo_path}"
 

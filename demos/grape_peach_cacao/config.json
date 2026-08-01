@@ -1,0 +1,197 @@
+{
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grape-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "peach-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "cacao",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "cacao-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "grape_genes",
+      "name": "Grape genes (Ensembl Plants r58)",
+      "assemblyNames": ["grape"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.genes.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.genes.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "peach_genes",
+      "name": "Peach genes (Ensembl Plants r58)",
+      "assemblyNames": ["peach"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.genes.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.genes.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "cacao_genes",
+      "name": "Cacao genes (Ensembl Plants r58)",
+      "assemblyNames": ["cacao"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.genes.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.genes.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_cacao_blocks",
+      "name": "Grape / peach / cacao (MCScan blocks)",
+      "assemblyNames": ["grape", "peach", "cacao"],
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "mcscanBlocksLocation": {
+          "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.blocks.gz",
+          "locationType": "UriLocation"
+        },
+        "blockAssemblies": ["grape", "peach", "cacao"],
+        "bedLocations": [
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.bed.gz",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.bed.gz",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.bed.gz",
+            "locationType": "UriLocation"
+          }
+        ],
+        "assemblyNames": ["grape", "peach", "cacao"]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Grape / Peach / Cacao multi-way synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "Peach \u2013 Cacao \u2013 Grape (MCScan blocks)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            {
+              "assembly": "peach"
+            },
+            {
+              "assembly": "cacao"
+            },
+            {
+              "assembly": "grape"
+            }
+          ],
+          "tracks": [
+            ["grape_peach_cacao_blocks"],
+            ["grape_peach_cacao_blocks"]
+          ],
+          "colorBy": "reference",
+          "autoDiagonalize": true
+        }
+      }
+    ]
+  }
+}
