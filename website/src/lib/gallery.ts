@@ -265,7 +265,10 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: '1000 Genomes trio SV coverage',
         spec: 'multi-sv-trio',
-        guide: 'tutorials/sv_multisamples',
+        // sv_visualization.md, not the SV tutorial: that page refocused onto
+        // the chr19 inversion and this figure went back to the guide that
+        // documents reading trio alignments against an SV call.
+        guide: 'user_guides/sv_visualization',
         description:
           'Coverage for a 1000 Genomes trio (mother, child, father) beneath the ensemble structural-variant VCF.',
       },

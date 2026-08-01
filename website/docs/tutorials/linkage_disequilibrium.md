@@ -151,6 +151,22 @@ Note that `plink --r2 dprime` does not merely add a column: the modifier also
 switches r² itself to the haplotype-frequency estimate. plink2 removed `--r2`
 and splits it into `--r2-phased` and `--r2-unphased`.
 
+## The other place LD shows up: coloring a GWAS
+
+The triangle is LD between every pair of variants in a window. The other
+question people bring to LD is narrower, and JBrowse answers it in a different
+display: which variants near a GWAS peak are correlated with the lead SNP, and
+therefore which of them the association could be tagging.
+
+A [`GWASTrack`](/docs/config_guides/gwas_track) takes a PLINK `.ld` file as an
+`ldAdapter` sub-adapter beside its summary statistics, and
+[`colorBy: 'ld'`](/docs/config/linearmanhattandisplay/#slot-colorby) then shades
+each point by its r² to the index SNP, LocusZoom style. It is the same
+correlation the triangle draws, read along one row of the matrix rather than
+over the whole of it, and it needs the same care about which panel the r² came
+from. See [](/docs/user_guides/gwas_track) for the display and the
+configuration.
+
 ## See also
 
 - [](/docs/user_guides/variant_track)
