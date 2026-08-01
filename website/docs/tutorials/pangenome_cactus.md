@@ -182,10 +182,9 @@ synteny view**, whose Quick start fills in a row per assembly the track lists.
 
 This is the same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
-and the
-[pggb one](/docs/tutorials/pangenome_ecoli#all-vs-all-synteny-projection), and
-all three agree on the backbone and on IAI39's inversions. What differs is where
-the blocks came from. minimap2 aligns each pair of assemblies directly, so its
+and the [pggb one](/docs/tutorials/pangenome_ecoli#synteny-projection), and all
+three agree on the backbone and on IAI39's inversions. What differs is where the
+blocks came from. minimap2 aligns each pair of assemblies directly, so its
 blocks are one aligner's opinion about two genomes at a time. These are read out
 of the HAL, so they are the graph's own base-level alignment, and so is every
 other projection on this page.

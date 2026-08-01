@@ -2,8 +2,13 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// The url the tracked fixture configs hardcode, and what ECOLI_DEMO_BASE
+// replaces in them when it is set.
+const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 
 // Figures for the pangenome tutorials that use the third-party
 // jbrowse-plugin-graphgenomeview (GraphGenomeView). The plugin bundle and the
@@ -52,14 +57,24 @@ const localEsmUrl =
 // Repo root, off this module rather than off cwd: the spec paths are stated
 // relative to the root and this file is imported by more than the generator.
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
-const local = process.env.GRAPH_PLUGIN_LOCAL
+// The fixture configs also hardcode the hosted demo's data urls, so ECOLI_DEMO_BASE
+// has to rewrite them here too — otherwise a local-demo run renders the new
+// plugin against the OLD hosted files. Same gitignored-sibling mechanism, and it
+// writes the sibling rather than keeping one by hand for the same reason: a
+// hand-kept copy of a tracked config drifts and nothing notices.
+const rewriteFixture = usingLocalDemo || process.env.GRAPH_PLUGIN_LOCAL
+const local = rewriteFixture
   ? (name: string) => {
       const derived = name.replace(/\.json$/, '_local.json')
-      const config = JSON.parse(readFileSync(`${repoRoot}${name}`, 'utf8')) as {
-        plugins: { esmUrl: string }[]
+      let text = readFileSync(`${repoRoot}${name}`, 'utf8')
+      if (usingLocalDemo) {
+        text = text.replaceAll(HOSTED_DEMO, ECOLI_DEMO_BASE)
       }
-      for (const plugin of config.plugins) {
-        plugin.esmUrl = localEsmUrl
+      const config = JSON.parse(text) as { plugins: { esmUrl: string }[] }
+      if (process.env.GRAPH_PLUGIN_LOCAL) {
+        for (const plugin of config.plugins) {
+          plugin.esmUrl = localEsmUrl
+        }
       }
       writeFileSync(
         `${repoRoot}${derived}`,
@@ -75,7 +90,7 @@ const CONFIG = local('test_data/graphgenomeview/config.json')
 const ECOLI_PANGENOME_CONFIG = local(
   'test_data/graphgenomeview/ecoli_pangenome.json',
 )
-const DATA = 'https://jbrowse.org/demos/ecoli_pangenome'
+const DATA = ECOLI_DEMO_BASE
 const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
 // Paint the linear segments track in the graph view's own 'Stable rank'
@@ -919,11 +934,13 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
-        type: 'box',
-        anchor: { view: 1, graphNode },
-        strokeWidth: 3,
-      })),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
+        (graphNode): Annotation => ({
+          type: 'box',
+          anchor: { view: 1, graphNode },
+          strokeWidth: 3,
+        }),
+      ),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
@@ -1046,6 +1063,115 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
 // it likes.
 const MHC_LANDMARK_NODES = ['s101145+', 's396436+']
 
+// The halves of pangenome/graph_resolution: ONE window of K12, cut from the two
+// graphs the demo carries. The tutorial argues in prose that a pggb graph runs
+// ~17 bp per segment while a minigraph rGFA records only structural variation,
+// and that you should therefore browse the rGFA whole-genome and the pggb graph
+// a kilobase at a time — and never showed it. This is that argument as a
+// picture, and it is the comparison a pangenome reader most wants: same locus,
+// same reference, same colors, two graph resolutions.
+//
+// 3 kb rather than the paa island, because the window has to be drawable in
+// BOTH. At 29.5 kb the pggb cut is past the node budget and its half of the
+// figure would be an error message; at 3 kb it is ~340 nodes (a braid) against
+// minigraph's handful (a thread), which is the difference stated at a size
+// where both halves are real drawings.
+//
+// The colanic-acid cluster, the busiest stretch of this graph in the demo's own
+// index: `tabix ecoli_pggb.links.bed.gz 'K12#1#chr:2120000-2123000'` returns 175
+// link endpoints on a non-K12 stable sequence, against 24 at the ycbF/pyrD
+// window pangenome/local_subgraph uses. Picked for link density rather than by
+// eye, so the pggb half is dense because the graph is, not because 3 kb of any
+// window looks like that.
+const RESOLUTION_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 2120000,
+  end: 2123000,
+}
+const RESOLUTION_WINDOW = 'chr:2,120,000-2,123,000'
+
+function graphResolutionPartSpecs(): ScreenshotSpec[] {
+  const part = (
+    name: string,
+    trackId: string,
+    sessionTrack: object,
+    label: string,
+  ): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, sessionTrack],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: RESOLUTION_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId,
+              type: 'LinearBasicDisplay',
+              // labels off in both halves: the pggb lane is hundreds of bare
+              // integer ids at this width, and the halves have to be read the
+              // same way for the density difference to be the only difference
+              showLabels: 'off',
+              heightMode: 'grow',
+              color: referencePositionColor(RESOLUTION_REGION),
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: trackId,
+          loadedRegion: RESOLUTION_REGION,
+          // force in both halves. An anchored layout would put the pggb half's
+          // hundreds of nodes on one line and hide exactly what is being shown.
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    // the pggb cut fetches and lays out two orders of magnitude more nodes
+    readyTimeout: 180000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    // half the composed width each
+    viewportWidth: 750,
+    // The graph pane caps at 600 px and zoom-to-fit works against that box, so
+    // an under-tall viewport does not just crop the frame, it makes the fit
+    // itself spill: at 900 both halves ran their drawing off the bottom edge.
+    viewportHeight: 1060,
+    hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: label,
+        anchor: { selector: '[data-testid="graph-genome-canvas"]' },
+        dx: 110,
+        dy: -250,
+        maxWidth: 205,
+        fontSize: 18,
+      },
+    ],
+  })
+  return [
+    part(
+      'pangenome/graph_resolution_minigraph',
+      ECOLI_SEGMENTS_TRACK,
+      ECOLI_SEGMENTS_SESSION_TRACK,
+      'minigraph rGFA\nstructural variation only',
+    ),
+    part(
+      'pangenome/graph_resolution_pggb',
+      PGGB_SEGMENTS_TRACK,
+      PGGB_SEGMENTS_SESSION_TRACK,
+      'pggb\na node at every variant',
+    ),
+  ]
+}
+
 function mhcLayoutPartSpecs(): ScreenshotSpec[] {
   const part = (
     name: string,
@@ -1103,12 +1229,14 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
-        type: 'circle',
-        anchor: { view: 1, graphNode },
-        radius: 24,
-        strokeWidth: 3,
-      })),
+      ...MHC_LANDMARK_NODES.map(
+        (graphNode): Annotation => ({
+          type: 'circle',
+          anchor: { view: 1, graphNode },
+          radius: 24,
+          strokeWidth: 3,
+        }),
+      ),
       {
         type: 'text',
         text: label,
@@ -1261,6 +1389,21 @@ export const graphSpecs: ScreenshotSpec[] = [
     // force half is the same subgraph with nothing holding it to the axis, which
     // is what says the axis in the other half is a real thing rather than the
     // only way a graph can be drawn.
+    direction: 'horizontal',
+  },
+  ...graphResolutionPartSpecs(),
+  {
+    mode: 'compose',
+    name: 'pangenome/graph_resolution',
+    parts: [
+      'pangenome/graph_resolution_minigraph',
+      'pangenome/graph_resolution_pggb',
+    ],
+    // Left+right, minigraph first, because the halves are read as "what the
+    // same window looks like as you go from SV resolution to base resolution"
+    // and that reads left to right. Stacking them would put two graph panes at
+    // different vertical offsets under two identical linear views, where the
+    // eye compares the linear halves rather than the graphs.
     direction: 'horizontal',
   },
   // The indexed route on the tutorial's own four-strain graph: the rGFA

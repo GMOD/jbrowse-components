@@ -84,10 +84,17 @@ directory and need `bgzip` and `tabix`, plus `gfatools` for the rGFA route or
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
 bash build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
 
-# plain GFA: walk the P lines to derive the same thing
+# plain GFA: walk the P (or W) lines to derive the same thing
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
 bash build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
 ```
+
+The plain-GFA walk makes two choices worth knowing: when a path reaches a
+segment twice **the first visit wins**, since a node draws as one tube at one x
+and recording both would claim reference the segment does not occupy (the repeat
+stays visible as depth); and a segment the reference never visits is placed on
+**its own carrier's coordinates**, which is the same asymmetry rGFA has and is
+why a reference query reaches it through the links file.
 
 Both write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their tabix
 indexes, and both load through one adapter:
@@ -209,13 +216,15 @@ bubbles** and **Wide bubbles** give every allele a drawn length instead, at the
 cost that below the floor a node no longer draws proportional to its length.
 
 **View menu → Settings → Graph context** is how far the cut follows links past
-the region, and it defaults to **1 hop**. An allele's interior segments are
-indexed under their own haplotype's sequence, so a query on the reference never
-reaches them, and a detour that leaves the backbone before the window and
-rejoins after it arrives as two stubs rather than as the one event it is. A hop
-closes those, costing a query per off-reference segment already reached. Drop it
-to **None** only to see what the region query alone reaches, which is one detour
-drawn as two unrelated insertions.
+the region, and it defaults to **1 hop**. It is the in-app counterpart of
+`odgi extract -c N`, which expands a window by a bounded number of steps rather
+than taking everything between its ends the way `-E` does. An allele's interior
+segments are indexed under their own haplotype's sequence, so a query on the
+reference never reaches them, and a detour that leaves the backbone before the
+window and rejoins after it arrives as two stubs rather than as the one event it
+is. A hop closes those, costing a query per off-reference segment already
+reached. Drop it to **None** only to see what the region query alone reaches,
+which is one detour drawn as two unrelated insertions.
 
 <Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. The red boxes are the same two nodes in both halves, 43 bp and 558 bp, where one CFT073 detour leaves the backbone and rejoins it. Left, at Graph context None, they end in mid-air, because the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the arrow marks the 5.5 kb interior the extra queries found, and the two boxes are now the two sides of a closed bubble (the node and edge counts in the header rise to match). A hop is one step, so the right half has a loose end of its own where the walk stopped, at 9.5 kb; it expands only over off-reference segments, so it no longer drags in the backbone either side of the window." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 

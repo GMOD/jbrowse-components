@@ -1,4 +1,5 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -15,9 +16,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // jbrowse-plugin-graphgenomeview and no longer bundled in jbrowse-web. They live
 // in specs/graph.ts, which loads that plugin by esmUrl from a fixture config, so
 // they are generated and live-linkable like everything else here.
-const CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-)
+const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 
 export const pangenomeSpecs: ScreenshotSpec[] = [
   // Projection 1: the graph's own all-vs-all alignment, the wfmash PAF pggb
@@ -97,14 +96,16 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             {
               // the same window's variant calls above the alignment they were
               // decomposed from (reviewer: show the evidence sources side by
-              // side). Same <100 bp filter as the variant figure, for the same
-              // nested-bubble reason.
+              // side).
+              //
+              // No jexl length filter any more. It was here to hide the snarl
+              // tree's wide parent records, which drew over the fine layer they
+              // were decomposed from; `pggb -V K12:100000` pops those in the
+              // pipeline (vcfbub | vcfwave) so the track loads an already-flat
+              // tier. Keeping the filter would now drop real indels instead.
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
               height: 120,
-              jexlFilters: [
-                "jexl:get(feature,'end')-get(feature,'start') < 100",
-              ],
             },
             { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
@@ -126,11 +127,99 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, as a
-  // whole-chromosome overview so the shared plateau and the accessory dips read
-  // at a glance. No gene lane: at 4.6 Mb the ~4,300 K12 genes only trip the
-  // FeatureTrack "too many features" gate, so the depth curve carries the figure
-  // on its own.
+  // Projection 1b: the same strains, with the ribbons read out of the graph by
+  // `odgi untangle` rather than off the wfmash PAF the graph was induced from.
+  //
+  // K12 IN THE MIDDLE, and three rows rather than five. untangle projects query
+  // paths onto a TARGET path, so every record in that file has K12 on one side;
+  // it is reference-relative by construction, where the wfmash PAF is genuinely
+  // all-vs-all. A five-row stack compares adjacent rows, so the Sakai/CFT073 and
+  // NCTC86/IAI39 bands would have no records at all and the figure would read as
+  // a broken track rather than as a different projection. With the reference
+  // between them both drawn bands are K12-relative, which is what the file is.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_untangle',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            { assembly: 'CFT073' },
+            { assembly: 'K12' },
+            { assembly: 'Sakai' },
+          ],
+          tracks: [['ecoli_pggb_untangle'], ['ecoli_pggb_untangle']],
+          drawCurves: false,
+          colorBy: 'default',
+          minAlignmentLength: 10000,
+          levelHeights: [140, 140],
+        },
+      ],
+    }),
+    // three rows and two 140px bands
+    viewportHeight: 720,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+
+  // Projection 2: the decomposed variant tier, which had no figure at all while
+  // this page's only view of it was the lane riding above the MAF. The matrix
+  // display rather than the per-position one: it is the display that reads a
+  // pangenome VCF as a sample-by-site matrix, which is what a callset over a
+  // graph is for.
+  //
+  // No jexl length filter, unlike the MAF figure. That filter existed to hide
+  // the snarl tree's wide parent records, and `pggb -V K12:100000` pops them in
+  // the pipeline instead (vcfbub -l 0 -a 100000 | vcfwave), so the track loads
+  // an already-flat tier and the display needs nothing said to it.
+  //
+  // The same 60 kb window the MAF figure uses, picked from the odgi pav bigWigs
+  // for "each strain partly present and partly absent", so the matrix has both
+  // shared and strain-specific columns rather than a wall of one color.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_variants',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:4,540,000-4,600,000',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'ecoli_pggb_variants',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              height: 260,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '4,560,000',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 480,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 950, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+
+  // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, above
+  // graph complexity from `odgi degree`, as a whole-chromosome overview so the
+  // shared plateau and the accessory dips read at a glance. No gene lane: at
+  // 4.6 Mb the ~4,300 K12 genes only trip the FeatureTrack "too many features"
+  // gate, so the two curves carry the figure on their own.
+  //
+  // Both in one frame rather than two figures, because separately they are two
+  // near-identical whole-genome curves and the point is where they DISAGREE:
+  // depth counts paths present, degree counts branching, so a window can be
+  // fully covered and still tangled.
   {
     mode: 'url',
     name: 'pangenome/depth',
@@ -146,14 +235,19 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               height: 200,
             },
+            {
+              trackId: 'ecoli_pggb_degree',
+              type: 'LinearWiggleDisplay',
+              height: 200,
+            },
           ],
         },
       ],
     }),
-    readyText: 'pangenome depth',
+    readyText: 'graph complexity',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 360,
+    viewportHeight: 560,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

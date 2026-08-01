@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the E. coli pangenome-graph demo shown in
-# website/docs/tutorials/pangenome.md: build a pggb graph from five strains and
-# load its linear projections into a runnable JBrowse — the all-vs-all synteny
-# (wfmash PAF), the pangenome variants (`pggb -V`), the whole-genome multiple
-# alignment (`pggb -M`, re-rooted on K12 as a MAF), the pangenome depth (`odgi
-# depth`, core vs accessory over K12 as a bigWig), and per-strain presence
-# (`odgi pav`, one bigWig per strain as a MultiWiggle). It also writes the `odgi
-# viz` graph raster as a static comparison figure, and the two subgraphs the
-# graph genome view opens: a pggb window cut with `odgi extract`, and a
-# minigraph rGFA window cut with `gfatools view -R`.
+# website/docs/tutorials/pangenome_ecoli.md: build a pggb graph from five strains
+# and load its linear projections into a runnable JBrowse —
+#
+#   synteny        the wfmash PAF pggb aligned FROM, and `odgi untangle`, which
+#                  is the same picture read back OUT of the finished graph
+#   variants       `pggb -V REF:LEN`, both the decomposed tier and the raw
+#                  snarl tree the decomposition was popped from
+#   alignment      `pggb -M`, re-rooted on K12 as a MAF, its rows ordered by an
+#                  `odgi similarity` UPGMA tree
+#   depth          `odgi depth`, core vs accessory over K12 as a bigWig
+#   complexity     `odgi degree`, mean node degree per window
+#   presence       `odgi pav`, one bigWig per strain as a MultiWiggle
+#
+# It also writes the `odgi viz` graph raster as a static comparison figure, and
+# the two subgraphs the graph genome view opens: a pggb window cut with `odgi
+# extract`, and a minigraph rGFA window cut with `gfatools view -R`.
 #
 # It downloads the same five RefSeq E. coli chromosomes as the all-vs-all synteny
 # tutorial, PanSN-names a concatenated copy, runs pggb, converts each output to
-# the format its JBrowse track type reads, and writes a config.json with the four
-# assemblies, per-strain gene tracks, the five graph-derived tracks, and a
-# default session (a stacked synteny view plus the K12 reference lane).
+# the format its JBrowse track type reads, and writes a config.json with the
+# assemblies, per-strain gene tracks, the graph-derived tracks, and a default
+# session (a stacked synteny view plus the K12 reference lane). Everything
+# downstream of the STRAINS table is derived from it, so adding strains there is
+# the only edit an expanded pangenome needs.
 #
 # Everything is pinned (fixed RefSeq accessions, pinned pggb image + parameters),
 # so re-running reproduces the same graph and views.
@@ -35,7 +44,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after 
 # `curl -fO` of this one file behaves the same as a repo checkout.
 # build_pggb_tabix.sh fetches its own helper the same way.
 HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pggb_tabix.sh
-  build_rgfa_tabix.sh build_rgfa_alleles.sh build_minigraph_paths.sh)
+  build_rgfa_tabix.sh build_rgfa_alleles.sh build_minigraph_paths.sh
+  odgi_similarity_to_newick.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -58,7 +68,13 @@ REF=K12   # the strain the VCF and MAF are projected onto
 # Pin the pggb image by tag (pggb's dated build tag, not :latest) so re-running
 # reproduces the same graph. Bump this to a newer tag deliberately, not silently.
 # odgi ships inside this image, so the depth projection below reuses it.
-PGGB_IMAGE=ghcr.io/pangenome/pggb:202603141454453ade6b
+#
+# The image's build date is not its tools' date. This one is 2026-07-24 and
+# carries smoothxg 0ea0470, which is from 2026-03-31 and 14 commits behind
+# smoothxg master -- so it does NOT include pangenome/smoothxg#223, the fix for
+# the POA padding that reroot_maf.py crops around below. Check
+# `smoothxg --version` against that commit before assuming the crop is dead code.
+PGGB_IMAGE=ghcr.io/pangenome/pggb:202607241950514225c6
 in_pggb() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$PGGB_IMAGE" "$@"; }
 
 # minigraph and gfatools build the rGFA counterpart of the graph (see the
@@ -97,8 +113,12 @@ IAI39   GCF_000026345.1
 STRAINS_TBL
 
 # ── PanSN-name (sample#haplotype#contig) a concatenated copy for pggb ─────────
-# haplotype is always `1` (haploid bacterial assemblies); pggb reads the PanSN
-# `sample#` prefix to tell which genome each sequence belongs to.
+# haplotype is always `1` (haploid bacterial assemblies). PanSN is not cosmetic
+# here: wfmash's `-Y '#'` (on by default) skips mappings whose query and target
+# share the prefix before the last '#', which is what keeps a genome from being
+# aligned to itself, and `-V` derives each VCF sample and phase from the same
+# prefix. The awk above kept only each assembly's first record, so this is
+# chromosomes only and no plasmids reach the graph.
 for strain in $STRAINS; do
   awk -v s="$strain" '/^>/{print ">" s "#1#chr"; next} {print}' "$strain.fa"
 done > all.fa
@@ -106,34 +126,112 @@ bgzip -kf all.fa
 samtools faidx all.fa.gz
 
 # ── Build the graph with pggb ────────────────────────────────────────────────
-# -n <#haplotypes>, -p 90 / -s 5000 (identity/segment for a bacterial pangenome),
-# -V REF makes a VCF decomposing variants against the REF path, -M writes a MAF.
+# -p 90 / -s 5000 (identity/segment) suits a within-species bacterial pangenome.
+# -M writes the multiple alignment as a MAF.
+#
 # -c <#haplotypes - 1> is REQUIRED for a real all-vs-all: pggb's separate
 # `-c, --n-mappings` defaults to 1, so `-n 4` alone makes wfmash keep only each
 # segment's single best match (one other genome), yielding an under-connected
-# graph that crashes smoothxg (std::length_error / segfault in graph prep). Set
-# -c so every segment maps to all other haplotypes.
+# graph that crashes smoothxg (std::length_error / segfault in graph prep). -n
+# is a smoothxg parameter and cannot influence mapping at all, which is why the
+# two have to be set together.
+#
+# -V REF:LEN rather than a bare -V REF. Both write the raw `vg deconstruct` VCF,
+# whose records are a snarl TREE (INFO/LV is the level and INFO/PS the parent),
+# so a bubble and the variants inside it are both present and the wide one draws
+# over the fine layer. With LEN, pggb additionally runs its own
+# `vcfbub -l 0 -a LEN | vcfwave -I 1000`, writing *.decomposed.vcf.
+#
+# `vcfbub -l 0` does NOT reduce that to level 0, whatever --max-level suggests:
+# it POPS any site whose alleles run past LEN and emits the nested sites inside
+# it instead, so LV>0 records remain and are meant to. Measured on this graph at
+# LEN=10000: raw has 42 records with a reference allele over 1 kb and a largest
+# of 435,744 bp; decomposed has 55 and a largest of 9,616. The width cap is the
+# point -- nothing survives wide enough to paint over the layer beneath it, so
+# the browser needs no display filter.
+#
 # -w /data gives the mapped -u user a writable working directory; without it
 # seqwish cannot write its sdsl temp files (cwd defaults to `/`) and dies.
+# -T caps the POA threads independently of -t; lower it if smoothxg OOMs.
 NHAP=$(echo "$STRAINS" | wc -w)
+# LEN is a cost knob as much as a filter: vcfwave realigns every allele vcfbub
+# keeps, so the step is dominated by the longest ones. HPRC's own recipe is
+# `vcfbub -l 0 -a 100000`, and at 100000 on this graph vcfwave ran 19 minutes
+# without finishing -- six of its alleles are over 50 kb and the largest is
+# 561 kb. 10000 drops the 15 sites with an allele that big (which the graph view
+# and the per-strain paths track read far better than a VCF row does) and keeps
+# every small variant, in a fraction of the time.
+POP_LENGTH=10000
 if ! ls pggb/*.smooth.final.gfa >/dev/null 2>&1; then
   in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
-    -n "$NHAP" -c "$((NHAP - 1))" -t "$(nproc)" -p 90 -s 5000 -V "$REF" -M
+    -n "$NHAP" -c "$((NHAP - 1))" -t "$(nproc)" -p 90 -s 5000 \
+    -V "$REF:$POP_LENGTH" -M
 fi
 
 GFA=$(ls pggb/*.smooth.final.gfa)
+OG=$(ls pggb/*.smooth.final.og)
 
-# ── Projection 1: all-vs-all synteny (the wfmash PAF pggb already produced) ───
-# make-pif tabix-indexes it so the whole-genome view stays a range query.
+# ── Projection 1: all-vs-all synteny ─────────────────────────────────────────
+# TWO tracks, because they answer different questions and the difference is the
+# point of putting a graph in a browser at all.
+#
+# (a) the wfmash PAF, which is the alignment the graph was INDUCED FROM. It is
+# pggb's input, not a readout of the graph, and it is here because it is free
+# and because it is what the all-vs-all synteny tutorial loads.
 cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
 jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 
+# (b) `odgi untangle`, which IS a readout of the graph: it walks each query path
+# and reports, segment by segment, which stretch of the reference path that
+# query is actually traversing. So it states homology the way the graph resolved
+# it, after seqwish and smoothxg, and a repeat that collapsed into one set of
+# nodes comes back as several query segments pointing at the same reference
+# span. -m merges runs shorter than this into the previous segment (otherwise
+# every SNP node starts a new one), -j keeps mappings at or above a jaccard, and
+# -p asks for PAF so `make-pif` reads it with nothing in between.
+#
+# untangle leaves PAF column 10 (residue matches) at 0 and writes no CIGAR --
+# it reports a jaccard over graph steps, not a base alignment -- so a consumer
+# that derives percent identity from col10/col11 reads every block as 0%. It
+# does state an identity in its own `id:f:` tag, so fill column 10 from that;
+# the block then colors by identity like any other synteny track, and the number
+# is untangle's rather than one this script invented.
+if [ ! -f ecoli_pggb_untangle.paf ]; then
+  printf '%s#1#chr\n' "$REF" > untangle_target.txt
+  : > untangle_query.txt
+  for strain in $STRAINS; do
+    [ "$strain" = "$REF" ] || printf '%s#1#chr\n' "$strain" >> untangle_query.txt
+  done
+  in_pggb odgi untangle -i "/data/$OG" -R /data/untangle_target.txt \
+    -Q /data/untangle_query.txt -m 1000 -j 0.5 -p -t "$(nproc)" \
+    | awk -F'\t' -v OFS='\t' '
+        { id = ""
+          for (i = 13; i <= NF; i++) if ($i ~ /^id:f:/) { id = substr($i, 6) }
+          if (id != "") { $10 = int(id / 100 * $11 + 0.5) }
+          print }' \
+    > ecoli_pggb_untangle.paf.tmp
+  mv ecoli_pggb_untangle.paf.tmp ecoli_pggb_untangle.paf
+fi
+jbrowse make-pif ecoli_pggb_untangle.paf
+
 # ── Projection 2: pangenome variants (rename the REF path to the assembly chr) ─
 # pggb writes the VCF CHROM as the PanSN reference path (K12#1#chr); JBrowse needs
-# it to match the K12 assembly's refName (chr). The VCF is already position
-# sorted, so a rename + bgzip + tabix is all it takes.
-sed "s/${REF}#1#chr/chr/g" pggb/*.smooth.final."$REF".vcf | bgzip > ecoli_pggb.vcf.gz
-tabix -f -p vcf ecoli_pggb.vcf.gz
+# it to match the K12 assembly's refName (chr). bcftools rather than sed: a global
+# substitution over the whole file also rewrites INFO/AT traversals and PS ids,
+# which happen not to contain the path name today and are not guaranteed not to.
+# bcftools ships in the pggb image (pggb itself calls it), so this adds no host
+# requirement.
+#
+# Both tiers land: ecoli_pggb.vcf.gz is the decomposed one and is what the
+# variant track loads, ecoli_pggb_snarls.vcf.gz is the raw snarl tree, since
+# LV/PS are what make a graph VCF different from an ordinary callset.
+printf '%s#1#chr\tchr\n' "$REF" > rename_chrs.tsv
+vcf_tier() {   # <output-basename> <pggb vcf>
+  in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv '/data/$2' \
+    | bcftools sort -T /data/tmp -Oz -o '/data/$1.vcf.gz' && tabix -f -p vcf '/data/$1.vcf.gz'"
+}
+vcf_tier ecoli_pggb "$(ls pggb/*.smooth.final."$REF".decomposed.vcf)"
+vcf_tier ecoli_pggb_snarls "$(ls pggb/*.smooth.final."$REF".vcf)"
 
 # ── Projection 3: whole-genome MAF, re-rooted on REF, as a tabixed BED ────────
 # pggb's -M MAF orders each block from its longest path, so row 0 is not a fixed
@@ -148,6 +246,17 @@ python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf "${
 python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_pggb.maf ecoli_pggb.maf.bed
 bgzip -f ecoli_pggb.maf.bed
 tabix -f -p bed ecoli_pggb.maf.bed.gz
+
+# The order the MAF rows are drawn in, from the graph rather than from this
+# script's strain list. `odgi similarity -D '#' -p 1` reports how much of the
+# graph each pair of samples shares; UPGMA over 1 - estimated.identity turns that
+# into a Newick the MAF track reads as `nhLocation`, which both orders the rows
+# and draws them as a dendrogram. Seconds on a bacterial pangenome, and it is a
+# graph quantity, so the rows group by what the graph says rather than
+# alphabetically.
+in_pggb odgi similarity -i "/data/$OG" -D '#' -p 1 > ecoli_pggb_similarity.tsv
+python3 "$SCRIPT_DIR/odgi_similarity_to_newick.py" \
+  ecoli_pggb_similarity.tsv ecoli_pggb.nh
 
 # ── Projection 4: pangenome depth (core vs accessory) as a bigWig ─────────────
 # odgi depth counts how many path-steps traverse the graph nodes under each REF
@@ -182,7 +291,23 @@ for strain in $STRAINS; do
   bedGraphToBigWig "ecoli_pggb_pav_${strain}.bedgraph" chrom.sizes "ecoli_pggb_pav_${strain}.bw"
 done
 
+# ── Projection 4c: graph complexity (odgi degree) as a bigWig ────────────────
+# Depth says how many paths are present; degree says how BRANCHED the graph is.
+# `odgi degree -b` reports each window's mean node degree, which is 2 along a
+# stretch every path walks identically and rises wherever paths enter and leave.
+# So it locates the graph's tangles directly, rather than by inferring them from
+# a dip in coverage, and it is the one curve here that has no equivalent in an
+# alignment-derived track. Reuses depth_windows.bed; column 4 is mean.degree.
+in_pggb odgi degree -i "/data/$OG" -b /data/depth_windows.bed \
+  | awk -v p="${REF}#1#chr" -v OFS='\t' '$1 == p && $4 + 0 == $4 { print "chr", $2, $3, $4 }' \
+  | sort -k1,1 -k2,2n > ecoli_pggb_degree.bedgraph
+bedGraphToBigWig ecoli_pggb_degree.bedgraph chrom.sizes ecoli_pggb_degree.bw
+
 # ── Graph overview: odgi viz (the "vs odgi viz" comparison figure) ────────────
+# pggb already renders its own 1D and 2D visualizations unless you pass -v, so
+# pggb/*.viz_*.png and pggb/*.lay.draw.png exist by the time this runs. This
+# re-runs viz only to size it for the tutorial figure (the multiqc rasters are
+# thumbnails); nobody reproducing this needs the command to see the picture.
 # A static raster of the graph itself: one row per strain, x-axis = graph node
 # order (the "pangenome sequence"), colored by path coverage. NOT a JBrowse track
 # — the tutorial contrasts this graph-native axis against the four reference-
@@ -198,10 +323,11 @@ in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 
 #
 # A pggb GFA carries no coordinates on its segments (the only reference
 # positions live in the P/W lines), so a window has to be cut out of the graph:
-# extract -E takes every node between the first and last in the range, sort -O
-# compacts the node ids, view -g writes GFA. Keep it small: at base resolution
-# a few hundred bp between five strains already carries a dozen bubbles.
-OG=$(ls pggb/*.smooth.final.og)
+# extract -E takes every node between the first and last in the range (the
+# aggressive option: -c/-d expand by a bounded number of steps/bp instead, which
+# is what the view's own "Graph context: N hops" setting does), sort -O compacts
+# the node ids, view -g writes GFA. Keep it small: at base resolution a few
+# hundred bp between five strains already carries a dozen bubbles.
 in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o - \
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
@@ -321,23 +447,50 @@ cat > ava_track.json <<JSON
 JSON
 jb add-track-json ava_track.json --update --out "$APP"
 
-# projection 2: pangenome variants (matrix display by default)
+# projection 1b: the same picture read out of the graph instead of out of its
+# input, from odgi untangle. Same adapter and same shape as the track above, so
+# the two stack in one synteny view and disagree visibly where the graph
+# resolved a repeat the pairwise alignment did not.
+cp ecoli_pggb_untangle.pif.gz ecoli_pggb_untangle.pif.gz.tbi "$APP/"
+cat > untangle_track.json <<JSON
+{
+  "type": "SyntenyTrack",
+  "trackId": "ecoli_pggb_untangle",
+  "name": "pggb graph: synteny from the graph (odgi untangle)",
+  "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
+  "adapter": {
+    "type": "AllVsAllIndexedPAFAdapter",
+    "pifGzLocation": { "uri": "ecoli_pggb_untangle.pif.gz" },
+    "index": { "location": { "uri": "ecoli_pggb_untangle.pif.gz.tbi" } },
+    "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
+  }
+}
+JSON
+jb add-track-json untangle_track.json --update --out "$APP"
+
+# projection 2: pangenome variants, the decomposed tier (matrix display by
+# default), plus the raw snarl tree as a second track for the LV/PS discussion.
 jb add-track ecoli_pggb.vcf.gz --trackId ecoli_pggb_variants \
-  --name "pggb graph: pangenome variants (vs K12)" -a K12 --load copy --force --out "$APP"
+  --name "pggb graph: pangenome variants (vs $REF)" -a "$REF" --load copy --force --out "$APP"
+jb add-track ecoli_pggb_snarls.vcf.gz --trackId ecoli_pggb_snarls \
+  --name "pggb graph: raw snarl tree (nested, vs $REF)" -a "$REF" --load copy --force --out "$APP"
 
 # projection 3: whole-genome MAF (MafTabixAdapter carries the sample list).
 # add-track-json takes a file/inline JSON (no --load copy), so drop the bed files
-# beside config.json where the relative uris point.
-cp ecoli_pggb.maf.bed.gz ecoli_pggb.maf.bed.gz.tbi "$APP/"
-cat > maf_track.json <<'JSON'
+# beside config.json where the relative uris point. `nhLocation` is the odgi
+# similarity tree built above, which orders and groups the rows; `samples` still
+# names them, so a tree that fails to build leaves the track working.
+cp ecoli_pggb.maf.bed.gz ecoli_pggb.maf.bed.gz.tbi ecoli_pggb.nh "$APP/"
+cat > maf_track.json <<JSON
 {
   "type": "MafTrack",
   "trackId": "ecoli_pggb_maf",
-  "name": "pggb graph: whole-genome alignment (MAF, vs K12)",
-  "assemblyNames": ["K12"],
+  "name": "pggb graph: whole-genome alignment (MAF, vs $REF)",
+  "assemblyNames": ["$REF"],
   "adapter": {
     "type": "MafTabixAdapter",
-    "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+    "samples": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
+    "nhLocation": { "uri": "ecoli_pggb.nh" },
     "uri": "ecoli_pggb.maf.bed.gz"
   }
 }
@@ -346,7 +499,12 @@ jb add-track-json maf_track.json --update --out "$APP"
 
 # projection 4: pangenome depth (autodetected as a QuantitativeTrack bigWig)
 jb add-track ecoli_pggb_depth.bw --trackId ecoli_pggb_depth \
-  --name "pggb graph: pangenome depth (paths over K12)" -a K12 --load copy --force --out "$APP"
+  --name "pggb graph: pangenome depth (paths over $REF)" -a "$REF" --load copy --force --out "$APP"
+
+# projection 4c: graph complexity, the same shape of track over odgi degree
+jb add-track ecoli_pggb_degree.bw --trackId ecoli_pggb_degree \
+  --name "pggb graph: graph complexity (mean node degree over $REF)" -a "$REF" \
+  --load copy --force --out "$APP"
 
 # projection 4b: per-strain presence (one bigWig per strain -> MultiQuantitativeTrack).
 # add-track-json doesn't copy files, so drop the per-strain bigWigs beside config.json.
@@ -516,24 +674,22 @@ with open(path, 'w') as fh:
     json.dump(config, fh, indent=2)
 PY
 
-# ── Default session: all four projections ─────────────────────────────────────
-# view 1 stacks the five strains for the synteny projection; view 2 is the K12
-# reference lane with the depth, variant, and MAF projections beneath the genes.
-cat > session.json <<'JSON'
+# ── Default session ──────────────────────────────────────────────────────────
+# view 1 stacks the strains for the synteny projection; view 2 is the reference
+# lane with the depth, complexity, variant and MAF projections beneath the genes.
+# Both are built from $STRAINS rather than listed, so an edit to the strain table
+# at the top of this script carries through to the session.
+panels=$(for strain in $STRAINS; do printf '{ "assembly": "%s" },' "$strain"; done | sed 's/,$//')
+ribbons=$(for strain in $STRAINS; do [ "$strain" = "${STRAINS%% *}" ] || printf '["ecoli_pggb_ava"],'; done | sed 's/,$//')
+cat > session.json <<JSON
 {
   "name": "E. coli pangenome graph",
   "views": [
     {
       "type": "LinearSyntenyView",
       "init": {
-        "views": [
-          { "assembly": "K12" },
-          { "assembly": "Sakai" },
-          { "assembly": "CFT073" },
-          { "assembly": "NCTC86" },
-          { "assembly": "IAI39" }
-        ],
-        "tracks": [["ecoli_pggb_ava"], ["ecoli_pggb_ava"], ["ecoli_pggb_ava"], ["ecoli_pggb_ava"]],
+        "views": [$panels],
+        "tracks": [$ribbons],
         "drawCurves": false,
         "minAlignmentLength": 10000
       }
@@ -541,9 +697,9 @@ cat > session.json <<'JSON'
     {
       "type": "LinearGenomeView",
       "init": {
-        "assembly": "K12",
+        "assembly": "$REF",
         "loc": "chr:1,000,000-1,010,000",
-        "tracks": ["K12_genes", "ecoli_pggb_depth", "ecoli_pggb_pav", "ecoli_pggb_variants", "ecoli_pggb_maf"]
+        "tracks": ["${REF}_genes", "ecoli_pggb_depth", "ecoli_pggb_degree", "ecoli_pggb_pav", "ecoli_pggb_variants", "ecoli_pggb_maf"]
       }
     }
   ]
@@ -552,12 +708,15 @@ JSON
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the four assemblies, gene tracks, and the pggb-graph"
-echo "projections (synteny, variants, MAF, depth, per-strain presence). Serve it, e.g.:"
+echo "Built $APP/config.json with the assemblies, gene tracks, and the pggb-graph"
+echo "projections (synteny from the wfmash PAF and from odgi untangle, variants in"
+echo "both the decomposed and raw snarl tiers, MAF ordered by an odgi similarity"
+echo "tree, depth, graph complexity, per-strain presence). Serve it, e.g.:"
 echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
 echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
-echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz)."
+echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz); pggb wrote its"
+echo "own 1D and 2D visualizations into pggb/ as well."
 echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window),"
 echo "ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on K12 coordinates),"
 echo "or ecoli_paa_subgraph.gfa (the paa island and the four paths around it)."
