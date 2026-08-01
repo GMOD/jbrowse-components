@@ -70,6 +70,7 @@ export type { SashimiArc } from './features/sashimi/computeOverlay.ts'
 export type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 export type { HighlightBox } from './LinearAlignmentsDisplay/components/computeHighlightBoxes.ts'
 export type { VisibleLabel } from './LinearAlignmentsDisplay/components/computeVisibleLabels.ts'
+export type { SashimiArcSection } from './LinearAlignmentsDisplay/components/sashimiArcs.ts'
 export type { ScrollModel } from './LinearAlignmentsDisplay/components/sectionScreen.ts'
 export type { TooltipPayload } from './LinearAlignmentsDisplay/components/tooltipUtils.ts'
 export type {
