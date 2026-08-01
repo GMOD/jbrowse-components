@@ -68,15 +68,23 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float xR = isTop ? max(c.x1, c.x2) : max(c.x4, c.x3);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
-  //   (1) thin-feature stroke widening: perpFactor·0.5 (1-px perpendicular
-  //       stroke projected onto the x-axis at this slope).
-  //   (2) AA fade at the boundary: 1 px.
+  //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5.
+  //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
+  //       ribbon wider than perpFactor px.
+  //   (3) AA fade at the boundary: 1 px.
+  //
+  // Term (1) scales with the slope of the STEEPER edge, not the centerline
+  // average. The average under-pads whichever edge travels further on a
+  // width-changing ribbon (measured: 0.94px of the AA ramp cropped on corners
+  // (100, 900, 1200, 1180) at h=100, 4.5px on a crossed steep one), which is
+  // the same reasoning that put maxEdgeDx in syntenyFillCurve's pad.
+  //
   // CIGAR indel tiles use the same padded polygon as BASE — they share the
   // analytic edge + smoothstep AA path (fillCoverage), so their perpendicular
   // edges antialiase against the base block instead of stair-stepping.
-  float slope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h;
+  float slope = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2)) / h;
   float perpFactor = sqrt(1.0 + slope * slope);
-  float pad = perpFactor * 0.5 + 1.0;
+  float pad = perpFactor * 0.5 + thinRibbonPad(perpFactor, c) + 1.0;
 
   float y = isTop ? -1.0 : h + 1.0;
 

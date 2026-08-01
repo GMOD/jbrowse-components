@@ -164,15 +164,21 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
     (isCigar > 0.5 || isMarker > 0.5 || fadeThinAlignments < 0.5)
       ? 1.0
       : clamp(perpW, WIDTH_FADE_FLOOR, 1.0);
-  // Per-edge AA, 1px each. dL/dR are already true perpendicular distances, so
-  // the AA width is the length of their screen-space gradient (= 1 at every
-  // slope) — NOT fwidth (=|ddx|+|ddy|), which overshoots by up to √2 on
-  // diagonals and softens slanted ribbon edges. Clamped to bound any residual
-  // derivative spike. See drewcassidy.me/2020/06/26/sdf-antialiasing/.
-  float aaL = clamp(length(float2(ddx(dL), ddy(dL))), 1e-4, 1.5);
-  float aaR = clamp(length(float2(ddx(dR), ddy(dR))), 1e-4, 1.5);
-  return smoothstep(-aaL * 0.5, aaL * 0.5, dL)
-       * smoothstep(-aaR * 0.5, aaR * 0.5, dR) * widthFade;
+  // Per-edge AA, 1px each. dL/dR are constructed as TRUE perpendicular
+  // distances (each divided by its own edge's foreshortening), so the length of
+  // their screen-space gradient is analytically 1 at every slope — the AA width
+  // is a constant, not something to measure. NOT fwidth (=|ddx|+|ddy|), which
+  // overshoots by up to √2 on diagonals and softens slanted ribbon edges. See
+  // drewcassidy.me/2020/06/26/sdf-antialiasing/.
+  //
+  // Measuring it with ddx/ddy instead (what this did before) is not merely
+  // redundant — it is wrong in the two places the derivative stops matching the
+  // analytic value. In the ±1px AA rows above/below the ribbon the caller's `t`
+  // clamps, freezing the edges, and the measured gradient collapses to 1/pf
+  // (0.05-0.32 on slanted ribbons) — a near-hard side edge on the ribbon's top
+  // and bottom rows. At a bowtie's pinch the 2x2 quad straddles the edge-identity
+  // swap and reads 0.707. The constant is right in both.
+  return smoothstep(-0.5, 0.5, dL) * smoothstep(-0.5, 0.5, dR) * widthFade;
 }
 
 // Ribbon edge X positions + per-edge slope foreshortening at a point along the
@@ -210,9 +216,12 @@ public float fillCoverage(float2 localPos, float edge0, float edge1,
                           float h, float fadeThinAlignments) {
   float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, isCigar, isMarker,
                           fadeThinAlignments);
-  float ay = max(length(float2(ddx(localPos.y), ddy(localPos.y))), 1e-4) * 0.5;
-  float cy = smoothstep(-ay, ay, localPos.y)
-           - smoothstep(h - ay, h + ay, localPos.y);
+  // Half-pixel AA at the top/bottom cuts. Both vertex shaders set
+  // localPos.y = screenY - u.yTop exactly, so localPos.y is affine in screen y
+  // with unit slope and its gradient length is 1 by construction — no
+  // derivative to take.
+  float cy = smoothstep(-0.5, 0.5, localPos.y)
+           - smoothstep(h - 0.5, h + 0.5, localPos.y);
   return cx * cy;
 }
 
@@ -255,18 +264,18 @@ public float4 shadeFill(float4 color, float featureId, float coverage,
 
 // Edge-pass fragment output: 1px antialiased black stroke at 0.4 alpha. `dist`
 // is the signed perpendicular distance from the edge centerline in px; the
-// geometry expands ±STROKE_WIDTH (±1px) around a 0.5px half-width, so the
+// geometry expands ±STROKE_EXPAND_PX (±1px) around a 0.5px half-width, so the
 // analytic ramp reaches zero exactly at the quad boundary.
 //
-// Analytic SDF coverage (mirrors wiggle center-line, commit 06ea37ff44): divide
-// the edge distance by the true gradient magnitude (length of the screen-space
-// derivative, = 1 at every angle) rather than fwidth, and bias by +0.5 so the
-// core stays fully opaque. The old fwidth + symmetric-smoothstep form put
-// half-coverage ~0.75px out (a blurry ~1.5px stroke) and widened on diagonals.
+// Analytic SDF coverage (mirrors wiggle center-line, commit 06ea37ff44):
+// measure the edge distance in units of its true gradient magnitude rather than
+// fwidth, and bias by +0.5 so the core stays fully opaque. That gradient is a
+// constant 1: dist runs ±STROKE_EXPAND_PX across a quad that is exactly
+// 2·STROKE_EXPAND_PX wide perpendicular to the edge. The old fwidth +
+// symmetric-smoothstep form put half-coverage ~0.75px out (a blurry ~1.5px
+// stroke) and widened on diagonals.
 public float4 edgeStrokeColor(float dist) {
-  float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-4);
-  float edgeAlpha = clamp((0.5 - abs(dist)) / aa + 0.5, 0.0, 1.0);
-  return float4(0.0, 0.0, 0.0, edgeAlpha * 0.4);
+  return float4(0.0, 0.0, 0.0, clamp(1.0 - abs(dist), 0.0, 1.0) * 0.4);
 }
 
 // Unit normal to an edge tangent (perpendicular in screen space), shared by
@@ -276,4 +285,27 @@ public float4 edgeStrokeColor(float dist) {
 public float2 edgeNormal(float2 tangent) {
   float len = length(tangent);
   return len > 0.001 ? float2(-tangent.y, tangent.x) / len : float2(0.0, 1.0);
+}
+
+// Extra horizontal vertex pad (px) covering perpCoverage's `expand` term, which
+// pushes both edges outward by up to 0.5 PERPENDICULAR px — i.e. up to
+// perpFactor·0.5 horizontal px — to hold a sub-pixel-thin ribbon at a locatable
+// 1px. Both fill passes used to pad only for the AA ramp, so on a steep thin
+// ribbon the geometry cropped that very band: measured 8.4px of lost coverage in
+// straight mode and 90px in curve mode on a 3000px-run / 20px-tall ribbon. The
+// visible result was that the 1px floor silently didn't hold at steep slopes —
+// exactly the whole-genome case it exists for — and the sides came out
+// hard-cut instead of antialiased.
+//
+// Bounded by the ribbon's MINIMUM horizontal width, so a ribbon wider than
+// perpFactor px gets no extra pad at all and the per-segment saving in
+// syntenyFillCurve is untouched. Both modes have edge1 - edge0 =
+// lerp(x2-x1, x3-x4, s) exactly, monotonic in s, so the width can only reach
+// zero mid-ribbon when the two endpoint deltas differ in sign (a bowtie).
+// SYNC: mirrored by `padExtra` in syntenyFillCurvePad.test.ts.
+public float thinRibbonPad(float perpFactor, Corners c) {
+  float dTop = c.x2 - c.x1;
+  float dBot = c.x3 - c.x4;
+  float wMin = dTop * dBot < 0.0 ? 0.0 : min(abs(dTop), abs(dBot));
+  return max(perpFactor * 0.5 - 0.5 * wMin, 0.0);
 }

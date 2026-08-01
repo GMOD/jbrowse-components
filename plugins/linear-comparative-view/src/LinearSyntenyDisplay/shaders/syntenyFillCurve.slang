@@ -97,11 +97,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   evalT(t, c, xL, xR, y);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
-  //   (1) thin-feature stroke widening: perpFactor·0.5 (a 1-px perpendicular
-  //       stroke projected onto the x-axis at THIS segment's steepest slope).
-  //   (2) bezier bulge within the segment: max|s''|·dt²/8 in s-units, scaled
+  //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5, at THIS
+  //       segment's steepest slope.
+  //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
+  //       ribbon wider than perpFactor px, so it costs the common case nothing.
+  //   (3) bezier bulge within the segment: max|s''|·dt²/8 in s-units, scaled
   //       by max edge Δ.
-  //   (3) AA fade at the boundary: 1 px.
+  //   (4) AA fade at the boundary: 1 px.
   //
   // Term (1) is per-segment. It used to use the ribbon-wide maximum, which
   // over-pads every segment but the middle one: local dx/dy peaks at 2× the
@@ -111,7 +113,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // the rasterized-then-discarded area of a thin steep ribbon by a measured
   // 10-17% (`syntenyFillCurvePad.test.ts` computes both).
   //
-  // Term (2) is deliberately still the ribbon-wide bound. Do NOT try to make it
+  // Term (3) is deliberately still the ribbon-wide bound. Do NOT try to make it
   // per-segment via |s''(t)| = |6-12t| (which is 0 at t=0.5, so it looks like
   // free savings): that bounds the curve's deviation from its chord in *t*, but
   // this quad interpolates x linearly in *screen y*, and y(t) is itself
@@ -135,7 +137,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float segSlope = maxEdgeDx / h * sBlendDeriv(tPeak) / yCurveDeriv(tPeak);
   float perpFactor = sqrt(1.0 + segSlope * segSlope);
   float bulgeX = maxEdgeDx * invN * invN * 0.75;
-  float pad = perpFactor * 0.5 + bulgeX + 1.0;
+  float pad = perpFactor * 0.5 + thinRibbonPad(perpFactor, c) + bulgeX + 1.0;
 
   // AA y-pad only at the first segment's top and last segment's bottom; the
   // shared boundaries between adjacent segments must match exactly.

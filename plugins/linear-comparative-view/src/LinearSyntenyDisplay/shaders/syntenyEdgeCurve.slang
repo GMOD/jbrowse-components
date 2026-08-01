@@ -1,7 +1,7 @@
 // Linear-synteny edge pass — curved (bezier ribbon) mode. Draws a 1px
 // antialiased outline around the currently-clicked alignment, tessellating
-// each top/bottom edge into NUM_SEGMENTS pieces and expanding along the
-// edge normal by STROKE_WIDTH/2.
+// each top/bottom edge into NUM_SEGMENTS pieces and expanding ±STROKE_EXPAND_PX
+// along the edge normal — a 2px-wide quad carrying the 1px stroke's AA ramp.
 //! targets: wgsl, glsl
 
 import syntenyTypes;
@@ -10,7 +10,7 @@ import syntenyTypes;
 // deviation that the fill pass's perpendicular pad otherwise absorbs.
 public static const uint NUM_SEGMENTS = 16u;
 public static const uint VERTS_PER_INSTANCE = 2u * NUM_SEGMENTS * 6u;
-static const float STROKE_WIDTH = 1.0;
+static const float STROKE_EXPAND_PX = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -79,8 +79,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float rawDx = edgeIdx == 1u ? c.x3 - c.x2 : c.x4 - c.x1;
   float2 normal = edgeNormal(edgeTangent(rawDx, t));
 
-  float2 pos = float2(edgeX, e.z) + normal * side * STROKE_WIDTH;
-  o.dist = side * STROKE_WIDTH;
+  float2 pos = float2(edgeX, e.z) + normal * side * STROKE_EXPAND_PX;
+  o.dist = side * STROKE_EXPAND_PX;
   o.position = screenToClip(pos, u.resolution);
   return o;
 }

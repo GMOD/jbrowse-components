@@ -1,15 +1,16 @@
 // Linear-synteny edge pass — straight-line mode. Draws a 1px antialiased
 // outline around the currently-clicked alignment (skips all other instances
 // via early-out). Each edge is a single straight line from
-// (top-corner, yTop) to (bottom-corner, yBottom), expanded along the edge
-// normal by STROKE_WIDTH/2 — no tessellation needed.
+// (top-corner, yTop) to (bottom-corner, yBottom), expanded ±STROKE_EXPAND_PX
+// along the edge normal — a 2px-wide quad carrying the 1px stroke's AA ramp.
+// No tessellation needed.
 //! targets: wgsl, glsl
 
 import syntenyTypes;
 
 // 2 edges × 6 verts each (single line-quad per edge).
 public static const uint VERTS_PER_INSTANCE = 12u;
-static const float STROKE_WIDTH = 1.0;
+static const float STROKE_EXPAND_PX = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -54,8 +55,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // Normal to the line (xTop, yTop) → (xBot, yBottom); see edgeNormal.
   float2 normal = edgeNormal(float2(xBot - xTop, u.height));
 
-  float2 pos = float2(edgeX, edgeY) + normal * side * STROKE_WIDTH;
-  o.dist = side * STROKE_WIDTH;
+  float2 pos = float2(edgeX, edgeY) + normal * side * STROKE_EXPAND_PX;
+  o.dist = side * STROKE_EXPAND_PX;
   o.position = screenToClip(pos, u.resolution);
   return o;
 }
