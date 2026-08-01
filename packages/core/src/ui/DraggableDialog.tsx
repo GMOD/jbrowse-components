@@ -23,9 +23,10 @@ const useStyles = makeStyles()(theme => ({
 
 // A drag-repositionable dialog. Renders the shared Dialog so it inherits the
 // content-box input fix and the error boundary, and supplies a draggable title
-// bar as Dialog's `header`.
+// bar as Dialog's `header`. `slotProps` is not offered: the paper slot carries
+// the drag transform, so a caller's would be dropped rather than merged.
 const DraggableDialog = observer(function DraggableDialog(
-  props: DialogProps & { title: string },
+  props: Omit<DialogProps, 'slotProps'> & { title: string },
 ) {
   const { classes } = useStyles()
   const { title, children, onClose, ...rest } = props
@@ -61,10 +62,7 @@ const DraggableDialog = observer(function DraggableDialog(
       {...rest}
       onClose={onClose}
       slotProps={{
-        ...props.slotProps,
-        paper: {
-          style: { transform: `translate(${pos.x}px, ${pos.y}px)` },
-        },
+        paper: { style: { transform: `translate(${pos.x}px, ${pos.y}px)` } },
       }}
       header={
         <DialogTitle

@@ -55,6 +55,15 @@ interface CascadingMenuListProps {
   onNavigateBack?: () => void
 }
 
+// Identity of a submenu row, used both as its React key and to remember which
+// submenu is open. Deliberately not the array index: the items are re-derived on
+// every observable change (a checkbox toggle can add or drop a row above), so an
+// index-keyed "open" flag would follow the position rather than the submenu and
+// the open panel would jump to whichever row landed at that index.
+function submenuKey(label: React.ReactNode) {
+  return `subMenu-${label}`
+}
+
 // Build a `cascading-<kind>-<label>` data-testid, or undefined for non-string
 // labels that can't be slugified
 function makeTestId(kind: string, label: React.ReactNode) {
@@ -81,8 +90,15 @@ function MenuItemLeadingIcon({
 // (true if ANY row needs it) so every row reserves matching slots and the
 // decorations stack into aligned columns down the menu.
 function getMenuColumnFlags(menuItems: JBMenuItem[]) {
+  // a disabled row surfaces its help as a hover tooltip instead of the "?"
+  // button (see DisabledTooltip), so it must not claim the column either — or a
+  // menu whose only help row is disabled reserves a spacer on every row for a
+  // button that never renders
   const hasCheckboxOrRadioWithHelp = menuItems.some(
-    m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
+    m =>
+      (m.type === 'checkbox' || m.type === 'radio') &&
+      m.helpText &&
+      !m.disabled,
   )
   const hasEndAdornment = menuItems.some(
     m => 'endAdornment' in m && m.endAdornment,
@@ -315,9 +331,9 @@ function CascadingMenuList({
   onNavigateBack,
 }: CascadingMenuListProps) {
   const { classes } = useStyles()
-  const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
+  const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
   const closeSubmenu = () => {
-    setOpenSubmenuIdx(undefined)
+    setOpenSubmenu(undefined)
   }
 
   const {
@@ -335,9 +351,10 @@ function CascadingMenuList({
     <>
       {sortedItems.map((item, idx) => {
         if ('subMenu' in item) {
+          const key = submenuKey(item.label)
           return (
             <CascadingSubmenu
-              key={`subMenu-${item.label}`}
+              key={key}
               title={item.label}
               Icon={item.icon}
               inset={hasIcon && !item.icon}
@@ -348,10 +365,10 @@ function CascadingMenuList({
               closeAfterItemClick={closeAfterItemClick}
               onCloseRoot={onCloseRoot}
               onNavigateBack={onNavigateBack}
-              isOpen={openSubmenuIdx === idx && !item.disabled}
+              isOpen={openSubmenu === key && !item.disabled}
               onOpen={() => {
                 if (!item.disabled) {
-                  setOpenSubmenuIdx(idx)
+                  setOpenSubmenu(key)
                 }
               }}
               onClose={() => {

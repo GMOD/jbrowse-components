@@ -3,23 +3,42 @@
 
 import { Menu } from '@mui/material'
 
-import type { MenuProps } from '@mui/material'
+import type { PopoverOrigin } from '@mui/material'
 
-function HoverMenu(props: MenuProps) {
+// A Menu a hovering pointer can cross into: the root (which spans the viewport)
+// is click-through so the gap between the opener row and the panel doesn't
+// swallow the pointer, while the paper itself stays interactive.
+//
+// Only CascadingMenu's submenus render this, so it takes exactly what they pass
+// — the root's pointer-events and the paper slot are its whole point, and a
+// pass-through of the full MenuProps would let a caller quietly override them.
+function HoverMenu({
+  open,
+  anchorEl,
+  onClose,
+  anchorOrigin,
+  transformOrigin,
+  children,
+}: {
+  open: boolean
+  anchorEl: HTMLElement | null
+  onClose: () => void
+  anchorOrigin: PopoverOrigin
+  transformOrigin: PopoverOrigin
+  children: React.ReactNode
+}) {
   return (
     <Menu
-      {...props}
-      style={{
-        pointerEvents: 'none',
-        ...props.style,
-      }}
-      slotProps={{
-        ...props.slotProps,
-        paper: {
-          style: { pointerEvents: 'auto' },
-        },
-      }}
-    />
+      open={open}
+      anchorEl={anchorEl}
+      onClose={onClose}
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
+      style={{ pointerEvents: 'none' }}
+      slotProps={{ paper: { style: { pointerEvents: 'auto' } } }}
+    >
+      {children}
+    </Menu>
   )
 }
 

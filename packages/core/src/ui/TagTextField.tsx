@@ -37,11 +37,12 @@ interface OwnProps {
   quickPicks?: TagQuickPick[]
 }
 
-// `value`, `onChange`, `error`, `helperText`, and the inner maxLength are
-// managed here.
+// `value`, `onChange`, `error`, `helperText`, and the inner maxLength/testid are
+// managed here. `slotProps` is owned too — it carries that maxLength, so a
+// caller-supplied one would be dropped rather than merged; use `inputTestId`.
 type Props = Omit<
   TextFieldProps,
-  'value' | 'onChange' | 'error' | 'helperText'
+  'value' | 'onChange' | 'error' | 'helperText' | 'slotProps'
 > &
   OwnProps
 

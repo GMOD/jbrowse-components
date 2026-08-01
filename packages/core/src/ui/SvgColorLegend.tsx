@@ -77,13 +77,17 @@ export default function SvgColorLegend({
     entries.length > fit ? `+${entries.length - shown.length} more` : undefined
 
   let maxLabelWidth = 0
-  for (const label of overflowLabel === undefined
-    ? shown.map(e => e.label)
-    : [...shown.map(e => e.label), overflowLabel]) {
-    const w = measureLegendText(label, FONT_SIZE)
-    if (w > maxLabelWidth) {
-      maxLabelWidth = w
-    }
+  for (const entry of shown) {
+    maxLabelWidth = Math.max(
+      maxLabelWidth,
+      measureLegendText(entry.label, FONT_SIZE),
+    )
+  }
+  if (overflowLabel !== undefined) {
+    maxLabelWidth = Math.max(
+      maxLabelWidth,
+      measureLegendText(overflowLabel, FONT_SIZE),
+    )
   }
   const totalWidth =
     TEXT_LEFT + maxLabelWidth + 6 + (onDismiss ? DISMISS_GUTTER : 0)
@@ -94,7 +98,6 @@ export default function SvgColorLegend({
         <g
           key={entry.key}
           transform={`translate(0 ${idx * LEGEND_ROW_HEIGHT})`}
-          opacity={entry.hidden ? 0.35 : 1}
         >
           <rect
             x={0}
@@ -103,25 +106,30 @@ export default function SvgColorLegend({
             height={LEGEND_ROW_HEIGHT}
             fill="rgba(255,255,255,0.95)"
           />
-          {entry.marker ??
-            (entry.color === undefined ? null : (
-              <rect
-                x={2}
-                y={2}
-                width={LEGEND_SWATCH}
-                height={LEGEND_SWATCH}
-                fill={entry.color}
-              />
-            ))}
-          <text
-            x={TEXT_LEFT}
-            y={11}
-            fontSize={FONT_SIZE}
-            fill="black"
-            textDecoration={entry.hidden ? 'line-through' : undefined}
-          >
-            {entry.label}
-          </text>
+          {/* only the swatch and label dim for a toggled-off entry — dimming the
+              row group would take the white paper with it, letting the canvas
+              bleed through and making the struck-out label harder to read */}
+          <g opacity={entry.hidden ? 0.35 : 1}>
+            {entry.marker ??
+              (entry.color === undefined ? null : (
+                <rect
+                  x={2}
+                  y={2}
+                  width={LEGEND_SWATCH}
+                  height={LEGEND_SWATCH}
+                  fill={entry.color}
+                />
+              ))}
+            <text
+              x={TEXT_LEFT}
+              y={11}
+              fontSize={FONT_SIZE}
+              fill="black"
+              textDecoration={entry.hidden ? 'line-through' : undefined}
+            >
+              {entry.label}
+            </text>
+          </g>
         </g>
       ))}
       {overflowLabel === undefined ? null : (

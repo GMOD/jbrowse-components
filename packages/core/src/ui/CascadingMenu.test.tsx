@@ -190,3 +190,47 @@ describe('CascadingMenu endAdornment', () => {
     expect(onClick).not.toHaveBeenCalled()
   })
 })
+
+// The open submenu is remembered by identity, not by position. The items are
+// rebuilt on every observable change (see the pin test above), so a row
+// appearing above an open submenu shifts its index — and an index-keyed flag
+// would close it and open whichever submenu slid into the vacated slot.
+describe('CascadingMenu submenus', () => {
+  it('keeps the same submenu open when a row appears above it', () => {
+    const showExtra = observable.box(false)
+    const { getByText, getByTestId } = render(
+      <ThemeProvider theme={theme}>
+        <CascadingMenu
+          open
+          menuItems={() => [
+            ...(showExtra.get() ? [{ label: 'Extra', onClick: () => {} }] : []),
+            { label: 'Colors', subMenu: [{ label: 'Red', onClick: () => {} }] },
+            {
+              label: 'Shapes',
+              subMenu: [{ label: 'Square', onClick: () => {} }],
+            },
+          ]}
+          onMenuItemClick={cb => {
+            cb()
+          }}
+          onClose={() => {}}
+        />
+      </ThemeProvider>,
+    )
+    // aria-expanded rather than the panel contents: a closing MUI Menu stays
+    // mounted through its exit transition, so its rows outlive the state change
+    const expanded = (label: string) =>
+      getByTestId(`cascading-submenu-${label}`).getAttribute('aria-expanded')
+
+    fireEvent.mouseOver(getByText('Colors'))
+    expect(getByText('Red')).toBeTruthy()
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
+
+    act(() => {
+      runInAction(() => {
+        showExtra.set(true)
+      })
+    })
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
+  })
+})

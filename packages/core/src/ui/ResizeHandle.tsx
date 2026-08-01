@@ -83,6 +83,10 @@ function ResizeHandle({
 
   return (
     <div
+      // caller props first: spread after the handlers below, a stray
+      // onPointerMove/onPointerUp would silently replace the drag's own and
+      // leave a press that never resizes and never ends
+      {...props}
       // Claims the press: gesture ancestors (the LGV click-drag pan, MAF's
       // drag-selection) test `closest('[data-gesture-owner]')` and don't begin
       // their own drag. It's a marker rather than a `stopPropagation` because
@@ -102,7 +106,6 @@ function ResizeHandle({
         handlers.onPointerDown(event)
         onPointerDown?.(event)
       }}
-      {...props}
     />
   )
 }

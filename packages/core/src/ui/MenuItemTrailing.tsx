@@ -30,25 +30,6 @@ function MenuItemValueGlyph({
   )
 }
 
-// A row's help affordance: a "?" that opens the help dialog, or — on a
-// checkbox/radio row lacking help that shares a menu with rows that have it — an
-// invisible spacer of the same footprint so the value glyphs stay column-aligned.
-function MenuItemHelpSlot({
-  item,
-  isCheckOrRadio,
-  reserveSpace,
-}: {
-  item: ClickableMenuItem
-  isCheckOrRadio: boolean
-  reserveSpace: boolean
-}) {
-  return item.helpText && !item.disabled ? (
-    <CascadingMenuHelpIconButton helpText={item.helpText} label={item.label} />
-  ) : isCheckOrRadio && reserveSpace ? (
-    <CascadingMenuHelpIconSpacer />
-  ) : null
-}
-
 // Rightmost fixed-width column holding an item's endAdornment (e.g. the "default
 // for all" pin). Reserved on every row of a menu that has any adornment so they
 // right-align into their own column.
@@ -87,6 +68,15 @@ export function MenuItemTrailing({
 }) {
   const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
   const hasActionColumn = hasCheckboxOrRadioWithHelp || hasEndAdornment
+  // a disabled row can't open the help popover (pointer-events:none), so its
+  // helpText is surfaced as a hover tooltip by the row instead
+  const helpButton =
+    item.helpText && !item.disabled ? (
+      <CascadingMenuHelpIconButton
+        helpText={item.helpText}
+        label={item.label}
+      />
+    ) : undefined
   return (
     <>
       <div style={{ flexGrow: 1, minWidth: 10 }} />
@@ -99,22 +89,17 @@ export function MenuItemTrailing({
       ) : null}
       {sharedActionColumn ? (
         <MenuItemEndAdornmentSlot>
-          {item.helpText && !item.disabled ? (
-            <CascadingMenuHelpIconButton
-              helpText={item.helpText}
-              label={item.label}
-            />
-          ) : item.endAdornment ? (
-            item.endAdornment
-          ) : null}
+          {helpButton ?? item.endAdornment}
         </MenuItemEndAdornmentSlot>
       ) : (
         <>
-          <MenuItemHelpSlot
-            item={item}
-            isCheckOrRadio={isCheckOrRadio}
-            reserveSpace={hasCheckboxOrRadioWithHelp}
-          />
+          {/* on a checkbox/radio row lacking help that shares a menu with rows
+              that have it, an invisible spacer of the same footprint keeps the
+              value glyphs column-aligned */}
+          {helpButton ??
+            (isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
+              <CascadingMenuHelpIconSpacer />
+            ) : null)}
           {hasEndAdornment ? (
             <MenuItemEndAdornmentSlot>
               {item.endAdornment}
