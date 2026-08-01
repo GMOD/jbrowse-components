@@ -38,8 +38,9 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float lineLengthBp = float(inst.startEnd.y - inst.startEnd.x);
   float lineWidthPx = lineLengthBp / u.bpPerPx;
 
+  // color/dist are seeded for the OFFSCREEN early-outs below, whose culled
+  // triangles never read a varying; the drawn path overwrites both.
   VsOut o;
-  o.position = float4(0.0);
   o.color = float4(0.0);
   o.dist = 0.0;
 
@@ -72,13 +73,17 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
 
-  float halfW = CHEVRON_W_PX / u.canvasWidth;
-  float halfH = CHEVRON_H_PX / u.canvasHeight;
+  float halfW = pxToClipW(CHEVRON_W_PX * 0.5, u);
+  float halfH = pxToClipH(CHEVRON_H_PX * 0.5, u);
   // Extrude geometry 1px per side for fwidth-based AA in the fragment.
-  float coreHalfThickness = CHEVRON_THICKNESS_PX / u.canvasHeight;
-  float aaPad = 2.0 / u.canvasHeight;
+  float coreHalfThickness = pxToClipH(CHEVRON_THICKNESS_PX * 0.5, u);
+  float aaPad = pxToClipH(1.0, u);
   float extHalfThickness = coreHalfThickness + aaPad;
-  // Perpendicular-pixel-distance carried by `dist` varying.
+  // Half-extent of the `dist` varying: signed *vertical* px offset from the
+  // arm's centerline, ±(core half-thickness + aaPad). The fragment's fwidth
+  // divide converts it to a screen-space distance, which folds in the arm's
+  // slant, so the drawn arm lands within a few hundredths of a px of the
+  // Canvas2D path's CHEVRON_THICKNESS_PX stroke.
   float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
   float dir = flipX(inst.direction, u);
 

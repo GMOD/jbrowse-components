@@ -3,8 +3,10 @@
 // "this feature keeps going". Uses its own instance buffer (uploaded by
 // GpuCanvasFeatureRenderer alongside rects) that carries startEnd/y/height/color
 // from the rect data plus a strand field so the arrows point in the feature's
-// genomic direction — letting users read strand even when both feature ends are
-// off-screen.
+// direction — letting users read strand even when both feature ends are
+// off-screen. The strand is genomic, so it goes through `flipX` like the strand
+// arrows' and chevrons' directions do: on a reversed block a + feature runs
+// right-to-left on screen and its markers must point left with it.
 //
 // The block's viewport is set to its on-screen (scissored) span, so clip x = ±1
 // is the visible left/right edge: a rect whose start maps left of -1 (or end
@@ -79,10 +81,10 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   uint tv   = vid % 3u;   // vertex within the triangle
 
   bool isRight = chev < 2u;
-  // Clip ±1 spans the block's visible region (abs(bpRangeX.z) bp wide); convert
-  // the px overhang threshold into that clip space so the gate is zoom-aware.
-  float blockWidthPx   = abs(u.bpRangeX.z) / u.bpPerPx;
-  float minOverhangClip = CONT_MIN_OVERHANG_PX / blockWidthPx * 2.0;
+  // Clip ±1 spans the block's visible region, whose width in px is u.canvasWidth
+  // (see featureGlyphUniforms.slang) — so the px overhang threshold converts to
+  // clip like any other px length, and the gate is zoom-aware for free.
+  float minOverhangClip = pxToClipW(CONT_MIN_OVERHANG_PX, u);
   // The rect runs far enough off this screen edge (overhang > threshold) while
   // still reaching into view — and the edge is the real canvas edge, not an
   // internal seam between displayedRegions (a feature spilling past a sub-region
@@ -101,11 +103,10 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  float marginClip = CONT_EDGE_MARGIN_PX / u.canvasWidth * 2.0;
-  float triWClip   = CONT_TRI_W_PX / u.canvasWidth * 2.0;
-  float gapClip    = CONT_TRI_GAP_PX / u.canvasWidth * 2.0;
-  float halfHPx    = min(CONT_TRI_HALF_H_PX, inst.height * 0.4);
-  float halfHClip  = halfHPx / u.canvasHeight * 2.0;
+  float marginClip = pxToClipW(CONT_EDGE_MARGIN_PX, u);
+  float triWClip   = pxToClipW(CONT_TRI_W_PX, u);
+  float gapClip    = pxToClipW(CONT_TRI_GAP_PX, u);
+  float halfHClip  = pxToClipH(min(CONT_TRI_HALF_H_PX, inst.height * 0.4), u);
 
   float cy = snapBoxCenterY(inst.y + inst.height * 0.5, inst.height, u.scrollY, u.canvasHeight);
 
@@ -115,8 +116,11 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   float pairIndex = float(isRight ? chev : chev - 2u);
   // anchor: the back (flat edge) of the triangle, always margin+gap*pair px inside
   float anchorX = edgeX - edgeSide * (marginClip + gapClip * pairIndex);
-  // For strand=0 fall back to outward so strand-less features still show markers.
-  float effectiveStrand = inst.strand == 0.0 ? edgeSide : inst.strand;
+  // Genomic strand → screen direction, so a reversed block's markers point the
+  // way its glyphs run. For strand=0 fall back to outward so strand-less
+  // features still show markers.
+  float screenStrand = flipX(inst.strand, u);
+  float effectiveStrand = screenStrand == 0.0 ? edgeSide : screenStrand;
   // 1 when strand points toward this edge, 0 when it points away
   float strandMatchesEdge = max(0.0, effectiveStrand * edgeSide);
   float apexX = anchorX - edgeSide * triWClip * (1.0 - strandMatchesEdge);

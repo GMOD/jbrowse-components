@@ -259,6 +259,7 @@ function strokeChevron(
 function drawContinuation(
   ctx: Ctx2D,
   region: RegionRenderData,
+  block: BpRegionBounds,
   toX: BpToScreen,
   scrollY: number,
   scissorX: number,
@@ -309,7 +310,11 @@ function drawContinuation(
         scrollY,
       )
       const halfH = Math.min(CONT_TRI_HALF_H_PX, region.rectHeights[i]! * 0.4)
-      const strand = region.rectStrands[i]!
+      // Genomic strand → screen direction, so a reversed block's markers point
+      // the way its glyphs run — same flip drawLines/drawArrows apply, and
+      // continuation.slang's `flipX(inst.strand, u)`.
+      const rawStrand = region.rectStrands[i]!
+      const strand = block.reversed ? -rawStrand : rawStrand
       if (offRight) {
         const effectiveStrand = strand === 0 ? 1 : strand
         const strandMatchesEdge = Math.max(0, effectiveStrand) // edgeSide=1
@@ -363,6 +368,7 @@ export function drawFeatureBlocks(
       drawContinuation(
         ctx,
         region,
+        block,
         toX,
         scrollY,
         clip.scissorX,

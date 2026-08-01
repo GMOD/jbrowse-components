@@ -36,9 +36,9 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
 
   float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
 
-  float stemLength = STEM_LENGTH_PX / u.canvasWidth * 2.0;
-  float stemHalf = STEM_HALF_H_PX / u.canvasHeight * 2.0;
-  float headHalf = HEAD_HALF_H_PX / u.canvasHeight * 2.0;
+  float stemLength = pxToClipW(STEM_LENGTH_PX, u);
+  float stemHalf = pxToClipH(STEM_HALF_H_PX, u);
+  float headHalf = pxToClipH(HEAD_HALF_H_PX, u);
 
   float dir = flipX(inst.direction, u);
 

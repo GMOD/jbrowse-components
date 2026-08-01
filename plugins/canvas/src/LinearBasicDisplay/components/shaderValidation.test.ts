@@ -6,12 +6,14 @@ import path from 'node:path'
 import {
   arrowShader,
   chevronShader,
+  continuationShader,
   lineShader,
   rectShader,
 } from '../passes/index.ts'
 
 const ARROW_SHADER = arrowShader.WGSL_SOURCE
 const CHEVRON_SHADER = chevronShader.WGSL_SOURCE
+const CONTINUATION_SHADER = continuationShader.WGSL_SOURCE
 const LINE_SHADER = lineShader.WGSL_SOURCE
 const RECT_SHADER = rectShader.WGSL_SOURCE
 
@@ -41,6 +43,7 @@ const wgslShaders: [string, string][] = [
   ['line', LINE_SHADER],
   ['chevron', CHEVRON_SHADER],
   ['arrow', ARROW_SHADER],
+  ['continuation', CONTINUATION_SHADER],
 ]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip

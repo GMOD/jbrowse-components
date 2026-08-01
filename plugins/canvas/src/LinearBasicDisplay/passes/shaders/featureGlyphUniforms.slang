@@ -12,6 +12,12 @@ public struct FeatureGlyphUniforms {
   // reversed blocks, flipping clip-x in hpToClipX. See blockClipUtils.ts.
   public float3 bpRangeX;
   public float  canvasHeight;
+  // NOT the canvas width: the renderer writes the block's *scissored* width, the
+  // same span clip x = ±1 covers (bpRangeX carries the clipped bp range). Px↔clip
+  // conversions and the continuation pass's edge tests are all block-local, so
+  // this is the width they must measure against. The true canvas width never
+  // reaches a shader — `canvasEdgeFlags` consumes it on the CPU and hands the
+  // result down as left/rightIsCanvasEdge.
   public float  canvasWidth;
   public float  scrollY;
   public float  bpPerPx;
@@ -34,13 +40,21 @@ public struct FeatureGlyphUniforms {
 public float bpToClipX(uint bp, FeatureGlyphUniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
-public float bpToLinear(uint bp, FeatureGlyphUniforms u) {
-  return hpScaleLinear(hpSplitUint(bp), u.bpRangeX, u.zero);
-}
 // Pre-split variant for cases where the caller already has a float2 split
 // (e.g. after arithmetic on split components).
 public float hpClipX(float2 splitPos, FeatureGlyphUniforms u) {
   return hpToClipX(splitPos, u.bpRangeX, u.zero);
+}
+// CSS px → clip-space *length*. Clip spans 2 units across the block's visible
+// width / the canvas height, so a px length is `px * 2 / size`. Spell every px
+// dimension through these: writing `HALF_W_PX / u.canvasWidth` gives the same
+// number but silently folds the ÷2 into the conversion, so the constant reads
+// as a full width while meaning a half one.
+public float pxToClipW(float px, FeatureGlyphUniforms u) {
+  return px * 2.0 / u.canvasWidth;
+}
+public float pxToClipH(float px, FeatureGlyphUniforms u) {
+  return px * 2.0 / u.canvasHeight;
 }
 // Flip a value's sign when the block is reversed (branchless lerp). Used for
 // both clip-space positions and direction scalars (+1/-1).
