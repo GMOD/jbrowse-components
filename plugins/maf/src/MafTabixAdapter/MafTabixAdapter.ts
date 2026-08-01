@@ -48,13 +48,20 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     return ObservableCreate<Feature>(async observer => {
       const { adapter } = await this.setupPre(opts)
-      let firstAssemblyNameFound: string | undefined
       const refAssemblyName = this.getConf('refAssemblyName')
       const sampleIds = buildSampleFilter(opts)
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const data = (feature.get('field5') as string).split(',')
         const alignments: Record<string, AlignmentRecord> = {}
+        // Per feature, not per query: the last-resort reference is this
+        // stanza's own first species. MAF puts the reference first in every
+        // stanza, so this is the same answer on a well-formed file — but
+        // carrying one stanza's choice across the rest meant a stanza that
+        // happened to lack that species resolved to no reference sequence at
+        // all, and a block with an empty reference has no genomic extent, so
+        // it vanished from the rows and from coverage.
+        let firstAssemblyNameFound: string | undefined
 
         for (let j = 0, l = data.length; j < l; j++) {
           const entry = parseMafTabixEntry(data[j]!, sampleIds)

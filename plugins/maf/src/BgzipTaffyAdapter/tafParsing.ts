@@ -207,7 +207,10 @@ export function blockToFeature(
   }
 
   return {
-    uniqueId: `${row0.start}-${row0.length}`,
+    // Qualified by the reference row's sequence name: `start`+`length` alone
+    // repeats across chromosomes, and a feature id has to survive being read
+    // outside the one region query that produced it.
+    uniqueId: `${row0.sequenceName}-${row0.start}-${row0.length}`,
     start: row0.start,
     end: row0.start + row0.length,
     strand: row0.strand,

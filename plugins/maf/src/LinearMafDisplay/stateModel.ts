@@ -788,6 +788,20 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * The per-sample rows area has something to draw: the view can place it,
+         * the rows are shown at all, and the row set is known.
+         *
+         * Every rows layer is a full per-cell scan of the visible blocks, and
+         * with `showAlignments` off the area is 0px tall — so the gate lives
+         * here rather than being re-spelled by each `visible*` getter, which is
+         * how the summary bars came to be the only rows layer that could run
+         * before the view was initialized.
+         */
+        get rowsVisible() {
+          return self.lgv.initialized && self.showAlignments && !!self.sources
+        },
+        /**
+         * #getter
          * Max CSS-px height the rows canvas may take before its backing store
          * (`× dpr`) hits the browser/GPU canvas limit. The single ceiling both the
          * fit-target sizing and the `rowHeight` cap respect.
@@ -1368,17 +1382,13 @@ export default function stateModelFactory(
           rpcDataMap: self.rpcDataMap,
           ...self.rowGeometry(),
         })
-        // Every rows overlay is a full per-cell scan of the visible blocks, and
-        // with `showAlignments` off the rows area is 0 px tall — so gate them all
-        // here rather than let each one scan for a layer nothing paints.
-        const rowsVisible = () => self.lgv.initialized && self.showAlignments
         return {
           /**
            * #getter
            * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
            */
           get visibleEmptyLines() {
-            return rowsVisible()
+            return self.rowsVisible
               ? computeVisibleEmptyLines(overlayParams())
               : []
           },
@@ -1387,7 +1397,7 @@ export default function stateModelFactory(
            * Positioned insertion markers (interbase) for the visible aligned rows.
            */
           get visibleInsertions() {
-            return rowsVisible()
+            return self.rowsVisible
               ? computeVisibleInsertions(overlayParams())
               : []
           },
@@ -1397,7 +1407,9 @@ export default function stateModelFactory(
            * the deleted-base count inside each run when it fits.
            */
           get visibleDeletions() {
-            return rowsVisible() ? computeVisibleDeletions(overlayParams()) : []
+            return self.rowsVisible
+              ? computeVisibleDeletions(overlayParams())
+              : []
           },
           /**
            * #getter
@@ -1405,7 +1417,7 @@ export default function stateModelFactory(
            * Empty unless the indicator is toggled on.
            */
           get visibleInversions() {
-            return rowsVisible() && self.showInversions
+            return self.rowsVisible && self.showInversions
               ? computeVisibleInversions(overlayParams())
               : []
           },
@@ -1507,25 +1519,19 @@ export default function stateModelFactory(
          * rendering (the identity plot and codon view both replace the letters).
          */
         get visibleLabels() {
-          const view = self.lgv
           // Suppressed in any non-base rendering (identity plot / codon view both
           // replace the per-base letters).
-          if (
-            !view.initialized ||
-            !self.showAlignments ||
-            !self.sources ||
-            self.resizing ||
-            self.activeRowRendering !== 'bases'
-          ) {
-            return []
-          }
-          return computeVisibleLabels({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            ...self.rowGeometry(),
-            showAllLetters: self.showAllLetters,
-            showAsUpperCase: self.showAsUpperCase,
-          })
+          return self.rowsVisible &&
+            !self.resizing &&
+            self.activeRowRendering === 'bases'
+            ? computeVisibleLabels({
+                view: self.lgv,
+                rpcDataMap: self.rpcDataMap,
+                ...self.rowGeometry(),
+                showAllLetters: self.showAllLetters,
+                showAsUpperCase: self.showAsUpperCase,
+              })
+            : []
         },
         /**
          * #getter
@@ -1535,16 +1541,14 @@ export default function stateModelFactory(
          * extra species.
          */
         get visibleSummaryBars() {
-          const view = self.lgv
-          if (!self.showSummary || !self.showAlignments || !self.sources) {
-            return []
-          }
-          return computeVisibleSummaryBars({
-            view,
-            summaryDataMap: self.summaryDataMap,
-            rowIndexBySrc: self.rowIndexBySrc,
-            ...self.rowGeometry(),
-          })
+          return self.rowsVisible && self.showSummary
+            ? computeVisibleSummaryBars({
+                view: self.lgv,
+                summaryDataMap: self.summaryDataMap,
+                rowIndexBySrc: self.rowIndexBySrc,
+                ...self.rowGeometry(),
+              })
+            : []
         },
         /**
          * #getter
@@ -1554,21 +1558,14 @@ export default function stateModelFactory(
          * for species the track doesn't list drop out.
          */
         get visibleFrames(): FrameMarker[] {
-          const view = self.lgv
-          if (
-            !view.initialized ||
-            !self.showAlignments ||
-            !self.annotationsActive ||
-            !self.sources
-          ) {
-            return []
-          }
-          return computeVisibleAnnotations({
-            view,
-            framesDataMap: self.framesDataMap,
-            rowIndexBySrc: self.rowIndexBySrc,
-            ...self.rowGeometry(),
-          })
+          return self.rowsVisible && self.annotationsActive
+            ? computeVisibleAnnotations({
+                view: self.lgv,
+                framesDataMap: self.framesDataMap,
+                rowIndexBySrc: self.rowIndexBySrc,
+                ...self.rowGeometry(),
+              })
+            : []
         },
         /**
          * #getter
@@ -1576,8 +1573,7 @@ export default function stateModelFactory(
          */
         get codonCellsActive() {
           return (
-            self.lgv.initialized &&
-            self.showAlignments &&
+            self.rowsVisible &&
             self.activeRowRendering === 'codon' &&
             !!self.defaultCodonSpecies
           )

@@ -17,6 +17,13 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  * Unlike coverage its axis is a fixed 0–100% scale, so it always has ticks. The
  * `codon` mode swaps per-base identity for per-codon amino-acid identity; both
  * share the band geometry and palette.
+ *
+ * The swap is keyed on `codonConservationActive`, not on `conservationMode`
+ * alone: codons need frames to define them and per-base blocks to translate, so
+ * the mode selects the codon band only where those exist. Reading the raw mode
+ * left the band permanently blank on a track configured `conservationMode:
+ * 'codon'` with no `annotationAdapter` — `visibleCodonConservation` is gated on
+ * the same getter and returns nothing there.
  */
 const MafConservationBand = observer(function MafConservationBand({
   model,
@@ -28,7 +35,7 @@ const MafConservationBand = observer(function MafConservationBand({
   const theme = useTheme()
   const {
     showConservation,
-    conservationMode,
+    codonConservationActive,
     conservationHeight,
     coverageDisplayHeight,
   } = model
@@ -49,7 +56,7 @@ const MafConservationBand = observer(function MafConservationBand({
           canvasWidth: model.lgv.width,
           theme,
         }
-        if (conservationMode === 'codon') {
+        if (codonConservationActive) {
           drawCodonConservation(ctx, model.visibleCodonConservation, state)
         } else {
           drawConservation(ctx, model.renderBlocks, model.rpcDataMap, state)

@@ -33,7 +33,7 @@ const MafBandLabels = observer(function MafBandLabels({
   const {
     showCoverage,
     showConservation,
-    conservationMode,
+    codonConservationActive,
     coverageDisplayHeight,
   } = model
   return showCoverage && showConservation ? (
@@ -42,7 +42,8 @@ const MafBandLabels = observer(function MafBandLabels({
         Coverage
       </div>
       <div className={classes.label} style={{ top: coverageDisplayHeight }}>
-        {conservationMode === 'codon'
+        {/* names what the band is actually drawing, not the requested mode */}
+        {codonConservationActive
           ? 'Conservation (aa identity)'
           : 'Conservation (% identity)'}
       </div>

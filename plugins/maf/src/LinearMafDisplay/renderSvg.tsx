@@ -78,7 +78,7 @@ function MafSvgBody({
     showCoverage,
     coverageDomain,
     showConservation,
-    conservationMode,
+    codonConservationActive,
     conservationHeight,
     activeRowRendering,
     rowProportion,
@@ -119,7 +119,9 @@ function MafSvgBody({
             height={conservationHeight}
             opts={opts}
             paint={ctx => {
-              if (conservationMode === 'codon') {
+              // Same gate as the on-screen band: the codon band only replaces
+              // the per-base one where frames actually define codons.
+              if (codonConservationActive) {
                 drawCodonConservation(ctx, model.visibleCodonConservation, {
                   conservationHeight,
                   canvasWidth: width,
