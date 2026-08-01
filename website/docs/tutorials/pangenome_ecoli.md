@@ -15,6 +15,13 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
+:::caution Experimental
+
+The graph view is a beta plugin, and this tutorial covers experimental ideas. We
+welcome your [feedback](/contact).
+
+:::
+
 ## Prerequisites
 
 - `docker`, for the pggb image, which also carries odgi

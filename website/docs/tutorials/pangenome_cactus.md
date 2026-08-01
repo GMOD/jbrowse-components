@@ -16,6 +16,13 @@ the result into a graph.
 This tutorial builds a graph from five _E. coli_ strains and loads four views of
 it in JBrowse: synteny, variants, a whole-genome alignment, and depth.
 
+:::caution Experimental
+
+This tutorial covers experimental ideas, and the graph view it links to is a
+beta plugin. We welcome your [feedback](/contact).
+
+:::
+
 ## Prerequisites
 
 - `docker`, for the cactus image (which carries odgi, halSynteny, hal2maf, and

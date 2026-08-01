@@ -35,6 +35,8 @@ const isRealDoc = allDocs.some(doc => entrySlug(doc.id) === currentSlug)
 const mdHref = isRealDoc
   ? `${baseUrl}/docs/${currentSlug || 'index'}.md`
   : undefined
+// every tutorial gets the same feedback line, so no page carries its own copy
+const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
 ---
 
 <SidebarLayout
@@ -49,6 +51,14 @@ const mdHref = isRealDoc
     <Breadcrumbs currentSlug={currentSlug} />
     <h1>{title}</h1>
     <slot />
+    {
+      isTutorial && (
+        <p class="tutorial-feedback">
+          Feedback on this tutorial is welcome:{' '}
+          <a href={`${baseUrl}/contact/`}>contact us</a>.
+        </p>
+      )
+    }
   </article>
   <CopyMarkdown markdown={rawMarkdown} title={title} />
   {toc.length > 0 && <TableOfContents toc={toc} />}
@@ -153,6 +163,14 @@ const mdHref = isRealDoc
     min-width: 0;
     line-height: 1.7;
     overflow-wrap: break-word;
+  }
+
+  .tutorial-feedback {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
   }
 
   .docs-content h1 {

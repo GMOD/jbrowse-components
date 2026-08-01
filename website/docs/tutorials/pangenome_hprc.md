@@ -17,6 +17,13 @@ JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
 projections we prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
+:::caution Experimental
+
+The graph view is a beta plugin, and this tutorial covers experimental ideas. We
+welcome your [feedback](/contact).
+
+:::
+
 ## Prerequisites
 
 - every track on this page, assembled, at
