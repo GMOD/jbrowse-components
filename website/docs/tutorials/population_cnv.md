@@ -7,39 +7,37 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** point a `MultiQuantitativeTrack` at per-sample copy-number BigWigs,
-render it as a `multirowdensity` heatmap with the bicolor pivot at the diploid
-baseline of 2, and every individual becomes one row whose color encodes a copy
-number. Past a few hundred samples the format becomes the bottleneck, so the
+**TL;DR:** point a `MultiQuantitativeTrack` at per-sample copy-number BigWigs
+and render it as a `multirowdensity` heatmap, with the color pivot at the
+diploid baseline of 2. Every individual becomes one row, colored by copy number.
+Past a few hundred samples the per-file requests become the bottleneck, so the
 second half packs the same values into one Zarr store.
 
 ## Prerequisites
 
-- A JBrowse 2 instance to add tracks to (see the
-  [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
-- The per-sample copy-number BigWigs, hosted, each under 600 KB for the whole
-  genome:
-
-| File                                                                                | What                                   |
-| ----------------------------------------------------------------------------------- | -------------------------------------- |
-| `https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw` | one individual's copy number, 1kb bins |
+- a JBrowse instance to paste a track into (see the
+  [web quickstart](/docs/quickstart_web))
+- `node` and a checkout of this repository, to
+  [build a Zarr store](#build-the-store)
+- QuicK-mer2 and a 30x alignment, to add
+  [samples of your own](#your-own-samples)
 
 ## The QuicK-mer2 estimates
 
-These are [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates over the
-30x 1000 Genomes panel, produced by the Kidd lab at the University of Michigan
-and published as the [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG)
-track hub, whose `trackDb` lists all 2504 samples across 26 populations. That
-hub serves bigBed heat maps for the UCSC browser. The files above are the lab's
-raw per-sample bigWig estimates, re-hosted unmodified on `jbrowse.org`. The
-lab's own download share for those is offline, so the copies above are what
-these examples use. **If you use them, cite
+The values are [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) copy-number
+estimates over the 30x 1000 Genomes panel, from the Kidd lab at the University
+of Michigan. Their [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track
+hub publishes bigBed heat maps for the UCSC browser, and its `trackDb` lists all
+2504 samples across 26 populations. The files this page reads are the lab's raw
+per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
+unmodified at
+`https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw`
+because the lab's own download share is offline. **If you use them, cite
 [Shen and Kidd 2020](https://doi.org/10.3390/genes11020141).**
 
-QuicK-mer2 counts k-mers that occur exactly once in the reference, which is what
-makes it read _paralogs_ apart instead of collapsing a gene family into one
-averaged pile. That property is the whole reason this tutorial has anything to
-show.
+QuicK-mer2 counts only k-mers that occur exactly once in the reference, so it
+reads _paralogs_ apart instead of collapsing a gene family into one averaged
+pile. That is the whole reason this tutorial has anything to show.
 
 <Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies, and the bar top right is the scale. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where copy number runs from zero to ten across the panel." src="/img/cnv1000g/ccl3l1_depth.png" />
 
@@ -85,17 +83,15 @@ display settings turn that into a copy-number heatmap:
   signal".
 - [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore) and
   [`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore) pin the
-  scale, and copy number is the kind of quantity that wants pinning: 2 means the
-  same thing in every window, so the color should too. Nearly every bin of
-  nearly every sample sits at the baseline, so the default autoscale tracks the
-  noise around it and clips the amplifications, and any autoscale rescales per
-  window, which makes one color mean a different copy number after every
-  navigation.
+  scale. Two copies mean the same thing in every window, so the color should
+  too, and autoscale breaks that twice over: nearly every bin sits at the
+  baseline, so it follows the noise there and clips the amplifications, and it
+  rescales after every navigation.
 
-  Pick the bounds **symmetric around the pivot**. The ramp divides both sides by
-  the longer one, so 0 to 6 around a pivot of 2 would cap a homozygous deletion
-  at half saturation, the same intensity as a single extra copy pair. 0 to 4
-  lets both extremes saturate. Gains past 4 clamp, which the legend shows.
+  Keep the bounds **symmetric around the pivot**. The ramp divides both sides by
+  the longer one, so 0 to 6 would cap a homozygous deletion at half saturation,
+  the same shade as one extra copy. 0 to 4 lets both extremes saturate, and
+  gains past 4 clamp, which the legend shows.
 
 Then run **Clustering → Cluster rows by score** in the track menu. Rows are in
 file order until you do, and copy-number classes only read as blocks once
@@ -134,21 +130,20 @@ Where the variation does fit the representation, they agree:
 
 ## Scaling past one population
 
-The track above is 104 individuals because that is roughly where one BigWig per
-sample stops being pleasant, and the reason is not size. Reading the window in
-this tutorial's figures out of the hosted files:
+The track above stops at 104 individuals because that is about where one BigWig
+per sample stops being pleasant, and size is not the reason. Reading this
+tutorial's window out of the hosted files:
 
-- One BigWig is under 600 KB for the whole genome at 1 kb bins, and the window
-  is a couple of kilobytes of that.
-- Filling it takes 625 HTTP requests, six per file. A BigWig has to read its
-  header, its chrom B-tree and its R-tree index before it knows where a region's
-  values live, and each of those waits on the one before it.
-- A range request to the host costs about 210 ms, so the cost is latency
-  multiplied by file count rather than bandwidth. The full panel is 24 times the
-  files.
+- one BigWig is under 600 KB for the whole genome at 1 kb bins, and the window
+  is a couple of kilobytes of that
+- filling it takes 625 requests, six per file. A BigWig reads its header, its
+  chrom B-tree and its R-tree index before it knows where a region's values
+  live, and each of those waits on the one before it
+- a range request to the host costs about 210 ms, so the cost is latency times
+  file count rather than bandwidth, and the full panel is 24 times the files
 
 The fix is a format that answers the same question in a couple of requests: one
-array, samples by bins, chunked so that a chunk holds every sample over a span
+array of samples by bins, chunked so that a chunk holds every sample over a span
 of the genome.
 
 [Zarr](https://zarr.dev/) v3 is that format, and it needs no tile server:
@@ -248,25 +243,57 @@ Unmeasured bins are `NaN` rather than zero. QuicK-mer2 leaves gaps where there
 are no unique k-mers, and a gap drawn as zero coverage reads as a homozygous
 deletion.
 
-A `group` costs the heatmap nothing. Grouped samples share a synthesized color,
-but where that color lands depends on the rendering: in a line or xy plot it is
-the sample's own color, and in density, where the score already owns the color
-ramp, it tints the row label instead. So the populations show up beside the rows
-without touching the red-to-blue scale.
+The `group` column costs the heatmap nothing. Grouped samples share a
+synthesized color, which in a line or xy plot is the sample's own color. In
+density the score already owns the color ramp, so the group color tints the row
+label instead, and the populations show up beside the rows without touching the
+red-to-blue scale.
 
 The store is plain files, so publishing it is a copy to any static host with
 CORS enabled. There is no server component.
+
+## Your own samples
+
+Nothing here is specific to the 1000 Genomes panel. To put a genome of your own
+on the same scale, run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over
+its aligned reads. The lab's
+[tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
+one 30x 1000 Genomes CRAM through `count` and `est` command by command, with its
+own sample output to check against, so follow that rather than a paraphrase of
+it here. For GRCh38 its k-mer index is
+[prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/),
+which skips the `search` pass over the reference. It is a cluster-sized job
+either way: the tutorial reports 67 GB of reference files, roughly 50 GB of RAM
+to hold the index, and about 25 minutes on six threads per sample.
+
+What that leaves for JBrowse is one conversion. `est` writes copy number in 1 kb
+windows, and its four columns are bedGraph once the decoy and EBV contigs are
+dropped:
+
+```bash
+grep -v decoy sample.qm2.CN.1k.bed | grep -v chrEBV >sample.bedgraph
+samtools faidx GRCh38_BSM.fa
+cut -f1,2 GRCh38_BSM.fa.fai >GRCh38_BSM.chrom.sizes
+bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
+```
+
+Host it, then add its URL to `bigWigs`, or a `name` and `url` row to
+`samples.tsv` for the Zarr build, and the sample is another row on the same
+color ramp. Running an individual the panel already covers gives the lab's
+estimate of that genome as a check.
 
 ## Reproduce it end to end
 
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
 derives the full 2504-sample list from the Kidd lab `trackDb` and runs the
-converter over it, so nothing above depends on a hand-written sample list.
+converter over it, so nothing above depends on a hand-written sample list. It
+calls the converter by repo-relative path, so run it from a checkout:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh
-bash build_1000g_cnv_zarr.sh                # the tutorial's window
-bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
+git clone https://github.com/GMOD/jbrowse-components
+cd jbrowse-components && pnpm install
+bash scripts/build_1000g_cnv_zarr.sh                # the tutorial's window
+bash scripts/build_1000g_cnv_zarr.sh --whole-genome # every main contig
 ```
 
 ## See also
