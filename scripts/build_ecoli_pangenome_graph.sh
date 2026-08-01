@@ -73,16 +73,24 @@ REF=K12   # the strain the VCF and MAF are projected onto
 # automatically a better graph. Two findings, both measured on this dataset:
 #
 # 1. DO NOT bump to 202607241950514225c6 (2026-07-24) without re-checking the
-#    collapse. That image builds an E. coli graph that is barely collapsed at
-#    all: 22.12 Mb of graph sequence from 25.6 Mb of input, against 7.63 Mb
-#    from 20.3 Mb here, so most of the reference is traversed by its own path
-#    only (7,385 of ~9,280 depth windows read 1, where this image plateaus at
-#    the strain count). It is not a parameter difference -- the params.yml are
-#    identical apart from versions -- and not the mapping, whose PAF is LARGER
-#    (8.7 MB vs 5.3 MB). The seqwish intermediate is already 22.27 Mb before
-#    smoothxg runs, so it is seqwish (v0.7.11-9 -> v0.7.11-35) or what wfmash
-#    now hands it. `odgi similarity` is the one-command check: sibling E. coli
-#    should share most of their sequence, and there they share about a fifth.
+#    collapse. On these same five strains and these same parameters it builds a
+#    graph that is barely collapsed at all:
+#
+#                          this image      2026-07-24
+#      graph sequence      8.34 Mb         22.12 Mb     (25.6 Mb of input)
+#      segments            605,544         115,127      (~14 bp vs ~192 bp each)
+#      odgi depth          plateaus at 5   7,385 of ~9,280 windows read 1
+#      odgi similarity     ~4 Mb shared    ~0.9 Mb shared
+#
+#    Not the parameters: the two params.yml are identical apart from versions.
+#    Not the mapping either, and that one has to be measured rather than assumed
+#    -- built from the same input the two wfmash versions give 506 records each,
+#    all 10 pairs, 80.4 Mb aligned, mean identity 0.813 vs 0.808, CIGARs
+#    throughout. The seqwish intermediate is already 22.27 Mb before smoothxg
+#    runs, which puts it on seqwish (v0.7.11-9 -> v0.7.11-35).
+#
+#    `odgi similarity -D '#' -p 1` is the one-command check on any bump: sibling
+#    E. coli should share most of their sequence, and there they share a fifth.
 #
 # 2. That image carries smoothxg 0ea0470, from 2026-03-31 and 14 commits behind
 #    master, so it does NOT include pangenome/smoothxg#223 either -- the fix for
