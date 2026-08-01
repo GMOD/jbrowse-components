@@ -8,9 +8,7 @@
   "assemblies": [
     {
       "name": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
+      "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "P6R5xbRqRr",
@@ -37,13 +35,9 @@
     {
       "trackId": "ncbi_refseq_hg38",
       "name": "NCBI RefSeq genes",
-      "category": [
-        "Annotation"
-      ],
+      "category": ["Annotation"],
       "type": "FeatureTrack",
-      "assemblyNames": [
-        "hg38"
-      ],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
@@ -54,12 +48,8 @@
       "trackId": "pbmc5k_scrna_pseudobulk_hg38",
       "name": "scRNA pseudobulk by cell type (10x 5k PBMC)",
       "type": "MultiQuantitativeTrack",
-      "category": [
-        "Single cell"
-      ],
-      "assemblyNames": [
-        "hg38"
-      ],
+      "category": ["Single cell"],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "MultiWiggleAdapter",
         "subadapters": [
@@ -137,12 +127,8 @@
       "trackId": "pbmc5k_scrna_percell_hg38",
       "name": "Per-cell coverage, 4390 cells (marker loci)",
       "type": "MultiQuantitativeTrack",
-      "category": [
-        "Single cell"
-      ],
-      "assemblyNames": [
-        "hg38"
-      ],
+      "category": ["Single cell"],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "MultiWiggleZarrAdapter",
         "uri": "https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr"
@@ -158,13 +144,8 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "pbmc5k_scatac_pseudobulk_hg38",
       "name": "Single-cell ATAC pseudobulk by cell type (10x 5k PBMC, SnapATAC2)",
-      "category": [
-        "Single cell",
-        "Chromatin accessibility"
-      ],
-      "assemblyNames": [
-        "hg38"
-      ],
+      "category": ["Single cell", "Chromatin accessibility"],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "MultiWiggleAdapter",
         "subadapters": [

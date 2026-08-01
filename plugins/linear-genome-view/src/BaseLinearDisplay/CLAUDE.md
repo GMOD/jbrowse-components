@@ -143,8 +143,8 @@ time, masked.
 
 **A `fetchNeeded` that declines to fetch must be woken by something the autorun
 already tracks.** `FetchVisibleRegions` tests
-`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits — so on a run
-where the block is uncovered, `isCacheValid`'s observables register no
+`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits — so on a
+run where the block is uncovered, `isCacheValid`'s observables register no
 dependency. That is fine only because an uncovered block always reaches
 `fetchNeeded`, and a fetch bumps `fetchGeneration`, which the autorun tracks. An
 override that returns early **without** fetching breaks that chain and has to

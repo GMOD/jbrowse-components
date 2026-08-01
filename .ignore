@@ -51,3 +51,4 @@ scripts/build_ag1000g_ld.sh
 test_data/dog10k/dog10k_igf1_samples.tsv
 scripts/build_dog10k_cyp1a2.sh
 plugins/canvas/src/LinearMultiRowFeatureDisplay/applyRowGroups.test.ts
+website/scripts/specs/maf.ts

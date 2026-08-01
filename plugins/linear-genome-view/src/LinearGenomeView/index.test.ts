@@ -1077,7 +1077,6 @@ describe('displayedRegion.reversed → buildRenderBlocks wiring', () => {
       expect(r.reversed).toBe(!f.reversed)
     })
   })
-
 })
 
 // `bufferedVisibleRegions` is the single join between the view and the fetch
@@ -1152,9 +1151,9 @@ describe('bufferedVisibleRegions — the fetch-path contract', () => {
       'buf-4',
     )
     model.showAllRegions()
-    expect(model.bufferedVisibleRegions.map(b => b.displayedRegionIndex)).toEqual(
-      model.visibleRegions.map(b => b.displayedRegionIndex),
-    )
+    expect(
+      model.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
+    ).toEqual(model.visibleRegions.map(b => b.displayedRegionIndex))
   })
 
   // Orientation has to ride along with the fetch region, not just with the

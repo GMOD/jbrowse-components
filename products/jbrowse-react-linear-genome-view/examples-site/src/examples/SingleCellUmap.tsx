@@ -132,7 +132,9 @@ const Demo = observer(function Demo() {
   const { selection, view } = session
   // A feature clicked in the gene track wins over the dropdown, which clears
   // the selection when it is used, so the two never disagree.
-  const clicked = isFeature(selection) ? String(selection.get('name')) : undefined
+  const clicked = isFeature(selection)
+    ? String(selection.get('name'))
+    : undefined
   const gene = clicked && cells.genes.includes(clicked) ? clicked : picked
 
   function pickCellType(name: string) {

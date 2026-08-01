@@ -120,10 +120,10 @@ Here `init` is required: a `defaultSession` view is a saved state snapshot, and
 `init` is the property holding the keys that need resolving on load (`loc`,
 `tracks`, `highlight`, `tracklist`, `nav`, `displayedRegionNames`, `grow`).
 Plain view settings (`colorByCDS`, `showAminoAcids`, `showCenterLine`,
-`trackLabels`, `showHighlightChips`) are properties in their own right, so they sit beside
-`init`, not inside it. A [session spec](/docs/urlparams#session-spec) lists the
-same keys flat instead, since there they are arguments to the view's launcher,
-so a view moved between the two has to be reshaped.
+`trackLabels`, `showHighlightChips`) are properties in their own right, so they
+sit beside `init`, not inside it. A [session spec](/docs/urlparams#session-spec)
+lists the same keys flat instead, since there they are arguments to the view's
+launcher, so a view moved between the two has to be reshaped.
 
 See [](/docs/config_guides/default_session).
 

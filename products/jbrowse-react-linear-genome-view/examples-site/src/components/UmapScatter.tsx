@@ -88,8 +88,14 @@ export default function UmapScatter({
       const order = [...cells.x.keys()].sort((a, b) =>
         values
           ? values[a]! - values[b]!
-          : Number(active.size > 0 && active.has(cells.cellTypes[cells.type[a]!]!.name)) -
-            Number(active.size > 0 && active.has(cells.cellTypes[cells.type[b]!]!.name)),
+          : Number(
+              active.size > 0 &&
+                active.has(cells.cellTypes[cells.type[a]!]!.name),
+            ) -
+            Number(
+              active.size > 0 &&
+                active.has(cells.cellTypes[cells.type[b]!]!.name),
+            ),
       )
       for (const i of order) {
         const type = cells.cellTypes[cells.type[i]!]!
@@ -111,7 +117,12 @@ export default function UmapScatter({
         ref={ref}
         width={WIDTH * 2}
         height={HEIGHT * 2}
-        style={{ width: WIDTH, height: HEIGHT, maxWidth: '100%', cursor: 'pointer' }}
+        style={{
+          width: WIDTH,
+          height: HEIGHT,
+          maxWidth: '100%',
+          cursor: 'pointer',
+        }}
         onClick={event => {
           const box = event.currentTarget.getBoundingClientRect()
           const scale = WIDTH / box.width
@@ -133,7 +144,9 @@ export default function UmapScatter({
           }
         }}
       />
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: WIDTH }}>
+      <div
+        style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: WIDTH }}
+      >
         {cells.cellTypes.map(type => (
           <button
             key={type.name}

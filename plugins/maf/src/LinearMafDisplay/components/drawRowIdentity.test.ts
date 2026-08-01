@@ -281,9 +281,7 @@ describe('off-block MAF blocks cannot change the picture', () => {
           reversed: false,
         },
       ],
-      new Map([
-        [REGION_INDEX, { blocks, coverage: undefined as never }],
-      ]) as ReadonlyMap<number, MafRegionData>,
+      new Map([[REGION_INDEX, { blocks, coverage: undefined as never }]]),
       {
         rowHeight: 10,
         rowProportion: 0.8,

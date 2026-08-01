@@ -6,7 +6,8 @@ Selecting cell types calls the display's own row filter, the one the track's
 sidebar tree drives:
 
 ```ts
-const display = view.getTrack(TRACK_ID)?.activeDisplay as MultiWiggleDisplayModel
+const display = view.getTrack(TRACK_ID)
+  ?.activeDisplay as MultiWiggleDisplayModel
 display.setSubtreeFilter(['CD8 T', 'NK'])
 ```
 
