@@ -23,6 +23,10 @@ module syntenyTypes;
 // with the dotplot / hic renderers, so it must not be re-spelled here.
 __exported import hpmath;
 
+// Not re-exported: the shared vertex prologue unpacks the instance color, so
+// this module owns the dependency and no pass needs to import it.
+import colorPack;
+
 public struct Instance {
   public float bp1               : ATTR0;
   public float bp2               : ATTR1;
@@ -73,6 +77,10 @@ public static const float WIDTH_FADE_FLOOR = 0.15;
 // small, exactly-representable Float32.
 public struct Uniforms {
   public float2 resolution;
+  // Ribbon height in CSS px, floored at 1 by writeUniforms. Floored on the CPU
+  // rather than per-shader so `u.height` is directly usable as the y-span and
+  // the yCurve scale everywhere, with no `max(u.height, 1.0)` to keep in sync
+  // across four shaders (they disagreed on where to apply it).
   public float  height;
   public float  panPx0;
   public float  bpPerPxInv0;
@@ -104,7 +112,9 @@ public Corners computeCorners(Instance inst, Uniforms u) {
 }
 
 public bool isCulled(Corners c, float alignmentLength, Uniforms u) {
-  if (u.minAlignmentLength > 0.0 && alignmentLength < u.minAlignmentLength) {
+  // No `minAlignmentLength > 0` guard needed: lengths are non-negative, so an
+  // unset (0) filter never matches.
+  if (alignmentLength < u.minAlignmentLength) {
     return true;
   }
   float mOff = u.overdrawPx;
@@ -135,8 +145,7 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // opaque base in colored mode). Measuring each edge's own signed perpendicular
 // distance keeps the transition ~1px on both edges regardless of curvature.
 float perpCoverage(float2 localPos, float edge0, float edge1,
-                   float pf0, float pf1, float isCigar, float isMarker,
-                   float fadeThinAlignments) {
+                   float pf0, float pf1, float kind, float fadeThinAlignments) {
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
   float pfL = (edge0 <= edge1) ? pf0 : pf1;
@@ -161,7 +170,7 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
   // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch scales its centerline
   // stroke alpha by the equivalent max(perpW, WIDTH_FADE_FLOOR).
   float widthFade =
-    (isCigar > 0.5 || isMarker > 0.5 || fadeThinAlignments < 0.5)
+    (isCigarKind(kind) || isMarkerKind(kind) || fadeThinAlignments < 0.5)
       ? 1.0
       : clamp(perpW, WIDTH_FADE_FLOOR, 1.0);
   // Per-edge AA, 1px each. dL/dR are constructed as TRUE perpendicular
@@ -187,19 +196,20 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
 // the X-blend value and `sd = ds/dt`, `dydt = dy/dt` give each edge its own
 // dx/dy: straight mode passes s=t, sd=1, dydt=h (linear y); curve mode passes
 // s=sBlend(t), sd=sBlendDeriv(t), dydt=h·yCurveDeriv(t).
-public struct FillEdges {
-  public float edge0;
-  public float edge1;
-  public float pf0;
-  public float pf1;
+struct FillEdges {
+  float edge0;
+  float edge1;
+  float pf0;
+  float pf1;
 };
 
-public FillEdges fillEdges(float4 corners, float s, float sd, float dydt) {
+FillEdges fillEdges(float4 corners, float s, float sd, float dydt) {
   FillEdges e;
   e.edge0 = lerp(corners.x, corners.w, s);
   e.edge1 = lerp(corners.y, corners.z, s);
-  float slope0 = (corners.w - corners.x) * sd / max(abs(dydt), 1e-4);
-  float slope1 = (corners.z - corners.y) * sd / max(abs(dydt), 1e-4);
+  float dxdy = sd / max(abs(dydt), 1e-4);
+  float slope0 = (corners.w - corners.x) * dxdy;
+  float slope1 = (corners.z - corners.y) * dxdy;
   e.pf0 = sqrt(1.0 + slope0 * slope0);
   e.pf1 = sqrt(1.0 + slope1 * slope1);
   return e;
@@ -211,10 +221,10 @@ public FillEdges fillEdges(float4 corners, float s, float sd, float dydt) {
 // indel tiles share this analytic per-edge AA so both trace the smooth analytic
 // bezier edges with antialiased (not stair-stepped) sides; only the density
 // width-fade differs.
-public float fillCoverage(float2 localPos, float edge0, float edge1,
-                          float pf0, float pf1, float isCigar, float isMarker,
-                          float h, float fadeThinAlignments) {
-  float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, isCigar, isMarker,
+float fillCoverage(float2 localPos, float edge0, float edge1,
+                   float pf0, float pf1, float kind, float h,
+                   float fadeThinAlignments) {
+  float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, kind,
                           fadeThinAlignments);
   // Half-pixel AA at the top/bottom cuts. Both vertex shaders set
   // localPos.y = screenY - u.yTop exactly, so localPos.y is affine in screen y
@@ -225,25 +235,26 @@ public float fillCoverage(float2 localPos, float edge0, float edge1,
   return cx * cy;
 }
 
-// Fill fragment output: feature color with hover darkening + alpha boost,
-// premultiplied by coverage.
+// Fill fragment output: feature color with hover darkening + alpha boost, with
+// coverage folded into the alpha (straight, not premultiplied — the HAL's
+// default blend is src-alpha / one-minus-src-alpha).
 // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
 // Canvas2DSyntenyRenderer.ts's hover branch.
-// isCigar: 1.0 for indel quads drawn over a visible base block. Non-hovered
+// CIGAR kinds are indel quads drawn over a visible base block. Non-hovered
 // indels are pre-blended with white at u.alpha and output fully opaque, so
 // they visually fade like they're over a white background while still fully
 // covering the base block (avoids double-fade against the base block color).
-public float4 shadeFill(float4 color, float featureId, float coverage,
-                        float isCigar, float isMarker, Uniforms u) {
+float4 shadeFill(float4 color, float featureId, float coverage, float kind,
+                 Uniforms u) {
   float3 rgb = color.rgb;
   // Markers carry their own fixed alpha (0.25) and ignore colorBy, global
   // display alpha, and hover — matching the legacy fixed context lines.
-  if (isMarker > 0.5) {
+  if (isMarkerKind(kind)) {
     return float4(rgb, color.a * coverage);
   }
   bool isHovered = u.hoveredFeatureId > 0.0
     && abs(featureId - u.hoveredFeatureId) < 0.5;
-  if (isCigar > 0.5) {
+  if (isCigarKind(kind)) {
     // Pre-blend with white so the indel fades against white regardless of what
     // the base block drew. blendAlpha mirrors the original alpha formula so
     // hover (min(u.alpha*5, 0.35)) and normal (u.alpha) match origin/main.
@@ -308,4 +319,76 @@ public float thinRibbonPad(float perpFactor, Corners c) {
   float dBot = c.x3 - c.x4;
   float wMin = dTop * dBot < 0.0 ? 0.0 : min(abs(dTop), abs(dBot));
   return max(perpFactor * 0.5 - 0.5 * wMin, 0.0);
+}
+
+// The two ribbon edges at X-blend `s`, ordered left/right — they swap on a
+// crossed "bowtie" ribbon, which is why every caller takes min/max rather than
+// assuming an order. Straight mode passes s=t, curve mode s=sBlend(t).
+public float2 edgeSpan(Corners c, float s) {
+  float e0 = lerp(c.x1, c.x4, s);
+  float e1 = lerp(c.x2, c.x3, s);
+  return float2(min(e0, e1), max(e0, e1));
+}
+
+// Everything the two fill passes share. They differ only in geometry — one quad
+// vs 8 tessellated bezier segments — so the varyings, the vertex prologue, and
+// the whole fragment live here and each pass is left holding just its own
+// polygon. Mirrors the rowRect module's split (render-core).
+public struct FillVsOut {
+  public float4 position : SV_Position;
+  public float4 color    : COLOR0;
+  public nointerpolation float featureId : COLOR1;
+  // Per-instance corner positions in CSS-pixel screen X. (x, y) belong to the
+  // top view, (z, w) to the bottom — i.e. Corners x1..x4 in order.
+  public nointerpolation float4 corners : COLOR2;
+  // Local position within the instance: localPos.x = screen X (CSS px),
+  // localPos.y = vertical offset from yTop in CSS px (≈[0, height], extended
+  // ~1px at the ends for the AA fade).
+  public float2 localPos : COLOR3;
+  // The raw KIND tag, so the fragment calls isCigarKind/isMarkerKind instead of
+  // each pass re-spelling them as separate float flags.
+  public nointerpolation float kind : COLOR4;
+};
+
+// Vertex prologue: fills everything independent of the pass's geometry and
+// returns false when the instance is culled, with `o` already zeroed to a
+// degenerate vertex. `c` is the projected corner set the caller builds its
+// polygon from.
+public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
+                        out Corners c) {
+  o.position = float4(0.0);
+  o.color = unpackRGBA(inst.color);
+  o.featureId = inst.featureId;
+  o.corners = float4(0.0);
+  o.localPos = float2(0.0);
+  o.kind = inst.kind;
+  c = computeCorners(inst, u);
+  if (isCulled(c, inst.alignmentLength, u)) {
+    return false;
+  }
+  o.corners = float4(c.x1, c.x2, c.x3, c.x4);
+  return true;
+}
+
+// Vertex epilogue: place the vertex at screen (vx, yTop + y) and record the
+// local position the fragment measures coverage from. Setting both here is what
+// makes localPos.y affine in screen y with unit slope — the property
+// fillCoverage's constant vertical AA relies on.
+public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
+  o.localPos = float2(vx, y);
+  o.position = screenToClip(float2(vx, u.yTop + y), u.resolution);
+}
+
+// The entire fill fragment. `s` is the pass's X-blend at this fragment, `sd`
+// its ds/dt and `dydt` its dy/dt (straight: t, 1, height; curve: sBlend(t),
+// sBlendDeriv(t), height·yCurveDeriv(t)). fillEdges turns those into each
+// edge's own X and foreshortening.
+public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
+  FillEdges e = fillEdges(i.corners, s, sd, dydt);
+  float coverage = fillCoverage(i.localPos, e.edge0, e.edge1, e.pf0, e.pf1,
+                                i.kind, u.height, u.fadeThinAlignments);
+  if (coverage <= 0.0) {
+    discard;
+  }
+  return shadeFill(i.color, i.featureId, coverage, i.kind, u);
 }

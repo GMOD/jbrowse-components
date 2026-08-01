@@ -226,7 +226,9 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     const u = this.uniformF32
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr
-    u[U.height] = p.height
+    // Floored here rather than in each shader — see the Uniforms.height note in
+    // syntenyTypes.slang. A zero-height ribbon would divide by it.
+    u[U.height] = Math.max(p.height, 1)
     // panPx = (base - offsetPx*bpPerPx)/bpPerPx: how far the current view has
     // panned from the fetch-time base, in px. Computed float64 from a SMALL
     // numerator (base ≈ the fetch-time viewport start), so no genome-scale

@@ -10,18 +10,17 @@
 // ribbons.
 //
 // Fragment: inverts y(t) = h·(1.5t(1-t) + t³) via 2 Newton iterations
-// (cubic convergence — sub-pixel accuracy from t₀ = y/h), evaluates the
-// two edge x-curves at that t, computes signed perpendicular distance
-// from the centerline, and outputs analytic coverage via smoothstep over
-// fwidth(perpDist) — geometrically correct AA at any slope. BASE ribbons and
-// CIGAR indel tiles run the identical path (see fillCoverage).
+// (cubic convergence — sub-pixel accuracy from t₀ = y/h), then hands the
+// resulting bezier basis to the shared fillFs (syntenyTypes), which evaluates
+// the two edge x-curves, takes each edge's signed perpendicular distance, and
+// outputs analytic coverage. BASE ribbons and CIGAR indel tiles run the
+// identical path.
 //
 // References:
 //   developer.nvidia.com/gpugems/gpugems3 chapter 25 (Loop-Blinn)
-//   drewcassidy.me/2020/06/26/sdf-antialiasing/  (SDF AA via fwidth)
+//   drewcassidy.me/2020/06/26/sdf-antialiasing/  (SDF AA)
 //! targets: wgsl, glsl
 
-import colorPack;
 import syntenyTypes;
 
 // Tessellation count: 8 segments × 6 verts each. Both BASE ribbons and CIGAR
@@ -38,50 +37,13 @@ public static const uint NUM_SEGMENTS = 8u;
 public static const uint VERTS_PER_INSTANCE = NUM_SEGMENTS * 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-  nointerpolation float featureId : COLOR1;
-  // Per-instance bezier corner positions (CSS-pixel screen X for view 0/1).
-  // (x1, x2) belong to the top view; (x3, x4) to the bottom.
-  nointerpolation float4 corners : COLOR2;
-  // Local position within the instance: localPos.x = screen X (CSS px),
-  // localPos.y = vertical offset from yTop in CSS px (≈[0, height], slightly
-  // extended at the first/last segments for AA fade).
-  float2 localPos : COLOR3;
-  nointerpolation float isCigar : COLOR4;
-  // 1.0 for a KIND_MARKER tick (zero-width context line). Skips the sub-pixel
-  // width fade and global-alpha shading so it stays a crisp fixed-alpha line.
-  nointerpolation float isMarker : COLOR5;
-};
-
-// Evaluate the centerline / edges at bezier parameter t. `s` is the cubic
-// smoothstep X-blend; `y` traces the cubic Hermite ease-in-out.
-void evalT(float t, Corners c, out float xL, out float xR, out float y) {
-  float s = sBlend(t);
-  float edge0 = lerp(c.x1, c.x4, s);
-  float edge1 = lerp(c.x2, c.x3, s);
-  xL = min(edge0, edge1);
-  xR = max(edge0, edge1);
-  y = u.height * yCurve(t);
-}
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
-  o.color = unpackRGBA(inst.color);
-  o.featureId = inst.featureId;
-  o.corners = float4(0.0);
-  o.localPos = float2(0.0);
-  o.isCigar = isCigarKind(inst.kind) ? 1.0 : 0.0;
-  o.isMarker = isMarkerKind(inst.kind) ? 1.0 : 0.0;
-
-  Corners c = computeCorners(inst, u);
-  if (isCulled(c, inst.alignmentLength, u)) {
-    o.position = float4(0.0);
+FillVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  FillVsOut o;
+  Corners c;
+  if (!fillVsBegin(inst, u, o, c)) {
     return o;
   }
-  o.corners = float4(c.x1, c.x2, c.x3, c.x4);
 
   uint seg = vid / 6u;
   uint vertInSeg = vid % 6u;
@@ -91,10 +53,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   bool isRight = (vertInSeg == 1u || vertInSeg == 4u || vertInSeg == 5u);
 
   float invN = 1.0 / float(NUM_SEGMENTS);
-  float t = (isTop ? float(seg) : float(seg + 1u)) * invN;
+  float t0 = float(seg) * invN;
+  float t1 = float(seg + 1u) * invN;
+  float t = isTop ? t0 : t1;
 
-  float xL, xR, y;
-  evalT(t, c, xL, xR, y);
+  float2 span = edgeSpan(c, sBlend(t));
+  float y = u.height * yCurve(t);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
   //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5, at THIS
@@ -111,7 +75,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // is momentarily vertical. Bounding it per segment is exact (the ratio below
   // is unimodal, so its max over the segment is a single evaluation) and cuts
   // the rasterized-then-discarded area of a thin steep ribbon by a measured
-  // 10-17% (`syntenyFillCurvePad.test.ts` computes both).
+  // 10-17% (`syntenyFillPad.test.ts` computes both).
   //
   // Term (3) is deliberately still the ribbon-wide bound. Do NOT try to make it
   // per-segment via |s''(t)| = |6-12t| (which is 0 at t=0.5, so it looks like
@@ -123,9 +87,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   //
   // CIGAR indel tiles use the same pad as BASE — they clip to the smooth
   // analytic curve in the fragment, not to this trapezoid geometry.
-  float h = max(u.height, 1.0);
-  float t0 = float(seg) * invN;
-  float t1 = float(seg + 1u) * invN;
+  //
   // The pad protects the EDGES, so it scales with the larger edge Δ, not the
   // centerline's (they differ on a width-changing ribbon, where the centerline
   // average under-pads the wider edge).
@@ -134,7 +96,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // its peak of 2.0 at t=0.5, so its maximum over the segment is at whichever
   // in-range t sits closest to 0.5.
   float tPeak = clamp(0.5, t0, t1);
-  float segSlope = maxEdgeDx / h * sBlendDeriv(tPeak) / yCurveDeriv(tPeak);
+  float segSlope = maxEdgeDx / u.height * sBlendDeriv(tPeak)
+                 / yCurveDeriv(tPeak);
   float perpFactor = sqrt(1.0 + segSlope * segSlope);
   float bulgeX = maxEdgeDx * invN * invN * 0.75;
   float pad = perpFactor * 0.5 + thinRibbonPad(perpFactor, c) + bulgeX + 1.0;
@@ -144,18 +107,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   if (seg == 0u && isTop) { y -= 1.0; }
   if (seg == NUM_SEGMENTS - 1u && !isTop) { y += 1.0; }
 
-  float vx = isRight ? (xR + pad) : (xL - pad);
-  o.localPos = float2(vx, y);
-
-  o.position = screenToClip(float2(vx, u.yTop + y), u.resolution);
+  fillVsEmit(o, isRight ? span.y + pad : span.x - pad, y, u);
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
-  float yLocal = fragIn.localPos.y;
-  float h = max(u.height, 1.0);
-  float yFrac = clamp(yLocal / h, 0.0, 1.0);
+float4 fs_main(FillVsOut fragIn) : SV_Target {
+  float yFrac = clamp(fragIn.localPos.y / u.height, 0.0, 1.0);
 
   // Recover bezier parameter t from the fragment's y position. 2 Newton
   // iterations on the strictly-monotonic y(t) = h·(t³ − 1.5t² + 1.5t)
@@ -166,18 +124,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   }
   t = clamp(t, 0.0, 1.0);
 
-  // Curved ribbon: X-blend is the cubic smoothstep (s=sBlend(t), sd=sBlendDeriv)
-  // and y traces the ease-in-out (dydt=h·yCurveDeriv). fillEdges builds each
-  // edge's X + its OWN dx/dy foreshortening from those analytic derivatives —
-  // per-edge rather than a shared centerline slope, so a width-changing / bent
-  // ribbon keeps a crisp perpendicular coverage transition (see perpCoverage).
-  FillEdges e = fillEdges(fragIn.corners, sBlend(t), sBlendDeriv(t),
-                          h * yCurveDeriv(t));
-
-  float coverage = fillCoverage(fragIn.localPos, e.edge0, e.edge1, e.pf0, e.pf1,
-                                fragIn.isCigar, fragIn.isMarker, h,
-                                u.fadeThinAlignments);
-  if (coverage <= 0.0) { discard; }
-  return shadeFill(fragIn.color, fragIn.featureId, coverage, fragIn.isCigar,
-                   fragIn.isMarker, u);
+  // Curved ribbon: X-blend is the cubic smoothstep and y traces the
+  // ease-in-out, so each edge gets its OWN dx/dy from those analytic
+  // derivatives — per-edge rather than a shared centerline slope, which is what
+  // keeps a width-changing / bent ribbon's coverage transition crisp (see
+  // perpCoverage).
+  return fillFs(fragIn, sBlend(t), sBlendDeriv(t),
+                u.height * yCurveDeriv(t), u);
 }
