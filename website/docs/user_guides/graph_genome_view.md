@@ -203,24 +203,24 @@ bubbles** and **Wide bubbles** give every allele a drawn length instead, at the
 cost that below the floor a node no longer draws proportional to its length.
 
 **View menu → Settings → Graph context** is how far the cut follows links past
-the region, and it defaults to **None**. An allele's interior segments are
+the region, and it defaults to **1 hop**. An allele's interior segments are
 indexed under their own haplotype's sequence, so a query on the reference never
 reaches them, and a detour that leaves the backbone before the window and
-rejoins after it arrives as two stubs rather than as the one event it is. **1
-hop** closes those, costing a query per off-reference segment already reached.
-Set it whenever the shape of the graph is what you are reading: at None one
-detour draws as two unrelated insertions.
+rejoins after it arrives as two stubs rather than as the one event it is. A hop
+closes those, costing a query per off-reference segment already reached. Drop it
+to **None** only to see what the region query alone reaches, which is one detour
+drawn as two unrelated insertions.
 
-<Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. The red boxes are the same two nodes in both halves, 43 bp and 558 bp, where one CFT073 detour leaves the backbone and rejoins it. Left, at Graph context None, they end in mid-air, because the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the arrow marks the 5.5 kb interior the extra queries found, and the two boxes are now the two sides of a closed bubble (the node and edge counts in the header rise to match). A hop is one step, so the right half has loose ends of its own where the walk stopped, plus the reference either side of the window at 308 bp and 9.5 kb." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. The red boxes are the same two nodes in both halves, 43 bp and 558 bp, where one CFT073 detour leaves the backbone and rejoins it. Left, at Graph context None, they end in mid-air, because the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the arrow marks the 5.5 kb interior the extra queries found, and the two boxes are now the two sides of a closed bubble (the node and edge counts in the header rise to match). A hop is one step, so the right half has a loose end of its own where the walk stopped, at 9.5 kb; it expands only over off-reference segments, so it no longer drags in the backbone either side of the window." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
-There is a **2 hops** setting as well, and the two extra steps are not the same
-kind of thing. On this window 1 hop is the detour interiors, which is the whole
-of the figure above. 2 hops is mostly backbone outside the window, plus the 40
-kb Sakai segment behind one of the alleles, none of which the linear panel can
-show: it widens the neighbourhood rather than completing the window. The setting
-expands a coordinate frontier rather than walking the graph, so it never
-converges on an exact slice however far it runs. For an exact slice, cut one
-with `gfatools view -R <region> -r 1` and open it as a
+There is a **2 hops** setting as well, for a graph whose alleles have alleles of
+their own. A hop expands only over off-reference segments — it stops at the
+backbone every end-to-end walk has to traverse, which is gfabase's
+`--cutpoints 1` rule with the rank tag standing in for a connectivity index — so
+on this window the cut closes at 1 hop and 2 adds nothing. HPRC's amylase window
+keeps growing at 2. It stops at two because a frontier is still not a bubble
+decomposition, and never converges on an exact slice however far it runs. For an
+exact slice, cut one with `gfatools view -R <region> -r 1` and open it as a
 [file](#route-2-a-gfa-file).
 
 ## Colors that mean the same thing in both panels

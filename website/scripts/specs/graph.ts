@@ -1036,7 +1036,9 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
   })
   return [
     part('pangenome/hprc_mhc_layout_force', 'force', 1055),
-    part('pangenome/hprc_mhc_layout_anchored', 'auto', 775),
+    // the one-hop default cut brings in more nodes than the old None cut, so
+    // the anchored pane grew past the 775 this used to need
+    part('pangenome/hprc_mhc_layout_anchored', 'auto', 790),
   ]
 }
 
@@ -2414,7 +2416,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // covers the taller second frame (the graph plus the launched panel, whose
     // gene track runs two rows deep at this width); the menu frame sets its own
-    viewportHeight: 730,
+    viewportHeight: 675,
     hideTooltip: true,
     stages: [
       {
@@ -2458,7 +2460,7 @@ export const graphSpecs: ScreenshotSpec[] = [
         // would be clicked at its old position. Same reason as
         // rgfa_launch_out_menu.
         closeMenusFirst: true,
-        viewportHeight: 730,
+        viewportHeight: 675,
         actions: [
           {
             type: 'click',
