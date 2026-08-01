@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { setNumberGrouping } from '@jbrowse/core/util'
 import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
+import { isFeature, unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
@@ -317,9 +318,14 @@ export function BaseSessionModel<
        * #action
        * set the global selection, i.e. the globally-selected object. can be a
        * feature, a view, just about anything
+       *
+       * A feature is unwrapped on the way in, so app state never holds a
+       * jexlFeatureProxy. `isFeature` accepts a proxy, but on one `id` is a
+       * data field rather than the method the Feature type promises — every
+       * consumer doing `isFeature(selection) ? selection.id() : …` would throw.
        */
       setSelection(thing: unknown) {
-        self.selection = thing
+        self.selection = isFeature(thing) ? unwrapFeature(thing) : thing
       },
 
       /**

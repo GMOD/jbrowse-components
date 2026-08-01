@@ -1,6 +1,10 @@
 import createJexlInstance from './jexl.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
-import SimpleFeature, { isFeature, jexlFeatureProxy } from './simpleFeature.ts'
+import SimpleFeature, {
+  isFeature,
+  jexlFeatureProxy,
+  unwrapFeature,
+} from './simpleFeature.ts'
 
 const jexl = createJexlInstance()
 
@@ -134,6 +138,19 @@ describe('jexlFeatureProxy', () => {
     expect(isFeature(p)).toBe(true)
     expect(jexlFeatureProxy(p)).toBe(p)
     expect(JSON.parse(JSON.stringify(p))).toEqual(f.toJSON())
+  })
+
+  // isFeature accepts a proxy, but the Feature type it narrows to promises a
+  // callable id(); on a proxy `id` is a data field. Anything holding onto a
+  // feature past a jexl callback has to unwrap first — BaseSession.setSelection
+  // does, because five `isFeature(selection) ? selection.id() : …` readers
+  // would otherwise throw.
+  test('id is a data field on the proxy, a method on the unwrapped feature', () => {
+    const p = jexlFeatureProxy(f)
+    expect(typeof (p as unknown as Record<string, unknown>).id).not.toBe(
+      'function',
+    )
+    expect(unwrapFeature(p).id()).toBe(f.id())
   })
 
   test('parent()/id() also work on an unwrapped feature', () => {
