@@ -17,10 +17,11 @@ export const ARC_PASS = slangPass({
   topology: 'triangle-strip',
 })
 
+// Default triangle-list topology — the tick is an antialiased 6-vertex quad,
+// not a native line (see arcLine.slang).
 export const ARC_LINE_PASS = slangPass({
   id: PASS_ARC_LINE,
   mod: arcLineShader,
-  topology: 'line-list',
 })
 
 // Default triangle-list topology — each marker is a 6-vertex quad.

@@ -148,6 +148,11 @@ public struct Uniforms {
   // off-screen without an out-of-bounds viewport. Appended at the tail for
   // offset stability.
   public float arcBandH;
+  // Device pixel ratio. Every other length in this struct is CSS px on purpose
+  // (clip space normalizes, so nothing here needs the buffer's scale) — this is
+  // the one exception, and it exists ONLY so an antialiased stroke can size its
+  // ramp in DEVICE pixels. Appended at the tail for offset stability.
+  public float dpr;
 };
 
 // Coverage-strip clip indicator triangle, in CSS px: half-width and height.
@@ -158,6 +163,94 @@ public struct Uniforms {
 // cross-package copy can't drift either.
 public static const float TRIANGLE_HW = 3.5;
 public static const float TRIANGLE_H  = 4.5;
+
+// Antialiased-stroke ramp for the arc band's passes (arc, arcLine), in DEVICE
+// pixels — one device pixel is the box-filter width Canvas2D rasterizes with,
+// so this is what keeps the GPU and Canvas2D mirrors the same weight.
+//
+// The passes build a distance that is a true perpendicular distance in CSS px,
+// so its gradient magnitude is analytically 1 per CSS px and there is nothing
+// for `fwidth` to discover: measuring it only reintroduces the |ddx|+|ddy|
+// anisotropy, which cost the arc up to 0.1 of peak alpha on its diagonal flanks
+// while leaving the apex crisp. But the constant is one DEVICE px, not one CSS
+// px — spelling it in CSS px (as STROKE_PERP_PX does in the synteny shaders)
+// silently doubles the ramp on a dpr=2 display and reads as a soft, mushy line.
+// Hence `strokeCoverage` divides by u.dpr.
+public static const float STROKE_AA_PX = 1.0;
+
+// Coverage of an antialiased stroke `halfWidthPx` wide (CSS px) at true
+// perpendicular distance `d` (CSS px). Shared so the arc and arcLine passes
+// cannot drift in weight; a geometry pad of STROKE_AA_PX CSS px always covers
+// the ramp, since dpr >= 1.
+public float strokeCoverage(float d, float halfWidthPx, Uniforms u) {
+  float aa = STROKE_AA_PX / max(u.dpr, 1.0);
+  return clamp((halfWidthPx - d) / aa + 0.5, 0.0, 1.0);
+}
+
+// Exact distance from a point to the axis-aligned ellipse |p/ab| = 1 — Inigo
+// Quilez's closed-form solve of the quartic. Used by arc.slang so a dome's
+// coverage comes from the analytic curve rather than from the tessellated hull
+// it is rasterized with.
+//
+// Chosen over the iterative alternatives because the arc band produces very
+// flat ellipses (a 25px band under a 1500px pair is 44:1, and it goes past
+// 88:1): measured against an fp64 reference at fp32 precision, this stays
+// within 0.031px out to 88:1, where a seeded Newton on the parametric angle
+// runs away entirely.
+public float sdEllipse(float2 p, float2 radii) {
+  float2 q = abs(p);
+  float2 ab = radii;
+  if (q.x > q.y) { q = q.yx; ab = ab.yx; }
+  float l = ab.y * ab.y - ab.x * ab.x;
+  // Circle: `l` is the solver's divisor, so hand those back the exact answer
+  // rather than a division by ~0. Reachable — a clamped dome's ry is pinned to
+  // the band while rx tracks the pair's width, so they cross.
+  if (abs(l) < 1e-6 * ab.y * ab.y) { return abs(length(q) - ab.x); }
+  float m = ab.x * q.x / l; float m2 = m * m;
+  float n = ab.y * q.y / l; float n2 = n * n;
+  float c = (m2 + n2 - 1.0) / 3.0;
+  float c3 = c * c * c;
+  float d = c3 + m2 * n2;
+  float g = m + m * n2;
+  float co;
+  if (d < 0.0) {
+    float h = acos(clamp((c3 + m2 * n2 * 2.0) / c3, -1.0, 1.0)) / 3.0;
+    float s = cos(h);
+    float t = sin(h) * sqrt(3.0);
+    float rx = sqrt(max(-c * (s + t + 2.0) + m2, 0.0));
+    float ry = sqrt(max(-c * (s - t + 2.0) + m2, 0.0));
+    co = (ry + sign(l) * rx + abs(g) / max(rx * ry, 1e-20) - m) / 2.0;
+  } else {
+    float qq = c3 + m2 * n2 * 2.0;
+    float h = 2.0 * m * n * sqrt(d);
+    float s = sign(qq + h) * pow(abs(qq + h), 1.0 / 3.0);
+    float t = sign(qq - h) * pow(abs(qq - h), 1.0 / 3.0);
+    float rx = -s - t - c * 4.0 + 2.0 * m2;
+    float ry = (s - t) * sqrt(3.0);
+    float rm = sqrt(rx * rx + ry * ry);
+    co = (ry / sqrt(max(rm - rx, 1e-20)) + 2.0 * g / max(rm, 1e-20) - m) / 2.0;
+  }
+  co = clamp(co, -1.0, 1.0);
+  float2 r = ab * float2(co, sqrt(max(1.0 - co * co, 0.0)));
+  return length(r - q);
+}
+
+// Distance from a point to a circle whose radius dwarfs the band it is clipped
+// to — the far-pair case, where r reaches millions of px. `legLocal` is the
+// point relative to the endpoint the circle meets the baseline at, x positive
+// pointing AWAY from the circle.
+//
+// Exact, but written so nothing cancels: the centre sits at (-r, 0) in that
+// frame, so |p-c|² = r² + 2r·x + x² + y² identically and
+// |p-c| - r = rk / (sqrt(1+k) + 1) with both `rk` and `k` assembled from small
+// terms. Evaluating `length(p - c) - r`, or even recovering x as
+// `abs(p.x) - r` from a centre-relative point, loses every significant digit
+// past r ≈ 1e6 px.
+public float distToWideCircle(float2 legLocal, float r) {
+  float rk = 2.0 * legLocal.x
+           + (legLocal.x * legLocal.x + legLocal.y * legLocal.y) / r;
+  return abs(rk / (sqrt(max(1.0 + rk / r, 0.0)) + 1.0));
+}
 
 // ---- Helper functions ---------------------------------------------------
 //

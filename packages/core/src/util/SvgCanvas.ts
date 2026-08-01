@@ -373,28 +373,60 @@ export class SvgCanvas {
     endAngle: number,
     counterclockwise = false,
   ) {
+    this.ellipse(
+      x,
+      y,
+      radius,
+      radius,
+      0,
+      startAngle,
+      endAngle,
+      counterclockwise,
+    )
+  }
+
+  ellipse(
+    x: number,
+    y: number,
+    radiusX: number,
+    radiusY: number,
+    rotation: number,
+    startAngle: number,
+    endAngle: number,
+    counterclockwise = false,
+  ) {
     const [cx, cy] = this.transformPoint(x, y)
-    const [rx, ry] = this.transformSize(radius, radius)
+    const [rx, ry] = this.transformSize(radiusX, radiusY)
     const sweep = counterclockwise ? 0 : 1
     const diff = endAngle - startAngle
+    const deg = (rotation * 180) / Math.PI
+    // Canvas measures the angle on the UNROTATED ellipse and then spins the
+    // whole thing, so the endpoint is the parametric point rotated — not the
+    // point at (angle + rotation).
+    const at = (angle: number) => {
+      const px = rx * Math.cos(angle)
+      const py = ry * Math.sin(angle)
+      return [
+        cx + px * Math.cos(rotation) - py * Math.sin(rotation),
+        cy + px * Math.sin(rotation) + py * Math.cos(rotation),
+      ] as const
+    }
 
     if (Math.abs(diff) >= 2 * Math.PI) {
-      const mx = cx + rx * Math.cos(startAngle)
-      const my = cy + ry * Math.sin(startAngle)
-      const halfX = cx + rx * Math.cos(startAngle + Math.PI)
-      const halfY = cy + ry * Math.sin(startAngle + Math.PI)
-      this.pathData += `M${mx},${my}A${rx},${ry} 0 1 ${sweep} ${halfX},${halfY}A${rx},${ry} 0 1 ${sweep} ${mx},${my}`
+      // A closed ellipse has coincident endpoints, which an SVG arc command
+      // degenerates on — so go round in two halves.
+      const [mx, my] = at(startAngle)
+      const [halfX, halfY] = at(startAngle + Math.PI)
+      this.pathData += `M${mx},${my}A${rx},${ry} ${deg} 1 ${sweep} ${halfX},${halfY}A${rx},${ry} ${deg} 1 ${sweep} ${mx},${my}`
       return
     }
 
-    const sx = cx + rx * Math.cos(startAngle)
-    const sy2 = cy + ry * Math.sin(startAngle)
-    const ex = cx + rx * Math.cos(endAngle)
-    const ey = cy + ry * Math.sin(endAngle)
+    const [sx, sy2] = at(startAngle)
+    const [ex, ey] = at(endAngle)
     const largeArc = Math.abs(diff) > Math.PI ? 1 : 0
 
     this.pathData += !this.pathData ? `M${sx},${sy2}` : `L${sx},${sy2}`
-    this.pathData += `A${rx},${ry} 0 ${largeArc} ${sweep} ${ex},${ey}`
+    this.pathData += `A${rx},${ry} ${deg} ${largeArc} ${sweep} ${ex},${ey}`
   }
 
   bezierCurveTo(

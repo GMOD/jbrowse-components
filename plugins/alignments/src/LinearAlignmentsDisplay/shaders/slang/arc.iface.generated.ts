@@ -3,7 +3,7 @@
 
 import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
-export const VERTS_PER_INSTANCE = 258
+export const VERTS_PER_INSTANCE = 130
 
 export const ARC_HEIGHT_MARGIN = 8
 
@@ -12,6 +12,8 @@ export const ARC_FAR_SCREEN_WIDTHS = 1
 export const ARC_FLAT_MIN_PX = 2.5
 
 export const ARC_FLAT_ALPHA = 0.7
+
+export const ARC_APEX_FRACTION = 0.75
 
 export const UNIFORMS_SIZE_BYTES = 336
 
@@ -46,6 +48,7 @@ export const UNIFORM_OFFSET_F32 = {
   reversed: 32,
   pxPerBp: 78,
   arcBandH: 81,
+  dpr: 82,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -201,6 +204,7 @@ export interface Uniforms {
   colorSplitInversion: number
   arcColor8: number
   arcBandH: number
+  dpr: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -289,6 +293,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[79] = uniforms.colorSplitInversion
   u32[80] = uniforms.arcColor8
   f32[81] = uniforms.arcBandH
+  f32[82] = uniforms.dpr
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

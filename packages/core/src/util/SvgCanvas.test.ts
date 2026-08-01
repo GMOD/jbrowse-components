@@ -271,3 +271,50 @@ describe('font shorthand', () => {
     expect(emitted?.join(' ')).toBe(expected.trim())
   })
 })
+
+describe('ellipse', () => {
+  // The arc endpoints come out of trig, so they carry ~1e-15 of noise that has
+  // always been there (`arc` produced it too). Round it off rather than pin it.
+  const pathOf = (ctx: SvgCanvas) =>
+    /d="([^"]*)"/
+      .exec(ctx.getSerializedSvg())?.[1]
+      ?.replaceAll(/-?\d+\.?\d*(?:e[+-]\d+)?/g, m => String(Number(Number(m).toFixed(6))))
+
+  // Paired-read arcs stroke a half ellipse; SVG's arc command takes separate
+  // radii natively, so the export is the same curve rather than a flattening of
+  // it. `arc` delegates here, hence the equal-radii case.
+  test('a half ellipse emits one arc command between its two endpoints', () => {
+    const ctx = new SvgCanvas()
+    ctx.beginPath()
+    ctx.ellipse(100, 50, 40, 10, 0, Math.PI, 2 * Math.PI)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M60,50A40,10 0 0 1 140,50')
+  })
+
+  test('arc still emits equal radii', () => {
+    const ctx = new SvgCanvas()
+    ctx.beginPath()
+    ctx.arc(100, 50, 40, Math.PI, 2 * Math.PI)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M60,50A40,40 0 0 1 140,50')
+  })
+
+  // Canvas measures the angle on the unrotated ellipse and spins the result, so
+  // the endpoint is the parametric point rotated — not the point at
+  // (angle + rotation), which for a non-circular ellipse is a different place.
+  test('rotation turns the endpoints, not the angles', () => {
+    const ctx = new SvgCanvas()
+    ctx.beginPath()
+    ctx.ellipse(0, 0, 40, 10, Math.PI / 2, 0, Math.PI)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M0,40A40,10 90 0 1 0,-40')
+  })
+
+  test('a closed ellipse goes round in two halves', () => {
+    const ctx = new SvgCanvas()
+    ctx.beginPath()
+    ctx.ellipse(0, 0, 40, 10, 0, 0, 2 * Math.PI)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M40,0A40,10 0 1 1 -40,0A40,10 0 1 1 40,0')
+  })
+})

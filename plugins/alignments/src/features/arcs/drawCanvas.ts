@@ -5,6 +5,7 @@ import {
   arcMarkerColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import {
+  ARC_APEX_FRACTION,
   ARC_FAR_SCREEN_WIDTHS,
   ARC_FLAT_ALPHA,
   ARC_FLAT_MIN_PX,
@@ -47,13 +48,16 @@ interface DrawArcsOpts {
   screenWidthPx: number
 }
 
-// Strokes one non-flat paired-read arc between screen-x sx1 and sx2. Caller
-// sets strokeStyle and clips to the band. `far` picks the shape:
-//  - near: a rounded dome (cubic bezier, control points at the apex) — matches
-//    arc.slang; the bezier peak reaches 0.75·(apexY-anchorY).
-//  - far: a full-size circle whose radius is the real half-width. It's so big
-//    the band clip leaves only the near-vertical sides at each real endpoint.
-function strokeArc(
+// Strokes one non-flat paired-read arc between screen-x sx1 and sx2 as a half
+// ellipse rising from the two endpoints. Caller sets strokeStyle and clips to
+// the band. `far` picks the vertical radius:
+//  - near: ARC_APEX_FRACTION of the insert size's Y, so the apex sits where the
+//    cubic bezier this replaced peaked.
+//  - far: the real half-width, i.e. a true circle — so big the band clip leaves
+//    only the near-vertical sides at each real endpoint.
+// Mirrors arc.slang, which measures the same ellipse analytically per fragment.
+// Exported for arcShape.test.ts, which pins that mirror.
+export function strokeArc(
   ctx: Ctx2D,
   sx1: number,
   sx2: number,
@@ -62,16 +66,11 @@ function strokeArc(
   pairedArcsDown: boolean,
   far: boolean,
 ) {
+  const rx = Math.abs(sx2 - sx1) / 2
+  const ry = far ? rx : ARC_APEX_FRACTION * Math.abs(apexY - anchorY)
+  const [start, end] = pairedArcsDown ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   ctx.beginPath()
-  if (far) {
-    const midX = (sx1 + sx2) / 2
-    const r = Math.abs(sx2 - sx1) / 2
-    const [start, end] = pairedArcsDown ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
-    ctx.arc(midX, anchorY, r, start, end)
-  } else {
-    ctx.moveTo(sx1, anchorY)
-    ctx.bezierCurveTo(sx1, apexY, sx2, apexY, sx2, anchorY)
-  }
+  ctx.ellipse((sx1 + sx2) / 2, anchorY, rx, ry, 0, start, end)
   ctx.stroke()
 }
 
