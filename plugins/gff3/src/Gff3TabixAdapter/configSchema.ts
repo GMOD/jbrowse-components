@@ -64,7 +64,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
         defaultValue: 'TBI',
       },
       /**
-       * #slot index.indexType
+       * #slot index.location
        */
       location: {
         type: 'fileLocation',
