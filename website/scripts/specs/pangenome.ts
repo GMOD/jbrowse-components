@@ -127,42 +127,12 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Projection 1b: the same strains, with the ribbons read out of the graph by
-  // `odgi untangle` rather than off the wfmash PAF the graph was induced from.
-  //
-  // K12 IN THE MIDDLE, and three rows rather than five. untangle projects query
-  // paths onto a TARGET path, so every record in that file has K12 on one side;
-  // it is reference-relative by construction, where the wfmash PAF is genuinely
-  // all-vs-all. A five-row stack compares adjacent rows, so the Sakai/CFT073 and
-  // NCTC86/IAI39 bands would have no records at all and the figure would read as
-  // a broken track rather than as a different projection. With the reference
-  // between them both drawn bands are K12-relative, which is what the file is.
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_untangle',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          views: [
-            { assembly: 'CFT073' },
-            { assembly: 'K12' },
-            { assembly: 'Sakai' },
-          ],
-          tracks: [['ecoli_pggb_untangle'], ['ecoli_pggb_untangle']],
-          drawCurves: false,
-          colorBy: 'default',
-          minAlignmentLength: 10000,
-          levelHeights: [140, 140],
-        },
-      ],
-    }),
-    // three rows and two 140px bands
-    viewportHeight: 720,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 120000,
-    settleMs: 15000,
-  },
+  // No `odgi untangle` projection figure: the tutorial teaches building
+  // ecoli_pggb_untangle.paf, but that track is not in the hosted
+  // ecoli_pangenome config, so a spec for it can only capture an empty stack.
+  // Restore one (K12 in the MIDDLE row — untangle is reference-relative, so
+  // two non-reference rows have nothing to draw between them) once the track
+  // is published.
 
   // Projection 2: the decomposed variant tier, which had no figure at all while
   // this page's only view of it was the lane riding above the MAF. The matrix

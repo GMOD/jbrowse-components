@@ -198,8 +198,6 @@ every record has K12 on one side, where the wfmash PAF is genuinely all-vs-all.
 Put the reference between the strains you want to compare rather than at the top
 of the stack, or the bands between two non-reference rows have nothing to draw.
 
-<Figure caption="CFT073 and Sakai against K12 in the middle, the ribbons read out of the graph by odgi untangle rather than off the alignment pggb was given. The backbone and the accessory gaps agree with the figure above; the grain does not, because a segment boundary here is where the graph stopped agreeing rather than where an aligner ended a block." src="/img/pangenome/pggb_untangle.png" />
-
 Untangle is the slower of the two by a wide margin, because it indexes every
 step of every path rather than reading an alignment off disk. On a base-level
 graph budget for it accordingly, or restrict `-Q` to the paths you need.
