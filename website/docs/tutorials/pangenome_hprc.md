@@ -240,7 +240,7 @@ coordinates in the linear panel. The force layout bows the same edge out by the
 length of the backbone it bypasses, which states a size but not a position,
 because FMMM leaves the arc's two ends wherever the simulation puts them.
 
-<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries that assembly's own CAT gene annotation, so the boxed CFHR3 and CFHR1 are on the reference and on HG00099 and absent from HG01109, whose alignment stops and resumes across the same span. In the graph the reference is the top row, colored by position, and the dashed arc under it spans the 84.7 kb those two genes sit in, labelled on the curve with what it skips. The shorter dashed arcs are the other two deletions in the window, one of them labelled and one too narrow at this zoom to hold a label, and the thin stalks are alternate alleles, one row per stable rank." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries that assembly's own CAT gene annotation, so the boxed CFHR3 and CFHR1 are on the reference and on HG00099 and absent from HG01109, whose alignment stops and resumes across the same span. In the graph the reference is the top row, colored by position, and the dashed arc under it spans the 84.7 kb those two genes sit in, labelled on the curve as a deletion of that much. The shorter dashed arcs are the other two deletions in the window, one of them labelled and one too narrow at this zoom to hold a label, and the thin stalks are alternate alleles, one row per stable rank." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering one of these edges gives the interval and the bp it removes. This is
 the event a linear view is worst at, because a deletion has nothing to draw at
@@ -257,7 +257,7 @@ on that haplotype's assembly.
 Chromosome size does not enter into any of this. The amylase locus sits on chr1,
 the longest human chromosome, and the graph holds 464 haplotypes of it:
 
-<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The graph is cut from two tabix indexes, so 248 Mb of chromosome costs nothing: this window is 78 nodes. The dashed arcs are deletions, each bowed around the reference it skips and labelled with how much that is, on a leader where the arc is too small to carry the words; the short arms off the thread are alleles whose interiors sit outside the cut. Colors are reference position in both panels, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_amylase_graph.png" />
+<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The graph is cut from two tabix indexes, so 248 Mb of chromosome costs nothing: this window is 78 nodes. The dashed arcs are deletions, each bowed around the reference it removes and labelled with how much that is, on a leader where the arc is too small to carry the words; the short arms off the thread are alleles whose interiors sit outside the cut. Colors are reference position in both panels, red at the window's left edge to magenta at its right." src="/img/pangenome/hprc_amylase_graph.png" />
 
 The graph's own bubble index says what that window holds, and tabix reads it
 over HTTP without the browser. The bubble spanning AMY1A and AMY1B is the first
@@ -325,7 +325,7 @@ the drawing is a row per donor rather than a shape.
 LPA is the case for the shape instead, since its KIV-2 repeat sets Lp(a) level
 and copy number there is not callable from short reads:
 
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with what it skips, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Either way the attribution is the same one `discoveryRank` and `firstSeenIn`
 carry: the haplotype minigraph took the sequence from, not the set of haplotypes
