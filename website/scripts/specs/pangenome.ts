@@ -201,7 +201,10 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: '4,560,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 480,
+    // tall enough for the gene lane plus all four non-reference rows: at 480 the
+    // capture cut the matrix off after CFT073 and IAI39, so the figure showed
+    // two strains under a caption that says one row per strain
+    viewportHeight: 600,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
