@@ -2,8 +2,10 @@
 
 Audit of `packages/core/src/util/` (2026-07-31), six parallel read-only passes
 over disjoint subsets. Everything below was verified by reading the code and
-grepping call sites; each item says whether it is reachable today. No reachable
-bugs are left open — what remains is latent/typing, dead code, and structural.
+grepping call sites. No reachable bugs are left open, and most of the
+latent/typing items and the unambiguous dead code have landed. What remains is a
+short latent list, the dead code that sits behind the runtime-plugin ABI
+surface, and the structural section.
 
 ## Fixed in the second pass (2026-07-31)
 
@@ -131,58 +133,60 @@ Most of this section landed in the second pass (see above). What is left:
   anything importing `@jbrowse/core/util/io`. Moving `isElectron`/`isNode`/`rIC`
   into a small `environment.ts` next to `isWebWorker.ts` breaks all three.
 
-## Open: dead code (user has approved deletion)
+## Dead code: deleted in the second pass
 
-Largest first. All confirmed by repo-wide grep excluding tests and the barrels.
+`compositeMap.ts`, `blobToDataURL.ts`, `transferables.ts`, `flatqueue/` (with
+`Flatbush.neighbors()` and `upperBound`), the dead half of
+`offscreenCanvasPonyfill.ts` (which also breaks one of the barrel's value
+cycles), `aborting.ts`'s three pre-stopToken helpers, `nanoid`'s custom-alphabet
+machinery, `color-bits`'s `formatHWBA`/`toHWBA`, and the single exports
+`blockToRegion`, `makeDisplayedRegionKey`, `isContainedWithin`, `iterMap`,
+`getLayoutId`, `contrastingTextColor`, `seqUtils.defaultStops`,
+`assembleLocStringFast`, `checkStopToken2`. `getUriLink` and
+`shareSessionToDynamo` became module-private.
 
-- `layouts/` — only `GranularRectLayout.addRect` has a caller anywhere
+Two were deliberately kept against the list:
+
+- `Base1DUtils.offsetBpToPx` — three neighbouring comments name it as the
+  exact-round-trip answer to a documented precision trap. Deleting the function
+  makes that documentation dangle.
+- `color/index.isNamedColor` — the one-line sibling of the live
+  `namedColorToHex`, and it carries the `Object.hasOwn` prototype guard's test.
+
+## Dead code: still open, gated on the plugin ABI question, not on reachability
+
+`@jbrowse/core/util` and `@jbrowse/core/util/layouts` are both in
+`ReExports/list.ts`, so everything they export is reachable by an external
+runtime plugin through `jbrequire`. The audit's reachability grep was in-tree
+only, so "dead" there means "dead in this repo", not "dead". The deletions above
+crossed that surface knowingly — they are obscure helpers, and
+[PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md) is explicit that
+RFC-001 deferred formal API-stability policy. The two items below are bigger
+and were left for a deliberate call:
+
+- `layouts/` — only `GranularRectLayout.addRect` has an in-tree caller
   (`plugins/canvas/src/LinearBasicDisplay/layout.ts:1135`, on a layout built
-  fresh per pack). Dead: `MultiLayout.ts`, `PrecomputedLayout.ts`,
+  fresh per pack). Dead in-tree: `MultiLayout.ts`, `PrecomputedLayout.ts`,
   `intervalUtils.isRangeClear` (its live twin is hand-inlined at
   `GranularRectLayout.ts:283`), `BaseLayout` as an implemented interface,
   `serializeRegion`/`toJSON`/`discardRange`/`getByCoord`/`getByID`/
   `getDataByID`/`getRectangles`/`getTotalHeight`/`maxHeightReached`/public
   `addRectToBitmap`, the `Rectangle<T>` generic and both data fields, and the
-  unreachable `hardRowLimit` throw. Roughly 400 of 700 lines.
-- `flatqueue/` plus `Flatbush.neighbors()` / `upperBound` / the `_queue` field —
-  `neighbors` has zero callers and is FlatQueue's only consumer. ~155 lines and a
-  vendored dependency.
-- `compositeMap.ts` — entirely dead; not re-exported from the barrel, absent from
-  the package exports map, referenced only by its own test.
-- `aborting.ts` — `checkAbortSignal`, `abortBreakPoint`, `observeAbortSignal` have
-  no callers; `observeAbortSignal(undefined)` returns an Observable that never
-  emits *or* completes. Superseded by `stopToken.ts`; only `makeAbortError` and
-  `isAbortException` still have callers.
-- `transferables.ts:33` — `collectTransferables`/`isDetachedBuffer` dead, and
-  `isArrayBufferLike` would accept TypedArrays (`DataCloneError`) if wired up.
-  The keys it looks for appear on no RPC result (gwas emits `flatbushData`; MAF
-  has `collectMafTransferables`).
-- `offscreenCanvasPonyfill.ts:26-66` — `createCanvas`, `createImageBitmap`,
-  `isImageBitmap` dead, and their `isNode` branches reference undeclared
-  identifiers behind `@ts-expect-error`. Only `drawImageOntoCanvasContext` is
-  used.
-- `wheelZoom.ts` — nine exports are internal to `createWheelZoomController` yet
-  sit in the public barrel (`util/index.ts:151-162`); only `normalizeWheelDelta`
-  has another consumer. `createScrollLatch` likewise.
-- `nanoid.ts` — `urlAlphabet`, `customAlphabet`, `customRandom` unused (~half the
-  file). `color-bits`/`colorBits` — ~15 unused exports incl. `formatHWBA`/
-  `toHWBA` (which are also wrong: hue left as a turn fraction, emits `hsla(...)`
-  for an HWB triple). `color/index.ts` — `contrastingTextColor`, `isNamedColor`.
-  `seqUtils.defaultStops`. `geneticCodes.ncbiGeneticCodes`.
-- Single dead exports: `Base1DUtils.offsetBpToPx`, `blockTypes.blockToRegion`,
-  `blockTypes.makeDisplayedRegionKey` (its key format also diverges from the
-  block keys built inline in `calculate{Static,Dynamic}Blocks`), all of
-  `bpUtils`'s span helpers (`bpToPx`/`bpSpanPx`/`featureSpanPx`/`MinimalRegion`),
-  `locString.assembleLocStringFast`, `range.isContainedWithin`, `index.iterMap`,
-  `index.getLayoutId`, `index.getUriLink` (used only in-file),
-  `blobToDataURL.ts`, `sessionSharing.shareSessionToDynamo`, three
-  `mst-reflection` exports, `stopToken.checkStopToken2`, `when.ts` (a one-line
-  re-export of mobx's `when`, two consumers).
+  unreachable `hardRowLimit` throw. Roughly 400 of 700 lines. This is the one
+  layout API an external plugin plausibly reaches for.
+- `wheelZoom.ts` — nine exports internal to `createWheelZoomController` sit in
+  the barrel with no barrel consumer (every in-tree caller imports the
+  `util/wheelZoom` subpath directly). `createScrollLatch` likewise. Low external
+  risk (both are recent), but removing them from the barrel is the same kind of
+  change.
 
-Note `index.ts:180` exports the **dead** `bpUtils.bpToPx` under the same name as
-the live `Base1DUtils.bpToPx` — a public-surface collision where the exported one
-is unused. Removing dead exports also shrinks the generated
-`packages/core/package.json` exports map, so run `pnpm autogen` after.
+Also still open: `bpUtils`'s span helpers
+(`bpToPx`/`bpSpanPx`/`featureSpanPx`/`MinimalRegion`), three `mst-reflection`
+exports, `geneticCodes.ncbiGeneticCodes`, the remaining ~13 unused
+`color-bits`/`colorBits` exports, and `when.ts` (a one-line re-export of mobx's
+`when`, two consumers). Note `index.ts` exports the **dead** `bpUtils.bpToPx`
+under the same name as the live `Base1DUtils.bpToPx` — a public-surface
+collision where the exported one is unused.
 
 ## Open: structural
 
@@ -191,13 +195,17 @@ is unused. Removing dead exports also shrinks the generated
   `stringUtils.ts`; `measureGridWidth`/`resolveSelectedIds`/`getStr` are MUI
   DataGrid helpers that drag an `@mui/x-data-grid` import into the barrel;
   `stringify` belongs next to `assembleLocString` in `locString.ts`;
-  `isElectron`/`isNode`/`rIC` belong in `environment.ts` (see the cycle item).
+  `isElectron`/`isNode`/`rIC` belong in `environment.ts` (see the cycle item —
+  one of its three legs is already gone with the ponyfill trim).
 - Duplication to collapse: two standard codon tables — all 27
   `ncbiGeneticCodes` entries were spot-checked against NCBI `gc.prt` and are
   correct, so `seqUtils.defaultCodonTable`/`codonTable` can be defined as
   `getGeneticCode(1).codonTable`, deleting a 65-line literal (keep the
-  `codonTable` name, 11 non-test consumers). Four `getFileName` copies. Three
-  unrelated `shorten()`s. Five re-parsing `cssColorTo*` wrappers.
+  `codonTable` name, 11 non-test consumers). Three unrelated `shorten()`s. Five
+  re-parsing `cssColorTo*` wrappers. (The `getFileName` copies are down to the
+  two that are not actually duplicates: `LocalFileChooser`'s shows the *full*
+  local path and returns `undefined` for "no file", and `plugins/wiggle`'s takes
+  a string.)
 - `getRed/getGreen/getBlue/getAlpha` (0xRRGGBBAA) and
   `abgrRed/abgrGreen/abgrBlue/abgrAlpha` (ABGR u32) are both
   `(c: number) => number` exported from one barrel; every current call site is
