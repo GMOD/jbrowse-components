@@ -1,3 +1,4 @@
+import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeatureWidget/LaunchBreakendPanel/labels.ts'
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
@@ -489,8 +490,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 25000,
   },
 
-  // sv_visualization.md: the TRA feature-details panel with its "Launch split
-  // views with breakend source and target" link. Zoomed onto a single SKBR3
+  // sv_visualization.md: the TRA feature-details panel with its
+  // "Open breakpoints in split view" link. Zoomed onto a single SKBR3
   // Sniffles translocation breakend (14:84871468 // 17:74803924) so clicking
   // the lone variant opens the details drawer; the BREAKENDS link is annotated.
   {
@@ -511,16 +512,16 @@ export const uiSpecs: ScreenshotSpec[] = [
       // testid) to open the feature-details drawer; the translocation's
       // INFO.CHR2/END drive the LaunchBreakendPanel split-view link
       { type: 'click', selector: '[data-testid="feature-name-89844_3"]' },
-      { type: 'waitForText', text: 'breakpoint split view' },
+      { type: 'waitForText', text: SPLIT_VIEW_LINK_LABEL },
       { type: 'delay', ms: 1500 },
     ],
     annotations: [
-      { type: 'box', anchor: { text: 'breakpoint split view' } },
+      { type: 'box', anchor: { text: SPLIT_VIEW_LINK_LABEL } },
       // arrow + explanatory callout pointing at the boxed split-view link
       {
         type: 'arrow',
         from: { x: 760, y: 300 },
-        anchor: { text: 'breakpoint split view' },
+        anchor: { text: SPLIT_VIEW_LINK_LABEL },
       },
       {
         type: 'text',

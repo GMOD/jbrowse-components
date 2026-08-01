@@ -15,6 +15,8 @@ import {
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { SPLIT_VIEW_LINK_LABEL } from './labels.ts'
+
 import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
 
@@ -69,7 +71,7 @@ const LaunchSvPanel = observer(function LaunchSvPanel({
                 })
               }}
             >
-              Open breakpoints in split view
+              {SPLIT_VIEW_LINK_LABEL}
             </ActionLink>
           </li>
         ) : null}

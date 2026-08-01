@@ -268,9 +268,9 @@ The header bar accepts location searches directly in either panel.
   alignment; the feature details panel includes an option to open the split view
   centered on that read and its supplementary partner.
 - From the circular genome view - click a chord's feature details and use the
-  "Open in breakpoint split view" link in its Breakends section.
+  "Open breakpoints in split view" link in its Breakends section.
 
-<Figure caption="Feature details panel for a TRA variant. The Breakends section has a 'Launch split view' list where each row pairs the two breakend endpoints (e.g. '14:84871468 // 17:74803924') with an 'Open in breakpoint split view' link; clicking it opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
+<Figure caption="Feature details panel for a TRA variant. The Breakends section lists each endpoint (e.g. '17:74,803,924') with its own 'Open in linear view' link, and below them a single 'Open breakpoints in split view' link; clicking that opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
 
 The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
