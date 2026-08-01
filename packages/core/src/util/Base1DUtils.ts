@@ -343,13 +343,19 @@ export function getContentBlocksPxSpan(
   if (!first || !last) {
     return undefined
   }
+  // pass through the displayedRegionIndex each block already carries: without
+  // it bpToPx picks the first region with a matching refName, so a view showing
+  // the same region twice (or two overlapping copies) points the overview
+  // rectangle at the wrong copy
   const leftPx = layoutBpToPx(layout, {
     refName: first.refName,
     coord: first.reversed ? first.end : first.start,
+    displayedRegionIndex: first.displayedRegionIndex,
   })
   const rightPx = layoutBpToPx(layout, {
     refName: last.refName,
     coord: last.reversed ? last.start : last.end,
+    displayedRegionIndex: last.displayedRegionIndex,
   })
   return leftPx !== undefined && rightPx !== undefined
     ? { leftPx, rightPx }

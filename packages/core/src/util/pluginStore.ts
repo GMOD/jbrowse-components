@@ -16,8 +16,10 @@ export interface ResolvedPlugin {
   pluginVersion?: string
   // every JBrowse range the plugin declares, for messaging when incompatible
   supportedRanges: string[]
-  // the concrete, installable definition for the chosen url
-  definition: PluginDefinition
+  // the concrete, installable definition for the chosen url, or undefined when
+  // the entry offers no url to install from — a store entry whose urls are all
+  // per-version has nothing to fall back on once no version matched
+  definition: PluginDefinition | undefined
 }
 
 export interface PluginUpdate {
@@ -45,22 +47,23 @@ function rangeMatches(jbrowseVersion: string, range: string) {
   return matched
 }
 
-function definitionFrom(name: string, src: UrlFields): PluginDefinition {
+// undefined rather than a throw: an entry that lists urls only per version has
+// none to offer once no version matched, and throwing there took out the whole
+// plugin-store list instead of rendering that one card as incompatible.
+function definitionFrom(
+  name: string,
+  src: UrlFields,
+): PluginDefinition | undefined {
   const integrity = src.integrity ? { integrity: src.integrity } : {}
-  const def =
-    src.umdUrl !== undefined
-      ? { name, umdUrl: src.umdUrl, ...integrity }
-      : src.esmUrl !== undefined
-        ? { esmUrl: src.esmUrl }
-        : src.cjsUrl !== undefined
-          ? { cjsUrl: src.cjsUrl }
-          : src.url !== undefined
-            ? { name, url: src.url, ...integrity }
-            : undefined
-  if (!def) {
-    throw new Error(`plugin ${name} has no url`)
-  }
-  return def
+  return src.umdUrl !== undefined
+    ? { name, umdUrl: src.umdUrl, ...integrity }
+    : src.esmUrl !== undefined
+      ? { esmUrl: src.esmUrl }
+      : src.cjsUrl !== undefined
+        ? { cjsUrl: src.cjsUrl }
+        : src.url !== undefined
+          ? { name, url: src.url, ...integrity }
+          : undefined
 }
 
 function highestVersion(versions: JBrowsePluginVersion[]) {
@@ -144,14 +147,12 @@ export function getPluginUpdate(
   installedVersion: string | undefined,
 ): PluginUpdate | undefined {
   const resolved = resolvePlugin(plugin, jbrowseVersion)
+  const { definition } = resolved
   return resolved.compatible &&
+    definition !== undefined &&
     resolved.pluginVersion !== undefined &&
     installedVersion !== undefined &&
     isNewer(resolved.pluginVersion, installedVersion)
-    ? {
-        pluginVersion: resolved.pluginVersion,
-        name: plugin.name,
-        definition: resolved.definition,
-      }
+    ? { pluginVersion: resolved.pluginVersion, name: plugin.name, definition }
     : undefined
 }

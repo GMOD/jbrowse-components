@@ -19,10 +19,15 @@ export async function updateStatus<U>(
   stopToken?: StopToken,
 ) {
   cb?.(msg)
-  const res = await fn()
-  checkStopToken(stopToken)
-  cb?.('')
-  return res
+  // finally, so a throwing `fn` doesn't leave its phase label sitting on the
+  // channel forever — the error surfaces under a stale "Downloading file"
+  try {
+    const res = await fn()
+    checkStopToken(stopToken)
+    return res
+  } finally {
+    cb?.('')
+  }
 }
 
 /**
@@ -328,8 +333,11 @@ export async function withProgress<T>(
     stopToken,
   })
   report(0)
-  const res = await fn(report)
-  checkStopToken(stopToken)
-  statusCallback?.('')
-  return res
+  try {
+    const res = await fn(report)
+    checkStopToken(stopToken)
+    return res
+  } finally {
+    statusCallback?.('')
+  }
 }

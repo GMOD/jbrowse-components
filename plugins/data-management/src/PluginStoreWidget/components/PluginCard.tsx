@@ -54,9 +54,15 @@ const PluginCard = observer(function PluginCard({
   const { runtimePluginDefinitions } = pluginManager
 
   // resolve the plugin build that matches this JBrowse version, and install
-  // that concrete (version-pinned) definition rather than the raw store entry
+  // that concrete (version-pinned) definition rather than the raw store entry.
+  // A store entry whose urls are all per-version has no definition at all once
+  // no version matched — the card renders, the Install button just stays off.
   const resolved = resolvePlugin(plugin, session.version)
-  const installDef = { ...resolved.definition, name: plugin.name }
+  const { definition } = resolved
+  const installDef =
+    resolved.compatible && definition !== undefined
+      ? { ...definition, name: plugin.name }
+      : undefined
 
   // installed-check is by packageName, not the resolved url: once a newer
   // compatible version is published the resolved url changes, and a url match
@@ -67,7 +73,7 @@ const PluginCard = observer(function PluginCard({
   const { packageName } = plugin
   const isInstalled = runtimePluginDefinitions.some(d =>
     packageName === undefined
-      ? pluginUrl(d) === pluginUrl(resolved.definition)
+      ? installDef !== undefined && pluginUrl(d) === pluginUrl(installDef)
       : installedVersionFromUrl(pluginUrl(d), packageName) !== undefined,
   )
   const [tempDisabled, setTempDisabled] = useState(false)
@@ -98,17 +104,19 @@ const PluginCard = observer(function PluginCard({
       <CardActions>
         <Button
           variant="contained"
-          disabled={isInstalled || tempDisabled || !resolved.compatible}
+          disabled={isInstalled || tempDisabled || installDef === undefined}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
-            if (adminMode) {
-              jbrowse.addPlugin(installDef)
-            } else if (isSessionWithSessionPlugins(session)) {
-              session.addSessionPlugin(installDef)
-            } else {
-              session.notify('No way to install plugin')
+            if (installDef !== undefined) {
+              if (adminMode) {
+                jbrowse.addPlugin(installDef)
+              } else if (isSessionWithSessionPlugins(session)) {
+                session.addSessionPlugin(installDef)
+              } else {
+                session.notify('No way to install plugin')
+              }
+              setTempDisabled(true)
             }
-            setTempDisabled(true)
           }}
         >
           {isInstalled ? 'Installed' : 'Install'}

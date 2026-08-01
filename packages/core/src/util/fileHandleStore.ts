@@ -31,6 +31,12 @@ function getDB() {
     upgrade(db) {
       db.createObjectStore(STORE_NAME)
     },
+  }).catch((error: unknown) => {
+    // drop the rejected promise, so a transient open failure (a blocked
+    // upgrade, a storage prompt the user has since answered) doesn't make every
+    // later call replay the same error for the life of the page
+    dbPromise = undefined
+    throw error
   })
   return dbPromise
 }

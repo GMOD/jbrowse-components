@@ -145,6 +145,22 @@ line3`
 
     expect(lines).toEqual(['single line'])
   })
+
+  // the label used to be cleared only on the happy path, so a throwing callback
+  // left the parse's last percentage on screen under whatever error surfaced
+  it('clears the status label when a line callback throws', () => {
+    const seen: unknown[] = []
+    expect(() => {
+      parseLineByLine(
+        new TextEncoder().encode('a\nb\n'),
+        () => {
+          throw new Error('nope')
+        },
+        s => seen.push(s),
+      )
+    }).toThrow('nope')
+    expect(seen.at(-1)).toBe('')
+  })
 })
 
 describe('groupLinesByRef', () => {

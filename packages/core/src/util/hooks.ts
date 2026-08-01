@@ -6,9 +6,14 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { RefObject } from 'react'
 
-// Fires `onInteract` when a mousedown/keydown lands inside `ref`. Listens at the
-// document level (not via React handlers) so it still fires when child drag
-// handlers call stopPropagation; used to set the focused view on click.
+// Fires `onInteract` when a mousedown/keydown lands inside `ref`; used to set
+// the focused view on click. Listens at the document level rather than through
+// React handlers so one listener covers the whole subtree, but bubble-phase:
+// a child calling stopPropagation DOES suppress it, which is why `ResizeHandle`
+// claims its press with a `data-gesture-owner` marker instead of stopping the
+// mousedown. Registering with `{ capture: true }` would make focus survive
+// those, at the cost of focusing the view for menus and error bars that
+// currently do not — a behavior change, not a bug fix.
 // `onInteract` is wrapped in a stable callback so callers can pass an inline
 // closure without re-subscribing the listeners every render (we don't rely on
 // the React Compiler memoizing it, since library consumers may not run it).

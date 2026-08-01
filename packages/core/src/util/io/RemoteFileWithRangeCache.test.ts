@@ -172,6 +172,41 @@ describe('RemoteFileWithRangeCache', () => {
     expect(res.status).toBe(200)
   })
 
+  // clearCache used to do `queue.length = 0`, which strands every waiting
+  // limitConcurrency call with no resolve and no reject: the read neither runs
+  // nor settles. Above MAX_CONCURRENT (20) in-flight reads that is a hang.
+  test('clearCache settles reads that were queued behind the concurrency cap', async () => {
+    const chunk = 256 * 1024
+    const bigFileSize = 64 * chunk
+    const url = 'https://example.com/big.bin'
+    const bigFetch = async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const range = new Headers(init?.headers).get('range')!
+      const [start, end] = /bytes=(\d+)-(\d+)/
+        .exec(range)!
+        .slice(1)
+        .map(Number) as [number, number]
+      const last = Math.min(end, bigFileSize - 1)
+      return new Response(new Uint8Array(last - start + 1), {
+        status: 206,
+        headers: { 'content-range': `bytes ${start}-${last}/${bigFileSize}` },
+      })
+    }
+    const file = new RemoteFileWithRangeCache(url, { fetch: bigFetch })
+
+    // one distinct chunk each, so none joins another's in-flight fetch and more
+    // than MAX_CONCURRENT of them are waiting on the queue at once
+    const reads = Array.from({ length: 32 }, (_, i) =>
+      file
+        .fetch(url, {
+          headers: { range: `bytes=${i * chunk}-${i * chunk + 9}` },
+        })
+        .then(res => res.arrayBuffer()),
+    )
+    clearCache()
+    const results = await Promise.all(reads)
+    expect(results.map(r => r.byteLength)).toEqual(Array(32).fill(10))
+  })
+
   test('clearCache causes subsequent requests to re-fetch', async () => {
     const { calls, mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)

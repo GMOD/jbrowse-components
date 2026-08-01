@@ -113,27 +113,31 @@ export function parseLineByLine(
   let blockStart = 0
   let i = 0
 
-  while (blockStart < buffer.length) {
-    const n = buffer.indexOf(10, blockStart)
-    // could be a non-newline ended file, so subarray to end of file if n===-1
-    const lineEnd = n === -1 ? buffer.length : n
-    const b = buffer.subarray(blockStart, lineEnd)
-    const line = decoder.decode(b).trim()
+  try {
+    while (blockStart < buffer.length) {
+      const n = buffer.indexOf(10, blockStart)
+      // could be a non-newline ended file, so subarray to end of file if n===-1
+      const lineEnd = n === -1 ? buffer.length : n
+      const b = buffer.subarray(blockStart, lineEnd)
+      const line = decoder.decode(b).trim()
 
-    if (line) {
-      const shouldContinue = lineCallback(line, i)
-      if (shouldContinue === false) {
-        break
+      if (line) {
+        const shouldContinue = lineCallback(line, i)
+        if (shouldContinue === false) {
+          break
+        }
       }
+
+      i++
+      report(blockStart)
+
+      // If no newline found, we've reached the end
+      blockStart = lineEnd + 1
     }
-
-    i++
-    report(blockStart)
-
-    // If no newline found, we've reached the end
-    blockStart = lineEnd + 1
+  } finally {
+    // Cleared in a finally: on the happy path so the finished parse's last
+    // percentage doesn't sit on screen through whatever unlabelled phase runs
+    // next, and on a throw (or a cancel) so it doesn't sit under the error.
+    statusCallback('')
   }
-  // Clear, so the finished parse's last percentage doesn't sit on screen
-  // through whatever unlabelled phase the caller runs next.
-  statusCallback('')
 }

@@ -29,6 +29,13 @@ export function renameRegionIfNeeded(
   return region
 }
 
+// What a single assembly contributes to a rename: the adapter refName map, and
+// the FASTA-name lookup CRAM/BAM need for originalRefName.
+interface AssemblyRenameData {
+  refNameMap: Record<string, string>
+  getSeqAdapterRefName: ((refName: string) => string) | undefined
+}
+
 // Region-shaped enough that, if it slipped through under a `region` key, it was
 // meant to be renamed. Used only by the guard below.
 function isRegionShaped(r: unknown): r is Region {
@@ -78,40 +85,47 @@ export async function renameRegionsIfNeeded<
   // capture assembly names before the await, since MST regions may be dead after
   const assemblyNames = regions.map(r => r.assemblyName)
   const uniqueAssemblyNames = [...new Set(assemblyNames)]
-  const assemblyData = Object.fromEntries(
-    await Promise.all(
-      uniqueAssemblyNames.map(async name => {
-        // resolve the assembly once via waitForAssembly (which awaits both
-        // registration and load) and derive the refName map AND
-        // getSeqAdapterRefName from this single loaded handle. A synchronous
-        // assemblyManager.get() here could miss an assembly still being
-        // registered, leaving getSeqAdapterRefName undefined so originalRefName
-        // (used by CRAM/BAM to fetch reference bases) falls back to the
-        // canonical name instead of the FASTA name.
-        const assembly = name
-          ? await assemblyManager.waitForAssembly(name)
-          : undefined
-        return [
-          name,
-          {
-            refNameMap: assembly
-              ? await assembly.getRefNameMapForAdapter(adapterConfig, args)
-              : {},
-            getSeqAdapterRefName: assembly
-              ? (r: string) => assembly.getSeqAdapterRefName(r)
-              : undefined,
-          },
-        ]
-      }),
-    ),
-  )
+  // annotated, because Object.fromEntries over an array whose element type is
+  // not a tuple selects its `any` overload — which left refNameMap and
+  // getSeqAdapterRefName unchecked all the way to renameRegionIfNeeded
+  const assemblyData: Record<string, AssemblyRenameData | undefined> =
+    Object.fromEntries(
+      await Promise.all(
+        uniqueAssemblyNames.map(async name => {
+          // resolve the assembly once via waitForAssembly (which awaits both
+          // registration and load) and derive the refName map AND
+          // getSeqAdapterRefName from this single loaded handle. A synchronous
+          // assemblyManager.get() here could miss an assembly still being
+          // registered, leaving getSeqAdapterRefName undefined so
+          // originalRefName (used by CRAM/BAM to fetch reference bases) falls
+          // back to the canonical name instead of the FASTA name.
+          const assembly = name
+            ? await assemblyManager.waitForAssembly(name)
+            : undefined
+          return [
+            name,
+            {
+              refNameMap: assembly
+                ? await assembly.getRefNameMapForAdapter(adapterConfig, args)
+                : {},
+              getSeqAdapterRefName: assembly
+                ? (r: string) => assembly.getSeqAdapterRefName(r)
+                : undefined,
+            },
+          ] as const
+        }),
+      ),
+    )
 
   return {
     ...args,
     regions: regions.map((region, i) => {
-      const { refNameMap, getSeqAdapterRefName } =
-        assemblyData[assemblyNames[i]!]
-      return renameRegionIfNeeded(refNameMap, region, getSeqAdapterRefName)
+      const data = assemblyData[assemblyNames[i]!]
+      return renameRegionIfNeeded(
+        data?.refNameMap,
+        region,
+        data?.getSeqAdapterRefName,
+      )
     }),
   }
 }

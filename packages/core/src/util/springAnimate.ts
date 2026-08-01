@@ -31,15 +31,17 @@ export function springAnimate({
   write,
   read,
   onFinish = () => {},
-  precision = 0,
+  precision,
   tension = 400,
   friction = 20,
   clamp = true,
 }: SpringAnimateOptions) {
   const mass = 1
-  const eps = precision || Math.abs(to - from) / 1000
+  // ?? not ||, so an explicit precision of 0 (converge only on overshoot) is
+  // honored rather than silently replaced by the derived default
+  const eps = precision ?? Math.abs(to - from) / 1000
 
-  let animationFrameId: number
+  let animationFrameId: number | undefined
   let lastWritten: number | undefined
 
   function apply(value: number) {
@@ -69,7 +71,9 @@ export function springAnimate({
     let position = animation.lastPosition
     let lastTime = animation.lastTime ?? time
     let velocity = animation.lastVelocity ?? 0
-    // If we lost a lot of frames just jump to the end.
+    // Dropped frames (a background tab, a long task) are not replayed: the
+    // simulation resumes from now, so the spring finishes late rather than
+    // teleporting through 60 steps of physics in one frame.
     if (time > lastTime + 64) {
       lastTime = time
     }
@@ -111,7 +115,9 @@ export function springAnimate({
       update({ lastPosition: from })
     },
     () => {
-      cancelAnimationFrame(animationFrameId)
+      if (animationFrameId !== undefined) {
+        cancelAnimationFrame(animationFrameId)
+      }
     },
   ] as const
 }

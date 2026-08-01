@@ -277,6 +277,19 @@ describe('updateStatus', () => {
   it('is a no-op transport with no callback but still returns the result', async () => {
     expect(await updateStatus('Working', undefined, () => 7)).toBe(7)
   })
+  // without the finally the label stayed on the channel, so the caller's error
+  // surfaced under a stale "Downloading file"
+  it('clears the label when fn throws', async () => {
+    const seen: RpcStatus[] = []
+    await expect(
+      updateStatus(
+        'Working',
+        s => seen.push(s),
+        () => Promise.reject(new Error('nope')),
+      ),
+    ).rejects.toThrow('nope')
+    expect(seen).toEqual(['Working', ''])
+  })
 })
 
 describe('downloadStatus', () => {
@@ -338,6 +351,17 @@ describe('withProgress', () => {
     expect(result).toBe('done')
     // the kickoff report(0) emits at current 0; the final emit is the clear
     expect(seen[0]).toEqual({ message: 'Processing', current: 0, total: 4 })
+    expect(seen.at(-1)).toBe('')
+  })
+
+  it('clears the label when fn throws', async () => {
+    const seen: RpcStatus[] = []
+    await expect(
+      withProgress(
+        { label: 'Processing', total: 4, statusCallback: s => seen.push(s) },
+        () => Promise.reject(new Error('nope')),
+      ),
+    ).rejects.toThrow('nope')
     expect(seen.at(-1)).toBe('')
   })
 })

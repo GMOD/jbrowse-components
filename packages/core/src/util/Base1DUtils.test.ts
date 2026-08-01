@@ -2,6 +2,7 @@ import {
   basePaintedAt,
   bpToPx,
   computeMoveToLayout,
+  getContentBlocksPxSpan,
   getLayoutHighlightCoords,
   moveTo,
   pxToBp,
@@ -590,5 +591,39 @@ describe('moveTo with clamped bpPerPx (extraBp path)', () => {
       (expectedCenter - viewBp / 2) / minBpPerPx,
     )
     expect(currentOffsetPx).toBe(expectedOffsetPx)
+  })
+})
+
+// The overview's "you are here" rectangle is projected from the visible content
+// blocks. Each block knows which displayed region it came from; dropping that
+// made bpToPx take the first region with a matching refName, so a view showing
+// the same region twice pointed the rectangle at the first copy.
+describe('getContentBlocksPxSpan', () => {
+  const layout = makeSnap([
+    { refName: 'chr1', start: 0, end: 1000 },
+    { refName: 'chr1', start: 0, end: 1000 },
+  ])
+
+  const block = (displayedRegionIndex: number) => ({
+    type: 'ContentBlock' as const,
+    key: `chr1:0-1000-${displayedRegionIndex}`,
+    offsetPx: 0,
+    widthPx: 1000,
+    assemblyName: 'test',
+    refName: 'chr1',
+    start: 200,
+    end: 400,
+    displayedRegionIndex,
+  })
+
+  it('projects onto the copy the block came from', () => {
+    expect(getContentBlocksPxSpan(layout, [block(0)])).toEqual({
+      leftPx: 200,
+      rightPx: 400,
+    })
+    expect(getContentBlocksPxSpan(layout, [block(1)])).toEqual({
+      leftPx: 1200,
+      rightPx: 1400,
+    })
   })
 })

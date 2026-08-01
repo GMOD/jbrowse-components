@@ -151,10 +151,13 @@ const colors: Record<string, string> = {
   yellowgreen: '#9ACD32',
 }
 
+// Object.hasOwn rather than a bare index: the table is a plain object, so
+// `colors.constructor` and `colors.toString` come back as functions typed
+// `string`, and isNamedColor('toString') was true.
 export function namedColorToHex(name: string): string | undefined {
-  return colors[name]
+  return Object.hasOwn(colors, name) ? colors[name] : undefined
 }
 
 export function isNamedColor(name: string): boolean {
-  return !!colors[name]
+  return Object.hasOwn(colors, name)
 }

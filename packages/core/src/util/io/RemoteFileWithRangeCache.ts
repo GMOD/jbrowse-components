@@ -81,8 +81,16 @@ export function clearCache() {
   // block — so this can momentarily push activeCount negative, which is
   // harmless (runNext still allows new work) and self-corrects once any leaked
   // work has resolved.
-  activeCount = 0
-  queue.length = 0
+  //
+  // Queued waiters are RESUMED, not dropped: a dropped resolver strands its
+  // limitConcurrency caller with no resolve and no reject, so the read neither
+  // runs nor settles — a hang rather than a cancellation. Each resumed waiter
+  // claims a slot the way runNext would and releases it in its own finally.
+  const waiters = queue.splice(0, queue.length)
+  activeCount = waiters.length
+  for (const resolve of waiters) {
+    resolve()
+  }
 }
 
 function runNext() {
@@ -160,8 +168,10 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     if (!sizeCache.has(this.url)) {
       // Bypass the chunk cache: a populated chunk would otherwise short-circuit
       // fetchRange, leaving sizeCache empty. fetchRange always observes
-      // Content-Range and updates sizeCache directly.
-      await this.fetchRange(this.url, 0, 0)
+      // Content-Range and updates sizeCache directly. Still goes through
+      // limitConcurrency — a stat is a real request against the same server,
+      // and N tracks opening at once used to issue N stats outside the cap.
+      await limitConcurrency(() => this.fetchRange(this.url, 0, 0))
     }
     const size = sizeCache.get(this.url)
     if (size === undefined) {
@@ -211,10 +221,10 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       throw Object.assign(new Error(msg), { status: res.status })
     }
     const buffer = new Uint8Array(await res.arrayBuffer())
-    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345"). Always
-    // refresh the module-level sizeCache here, so any successful range fetch —
-    // including those triggered by a leaked promise from a prior test — leaves
-    // the cache in a consistent state for future stat() callers.
+    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345"). The
+    // first successful range fetch populates the module-level sizeCache, so a
+    // later stat() needs no HEAD of its own; an already-known size is left
+    // alone (the file is not expected to change under us mid-session).
     if (!sizeCache.has(url)) {
       if (res.status === 200) {
         // no Content-Range on a 200, but the body is the entire file

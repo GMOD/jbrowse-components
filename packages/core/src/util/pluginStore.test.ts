@@ -80,6 +80,30 @@ describe('resolvePlugin', () => {
     expect(r.pluginVersion).toBe('2.0.0')
   })
 
+  // resolvePlugin used to throw here, taking out the whole store list rather
+  // than rendering this one entry as incompatible
+  it('resolves without a definition when only per-version urls exist and none match', () => {
+    const p = plugin({
+      versions: [
+        {
+          pluginVersion: '2.0.0',
+          jbrowseRange: '>=2.0.0 <3.0.0',
+          url: 'https://x/2.0.0/p.js',
+        },
+      ],
+    })
+    const r = resolvePlugin(p, '4.3.0')
+    expect(r.compatible).toBe(false)
+    expect(r.definition).toBeUndefined()
+    expect(r.supportedRanges).toEqual(['>=2.0.0 <3.0.0'])
+  })
+
+  it('resolves without a definition for an entry carrying no url at all', () => {
+    const r = resolvePlugin(plugin({}), '4.3.0')
+    expect(r.compatible).toBe(true)
+    expect(r.definition).toBeUndefined()
+  })
+
   it('falls back to top-level url when no versions are declared', () => {
     const p = plugin({ url: 'https://x/p.js', integrity: 'sha384-z' })
     const r = resolvePlugin(p, '4.3.0')
