@@ -1,18 +1,23 @@
+// The typecheck project: src plus its tests, under the node settings the CLI
+// actually runs with. The root project excludes this directory for the same
+// reason it excludes jbrowse-desktop/electron — `moduleResolution: bundler` and
+// a DOM lib would hand this code globals it won't have. `pnpm typecheck` runs
+// this project; `tsconfig.build.json` is the emitting one.
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "lib": ["esnext"],
     "target": "esnext",
     "moduleResolution": "nodenext",
     "module": "nodenext",
+    "types": ["node", "jest"],
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "noEmit": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/testUtil.ts", "dist"]
+  "exclude": ["dist"]
 }

@@ -241,7 +241,5 @@ export function mockFetch(mockOrHandler: MockFetchHandler) {
 export function mockGlobalFetch(mockOrHandler: MockFetchHandler) {
   return jest
     .spyOn(globalThis, 'fetch')
-    .mockImplementation((url: RequestInfo | URL) =>
-      resolveMock(mockOrHandler, url.toString()),
-    )
+    .mockImplementation(url => resolveMock(mockOrHandler, url.toString()))
 }
