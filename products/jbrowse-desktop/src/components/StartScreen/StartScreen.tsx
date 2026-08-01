@@ -1,3 +1,7 @@
+// imported for the module augmentation that types the extension points the
+// panels and menu below fire
+import './startScreenExtensionPoints.ts'
+
 import { useState } from 'react'
 
 import {
@@ -23,10 +27,6 @@ import {
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
 import { createStartScreenPluginManager, loadPluginManager } from './util.tsx'
-
-// imported for the module augmentation that types the extension points the
-// panels and menu below fire
-import './startScreenExtensionPoints.ts'
 
 import type { StartScreenPanelProps } from './startScreenExtensionPoints.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

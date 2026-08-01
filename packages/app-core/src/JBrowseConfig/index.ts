@@ -2,12 +2,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import RootConfiguration from './RootConfiguration.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationSchemaType,
   ConfigurationSchemaDefinition,
 } from '@jbrowse/core/configuration'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export { DEFAULT_SHARE_URL } from './RootConfiguration.ts'
 

@@ -10,7 +10,6 @@ import {
 import createJexlInstance from './util/jexl.ts'
 
 import type Plugin from './Plugin.ts'
-import type { PluginDefinition } from './pluginDefinitions.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
 import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
 import type ConnectionType from './pluggableElementTypes/ConnectionType.ts'
@@ -23,6 +22,7 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
+import type { PluginDefinition } from './pluginDefinitions.ts'
 import type {
   AbstractRootModel,
   AbstractSessionModel,
@@ -362,7 +362,9 @@ export default class PluginManager {
 
   constructor(
     initialPlugins: (
-      Plugin | PluginLoadRecord | RuntimePluginLoadRecord
+      | Plugin
+      | PluginLoadRecord
+      | RuntimePluginLoadRecord
     )[] = [],
   ) {
     // add the core plugin

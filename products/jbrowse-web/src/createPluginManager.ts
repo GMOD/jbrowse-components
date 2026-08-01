@@ -1,10 +1,10 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { pluginDefinitionMetadata } from '@jbrowse/core/pluginDefinitions'
 import {
   pluginDescriptionString,
   pluginUrl,
 } from '@jbrowse/core/pluginDefinitions'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
 import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'

@@ -30,7 +30,8 @@ export interface LegacyUMDPluginDefinition {
 }
 
 export type UMDPluginDefinition =
-  UMDLocPluginDefinition | UMDUrlPluginDefinition
+  | UMDLocPluginDefinition
+  | UMDUrlPluginDefinition
 
 export interface ESMLocPluginDefinition {
   esmLoc: {
@@ -46,7 +47,8 @@ export interface ESMUrlPluginDefinition {
 }
 
 export type ESMPluginDefinition =
-  ESMLocPluginDefinition | ESMUrlPluginDefinition
+  | ESMLocPluginDefinition
+  | ESMUrlPluginDefinition
 
 export interface CJSPluginDefinition {
   cjsUrl: string

@@ -1,4 +1,5 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   dedupePlugins,
   dropVendoredPlugins,
@@ -7,7 +8,6 @@ import {
   pluginUrl,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { dedupe } from '@jbrowse/core/util'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'

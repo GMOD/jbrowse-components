@@ -1,5 +1,4 @@
 import type { AppRootModel } from '@jbrowse/app-core'
-import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type {
@@ -7,6 +6,7 @@ import type {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 export interface SessionMetadata {

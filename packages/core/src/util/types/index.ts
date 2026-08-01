@@ -1,6 +1,5 @@
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type assemblyManager from '../../assemblyManager/index.ts'
 import type {
@@ -8,6 +7,7 @@ import type {
   ResolvableDisplay,
 } from '../../configuration/index.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
+import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
 import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
 import type { Feature } from '../simpleFeature.ts'
@@ -101,7 +101,8 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  React.LazyExoticComponent<React.FC<any>> | React.FC<any>
+  | React.LazyExoticComponent<React.FC<any>>
+  | React.FC<any>
 
 /**
  * the slice of a view that track-action menu items need: opening a track, and
@@ -711,7 +712,10 @@ export function isAuthNeededException(
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation =
-  LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation
+  | LocalPathLocation
+  | UriLocation
+  | BlobLocation
+  | FileHandleLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

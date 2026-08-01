@@ -24,8 +24,8 @@ import type {
   PluginLoadFailure,
   PluginRecord,
 } from '@jbrowse/core/PluginLoader'
-import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 type ReloadPluginManagerCallback = (

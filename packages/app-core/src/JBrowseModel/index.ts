@@ -1,18 +1,18 @@
-import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { migrateConfigSnapshot } from '@jbrowse/product-core'
 import { toJS } from 'mobx'
 
 import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfigurationModel,
   ConfigurationSchemaDefinition,
 } from '@jbrowse/core/configuration'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 // This config model always lives at rootModel.jbrowse, so its MST parent is the

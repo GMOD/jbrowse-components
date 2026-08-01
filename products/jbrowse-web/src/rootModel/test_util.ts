@@ -1,5 +1,5 @@
-import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 
 import corePlugins from '../corePlugins.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
