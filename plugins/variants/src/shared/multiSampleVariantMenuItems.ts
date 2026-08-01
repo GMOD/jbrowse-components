@@ -14,7 +14,6 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import TuneIcon from '@mui/icons-material/Tune'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { ALT_ALLELE_COLOR } from './altAlleleColor.ts'
 import { capitalizeFirst } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
@@ -165,26 +164,6 @@ export function variantTrackMenuItems(
           checked: !self.featureColor,
           onClick: () => {
             self.setFeatureColor('')
-          },
-        },
-        {
-          label: `ALT allele${
-            self.hasSecondaryAlt
-              ? ''
-              : !self.featuresVolatile
-                ? ' (checking for multiallelic sites...)'
-                : ' (no multiallelic sites in view)'
-          }`,
-          helpText:
-            'Color every alt-carrying cell by which ALT allele it carries, so samples sharing an allele share a color. The default scheme names only the most frequent alt and paints every other one the same flat color, which collapses a site where many samples each carry a different allele; ref and no-call cells keep their normal coloring',
-          type: 'radio',
-          checked: self.featureColor === ALT_ALLELE_COLOR,
-          disabled: !self.hasSecondaryAlt,
-          disabledHelpText: !self.featuresVolatile
-            ? 'Checking for multiallelic sites...'
-            : 'Every site in view has a single ALT allele, so there is nothing to tell apart',
-          onClick: () => {
-            self.setFeatureColor(ALT_ALLELE_COLOR)
           },
         },
         {

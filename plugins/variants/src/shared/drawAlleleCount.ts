@@ -1,6 +1,5 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import { getAltAlleleColor } from './altAlleleColor.ts'
 import {
   GENOTYPE_SPLITTER,
   NO_CALL_COLOR,
@@ -18,11 +17,6 @@ export function getAlleleColor(
   // allele-dosage shade. Part of the cache key since the same genotype maps to
   // different colors across features (each variant has its own impact color).
   altOverride?: string,
-  // Alt-allele mode: paint by *which* ALT the genotype carries rather than by
-  // dosage. Not part of the cache key, unlike altOverride: it comes from the
-  // display's single `featureColor` setting, so it is fixed for the whole life of
-  // `colorCache` (one compute pass) and cannot collide within it.
-  colorByAltAllele = false,
 ) {
   const cacheKey = `${genotype}:${mostFrequentAlt}:${altOverride ?? ''}`
   let c = colorCache[cacheKey]
@@ -31,10 +25,6 @@ export function getAlleleColor(
     let uncalled = 0
     let alt2 = 0
     let ref = 0
-    // First called non-reference allele — what alt-allele mode colors by. A
-    // genotype carrying two different alts (1/2) reports the first; no single
-    // fill can say "two alleles", and the tooltip names both.
-    let firstAlt = ''
 
     const alleles =
       genotype.length === 3 && (genotype[1] === '/' || genotype[1] === '|')
@@ -53,24 +43,16 @@ export function getAlleleColor(
       } else {
         alt2++
       }
-      if (firstAlt === '' && allele !== '0' && allele !== '.') {
-        firstAlt = allele
-      }
     }
-    // Hom-ref and all-no-call genotypes have no alt to name, so in every mode
-    // they fall through to the normal reference / no-call shading.
-    c =
-      colorByAltAllele && firstAlt !== ''
-        ? getAltAlleleColor(+firstAlt)
-        : getColorAlleleCount(
-            ref,
-            alt,
-            alt2,
-            uncalled,
-            total,
-            drawRef,
-            altOverride,
-          )
+    c = getColorAlleleCount(
+      ref,
+      alt,
+      alt2,
+      uncalled,
+      total,
+      drawRef,
+      altOverride,
+    )
     colorCache[cacheKey] = c
   }
   return c

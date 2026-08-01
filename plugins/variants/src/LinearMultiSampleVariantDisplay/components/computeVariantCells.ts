@@ -19,7 +19,6 @@ import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type {
-  AltColorMode,
   ProcessedSource,
   VariantFeatureGenotypes,
 } from '../../shared/types.ts'
@@ -85,7 +84,7 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   featureColor,
-  altColorMode,
+  colorByPhaseSet,
   featureGenotypes,
   report,
 }: {
@@ -97,12 +96,11 @@ export function computeVariantCells({
   // per feature; alt-carrying cells take it, ref/no-call cells keep their normal
   // coloring. Undefined = default genotype coloring.
   featureColor?: (feature: Feature) => string | undefined
-  // Which scheme colors the alt cells, when it is one the worker can't resolve
-  // to a per-feature color: 'phaseSet' (FORMAT PS) or 'altAllele' (which ALT the
-  // genotype carries). Explicit rather than inferred from the data — PS coloring
-  // used to switch itself on wherever a FORMAT carried PS, silently swapping the
-  // alt colors the legend was describing with no way back.
-  altColorMode?: AltColorMode
+  // Color phased alt cells by their FORMAT PS (phase set) instead of by allele.
+  // Explicit rather than inferred from the presence of PS: the implicit trigger
+  // silently swapped the alt-allele colors the legend was describing, with no
+  // way to switch back.
+  colorByPhaseSet?: boolean
   // featureId -> genotypes, resolved once for every filtered variant by
   // `computeSampleInfo` (which returns this map for exactly that reason) so the
   // per-cell loops never re-parse a feature's genotype block. Prepopulated for
@@ -113,7 +111,6 @@ export function computeVariantCells({
 }): VariantCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
   const drawRef = referenceDrawingMode === 'draw'
-  const colorByAltAllele = altColorMode === 'altAllele'
   // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
@@ -225,7 +222,7 @@ export function computeVariantCells({
       // carry it. So the slower samples path runs only when the user asked for
       // phase-set coloring AND this feature actually declares PS.
       const hasPhaseSet =
-        altColorMode === 'phaseSet' &&
+        colorByPhaseSet &&
         featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
       const samp = hasPhaseSet
         ? (feature.get('samples') as Record<string, Record<string, string[]>>)
@@ -263,7 +260,6 @@ export function computeVariantCells({
             mostFrequentAlt,
             PS,
             drawRef,
-            colorByAltAllele,
           )
           if (c) {
             const isRefCell = c === REFERENCE_COLOR
@@ -307,7 +303,6 @@ export function computeVariantCells({
             alleleColorCache,
             drawRef,
             overrideColor,
-            colorByAltAllele,
           )
           if (c) {
             addCell(

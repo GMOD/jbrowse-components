@@ -19,13 +19,6 @@ export interface SampleInfo {
   maxPloidy: number
 }
 
-// Which per-(feature, sample) scheme colors the alt cells, for the `featureColor`
-// sentinels the worker can't resolve to a per-feature color function. Undefined
-// is the default genotype coloring. One value rather than a flag per mode: they
-// share the single `featureColor` slot precisely so only one can be on screen,
-// and independent flags would need a precedence rule to settle it.
-export type AltColorMode = 'phaseSet' | 'altAllele'
-
 // Per-feature info for hover tooltips and the feature widget. Single-sourced so
 // the regular and matrix displays can't drift: the regular display keys these by
 // feature id (`featureGenotypeMap`), the matrix carries them positionally

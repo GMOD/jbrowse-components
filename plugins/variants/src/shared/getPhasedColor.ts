@@ -1,4 +1,3 @@
-import { getAltAlleleColor } from './altAlleleColor.ts'
 import {
   NO_CALL_COLOR,
   PRIMARY_ALT_COLOR,
@@ -73,7 +72,6 @@ export function getPhasedColor(
   mostFrequentAlt: string,
   PS?: string,
   drawReference = true,
-  colorByAltAllele = false,
 ) {
   const allele = alleles[HP]
   // The sample has no allele at this haplotype index. Phased expansion gives
@@ -101,9 +99,6 @@ export function getPhasedColor(
     const ps = +PS
     const hue = Number.isFinite(ps) ? (ps * 137.508) % 360 : 0
     return `hsl(${hue}, 50%, 50%)`
-  }
-  if (colorByAltAllele) {
-    return getAltAlleleColor(+allele)
   }
   return allele === mostFrequentAlt ? PRIMARY_ALT_COLOR : SECONDARY_ALT_COLOR
 }

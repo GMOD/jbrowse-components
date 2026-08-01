@@ -537,7 +537,7 @@ describe('phase-set coloring is opt-in', () => {
   // PS coloring used to switch itself on for any feature whose FORMAT carried
   // PS, which silently replaced the alt-allele colors the legend was still
   // describing and offered no way back. It is now driven by the explicit
-  // `altColorMode` (the PHASE_SET_COLOR featureColor sentinel).
+  // `colorByPhaseSet` flag (the PHASE_SET_COLOR featureColor sentinel).
   const sources: ProcessedSource[] = [
     { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
     { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
@@ -561,7 +561,7 @@ describe('phase-set coloring is opt-in', () => {
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
-      altColorMode: colorByPhaseSet ? 'phaseSet' : undefined,
+      colorByPhaseSet,
       featureGenotypes: genotypeLookup([feature]),
     })
     return [...result.cellColors.slice(0, result.numCells)]
@@ -603,7 +603,7 @@ describe('phase-set coloring is opt-in', () => {
         sources,
         renderingMode: 'phased',
         referenceDrawingMode: 'skip',
-        altColorMode: colorByPhaseSet ? ('phaseSet' as const) : undefined,
+        colorByPhaseSet,
         featureGenotypes: genotypeLookup([feature, other]),
       })
 
@@ -710,106 +710,4 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
       S2: '1|0',
     })
   })
-})
-
-describe('alt-allele coloring', () => {
-  // The reason this mode exists: at a multiallelic site the default scheme names
-  // one alt and paints every other one the same flat color, so samples carrying
-  // different alleles are indistinguishable. HPRC2 chr1:1007746 lists 18 ALTs and
-  // all 18 are carried, which is the shape modelled here.
-  const sources: ProcessedSource[] = ['S1', 'S2', 'S3', 'S4'].map(s => ({
-    name: s,
-    sampleName: s,
-  }))
-  const feature = makeFeature({
-    genotypes: { S1: '1', S2: '2', S3: '3', S4: '0' },
-    FORMAT: [],
-    ALT: ['A', 'C', 'T'],
-    REF: 'G',
-    name: 'v1',
-    description: '',
-    type: 'SNV',
-    start: 100,
-    end: 101,
-  })
-
-  function run(altColorMode?: 'altAllele') {
-    const result = computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
-      sources,
-      renderingMode: 'alleleCount',
-      referenceDrawingMode: 'draw',
-      altColorMode,
-      featureGenotypes: genotypeLookup([feature]),
-    })
-    const byRow = new Map<number, number>()
-    for (let i = 0; i < result.numCells; i++) {
-      byRow.set(result.cellRowIndices[i]!, result.cellColors[i]!)
-    }
-    return byRow
-  }
-
-  test('default coloring collapses the non-primary alts to one color', () => {
-    const byRow = run()
-    // S2 and S3 carry *different* alleles but read identically — the collapse.
-    expect(byRow.get(1)).toBe(byRow.get(2))
-  })
-
-  test('alt-allele coloring gives each carried allele its own color', () => {
-    const byRow = run('altAllele')
-    const alts = [byRow.get(0)!, byRow.get(1)!, byRow.get(2)!]
-    expect(new Set(alts).size).toBe(3)
-  })
-
-  test('reference cells keep their own color in alt-allele mode', async () => {
-    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
-    expect(run('altAllele').get(3)).toBe(getCachedABGR(REFERENCE_COLOR))
-  })
-
-  test('phased mode colors each haplotype by its own allele', () => {
-    const phasedFeature = makeFeature({
-      genotypes: { S1: '1|2', S2: '3|0' },
-      FORMAT: [],
-      ALT: ['A', 'C', 'T'],
-      REF: 'G',
-      name: 'v1',
-      description: '',
-      type: 'SNV',
-      start: 100,
-      end: 101,
-    })
-    const result = computeVariantCells({
-      filteredVariants: [{ feature: phasedFeature, mostFrequentAlt: '1' }],
-      sources: ['S1', 'S2'].flatMap(s => [
-        { name: `${s} HP0`, sampleName: s, HP: 0 },
-        { name: `${s} HP1`, sampleName: s, HP: 1 },
-      ]),
-      renderingMode: 'phased',
-      referenceDrawingMode: 'draw',
-      altColorMode: 'altAllele',
-      featureGenotypes: genotypeLookup([phasedFeature]),
-    })
-    const byRow = new Map<number, number>()
-    for (let i = 0; i < result.numCells; i++) {
-      byRow.set(result.cellRowIndices[i]!, result.cellColors[i]!)
-    }
-    // S1's two haplotypes carry alleles 1 and 2 — distinct colors, and S1 HP0
-    // (allele 1) differs from S2 HP0 (allele 3).
-    expect(byRow.get(0)).not.toBe(byRow.get(1))
-    expect(byRow.get(0)).not.toBe(byRow.get(2))
-  })
-})
-
-test('the alt-allele palette stays distinguishable past its hue count', async () => {
-  const { getAltAlleleColor, ALT_ALLELE_PALETTE } =
-    await import('../../shared/altAlleleColor.ts')
-  // A 16-allele site is real (HPRC2 chr1:1049115 carries 16 of its 31 ALTs), so
-  // the palette has to run that far without repeating.
-  const first16 = Array.from({ length: 16 }, (_, i) => getAltAlleleColor(i + 1))
-  expect(new Set(first16).size).toBe(16)
-  // Past the palette it cycles, which the legend states outright.
-  expect(getAltAlleleColor(ALT_ALLELE_PALETTE.length + 1)).toBe(
-    getAltAlleleColor(1),
-  )
 })
