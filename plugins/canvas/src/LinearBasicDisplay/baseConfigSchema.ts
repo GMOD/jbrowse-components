@@ -9,7 +9,10 @@ import {
   DISPLAY_MODES,
   SUBFEATURE_LABELS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
-import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import {
+  MAX_DESCRIPTION_FEATURE_DENSITY,
+  MAX_LABEL_FEATURE_DENSITY,
+} from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
@@ -95,6 +98,16 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: MAX_LABEL_FEATURE_DENSITY,
         description:
           'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
+      maxDescriptionFeatureDensity: {
+        type: 'number',
+        defaultValue: MAX_DESCRIPTION_FEATURE_DENSITY,
+        description:
+          'In "auto" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names',
         advanced: true,
       },
       /**

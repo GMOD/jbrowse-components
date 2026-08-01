@@ -630,18 +630,25 @@ export default function baseStateModelFactory(
          * #getter
          */
         get effectiveShowDescriptions() {
-          // In auto mode the density gate hides both labels and descriptions
-          // together. Manual 'off' only hides labels — descriptions remain
-          // independently controllable. Collapsed suppresses them outright (like
-          // names) — gated at this render-layer getter, not the raw
-          // `showDescriptions` one, so the "Show descriptions" menu checkbox still
-          // reflects the persisted setting rather than reading false while
-          // collapsed (mirrors how subfeatureLabels is forced off in rpcProps,
-          // not in its menu-facing getter).
+          // Auto degrades in two steps: descriptions go at
+          // maxDescriptionFeatureDensity, names at the higher
+          // maxLabelFeatureDensity. Anded with `showLabels` so a config that
+          // inverts the two thresholds can't leave descriptions painting after
+          // names are gone — the tighter of the pair always wins. Manual modes
+          // only hide labels — descriptions remain independently controllable.
+          // Collapsed suppresses them outright (like names) — gated at this
+          // render-layer getter, not the raw `showDescriptions` one, so the
+          // "Show descriptions" menu checkbox still reflects the persisted
+          // setting rather than reading false while collapsed (mirrors how
+          // subfeatureLabels is forced off in rpcProps, not in its menu-facing
+          // getter).
           return (
             this.displayMode !== 'collapsed' &&
             this.showDescriptions &&
-            (this.showLabelsMode !== 'auto' || this.showLabels)
+            (this.showLabelsMode !== 'auto' ||
+              (this.showLabels &&
+                self.visibleFeatureDensityPerPx <=
+                  getConf(self, 'maxDescriptionFeatureDensity')))
           )
         },
 

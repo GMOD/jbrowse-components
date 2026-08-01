@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -1115,6 +1116,35 @@ describe('showLabels auto density gate', () => {
   it('auto density gate hides descriptions together with labels', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
+    zoomAndSettle(view, 62.5)
+    expect(display.showLabels).toBe(false)
+    expect(display.effectiveShowDescriptions).toBe(false)
+  })
+
+  // The rung between the two thresholds: descriptions drop at 0.05 features/px
+  // (bpPerPx ≈ 5 here), names not until 0.2 (bpPerPx ≈ 20), so zooming out
+  // degrades name + description → name → nothing rather than all-or-nothing.
+  it('auto drops descriptions a zoom tier before names', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
+
+    // density ≈ 0.02 — under both thresholds
+    zoomAndSettle(view, 2)
+    expect(display.showLabels).toBe(true)
+    expect(display.effectiveShowDescriptions).toBe(true)
+
+    // density ≈ 0.1 — over the description threshold, under the label one
+    zoomAndSettle(view, 10)
+    expect(display.showLabels).toBe(true)
+    expect(display.effectiveShowDescriptions).toBe(false)
+  })
+
+  // A config that inverts the thresholds must not paint descriptions after the
+  // names they hang off are gone — the tighter of the pair wins.
+  it('never leaves descriptions on past the label threshold', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
+    setConf(display, 'maxDescriptionFeatureDensity', 10)
     zoomAndSettle(view, 62.5)
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(false)
