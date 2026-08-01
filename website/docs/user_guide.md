@@ -85,6 +85,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/dog10k_retrogene)
 - [](/docs/tutorials/local_ancestry)
+- [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/dog10k_svs)
 
 ### Epigenomics & single cell
@@ -93,6 +94,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/bisulfite)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/scatac_pseudobulk)
+- [](/docs/tutorials/scrna_pseudobulk)
 
 ### Transcriptomics & proteins
 

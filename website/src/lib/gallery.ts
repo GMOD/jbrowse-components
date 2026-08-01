@@ -277,6 +277,16 @@ export const gallerySections: readonly GallerySection[] = [
           'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
       },
       {
+        // The mutation matrix, not the copy-number painting the "Coverage"
+        // section already carries for this cohort: different assay, different
+        // display, and the grouping is what the picture is about.
+        label: 'Tumor cohort mutations by histology',
+        spec: 'tcga/mutations_cdh1_histology',
+        guide: 'tutorials/tcga_cohort_mutations',
+        description:
+          'Somatic mutations in CDH1 across a TCGA breast cohort, one column per mutation and one row per tumor, with the rows grouped by histology. The truncating mutations fall almost entirely in the lobular band.',
+      },
+      {
         label: 'Wolfdog local ancestry',
         spec: 'dog10k-wolfdog-ancestry',
         guide: 'tutorials/local_ancestry',
@@ -383,6 +393,13 @@ export const gallerySections: readonly GallerySection[] = [
           'CATlas single-cell ATAC pseudobulk around the INS locus: cell-type BigWigs gathered into one multi-quantitative track, one labeled row each on a shared scale, rather than separate tracks to line up by hand.',
       },
       {
+        label: 'Single-cell RNA pseudobulk',
+        spec: 'scrna/ms4a1_bcell',
+        guide: 'tutorials/scrna_pseudobulk',
+        description:
+          'A 10x PBMC experiment pooled by cell type into one coverage BigWig each and loaded as a single track. At a B-cell marker only the B row carries the pile, and it sits at the 3’ end of the gene, where 3’ chemistry puts the reads.',
+      },
+      {
         label: 'Hi-C contact matrix',
         spec: 'hic_track',
         guide: 'user_guides/hic_track',
@@ -477,17 +494,18 @@ export const gallerySections: readonly GallerySection[] = [
           'A pggb pangenome graph projected onto the K12 reference as per-strain presence, one row per non-reference strain across the whole chromosome, dropping to zero over the stretches that strain does not carry.',
       },
       {
-        // Was pangenome_cactus/synteny, a five-row halSynteny stack of the same
-        // strains as the all-vs-all card below it — same view type, same pink
-        // ribbons, indistinguishable as a thumbnail. The HAL's base-level MAF is
-        // the projection this pipeline has and the PAF ones don't, so it is both
-        // the distinct capability and the distinct picture. The synteny stack is
-        // still in the tutorial.
+        // Third pick for this card. The halSynteny stack was a five-row ribbon
+        // band indistinguishable from the all-vs-all card below it; the HAL MAF
+        // that replaced it is a 6 kb window of alignment rows, which reads as
+        // nothing at card size. This one is the graph's own odgi viz picture
+        // rebuilt from the same data on a genome coordinate — the raster's row
+        // order and colors, so the two are comparable, which no other card here
+        // does. Both earlier figures are still in the tutorial.
         label: 'E. coli pangenome (Minigraph-Cactus)',
-        spec: 'pangenome_cactus/maf',
+        spec: 'pangenome_cactus/graph_correspondence',
         guide: 'tutorials/pangenome_cactus',
         description:
-          "The Minigraph-Cactus graph's HAL projected onto K12 as a MAF: a coverage band, then one row per strain colored where it differs from K12, under the K12 gene lane. All five align continuously here, so the mismatch columns are SNP divergence.",
+          "Per-strain presence in the Minigraph-Cactus graph, one row per strain in the colors odgi viz gives them, drawn on K12's coordinates instead of the graph's node order. White is sequence that strain does not carry.",
       },
       {
         // A plain five-row ecoli_pangenome stack used to have a card of its own.
