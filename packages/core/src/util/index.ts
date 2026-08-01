@@ -1,6 +1,4 @@
 import { isElectron } from './environment.ts'
-import { toLocale } from './numericUtils.ts'
-import { shorten } from './stringUtils.ts'
 import { storeBlobLocation } from './tracks.ts'
 
 import type { FileLocation } from './types/index.ts'
@@ -9,7 +7,13 @@ import type { FileLocation } from './types/index.ts'
 // '@jbrowse/core/util/unzip' so this barrel does not reach bgzf/pako. See that
 // file for why a re-export of it cannot be tree-shaken.
 
-export { shorten, shorten2, truncateMiddle } from './stringUtils.ts'
+export {
+  capitalizeFirst,
+  pluralize,
+  shorten,
+  shorten2,
+  truncateMiddle,
+} from './stringUtils.ts'
 export { getFillProps, getStrokeProps, stripAlpha } from './svgColorProps.ts'
 export {
   fetchAndMaybeUnzip,
@@ -203,6 +207,7 @@ export { matchTrackId } from './matchTrackId.ts'
 export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
 export { isElectron, isNode, rIC } from './environment.ts'
 export { isObject } from './objectUtils.ts'
+export { type ReorderDirection, reorder } from './reorder.ts'
 export { getStr } from './getStr.ts'
 export { measureGridWidth, resolveSelectedIds } from './dataGridUtils.ts'
 export { isRpcResult } from './rpc.ts'
@@ -230,28 +235,6 @@ export {
   hashCode,
   objectHash,
 } from './mstUtils.ts'
-
-export function stringify(
-  {
-    refName,
-    coord,
-    assemblyName,
-    oob,
-  }: {
-    assemblyName?: string
-    coord: number
-    refName?: string
-    oob?: boolean
-  },
-  useAssemblyName?: boolean,
-) {
-  return [
-    assemblyName && useAssemblyName ? `{${assemblyName}}` : '',
-    refName
-      ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
-      : '',
-  ].join('')
-}
 
 // this is recommended in a later comment in
 // https://github.com/electron/electron/issues/2288 for detecting electron in a
@@ -316,23 +299,6 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
-// Regular-plural noun for a count, for the "N hidden features" / "Clear N
-// highlights" family of labels. Takes the count rather than returning a bare
-// suffix so the call site reads as the sentence it produces, and so `0` pairs
-// with the plural ("0 features") the way English does — the hand-written
-// `n > 1 ? 's' : ''` scattered around got that right only because every one of
-// those labels was already gated on n > 0.
-export function pluralize(count: number, noun: string) {
-  return count === 1 ? noun : `${noun}s`
-}
-
-// Sentence-case a noun that arrives lowercase because it also appears
-// mid-sentence — the display nouns ('feature', 'read', 'variant') that name
-// what a track holds are the case this exists for.
-export function capitalizeFirst(s: string) {
-  return `${s.charAt(0).toUpperCase()}${s.slice(1)}`
-}
-
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result: Record<string, T[]> = {}
   for (const value of array) {
@@ -345,33 +311,6 @@ export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
 
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
-}
-
-export type ReorderDirection = 'up' | 'down' | 'top' | 'bottom'
-
-/**
- * Move the element at `idx` within `arr` in the given direction, returning a new
- * array. An edge move (already at top/bottom) returns an unchanged copy.
- */
-export function reorder<T>(
-  arr: readonly T[],
-  idx: number,
-  direction: ReorderDirection,
-): T[] {
-  const next = [...arr]
-  if (idx >= 0 && idx < arr.length) {
-    const [item] = next.splice(idx, 1)
-    const target =
-      direction === 'up'
-        ? Math.max(0, idx - 1)
-        : direction === 'down'
-          ? Math.min(arr.length - 1, idx + 1)
-          : direction === 'top'
-            ? 0
-            : arr.length - 1
-    next.splice(target, 0, item!)
-  }
-  return next
 }
 
 export function testAdapter(
@@ -414,6 +353,7 @@ export {
   compareLocs,
   parseLocString,
   parseLocStringOneBased,
+  stringify,
 } from './locString.ts'
 export {
   type LastStopTokenCheck,

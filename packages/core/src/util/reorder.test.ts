@@ -1,4 +1,4 @@
-import { reorder } from './index.ts'
+import { reorder } from './reorder.ts'
 
 describe('reorder', () => {
   const arr = ['a', 'b', 'c', 'd']

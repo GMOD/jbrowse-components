@@ -1,4 +1,5 @@
 import { toLocale } from './numericUtils.ts'
+import { shorten } from './stringUtils.ts'
 
 export interface ParsedLocString {
   assemblyName?: string
@@ -232,4 +233,32 @@ export function compareLocStrings(
   const locA = parseLocString(a, isValidRefName)
   const locB = parseLocString(b, isValidRefName)
   return compareLocs(locA, locB)
+}
+
+/**
+ * A cursor/coordinate readout: `{assembly}chr1:1,234`, with the refName
+ * shortened and the coordinate locale-grouped. The *display* counterpart to
+ * {@link assembleLocString} — this one is for showing a single position to a
+ * user, never for a location string that will be parsed back.
+ */
+export function stringify(
+  {
+    refName,
+    coord,
+    assemblyName,
+    oob,
+  }: {
+    assemblyName?: string
+    coord: number
+    refName?: string
+    oob?: boolean
+  },
+  useAssemblyName?: boolean,
+) {
+  return [
+    assemblyName && useAssemblyName ? `{${assemblyName}}` : '',
+    refName
+      ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
+      : '',
+  ].join('')
 }

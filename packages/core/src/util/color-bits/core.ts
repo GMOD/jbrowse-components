@@ -35,6 +35,14 @@ export function toNumber(color: Color) {
   return cast(color)
 }
 
+// These read the canonical 0xRRGGBBAA layout (R in the HIGH byte). Their
+// mirror image is `abgrRed`/`abgrGreen`/`abgrBlue`/`abgrAlpha` in
+// ../colorBits.ts, which reads the ABGR u32 the GPU path packs (R in the LOW
+// byte) — calling the wrong pair silently swaps R and B. Both take a plain
+// number and cannot be told apart by the type system: a branded Color was
+// considered and rejected, because ABGR values are read back out of
+// Uint32Arrays, where indexing yields `number` and every read would need the
+// cast that defeats the brand.
 export function getRed(c: Color) {
   return get(c, OFFSET_R)
 }
