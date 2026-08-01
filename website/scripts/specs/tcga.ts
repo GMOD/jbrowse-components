@@ -95,6 +95,59 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
   ],
 }
 
+// The same tally as TCGA_BRCA_RECURRENCE_TRACK, run once per receptor subtype:
+// cnv_recurrence.py --groups gives each group its own gain and loss column,
+// BedGraphTabixAdapter reads every column past `end` as its own signal, and
+// MultiQuantitativeTrack's default multirowxy draws one row per signal. So the
+// eight rows come out of one 246KB file with no subadapter list.
+//
+// The columns are direction-major (four gains, then four losses), which is what
+// puts the rows a reader compares next to each other.
+//
+// Pinned rather than autoscaled, for the reason the pooled track is: autoscale
+// would give each row its own axis and make the subtypes look alike, which is
+// the one thing this figure exists to disprove.
+//
+// +-70 rather than the pooled track's +-100. Each row here carries one signed
+// direction, so it only ever fills the half of its axis on that side, and at
+// +-100 the tallest bar in the file (66.85%) reached under a third of its row.
+// 70 is the nearest round number above that maximum, so nothing clips and the
+// bars roughly double. All eight rows still share it, which is what keeps them
+// comparable.
+const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'tcga_brca_cnv_recurrence_by_subtype',
+  name: 'TCGA-BRCA recurrence by receptor subtype',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphTabixAdapter',
+    bedGraphGzLocation: {
+      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'TBI',
+      location: {
+        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz.tbi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+  displays: [
+    {
+      type: 'MultiLinearWiggleDisplay',
+      height: 620,
+      posColor: '#b2182b',
+      negColor: '#2166ac',
+      minScore: -70,
+      maxScore: 70,
+      // eight rows of one signed direction each, so the boundary between a
+      // group's row and the next one is not otherwise drawn
+      showRowSeparators: true,
+    },
+  ],
+}
+
 // The tree sidebar only mounts once clustering has produced a hierarchy
 // (TreeSidebar returns null on `!hierarchy`), so waiting on its canvas gates the
 // capture on real completion rather than on a duration guess.
@@ -414,6 +467,51 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     settleMs: 15000,
     diffThreshold: 0.02,
+  },
+
+  // The pooled frequency profile split four ways by receptor subtype, genome
+  // wide. The same cutoffs and the same axis as the pooled track, so what
+  // changes between the rows is the cohort and nothing else.
+  //
+  // Whole genome rather than a locus because the differences are not at one
+  // place: 17q gain is the HER2+ row, 16q loss the HR+/HER2- row, 5q loss and
+  // 10p gain the triple-negative row, and 1q gain is the event they share. A
+  // zoom would carry one of those and imply the rest are alike.
+  //
+  // No callouts. Eight rows of 100kb bars across 23 chromosomes leaves no space
+  // a label could sit in without covering a row, and the arm-scale blocks the
+  // figure is read at are wide enough to find from the ruler. The caption names
+  // them instead.
+  {
+    mode: 'url',
+    name: 'tcga/cohort_cnv_recurrence_subtype',
+    url: kgUrl({
+      sessionTracks: [TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          displayedRegionNames: HG38_MAIN_CHROMS,
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'tcga_brca_cnv_recurrence_by_subtype',
+              type: 'MultiLinearWiggleDisplay',
+              height: 620,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    // 246KB across the whole genome, so unlike the 5.7MB stack this needs no
+    // raised navigation or ready budget
+    readyTimeout: 180000,
+    viewportWidth: 1900,
+    // the 620px display plus the view's own chrome: the generator reported 62px
+    // clipped at 760
+    viewportHeight: 830,
+    settleMs: 10000,
   },
 
   // PIK3CA, the cohort's most-mutated gene. The window is the whole MANE

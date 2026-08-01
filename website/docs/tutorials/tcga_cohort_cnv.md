@@ -15,14 +15,16 @@ vertical stripes down the stack.
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
-- Both files, hosted; the whole 1104-tumor cohort is a few MB of segment calls:
+- These files, hosted; the whole 1104-tumor cohort is a few MB of segment calls:
 
-| File                                                                  | What                         |
-| --------------------------------------------------------------------- | ---------------------------- |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`                 | the segment stack            |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz` | cohort gain/loss frequencies |
+| File                                                                             | What                              |
+| -------------------------------------------------------------------------------- | --------------------------------- |
+| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`                            | the segment stack                 |
+| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz`            | cohort gain/loss frequencies      |
+| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz` | the same, split by clinical group |
+| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                          | per-tumor histology, receptors    |
 
-## What the two files hold
+## What the files hold
 
 Both come from open-access GDC data, so no dbGaP application and no token is
 involved. [Reproduce it end to end](#reproduce-it-end-to-end) below builds them
@@ -193,6 +195,73 @@ model, no significance test, and no peak calling, and amplitude enters only
 through the gain/loss cutoff. It answers "in what fraction of the cohort", not
 "more often than chance".
 
+## Split the recurrence by clinical group
+
+The recurrence track pools every tumor, so a peak is the cohort's average and
+says nothing about which tumors make it up. `cnv_recurrence.py --groups` runs
+the same tally once per value of a clinical column and writes each group its own
+gain and loss column:
+
+```bash
+python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
+  --groups tcga_brca_clinical.tsv:subtype
+```
+
+That is the same
+[clinical TSV](/docs/tutorials/tcga_cohort_mutations#what-the-two-files-hold)
+the mutation cohort groups its matrix rows by, so a tumor falls in the same
+group in both tracks.
+
+`BedGraphTabixAdapter` reads every column past `end` as its own signal, so the
+eight columns arrive as eight signals from one file, and a
+[`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
+one row each. No subadapter list and no second file:
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "tcga_brca_cnv_recurrence_by_subtype",
+  "name": "TCGA-BRCA recurrence by receptor subtype",
+  "assemblyNames": ["hg38"],
+  "category": ["TCGA"],
+  "adapter": {
+    "type": "BedGraphTabixAdapter",
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz"
+  },
+  "displayDefaults": {
+    "height": 620,
+    "posColor": "#b2182b",
+    "negColor": "#2166ac",
+    "minScore": -70,
+    "maxScore": 70,
+    "showRowSeparators": true
+  }
+}
+```
+
+<Figure caption="Gain (red) and loss (blue) frequency per 100kb across all 23 chromosomes, tallied separately for each receptor subtype and drawn one row per signal. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event the triple-negative row is missing; 1q and 8q gain are in every row. The bottom row of each block is the tumors whose receptor calls do not resolve a subtype." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
+
+The rows can only be read against each other because
+[`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
+pin them to one axis. Left to autoscale, each row would fit its own maximum and
+the four subtypes would look alike. The pin is tighter here than on the pooled
+track above, at 70 rather than 100, because each row carries one signed
+direction and so only ever fills the half of its axis on that side.
+
+Two things this file does not do:
+
+- **Gain and loss stay separate columns**, rather than collapsing to one signed
+  value per subtype. They are not redundant: at the edge of the 17q amplicon,
+  the HER2+ group is gained and lost at nearly the same rate, and a single net
+  value would draw that as roughly nothing right beside ERBB2.
+- **Small groups are dropped**, at `--min-group` tumors (20 by default), since a
+  percentage over a handful of tumors moves in visible steps and reads as
+  signal. The script names each group it skipped and how big it was.
+
+Point `--groups` at any other column for a different split; `histology` and
+`stage` come from harmonized GDC fields and so work for any TCGA project, while
+`subtype` is breast specific.
+
 ## Using your own cohort
 
 Nothing here is TCGA-specific. Any caller that emits per-sample segments works;
@@ -220,14 +289,17 @@ It needs `curl`, `python3`, and `bgzip` + `tabix` from
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv.sh
 bash build_tcga_cohort_cnv.sh TCGA-BRCA 20 # 20 tumors, to test the pipeline
-bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~15 minutes
-# -> tcga_brca_cnv.bed.gz (+ .tbi), tcga_brca_cnv_recurrence.bedGraph.gz (+ .tbi)
+bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~20 minutes
+# -> tcga_brca_cnv.bed.gz (+ .tbi), tcga_brca_cnv_recurrence.bedGraph.gz (+ .tbi),
+#    tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz (+ .tbi), tcga_brca_clinical.tsv
 ```
 
 The full run is almost entirely downloading and produces 379,318 segments across
-1104 tumors in 5.7 MB, plus 22,592 recurrence bins in 148 KB derived from that
-BED rather than re-downloaded. Swap in any other project id (`TCGA-OV`,
-`TCGA-LUAD`, ...) for a different cohort.
+1104 tumors in 5.7 MB, plus 22,592 recurrence bins in 148 KB and 24,048 grouped
+bins in 246 KB, both derived from that BED rather than re-downloaded. Swap in
+any other project id (`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort, and
+pass a third argument to group the recurrence by a different clinical column,
+since `subtype` is breast specific.
 
 Three of its steps decide whether the resulting track loads correctly:
 
@@ -252,7 +324,15 @@ The recurrence step is separately runnable as
 if you have a cohort BED already and want only the frequency file. It skips bins
 where fewer than half the cohort has any call, rather than drawing them as zero,
 which here trims only the chromosome tips: SNP 6.0 segments span centromeres, so
-the track has no interior gaps.
+the track has no interior gaps. That coverage mask is taken over the whole
+cohort even when `--groups` is set, so the grouped file has the same gaps as the
+pooled one and a group cannot lose a bin the cohort has calls for.
+
+The clinical table comes from
+[`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
+the same helper and the same arguments the
+[mutation cohort](/docs/tutorials/tcga_cohort_mutations) uses, so one file
+serves both tracks.
 
 ## Where to go next
 

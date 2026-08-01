@@ -17,14 +17,22 @@
 # cnv_recurrence.py: no extra download, and it answers the question the stacked
 # figure cannot, which is what fraction of the cohort carries each event.
 #
+# The same step runs a second time split by a clinical column, which turns the
+# one frequency profile into one per group: a bedGraph column pair per group,
+# which a MultiQuantitativeTrack draws as one row each.
+#
 # Requires: curl, python3, bgzip + tabix (htslib)
 # Output:   tcga_<project>_cnv.bed.gz (+ .tbi)
 #           tcga_<project>_cnv_recurrence.bedGraph.gz (+ .tbi)
-# Runtime:  ~10-20 min for BRCA (1106 tumors), dominated by the GDC downloads
+#           tcga_<project>_cnv_recurrence_by_<groupby>.bedGraph.gz (+ .tbi)
+#           tcga_<project>_clinical.tsv
+# Runtime:  ~15-25 min for BRCA (1106 tumors), dominated by the GDC downloads
 #
-# Usage: build_tcga_cohort_cnv.sh [PROJECT] [LIMIT]
+# Usage: build_tcga_cohort_cnv.sh [PROJECT] [LIMIT] [GROUPBY]
 #   PROJECT  TCGA project id (default TCGA-BRCA)
 #   LIMIT    only fetch the first N tumors (default: all; for a quick smoke test)
+#   GROUPBY  clinical column to split recurrence by (default subtype, which is
+#            breast specific; histology and stage are harmonized across projects)
 
 set -euo pipefail
 
@@ -32,7 +40,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-HELPERS=(cnv_recurrence.py)
+HELPERS=(cnv_recurrence.py tcga_clinical_tsv.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -40,7 +48,15 @@ done
 
 PROJECT=${1:-TCGA-BRCA}
 LIMIT=${2:-0}
-OUT=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_cnv
+GROUPBY=${3:-subtype}
+SLUG=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')
+OUT=${SLUG}_cnv
+CLINICAL=${SLUG}_clinical.tsv
+# A group's per-bin percentage is only worth plotting once the group is big
+# enough for it to mean something; the smoke-test path keeps every group so that
+# a 20-tumor run still exercises the grouped output end to end.
+MIN_GROUP=20
+[ "$LIMIT" -eq 0 ] || MIN_GROUP=1
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
@@ -169,7 +185,28 @@ python3 "$SCRIPT_DIR/cnv_recurrence.py" "$OUT.bed.gz" "${OUT}_recurrence.bedGrap
 bgzip -f "${OUT}_recurrence.bedGraph"
 tabix -f -p bed "${OUT}_recurrence.bedGraph.gz"
 
+# The same clinical table the mutation cohort groups its matrix rows by, built
+# by the same helper with the same arguments, so one hosted copy serves both
+# tracks and a tumor means the same thing in each.
+echo "== fetching clinical annotation"
+python3 "$SCRIPT_DIR/tcga_clinical_tsv.py" "$PROJECT" "$CLINICAL"
+
+# One frequency profile per clinical group, in one file: cnv_recurrence.py gives
+# each group its own gain/loss column pair, BedGraphTabixAdapter reads every
+# column past `end` as its own signal, and MultiQuantitativeTrack draws one row
+# per signal. Same cutoffs and same denominator convention as the pooled file
+# above, so a group's row and the cohort row can be read against each other.
+echo "== summarizing recurrence by $GROUPBY"
+BY="${OUT}_recurrence_by_${GROUPBY}.bedGraph"
+python3 "$SCRIPT_DIR/cnv_recurrence.py" "$OUT.bed.gz" "$BY" \
+  --groups "$CLINICAL:$GROUPBY" --min-group "$MIN_GROUP"
+bgzip -f "$BY"
+tabix -f -p bed "$BY.gz"
+
 echo "== done: $OUT.bed.gz ($(du -h "$OUT.bed.gz" | cut -f1))"
 echo "         ${OUT}_recurrence.bedGraph.gz ($(du -h "${OUT}_recurrence.bedGraph.gz" | cut -f1))"
+echo "         $BY.gz ($(du -h "$BY.gz" | cut -f1))"
+echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
 echo "   upload with: aws s3 cp $OUT.bed.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
 echo "                aws s3 cp ${OUT}_recurrence.bedGraph.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
+echo "                aws s3 cp $BY.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
