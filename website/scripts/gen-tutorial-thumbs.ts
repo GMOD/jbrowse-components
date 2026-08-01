@@ -259,6 +259,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.14, 0.56],
     position: 'center',
   },
+  tcga_cohort_mutations: {
+    // the histology-grouped CDH1 matrix, framed on the boundary between the
+    // empty ductal band and the dense lobular one: a card cropped anywhere else
+    // in this figure is flat gray
+    src: 'tcga/mutations_cdh1_histology.png',
+    band: [0.7, 0.97],
+    position: 'left',
+  },
   // The 2504-row cohort heatmap rather than the page's hero: the hero carries a
   // callout pill, and this one is the cleanest render of the same pattern.
   population_cnv: {

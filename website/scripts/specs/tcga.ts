@@ -137,6 +137,134 @@ const RECURRENT_LOCI = [
 
 const COHORT_TRACK_ID = 'tcga_brca_cnv'
 
+// The same cohort's somatic point mutations, as a genotype matrix: one column
+// per distinct mutation, one row per tumor. Built by
+// scripts/build_tcga_cohort_mutations.sh from GDC open-access Masked Somatic
+// Mutation MAFs; see website/docs/tutorials/tcga_cohort_mutations.md.
+//
+// `samplesTsvLocation` is the same clinical table for every figure, and each
+// figure picks which of its columns to group and color rows by, so the grouped
+// figures differ from the plain one by two config slots.
+//
+// A session track, so the display slots have to live in the track's own
+// `displays` array: slots put on the view's `tracks` entry are dropped for a
+// track the config doesn't already carry.
+function mutationTrack({
+  groupBy = '',
+  colorBy = '',
+  height = 1010,
+  lineZoneHeight = 20,
+}: {
+  groupBy?: string
+  colorBy?: string
+  height?: number
+  lineZoneHeight?: number
+} = {}) {
+  return {
+    type: 'VariantTrack',
+    trackId: 'tcga_brca_mutations',
+    name: 'TCGA-BRCA somatic mutations (979 primary tumors)',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: {
+        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz',
+        locationType: 'UriLocation',
+      },
+      index: {
+        indexType: 'TBI',
+        location: {
+          uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz.tbi',
+          locationType: 'UriLocation',
+        },
+      },
+      samplesTsvLocation: {
+        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv',
+        locationType: 'UriLocation',
+      },
+    },
+    displays: [
+      {
+        type: 'LinearMultiSampleVariantMatrixDisplay',
+        // The matrix display, not the regular one: a cohort's somatic mutations
+        // are sparse and spread over a whole gene, so laying columns out at
+        // their genomic positions puts most of the figure in empty space. By
+        // feature index they pack, and the lineZone above still ties each
+        // column back to the position it came from.
+        //
+        // 1010px so the 979 rows clear 1px each. Auto-fit here allows sub-pixel
+        // rows (unlike the multi-row feature display, whose effectiveRowHeight
+        // floors at 1px and grows the track), and a somatic matrix is one alt
+        // cell per carrier rather than a painted row, so a shorter display would
+        // thin exactly the single-carrier columns these figures are about.
+        height,
+        // The band the connector lines are drawn in, above the rows. `height`
+        // includes it, so a figure raising this raises `height` by the same
+        // amount to leave the rows what they had.
+        lineZoneHeight,
+        // Every alt-carrying cell takes its mutation's VEP impact tier, from the
+        // CSQ the MAF's own Consequence/IMPACT columns are re-encoded into. On
+        // somatic data this separates truncating (HIGH) from missense
+        // (MODERATE) without a per-figure color table.
+        featureColor: 'jexl:impactColor(feature)',
+        groupBy,
+        colorBy,
+      },
+    ],
+  }
+}
+
+// The matrix canvas only mounts once the cell-data RPC has landed, so this gates
+// each capture on real completion rather than on a duration guess.
+const MATRIX_DONE = '[data-testid="variant-matrix-display-done"]'
+
+// MANE gives one transcript per gene, so the lane names the gene in a single row
+// instead of an isoform stack. 84px is two rows' worth: content starts ~4px in
+// and the row pitch is 40px.
+const MANE_TRACK = {
+  trackId: 'MANE.GRCh38.v1.4.refseq',
+  type: 'LinearBasicDisplay',
+  height: 84,
+}
+
+function mutationFigure({
+  loc,
+  groupBy = '',
+  colorBy = '',
+  cluster = false,
+  height = 1010,
+  lineZoneHeight = 20,
+}: {
+  loc: string
+  groupBy?: string
+  colorBy?: string
+  cluster?: boolean
+  height?: number
+  lineZoneHeight?: number
+}) {
+  return kgUrl({
+    sessionTracks: [
+      mutationTrack({ groupBy, colorBy, height, lineZoneHeight }),
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc,
+        trackLabels: 'offset',
+        tracks: [
+          MANE_TRACK,
+          {
+            trackId: 'tcga_brca_mutations',
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+            ...(cluster ? { runClustering: true } : {}),
+          },
+        ],
+      },
+    ],
+  })
+}
+
 export const tcgaSpecs: ScreenshotSpec[] = [
   // The cohort view: every TCGA-BRCA primary tumor as one 1px row across the
   // whole genome, clustered so tumors with similar profiles sit together, under
@@ -286,5 +414,96 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     settleMs: 15000,
     diffThreshold: 0.02,
+  },
+
+  // PIK3CA, the cohort's most-mutated gene. The window is the whole MANE
+  // transcript, and every distinct mutation in it is one column: the three
+  // canonical hotspot codons (H1047R in the kinase domain, E542K/E545K in the
+  // helical one) are the columns carried by a large fraction of the cohort,
+  // against columns one tumor wide for everything else.
+  //
+  // No callouts naming those codons. The matrix lays columns out by feature
+  // index rather than at genomic x, so an `anchor: {track, locus}` would resolve
+  // through the bp->px layout and land next to whichever column happens to sit
+  // at that coordinate, which is not the one it names. The caption names them
+  // instead, and hovering a column in the live view labels it.
+  {
+    mode: 'url',
+    name: 'tcga/mutations_pik3ca',
+    url: mutationFigure({ loc: '3:179,148,000-179,240,500', cluster: true }),
+    // clustering, not the plain matrix. Unclustered, a carrier is one 1px row
+    // wherever its tumor happens to sort, so even a hotspot carried by a large
+    // share of the cohort draws as a dashed streak. Clustering by genotype makes
+    // the carriers contiguous and the same column becomes a solid bar, with the
+    // tumors carrying nothing here as one clean block below. Measured on the two
+    // renders, not assumed.
+    //
+    // The tree sidebar only mounts once the clustering RPC has landed, so this
+    // waits on the dendrogram rather than on the matrix canvas.
+    readySelector: CLUSTERED,
+    readyTimeout: 300000,
+    viewportWidth: 1500,
+    // the 1010px display plus the gene track and the view's own chrome, with
+    // room for the last group band: the generator reported 91px clipped at 1240
+    viewportHeight: 1340,
+    settleMs: 15000,
+  },
+
+  // CDH1 grouped by histology. E-cadherin loss is the defining lesion of lobular
+  // breast cancer, and this is that result as a picture: the HIGH-impact
+  // (truncating) cells crowd into the lobular band and the much larger ductal
+  // band above it is nearly empty.
+  //
+  // Grouped AND colored by the same column: `groupBy` makes each histology's
+  // rows contiguous, `colorBy` puts the color strip in the gutter that says
+  // which band is which. Without the strip the bands are unlabeled row ranges.
+  //
+  // A tall connector band, unlike the other two figures. The matrix packs
+  // columns by feature index, so on its own it says nothing about where in the
+  // gene a mutation is; here that is half the result. CDH1 is a tumor
+  // suppressor and its truncating calls are spread along the transcript rather
+  // than piled on a codon, which is the contrast with the PIK3CA figure's three
+  // hotspot bars, and the connector fan is what makes it visible: 90 of the
+  // window's 114 columns are HIGH impact and their lines land right across the
+  // exons of the lane above. `height` goes up by the same amount so the rows
+  // keep the 990px they had.
+  {
+    mode: 'url',
+    name: 'tcga/mutations_cdh1_histology',
+    url: mutationFigure({
+      loc: '16:68,730,000-68,840,000',
+      groupBy: 'histology',
+      colorBy: 'histology',
+      lineZoneHeight: 130,
+      height: 1120,
+    }),
+    readySelector: MATRIX_DONE,
+    readyTimeout: 180000,
+    viewportWidth: 1500,
+    viewportHeight: 1450,
+    settleMs: 10000,
+  },
+
+  // TP53 grouped by receptor subtype, the same mechanic on the other clinical
+  // column: the triple-negative band is mutated at several times the rate of
+  // the HR+/HER2- band, which is the cohort's largest.
+  //
+  // The coding exons rather than the whole 20kb transcript. Over the transcript
+  // the window carries 210 columns, most of them one intronic MODIFIER call, and
+  // spreading the real mutations across those columns is what made the density
+  // difference between the bands hard to read.
+  {
+    mode: 'url',
+    name: 'tcga/mutations_tp53_subtype',
+    url: mutationFigure({
+      loc: '17:7,673,000-7,677,000',
+      groupBy: 'subtype',
+      colorBy: 'subtype',
+    }),
+    readySelector: MATRIX_DONE,
+    readyTimeout: 180000,
+    viewportWidth: 1500,
+    viewportHeight: 1340,
+    settleMs: 10000,
   },
 ]
