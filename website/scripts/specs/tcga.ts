@@ -529,6 +529,14 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // helical one) are the columns carried by a large fraction of the cohort,
   // against columns one tumor wide for everything else.
   //
+  // Grouped by receptor subtype rather than clustered by genotype, which is the
+  // inverse of the TP53 figure and reads two things at once: the hotspot columns
+  // are dense vertical stripes wherever they fall, and they fall mostly in the
+  // HR+/HER2- band. Clustering instead puts every carrier in one block at the
+  // top, which does make each hotspot a solid bar, but two thirds of the frame
+  // is then the empty field below it and the clinical axis is gone. Both were
+  // rendered before choosing.
+  //
   // No callouts naming those codons. The matrix lays columns out by feature
   // index rather than at genomic x, so an `anchor: {track, locus}` would resolve
   // through the bp->px layout and land next to whichever column happens to sit
