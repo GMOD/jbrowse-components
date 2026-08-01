@@ -507,7 +507,7 @@ has sequence it does not.
 That leaves few enough alleles to draw each at its own genomic position, lined
 up with the genes above. **Clustering → Cluster rows by genotype... → Run
 clustering** in the track menu reorders the 464 rows by genotype similarity and
-draws a dendrogram beside them, in the worker, so the view stays responsive:
+draws a dendrogram beside them:
 
 <Figure caption="Structural alleles (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. Haplotypes that share whole sets of insertions and deletions cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
 

@@ -152,16 +152,15 @@ Zarr store, 2504 samples          3 requests     0.22 MB     0.2 s
                              2 metadata + 1 chunk of 2504 x 256
 ```
 
-Two megabytes is not the problem. The request count is, and it is six per file
-whatever the window: a BigWig reads its header, its chrom B-tree and its R-tree
-index before it knows where a region's values live, and each of those waits on
-the one before it. So the cost is a round trip times the file count, the full
-panel is 24 times the files, and the times above scale with whatever that round
-trip is on your own network.
+Two megabytes is not the problem. The request count is. Every BigWig needs a few
+reads to find where a region's values live before it can read them, and those
+reads happen once per file and wait on each other, so the cost is a round trip
+times the number of files. The full panel is 24 times the files, and the times
+above scale with whatever that round trip is on your own network.
 
 The fix is a format that answers the same question in a couple of requests: one
-array of samples by bins, chunked so that a chunk holds every sample over a span
-of the genome.
+array of samples by bins, stored so that a single read covers every sample at
+once.
 
 [Zarr](https://zarr.dev/) v3 is that format, and it needs no tile server:
 [zarrita.js](https://github.com/manzt/zarrita.js) reads chunks straight off
@@ -235,35 +234,29 @@ node scripts/build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-Omit `--region` to convert whole genomes. The example above is the store this
-tutorial's figures use, 2504 samples over 3.5 Mb, and the converter reports its
-own sizes as it writes: 35 MB of float32 uncompressed, 1.4 MB on disk. Copy
-number compresses well because most of it is the same number.
+That is the command behind this tutorial's figures, all 2504 samples over the
+two windows the page visits. The converter prints the sizes as it writes; this
+store lands at 1.4 MB. Drop the `--region` flags to convert whole genomes
+instead.
 
-Three choices in the output are what make the reads cheap.
+`--levels` is the one flag worth thinking about. Give it your input's bin size
+first, then a coarser one: `1000,10000` keeps the 1 kb values and adds a 10 kb
+average of them, and a zoomed-out view reads the coarse copy rather than every
+bin. Everything else is chosen for you.
 
-Chunks are `[all samples, 256 bins]`, so one request returns every sample over
-256 kb and a screenful of the cohort is one or two reads whether the cohort is
-three samples or three thousand. This is the opposite of the natural per-sample
-layout.
+The output is an ordinary folder of files. Copy it to any static host with CORS
+enabled and point a track at it, the same way you would host a BigWig. Nothing
+runs on the server.
 
-Levels form a pyramid. `--levels 1000,10000` writes the 1 kb values plus a 10 kb
-average of them, and the adapter picks the coarsest level still finer than one
-screen pixel. Without it, a zoomed-out view reads every 1 kb bin to draw each
-pixel once.
+:::note What the converter handles
 
-Unmeasured bins are `NaN` rather than zero. QuicK-mer2 leaves gaps where there
-are no unique k-mers, and a gap drawn as zero coverage reads as a homozygous
-deletion.
+A single chunk of the store holds every sample over a 256 kb stretch, which is
+why a screenful costs one or two reads no matter how many samples there are.
+Bins with no measurement are written as `NaN` rather than 0, so the gaps
+QuicK-mer2 leaves where there are no unique k-mers do not draw as homozygous
+deletions.
 
-The `group` column costs the heatmap nothing. Grouped samples share a
-synthesized color, which in a line or xy plot is the sample's own color. In
-density the score already owns the color ramp, so the group color tints the row
-label instead, and the populations show up beside the rows without touching the
-red-to-blue scale.
-
-The store is plain files, so publishing it is a copy to any static host with
-CORS enabled. There is no server component.
+:::
 
 ## Your own samples
 

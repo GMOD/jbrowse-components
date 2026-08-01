@@ -93,40 +93,24 @@ nucleotide diversity and Tajima's D
 packs each into a bigWig with `bedGraphToBigWig`. See
 [reproduce it end to end](#reproduce-it-end-to-end) for the invocation.
 
-Three things about that conversion are worth knowing, because each one produces
-a silently wrong track rather than an error.
-
-**Derive `chrom.sizes` from the VCF header** so the contig names cannot disagree
-with the values you are about to bin. A name mismatch is the usual cause of an
-empty track:
-
-```bash
-VCF=DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
-bcftools view -h "$VCF" \
-  | awk -F'[=,>]' '/^##contig/{print $3"\t"$5}' > dm6.chrom.sizes
-```
-
-This VCF names the chromosome arms `2L`, `2R`, `3L`, `3R`, `X`, `4` (FlyBase
-style). UCSC dm6 prefixes them `chr2L`, etc. If your JBrowse dm6 assembly uses
-the UCSC names, JBrowse's
+The one thing to check yourself is chromosome naming, because a mismatch there
+draws an empty track rather than an error. The script takes the contig names
+from the VCF header, and this VCF calls the chromosome arms `2L`, `2R`, `3L`,
+`3R`, `X` and `4`, FlyBase style, so the bigWigs use those names too. UCSC dm6
+prefixes them `chr2L` and so on. If your dm6 assembly uses the UCSC names,
 [refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two
 at display time.
 
-**The three vcftools outputs do not share a coordinate convention.**
-`--window-pi` and `--fst-window-size` report `BIN_START` 1-based, so the script
-subtracts one to reach the 0-based half-open coordinate bedGraph expects.
-`--TajimaD` reports it 0-based already and takes no shift. Getting this wrong
-shifts a whole track by one window instead of failing.
+The rest of what the script does is bookkeeping you would otherwise have to get
+right by hand: the three vcftools outputs disagree about whether a window start
+is 0-based or 1-based, and one of them leaves the window end off entirely. A
+mistake there shifts a whole track sideways by one window instead of failing.
 
-**Only the first two clamp their window ends to the contig.** `--TajimaD` emits
-a start and no end, so the script constructs the end and clamps it;
-`bedGraphToBigWig` fails hard on an interval that runs past its chromosome.
-
-Windows vcftools could not estimate come out as `nan` or `-nan` and are dropped.
-Negative Fst estimates, an expected artifact of the Weir & Cockerham estimator
-at low-differentiation sites, are floored at 0 for display, which is
-conventional. Tajima's D keeps its sign: unlike Fst it is meaningfully signed,
-and the negative excursions are the signal.
+Windows vcftools could not estimate come out as `nan` and are dropped. Negative
+Fst estimates, an expected artifact of the Weir & Cockerham estimator at
+low-differentiation sites, are floored at 0 for display, which is conventional.
+Tajima's D keeps its sign: unlike Fst it is meaningfully signed, and the
+negative excursions are the signal.
 
 Because this VCF holds only variant sites, `--window-pi` sums diversity over the
 genotyped SNPs and omits invariant positions, so the absolute values are not
@@ -134,11 +118,9 @@ calibrated. They remain directly comparable across windows of the same VCF. For
 calibrated absolute π and dxy you need an allSites VCF and a tool that expects
 one, such as [pixy](https://pixy.readthedocs.io/)
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)), which
-computes π, dxy, and Fst together without the missing-data bias. Its window
-columns are `chromosome, window_pos_1, window_pos_2` and its values are
-`avg_pi`, `avg_dxy` and `avg_wc_fst`; `window_pos_1` is 1-based and
-`window_pos_2` is clamped, so each converts to a bigWig exactly like the
-`--window-pi` output above.
+computes π, dxy, and Fst together without the missing-data bias. Its output is
+one row per window with the value in a column, so it packs into a bigWig the
+same way.
 
 ## Loading in JBrowse
 
