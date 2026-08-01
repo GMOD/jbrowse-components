@@ -283,7 +283,11 @@ The reverse works from any track, not just the graph's own segments. A gene
 gives only a coordinate, and that is enough: rGFA segments do not overlap on a
 stable sequence, so one backbone segment covers it.
 
-<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the span between the two backbone segments the allele detaches from and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the 2 kb of K12 between the backbone segments the allele leaves and rejoins, so the node is a non-reference insertion: 65.4 kb of sequence where the reference has 2.1 kb." src="/img/pangenome/rgfa_hover_sync.png" />
+
+The same event drawn as an alignment rather than as a graph is a synteny gap,
+which is what the [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts
+beside its own graph panel.
 
 A hover lasts as long as the pointer does. **Right-click a node → Highlight in
 &lt;assembly&gt;** writes the same interval into the linear view's own highlight
@@ -381,7 +385,11 @@ channel: without it a large insertion and a 1 bp one draw the same box. Pointed
 at the BED's signed `delta` column, it draws the insertion and deletion marks
 the [alignments track](/docs/user_guides/alignments_track) uses.
 
-<Figure caption="200 kb of K12, the graph's segments above and each strain's path through every bubble in the window below. A row is one strain: grey where it takes the reference path, a magenta marker sized by the inserted bases where it carries an insertion, a grey bar where it deletes. The bubble in the middle of the window is one where three strains each bring their own hundred kilobases." src="/img/pangenome/rgfa_strain_paths.png" />
+A row is only as continuous as the bubble decomposition under it: `--call` emits
+a record per bubble and nothing between them, so over 200 kb of this graph the
+bubbles cover about a tenth of the frame and a row is mostly blank. Read it as
+marks at the sites that vary, not as a per-base lane like the
+[](/docs/user_guides/maf_track).
 
 Each row also carries what that bubble looks like across all the strains, so the
 sites worth a look are a filter away in **Edit filters**:

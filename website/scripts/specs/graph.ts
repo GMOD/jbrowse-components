@@ -220,53 +220,6 @@ const PGGB_ROWS_LOCUS = {
 }
 const PGGB_ROWS_WINDOW = 'chr:1,004,500-1,004,961'
 
-// The same graph read per strain instead of per segment: one row per strain,
-// each block that strain's allele at one bubble, from the BED
-// scripts/build_minigraph_paths.sh projects out of `minigraph --call`.
-//
-// `lengthField` is the point of the figure. A block can only be as wide as the
-// reference it covers, so at this bubble every strain would draw the same 3,376
-// bp box; the deltas turn Sakai's 113 kb allele into a labelled insertion marker
-// and IAI39's into a deletion line. `rowOrder` pins the reference on top, which
-// is also the pipeline's own check — K12 takes the reference path at all 601
-// bubbles, so its row is uniformly grey. Class colors ride in the file's
-// itemRgb, so `legend` only has to name them.
-const ECOLI_PATHS_TRACK = 'ecoli_minigraph_paths'
-const ECOLI_PATHS_SESSION_TRACK = {
-  type: 'FeatureTrack',
-  trackId: ECOLI_PATHS_TRACK,
-  name: 'minigraph graph: per-strain path through each bubble',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'BedTabixAdapter',
-    uri: `${DATA}/ecoli_minigraph_paths.bed.gz`,
-  },
-  displays: [
-    {
-      type: 'LinearMultiRowFeatureDisplay',
-      partitionField: 'strain',
-      lengthField: 'delta',
-      rowOrder: ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39'],
-      // three strains carry an insertion at this bubble, so at the default 1 the
-      // three magenta blocks abut into one mass; the gap is what makes them read
-      // as three haplotypes
-      rowProportion: 0.85,
-      // Three classes, not the five build_minigraph_paths.sh can emit. Review:
-      // "dont add legend items for things that are not displayed" — over
-      // PATHS_WINDOW_WIDE the file carries only ref, ins and del
-      // (`tabix ecoli_minigraph_paths.bed.gz chr:1000000-1200000 | cut -f11 |
-      // sort -u`), and its 18 `sub` and 25 `nocall` rows are all elsewhere in
-      // the genome, so a five-row key spent two rows on swatches with nothing
-      // in the frame to match them to.
-      legend: [
-        { label: 'reference path', color: 'rgb(204,204,204)' },
-        { label: 'insertion', color: 'rgb(192,0,192)' },
-        { label: 'deletion', color: 'rgb(128,128,128)' },
-      ],
-    },
-  ],
-}
-
 // The bubble the hover and sample-rows figures are about: K12
 // chr:1,094,197-1,097,573, where Sakai and CFT073 carry ~110-113 kb alleles,
 // NCTC86 a 41 kb one, and IAI39 deletes 3.2 kb. Picked off the BED, not by eye:
@@ -279,18 +232,6 @@ const PATHS_REGION = {
   start: 1088000,
   end: 1104000,
 }
-const PATHS_WINDOW_WIDE = 'chr:1,000,000-1,200,000'
-
-// The per-strain track's own window, and 12x wider than the one above on
-// purpose. Review of the old figure: "this looks very odd. it is a large
-// insertion, but it should just look like a normal linearmafdisplay kind of
-// instead of this weird custom thing." At 16 kb the frame held ONE bubble, so
-// five stacked full-width boxes with numbers printed in them read as a bar
-// chart of one event rather than as five haplotypes. 200 kb holds 20 bubbles
-// (`tabix ecoli_minigraph_paths.bed.gz chr:1000000-1200000 | wc -l` is 100 rows
-// over 5 strains), which is what makes a row read as a lane: mostly grey
-// reference path, punctuated where that strain diverges.
-
 // CFT073's allele at PATHS_WINDOW's bubble — 65,410 bp, the longest thing in
 // the cut and the one worth hovering. Named rather than measured: the hover and
 // the ring drawn over it both resolve it through the view's own nodePositions
@@ -1164,6 +1105,12 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           // hundreds of nodes on one line and hide exactly what is being shown.
           layoutMode: 'force',
           colorScheme: 'reference-position',
+          // Bandage's own node-length floor is sized for assembled contigs, so
+          // a pangenome allele of a few bases clamps to a stub and both arms of
+          // a bubble land within one node thickness of each other. Without this
+          // the pggb half draws as a single 521-node thread with no visible
+          // branching, which is the one thing the figure is for.
+          bubbleSpread: 'open',
         },
       ],
     }),
@@ -1661,53 +1608,29 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportHeight: 1580,
     hideTooltip: true,
   },
-  // The graph read as an alignment: five haplotype rows over 200 kb of K12, one
-  // block per bubble per strain. The segments track above is the same graph
-  // per-segment, so the two lanes are the two ways of reading one file.
+  // NO FIGURE for the per-strain paths track (`ecoli_minigraph_paths`), which
+  // graph_genome_view.md still documents and the demo still hosts. Retired
+  // after three passes; the last verdict was "align this more with the look and
+  // feel of deletions with linearmafdisplay ... if that is not possible we can
+  // skip perhaps ... could consider deleting".
   //
-  // Window is PATHS_WINDOW_WIDE, for the reason stated there: a row has to hold
-  // enough bubbles to read as a haplotype's path rather than as one bar.
-  {
-    mode: 'url',
-    name: 'pangenome/rgfa_strain_paths',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK, ECOLI_PATHS_SESSION_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PATHS_WINDOW_WIDE,
-          tracks: [
-            // No gene lane: at 200 kb it is ~190 unlabelled boxes, a gold band
-            // that says nothing this figure is about
-            {
-              trackId: ECOLI_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              showLabels: 'off',
-              height: 60,
-            },
-            {
-              trackId: ECOLI_PATHS_TRACK,
-              type: 'LinearMultiRowFeatureDisplay',
-              // five rows auto-fit into this, leaving each ~26px: taller than
-              // MIN_HEIGHT_FOR_TEXT, so the insertion markers carry their bp
-              // labels rather than shrinking to bare bars
-              height: 130,
-            },
-          ],
-        },
-      ],
-    }),
-    // the multi-row display's own doneness signal: derived from fetched
-    // features, so it cannot paint before the rows exist
-    readySelector: '[data-testid="multirow-row-labels"]',
-    readyTimeout: 90000,
-    settleMs: 3000,
-    viewportWidth: 1000,
-    // the two pinned tracks plus both headers, and nothing under them
-    viewportHeight: 465,
-    hideTooltip: true,
-  },
+  // It is not possible from this file. A MAF row reads as a lane because every
+  // aligned column is painted; `minigraph --call` emits a record per BUBBLE and
+  // nothing between them, so the lane is only as continuous as the bubble
+  // decomposition. Over the 200 kb the figure used, the 20 bubbles cover 24,840
+  // bp -- 12% of the frame, and the rest is white. Measured every window in the
+  // graph before giving up: the densest 200 kb reaches 64% and the densest
+  // 50 kb 91%, but both get there from one 40-44 kb bubble filling most of the
+  // frame, which is the "five stacked full-width boxes read as a bar chart"
+  // failure the previous pass widened the window to escape. Dense and
+  // many-event are opposite directions here.
+  //
+  // Filling the gaps would mean emitting inter-bubble reference rows from
+  // build_minigraph_paths.sh -- and doing that honestly needs each sample's
+  // per-bubble contig coordinates chained across the gap, since "no bubble
+  // here" is a statement about the graph and not evidence that a given sample
+  // aligned there. That is a rebuild and a re-upload of the hosted demo BED,
+  // and it was declined.
   // The per-feature entry point, which no figure covered and whose behavior the
   // prose only hinted at ("or right-click a segment for its neighbourhood"). A
   // right-click launches on the segment's own span padded by half its length on
