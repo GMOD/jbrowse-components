@@ -8,9 +8,10 @@
   "exclude": [
     "dist",
     "static/pagefind",
-    // Own standalone tsconfig previously (not noUncheckedIndexedAccess, jest
-    // globals for its tests); astro check has no jest types and this project's
-    // stricter indexed-access rule was never applied here.
+    // Own standalone tsconfig (not noUncheckedIndexedAccess, jest globals for
+    // its tests); astro check has no jest types and this project's stricter
+    // indexed-access rule was never applied here. `pnpm typecheck` runs that
+    // project as a second step, so it is excluded here but not unchecked.
     "scripts/api-docs"
   ]
 }

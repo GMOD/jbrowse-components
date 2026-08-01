@@ -6,7 +6,7 @@
     "build": "pnpm gen:gallery-thumbs && astro build && pagefind --site dist",
     "index": "pnpm gen:gallery-thumbs && astro build && pagefind --site dist --output-path static/pagefind",
     "preview": "astro preview",
-    "typecheck": "astro check",
+    "typecheck": "astro check && node ../node_modules/typescript7/bin/tsc --noEmit -p scripts/api-docs",
     "lint-docs": "node scripts/generate-guide-indexes.ts",
     "check-doc-imports": "node scripts/check-doc-imports.ts",
     "check-sidebar": "node scripts/check-sidebar.ts",
