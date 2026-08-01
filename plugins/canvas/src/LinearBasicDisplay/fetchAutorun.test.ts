@@ -1097,18 +1097,18 @@ describe('showLabels auto density gate', () => {
     expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(500)
   })
 
-  it('mode "on" shows labels even above the density threshold', () => {
+  it('a pinned rung shows names even above the density threshold', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('on')
+    display.setShowLabels('nameAndDescription')
     zoomAndSettle(view, 62.5)
     expect(display.showLabels).toBe(true)
   })
 
-  it('mode "off" hides labels even at low density', () => {
+  it('"none" hides names even at low density', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('off')
+    display.setShowLabels('none')
     zoomAndSettle(view, 20)
     expect(display.showLabels).toBe(false)
   })
@@ -1121,20 +1121,20 @@ describe('showLabels auto density gate', () => {
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
-  // The rung between the two thresholds: descriptions drop at 0.05 features/px
-  // (bpPerPx ≈ 5 here), names not until 0.2 (bpPerPx ≈ 20), so zooming out
+  // The rung between the two thresholds: descriptions drop at 0.1 features/px
+  // (bpPerPx ≈ 10 here), names not until 0.2 (bpPerPx ≈ 20), so zooming out
   // degrades name + description → name → nothing rather than all-or-nothing.
   it('auto drops descriptions a zoom tier before names', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
 
-    // density ≈ 0.02 — under both thresholds
-    zoomAndSettle(view, 2)
+    // density ≈ 0.05 — under both thresholds
+    zoomAndSettle(view, 5)
     expect(display.showLabels).toBe(true)
     expect(display.effectiveShowDescriptions).toBe(true)
 
-    // density ≈ 0.1 — over the description threshold, under the label one
-    zoomAndSettle(view, 10)
+    // density ≈ 0.15 — over the description threshold, under the label one
+    zoomAndSettle(view, 15)
     expect(display.showLabels).toBe(true)
     expect(display.effectiveShowDescriptions).toBe(false)
   })
@@ -1150,11 +1150,13 @@ describe('showLabels auto density gate', () => {
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
-  it('manual "off" hides labels but descriptions remain independently controllable', () => {
+  // The rung the old showLabels:'off' + showDescriptions:true pair rendered by
+  // accident, now a choice with a name: description text, no name, at any zoom.
+  it('"description" paints descriptions with no name, past the density gate', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('off')
-    zoomAndSettle(view, 20)
+    display.setShowLabels('description')
+    zoomAndSettle(view, 62.5)
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(true)
   })
@@ -1254,8 +1256,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
   }
 
   it.each([
-    ['showLabels', 'off'],
-    ['showDescriptions', false],
+    ['showLabels', 'none'],
     ['heightMode', 'grow'],
     ['displayMode', 'compact'],
     // The track-height slots and their bounds. `height` is the expensive one:
@@ -1269,6 +1270,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     // the main-thread `showLabels` auto gate — layout reserves label rows from
     // it, the worker never sees it
     ['maxLabelFeatureDensity', 0.05],
+    ['maxDescriptionFeatureDensity', 0.01],
   ])('a main-thread-only %s change does not refetch', async (slot, value) => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length

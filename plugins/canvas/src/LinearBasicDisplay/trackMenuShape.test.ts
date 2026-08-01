@@ -45,7 +45,7 @@ describe('canvas track menu shape', () => {
     for (const group of [
       subMenuOf(items, 'Gene glyph'),
       subMenuOf(items, 'Show...'),
-      subMenuOf(items, 'Feature height'),
+      subMenuOf(items, 'Set feature height'),
     ]) {
       for (const item of group) {
         if (item.type === 'radio' || item.type === 'checkbox') {
@@ -93,7 +93,7 @@ describe('canvas track menu shape', () => {
     // family, so without the priority it read: ..., Filter by..., Gene glyph
     expect(rendered).toEqual([
       'Show...',
-      'Feature height',
+      'Set feature height',
       'Color by...',
       'Gene glyph',
       'Clear 1 highlight',
@@ -143,29 +143,52 @@ describe('canvas track menu shape', () => {
     expect(display.hasFeatureFilters()).toBe(false)
   })
 
-  it('says so when Show descriptions is ticked but the render is suppressing it', () => {
+  it('offers the label rungs as one flat radio group', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('on')
-    display.setShowDescriptions(true)
+    const show = subMenuOf(display.trackMenuItems(), 'Show...')
+
+    // checkboxes first, then the "Labels" subheader and its radios — the split
+    // that used to put descriptions in a checkbox and the rest in a radio is
+    // gone, so there is exactly one control for what label text is drawn
+    expect(show.map(labelOf)).toEqual([
+      'Show outline',
+      'Show only genes',
+      'Show chevrons',
+      'Labels',
+      'Auto',
+      'Name + description',
+      'Name only',
+      'Description only',
+      'None',
+      'Subfeature labels',
+      'Off',
+      'Below',
+      'Overlay',
+    ])
+  })
+
+  it('says so when the chosen label rung is suppressed by collapsed mode', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setShowLabels('nameAndDescription')
 
     const enabled = find(
       subMenuOf(display.trackMenuItems(), 'Show...'),
-      'Show descriptions',
+      'Name + description',
     )
-    expect(enabled.type === 'checkbox' && enabled.checked).toBe(true)
     expect('subLabel' in enabled ? enabled.subLabel : undefined).toBeUndefined()
 
-    // collapsed drops every label kind, but the setting is deliberately left
-    // alone — without the subLabel the row reads as a ticked box doing nothing
+    // collapsed drops every label kind, but the mode is deliberately left alone
+    // — without the subLabel the row reads as a selected radio doing nothing
     display.setDisplayMode('collapsed')
     const inert = find(
       subMenuOf(display.trackMenuItems(), 'Show...'),
-      'Show descriptions',
+      'Name + description',
     )
-    expect(inert.type === 'checkbox' && inert.checked).toBe(true)
+    expect(inert.type === 'radio' && inert.checked).toBe(true)
     expect('subLabel' in inert ? inert.subLabel : undefined).toBe(
-      'Hidden by the current label settings',
+      'Hidden while collapsed',
     )
   })
 })

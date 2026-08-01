@@ -1,7 +1,7 @@
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { capitalizeFirst, pluralize } from '@jbrowse/core/util'
+import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
@@ -12,6 +12,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { inlineRadioGroup } from './baseModelHelpers.ts'
 import { showHiddenFeaturesMenuItems } from './featureContextMenu.ts'
+import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -40,15 +41,14 @@ const RECOVERY_PRIORITY = -100
 // these builders, so it can't hand them its own inferred type. The model is
 // passed in at the call site, so a drifted field fails to typecheck there.
 interface ShowSubmenuSelf {
-  featureNoun: string
-  showDescriptions: boolean
-  // What the render actually does with showDescriptions: collapsed mode and the
-  // auto-labels density gate both suppress them. Read here so the checkbox can
-  // say why it looks inert — see showSubmenuCheckboxItems.
-  effectiveShowDescriptions: boolean
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
-  setShowDescriptions: (value: boolean) => void
+  // Collapsed mode drops every label kind regardless of the chosen rung, so the
+  // selected radio can sit there describing text nothing is painting. Read here
+  // to say why rather than disabling the group — the choice is still meaningful,
+  // it just isn't reaching the canvas in this display mode. ('auto' hiding at
+  // high density needs no such note: that is the mode doing its advertised job.)
+  displayMode: DisplayMode
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
 }
@@ -61,7 +61,6 @@ interface ColorMenuSelf {
 }
 
 interface FeatureHeightSelf extends IAnyStateTreeNode, HeightModeMenuModel {
-  featureNoun: string
   displayMode: DisplayMode
   setDisplayMode: (value: DisplayMode) => void
 }
@@ -113,37 +112,38 @@ function clearHighlightsMenuItems(self: {
 // checkboxes-then-radios rather than an interleaved mix.
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
-    checkboxItem(
-      'Show descriptions',
-      self.showDescriptions,
-      () => {
-        self.setShowDescriptions(!self.showDescriptions)
-      },
-      // Ticked-but-inert is the confusing state: collapsed mode drops every
-      // label, and the auto-labels density gate takes descriptions down with
-      // the names. Say so rather than disabling the row — the setting is still
-      // meaningful, it just isn't reaching the canvas at this zoom/mode.
-      self.showDescriptions && !self.effectiveShowDescriptions
-        ? { subLabel: 'Hidden by the current label settings' }
-        : undefined,
-    ),
     checkboxItem('Show outline', self.showOutline, () => {
       self.setShowOutline(!self.showOutline)
     }),
   ]
 }
 
+// Wording for the label radio, and the single place the mode order is fixed.
+// 'auto' leads because it's the default and the mode that needs no thought; the
+// four pinned rungs then read most-to-least text.
+const SHOW_LABELS_OPTION_LABELS: Record<ShowLabelsMode, string> = {
+  auto: 'Auto',
+  nameAndDescription: 'Name + description',
+  name: 'Name only',
+  description: 'Description only',
+  none: 'None',
+}
+
 // The radio groups of the "Show..." submenu, each a subHeader + inline radios.
 // Rendered after the checkboxes; subclasses override to append.
 export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
+  const inert = self.displayMode === 'collapsed'
   return inlineRadioGroup(
-    `${capitalizeFirst(self.featureNoun)} labels`,
+    'Labels',
     self.showLabelsMode,
-    [
-      { value: 'auto', label: 'Auto (hide when dense)' },
-      { value: 'on', label: 'Always on' },
-      { value: 'off', label: 'Always off' },
-    ],
+    SHOW_LABELS_MODES.map(value => ({
+      value,
+      label: SHOW_LABELS_OPTION_LABELS[value],
+      subLabel:
+        inert && value === self.showLabelsMode && value !== 'none'
+          ? 'Hidden while collapsed'
+          : undefined,
+    })),
     mode => {
       self.setShowLabels(mode)
     },
@@ -186,16 +186,20 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   ]
 }
 
-// One "<Noun> height" menu with two independent radio groups, mirroring the
-// alignments display: the size presets (how tall each feature is drawn) and,
+// One "Set feature height" menu with two independent radio groups, mirroring
+// the alignments display: the size presets (how tall each feature is drawn) and,
 // under a "Track sizing" subheader, how the track responds when there are more
 // features than fit — scroll / expand / squeeze. The two axes are orthogonal, so
 // picking a size never changes the mode and vice versa. Shared by every canvas
-// display (genes, variants).
+// display (genes, variants), and worded with the generic "feature" throughout
+// rather than each display's featureNoun — "Variant height" reads like a
+// different setting than "Feature height" when it is the same one. The noun
+// still varies where it names content rather than a control ("Show 3 hidden
+// variants").
 export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
   return [
     {
-      label: `${capitalizeFirst(self.featureNoun)} height`,
+      label: 'Set feature height',
       icon: HeightIcon,
       subMenu: [
         // Each preset row carries its own pin (endAdornment): the radio
@@ -218,7 +222,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
           }),
         ),
         { type: 'subHeader' as const, label: 'Track sizing' },
-        ...heightModeMenuItems(self, self.featureNoun),
+        ...heightModeMenuItems(self, 'feature'),
       ],
     },
   ]

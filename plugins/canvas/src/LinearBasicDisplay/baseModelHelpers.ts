@@ -79,7 +79,7 @@ export async function fetchCanvasFeatureDetails(
 export function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
-  options: readonly { value: T; label: string }[],
+  options: readonly { value: T; label: string; subLabel?: string }[],
   onSelect: (value: T) => void,
 ): MenuItem[] {
   return [

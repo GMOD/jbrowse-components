@@ -683,9 +683,9 @@ describe('canvas display fit escalation ladder', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     const total = 40
-    // Force labels on: the auto density gate (orthogonal to the fit ladder) would
-    // otherwise hide all labels at this feature count.
-    display.setShowLabels('on')
+    // Pin a rung with names: the auto density gate (orthogonal to the fit
+    // ladder) would otherwise hide all labels at this feature count.
+    display.setShowLabels('nameAndDescription')
     display.setRpcData(0, mixedWidthRegionData(total), view.bpPerPx, ctgA)
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
@@ -757,7 +757,7 @@ describe('canvas display fit escalation ladder', () => {
   it('with descriptions off, the full and labels stages coincide', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
-    display.setShowDescriptions(false)
+    display.setShowLabels('name')
     display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
     expect(display.effectiveShowDescriptions).toBe(false)
 
@@ -783,8 +783,7 @@ describe('canvas display fit escalation ladder', () => {
   it('with labels and descriptions off, only a uniform squeeze remains', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
-    display.setShowLabels('off')
-    display.setShowDescriptions(false)
+    display.setShowLabels('none')
     display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
     expect(display.showLabels).toBe(false)
 

@@ -16,7 +16,13 @@ export const MAX_LABEL_FEATURE_DENSITY = 0.2
 // pushes more features onto new rows. Degrading in two steps —
 // name + description → name → nothing — keeps 'auto' useful across a zoom range
 // where the single old threshold went straight from everything to nothing.
-export const MAX_DESCRIPTION_FEATURE_DENSITY = 0.05
+//
+// Half the label threshold, so 'auto' has a real middle band (0.1–0.2, names
+// only) without stripping descriptions at ordinary working zooms: a 14kb view
+// of the volvox gene track sits at ~0.055 features/px, and descriptions are
+// still readable there. A quarter of the threshold cut them off at exactly that
+// view, which is the behavior 'auto' exists to avoid.
+export const MAX_DESCRIPTION_FEATURE_DENSITY = 0.1
 
 // At one pixel per base or finer the cursor resolves to a single base. Coarser
 // than that, a position reported to the base — an HGVS c. coordinate — would be

@@ -72,6 +72,10 @@ import {
   scaleLaidOutData,
 } from './layout.ts'
 import {
+  modeCanShowDescription,
+  modeCanShowName,
+} from './showLabelsMode.ts'
+import {
   canvasTrackMenuItems,
   colorBySubMenuItems,
   colorMenuItems,
@@ -117,6 +121,7 @@ import type { FitStage } from './fitLadder.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
+
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
@@ -526,38 +531,36 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Effective boolean visibility used by layout, hit testing, the DOM
+        // Effective name visibility used by layout, hit testing, the DOM
         // overlay, and SVG export. 'auto' switches to false once feature
         // density crosses the readability threshold so layout-reserved label
         // space, the rendered DOM elements, and the hit-test geometry all
         // agree — otherwise rows reserve label height that never gets used.
+        // Collapsed mode is a single-row overview, so it suppresses names
+        // outright — gated here (not just at renderedShowLabels) so all four
+        // consumers agree. Descriptions and subfeature labels are suppressed
+        // separately (effectiveShowDescriptions / rpcProps).
         get showLabels() {
-          // Collapsed mode is a single-row overview — suppress feature names so
-          // nothing paints on top of the piled-up boxes. Gated here (not just at
-          // renderedShowLabels) so layout row reservation, the DOM overlay, hit
-          // testing, and SVG export all agree. Descriptions and subfeature labels
-          // are suppressed separately (effectiveShowDescriptions / rpcProps).
-          if (this.displayMode === 'collapsed') {
-            return false
-          }
           const mode = this.showLabelsMode
-          if (mode === 'off') {
-            return false
-          }
-          if (mode === 'on') {
-            return true
-          }
           return (
-            self.visibleFeatureDensityPerPx <=
-            getConf(self, 'maxLabelFeatureDensity')
+            this.displayMode !== 'collapsed' &&
+            modeCanShowName(mode) &&
+            (mode !== 'auto' ||
+              self.visibleFeatureDensityPerPx <=
+                getConf(self, 'maxLabelFeatureDensity'))
           )
         },
 
         /**
          * #getter
          */
+        // Whether the chosen mode admits descriptions at all, before the
+        // density gate and collapsed mode get a say — the persisted intent, so
+        // the track menu's radio reflects the user's choice rather than what
+        // this zoom happens to be painting. Render-time consumers read
+        // effectiveShowDescriptions / renderedShowDescriptions instead.
         get showDescriptions() {
-          return getConf(self, 'showDescriptions')
+          return modeCanShowDescription(this.showLabelsMode)
         },
 
         /**
@@ -634,14 +637,14 @@ export default function baseStateModelFactory(
           // maxDescriptionFeatureDensity, names at the higher
           // maxLabelFeatureDensity. Anded with `showLabels` so a config that
           // inverts the two thresholds can't leave descriptions painting after
-          // names are gone — the tighter of the pair always wins. Manual modes
-          // only hide labels — descriptions remain independently controllable.
-          // Collapsed suppresses them outright (like names) — gated at this
-          // render-layer getter, not the raw `showDescriptions` one, so the
-          // "Show descriptions" menu checkbox still reflects the persisted
-          // setting rather than reading false while collapsed (mirrors how
-          // subfeatureLabels is forced off in rpcProps, not in its menu-facing
-          // getter).
+          // names are gone — the tighter of the pair always wins. The pinned
+          // modes skip the density gate entirely, `description` included: that
+          // rung deliberately paints descriptions with no name. Collapsed
+          // suppresses them outright (like names) — gated at this render-layer
+          // getter, not the mode-derived `showDescriptions` one, so the track
+          // menu's radio still reflects the persisted choice rather than
+          // reading false while collapsed (mirrors how subfeatureLabels is
+          // forced off in rpcProps, not in its menu-facing getter).
           return (
             this.displayMode !== 'collapsed' &&
             this.showDescriptions &&
@@ -906,12 +909,14 @@ export default function baseStateModelFactory(
           // (TrackContainer -> resizeHeight -> setConf), so dragging a track
           // taller re-ran the whole worker pipeline. Every name here is absent
           // from `DisplayConfig` and unread by the worker:
-          //   showLabels/showDescriptions  main-thread label visibility
+          //   showLabels                   main-thread label visibility
           //   displayMode                  compact height scaling + collapsed
           //                                single-row packing, applied in layout
           //   heightMode/height/maxHeight/growMaxHeight
           //                                track-height strategy and its bounds
-          //   maxLabelFeatureDensity       the main-thread `showLabels` auto gate
+          //   maxLabelFeatureDensity/maxDescriptionFeatureDensity
+          //                                the two rungs of the main-thread
+          //                                `showLabels` auto gate
           //   maxFeatureScreenDensity      reaches the worker as the separate
           //                                `maxFeatureDensity` field below, which
           //                                is undefined while nothing gates — so
@@ -922,13 +927,13 @@ export default function baseStateModelFactory(
           // cache key, leaving these as what makes raising the limit refetch.
           const {
             showLabels: _l,
-            showDescriptions: _d,
             displayMode: _dm,
             heightMode: _hm,
             height: _h,
             maxHeight: _mh,
             growMaxHeight: _gmh,
             maxLabelFeatureDensity: _mlfd,
+            maxDescriptionFeatureDensity: _mdfd,
             maxFeatureScreenDensity: _mfsd,
             ...rest
           } = getConfigSnapshotWithPromotables(self)
@@ -1974,13 +1979,6 @@ export default function baseStateModelFactory(
            */
           setShowLabels(value: ShowLabelsMode) {
             setConf(self, 'showLabels', value)
-          },
-
-          /**
-           * #action
-           */
-          setShowDescriptions(value: boolean) {
-            setConf(self, 'showDescriptions', value)
           },
 
           /**

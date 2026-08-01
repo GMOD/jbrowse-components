@@ -22,7 +22,7 @@ function subMenuOf(items: MenuItem[], label: string) {
 }
 
 function featureHeightSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
-  return subMenuOf(display.trackMenuItems(), 'Feature height')
+  return subMenuOf(display.trackMenuItems(), 'Set feature height')
 }
 
 function radio(subMenu: MenuItem[], label: string) {
@@ -96,8 +96,7 @@ describe('Feature height submenu', () => {
   it('collapsed suppresses names + descriptions without clobbering the settings', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setShowLabels('on')
-    display.setShowDescriptions(true)
+    display.setShowLabels('nameAndDescription')
     expect(display.showLabels).toBe(true)
     expect(display.effectiveShowDescriptions).toBe(true)
 
@@ -105,9 +104,10 @@ describe('Feature height submenu', () => {
     // both label kinds are forced off for the single-row overview
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(false)
-    // ...but the persisted settings are untouched, so the "Show descriptions"
-    // menu checkbox still reflects the user's choice (gated at the render layer,
-    // not the raw getter) and returns on leaving collapsed
+    // ...but the persisted mode is untouched, so the label radio still reflects
+    // the user's choice (gated at the render layer, not the mode-derived
+    // getter) and returns on leaving collapsed
+    expect(display.showLabelsMode).toBe('nameAndDescription')
     expect(display.showDescriptions).toBe(true)
     display.setDisplayMode('normal')
     expect(display.showLabels).toBe(true)

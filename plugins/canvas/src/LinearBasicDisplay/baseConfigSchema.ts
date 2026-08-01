@@ -88,7 +88,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
         defaultValue: 'auto',
         description:
-          'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
+          'Which label text is drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
       },
       /**
        * #slot
@@ -109,14 +109,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description:
           'In "auto" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names',
         advanced: true,
-      },
-      /**
-       * #slot
-       */
-      showDescriptions: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Show feature descriptions',
       },
       /**
        * #slot

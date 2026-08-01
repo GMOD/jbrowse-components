@@ -103,7 +103,7 @@ describe('flatbushIndexes caching', () => {
   it('rebuilds when label visibility changes', () => {
     const { display, index, dispose } = setup()
     const first = index()
-    display.setShowLabels(display.renderedShowLabels ? 'off' : 'on')
+    display.setShowLabels(display.renderedShowLabels ? 'none' : 'name')
     expect(index()).not.toBe(first)
     dispose()
   })

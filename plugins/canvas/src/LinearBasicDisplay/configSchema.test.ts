@@ -231,7 +231,10 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, 'showLabels')).toBe('auto')
     })
 
-    it('converts boolean showLabels=false to off', () => {
+    // showLabels absorbed showDescriptions, so the legacy pair folds onto one
+    // enum. A boolean false meant "no names, descriptions per the other slot",
+    // which is the description rung — not `none`.
+    it('converts boolean showLabels=false to the description rung', () => {
       const config = schema.create(
         {
           displayId: 'test',
@@ -240,15 +243,36 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'showLabels')).toBe('off')
+      expect(readConfObject(config, 'showLabels')).toBe('description')
     })
 
-    it('leaves enum showLabels untouched', () => {
+    it.each([
+      [{ showLabels: 'on' }, 'nameAndDescription'],
+      [{ showLabels: 'on', showDescriptions: false }, 'name'],
+      [{ showLabels: 'off' }, 'description'],
+      [{ showLabels: 'off', showDescriptions: false }, 'none'],
+      [{ showLabels: false, showDescriptions: false }, 'none'],
+      // 'auto' + descriptions off has no rung of its own; it lands back on
+      // 'auto' rather than pinning 'name' and forfeiting the density gate
+      [{ showLabels: 'auto', showDescriptions: false }, 'auto'],
+    ])('folds the legacy %s pair onto the unified enum', (legacy, expected) => {
       const config = schema.create(
-        { displayId: 'test', type: 'LinearBasicDisplay', showLabels: 'on' },
+        { displayId: 'test', type: 'LinearBasicDisplay', ...legacy },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'showLabels')).toBe('on')
+      expect(readConfObject(config, 'showLabels')).toBe(expected)
+    })
+
+    it('leaves a unified-enum showLabels untouched', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          showLabels: 'description',
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'showLabels')).toBe('description')
     })
 
     it('maps legacy geneGlyphMode "longest" lifted from renderer to "longestCoding"', () => {

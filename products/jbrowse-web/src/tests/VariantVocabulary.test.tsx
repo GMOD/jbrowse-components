@@ -21,14 +21,16 @@ interface VocabMenuItem {
 }
 interface NounDisplay {
   featureNoun: string
+  hideFeature: (id: string) => void
   trackMenuItems: () => VocabMenuItem[]
 }
 
-// Every label the canvas base builds reads its noun from one `featureNoun`
-// getter, and LinearVariantDisplay overrides it. This is the test that the
-// override actually reaches the rendered menu: the variant display borrows the
-// canvas display's menus wholesale, so without it the vocabulary could silently
-// revert to the gene-oriented "feature" with every other variant test green.
+// Where the variant display's `featureNoun` override does and doesn't reach the
+// menu. It names *content* — a sentence counting what the track holds — but not
+// the *controls*: "Variant height" reads like a different setting than "Feature
+// height" when it is the same one, and a reader already understands a feature is
+// just a thing. The variant display borrows the canvas menus wholesale, so
+// without this both halves could drift with every other variant test green.
 function labelsIn(items: VocabMenuItem[]): string[] {
   return items.flatMap(item => [
     ...(item.label === undefined ? [] : [item.label]),
@@ -36,7 +38,35 @@ function labelsIn(items: VocabMenuItem[]): string[] {
   ])
 }
 
-test('the variant track menu says "variant", never "feature"', async () => {
+test('the variant track menu names controls generically, content by its noun', async () => {
+  const user = userEvent.setup()
+  const { view, findAllByTestId } = await createView()
+
+  await view.navToLocString('ctgA:1..50000')
+  await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
+  const [feature] = await findAllByTestId(/^display-.*-done$/, ...opts)
+  expect(feature).toBeTruthy()
+
+  const display = view.tracks[0]!.displays[0] as NounDisplay
+  expect(display.featureNoun).toBe('variant')
+
+  const labels = labelsIn(display.trackMenuItems())
+
+  // the controls read the same on a variant track as on a gene track
+  expect(labels).toEqual(
+    expect.arrayContaining([
+      'Labels',
+      'Set feature height',
+      'Fixed feature height + fixed track height',
+      'Fit feature height to track height',
+    ]),
+  )
+
+  // ...and no control row is renamed by the noun
+  expect(labels.filter(l => /variant/i.test(l))).toEqual([])
+})
+
+test('a row that counts what the track holds still says "variant"', async () => {
   const user = userEvent.setup()
   const { view, findAllByTestId } = await createView()
 
@@ -45,23 +75,10 @@ test('the variant track menu says "variant", never "feature"', async () => {
   await findAllByTestId(/^display-.*-done$/, ...opts)
 
   const display = view.tracks[0]!.displays[0] as NounDisplay
-  expect(display.featureNoun).toBe('variant')
-
-  const labels = labelsIn(display.trackMenuItems())
-
-  // the two entries the noun renames, and the track-sizing rows underneath the
-  // second (which take the noun from the same getter, via heightModeMenuItems)
-  expect(labels).toEqual(
-    expect.arrayContaining([
-      'Variant labels',
-      'Variant height',
-      'Fixed variant height + fixed track height',
-      'Fit variant height to track height',
-    ]),
+  // the recovery row only exists once something is hidden, and it is a sentence
+  // about the track's contents rather than the name of a setting
+  display.hideFeature('test-vcf-1')
+  expect(labelsIn(display.trackMenuItems())).toEqual(
+    expect.arrayContaining(['Show 1 hidden variant']),
   )
-
-  // no gene vocabulary anywhere in the menu, at any nesting depth. Matched
-  // case-insensitively so a sentence-cased leak ("Feature height") is caught
-  // alongside a mid-sentence one.
-  expect(labels.filter(l => /feature/i.test(l))).toEqual([])
-}, 60000)
+})
