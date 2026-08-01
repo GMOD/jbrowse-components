@@ -51,6 +51,7 @@ const baseConfig = {
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/setHTML.js',
     '<rootDir>/config/jest/resizeObserver.js',
+    '<rootDir>/config/jest/pointerEvents.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
 }

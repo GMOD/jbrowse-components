@@ -2,6 +2,7 @@ import { useRef } from 'react'
 
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 import { usePointerDrag } from '../util/usePointerDrag.ts'
+import { useRafCommit } from '../util/useRafCommit.ts'
 
 import type React from 'react'
 
@@ -47,35 +48,37 @@ function ResizeHandle({
 >) {
   const { classes } = useStyles()
   const prevPosRef = useRef(0)
-  const latestPosRef = useRef(0)
-  const scheduledRef = useRef(false)
 
   const getPos = (event: React.PointerEvent) =>
     vertical ? event.clientX : event.clientY
 
+  // Coalesced to one commit per frame: a pointermove stream (plus the browser's
+  // coalesced batches) outruns the frame rate, and each commit reruns the
+  // resize downstream. The scheduled value is the absolute pointer position —
+  // last-write-wins — and the delta against the previous commit is derived
+  // here, so a dropped intermediate position costs nothing.
+  const { schedule, flush } = useRafCommit(pos => {
+    const distance = pos - prevPosRef.current
+    prevPosRef.current = pos
+    onDrag(distance)
+  })
+
   const handlers = usePointerDrag({
     onDragStart: event => {
-      const pos = getPos(event)
-      prevPosRef.current = pos
-      latestPosRef.current = pos
+      prevPosRef.current = getPos(event)
       onDragStart?.()
     },
     onDrag: event => {
       event.preventDefault()
-      // snapshot the position synchronously — the deferred rAF callback runs
-      // after React has nulled the event, so read it now
-      latestPosRef.current = getPos(event)
-      if (!scheduledRef.current) {
-        scheduledRef.current = true
-        requestAnimationFrame(() => {
-          const distance = latestPosRef.current - prevPosRef.current
-          prevPosRef.current = latestPosRef.current
-          onDrag(distance)
-          scheduledRef.current = false
-        })
-      }
+      // read the position synchronously — the deferred commit runs after React
+      // has nulled the event
+      schedule(getPos(event))
     },
-    onDragEnd: () => onDragEnd?.(),
+    onDragEnd: () => {
+      // land the resting size exactly, rather than a frame late
+      flush()
+      onDragEnd?.()
+    },
   })
 
   return (
