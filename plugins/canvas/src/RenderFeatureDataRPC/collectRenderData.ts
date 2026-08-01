@@ -4,40 +4,32 @@ import { createCollector } from './collect/renderContext.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RenderContext } from './collect/renderContext.ts'
-import type { DisplayConfig } from './renderConfig.ts'
-import type { FeatureLayout, PeptideData } from './types.ts'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
-import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { FeatureLayout } from './types.ts'
 
 // Walks the per-feature layout tree, emits draw primitives + hit/label metadata
 // into a Collector (see collect/), then packs the visible window into the typed
 // arrays the GPU/Canvas2D renderers consume. Geometry stays in absolute genomic
 // uint32 — packRenderArrays filters to [regionStart, regionEnd) without
 // rebasing.
+//
+// One object, typed as the per-feature `RenderContext` plus what only this walk
+// needs: the context was already five of the arguments, bundled here and handed
+// straight to every emitter, so composing the type says that rather than
+// re-listing its fields.
 export function collectRenderData(
-  layouts: FeatureLayout[],
-  regionStart: number,
-  regionEnd: number,
-  config: DisplayConfig,
-  theme: Theme,
-  colorByCDS: boolean,
-  peptideDataMap: Map<string, PeptideData> | undefined,
-  jexl: JexlInstance,
+  args: RenderContext & {
+    layouts: FeatureLayout[]
+    regionStart: number
+    regionEnd: number
+  },
 ) {
-  const ctx: RenderContext = {
-    config,
-    theme,
-    colorByCDS,
-    peptideDataMap,
-    jexl,
-  }
-
+  const { layouts, regionStart, regionEnd, config, theme } = args
   const collector = createCollector()
 
   const outlineColor = resolveOutlineColor(config.outlineColor, theme)
 
   for (const layout of layouts) {
-    processFeatureRecord(layout, ctx, collector)
+    processFeatureRecord(layout, args, collector)
   }
 
   const packed = packRenderArrays(

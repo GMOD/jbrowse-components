@@ -214,16 +214,16 @@ export async function executeRenderFeatureData({
     'Collecting render data',
     statusCallback,
     () =>
-      collectRenderData(
+      collectRenderData({
         layouts,
-        region.start,
-        region.end,
-        displayConfig,
+        regionStart: region.start,
+        regionEnd: region.end,
+        config: displayConfig,
         theme,
-        !!colorByCDS,
+        colorByCDS: !!colorByCDS,
         peptideDataMap,
-        pluginManager.jexl,
-      ),
+        jexl: pluginManager.jexl,
+      }),
   )
 
   checkStopTokenThrottled(stopTokenCheck)

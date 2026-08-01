@@ -44,6 +44,26 @@ function boxLayout(feature: Feature): FeatureLayout {
 const theme = createJBrowseTheme()
 const config = mockDisplayConfig({ color: '#cccc99' })
 
+// Every case here walks ONE layout over the same context; only the region end,
+// the config, the colorByCDS flag and the peptide map ever vary, so they arrive
+// as overrides rather than as seven repeated arguments.
+function collect(
+  layout: FeatureLayout,
+  overrides: Partial<Parameters<typeof collectRenderData>[0]> = {},
+) {
+  return collectRenderData({
+    layouts: [layout],
+    regionStart: 0,
+    regionEnd: 1000,
+    config,
+    theme,
+    colorByCDS: false,
+    peptideDataMap: undefined,
+    jexl,
+    ...overrides,
+  })
+}
+
 // Two CDS exons whose 9 coding bases (3 codons) make codon index 1 straddle the
 // exon boundary: bases 100,101,102 (codon0) | 103 + 200,201 (codon1) | 202,203,204 (codon2)
 function twoExonTranscript() {
@@ -71,16 +91,7 @@ function twoExonTranscript() {
 describe('collectRenderData peptide overlay', () => {
   it('maps the protein onto CDS exons, splitting a codon at the exon boundary', () => {
     const { layout } = twoExonTranscript()
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      new Map([['tx1', { protein: 'MFK' }]]),
-      jexl,
-    )
+    const result = collect(layout, { peptideDataMap: new Map([['tx1', { protein: 'MFK' }]]) })
 
     const overlay = result.aminoAcidOverlay!
     expect(overlay).toBeDefined()
@@ -117,16 +128,7 @@ describe('collectRenderData peptide overlay', () => {
 
   it('flags a transl_except residue in the overlay so it can be highlighted', () => {
     const { layout } = twoExonTranscript()
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      new Map([['tx1', { protein: 'MFK', translExceptIndices: new Set([2]) }]]),
-      jexl,
-    )
+    const result = collect(layout, { peptideDataMap: new Map([['tx1', { protein: 'MFK', translExceptIndices: new Set([2]) }]]) })
     const overlay = result.aminoAcidOverlay!
     expect(overlay.find(a => a.proteinIndex === 2)!.isTranslExcept).toBe(true)
     expect(
@@ -136,16 +138,7 @@ describe('collectRenderData peptide overlay', () => {
 
   it('emits no amino-acid overlay when the transcript has no peptide data', () => {
     const { layout } = twoExonTranscript()
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout)
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 })
@@ -212,16 +205,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       { start: 100, end: 109 },
       { start: 109, end: 118 },
     ])
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      true,
-      new Map([['cds1', { protein: 'MFKLST' }]]),
-      jexl,
-    )
+    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]) })
 
     const overlay = result.aminoAcidOverlay!
     expect(overlay).toBeDefined()
@@ -240,16 +224,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       { start: 100, end: 109 }, // VP4
       { start: 109, end: 118 }, // VP2
     ])
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      true,
-      new Map([['cds1', { protein: 'MFKLST' }]]),
-      jexl,
-    )
+    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]) })
 
     const overlay = result.aminoAcidOverlay!
     const byRow = (y: number) =>
@@ -266,16 +241,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   // the stop is excluded from every row — it is not part of any mature peptide.
   it('excludes the trailing stop codon from every region', () => {
     const { layout } = polyproteinLayout(100, 121, [{ start: 100, end: 118 }])
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      true,
-      new Map([['cds1', { protein: 'MFKLST*' }]]),
-      jexl,
-    )
+    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST*' }]]) })
     const overlay = result.aminoAcidOverlay!
     expect(overlay.map(a => a.aminoAcid).sort()).toEqual([
       'F',
@@ -301,16 +267,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       ],
       -1,
     )
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      true,
-      new Map([['cds1', { protein: 'MFKLST' }]]),
-      jexl,
-    )
+    const result = collect(layout, { colorByCDS: true, peptideDataMap: new Map([['cds1', { protein: 'MFKLST' }]]) })
     const byRow = (y: number) =>
       result
         .aminoAcidOverlay!.filter(a => a.topPx === y)
@@ -324,16 +281,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
 
   it('emits no amino-acid overlay when peptide data is absent', () => {
     const { layout } = polyproteinLayout(100, 118, [{ start: 100, end: 118 }])
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      true,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, { colorByCDS: true })
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 })
@@ -344,32 +292,14 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     const cfg = mockDisplayConfig({
       mouseover: `jexl:"score: "+get(feature,'id')`,
     })
-    const result = collectRenderData(
-      [boxLayout(feature)],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('score: g1')
   })
 
   it('honors a plain (non-jexl) mouseover string', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
     const cfg = mockDisplayConfig({ mouseover: 'static text' })
-    const result = collectRenderData(
-      [boxLayout(feature)],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('static text')
   })
 
@@ -379,47 +309,20 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     const cfg = mockDisplayConfig({
       mouseover: `jexl:qvscore(get(feature,'identificationqv'))`,
     })
-    const result = collectRenderData(
-      [boxLayout(feature)],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('m1')
   })
 
   it('the default slot resolves to the feature id when there is no name', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
-    const result = collectRenderData(
-      [boxLayout(feature)],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(boxLayout(feature))
     expect(result.flatbushItems[0]!.tooltip).toBe('g1')
   })
 
   it('top-level feature tooltip is the single hover source (subfeatures carry no tooltip)', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'id')` })
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('tx1')
     // subfeatures no longer carry their own tooltip — hover unifies on the
     // top-level feature's resolved mouseover
@@ -433,32 +336,14 @@ describe('collectRenderData intron chevrons', () => {
   it('sets intron line direction to the strand when chevrons are enabled', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ displayDirectionalChevrons: true })
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, { config: cfg })
     expect([...result.lineDirections]).toEqual([1])
   })
 
   it('zeroes intron line direction when chevrons are disabled', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ displayDirectionalChevrons: false })
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, { config: cfg })
     expect([...result.lineDirections]).toEqual([0])
   })
 })
@@ -524,16 +409,7 @@ function geneWithTwoTranscripts() {
 describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
   it('emits exons, introns, and one arrow per transcript at its stacked offset', () => {
     const layout = geneWithTwoTranscripts()
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout)
 
     // four exon rects (two per transcript)
     expect(result.rectPositions.length).toBe(4 * 2)
@@ -593,16 +469,7 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
         { ...boxLayout(leaf), y: 15 },
       ],
     }
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout)
 
     const leafInfo = result.subfeatureInfos.find(s => s.featureId === 'reg1')
     expect(leafInfo).toMatchObject({
@@ -658,16 +525,7 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
     })
     expect(layout.isoformsCollapsed).toBe(true)
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      Number.MAX_SAFE_INTEGER,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, { regionEnd: Number.MAX_SAFE_INTEGER, config: cfg })
 
     const label = result.floatingLabelsData.DPP6
     expect(label).toBeDefined()
@@ -687,16 +545,7 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
     })
     expect(layout.isoformsCollapsed).toBeFalsy()
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      Number.MAX_SAFE_INTEGER,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, { regionEnd: Number.MAX_SAFE_INTEGER, config: cfg })
 
     const label = result.floatingLabelsData.DPP6
     expect(label!.minX).toBe(100)
@@ -713,16 +562,7 @@ describe('collectRenderData color-slot robustness', () => {
     const cfg = mockDisplayConfig({
       color: `jexl:qvcolor(get(feature,'missing'))`,
     })
-    const result = collectRenderData(
-      [boxLayout(feature)],
-      0,
-      1000,
-      cfg,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(boxLayout(feature), { config: cfg })
     expect([...result.rectColors]).toEqual([cssColorToABGR('magenta')])
   })
 })
@@ -739,32 +579,14 @@ describe('collectRenderData density-fade eligibility', () => {
       start: 100,
       end: 101,
     })
-    const result = collectRenderData(
-      [boxLayout(feature)],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(boxLayout(feature))
     expect(result.flatbushItems.map(i => i.densityFade)).toEqual([true])
     expect([...result.rectDensityFade]).toEqual([0])
   })
 
   it('never marks a transcript (CDS/exon container) fade-eligible', () => {
     const { layout } = twoExonTranscript()
-    const result = collectRenderData(
-      [layout],
-      0,
-      1000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout)
     expect(result.flatbushItems.length).toBeGreaterThan(0)
     expect(result.flatbushItems.every(i => !i.densityFade)).toBe(true)
   })
@@ -793,8 +615,6 @@ describe('collectRenderData transcript coords', () => {
     })
   }
 
-  const collect = (layout: FeatureLayout) =>
-    collectRenderData([layout], 0, 1000, config, theme, false, undefined, jexl)
 
   it('puts the transcript coords on its subfeature entry under a gene', () => {
     const gene = mockFeature({

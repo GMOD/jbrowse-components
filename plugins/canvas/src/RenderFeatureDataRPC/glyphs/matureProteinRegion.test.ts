@@ -9,6 +9,8 @@ import {
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
 
+import type { DisplayConfig } from '../renderConfig.ts'
+import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const jexl = createJexlInstance()
@@ -239,6 +241,24 @@ describe('layoutMatureProteinRegion', () => {
 describe('collectRenderData for mature protein regions', () => {
   const theme = createJBrowseTheme()
 
+  // every case walks one polyprotein layout with peptides off; only the config
+  // and (once) the region end vary
+  const collect = (
+    layout: FeatureLayout,
+    config: DisplayConfig,
+    regionEnd = 10_000,
+  ) =>
+    collectRenderData({
+      layouts: [layout],
+      regionStart: 0,
+      regionEnd,
+      config,
+      theme,
+      colorByCDS: false,
+      peptideDataMap: undefined,
+      jexl,
+    })
+
   it('draws a rect per mature region plus a strand arrow on the parent CDS', () => {
     const feature = viralPolyprotein([
       'mature_protein_region',
@@ -248,16 +268,7 @@ describe('collectRenderData for mature protein regions', () => {
     const config = mockDisplayConfig()
     const layout = findGlyph(feature, config)({ feature, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
 
     // one rect per mature region
     expect(result.rectPositions).toHaveLength(3 * 2)
@@ -305,16 +316,7 @@ describe('collectRenderData for mature protein regions', () => {
     })
     const layout = findGlyph(feature, config)({ feature, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
     expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
       'protein VP0',
       'capsid protein VP1',
@@ -368,16 +370,7 @@ describe('collectRenderData for mature protein regions', () => {
     })
     const layout = findGlyph(gene, config)({ feature: gene, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
     expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
       'nsp1 (ORF1a polyprotein)',
       'nsp1 (ORF1ab polyprotein)',
@@ -422,16 +415,7 @@ describe('collectRenderData for mature protein regions', () => {
     })
     const layout = findGlyph(gene, config)({ feature: gene, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
     expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
       'protein VP0',
       'capsid protein VP1',
@@ -468,16 +452,7 @@ describe('collectRenderData for mature protein regions', () => {
     })
     const layout = findGlyph(feature, config)({ feature, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
     // the top-level CDS emits its own (name) label; keep only the per-mature
     // subfeature labels, which is what was previously missing entirely
     const labels = Object.values(result.floatingLabelsData).filter(
@@ -515,16 +490,7 @@ describe('collectRenderData for mature protein regions', () => {
     })
     const layout = findGlyph(feature, config)({ feature, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
     const subfeatureLabels = Object.values(result.floatingLabelsData).filter(
       l => 'subfeatureLabel' in l,
     )
@@ -552,16 +518,7 @@ describe('collectRenderData for mature protein regions', () => {
     const config = mockDisplayConfig()
     const layout = findGlyph(feature, config)({ feature, config })
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      10000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config)
     expect(result.rectPositions).toHaveLength(2 * 2)
     expect(result.arrowXs).toHaveLength(1)
     expect(result.arrowXs[0]).toBe(feature.get('end'))
@@ -607,16 +564,7 @@ describe('collectRenderData for mature protein regions', () => {
     const layout = findGlyph(gene, config)({ feature: gene, config })
     expect(layout.glyphType).toBe('Subfeatures')
 
-    const result = collectRenderData(
-      [layout],
-      0,
-      100000,
-      config,
-      theme,
-      false,
-      undefined,
-      jexl,
-    )
+    const result = collect(layout, config, 100_000)
     // one rect per mature region, not a single collapsed box
     expect(result.rectPositions).toHaveLength(3 * 2)
     expect([...result.rectPositions]).toEqual([266, 805, 805, 2719, 2719, 8554])
