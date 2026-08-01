@@ -71,7 +71,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setselection">**setSelection**</span><br><code>(thing: unknown) =&gt; void</code> | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything | BaseSessionModel |
+| <span id="action-setselection">**setSelection**</span><br><code>(thing: unknown) =&gt; void</code> | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything<br><br>A feature is unwrapped on the way in, so app state never holds a jexlFeatureProxy. `isFeature` accepts a proxy, but on one `id` is a data field rather than the method the Feature type promises — every consumer doing `isFeature(selection) ? selection.id() : …` would throw. | BaseSessionModel |
 | <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> | clears the global selection | BaseSessionModel |
 | <span id="action-sethovered">**setHovered**</span><br><code>(thing: unknown) =&gt; void</code> |  | BaseSessionModel |
 | <span id="action-sethighlightsvisible">**setHighlightsVisible**</span><br><code>(arg: boolean) =&gt; void</code> | toggle all region highlight bands across every view | BaseSessionModel |
