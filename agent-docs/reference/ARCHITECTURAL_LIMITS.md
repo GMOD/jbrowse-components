@@ -337,11 +337,35 @@ to fire below the floor. Sketch and the MAF-specific fixes in
 **Status:** Open.
 
 `LinearBasicDisplay`'s `rpcProps()` returns the whole resolved config snapshot
-(minus four display-only slots) plus `theme: getSession(self).themeOptions`.
-Every returned field is an RPC cache key, so `SettingsInvalidate` fires
-`clearAllRpcData()` and every visible region refetches. **A light/dark toggle, or
-one color slot edit, re-downloads and re-parses every region of every canvas
-feature track.**
+(minus a hand-listed set of display-only slots) plus
+`theme: getSession(self).themeOptions`. Every returned field is an RPC cache key,
+so `SettingsInvalidate` fires `clearAllRpcData()` and every visible region
+refetches. **A light/dark toggle, or one color slot edit, re-downloads and
+re-parses every region of every canvas feature track.**
+
+**The exclusion list is a blocklist, so its default is wrong.**
+`getConfigSnapshotWithPromotables` walks `fullConfSnapshot`, which emits *every*
+slot including defaults — so a slot that is neither read by the worker nor named
+in the destructure is a silent refetch trigger, and adding a main-thread-only
+slot introduces one by omission. That is a separate failure from the appearance
+coupling above: it refetches for settings that have nothing to do with what the
+worker draws. Found 2026-08-01 with five such slots in the payload, `height`
+among them — and `height` is written on *every resize-handle drag frame*
+(`TrackContainer` → `resizeHeight` → `setConf`), so dragging a canvas track
+taller re-ran the whole worker pipeline once the drag settled. Grow-mode exit
+(`installGrowExitBake`) and the fit bake hit the same path.
+
+Two rules when auditing that list. A slot that reaches the worker through a
+*separate* top-level `rpcProps` field must still invalidate through that field —
+`maxFeatureScreenDensity` rides as `maxFeatureDensity`, which is `undefined`
+while nothing gates, so excluding the slot alone would strand a track at a budget
+the user just raised. And `fetchSizeLimit`/`forceLoad` must stay in the payload:
+the byte budget itself (`resolvedByteLimit()`) is added at the RPC *call site* and
+so is not a cache key, leaving those slots as what makes raising the limit
+refetch. `loadedRegions`, not `rpcDataMap`, is the signal when measuring — the
+canvas base keeps fetched features through a settings clear on purpose. Guarded by
+the `SettingsInvalidate keys on the payload, not the reads` suite in
+`fetchAutorun.test.ts`.
 
 This is the one place the codebase inverts its own split (worker returns data,
 main thread owns pixels), and for a real reason: the canvas worker bakes
@@ -350,7 +374,11 @@ instance buffer. It is also why canvas is the only per-region display with no
 `gpuProps()` (ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern").
 
 **Retire when** canvas splits its payload into fetch-affecting and
-appearance-affecting halves and grows a `gpuProps()`. The consistent fix has the
+appearance-affecting halves and grows a `gpuProps()`. That split also inverts the
+blocklist into an allowlist, which is what stops the omission failure above from
+recurring — `DisplayConfig` in `renderConfig.ts` already enumerates exactly what
+the worker reads, but the `as DisplayConfig` cast on the payload launders the
+extra keys past it. The consistent fix has the
 worker emit a per-feature color *class index* plus the attributes jexl needs, and
 resolve the palette in the main-thread encoder, as synteny's `computedColors`
 already does. The cheap intermediate is a worker-side parsed-feature cache keyed
