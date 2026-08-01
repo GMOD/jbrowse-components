@@ -107,13 +107,13 @@ test('settled gates on autoDiagonalize completion when requested', () => {
   expect(model.settled).toBe(false)
 
   // reorder resolved successfully: settled is released
-  model.setAutoDiagonalizeComplete(true)
+  model.finishAutoDiagonalize()
   expect(model.settled).toBe(true)
 })
 
-// Each init apply re-declares the pair. Without that, a superseded init that
-// requested a reorder and then skipped it leaves `requested` true with nothing
-// coming, and `settled` never fires again — a capture hangs instead of failing.
+// Each init apply re-declares the gate. Without that, a superseded init that
+// requested a reorder and then skipped it leaves it raised with nothing coming,
+// and `settled` never fires again — a capture hangs instead of failing.
 test('a following init re-declares the autoDiagonalize gate', () => {
   const model = setup()
   model.markCanvasDrawn()
@@ -127,8 +127,22 @@ test('a following init re-declares the autoDiagonalize gate', () => {
 
   // and a completed pass can't satisfy the gate for the next requesting init,
   // which would let a capture commit the new, un-reordered plot
-  model.setAutoDiagonalizeComplete(true)
+  model.finishAutoDiagonalize()
   model.beginAutoDiagonalize(true)
+  expect(model.settled).toBe(false)
+})
+
+// An init that hasn't been applied yet means the tracks it names don't exist,
+// and a plot with no displays settles vacuously — so the gate has to hold on
+// `init` itself, not just on what the displays report.
+test('settled gates on an unapplied init', () => {
+  const model = setup()
+  model.markCanvasDrawn()
+  expect(model.settled).toBe(true)
+
+  // no width in this fixture, so the init autorun never fires and this stays
+  // pending — the same state the real apply passes through
+  model.setInit({ views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] })
   expect(model.settled).toBe(false)
 })
 

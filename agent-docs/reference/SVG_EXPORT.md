@@ -342,8 +342,11 @@ on-screen GPU canvas for screenshot capture and browser tests. Dotplot
 (`LinearSyntenyViewHelper.settled` → `synteny_canvas_done`) each expose it: a
 testid the capturer waits on so it never snapshots a mid-render frame.
 
-It is `canvasDrawn && every display (!loading && !refetching && dataCurrent)` —
-the same `dataCurrent` freshness axis as `svgReady`, for the same reason.
+It is `canvasDrawn && !initPending && !pendingAutoDiagonalize &&
+displaysSettled(displays)`, where `displaysSettled` (in `synteny-core`'s
+`SyntenyFetchStateMixin.ts`, so the two views can't drift) is
+`every(!loading && !refetching && dataCurrent)` — the same `dataCurrent`
+freshness axis as `svgReady`, for the same reason.
 Without it, the debounce gap bites capture harder than export: dotplot's
 init-time *autoDiagonalize* reorders the query axis, and for ~1s afterward no
 fetch is in flight, so the stale rpcData (absolute-cumBp positions computed for
@@ -356,12 +359,18 @@ Signatures: `dotplotFetchKey` (lodMode + per-axis bpPerPx + displayed-region
 refName/start/end/reversed + the snapped h-axis fetch window); synteny composes
 `currentFetchKey` from its
 existing tracked-dep getters (`fetchRegionsKey`, `bpPerPxBucketKey`, region
-order, CIGAR/marker opts, LOD). Dotplot additionally keeps an
-`autoDiagonalizeRequested`/`Complete` pair: `dataCurrent` catches
-reordered-but-stale data, but a *skipped/errored* diagonalize never reorders at
-all, so its (correctly-fetched, un-diagonalized) data is `dataCurrent` — that
-pair makes `settled` wait for the reorder to actually run, else the capture
-times out loudly rather than commit an un-diagonalized plot.
+order, CIGAR/marker opts, LOD). The other two terms cover what a fetch
+signature cannot see:
+
+- `pendingAutoDiagonalize` — `dataCurrent` catches reordered-but-stale data, but
+  a *skipped/errored* diagonalize never reorders at all, so its
+  (correctly-fetched, un-diagonalized) data is `dataCurrent`. The flag makes
+  `settled` wait for the reorder to actually run, else the capture times out
+  loudly rather than commit an un-diagonalized plot.
+- `initPending` — before the apply adds them there are no displays to be stale,
+  and `every` over none is true, so the gate would open on a cleared canvas. Hit
+  once as a fully blank `synteny_canvas_done` frame in CI, where the synteny
+  tracks are the last step of a multi-await apply.
 
 ### Non-LGV displays: same gate, and `SvgChrome` wherever there's a box to draw
 

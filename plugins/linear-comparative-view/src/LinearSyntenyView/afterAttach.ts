@@ -141,7 +141,7 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
     // skipped, so `settled` stays false and the capture times out loudly instead
     // of committing an undiagonalized view.
     if (isAlive(self)) {
-      self.setAutoDiagonalizeComplete(true)
+      self.finishAutoDiagonalize()
     }
   })
 }
@@ -151,10 +151,9 @@ async function applyInit(
   init: LinearSyntenyViewInit,
   { superseded }: InitApplyContext,
 ) {
-  // flag the pending reorder before any track render can paint, so `settled`
-  // (→ synteny_canvas_done) can't fire on the pre-diagonalize hairball during
-  // the view-building await window below (before awaitingAutoDiagonalize flips
-  // the canvas off)
+  // declare the reorder gate up front, before any track render can paint: it
+  // outlives this pass (only the reorder itself lowers it) where the levels'
+  // `initPending` term covers only the apply window below
   self.beginAutoDiagonalize(!!init.autoDiagonalize)
   await buildViews(self, init, superseded)
   await applyInitViewLocsAndTracks(self, init)

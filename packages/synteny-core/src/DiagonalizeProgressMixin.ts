@@ -10,13 +10,13 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
  *
  * The auto-diagonalize lifecycle state shared by the comparative views
  * (LinearSyntenyView, DotplotView): the in-flight wait, its live RPC status and
- * stop token, and the two flags that gate `settled` so a screenshot or browser
- * test can't capture a pre-reorder hairball.
+ * stop token, and the flag that gates `settled` so a screenshot or browser test
+ * can't capture a pre-reorder hairball.
  *
- * `withDiagonalizeProgress` drives the first three; the requested/complete pair
- * is set by the view's own init autorun, which is the only thing that knows a
- * reorder was asked for. Composed rather than duplicated so both views report
- * progress, cancel, and gate identically.
+ * `withDiagonalizeProgress` drives the wait and the status/token pair; the gate
+ * is raised and lowered by the view's own init autorun, which is the only thing
+ * that knows a reorder was asked for. Composed rather than duplicated so both
+ * views report progress, cancel, and gate identically.
  */
 export function DiagonalizeProgressMixin() {
   return types
@@ -31,20 +31,17 @@ export function DiagonalizeProgressMixin() {
       awaitingAutoDiagonalize: false,
       /**
        * #volatile
-       * Set true as soon as an init-time autoDiagonalize is requested, before any
-       * render can paint. Gates `diagonalizeSettled` so a capture can't commit
-       * the pre-reorder view during the view-building await window, before
-       * `awaitingAutoDiagonalize` flips.
+       * A reorder this init asked for that has not succeeded yet. Raised before
+       * any render can paint, and lowered only once the pass RESOLVES — a
+       * skipped or thrown reorder leaves it up, so the view's `settled` gate
+       * never reports done on an undiagonalized view and the capture fails
+       * loudly (times out) instead of committing a hairball.
+       *
+       * One flag rather than a requested/complete pair: the two only ever moved
+       * together, and every state a pair can drift into either wedges the gate
+       * shut or opens it on the wrong pass.
        */
-      autoDiagonalizeRequested: false,
-      /**
-       * #volatile
-       * Set true only after the init-time diagonalize pass RESOLVES
-       * successfully. If the reorder is skipped or throws this stays false, so
-       * `diagonalizeSettled` never reports done on an undiagonalized view — the
-       * capture fails loudly (times out) instead of committing a hairball.
-       */
-      autoDiagonalizeComplete: false,
+      pendingAutoDiagonalize: false,
       /**
        * #volatile
        * Live status from the auto-diagonalize RPC (download %, parse, algorithm
@@ -58,16 +55,6 @@ export function DiagonalizeProgressMixin() {
        */
       diagonalizeStopToken: undefined as StopToken | undefined,
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The diagonalize half of a view's `settled` gate: either no reorder was
-       * requested, or the one that was has completed.
-       */
-      get diagonalizeSettled() {
-        return !self.autoDiagonalizeRequested || self.autoDiagonalizeComplete
-      },
-    }))
     .actions(self => ({
       /**
        * #action
@@ -77,27 +64,22 @@ export function DiagonalizeProgressMixin() {
       },
       /**
        * #action
-       * Re-declare the gate at the top of one init apply pass: a reorder is
-       * pending iff THIS init asked for one, and nothing is complete until this
-       * pass completes it.
-       *
-       * The pair has to move together, which is why this is one action rather
-       * than two setters. A superseded init that set `requested` and then
-       * skipped its reorder would otherwise leave the flag true with nothing
-       * coming, wedging `diagonalizeSettled` (and so `settled`) forever; and a
-       * previous init's `complete` would satisfy the gate for the next one's
-       * un-reordered view, which is the same capture bug the flags exist to
-       * prevent, in the other direction.
+       * Declare the gate at the top of one init apply pass: a reorder is
+       * pending iff THIS init asked for one. Assigning rather than raising is
+       * what hands the gate over cleanly — a superseded init that asked for a
+       * reorder and then skipped it would otherwise leave the flag up with
+       * nothing coming, wedging `settled` forever.
        */
       beginAutoDiagonalize(requested: boolean) {
-        self.autoDiagonalizeRequested = requested
-        self.autoDiagonalizeComplete = false
+        self.pendingAutoDiagonalize = requested
       },
       /**
        * #action
+       * The init-time reorder resolved, so the view on screen is the
+       * diagonalized one — open the gate.
        */
-      setAutoDiagonalizeComplete(arg: boolean) {
-        self.autoDiagonalizeComplete = arg
+      finishAutoDiagonalize() {
+        self.pendingAutoDiagonalize = false
       },
       /**
        * #action

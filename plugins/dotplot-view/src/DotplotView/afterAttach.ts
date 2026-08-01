@@ -181,7 +181,7 @@ async function runAutoDiagonalize(
       // this line is skipped, so `settled` stays false and the capture times
       // out loudly instead of committing an undiagonalized plot.
       if (isAlive(self)) {
-        self.setAutoDiagonalizeComplete(true)
+        self.finishAutoDiagonalize()
       }
     }
   })
@@ -266,8 +266,9 @@ async function applyInit(
     )
   } else {
     const [target, query] = init.views.map(v => v.assembly)
-    // flag the pending reorder before any track render can paint, so `settled`
-    // (→ dotplot_webgl_canvas_done) can't fire on the pre-diagonalize plot
+    // declare the reorder gate up front, before any track render can paint: it
+    // outlives this pass (only the reorder itself lowers it) where the
+    // `initPending` term covers only the apply window below
     self.beginAutoDiagonalize(!!init.autoDiagonalize)
     self.setAssemblyNames(target!, query!)
     applyInitTracks(self, init)

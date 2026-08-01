@@ -191,6 +191,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * An `init` blob that has not been applied yet — `installInitAutorun`
+       * clears it as the last thing an apply pass does. The view is assembling
+       * itself: the rows can already exist, and be initialized, while the
+       * synteny tracks are still several awaits away, which is why the levels'
+       * `settled` gate reads this.
+       */
+      get initPending() {
+        return !!self.init
+      },
+      /**
+       * #getter
        * Opt each sub-view's scalebar into prefixing its refName labels with the
        * assembly name (e.g. "hg38:chr1"), so stacked genome rows of different
        * assemblies stay distinguishable. Read duck-typed by the child

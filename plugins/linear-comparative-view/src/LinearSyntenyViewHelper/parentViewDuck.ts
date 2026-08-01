@@ -10,7 +10,8 @@ export interface ParentViewDuck {
   views: LinearGenomeViewModel[]
   scrollZoom: boolean
   overdrawPx: number
-  diagonalizeSettled: boolean
+  initPending: boolean
+  pendingAutoDiagonalize: boolean
 }
 
 // One level of the stack, as seen from a synteny display nested inside it. Same

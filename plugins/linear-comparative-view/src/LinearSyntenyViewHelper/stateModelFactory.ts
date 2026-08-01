@@ -8,6 +8,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
+import { displaysSettled } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
@@ -143,18 +144,18 @@ export function linearSyntenyViewHelperModelFactory(
        * before snapshotting — so it must mean "done", not just "first paint".
        */
       get settled() {
+        const { initPending, pendingAutoDiagonalize } = this.parentView
         return (
           self.canvasDrawn &&
-          this.linearSyntenyDisplays.every(
-            // dataCurrent guards the debounce gap: after a region/zoom change
-            // the held ribbons are stale yet no fetch is in flight for ~500ms,
-            // so loading/refetching alone would report done on the wrong data
-            d => !d.loading && !d.refetching && d.dataCurrent,
-          ) &&
-          // if an init autoDiagonalize was requested, the view isn't "done"
-          // until that reorder has actually completed — otherwise a
-          // skipped/errored reorder would settle on the undiagonalized view
-          this.parentView.diagonalizeSettled
+          // a level exists from the moment the rows do, but `init` adds the
+          // synteny tracks several awaits later — and until it does, an empty
+          // level paints a cleared canvas, calls that drawn, and settles
+          // vacuously over its zero displays
+          !initPending &&
+          // a requested reorder that hasn't succeeded means what's on screen is
+          // the pre-reorder hairball, not the answer
+          !pendingAutoDiagonalize &&
+          displaysSettled(this.linearSyntenyDisplays)
         )
       },
     }))

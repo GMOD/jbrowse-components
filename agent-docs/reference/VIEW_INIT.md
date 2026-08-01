@@ -198,12 +198,20 @@ own precondition and skips quietly rather than notifying.
 Making supersede reachable has a second consequence worth knowing before you add
 a step: **anything `apply` sets up front must be re-declared by the next pass,
 not inherited.** A superseded apply can now stop between its first write and the
-step that resolves it. The comparative views set `autoDiagonalizeRequested`
+step that resolves it. The comparative views raise `pendingAutoDiagonalize`
 before any render can paint, so a supersede would strand it true with no reorder
 coming and wedge `settled` — hence `beginAutoDiagonalize(requested)`, which
-declares both halves of that gate for the current init instead of only ever
-raising the flag. Early-set state belongs in one action that states it, not in a
-conditional that raises it.
+declares the gate for the current init instead of only ever raising the flag.
+Early-set state belongs in one action that states it, not in a conditional that
+raises it.
+
+The mirror-image hazard is state the apply has **not** set yet. Both comparative
+views expose `initPending` (just `!!init`, which `installInitAutorun` clears as
+the last thing a pass does) and fold it into `settled`: a level or axis exists
+from the moment the rows do, several awaits before the apply adds the tracks, and
+an empty one paints a cleared canvas and settles vacuously over its zero
+displays. Any readiness gate a view publishes has to cover its own apply window,
+not just the steps that window runs.
 
 **One timer survives, and it is not an oversight.** LGV's `openTracklist` waits
 1s for the width change that opening the drawer causes. The rule that condemns

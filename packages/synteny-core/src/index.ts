@@ -84,6 +84,7 @@ export { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 export { DiagonalizeProgressMixin } from './DiagonalizeProgressMixin.ts'
 export {
   SyntenyFetchStateMixin,
+  displaysSettled,
   swappedAssembliesWarning,
 } from './SyntenyFetchStateMixin.ts'
 export { default as MinLengthSlider } from './MinLengthSlider.tsx'

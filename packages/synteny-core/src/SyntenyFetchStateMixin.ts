@@ -65,6 +65,21 @@ export function SyntenyFetchStateMixin() {
     }))
 }
 
+// The display half of both views' `settled` gate, written once so the two
+// can't drift on what "done" means. `dataCurrent` is what makes it a done test
+// rather than a not-busy test: in the debounce gap after a region/zoom change
+// the held data is stale yet no fetch is in flight, so loading/refetching alone
+// would report done on content drawn against the old viewport.
+//
+// Vacuously true on an empty list, which is correct for a level or axis that
+// legitimately has no display — the caller is responsible for not asking while
+// its init has yet to add them (both gate on `initPending` for that).
+export function displaysSettled(
+  displays: { loading: boolean; refetching: boolean; dataCurrent: boolean }[],
+) {
+  return displays.every(d => !d.loading && !d.refetching && d.dataCurrent)
+}
+
 // Both displays detect the same misconfiguration — the file's chromosome names
 // match the opposite axis/row — so they must say the same thing about it. Only
 // the remedy differs (which control the user reaches for), so the caller

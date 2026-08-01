@@ -23,6 +23,7 @@ import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import {
   DiagonalizeProgressMixin,
   coerceColorBy,
+  displaysSettled,
   lodMenuItems,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
@@ -372,6 +373,17 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * An `init` blob that has not been applied yet — `installInitAutorun`
+         * clears it as the last thing an apply pass does. The plot is
+         * assembling itself: the axes can already exist, and be initialized,
+         * while the tracks or the region restriction are still to come, which
+         * is why the `settled` gate reads this.
+         */
+        get initPending() {
+          return !!self.init
+        },
+        /**
+         * #getter
          * Whether to show the import form
          */
         get showImportForm() {
@@ -489,18 +501,14 @@ export default function stateModelFactory(pm: PluginManager) {
         get settled() {
           return (
             self.canvasDrawn &&
-            this.dotplotDisplays.every(
-              // dataCurrent guards the debounce gap: after a zoom or diagonalize
-              // reorder the held rpcData is stale (drawn against the new axes)
-              // yet no fetch is in flight for ~1s, so loading/refetching alone
-              // would report done on the wrong plot. Same three terms
-              // LinearSyntenyViewHelper's settled gate uses.
-              d => !d.loading && !d.refetching && d.dataCurrent,
-            ) &&
-            // if an init autoDiagonalize was requested, the plot isn't "done"
-            // until that reorder has actually completed — otherwise a
-            // skipped/errored reorder would settle on the undiagonalized plot
-            self.diagonalizeSettled
+            // the canvas paints from the moment the axes exist, but `init` adds
+            // the tracks and restricts the regions after that — and with no
+            // display yet there is nothing to report the plot unsettled
+            !this.initPending &&
+            // a requested reorder that hasn't succeeded means what's on screen
+            // is the pre-reorder plot, not the answer
+            !self.pendingAutoDiagonalize &&
+            displaysSettled(this.dotplotDisplays)
           )
         },
         /**

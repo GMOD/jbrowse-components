@@ -31,12 +31,12 @@ function setup() {
 
 const views = [{ assembly: 'volvox' }, { assembly: 'volvox' }]
 
-// `autoDiagonalizeRequested` is raised before any render can paint, so a
-// capture can't commit the pre-reorder plot. The init that raised it is also
-// the only thing that lowers it, by completing the reorder — so an init
-// superseded in between must hand the gate to its replacement rather than
-// leave it raised. Left raised, `diagonalizeSettled` is false forever and a
-// screenshot or browser test hangs instead of failing.
+// `pendingAutoDiagonalize` is raised before any render can paint, so a capture
+// can't commit the pre-reorder plot. The init that raised it is also the only
+// thing that lowers it, by completing the reorder — so an init superseded in
+// between must hand the gate to its replacement rather than leave it raised.
+// Left raised, `settled` is false forever and a screenshot or browser test
+// hangs instead of failing.
 // Parks deterministically rather than racing the reorder: an assembly that is
 // never configured neither initializes nor errors, so the reorder's wait for
 // `initialized` cannot resolve on its own and the RPC can never run. The only
@@ -51,15 +51,13 @@ test('an init superseded before its reorder hands the gate to its replacement', 
   view.setWidth(800)
 
   // the gate goes up as the first step of the apply, before the reorder
-  await when(() => view.autoDiagonalizeRequested, { timeout: 15000 })
-  expect(view.diagonalizeSettled).toBe(false)
+  await when(() => view.pendingAutoDiagonalize, { timeout: 15000 })
 
   // superseded while parked in the reorder's wait, by an init wanting no reorder
   view.setInit({ views })
 
   await when(() => view.init === undefined, { timeout: 15000 })
-  expect(view.autoDiagonalizeRequested).toBe(false)
-  expect(view.diagonalizeSettled).toBe(true)
+  expect(view.pendingAutoDiagonalize).toBe(false)
 })
 
 // The same invariant from the other side, without racing an in-flight apply:
@@ -75,6 +73,5 @@ test('an init pass declares the gate rather than only raising it', async () => {
   view.setWidth(800)
 
   await when(() => view.init === undefined, { timeout: 15000 })
-  expect(view.autoDiagonalizeRequested).toBe(false)
-  expect(view.diagonalizeSettled).toBe(true)
+  expect(view.pendingAutoDiagonalize).toBe(false)
 })
