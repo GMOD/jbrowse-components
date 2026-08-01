@@ -46,7 +46,12 @@ interface UseFetchOptions<Data> {
 }
 
 interface UseFetchResponse<Data> extends FetchState<Data> {
-  mutate: () => Promise<void>
+  /**
+   * Trigger a refetch. Returns nothing: the result arrives through
+   * `data`/`error`/`isLoading` like the initial fetch, and a promise here could
+   * only resolve before the refetch it schedules had run.
+   */
+  mutate: () => void
   isValidating: boolean
 }
 
@@ -66,7 +71,12 @@ function serializeKey(key: FetchKey): string | null {
 // mounted useFetch sharing that key.
 const listeners = new Map<string, Set<() => void>>()
 
-export async function mutate(key: FetchKey) {
+/**
+ * Revalidate every mounted `useFetch` on this key. Synchronous for the same
+ * reason the per-hook `mutate` is: it schedules the refetches, and each hook
+ * reports its own result through the state it already exposes.
+ */
+export function mutate(key: FetchKey) {
   const serialized = serializeKey(key)
   if (serialized) {
     for (const refetch of listeners.get(serialized) ?? []) {
@@ -80,11 +90,15 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
   fetcher: ((...args: FetcherArgs<Key>) => Promise<Data>) | null,
   options: UseFetchOptions<Data> = {},
 ): UseFetchResponse<Data> {
-  const [state, setState] = useState<FetchState<Data>>({
+  const serialized = serializeKey(key)
+  const [state, setState] = useState<FetchState<Data>>(() => ({
     data: undefined,
     error: undefined,
-    isLoading: false,
-  })
+    // seeded from the key rather than starting false: the effect below runs
+    // after the first paint, so a false seed showed the resolved-and-empty state
+    // for a frame before the spinner (an empty attribute table, an empty list)
+    isLoading: serialized !== null && fetcher !== null,
+  }))
   // bumped to force a refetch (local mutate() or a cross-component mutate(key))
   const [nonce, setNonce] = useState(0)
   // refs let the fetch effect depend only on the serialized key + nonce without
@@ -95,7 +109,6 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
   fetcherRef.current = fetcher
   const keyRef = useRef(key)
   keyRef.current = key
-  const serialized = serializeKey(key)
 
   useEffect(() => {
     const key = keyRef.current
@@ -161,7 +174,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
     }
   }, [serialized])
 
-  const mutate = useCallback(async () => {
+  const mutate = useCallback(() => {
     setNonce(n => n + 1)
   }, [])
 

@@ -136,7 +136,6 @@ const ShareDialog = observer(function ShareDialog({
           <ErrorBanner
             error={error}
             onReset={() => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               mutate()
             }}
           />

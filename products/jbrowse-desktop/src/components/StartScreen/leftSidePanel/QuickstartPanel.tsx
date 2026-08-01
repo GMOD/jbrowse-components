@@ -86,9 +86,7 @@ export default function QuickstartPanel({
           quickstartToDelete={deleteDialogOpen}
           onClose={() => {
             setDeleteDialogOpen(undefined)
-            refetchQuickstarts().catch((e: unknown) => {
-              console.error(e)
-            })
+            refetchQuickstarts()
           }}
         />
       ) : null}
@@ -99,9 +97,7 @@ export default function QuickstartPanel({
           quickstartToRename={renameDialogOpen}
           onClose={() => {
             setRenameDialogOpen(undefined)
-            refetchQuickstarts().catch((e: unknown) => {
-              console.error(e)
-            })
+            refetchQuickstarts()
           }}
         />
       ) : null}

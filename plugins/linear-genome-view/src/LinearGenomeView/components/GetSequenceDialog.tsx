@@ -52,7 +52,11 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   const totalBp = regions.reduce((a, r) => a + (r.end - r.start), 0)
   const tooLargeToFetch = totalBp > MAX_FETCH_BP
 
-  const { data: sequenceChunks, error } = useFetch(
+  const {
+    data: sequenceChunks,
+    error,
+    isLoading: loading,
+  } = useFetch(
     tooLargeToFetch
       ? false
       : ['fetchSequence', regions.map(r => `${r.refName}:${r.start}-${r.end}`)],
@@ -79,7 +83,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
       })
     },
   )
-  const loading = !tooLargeToFetch && sequenceChunks === undefined && !error
   const sequence = sequenceChunks
     ? formatSeqFasta(
         sequenceChunks.map(({ loc, seq }) => {

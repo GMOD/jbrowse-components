@@ -92,6 +92,32 @@ test('stops the fetch stop token on unmount', async () => {
   }).toThrow(/abort/i)
 })
 
+// The effect that sets isLoading runs after the first paint, so a `false` seed
+// let the resolved-and-empty state render for a frame first: an empty attribute
+// table in FileInfoPanel, and the `|| data === undefined` workarounds in
+// RefNameInfoDialog / GetSequenceDialog.
+test('is loading on the very first render when it will fetch', () => {
+  const { result } = renderHook(() =>
+    useFetch(['slow'] as const, async () => 'done'),
+  )
+  expect(result.current.isLoading).toBe(true)
+  expect(result.current.isValidating).toBe(true)
+})
+
+test('is not loading on the first render when there is nothing to fetch', () => {
+  expect(
+    renderHook(() => useFetch(null, async () => 'done')).result.current
+      .isLoading,
+  ).toBe(false)
+  expect(
+    renderHook(() => useFetch(['offset', undefined], async () => 'done')).result
+      .current.isLoading,
+  ).toBe(false)
+  expect(
+    renderHook(() => useFetch(['key'] as const, null)).result.current.isLoading,
+  ).toBe(false)
+})
+
 test('surfaces a rejection as error, leaving data undefined', async () => {
   const { result } = renderHook(() =>
     useFetch(['boom'], () => Promise.reject(new Error('nope'))),

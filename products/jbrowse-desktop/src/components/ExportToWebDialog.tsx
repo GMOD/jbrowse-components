@@ -222,7 +222,6 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
           <ErrorBanner
             error={error}
             onReset={() => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               mutate()
             }}
           />

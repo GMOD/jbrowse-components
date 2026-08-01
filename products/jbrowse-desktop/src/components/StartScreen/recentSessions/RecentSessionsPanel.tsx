@@ -151,7 +151,7 @@ export default function RecentSessionPanel({
   }
 
   const refreshSessions = () => {
-    mutateSessions().catch(console.error)
+    mutateSessions()
   }
 
   // the native picker is the same one File -> Open uses, so the start screen and
@@ -170,9 +170,8 @@ export default function RecentSessionPanel({
       await Promise.all(
         arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
       )
-      // Revalidate the QuickstartPanel's shared SWR cache key now that the
-      // list has changed on disk.
-      await mutate('listQuickstarts')
+      // Revalidate the QuickstartPanel now that the list has changed on disk
+      mutate('listQuickstarts')
     } catch (e) {
       console.error(e)
       notifyError(e)
