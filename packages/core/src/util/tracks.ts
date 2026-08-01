@@ -1,3 +1,9 @@
+// Re-exported because `@jbrowse/core/util/tracks` is the path plugins import it
+// from. It must come first: `../configuration` imports the util barrel, which
+// imports this module back, and a re-export declared after that cycle has a
+// getter that fires before its own require has run.
+export { getFileName } from './getFileName.ts'
+
 import {
   getParent,
   getSnapshot,
@@ -383,9 +389,6 @@ export function addTrackTypeGuesser(
       guess(adapterName, file) ?? next(adapterName, file),
   )
 }
-
-// re-exported because `@jbrowse/core/util/tracks` is where plugins import it from
-export { getFileName } from './getFileName.ts'
 
 const COMPRESSION_SUFFIXES = ['.gz', '.bgz', '.bz2', '.zst']
 
