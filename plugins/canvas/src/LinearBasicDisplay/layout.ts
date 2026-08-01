@@ -657,15 +657,21 @@ function isSubPixelFade(
 // extendToMinWidthX does). Both sides of the density-collapse overlap test go
 // through this: comparing a candidate's clamped extent against a neighbor's RAW
 // bp span made a sub-pixel neighbor ~0px wide, so nothing ever overlapped it.
+//
+// Exactly MIN_RECT_WIDTH_PX, not twice it. hpmath.slang's extendToMinWidthX
+// works in clip space, where `minWidthPx * 2.0 / canvasWidth` is minWidthPx
+// PIXELS (clip spans 2 units over canvasWidth px, so 1px = 2/canvasWidth) — the
+// `* 2.0` there is the clip-space conversion, not a doubling. Canvas2D's
+// `Math.max(MIN_RECT_WIDTH_PX, ...)` agrees. Doubling it here made every
+// sub-pixel mark measure 2px wider than it paints, so marks that had room to
+// collapse onto row 0 stacked instead and dense pileups packed taller than the
+// fade regime intends.
 function renderedSpanPx(
   ext: { startBp: number; endBp: number },
   bpPerPx: number,
 ): [number, number] {
   const startPx = ext.startBp / bpPerPx
-  return [
-    startPx,
-    Math.max(ext.endBp / bpPerPx, startPx + MIN_RECT_WIDTH_PX * 2),
-  ]
+  return [startPx, Math.max(ext.endBp / bpPerPx, startPx + MIN_RECT_WIDTH_PX)]
 }
 
 // Merge sorted [start,end] px intervals into a disjoint, sorted set so an

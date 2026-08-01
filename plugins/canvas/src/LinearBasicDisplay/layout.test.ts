@@ -1305,6 +1305,55 @@ test('a dense pileup of thousands of collapsed marks fades', () => {
   expect([...fade].every(v => v === 1)).toBe(true)
 })
 
+test('a collapsed mark clears a solid neighbour at exactly the min-width clamp', () => {
+  // The collapse test compares a mark's PAINTED extent — its box widened to the
+  // renderers' min-draw clamp — against its neighbours', so the clamp layout
+  // assumes must be the one the renderers apply: MIN_RECT_WIDTH_PX (2px), per
+  // rect.slang's extendToMinWidthX and Canvas2D's Math.max. Measuring it as 2x
+  // that made a mark sitting 3px clear of a solid box read as overlapping it, so
+  // it was held out of the collapse and drew opaque in the middle of a pileup.
+  //
+  // bpPerPx=1, so bp are px. `probe` is a 1bp mark ending 3px short of the wide
+  // gene: inside a 4px clamp, clear of a 2px one.
+  const N = 1200
+  const marks = Array.from({ length: N }, (_, i) => ({
+    featureId: `snp${i}`,
+    startBp: 100 + i * 10,
+    endBp: 101 + i * 10,
+    height: 10,
+    densityFade: true,
+  }))
+  const data = makeFeatureData({
+    features: [
+      ...marks,
+      {
+        featureId: 'probe',
+        startBp: 19_997,
+        endBp: 19_998,
+        height: 10,
+        densityFade: true,
+      },
+      // wide (1000px), so it holds a real row and lands in the solid spans the
+      // collapse test queries
+      {
+        featureId: 'wideGene',
+        startBp: 20_000,
+        endBp: 21_000,
+        height: 10,
+        densityFade: false,
+      },
+    ],
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const fade = out.get(0)!.rectDensityFade
+  // enough collapsed marks to be in the fade regime, so a mark's fade flag is
+  // exactly "did it collapse"
+  expect([...fade.subarray(0, N)].every(v => v === 1)).toBe(true)
+  expect(fade[N]).toBe(1)
+  // the solid box itself never collapses
+  expect(fade[N + 1]).toBe(0)
+})
+
 test('thousands of sub-pixel variants collapse onto one row, not thousands', () => {
   // A dense variant track (dbSNP/gnomAD at whole-chromosome zoom): every variant
   // is a 1bp densityFade Box glyph, far narrower than the 2px clamp. Without the
