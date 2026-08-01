@@ -1,4 +1,5 @@
-import { revlist, stitch } from './seqUtils.ts'
+import { revlist } from './revlist.ts'
+import { stitch } from './seqUtils.ts'
 
 describe('stitch', () => {
   test('joins slices of a sequence', () => {

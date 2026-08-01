@@ -1,12 +1,9 @@
-import { coarseStripHTML } from './coarseStripHTML.ts'
-import { measureText } from './measureText.ts'
-import { max, toLocale } from './numericUtils.ts'
+import { isElectron } from './environment.ts'
+import { toLocale } from './numericUtils.ts'
 import { shorten } from './stringUtils.ts'
 import { storeBlobLocation } from './tracks.ts'
-import { isUriLocation } from './types/index.ts'
 
 import type { FileLocation } from './types/index.ts'
-import type { GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
 
 // `unzip` is deliberately NOT re-exported here — it lives at
 // '@jbrowse/core/util/unzip' so this barrel does not reach bgzf/pako. See that
@@ -204,6 +201,10 @@ export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'
 
 export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
+export { isElectron, isNode, rIC } from './environment.ts'
+export { isObject } from './objectUtils.ts'
+export { getStr } from './getStr.ts'
+export { measureGridWidth, resolveSelectedIds } from './dataGridUtils.ts'
 export { isRpcResult } from './rpc.ts'
 export {
   aesDecrypt,
@@ -256,22 +257,6 @@ export function stringify(
 // https://github.com/electron/electron/issues/2288 for detecting electron in a
 // renderer process, which is the one that has node enabled for us
 //
-// const isElectron = process.versions.electron
-// const i2 = process.versions.hasOwnProperty('electron')
-export const isElectron = /electron/i.test(
-  typeof navigator !== 'undefined' ? navigator.userAgent : '',
-)
-
-// equivalent to the `detect-node` package: true only inside a real Node.js
-// process, not in browsers where `process` may be polyfilled by the bundler
-// (the toString brand is '[object process]' only for the genuine global).
-// `process` isn't in core's browser-targeted build lib, so read it off
-// globalThis rather than referencing the bare global
-export const isNode =
-  Object.prototype.toString.call(
-    (globalThis as { process?: unknown }).process,
-  ) === '[object process]'
-
 /**
  * Convert a browser File (from a drop zone or file input) into a FileLocation:
  * a native local path under electron, or an in-memory blob location otherwise.
@@ -295,18 +280,16 @@ export function fileToLocation(file: File): FileLocation {
 
 export {
   type Frame,
-  codonTable,
   complement,
   complementTable,
-  defaultCodonTable,
   defaultStarts,
-  generateCodonTable,
   getFrame,
   revcom,
   reverse,
-  revlist,
   stitch,
 } from './seqUtils.ts'
+export { revlist } from './revlist.ts'
+export { codonTable, generateCodonTable } from './geneticCodes.ts'
 export {
   IUPAC_MOTIF_REGEX,
   isPalindromic,
@@ -320,22 +303,6 @@ export {
   parseMotifList,
 } from './parseMotifList.ts'
 
-// requires immediate execution in jest environment, because (hypothesis) it
-// otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
-// get the contents of the canvas
-export const rIC =
-  typeof jest === 'undefined'
-    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      typeof window !== 'undefined' && window.requestIdleCallback
-      ? window.requestIdleCallback
-      : (cb: () => void) =>
-          setTimeout(() => {
-            cb()
-          }, 1)
-    : (cb: () => void) => {
-        cb()
-      }
-
 // Browser-safe mirror of `indexableAdapters` in @jbrowse/text-indexing-core,
 // which cannot be imported here (it pulls in node:fs). Pinned by the parity
 // test in packages/text-indexing-core/src/types/common.test.ts
@@ -347,25 +314,6 @@ export function isSupportedIndexingAdapter(type = '') {
     'VcfAdapter',
     'VcfTabixAdapter',
   ].includes(type)
-}
-
-function getUriLink(value: { uri: string; baseUri?: string }) {
-  const { uri, baseUri = '' } = value
-  let href: string
-  try {
-    href = new URL(uri, baseUri).href
-  } catch (e) {
-    href = uri
-  }
-  return href
-}
-
-export function getStr(obj: unknown) {
-  return isObject(obj)
-    ? isUriLocation(obj)
-      ? getUriLink(obj)
-      : JSON.stringify(obj)
-    : String(obj)
 }
 
 // Regular-plural noun for a count, for the "N hidden features" / "Clear N
@@ -383,56 +331,6 @@ export function pluralize(count: number, noun: string) {
 // what a track holds are the case this exists for.
 export function capitalizeFirst(s: string) {
   return `${s.charAt(0).toUpperCase()}${s.slice(1)}`
-}
-
-// heuristic measurement for a column of a @mui/x-data-grid, pass in
-// values from a column
-export function measureGridWidth(
-  elements: unknown[],
-  args?: {
-    minWidth?: number
-    fontSize?: number
-    maxWidth?: number
-    padding?: number
-    stripHTML?: boolean
-  },
-) {
-  const {
-    padding = 30,
-    minWidth = 80,
-    fontSize = 12,
-    maxWidth = 1000,
-    stripHTML = false,
-  } = args ?? {}
-  return max(
-    elements.map(element => {
-      const str = getStr(element)
-      const n = measureText(stripHTML ? coarseStripHTML(str) : str, fontSize)
-      return Math.min(Math.max(n + padding, minWidth), maxWidth)
-    }),
-  )
-}
-
-// Resolve a @mui/x-data-grid v9 selection model into the concrete set of
-// selected row ids. The model is either an explicit include-set or an
-// exclude-set (the header "select all" checkbox produces the latter, e.g.
-// {type:'exclude', ids:{}} meaning "everything selected"), so reading model.ids
-// directly silently drops select-all and inverts a select-all-then-deselect.
-export function resolveSelectedIds(
-  model: GridRowSelectionModel,
-  allIds: Iterable<GridRowId>,
-): Set<GridRowId> {
-  if (model.type === 'exclude') {
-    const result = new Set<GridRowId>()
-    for (const id of allIds) {
-      if (!model.ids.has(id)) {
-        result.add(id)
-      }
-    }
-    return result
-  } else {
-    return new Set(model.ids)
-  }
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
@@ -474,13 +372,6 @@ export function reorder<T>(
     next.splice(target, 0, item!)
   }
   return next
-}
-
-// MIT https://github.com/inspect-js/is-object
-export function isObject(
-  x: unknown,
-): x is Record<string | symbol | number, unknown> {
-  return typeof x === 'object' && x !== null
 }
 
 export function testAdapter(

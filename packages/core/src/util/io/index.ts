@@ -1,6 +1,6 @@
 import { BlobFile, LocalFile } from 'generic-filehandle2'
 
-import { isElectron, isNode } from '../index.ts'
+import { isElectron, isNode } from '../environment.ts'
 import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
   AuthNeededError,

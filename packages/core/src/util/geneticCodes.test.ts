@@ -4,12 +4,17 @@ import {
   parseTranslTable,
   relativizeTranslExcept,
 } from './geneticCodes.ts'
-import { codonTable } from './seqUtils.ts'
+import { codonTable } from './geneticCodes.ts'
 
 describe('getGeneticCode', () => {
-  it('table 1 matches the existing standard codonTable export', () => {
-    // single source of truth guard: if either drifts, this fails
-    expect(getGeneticCode(1).codonTable).toEqual(codonTable)
+  // codonTable is now *defined* as table 1's, so this no longer guards drift
+  // between two literals — it pins that the convenience export still resolves
+  // the standard code and stays case-expanded.
+  it('the standard codonTable export is table 1, case-expanded', () => {
+    expect(codonTable).toBe(getGeneticCode(1).codonTable)
+    expect(codonTable.ATG).toBe('M')
+    expect(codonTable.atg).toBe('M')
+    expect(codonTable.TGA).toBe('*')
   })
 
   it('defaults to the standard code', () => {

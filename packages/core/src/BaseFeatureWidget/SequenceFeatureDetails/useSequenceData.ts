@@ -1,4 +1,5 @@
-import { revcom, revlist } from '../../util/seqUtils.ts'
+import { revlist } from '../../util/revlist.ts'
+import { revcom } from '../../util/seqUtils.ts'
 import { filterSuccessiveElementsWithSameStartAndEndCoord } from '../util.tsx'
 import { displayStrand } from './util.ts'
 

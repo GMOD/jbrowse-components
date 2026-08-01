@@ -1,4 +1,4 @@
-import { generateCodonTable, revlist } from './seqUtils.ts'
+import { revlist } from './revlist.ts'
 
 // NCBI translation tables (genetic codes), parsed from NCBI's authoritative
 // gc.prt (ftp.ncbi.nlm.nih.gov/entrez/misc/data/gc.prt). Each table is kept in
@@ -365,6 +365,37 @@ const CODONS = Array.from(
 
 const ncbiCodeById = new Map(ncbiGeneticCodes.map(t => [t.id, t]))
 
+/**
+ * Expand an uppercase codon -> amino acid map so every case combination of a
+ * triplet ('atg', 'Atg', 'aTG', ...) resolves, which is what callers reading
+ * raw sequence need.
+ */
+export function generateCodonTable(table: Record<string, string>) {
+  const tempCodonTable: Record<string, string> = {}
+  for (const codon of Object.keys(table)) {
+    const aa = table[codon]!
+    const nucs: string[][] = []
+    for (let i = 0; i < 3; i++) {
+      const nuc = codon.charAt(i)
+      nucs[i] = []
+      nucs[i]![0] = nuc.toUpperCase()
+      nucs[i]![1] = nuc.toLowerCase()
+    }
+    for (let i = 0; i < 2; i++) {
+      const n0 = nucs[0]![i]!
+      for (let j = 0; j < 2; j++) {
+        const n1 = nucs[1]![j]!
+        for (let k = 0; k < 2; k++) {
+          const n2 = nucs[2]![k]!
+          const triplet = n0 + n1 + n2
+          tempCodonTable[triplet] = aa
+        }
+      }
+    }
+  }
+  return tempCodonTable
+}
+
 function buildGeneticCode(id: number): GeneticCode {
   const def = ncbiCodeById.get(id)
   if (!def && id !== 1) {
@@ -404,3 +435,17 @@ export function getGeneticCode(id = 1): GeneticCode {
   }
   return code
 }
+
+/**
+ * The standard genetic code's codon map, case-expanded. Callers that translate
+ * without knowing (or caring about) a `transl_table` use this; anything reading
+ * a feature's declared table should call {@link getGeneticCode} instead.
+ *
+ * Derived from NCBI table 1 rather than kept as its own literal: the two were
+ * duplicated, and a hand-maintained 64-entry map is exactly the kind of thing
+ * that drifts silently. Living here (rather than in `seqUtils`, where it used
+ * to) is also what keeps the dependency one-way — `geneticCodes` needed
+ * `generateCodonTable` from `seqUtils`, so defining this the other way round
+ * made the two modules mutually dependent and the const load-order sensitive.
+ */
+export const codonTable = getGeneticCode(1).codonTable

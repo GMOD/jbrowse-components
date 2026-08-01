@@ -1,4 +1,12 @@
-import { getContainingTrack, getContainingView, getSession } from './index.ts'
+// straight from mstUtils rather than the barrel, which re-exports this module:
+// a value import of './index.ts' from a module the barrel re-exports is the
+// cycle shape that bites under Rollup (TDZ) and babel/CJS (getter before
+// require) alike
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from './mstUtils.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { isSessionModelWithWidgets } from './types/index.ts'
 
