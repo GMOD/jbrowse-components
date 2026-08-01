@@ -280,9 +280,20 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // Capsule SDF: px distance to the segment centerline. localPos =
     // segment_coord (along, perp) from the segment center; clamping the
     // along-overhang past ±segHalfLen to 0 gives rounded caps. Dividing by the
-    // true gradient magnitude (=1, a proper SDF) gives an angle-uniform 1px AA
-    // edge, and coincident caps let the max-blend pass union adjacent capsules
-    // into a seamless round join at any angle.
+    // gradient magnitude gives an angle-uniform AA edge, and coincident caps let
+    // the max-blend pass union adjacent capsules into a seamless round join at
+    // any angle.
+    //
+    // Do NOT "simplify" this to a constant on the grounds that a proper SDF has
+    // unit gradient. It does — but per CSS px, and ddx/ddy differentiate against
+    // the DEVICE-px grid (the HAL sizes the backing store by getDpr() and sets
+    // the viewport to canvas.width/height, while localPos is CSS px because
+    // viewportWidth and canvasHeight both are). So this returns 1/dpr, and that
+    // is the point: it is what keeps the ramp one OUTPUT pixel wide instead of
+    // one CSS pixel, i.e. crisp rather than dpr-times softer on HiDPI. Replacing
+    // it needs a devicePixelRatio uniform, which this shader does not have.
+    // The synteny fill shaders hit exactly this and now pass one explicitly
+    // (aaHalfPx in syntenyTypes.slang).
     float alongOver = max(abs(fragIn.localPos.x) - fragIn.segHalfLen, 0.0);
     float dist = length(float2(alongOver, fragIn.localPos.y));
     float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-4);
