@@ -248,15 +248,10 @@ The output is an ordinary folder of files. Copy it to any static host with CORS
 enabled and point a track at it, the same way you would host a BigWig. Nothing
 runs on the server.
 
-:::note What the converter handles
-
-A single chunk of the store holds every sample over a 256 kb stretch, which is
-why a screenful costs one or two reads no matter how many samples there are.
-Bins with no measurement are written as `NaN` rather than 0, so the gaps
-QuicK-mer2 leaves where there are no unique k-mers do not draw as homozygous
-deletions.
-
-:::
+If you would rather write a store from something other than BigWigs, the
+plugin's
+[store format](https://github.com/cmdcolin/jbrowse-plugin-zarr#store-format)
+gives the layout the adapter expects.
 
 ## Your own samples
 
