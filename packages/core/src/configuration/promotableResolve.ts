@@ -22,7 +22,7 @@
  * at construction so the tier this file falls back to is usable by construction.
  */
 import { deepEqual } from '../util/deepEqual.ts'
-import { getSession } from '../util/index.ts'
+import { getSession } from '../util/mstUtils.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import { isUsableValue } from './slotShape.ts'
 

@@ -8,12 +8,10 @@
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 
 import { deepEqual } from '../util/deepEqual.ts'
-import {
-  getSession,
-  isObject,
-  isViewContainer,
-  pluralize,
-} from '../util/index.ts'
+import { getSession } from '../util/mstUtils.ts'
+import { isObject } from '../util/objectUtils.ts'
+import { pluralize } from '../util/stringUtils.ts'
+import { isViewContainer } from '../util/types/index.ts'
 import { setConf } from './getConf.ts'
 import {
   cascadeContextFor,

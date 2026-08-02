@@ -8,7 +8,7 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import { getContainingTrack, getSession } from '../util/index.ts'
+import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { ElementId } from '../util/types/mst.ts'
 import ConfigSlot from './configurationSlot.ts'
 import {
