@@ -308,6 +308,66 @@ check("touches_all requires every locus, not any",
 check("touches_all matches refName case-insensitively",
       sv_multihop.touches_all([("CHR3", 1, 100)], [("chr3", 50)], 0), True)
 
+# A chain that folds back gives two loci on one chromosome. Un-merged, their
+# flanking windows put that sequence into the alignment target twice, every
+# genuine hit ties at MAPQ 0, and --min-mapq drops both arms -- leaving a
+# reconstruction that is only the templated insert and looks like a clean answer.
+check("merge_spans collapses windows that overlap",
+      sv_multihop.merge_spans([("chrA", 1, 30000), ("chrA", 10000, 40000)], 0),
+      [("chrA", 1, 40000)])
+check("merge_spans keeps disjoint windows apart",
+      sv_multihop.merge_spans([("chrA", 1, 100), ("chrA", 5000, 5100)], 0),
+      [("chrA", 1, 100), ("chrA", 5000, 5100)])
+check("merge_spans keeps chromosomes apart",
+      len(sv_multihop.merge_spans([("chrA", 1, 100), ("chrB", 1, 100)], 0)), 2)
+check("merge_spans pads before merging",
+      sv_multihop.merge_spans([("chrA", 5000, 6000), ("chrA", 8000, 9000)], 2000),
+      [("chrA", 3000, 11000)])
+check("merge_spans clamps a padded start to 1",
+      sv_multihop.merge_spans([("chrA", 100, 200)], 2000)[0][1], 1)
+
+# --jbrowse-out: the four output files are useless to a reader without a
+# statement of which assembly each belongs to and which side of the PAF is the
+# derivative. Verified end to end against jbrowse-web on a synthetic foldback.
+cfg = sv_multihop.jbrowse_config("der1", "hg38", "/data/GRCh38.fa", "/data/der1", "/data")
+check("jbrowse_config wires both assemblies",
+      [a["name"] for a in cfg["assemblies"]], ["hg38", "der1"])
+check("jbrowse_config points the derivative assembly at derive's own fasta",
+      cfg["assemblies"][1]["sequence"]["adapter"]["fastaLocation"]["uri"],
+      "der1.derivative.fa")
+synteny = cfg["tracks"][0]
+# positional assemblyNames read the wrong way round render against the wrong
+# assembly rather than erroring, so the named slots carry the orientation
+check("jbrowse_config names the PAF's query as the derivative",
+      (synteny["adapter"]["queryAssembly"], synteny["adapter"]["targetAssembly"]),
+      ("der1", "hg38"))
+check("jbrowse_config gives the segment and read tracks to the derivative",
+      [t["assemblyNames"] for t in cfg["tracks"][1:]], [["der1"], ["der1"]])
+# relative, so the whole output directory can be served or moved as one
+uris = [v["uri"] for t in cfg["tracks"] for v in t["adapter"].values()
+        if isinstance(v, dict) and "uri" in v]
+check("jbrowse_config writes paths relative to the config",
+      [u for u in uris if u.startswith("/")], [])
+
+rows = [
+    ["der1", "0", "0", "19935", "+", "chrA", "0", "65", "20000"] + ["60"] * 4,
+    ["der1", "0", "20134", "26078", "-", "chrA", "0", "10057", "16001"] + ["60"] * 4,
+    ["der1", "0", "19934", "20136", "+", "chrB", "0", "999", "1201"] + ["60"] * 4,
+]
+spec = sv_multihop.session_spec("der1", "hg38", rows, 26078)
+view = spec["views"][0]
+# one locstring per stretch, not per row: a single window around one arm leaves
+# the templated inserts (the reason for the reconstruction) pointing at nothing
+check("session_spec merges the reference panel's locstrings",
+      view["views"][0]["loc"], "chrA:1-22000 chrB:1-3201")
+check("session_spec spans the whole contig in the derivative panel",
+      view["views"][1]["loc"], "der1:1-26078")
+check("session_spec puts the synteny track on the view, not a panel",
+      view["tracks"], [[sv_multihop.track_ids("der1", "hg38")["synteny"]]])
+check("session_spec track ids match the emitted config",
+      sorted(view["views"][1]["tracks"]),
+      sorted(t["trackId"] for t in cfg["tracks"][1:]))
+
 # depmap_to_jbrowse.py: StarFusionAdapter keys off a '#'-prefixed header and
 # finds the breakpoint columns by name, so a plain CSV->TSV dump loads as an
 # empty track rather than failing.

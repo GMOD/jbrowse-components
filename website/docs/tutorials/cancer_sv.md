@@ -150,7 +150,9 @@ repair junction.
 The PAF is a synteny track and the consensus is an assembly, so the
 reconstruction loads against the reference directly. The BED is the same
 segments as a feature track on the derivative, each labelled with the interval
-it came from.
+it came from. Adding `--jbrowse-out config.json` writes the config that wires
+those together — both assemblies, the synteny track, the segments and the
+realigned reads — and prints the URL that opens them as a synteny view.
 
 A gene track cannot label a derivative this way. Junctions join whatever
 intervals they happen to join, and those usually land mid-intron: over this

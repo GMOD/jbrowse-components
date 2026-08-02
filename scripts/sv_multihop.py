@@ -24,16 +24,19 @@ Usage:
   sv_multihop.py chains somatic.sv.vcf.gz [--max-segment 20000]
   sv_multihop.py derive --aln tumor.cram --ref GRCh38.fa \\
       --loci chr3:25359568,chr10:58717464,chr12:72273112 --out der3
+  sv_multihop.py derive ... --jbrowse-out config.json   # + a browsable config
 """
 
 import argparse
 import gzip
 import itertools
+import json
 import os
 import re
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 
 BND_MATE = re.compile(r'[\[\]]([^\[\]:]+):(\d+)[\[\]]')
 
@@ -198,6 +201,142 @@ def run(cmd, **kw):
     return subprocess.run(cmd, check=True, **kw)
 
 
+def merge_spans(spans, pad):
+    """Padded, merged (chrom, start, end) windows, one per stretch of reference.
+
+    The derivative's arms come back as several PAF rows per chromosome; a panel
+    showing one locstring per row would repeat the same window.
+    """
+    merged = []
+    for chrom, start, end in sorted(spans):
+        window = (chrom, max(1, start - pad), end + pad)
+        if merged and merged[-1][0] == chrom and window[1] <= merged[-1][2]:
+            merged[-1] = (chrom, merged[-1][1], max(merged[-1][2], window[2]))
+        else:
+            merged.append(window)
+    return merged
+
+
+def track_ids(name, ref_name):
+    return {
+        'synteny': f'{name}_vs_{ref_name}',
+        'segments': f'{name}_segments',
+        'reads': f'{name}_reads',
+    }
+
+
+def jbrowse_config(name, ref_name, ref_fasta, out, config_dir):
+    """The config.json that wires derive's four outputs together.
+
+    Without it the tool leaves a reader with an assembly, a PAF, a BED and a BAM
+    and no statement of how they relate: which assembly each track belongs to,
+    and which side of the PAF is the derivative. Paths are relative to the
+    config, so the whole output directory can be served or moved as one.
+    """
+    def loc(path):
+        return {
+            'uri': os.path.relpath(os.path.abspath(path), os.path.abspath(config_dir)),
+            'locationType': 'UriLocation',
+        }
+
+    def assembly(asm_name, fasta):
+        return {
+            'name': asm_name,
+            'sequence': {
+                'type': 'ReferenceSequenceTrack',
+                'trackId': f'{asm_name}-ReferenceSequenceTrack',
+                'adapter': {
+                    'type': 'IndexedFastaAdapter',
+                    'fastaLocation': loc(fasta),
+                    'faiLocation': loc(fasta + '.fai'),
+                },
+            },
+        }
+
+    ids = track_ids(name, ref_name)
+    return {
+        'assemblies': [
+            assembly(ref_name, ref_fasta),
+            assembly(name, f'{out}.derivative.fa'),
+        ],
+        'tracks': [
+            {
+                'type': 'SyntenyTrack',
+                'trackId': ids['synteny'],
+                'name': f'Derivative allele vs {ref_name}',
+                'assemblyNames': [name, ref_name],
+                'adapter': {
+                    'type': 'PAFAdapter',
+                    'pafLocation': loc(f'{out}.vs_reference.paf'),
+                    # named rather than positional: the PAF's query is the
+                    # derivative, and an assemblyNames array read the wrong way
+                    # round renders against the wrong assembly instead of erroring
+                    'queryAssembly': name,
+                    'targetAssembly': ref_name,
+                },
+            },
+            {
+                'type': 'FeatureTrack',
+                'trackId': ids['segments'],
+                'name': 'Where each segment came from',
+                'assemblyNames': [name],
+                'adapter': {
+                    'type': 'BedAdapter',
+                    'bedLocation': loc(f'{out}.derivative_segments.bed'),
+                },
+            },
+            {
+                'type': 'AlignmentsTrack',
+                'trackId': ids['reads'],
+                'name': 'Spanning reads realigned to the derivative',
+                'assemblyNames': [name],
+                'adapter': {
+                    'type': 'BamAdapter',
+                    'bamLocation': loc(f'{out}.reads_vs_derivative.bam'),
+                    'index': {
+                        'location': loc(f'{out}.reads_vs_derivative.bam.bai'),
+                        'indexType': 'BAI',
+                    },
+                },
+            },
+        ],
+    }
+
+
+def session_spec(name, ref_name, rows, contig_length, pad=2000):
+    """A synteny view of the reconstruction, as a `session=spec-` URL session.
+
+    The reference panel carries one locstring per stretch the contig aligned to,
+    so every ribbon has a target: a single window around one arm leaves the
+    templated inserts -- the reason for the reconstruction -- pointing at nothing.
+    """
+    ids = track_ids(name, ref_name)
+    spans = merge_spans(
+        [(f[5], int(f[7]), int(f[8])) for f in rows], pad
+    )
+    return {
+        'views': [
+            {
+                'type': 'LinearSyntenyView',
+                'displayName': f'{name} vs {ref_name}',
+                'views': [
+                    {
+                        'assembly': ref_name,
+                        'loc': ' '.join(f'{c}:{s}-{e}' for c, s, e in spans),
+                    },
+                    {
+                        'assembly': name,
+                        'loc': f'{name}:1-{contig_length}',
+                        'tracks': [ids['segments'], ids['reads']],
+                    },
+                ],
+                'tracks': [[ids['synteny']]],
+                'drawCurves': True,
+            }
+        ]
+    }
+
+
 def cmd_derive(args):
     loci = []
     for token in args.loci.split(','):
@@ -278,9 +417,14 @@ def cmd_derive(args):
     # and the resulting coordinates are lifted back to whole-chromosome space.
     paf = f'{args.out}.vs_reference.paf'
     subset = os.path.join(tmp, 'subset.fa')
-    windows = [
-        (c, max(1, p - args.flank), p + args.flank) for c, p in loci
-    ]
+    # Merged, because a chain that turns back on itself gives two loci on one
+    # chromosome, and windows around both hold the same sequence twice: every
+    # genuine hit becomes a two-way tie at MAPQ 0 and --min-mapq drops it. What
+    # survives is the templated insert alone -- a reconstruction that looks like
+    # a clean answer and is missing both arms.
+    windows = merge_spans(
+        [(c, max(1, p - args.flank), p + args.flank) for c, p in loci], 0
+    )
     with open(subset, 'w') as fh:
         run(['samtools', 'faidx', args.ref,
              *(f'{c}:{s}-{e}' for c, s, e in windows)], stdout=fh)
@@ -377,6 +521,27 @@ def cmd_derive(args):
     run(['samtools', 'index', proof])
     print(f'wrote {proof}')
 
+    if args.jbrowse_out:
+        config_dir = os.path.dirname(os.path.abspath(args.jbrowse_out))
+        os.makedirs(config_dir, exist_ok=True)
+        # the derivative is served as its own assembly, which needs the index
+        run(['samtools', 'faidx', derivative])
+        ref_name = args.ref_name or re.sub(
+            r'\.(fa|fasta|fna)(\.gz)?$', '', os.path.basename(args.ref)
+        )
+        config = jbrowse_config(args.name, ref_name, args.ref, args.out, config_dir)
+        with open(args.jbrowse_out, 'w') as fh:
+            json.dump(config, fh, indent=2)
+            fh.write('\n')
+        print(f'wrote {args.jbrowse_out}')
+        spec = urllib.parse.quote(
+            json.dumps(session_spec(args.name, ref_name, rows, len(trimmed)))
+        )
+        print(
+            f'    open it with: ?config={os.path.basename(args.jbrowse_out)}'
+            f'&session=spec-{spec}'
+        )
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
@@ -415,6 +580,12 @@ def main():
                         'fusion transcript whose exons are adjacent in the contig '
                         'but separated by introns in the genome')
     d.add_argument('--threads', type=int, default=4)
+    d.add_argument('--jbrowse-out', metavar='CONFIG_JSON',
+                   help='also write a JBrowse config.json wiring the outputs '
+                        '(derivative assembly, synteny PAF, segment BED, reads BAM) '
+                        'and print the session URL that opens them')
+    d.add_argument('--ref-name', help='assembly name for --ref in that config '
+                                      '(default: the FASTA basename)')
     d.set_defaults(func=cmd_derive)
 
     args = ap.parse_args()
