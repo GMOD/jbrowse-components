@@ -163,6 +163,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 1],
     position: 'left',
   },
+  cancer_sv: {
+    // The reconstruction zoomed to the junctions: four ribbons of comparable
+    // width, no callout paint, and the one frame that says "derivative allele"
+    // rather than "another read pileup"
+    src: 'cancer_sv/derivative_inserts.png',
+    band: [0.24, 0.88],
+  },
   sv_visualization_cgiab: {
     // depth over BAF genome-wide; the translocation split view is the gallery
     // card, so the tutorial card takes the other half of the tutorial

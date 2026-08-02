@@ -276,6 +276,31 @@ pairs drawn pink lift away from the background.
 
 <Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, surfacing insertion pairs (pink) against the background." src="/img/alignments/read_cloud.png" />
 
+## One read against the reference
+
+A long read that crosses a structural variant does not align in one piece. The
+aligner splits it into a primary alignment plus one supplementary alignment per
+additional locus, records the whole set in each record's `SA` tag, and the
+pileup draws them as separate rows, often far apart or on different chromosomes.
+
+Right-click any of them and choose `Launch view` -> `Linear read vs ref` to put
+them back together. The `SA` tag is what makes this possible from one record:
+the view reads the read's other segments straight off it, so no search of the
+rest of the genome is needed. The read becomes its own assembly along one lane,
+every reference locus it touches is laid out along the other, and each alignment
+segment is drawn as a ribbon between them. The segments then appear in the order
+the read visits them rather than in reference order, which is what makes the
+structure of the rearrangement readable from a single molecule.
+
+An insertion shows as a gap in the diagonal, since those bases are in the read
+and not in the reference. Dragging over a region in the read lane extracts that
+sequence.
+
+<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions. The top panel is the ordinary pileup; below it the read (top lane) is drawn against the reference (bottom lane), and each gap in the diagonal is inserted sequence absent from the reference." src="/img/read_vs_ref_insertion.png" />
+
+The companion item `Dotplot of read vs ref` plots the same alignment as a
+dotplot, which reads more clearly when a read visits one locus repeatedly.
+
 ## See also
 
 - [](/docs/user_guides/consensus_sequence)

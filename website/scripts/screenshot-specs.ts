@@ -18,6 +18,7 @@ import { CODE_BASE } from '../src/lib/code-base.ts'
 import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
+import { cancerSvSpecs } from './specs/cancer_sv.ts'
 import { cnv1000gSpecs } from './specs/cnv1000g.ts'
 import { conservationSpecs } from './specs/conservation.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
@@ -60,6 +61,7 @@ export const specs: ScreenshotSpec[] = [
   ...scatacSpecs,
   ...scrnaSpecs,
   ...svSpecs,
+  ...cancerSvSpecs,
   ...tcgaSpecs,
   ...cnv1000gSpecs,
   ...gwasSpecs,
