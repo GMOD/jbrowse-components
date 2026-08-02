@@ -100,6 +100,7 @@
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",
+    "@jbrowse/browser-test-utils": "workspace:*",
     "@electron/packager": "^20.0.4",
     "@types/selenium-webdriver": "^4.35.6",
     "electron": "^43.2.0",

@@ -13,6 +13,8 @@ import { fileURLToPath } from 'url'
 
 import { By, WebDriver, until } from 'selenium-webdriver'
 
+import { clearAnnotations, drawAnnotations } from './annotations.ts'
+import { PROCEDURES, composeProcedure, optimizePng } from './procedures.ts'
 import {
   APP_BINARY,
   REPO_ROOT,
@@ -21,10 +23,14 @@ import {
   clickButton,
   createDriver,
   delay,
+  clickMenuItem,
   findByText,
   flushBrowserLogs,
+  hideAllWidgets,
+  hideSnackbars,
   isHeadless,
   killProcesses,
+  openMenu,
   openMenuItem,
   openVolvoxGenome,
   startChromedriver,
@@ -60,14 +66,14 @@ const ONLY =
 const FIGURES = [
   'desktop-cli-config.png',
   'desktop-landing.png',
+  'desktop-open-genome-steps.png',
+  'desktop-add-track-steps.png',
+  'desktop-available-genomes.png',
+  'desktop-available-genomes-steps.png',
   'desktop-ispcr.png',
   'desktop-ispcr-results.png',
   'desktop-blat-search.png',
   'desktop-blat-results.png',
-  'desktop-open-genome.png',
-  'desktop-available-genomes.png',
-  'desktop-session.png',
-  'desktop-add-track.png',
 ]
 
 const selected = FIGURES.filter(name => ONLY.some(only => name.includes(only)))
@@ -117,6 +123,29 @@ async function shutdown(code: number): Promise<never> {
   process.exit(code)
 }
 
+// Write a finished figure, honoring --only. Shared by the plain captures and by
+// the stacked procedure figures, so both obey the same selection rules and the
+// same early exit.
+async function commitFigure(
+  name: string,
+  png: Buffer,
+  dir = OUT_DIR,
+): Promise<void> {
+  const out = resolve(dir, name)
+  writeFileSync(out, png)
+  console.log(`  ✓ wrote ${out}`)
+  // Walking the rest of the flow with nothing left to write is a real risk,
+  // not just wasted minutes: the app has died outright at the
+  // available-genomes table, which would fail a run whose figures are all
+  // already on disk.
+  if (name === LAST_SELECTED) {
+    console.log('\nEvery --only figure written, stopping early.')
+    await shutdown(0)
+  }
+}
+
+const wanted = (name: string) => ONLY.length === 0 || selected.includes(name)
+
 async function capture(
   driver: WebDriver,
   name: string,
@@ -127,21 +156,58 @@ async function capture(
     throw new Error(`${name} is missing from the FIGURES list`)
   }
   await logViewport(driver, name)
-  if (ONLY.length > 0 && !ignoreOnly && !selected.includes(name)) {
+  if (!ignoreOnly && !wanted(name)) {
     console.log(`  ≈ skipped ${name} (--only ${ONLY.join(',')})`)
   } else {
     const png = await driver.takeScreenshot()
-    const out = resolve(dir, name)
-    writeFileSync(out, Buffer.from(png, 'base64'))
-    console.log(`  ✓ wrote ${out}`)
-    // Walking the rest of the flow with nothing left to write is a real risk,
-    // not just wasted minutes: the app has died outright at the
-    // available-genomes table, which would fail a run whose figures are all
-    // already on disk.
-    if (name === LAST_SELECTED) {
-      console.log('\nEvery --only figure written, stopping early.')
-      await shutdown(0)
-    }
+    await commitFigure(name, Buffer.from(png, 'base64'), dir)
+  }
+}
+
+// Frames of the procedure figures, keyed by figure name, in step order. Each is
+// captured at its own point in the flow (they are states of one real session),
+// so the stack is only assembled once its last frame lands.
+const FRAME_DIR = mkdtempSync(join(tmpdir(), 'jbrowse-desktop-steps-'))
+const frames = new Map<string, string[]>()
+
+// Capture one step of a procedure figure: draw that step's callouts over the
+// live app, take the frame, and stack the figure once every step has one.
+//
+// The callouts come from the PROCEDURES table rather than from the flow code,
+// so what a figure points at is authored in one readable place and an anchor
+// that no longer resolves fails the run instead of parking a callout in the
+// corner of a published image.
+async function procedureFrame(
+  driver: WebDriver,
+  figure: string,
+  index: number,
+): Promise<void> {
+  const procedure = PROCEDURES[figure]
+  if (!procedure) {
+    throw new Error(`${figure} is missing from PROCEDURES`)
+  }
+  const step = procedure.steps[index]
+  if (!step) {
+    throw new Error(`${figure} has no step ${index}`)
+  }
+  const at = `${index + 1}/${procedure.steps.length}`
+  if (!wanted(figure)) {
+    console.log(`  ≈ skipped ${figure} ${at} (--only ${ONLY.join(',')})`)
+    return
+  }
+  console.log(`  · ${figure} ${at}: ${step.title}`)
+  await drawAnnotations(driver, step.annotations)
+  const png = await driver.takeScreenshot()
+  await clearAnnotations(driver)
+  const framePath = join(FRAME_DIR, `${figure}.${index}.png`)
+  writeFileSync(framePath, Buffer.from(png, 'base64'))
+  const captured = [...(frames.get(figure) ?? []), framePath]
+  frames.set(figure, captured)
+  if (captured.length === procedure.steps.length) {
+    const stacked = join(FRAME_DIR, figure)
+    composeProcedure(captured, stacked)
+    optimizePng(stacked)
+    await commitFigure(figure, readFileSync(stacked))
   }
 }
 
@@ -592,6 +658,34 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await returnToStartScreen(driver)
 }
 
+// Opening a genome hangs some fraction of the time: the assembly sits at
+// `initialized: false` with no error and the import form reads "Loading"
+// forever (see agent-docs/guides/DESKTOP_SCREENSHOTS.md). openVolvoxGenome
+// gates on the assembly manager and says exactly that, which is what lets the
+// flow start the session over instead of losing every figure downstream of it
+// to an app-level race.
+async function openVolvoxWithRetry(
+  driver: WebDriver,
+  url: string,
+): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await openVolvoxGenome(driver, url)
+      return
+    } catch (e) {
+      if (attempt >= 3) {
+        throw e
+      }
+      console.warn(`  WARN: volvox open attempt ${attempt} failed: ${e}`)
+      await cleanupUI(driver)
+      await openMenuItem(driver, 'File', 'Return to start screen')
+      await waitForStartScreen(driver)
+      await delay(1000)
+      await freezeAnimations(driver)
+    }
+  }
+}
+
 // The cli_desktop tutorial's own commands, run for real against the bundled
 // volvox files, so the figure opens whatever the CLI actually writes rather than
 // a config shape hand-copied into the docs. `--load copy` is what makes the
@@ -743,49 +837,51 @@ async function main(): Promise<void> {
   console.log('Launching Electron app...')
   driver = await createDriver()
 
-  // Start screen
+  // Start screen. Both procedures that begin here take their first frame from
+  // it, each pointing at the button its own path starts with.
   console.log('Capturing start screen...')
   await waitForStartScreen(driver)
   await delay(1500) // let panels settle
+  await freezeAnimations(driver)
   await capture(driver, 'desktop-landing.png')
-
-  // BLAT / in-silico PCR dialogs on hg19, then back to the start screen
-  await captureIsPcrFigures(driver)
-  await captureBlatDialogs(driver)
+  await procedureFrame(driver, 'desktop-open-genome-steps.png', 0)
+  await procedureFrame(driver, 'desktop-available-genomes-steps.png', 0)
 
   // "Open genome(s)" dialog (custom genome from files/URLs)
   console.log('Capturing open-genome dialog...')
   await clickButton(driver, 'Open new genome')
   await findByText(driver, 'Open genome(s)')
   await delay(1000)
-  await capture(driver, 'desktop-open-genome.png')
+  await blurActiveElement(driver)
+  await procedureFrame(driver, 'desktop-open-genome-steps.png', 1)
   await cleanupUI(driver)
 
-  // "Available genomes" dialog (searchable table of public assemblies, fetched
-  // from jbrowse.org/hubs — wait for real rows, not the skeleton loader)
-  console.log('Capturing available-genomes dialog...')
-  await clickButton(driver, 'Show all available genomes')
-  await findByText(driver, 'Available genomes')
-  await driver.wait(until.elementLocated(By.css('table tbody tr')), 30000)
-  await waitForAppReady(driver)
-  await capture(driver, 'desktop-available-genomes.png')
-  await cleanupUI(driver)
-
-  // Loaded session with the bundled volvox assembly, served over http
+  // Loaded session with the bundled volvox assembly, served over http. This is
+  // the third frame of the open-a-genome procedure: what the reader gets for
+  // the two dialogs above.
   console.log('Opening volvox genome...')
-  await openVolvoxGenome(
+  // the 2bit rather than the FASTA: see openVolvoxGenome on why a pasted
+  // .fa + .fai pair goes through the app's own FASTA indexing, and why that
+  // hangs often enough to fail a figure run
+  await openVolvoxWithRetry(
     driver,
-    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
+    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.2bit`,
   )
   await waitForAppReady(driver)
+  await freezeAnimations(driver)
+  await waitForStableSession(driver)
+  await procedureFrame(driver, 'desktop-open-genome-steps.png', 2)
 
-  // Add the bundled volvox GFF3 genes track over http so the session screenshot
-  // shows annotated genes instead of a bare sequence. An hg38 demo with NCBI
-  // RefSeq + ClinVar is not viable here: the harness serves only local
-  // test_data and the repo has no hg38 FASTA, and those tracks need remote
-  // fetches that are unreliable/blocked in headless Electron.
+  // Add the bundled volvox GFF3 genes track over http, one frame per step of
+  // the add-a-track procedure: the menu item, the filled-in form, and the track
+  // it produces. An hg38 demo with NCBI RefSeq + ClinVar is not viable here:
+  // the harness serves only local test_data and the repo has no hg38 FASTA, and
+  // those tracks need remote fetches that are unreliable/blocked in headless
+  // Electron.
   console.log('Adding volvox GFF3 genes track...')
-  await openMenuItem(driver, 'File', 'Open track...')
+  await openMenu(driver, 'File')
+  await procedureFrame(driver, 'desktop-add-track-steps.png', 0)
+  await clickMenuItem(driver, 'Open track...')
   await findByText(driver, 'Add a track')
   await delay(1000)
   // The Main-file FileSelector defaults to URL mode (no location yet), so the
@@ -798,20 +894,60 @@ async function main(): Promise<void> {
     `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.sort.gff3.gz`,
   )
   await delay(500)
+  await procedureFrame(driver, 'desktop-add-track-steps.png', 1)
   await clickActiveAddTrackButton(driver) // Next: source -> confirm track type
   await delay(1500)
   await clickActiveAddTrackButton(driver) // Add: shows track + closes widget
   await waitForAppReady(driver) // the GFF3 track fetches and paints
+  // Adding a GFF3 also kicks off name indexing, which opens the jobs list and
+  // raises a toast. The subject here is the track, and the drawer narrows the
+  // view besides, so both go before the frame is taken and the view is left to
+  // settle at its full width.
+  await hideAllWidgets(driver)
+  await hideSnackbars(driver)
+  await waitForAppReady(driver)
+  await waitForStableSession(driver)
+  await procedureFrame(driver, 'desktop-add-track-steps.png', 2)
 
-  await capture(driver, 'desktop-session.png')
+  // Everything above runs on bundled data, and everything below needs the
+  // network. That is the order for a reason: a genome opened after the hg19
+  // visits used to hang at "Loading" in its import form, i.e. the assembly load
+  // of a NEW session never resolved once one of those sessions had been torn
+  // down by "Return to start screen" (roughly one run in three, and the frames
+  // it cost were the local ones that had nothing to do with hg19). Whatever
+  // that is, it does not run backwards, so the local figures are taken first
+  // and the remote ones last.
+  console.log('Returning to start screen...')
+  await openMenuItem(driver, 'File', 'Return to start screen')
+  await waitForStartScreen(driver)
+  await delay(1000)
+  await freezeAnimations(driver)
 
-  // "Add a track" form (File -> Open track...)
-  console.log('Capturing add-track form...')
-  await openMenuItem(driver, 'File', 'Open track...')
-  await findByText(driver, 'Add a track')
-  await delay(1500)
-  await capture(driver, 'desktop-add-track.png')
+  // "Available genomes" dialog (searchable table of public assemblies, fetched
+  // from jbrowse.org/hubs — wait for real rows, not the skeleton loader)
+  console.log('Capturing available-genomes dialog...')
+  await clickButton(driver, 'Show all available genomes')
+  await findByText(driver, 'Available genomes')
+  await driver.wait(until.elementLocated(By.css('table tbody tr')), 30000)
+  await waitForAppReady(driver)
+  await blurActiveElement(driver)
+  await capture(driver, 'desktop-available-genomes.png')
+  await procedureFrame(driver, 'desktop-available-genomes-steps.png', 1)
   await cleanupUI(driver)
+
+  // BLAT / in-silico PCR dialogs on hg19, then back to the start screen
+  await captureIsPcrFigures(driver)
+  await captureBlatDialogs(driver)
+
+  const unfinished = [...Object.entries(PROCEDURES)]
+    .filter(([name]) => wanted(name))
+    .filter(([name, p]) => (frames.get(name)?.length ?? 0) !== p.steps.length)
+    .map(([name]) => name)
+  if (unfinished.length > 0) {
+    throw new Error(
+      `procedure figures never completed: ${unfinished.join(', ')}`,
+    )
+  }
 
   await shutdown(0)
 }

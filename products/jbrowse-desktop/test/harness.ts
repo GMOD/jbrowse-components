@@ -295,6 +295,23 @@ export async function waitForStableSession(
   return last
 }
 
+// Poll a page-context expression until its result satisfies `check`, returning
+// the last read either way so a caller's error message can name the real state.
+async function waitFor<T>(
+  driver: WebDriver,
+  script: string,
+  check: (value: T) => boolean,
+  timeout: number,
+): Promise<T> {
+  const deadline = Date.now() + timeout
+  let last = JSON.parse(await driver.executeScript<string>(script)) as T
+  while (!check(last) && Date.now() < deadline) {
+    await delay(500)
+    last = JSON.parse(await driver.executeScript<string>(script)) as T
+  }
+  return last
+}
+
 // "Is this gone yet?" asked through the DOM rather than findElements, which
 // waits out the 30s implicit timeout every time the answer is "yes, none left" —
 // the dominant cost of a screenshot run, since every cleanup step ends that way.
@@ -413,6 +430,26 @@ export async function waitForAppReady(
   console.warn(`    WARN: proceeding with ${detail}`)
 }
 
+// Close whatever drawer widgets the previous step opened. A figure of "the
+// track is added" is a figure of the view, not of the jobs list that track
+// indexing opens beside it, and the drawer also narrows the view it sits next
+// to. Goes through the session rather than the drawer's close button because
+// the widget that has to go is not always the one on top.
+export async function hideAllWidgets(driver: WebDriver): Promise<void> {
+  await driver.executeScript('window.JBrowseSession?.hideAllWidgets?.()')
+}
+
+// Hide the toast a background job leaves behind. It is real UI, but it is
+// transient, and a reader looking at a figure of a finished state has no way to
+// tell that it was already fading when the frame was taken.
+export async function hideSnackbars(driver: WebDriver): Promise<void> {
+  await driver.executeScript(`
+    for (const el of document.querySelectorAll('.MuiSnackbar-root')) {
+      el.style.display = 'none'
+    }
+  `)
+}
+
 export async function waitForBackdropsToDisappear(
   driver: WebDriver,
   timeout = 5000,
@@ -464,14 +501,21 @@ export async function cleanupUI(driver: WebDriver): Promise<void> {
   }
 }
 
-// Open a menu and click an item within it
-export async function openMenuItem(
+// Open a top-level menu and leave it open. Split out of openMenuItem so a
+// figure can be captured of the menu itself, which is the first step of every
+// menu-driven procedure the docs describe.
+export async function openMenu(
   driver: WebDriver,
   menuName: string,
-  itemText: string,
 ): Promise<void> {
   await clickButton(driver, menuName)
   await delay(500)
+}
+
+export async function clickMenuItem(
+  driver: WebDriver,
+  itemText: string,
+): Promise<void> {
   const menuItem = await driver.wait(
     until.elementLocated(By.xpath(`//*[contains(text(), '${itemText}')]`)),
     5000,
@@ -479,6 +523,16 @@ export async function openMenuItem(
   await driver.wait(until.elementIsVisible(menuItem), 3000)
   await driver.executeScript('arguments[0].click();', menuItem)
   await delay(500)
+}
+
+// Open a menu and click an item within it
+export async function openMenuItem(
+  driver: WebDriver,
+  menuName: string,
+  itemText: string,
+): Promise<void> {
+  await openMenu(driver, menuName)
+  await clickMenuItem(driver, itemText)
 }
 
 // Serve a directory over http. Desktop loads picked local files via LocalFile
@@ -503,21 +557,29 @@ export async function startStaticServer(
   })
 }
 
-// Load the volvox assembly from a FASTA url via the "Open new genome" dialog,
-// then navigate to a region so the view fully paints. The .fai index url is
-// auto-derived as <fasta>.fai.
+// Load the volvox assembly through the "Open new genome" dialog, then navigate
+// to a region so the view fully paints. A `.fa` url brings its `.fai` along.
+//
+// Prefer `volvox.2bit` for anything that has to be reproducible. Pasting
+// `volvox.fa` plus `volvox.fa.fai` does NOT produce an indexed-FASTA assembly:
+// the pane classifies it as a bare FASTA and the app indexes it itself
+// (`indexFasta` in electron/ipc/fileHandlers.ts, whose output shows up as a
+// `LocalPathLocation` under the profile's `fai/` dir). That index step hangs
+// outright often enough to fail a run, leaving the assembly `initialized:
+// false` with no error and the import form reading "Loading" forever. A 2bit
+// needs no index, so it skips the whole path.
 export async function openVolvoxGenome(
   driver: WebDriver,
-  fastaUrl: string,
+  sequenceUrl: string,
 ): Promise<void> {
   await waitForStartScreen(driver)
   await clickButton(driver, 'Open new genome')
   await delay(1000)
 
-  // The dialog opens on a drop zone. Switch to URL entry and paste the FASTA
-  // plus its .fai index, one per line. The pane auto-detects the format
-  // (IndexedFastaAdapter) and derives the assembly name ("volvox") from the
-  // filename, so no manual name/format entry is needed.
+  // The dialog opens on a drop zone. Switch to URL entry and paste the sequence
+  // file, one url per line. The pane auto-detects the format and derives the
+  // assembly name ("volvox") from the filename, so no manual name/format entry
+  // is needed.
   await clickButton(driver, 'Open from a URL')
   await delay(500)
 
@@ -528,7 +590,11 @@ export async function openVolvoxGenome(
     10000,
   )
   await urlInput.click()
-  await urlInput.sendKeys(`${fastaUrl}\n${fastaUrl}.fai`)
+  await urlInput.sendKeys(
+    sequenceUrl.endsWith('.fa')
+      ? `${sequenceUrl}\n${sequenceUrl}.fai`
+      : sequenceUrl,
+  )
   await delay(1000)
 
   const submitBtn = await driver.wait(
@@ -555,16 +621,54 @@ export async function openVolvoxGenome(
   }
 
   // Opening a new genome creates a session with no view; the empty session
-  // shows a launcher. Click whatever launches a linear genome view.
-  const launchButtons = await driver.findElements(
-    By.xpath(
-      "//button[contains(., 'Launch view') or contains(., 'Linear genome view')]",
-    ),
+  // shows a launcher. Click whatever launches a linear genome view, then ask the
+  // SESSION whether a view actually appeared rather than assuming the click
+  // took. The click lands on a button that renders while the new session is
+  // still settling, and it silently does nothing often enough (roughly one run
+  // in three) to have failed the run 90 seconds later at the import form, where
+  // the symptom is an app bar with no view under it and no trace of the cause.
+  for (let attempt = 1; ; attempt++) {
+    const views = await driver.executeScript<number>(
+      'return window.JBrowseSession?.views?.length ?? 0',
+    )
+    if (views > 0) {
+      break
+    }
+    if (attempt > 3) {
+      throw new Error('view launcher never produced a view after 3 clicks')
+    }
+    const launchButtons = await driver.findElements(
+      By.xpath(
+        "//button[contains(., 'Launch view') or contains(., 'Linear genome view')]",
+      ),
+    )
+    console.log(
+      `    DEBUG: launch attempt ${attempt}, ${launchButtons.length} buttons`,
+    )
+    if (launchButtons.length > 0) {
+      await driver.executeScript('arguments[0].click();', launchButtons[0])
+    }
+    await delay(3000)
+  }
+
+  // The import form renders "Loading" until the assembly is ready, and an
+  // assembly that never loads reports nothing: no error, no toast, just the
+  // form. So gate on the assembly manager rather than on the button, and say
+  // which assembly was still uninitialized if it never arrives.
+  const assemblies = await waitFor<
+    { name: string; initialized: boolean; error: string }[]
+  >(
+    driver,
+    `return JSON.stringify((window.JBrowseRootModel?.assemblyManager?.assemblies ?? [])
+       .map(a => ({ name: a.name, initialized: a.initialized, error: String(a.error ?? '') })))`,
+    state => state.length > 0 && state.every(a => a.initialized || a.error),
+    60000,
   )
-  console.log(`    DEBUG: ${launchButtons.length} view-launch buttons found`)
-  if (launchButtons.length > 0) {
-    await driver.executeScript('arguments[0].click();', launchButtons[0])
-    await delay(2000)
+  const failed = assemblies.filter(a => !a.initialized)
+  if (assemblies.length === 0 || failed.length > 0) {
+    throw new Error(
+      `assembly never loaded: ${JSON.stringify(assemblies.length ? failed : 'none registered')}`,
+    )
   }
 
   // The linear genome view import form shows a submit "Open" button that enables

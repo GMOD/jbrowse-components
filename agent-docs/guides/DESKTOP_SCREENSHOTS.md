@@ -22,6 +22,48 @@ keeping a regen from re-encoding every other figure. A run walks the flow in
 which keeps a BLAT regen out of the flakiest steps. `capture()` rejects a name
 missing from `FIGURES`, so that list can't drift out of step with the flow.
 
+**Bundled data first, network last.** The flow captures everything that runs off
+`test_data/` (start screen, open-genome, volvox, add-track) before anything that
+fetches from jbrowse.org (available genomes, hg19 BLAT / in-silico PCR). Both
+halves used to fail together: a genome opened *after* one of the hg19 sessions
+had been torn down by "Return to start screen" would hang in its import form
+with the assembly stuck `initialized: false` and no error, which cost the local
+figures a run for reasons that had nothing to do with them.
+
+## Procedure figures
+
+`test/procedures.ts` is a table of multi-part figures: one entry per published
+PNG, one `steps[]` entry per frame, each frame carrying the callouts drawn over
+it. A single screenshot of a dialog says what the dialog looks like and not what
+to do in it, which is what made the desktop quickstart's figures read as
+wallpaper; a procedure figure is the same real captures in the order a reader
+performs them, numbered.
+
+- The frames are captured at their **natural points in the flow**
+  (`procedureFrame(driver, figure, index)` in `screenshots.ts`), so they are
+  states of one real session rather than staged mockups. The stack is assembled
+  and committed when the figure's last frame lands, and a figure that never
+  completes fails the run rather than going missing.
+- The callouts are drawn by
+  `@jbrowse/browser-test-utils/src/annotationOverlay.ts`, **the same overlay the
+  website's figure generator injects** — same anchors, same shapes, same colors,
+  so a desktop figure and a web figure are one visual language. Only the
+  injection differs (`executeScript` here, `page.evaluate` there).
+- **Anchor, never measure.** A callout names a `selector`, the `text` of a menu
+  item or button, or (through `window.JBrowseSession`, which desktop publishes)
+  a `track`/`locus` or a whole `view`. An anchor that resolves to nothing throws
+  and fails the run, so a renamed button breaks the regen instead of quietly
+  parking a red arrow in the corner of a published figure. `alignX`/`alignY` put
+  a badge or label *beside* a control without hand-encoding that control's
+  width.
+- Each frame's dead bottom margin is trimmed before stacking (the window is a
+  fixed 1400x763 whatever it is showing, so the start screen leaves ~200px of
+  empty page and the volvox view ~540px), and the frames are separated by a
+  rule. Trimming measures the frame's own bottom row, and a callout out in the
+  margin is content, so it can't be cut off.
+- A frame is only captured when `--only` selects its figure, so a scoped regen
+  can't fail on an anchor belonging to a figure it isn't writing.
+
 Captures off one build are near-deterministic but not byte-stable: repeated runs
 usually give identical PNGs, with occasional 0.04% drift (the static helper text
 under the sequence box shifting subpixel — most likely MUI's autosizing textarea
@@ -186,6 +228,24 @@ that returns *nothing* costs 30 seconds, and "nothing left" is exactly what
 Existence checks go through `countElements` (a `querySelectorAll` in
 `executeScript`), which is instant; real elements are only fetched once a count
 says there are some. Keep new waits off `findElements` for the same reason.
+
+## Opening the volvox genome
+
+The screenshot flow opens `volvox.2bit`, not `volvox.fa`, and that is not
+arbitrary: **pasting a remote `.fa` together with its `.fa.fai` does not produce
+a remote indexed FASTA.** The submitted form comes out as `FastaAdapter`, so the
+app downloads the whole FASTA and builds its own index through the `indexFasta`
+IPC handler, and the resulting assembly names a `LocalPathLocation` under the
+profile's `fai/` dir rather than the `.fai` that was pasted. That index step
+also hangs outright often enough (roughly one run in two, unattended, on a busy
+machine) to fail a run, and it fails silently: the assembly sits at
+`initialized: false` with an empty `error` and the import form reads "Loading"
+forever. `classifyAssemblyFiles` classifies the pair correctly in isolation, so
+whatever drops the pasted `.fai` is between there and submit.
+
+`openVolvoxGenome` therefore gates on the assembly manager rather than on the
+import form's Open button, and names the assembly that never initialized. A
+2bit needs no index at all, which is why it is what the figures use.
 
 ## Unresolved
 

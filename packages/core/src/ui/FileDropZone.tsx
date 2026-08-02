@@ -139,6 +139,7 @@ export default function FileDropZone({
     <div
       role="button"
       tabIndex={0}
+      data-testid="file-drop-zone"
       className={cx(
         classes.dropZone,
         isDragActive ? classes.dropZoneActive : classes.dropZoneInactive,

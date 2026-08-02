@@ -3,7 +3,10 @@
   "include": ["."],
   "exclude": [],
   "compilerOptions": {
-    "lib": ["esnext"],
+    // "dom" for the shared annotation overlay
+    // (@jbrowse/browser-test-utils/src/annotationOverlay.ts), which is
+    // page-context code this harness serializes into the running app
+    "lib": ["esnext", "dom"],
     "types": ["node", "jest"],
     "noEmit": true
   }

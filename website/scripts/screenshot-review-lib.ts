@@ -302,13 +302,19 @@ export function readMainPng(name: string): Buffer | undefined {
 // (products/jbrowse-desktop/test/screenshots.ts, a Selenium + Electron run)
 // rather than generate-screenshots.ts. They have no web spec, so without this
 // list the reviewer mis-classifies them as hand-captured ("manual"). Keep this
-// in sync with the capture() calls in that file.
+// in sync with that file's FIGURES list (its capture() calls and its PROCEDURES
+// table, whose stacked step figures are committed the same way).
 export const desktopAutogenNames = new Set([
   'desktop-landing',
-  'desktop-open-genome',
   'desktop-available-genomes',
-  'desktop-session',
-  'desktop-add-track',
+  'desktop-open-genome-steps',
+  'desktop-available-genomes-steps',
+  'desktop-add-track-steps',
+  'desktop-cli-config',
+  'desktop-blat-search',
+  'desktop-blat-results',
+  'desktop-ispcr',
+  'desktop-ispcr-results',
 ])
 
 // The full reviewable set: every generate-screenshots spec PLUS every image a

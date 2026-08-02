@@ -216,6 +216,15 @@ any of them. Every annotation should `anchor`, in this order of preference:
 An anchor that resolves to nothing **throws** and fails the spec, rather than
 parking the callout at (0,0) where it reads as a styling mistake in review.
 
+The overlay itself lives in
+`@jbrowse/browser-test-utils/src/annotationOverlay.ts`, not in `scripts/`,
+because the **desktop** figure harness
+(`products/jbrowse-desktop/test/screenshots.ts`) draws the same callouts over
+the packaged Electron app through selenium. `scripts/annotations.ts` is the
+puppeteer half: node-side anchor resolution plus the `page.evaluate`. Add a
+shape or an anchor kind in the shared module and both harnesses get it; add one
+here and the two surfaces drift.
+
 Note `--check` renders a spec twice and compares those two runs against each
 other — it detects flakiness, not whether the figure is still correct. To verify
 a change to a callout you have to regenerate and look at the PNG.

@@ -2007,6 +2007,9 @@ importers:
       '@electron/packager':
         specifier: ^20.0.4
         version: 20.0.4(supports-color@8.1.1)
+      '@jbrowse/browser-test-utils':
+        specifier: workspace:*
+        version: link:../../packages/browser-test-utils
       '@types/selenium-webdriver':
         specifier: ^4.35.6
         version: 4.35.6
