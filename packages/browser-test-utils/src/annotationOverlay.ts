@@ -94,6 +94,13 @@ export interface Annotation {
   width?: number
   height?: number
   radius?: number // circle radius (default 16, or derived from anchored element)
+  // gap in CSS px between the anchored element's box and the drawn 'box' or
+  // ring (default 6). Raise it when the element carries its own label outside
+  // its bounding box, which a graph node does: the box is drawn to the node's
+  // stroke and the renderer writes "43 bp" across it, so at the default the
+  // border lands over the first character. This is a padding, not a position —
+  // it stays anchored and does not have to be re-measured when a layout moves.
+  pad?: number
   text?: string
   color?: string // default red (#e3242b); also the 'text' pill border color
   textColor?: string // circle badge label color (circle default white)
@@ -350,7 +357,7 @@ export function drawAnnotationOverlay(
     if (!r) {
       return { ...a, from: tail, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
     }
-    const pad = 6
+    const pad = a.pad ?? 6
     // a numbered badge stays a fixed small disc; a hollow ring grows to wrap
     // the anchored element
     const ringRadius = Math.max(r.width, r.height) / 2 + pad

@@ -1016,13 +1016,14 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
-        (graphNode): Annotation => ({
-          type: 'box',
-          anchor: { view: 1, graphNode },
-          strokeWidth: 3,
-        }),
-      ),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
+        type: 'box',
+        anchor: { view: 1, graphNode },
+        strokeWidth: 3,
+        // clear of the node's own "43 bp" / "558 bp" label, which the graph
+        // writes across the node rather than inside its bounding box
+        pad: 22,
+      })),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
@@ -1153,33 +1154,49 @@ const MHC_LANDMARK_NODES = ['s101145+', 's396436+']
 // picture, and it is the comparison a pangenome reader most wants: same locus,
 // same reference, same colors, two graph resolutions.
 //
-// 3 kb rather than the paa island, because the window has to be drawable in
-// BOTH. At 29.5 kb the pggb cut is past the node budget and its half of the
-// figure would be an error message; at 3 kb it is ~340 nodes (a braid) against
-// minigraph's handful (a thread), which is the difference stated at a size
-// where both halves are real drawings.
+// 300 bp, and the size is the finding rather than a taste call. A force pane is
+// legible up to somewhere around 50 nodes and not past it, measured on this very
+// cut in one 600 px pane: 3 kb is 521 nodes, zoom-to-fit lands at 6.7% and a node
+// occupies ~1.3 px, so the pane draws as a single beaded rope and no bubble in it
+// can be seen at any drawn-length law. The same cut at 300 bp is 53 nodes, fits
+// at 66%, and every node, label and direction arrow reads. That ceiling is a
+// property of the pane, not of this graph — `drawPaths` found the same ~50
+// independently — so a denser window cannot be fixed by tuning the layout.
+//
+// The minigraph half does not move with it: the whole window sits inside the
+// 4.4 kb s693, so the one-hop cut returns the same seven segments at 300 bp as
+// at 3 kb. What shrinking costs is only pggb's node count, which is the half
+// that could not be read.
 //
 // The colanic-acid cluster, the busiest stretch of this graph in the demo's own
 // index: `tabix ecoli_pggb.links.bed.gz 'K12#1#chr:2120000-2123000'` returns 175
 // link endpoints on a non-K12 stable sequence, against 24 at the ycbF/pyrD
 // window pangenome/local_subgraph uses. Picked for link density rather than by
-// eye, so the pggb half is dense because the graph is, not because 3 kb of any
-// window looks like that.
+// eye, so the pggb half is dense because the graph is, not because any window
+// looks like that.
 const RESOLUTION_REGION = {
   refName: 'chr',
   assemblyName: 'K12',
   start: 2120000,
-  end: 2123000,
+  end: 2120300,
 }
-// What the LINEAR half shows, which is no longer the cut (review: "i see there
-// is an answer but i dont get it. we may want to zoom out more"). The one-hop
-// cut reaches s692 and s694, the backbone segments either side of the 4.4 kb
-// s693 the 3 kb window sits inside, and s694 runs to 2,139,486 — so at a 3 kb
-// LGV the biggest node in the minigraph pane was a segment the reader could not
-// see anywhere else in the frame, and a label saying so is not the same as
-// showing it. This span is the drawn cut's own extent, so every node in either
-// graph pane is a block in the lane above it at the same colour, and the 3 kb
-// that was cut is banded on the ruler.
+// What the LINEAR half shows, which is not the cut (review: "i see there is an
+// answer but i dont get it. we may want to zoom out more"). The one-hop cut
+// reaches s692 and s694, the backbone segments either side of the 4.4 kb s693
+// the window sits inside, and s694 runs to 2,139,486 — so on an LGV of the cut
+// itself the biggest node in the minigraph pane was a segment the reader could
+// not see anywhere else in the frame, and a label saying so is not the same as
+// showing it. This span is the minigraph cut's own extent, so every node in that
+// pane is a block in the lane above it at the same colour, and the window is
+// banded on the ruler.
+//
+// The two halves are read off this lane differently, and that is the figure
+// rather than a flaw in it. The minigraph pane's seven segments spread across
+// the whole 20.8 kb, one hue each. The pggb pane's fifty-three all sit inside the
+// banded 300 bp, so they come out one hue: the whole pane is that sliver of the
+// lane, which is the resolution claim stated in colour. It also lets the alleles
+// carry the pane, since a segment with no reference coordinate of its own draws
+// grey and those are now the only nodes that differ from their neighbours.
 const RESOLUTION_LANE_DOMAIN = { start: 2118646, end: 2139486 }
 const RESOLUTION_LANE_WINDOW = 'chr:2,118,646-2,139,486'
 
@@ -1211,7 +1228,9 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     // braid's top-left arm.
     labelOffset,
     extraAnnotations = [],
-    bubbleSpread = 'auto',
+    // Shared by both halves now, where each used to need its own. See the
+    // GraphGenomeView props below for what changed.
+    bubbleSpread = 'compress',
     layoutQuality = 1,
   }: {
     name: string
@@ -1220,7 +1239,7 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     label: string
     labelOffset: { dx: number; dy: number }
     extraAnnotations?: Annotation[]
-    bubbleSpread?: 'auto' | 'open' | 'wide'
+    bubbleSpread?: 'auto' | 'open' | 'wide' | 'compress'
     layoutQuality?: number
   }): ScreenshotSpec => ({
     mode: 'url',
@@ -1261,35 +1280,34 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           loadedTrackId: trackId,
           loadedRegion: RESOLUTION_REGION,
           // The ramp runs over the LANE's span, not the cut's, so a node and
-          // its block are one colour. On the cut's own 3 kb every node reaching
+          // its block are one colour. On the cut's own span every node reaching
           // past it saturates at an end of the ramp, which is what painted the
           // 16.4 kb backbone neighbour magenta and made it read as a giant
           // off-reference allele.
           colorDomain: RESOLUTION_LANE_DOMAIN,
-          // review: "the teal node just doesnt connect to anything". At
-          // Bandage's proportional scale s694's 16.4 kb draws ~15x the mean of
-          // this cut, so it swept the whole pane and its junction with s693 sat
-          // in a corner while its free end ran through the middle of the frame —
-          // the reading the note describes. 'open' floors every node at 2.5x the
-          // mean, which puts s694 at about twice its neighbours instead, so both
-          // of its ends are in the same part of the drawing.
+          // review: "the teal node just doesnt connect to anything". Drawn
+          // proportionally s694's 16.4 kb is 5x the mean of this cut and 43x its
+          // smallest node, so it swept the whole pane, its junction with s693 sat
+          // in a corner and its free end ran through the middle of the frame,
+          // which is the reading the note describes. 'compress' is Bandage's own
+          // power law, 0.5 and 0.5 against the graph's mean, which brings that
+          // 43:1 drawn range to about 3:1.
           //
-          // The minigraph half only, and that asymmetry is measured rather than
-          // an oversight: the floor is a per-node minimum, so on the pggb half's
-          // 521 nodes it inflates the drawing to ~52,000 units, zoom-to-fit
-          // lands at 1.4% and the braid renders as an empty pane. A cut of 7
-          // nodes spanning 6 bp to 16.4 kb and a cut of 521 nodes averaging
-          // ~17 bp cannot share a drawn-length floor, which is the same
-          // resolution difference the figure is about.
+          // Both halves, which the 'open' floor this figure used to run could not
+          // do: a floor is a per-node minimum, so it lifted a cut's non-branching
+          // chain nodes along with its alleles and the drawing inflated with the
+          // node count (the pggb half went to ~52,000 units and a 1.4% fit).
+          // Stated against the mean it leaves the drawing the size it already
+          // was, so a 7-node cut spanning 6 bp to 16.4 kb and a 53-node cut
+          // averaging ~6 bp can share one setting. The floor is still the right
+          // instrument where one long node has to stay long, which is why
+          // pangenome/pggb_haplotype_paths keeps it.
           bubbleSpread,
           // FMMM's iteration budget (1 = 15+10 iterations, 4 = 120+60), the same
-          // review round's "are you sure you can't iterate it more times". Also
-          // the minigraph half only, and for the same reason: on 521 nodes the
-          // extra iterations spread the braid past what zoom-to-fit can frame
-          // and the pane came back with half a thread in it.
+          // review round's "are you sure you can't iterate it more times".
           layoutQuality,
-          // force in both halves. An anchored layout would put the pggb half's
-          // hundreds of nodes on one line and hide exactly what is being shown.
+          // force in both halves. An anchored layout puts a cut on one line and
+          // hides exactly what is being shown.
           layoutMode: 'force',
           colorScheme: 'reference-position',
           // Bandage's own node-length floor is sized for assembled contigs, so
@@ -1331,17 +1349,15 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
       sessionTrack: ECOLI_SEGMENTS_SESSION_TRACK,
       label: 'minigraph rGFA\nstructural variation only',
       labelOffset: { dx: -340, dy: -260 },
-      bubbleSpread: 'open',
-      layoutQuality: 4,
       // What RESOLUTION_BACKBONE_NODE is, anchored by segment id through the
       // view's own nodePositions so FMMM can put it wherever it likes.
       //
-      // The arrow onto s693 that used to be here is gone with the drawn-length
-      // floor that made it necessary: at the proportional scale s694 arced right
+      // The arrow onto s693 that used to be here is gone with the proportional
+      // drawn length that made it necessary: at that scale s694 arced right
       // across the pane and its junction was in a corner, so the junction had to
-      // be pointed at. Now the two are collinear and meet at a visible vertex
-      // beside the 88 bp bubble, which an arrow drawn between their midpoints
-      // would run straight down the top of.
+      // be pointed at. Compressed, the two are collinear and meet at a visible
+      // vertex, which an arrow drawn between their midpoints would run straight
+      // down the top of.
       extraAnnotations: [
         {
           type: 'text',
@@ -1353,10 +1369,12 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           // loaded subgraph stops, which every cut of a graph has somewhere.
           text: 'reference backbone (s694),\nthe cyan block above;\nits far end is the cut edge',
           anchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
-          // left off the node, into the open ground beside it: at the midpoint
-          // itself the pill sits on the node it is naming
-          dx: -266,
-          dy: -40,
+          // right off the node, into the open ground beside it: at the midpoint
+          // itself the pill sits on the node it is naming, and to the left it
+          // runs off the pane, since compressing the drawn lengths moved s694
+          // from the middle of the drawing to its lower left corner
+          dx: 150,
+          dy: -10,
           maxWidth: 240,
           fontSize: 16,
         },
@@ -1429,14 +1447,12 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map(
-        (graphNode): Annotation => ({
-          type: 'circle',
-          anchor: { view: 1, graphNode },
-          radius: 24,
-          strokeWidth: 3,
-        }),
-      ),
+      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
+        type: 'circle',
+        anchor: { view: 1, graphNode },
+        radius: 24,
+        strokeWidth: 3,
+      })),
       {
         type: 'text',
         text: label,
@@ -1646,6 +1662,15 @@ export const graphSpecs: ScreenshotSpec[] = [
           gfaLocation: { uri: `${DATA}/ecoli_pggb_is5.gfa` },
           layoutMode: 'force',
           layoutQuality: 4,
+          // A floor, where the sibling graph figures compress, and the two are
+          // not interchangeable. This one is about carriage rather than bubble
+          // shape, and carriage is drawn on EDGES as one offset stroke per path:
+          // the 1.2 kb deletion arc has to stay long for five ribbons to
+          // separate along it and for the one magenta IAI39 stroke to be the
+          // only thing on it. A floor lifts the 1 bp alleles and leaves that arc
+          // proportional; 'compress' pulls it towards the mean and the five
+          // strokes crowd into the colour pile-up drawPaths is prone to, which
+          // states the opposite of what the figure is for. Rendered both.
           bubbleSpread: 'open',
           colorScheme: 'grey',
           referencePath: 'K12',
