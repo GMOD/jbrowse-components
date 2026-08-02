@@ -137,17 +137,24 @@ its reverse complement are one molecule). Only the outer chr3 bounds differ, and
 necessarily: the walk has no left-hand breakend to stop at, while the reads bound
 the arms at read length. That agreement is the third independent derivation.
 
-**It needs one fix before it reproduces that**, which is worth knowing before
-trusting a walk: `parseAlt`'s ALT pattern matches at most one base either side of
-the bracket (`(.?)`), so any BND carrying an inserted sequence at the junction is
-silently dropped. That is **28 of the 66 BND records** in COLO829's own VCF, and
-in this chain it drops precisely the junction holding the chr12 templated insert
-— the segment the tutorial figure is about, leaving `deriveChromosomes` with a
-0-segment chain. Widening the pattern to `[ACGTNacgtn]*` either side fixes it and
-changes nothing on the repo's six fixtures. The class of failure is the same one
-this tool hit three times: a plausible answer rather than an error.
+**That took a fix, now upstream** (`08ff4f9`), and the bug is worth knowing
+because it is this project's own failure mode in someone else's code: the ALT
+pattern matched at most one base either side of the bracket, so any BND carrying
+an inserted sequence at the junction was dropped in silence. **28 of the 66 BND
+records** in COLO829's own VCF, and in this chain precisely the junction holding
+the chr12 templated insert — the segment the tutorial figure is about — leaving
+`deriveChromosomes` with a 0-segment chain and a plausible-looking walk.
 
-The mate refName case trap applies there too, though the library dodges it —
+VCF 4.5 §5.4 is explicit that the replacement string can be longer: "the string t
+may be an extended version of s if some novel bases are inserted during the
+formation of the novel adjacency". §5.4.1 gives a worked example, which the
+pattern also dropped. The fix delegates the ALT grammar to `@gmod/vcf`'s
+`parseBreakend` rather than widening the regex — that parser already handles
+inserted sequence, assembly-contig mate positions (`<ctg1>:329`, §5.4.2) and
+single breakends, and `vcf-js` gained a regression test (`e1f3be2`) pinning the
+multi-base case, which was correct but untested there.
+
+The mate refName case trap applies too, though the library dodges it —
 `buildGraph` pairs breakends by `MATEID`, not by chromosome. But `Breakend.mateChr`
 is handed to consumers exactly as the caller wrote it (`CHR10` against a `chr10`
 CHROM), so anything grouping on it needs to normalize.
