@@ -18,6 +18,9 @@
 #   * which metric to use        - r2 and D' side by side on identical pairs
 #   * where the block ends       - a D' profile along the arm, which recovers
 #                                  the inversion breakpoints on its own
+#   * who carries the inversion  - a per-sample karyotype from published tag
+#                                  SNPs, printed as a score histogram (it has to
+#                                  come out trimodal) and a per-population table
 #
 # Read the printed tables before trusting the picture. A population fixed for
 # either arrangement can never show a block, and r2 barely shows this one at
@@ -229,6 +232,10 @@ build_track() { # pop minmaf grid tag
 
 echo
 echo "building LD tracks..."
+# One panel that segregates both arrangements and one that is near-fixed, chosen
+# off the probe table above. The karyotype track further down covers these same
+# two populations, so the two pictures are about the same mosquitoes.
+PANEL_POPS="CMgam GAgam"
 build_track CMgam 0.2 50000 ld_cmgam
 build_track GAgam 0.2 50000 ld_gagam
 
@@ -241,6 +248,132 @@ zcat ld_cmgam.ld.gz | awk 'NR>1{d=($5>$2?$5-$2:$2-$5); if(d<5e6) next;
     b=int($2/1000000); s[b]+=$8; n[b]++; c=int($5/1000000); s[c]+=$8; n[c]++}
   END{for(i=0;i<=60;i++) if(n[i]>50){v=s[i]/n[i]; bar="";
     for(j=0;j<int(v*50);j++) bar=bar"#"; printf "  %2d Mb  %.3f  %s\n", i, v, bar}}'
+
+# ── The arrangement itself, genotyped per mosquito ──────────────────────────
+# Everything above measures a CONSEQUENCE of the inversion: heterozygotes cannot
+# recombine across it, so the span travels as one block. This section genotypes
+# the arrangement itself, as one <INV> call per mosquito, which is what a
+# multi-sample variant display can show per row.
+#
+# The inversion is not something this script discovers. 2La is a cytologically
+# defined arrangement, both of its breakpoints were cloned and sequenced
+# (Sharakhov et al. 2006, PNAS 103:6258-6262), and a PCR across the junctions
+# karyotypes single mosquitoes, validated against polytene cytology on 765 field
+# specimens (White et al. 2007, Am J Trop Med Hyg 76:334-339). What is inferred
+# here is each sample's karyotype, from the tag SNPs of Love et al. 2019 (G3
+# 9:3249-3262), the same in-silico method MalariaGEN ships for Ag3; that paper
+# ascertained the tags on held-out Ag1000G samples and checked them against
+# cytologically karyotyped specimens sequenced outside the project.
+#
+# The score is compkaryo's: mean number of ALT alleles across the tag SNPs. It
+# is only meaningful if it comes out trimodal, so the histogram below is printed
+# rather than asserted. Read it before trusting the calls: three peaks at 0, 1
+# and 2 with empty space between them is the method working.
+COMPKARYO=https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets
+fetch "$COMPKARYO/2La_targets.txt" 2La_targets.txt
+
+# Phased haplotypes rather than the pass VCF, for two reasons: it is the file
+# already downloaded, and phased output has no missing genotypes, so compkaryo's
+# advice to mask GQ<20 first has nothing to act on. That advice exists because
+# low-quality genotypes skew the mean, so the shortcut was checked rather than
+# assumed: scoring the tags straight out of variation/main/vcf/pass, unphased and
+# with GQ<20 masked, gives the identical karyotype for all 1142 samples. The
+# calls are not an artifact of the phasing.
+#
+# grep before awk. Only ~200 of the file's millions of rows are wanted, and each
+# row carries 2328 haplotype columns, so letting awk split every record costs
+# minutes; a fixed-string prefilter on "<chrom> . <pos> " does the same job in
+# well under one. The .haps chromosome column is a bare '2' for arm 2L (the same
+# quirk haps2vcf.awk handles above), which is what the pattern matches.
+awk -v C=2 '{print C " . " $1 " "}' 2La_targets.txt > tagpat.txt
+zcat "haplotypes.$CHROM.gz" | grep -F -f tagpat.txt > tagrows.txt
+awk -v SAMP="samples.$CHROM.txt" -v NTAG="$(wc -l < 2La_targets.txt)" '
+BEGIN { while ((getline l < SAMP) > 0) { if (++nl > 2) { split(l, f, " "); name[++ns] = f[1] } } }
+{ sites++; for (s = 1; s <= ns; s++) sum[s] += $(4 + 2 * s) + $(5 + 2 * s) }
+END {
+  if (sites < 100) { print "only " sites " tag SNPs matched, refusing to karyotype" > "/dev/stderr"; exit 1 }
+  print sites " of " NTAG " 2La tag SNPs found in the haplotypes" > "/dev/stderr"
+  for (s = 1; s <= ns; s++) printf "%s\t%.4f\t%d\n", name[s], sum[s] / sites, int(sum[s] / sites + 0.5)
+}' tagrows.txt > karyotype.2La.txt
+
+# The phased haplotypes carry 22 colony-cross samples beside the 1142 wild-caught
+# ones, and those have no row in samples.meta.txt (they are in
+# cross.samples.meta.txt instead). Drop them: every panel in this script is a
+# wild-caught population, and a lab cross has no population to be grouped under.
+awk -F'\t' 'NR==FNR {wild[$1] = 1; next} $1 in wild' \
+  samples.meta.txt karyotype.2La.txt > karyotype.2La.wild.txt
+echo "karyotyped $(wc -l < karyotype.2La.wild.txt) wild-caught samples \
+($(( $(wc -l < karyotype.2La.txt) - $(wc -l < karyotype.2La.wild.txt) )) cross samples dropped)"
+
+echo
+echo "2La score distribution (mean ALT dosage over the tag SNPs, 0.1 bins):"
+awk -F'\t' '{b = int($2 * 10); n[b]++}
+  END {for (i = 0; i <= 20; i++) {bar = ""; for (j = 0; j < n[i]; j++) bar = bar "#"
+    printf "  %.1f  %4d  %s\n", i / 10, n[i] + 0, bar}}' karyotype.2La.wild.txt
+
+# Karyotype by population. This is the same claim the two LD panels make, read
+# off the arrangement instead of off the correlation: the panel that shows a
+# block should be the one segregating both arrangements, and the flat one should
+# be near-fixed. If those disagree, the LD figure is the thing that is wrong.
+echo
+echo "2La karyotype by population (+/+ standard, a/+ het, a/a inverted):"
+awk -F'\t' 'NR==FNR {pop[$1] = $3; next}
+  {k[pop[$1] "\t" $3]++; tot[pop[$1]]++; carr[pop[$1]] += $3}
+  END {printf "  %-8s %5s %6s %6s %6s %8s\n", "pop", "n", "+/+", "a/+", "a/a", "freq(a)"
+    for (p in tot) printf "  %-8s %5d %6d %6d %6d %8.2f\n", p, tot[p],
+      k[p "\t0"] + 0, k[p "\t1"] + 0, k[p "\t2"] + 0, carr[p] / (2 * tot[p])}' \
+  samples.meta.txt karyotype.2La.wild.txt | (read -r h; echo "$h"; sort -k6,6gr)
+
+# One file per LD panel rather than one file holding every sample. The display
+# draws one row per sample in the VCF and has no sample filter, so the file IS
+# the row set, and the row set is what has to be named: at 3 px a row is far too
+# short for the sidebar to render a text label, which leaves the track header as
+# the only place a population name can go. One track per population also puts
+# this picture in the same lane structure as the two heatmaps above.
+#
+# (karyotype.2La.wild.txt keeps the whole release for anyone who wants it, and
+# the per-population table above is that whole-release result in text.)
+emit_karyotype_track() { # pop
+  local pop="$1" calls="karyotype.2La.$1.txt"
+  awk -F'\t' -v POP="$pop" 'NR==FNR {if ($3 == POP) keep[$1] = 1; next} $1 in keep' \
+    samples.meta.txt karyotype.2La.wild.txt > "$calls"
+
+  # One <INV> record at the published breakpoints, genotyped across the panel.
+  # The breakpoints are White et al. 2007's; the D' profile printed above is the
+  # independent check that the block really does start and end near them.
+  {
+    printf '##fileformat=VCFv4.2\n'
+    printf '##contig=<ID=%s>\n' "$CHROM"
+    printf '##ALT=<ID=INV,Description="Inversion">\n'
+    printf '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">\n'
+    printf '##INFO=<ID=END,Number=1,Type=Integer,Description="End position">\n'
+    printf '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n'
+    awk -F'\t' -v CHROM=$CHROM -v FROM=$PROBE_FROM -v TO=$PROBE_TO '
+      BEGIN {OFS = "\t"; hdr = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT"}
+      {hdr = hdr "\t" $1; gt = gt "\t" ($3 == 0 ? "0/0" : ($3 == 1 ? "0/1" : "1/1"))}
+      END {print hdr
+        print CHROM, FROM, "2La", "N", "<INV>", ".", "PASS",
+          "SVTYPE=INV;END=" TO, "GT" gt}' "$calls"
+  } | bgzip > "ag1000g_2La_$pop.vcf.gz"
+  tabix -f -p vcf "ag1000g_2La_$pop.vcf.gz"
+
+  # The sample attribute table the display orders and colors rows by. Within one
+  # population the karyotype is the only useful key, and it sorts standard, het,
+  # inverted on its own, so the three classes come out as contiguous blocks in
+  # dosage order without needing a sort column of their own.
+  { printf 'name\tpopulation\tcountry\tkaryotype\n'
+    awk -F'\t' 'NR==FNR {p[$1] = $3; c[$1] = $4; next}
+      {print $1, p[$1], c[$1],
+        ($3 == 0 ? "2L+a/2L+a" : ($3 == 1 ? "2La/2L+a" : "2La/2La"))}' OFS='\t' \
+      samples.meta.txt "$calls"
+  } > "ag1000g_2La_${pop}_samples.tsv"
+
+  echo "  $pop: $(wc -l < "$calls") mosquitoes -> ag1000g_2La_$pop.vcf.gz"
+}
+
+echo
+echo "building per-mosquito karyotype tracks..."
+for pop in $PANEL_POPS; do emit_karyotype_track "$pop"; done
 
 # ── Assembly and JBrowse ────────────────────────────────────────────────────
 zcat AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
@@ -260,20 +393,34 @@ tabix -f -p gff AgamP4.sorted.gff3.gz
 jb add-track AgamP4.sorted.gff3.gz --name "AgamP4.12 genes" --trackId agamp4_genes \
   --load copy --force --out jbrowse2
 cp ld_cmgam.ld.gz ld_cmgam.ld.gz.tbi ld_gagam.ld.gz ld_gagam.ld.gz.tbi jbrowse2/
+for pop in $PANEL_POPS; do
+  cp "ag1000g_2La_$pop.vcf.gz" "ag1000g_2La_$pop.vcf.gz.tbi" \
+     "ag1000g_2La_${pop}_samples.tsv" jbrowse2/
+done
 
 # The CLI has no LDTrack workflow (and would not recognize a .ld.gz), so the LD
 # tracks are written straight into the config. D' rather than r2 is the whole
 # reason this figure is legible - see the probe table above.
-python3 - jbrowse2/config.json <<'PY'
+python3 - jbrowse2/config.json "$PANEL_POPS" <<'PY'
 import json, sys
 
-path = sys.argv[1]
+path, pops = sys.argv[1], sys.argv[2].split()
 cfg = json.load(open(path))
 names = {
     'ld_cmgam': "Cameroon (CMgam)",
     'ld_gagam': "Gabon (GAgam)",
 }
-cfg['tracks'] = [t for t in cfg['tracks'] if t['trackId'] not in names]
+# The karyotype lanes are driven off PANEL_POPS, same as the files above, so
+# changing which populations the script builds does not need an edit here too.
+COUNTRY = {'CMgam': 'Cameroon', 'GAgam': 'Gabon'}
+karyo = {
+    pop: (f'ag1000g_2La_{pop}',
+          f"{COUNTRY.get(pop, pop)} 2La karyotype, one row per mosquito")
+    for pop in pops
+}
+karyo_ids = {t for t, _ in karyo.values()}
+cfg['tracks'] = [t for t in cfg['tracks']
+                 if t['trackId'] not in names and t['trackId'] not in karyo_ids]
 for trackId, name in names.items():
     cfg['tracks'].append({
         'type': 'LDTrack',
@@ -296,6 +443,44 @@ for trackId, name in names.items():
             'height': 360,
         }],
     })
+
+# The arrangement itself, one row per mosquito. The regular multi-sample display
+# rather than its matrix mode: matrix spaces one evenly sized column per variant,
+# which throws away the one thing this call has, its genomic extent. Here the
+# genotype cells start and end at the breakpoints, directly under the LD block.
+for pop, (trackId, name) in karyo.items():
+    cfg['tracks'].append({
+        'type': 'VariantTrack',
+        'trackId': trackId,
+        'name': name,
+        'assemblyNames': ['AgamP4'],
+        'adapter': {
+            'type': 'VcfTabixAdapter',
+            'uri': f'{trackId}.vcf.gz',
+            'samplesTsvLocation': {'uri': f'ag1000g_2La_{pop}_samples.tsv'},
+        },
+        'displays': [{
+            'type': 'LinearMultiSampleVariantDisplay',
+            'displayId': f'{trackId}-LinearMultiSampleVariantDisplay',
+            # karyotype sorts standard, het, inverted on its own, so the three
+            # classes come out as contiguous blocks in dosage order
+            'groupBy': 'karyotype',
+            'colorBy': 'karyotype',
+            # 'draw', not the default 'skip'. Skip mode fills the whole track
+            # background with REFERENCE_COLOR and paints only ALT, so a
+            # standard-arrangement mosquito is indistinguishable from empty
+            # canvas - which is the entire distinction this figure exists to make
+            # for the near-fixed population. Drawing reference puts a grey cell at
+            # the call's span for those rows, so every mosquito shows a block over
+            # the inversion and its shade is its karyotype.
+            'referenceDrawingMode': 'draw',
+            # No featureColor. The default alt shade is keyed to allele dosage, so
+            # a heterozygote paints lighter than a homozygote and the three
+            # classes read apart; an override flattens het and hom-alt to one flat
+            # color and throws that away.
+            'rowHeight': 3,
+        }],
+    })
 cfg['defaultSession'] = {
     'name': 'Ag1000G 2La inversion',
     'views': [{
@@ -304,7 +489,7 @@ cfg['defaultSession'] = {
         'init': {
             'assembly': 'AgamP4',
             'loc': '2L:18,000,000-45,000,000',
-            'tracks': ['ld_cmgam', 'ld_gagam'],
+            'tracks': [t for t, _ in karyo.values()] + ['ld_cmgam', 'ld_gagam'],
         },
     }],
 }
@@ -313,9 +498,12 @@ PY
 
 echo
 echo "Built $(pwd)/jbrowse2/config.json, opening on 2L:18,000,000-45,000,000."
-echo "The top panel (Cameroon) is one block from ~20.5 to ~42.2 Mb and white"
-echo "outside it; the bottom panel (Gabon) is blank, because that population is"
-echo "fixed for one arrangement. Switch either track to D' via its track menu to"
+echo "The top track is the arrangement itself, one row per mosquito, grouped by"
+echo "population and karyotype. Below it the Cameroon LD panel is one block from"
+echo "~20.5 to ~42.2 Mb and white outside it, and the Gabon panel is blank there,"
+echo "because that population is near-fixed for the standard arrangement - which"
+echo "is the same thing the karyotype table above says, read off the correlation"
+echo "instead of off the calls. Switch either LD track to D' via its track menu to"
 echo "see the tradeoff: brighter cells, but a tinted background that blurs the"
 echo "block's edges. Serve it, e.g.:"
 echo "  npx --yes serve $(pwd)/jbrowse2"

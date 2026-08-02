@@ -178,6 +178,82 @@ const agLdTrack = (trackId: string, name: string, file: string) => ({
   ],
 })
 
+// The arrangement itself, one <INV> call per mosquito, as the per-sample
+// counterpart to the two LD panels. The LD figure shows a CONSEQUENCE of the
+// inversion (heterozygotes cannot recombine across it, so the span travels as
+// one block); this shows the structural variant those panels are about, and who
+// carries it.
+//
+// WHAT IS INFERRED AND WHAT IS NOT. 2La is not a call this pipeline makes. It is
+// a cytologically defined arrangement whose breakpoints were cloned and
+// sequenced (Sharakhov et al. 2006, PNAS 103:6258-6262) and which has a
+// diagnostic PCR across the junctions, validated against polytene cytology on
+// 765 field specimens (White et al. 2007, Am J Trop Med Hyg 76:334-339). Only
+// each sample's karyotype is inferred, by scoring the published tag SNPs of Love
+// et al. 2019 (G3 9:3249-3262) - the in-silico method MalariaGEN ships for Ag3,
+// which that paper reports disagreeing with cytology on 5 of 345 Ag1000G
+// specimens. build_ag1000g_ld.sh prints the score histogram; the calls are only
+// worth drawing because it comes out trimodal with empty space between the
+// peaks, which is a property of the data rather than of the threshold.
+//
+// The per-population table the same script prints is the independent check on
+// the LD figure above: Cameroon segregates both arrangements and Gabon is
+// near-fixed for the standard one, which is what makes one panel a block and the
+// other a control. Neither number is restated in the prose - the script prints
+// them, and this figure shows them.
+const AG_POPGEN = 'https://jbrowse.org/demos/popgen'
+
+// One track per population, not one track holding both. The display draws one
+// row per sample in the VCF and has no sample filter, so the file is the row set
+// — and at a 3px row the sidebar cannot render a text label, which leaves the
+// track header as the only place a population name can go. It also puts this
+// figure in the same two-lane structure as the heatmaps above.
+const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
+  type: 'VariantTrack',
+  trackId: `ag1000g_2la_karyotype_${pop.toLowerCase()}`,
+  name,
+  assemblyNames: ['anoGam3'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: `${AG_POPGEN}/ag1000g_2La_${pop}.vcf.gz`,
+    samplesTsvLocation: { uri: `${AG_POPGEN}/ag1000g_2La_${pop}_samples.tsv` },
+  },
+  displays: [
+    {
+      // The regular multi-sample display, NOT the matrix. Matrix mode spaces one
+      // evenly sized column per variant, which discards the only spatial thing a
+      // single SV call has: its extent. Here each genotype draws at the call's
+      // true span, so the cells begin and end at the breakpoints.
+      type: 'LinearMultiSampleVariantDisplay',
+      // Within one population the karyotype is the only useful key, and it sorts
+      // standard, het, inverted on its own, so the three classes come out as
+      // contiguous blocks in dosage order.
+      groupBy: 'karyotype',
+      colorBy: 'karyotype',
+      // 'draw', not the default 'skip'. Skip mode fills the entire track
+      // background with REFERENCE_COLOR and paints only ALT cells, so a
+      // standard-arrangement mosquito is indistinguishable from empty canvas —
+      // which is exactly the distinction this figure exists to make for the
+      // near-fixed population, whose track would otherwise read as failed to
+      // load. Drawing reference puts a grey cell at the call's span on those
+      // rows, so every mosquito shows a block over the inversion and its shade is
+      // its karyotype.
+      referenceDrawingMode: 'draw',
+      // No featureColor. The default alt shade is keyed to allele dosage
+      // (`getAltColorForDosage`), so a heterozygote paints lighter than a
+      // homozygote and the three classes read apart; an override flattens het and
+      // hom-alt to one flat color, which is what the first cut of this figure did
+      // and it threw the distinction away.
+      //
+      // 3px rows, not 1px: a 1px row is shorter than the inversion glyph's taper,
+      // so the left end of every block antialiases into a gradient instead of
+      // reading as a shape.
+      rowHeight: 3,
+      height,
+    },
+  ],
+})
+
 // Published 2La extent (White et al. 2007, AgamP3 coordinates, which are the
 // AgamP4 ones on this arm). Used to anchor the two callouts, one per population
 // lane, so each sits over the span it is about. It was also drawn as a
@@ -374,6 +450,51 @@ export const ldSpecs: ScreenshotSpec[] = [
         maxWidth: 430,
       },
     ],
+  },
+  {
+    mode: 'url',
+    name: 'ld/anopheles_2la_karyotype',
+    url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        // Heights are the row counts times rowHeight, so each lane is exactly as
+        // tall as its panel is large and neither scrolls. 297 and 69 mosquitoes
+        // (the script prints both), so the Cameroon lane is the tall one.
+        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 891),
+        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 207),
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'anoGam3',
+          // the whole arm, same frame as the LD figure above, so the call is
+          // bounded by standard-arrangement sequence on both sides rather than
+          // cropped to its own extent
+          loc: 'chr2L',
+          tracks: [
+            {
+              trackId: 'ag1000g_2la_karyotype_cmgam',
+              type: 'LinearMultiSampleVariantDisplay',
+            },
+            {
+              trackId: 'ag1000g_2la_karyotype_gagam',
+              type: 'LinearMultiSampleVariantDisplay',
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: '[data-testid="variant-display-done"]',
+    // 180s to match the sibling LD figure. The data here is three tiny files;
+    // what actually takes the time is the anoGam3 hub's chrom.sizes off
+    // hgdownload.soe.ucsc.edu, which times out and refetches often enough to blow
+    // through 120s on a bad day.
+    readyTimeout: 180000,
+    // 891 + 207 of rows + 2 track headers + each lane's legend + ruler/overview
+    // + app bar. Undersize this and the rows past the fold are cropped away
+    // silently: first paint still fires, so the capture succeeds with the
+    // informative rows missing. 1290 clipped the last 45 px of the Gabon lane.
+    viewportHeight: 1345,
+    settleMs: 12000,
   },
   {
     mode: 'url',
