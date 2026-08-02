@@ -166,8 +166,14 @@ ORTHOGROUPS=$(ls -d proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv 
 REFERENCE=$(echo "$NAMES" | head -1)
 BEDARGS=$(echo "$NAMES" | awk '{printf " --bed %s=%s.bed", $1, $1}')
 # shellcheck disable=SC2086  # BEDARGS is a built argument list, not one word
-python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS" \
-  -o "$REFERENCE.blocks" $BEDARGS
+# The column order in Orthogroups.tsv follows OrthoFinder's own proteome
+# discovery order (directory scan, typically alphabetical by filename), which
+# does not have to match $NAMES. orthogroups_to_blocks.py prints the order it
+# actually used on stdout for exactly this reason: blockAssemblies/bedLocations
+# below must be positionally aligned with the .blocks file's own columns,
+# not with $NAMES.
+BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS" \
+  -o "$REFERENCE.blocks" $BEDARGS)
 
 gzip -kf "$REFERENCE.blocks"
 for name in $NAMES; do gzip -kf "$name.bed"; done
@@ -199,11 +205,16 @@ for name in $NAMES; do
 done
 
 # ── The one multi-way track, and a session stacking the genomes in row order ─
-python3 - "$SET" "$REFERENCE" $NAMES <<'PY' > blocks_track.json
+# blockAssemblies/bedLocations use $BLOCK_ASSEMBLIES (the .blocks file's own
+# column order); assemblyNames and the session below use $NAMES (the display
+# row order), which need not be the same list order.
+python3 - "$SET" "$REFERENCE" "$BLOCK_ASSEMBLIES" "$NAMES" <<'PY' > blocks_track.json
 import json
 import sys
 
-set_name, reference, *names = sys.argv[1:]
+set_name, reference, block_assemblies_str, names_str = sys.argv[1:]
+block_assemblies = block_assemblies_str.split()
+names = names_str.split()
 print(json.dumps({
     "type": "SyntenyTrack",
     "trackId": f"{set_name}_orthogroups",
@@ -212,13 +223,13 @@ print(json.dumps({
     "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": f"{reference}.blocks.gz",
-        "blockAssemblies": names,
-        "bedLocations": [{"uri": f"{n}.bed.gz"} for n in names],
+        "blockAssemblies": block_assemblies,
+        "bedLocations": [{"uri": f"{n}.bed.gz"} for n in block_assemblies],
         "assemblyNames": names,
     },
 }, indent=2))
 PY
-jb add-track-json blocks_track.json --out "$APP"
+jb add-track-json blocks_track.json --update --out "$APP"
 
 python3 - "$SET" $NAMES <<'PY' > session.json
 import json

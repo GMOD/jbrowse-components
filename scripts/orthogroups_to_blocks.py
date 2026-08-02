@@ -147,6 +147,10 @@ def main():
           f"orthogroups, {counts['expanded']} of which hold a duplicated gene "
           f"and became several rows\ngenes resolved per column: {resolved}\n"
           f"blockAssemblies: {columns}", file=sys.stderr)
+    # The one line on stdout: the resolved column order, for a caller building a
+    # blockAssemblies/bedLocations list to capture instead of assuming its own
+    # proteome order matches this file's columns.
+    print(" ".join(columns))
 
 
 if __name__ == "__main__":
