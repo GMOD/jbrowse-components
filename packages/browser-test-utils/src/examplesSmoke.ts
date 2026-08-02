@@ -9,6 +9,8 @@ import {
   isBrowserConsoleNoise,
 } from './browser.ts'
 
+import type { Page } from 'puppeteer'
+
 // This guard targets bundle/eval integrity (the Rollup circular-dependency TDZ),
 // not the availability of the third-party hosts the examples fetch data/plugins
 // from (jbrowse.org, unpkg, S3). A DNS/connection failure to one of those is an
@@ -40,6 +42,11 @@ export interface SmokeOptions {
   workerSlug?: string
   // ms to settle after networkidle before asserting (lets islands mount/draw)
   settleMs?: number
+  // extra per-page assertions, run once the page has settled. Return one
+  // message per failure (empty array = passed); they are reported like any
+  // other error on that page. For anything a load-only check can't see — a
+  // control that renders but doesn't respond to a real click, say
+  check?: (page: Page, slug: string) => Promise<string[]>
   // progress sink (e.g. console.log from a CLI wrapper); defaults to a no-op so
   // the library stays console-free
   log?: (message: string) => void
@@ -59,6 +66,7 @@ export async function smokeExamplesSite({
   slugs,
   workerSlug,
   settleMs = 4000,
+  check,
   log = () => {},
 }: SmokeOptions): Promise<number> {
   const server = http.createServer((req, res) => {
@@ -125,6 +133,15 @@ export async function smokeExamplesSite({
     }
     if (slug === workerSlug && !workers.some(u => u.includes('rpcWorker'))) {
       errors.push(`no rpc worker spawned (workers: ${JSON.stringify(workers)})`)
+    }
+    if (check) {
+      try {
+        errors.push(...(await check(page, slug)))
+      } catch (e) {
+        errors.push(
+          `check threw: ${e instanceof Error ? e.message : String(e)}`,
+        )
+      }
     }
     if (errors.length) {
       failures++
