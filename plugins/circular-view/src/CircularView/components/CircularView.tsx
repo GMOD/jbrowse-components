@@ -10,6 +10,10 @@ import { Rulers } from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 
+// How far a press has to travel before it rotates the figure rather than
+// clicking what is under it. See handlePointerMove.
+const DRAG_THRESHOLD_PX = 4
+
 const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
@@ -98,6 +102,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const { classes } = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
   const lastAngleRef = useRef(0)
+  // where the press started, until it either travels far enough to become a
+  // rotation (see handlePointerMove) or ends as the click it looked like
+  const pressRef = useRef<{ x: number; y: number } | undefined>(undefined)
   const [isDragging, setIsDragging] = useState(false)
 
   // non-passive wheel listener so we can call preventDefault()
@@ -143,28 +150,51 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   }
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
-    event.currentTarget.setPointerCapture(event.pointerId)
+    pressRef.current = { x: event.clientX, y: event.clientY }
     lastAngleRef.current = angleFromCenter(event.clientX, event.clientY)
-    setIsDragging(true)
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (isDragging) {
-      const angle = angleFromCenter(event.clientX, event.clientY)
-      let delta = angle - lastAngleRef.current
-      // wrap delta to [-π, π] to handle the ±π boundary crossing
-      if (delta > Math.PI) {
-        delta -= 2 * Math.PI
-      } else if (delta < -Math.PI) {
-        delta += 2 * Math.PI
-      }
-      model.rotate(delta)
-      lastAngleRef.current = angle
+    const press = pressRef.current
+    if (!press) {
+      return
     }
+    if (!isDragging) {
+      if (
+        Math.hypot(event.clientX - press.x, event.clientY - press.y) <
+        DRAG_THRESHOLD_PX
+      ) {
+        return
+      }
+      // Only now take the pointer, so the rotation keeps following a cursor
+      // that leaves the figure. Capturing on pointerdown instead retargets the
+      // whole gesture at this <svg> — including the click that ends it — and
+      // the chords underneath, which carry their own onClick, would never see
+      // one. A press that doesn't move never captures, and stays a click.
+      event.currentTarget.setPointerCapture(event.pointerId)
+      setIsDragging(true)
+    }
+    const angle = angleFromCenter(event.clientX, event.clientY)
+    let delta = angle - lastAngleRef.current
+    // wrap delta to [-π, π] to handle the ±π boundary crossing
+    if (delta > Math.PI) {
+      delta -= 2 * Math.PI
+    } else if (delta < -Math.PI) {
+      delta += 2 * Math.PI
+    }
+    model.rotate(delta)
+    lastAngleRef.current = angle
   }
 
-  const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
-    event.currentTarget.releasePointerCapture(event.pointerId)
+  // pointercancel as well as pointerup: a touch drag the browser interrupts
+  // never fires `up`, and the rotation would stay latched to the cursor
+  const endDrag = (event: React.PointerEvent<SVGSVGElement>) => {
+    pressRef.current = undefined
+    // release only what the move handler took — a press that stayed under the
+    // threshold never captured anything
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
     setIsDragging(false)
   }
 
@@ -192,7 +222,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
           height={figureSize}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
         >
           <g transform={`translate(${centerXY})`}>
             <Slices model={model} />
