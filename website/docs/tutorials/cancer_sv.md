@@ -184,17 +184,17 @@ The COLO829 event is genomic. What a fusion looks like in RNA, and how a
 caller's output relates to the reads under it, is easier to follow on a known
 fusion.
 
-Loading DepMap's STAR-Fusion output through `StarFusionAdapter` and switching the
-track to `Variant display arcs` draws the whole call set at once, each call an
-arc from its left breakpoint to its right. An arc needs both of its ends on
+Loading DepMap's STAR-Fusion output through `StarFusionAdapter` and switching
+the track to `Variant display arcs` draws the whole call set at once, each call
+an arc from its left breakpoint to its right. An arc needs both of its ends on
 screen, so this is a whole-genome view (`View` -> `Show...` ->
 `Show all regions in assembly`): in a single-locus window every interchromosomal
 call is dropped and the track shows a lone breakend glyph. Most of the output is
-noise — ten of K562's calls are mitochondrial artefacts — while `BCR--ABL1` and
-`NUP214--XKR3` carry an order of magnitude more support than the rest, and they
-are the two sides of the same chr9/chr22 junction.
+noise, ten of K562's calls being mitochondrial artefacts, while `BCR--ABL1` and
+`NUP214--XKR3` carry an order of magnitude more support than the rest and are
+the two sides of the same chr9/chr22 junction.
 
-<Figure caption="K562 STAR-Fusion calls as arcs across the genome, colored by junction-read support. The red arc is the reciprocal chr9/chr22 pair; the rest, including the calls that end on chrM at the right edge, are the artefact tail." src="/img/cancer_sv/k562_starfusion_triage.png" />
+<Figure caption="K562 STAR-Fusion calls as arcs across the genome, colored by junction-read support. The red arc is the reciprocal chr9/chr22 pair; the rest, including the calls landing on chrM at the right edge, are the artefact tail." src="/img/cancer_sv/k562_starfusion_triage.png" />
 
 ```json
 {

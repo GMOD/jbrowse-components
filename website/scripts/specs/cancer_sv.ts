@@ -36,6 +36,45 @@ const TUMOUR = 'COLO829_tumor_ont'
 const NORMAL = 'COLO829BL_normal_ont'
 const SV = 'COLO829_somatic_sv'
 
+// Super-compact reads (COMPACTNESS_PRESETS' featureHeight 1 / featureSpacing 0).
+// ONT depth here is 200x tumour / 80x normal, and at the default read height a
+// panel shows a dozen rows out of that; the reads carrying the junction are
+// below the fold. One row per pixel puts the whole pileup in frame, which is
+// what makes the wall of clipping legible as a wall.
+const SUPER_COMPACT = { featureHeight: 1, featureSpacing: 0 }
+
+// The Compact preset (featureHeight 3 / featureSpacing 0). K562's Iso-Seq is
+// ~600x over BCR, and at one row per pixel that many reads merge into a solid
+// block; three keeps individual transcripts separable while still fitting an
+// order of magnitude more of the pileup than the default.
+const COMPACT = { featureHeight: 3, featureSpacing: 0 }
+
+// Every COLO829 window in this tutorial falls inside a large intron (RARB,
+// BICC1, TRHDE), where the gene track draws one flat line per isoform and no
+// exon. Collapsing to the longest coding transcript is what makes the gene NAME
+// visible: a top-level feature's floating label is drawn under its glyph and
+// reserves no height of its own, so with all isoforms stacked the label lands
+// past the bottom of a fixed-height track and is clipped away (verified against
+// the live model: the label was in floatingLabelsData at y=313 under a track
+// 100px tall). One row puts it back inside the band.
+const GENE_TRACK = {
+  trackId: GENES,
+  geneGlyphMode: 'longestCoding',
+  height: 60,
+}
+
+// hg38's primary chromosomes, in order, for the whole-genome arc view. The
+// assembly is the full GRCh38 with alts and random scaffolds, and laying those
+// out too spends most of the width on contigs no fusion call touches.
+const HG38_MAIN_CHROMS = [
+  ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
+  'chrX',
+  'chrY',
+  // 16 kb against 3.1 Gb, so it is a hairline, but ten of the 44 calls end on
+  // it, and those arcs are the artefact tail the figure is about
+  'chrM',
+]
+
 export const cancerSvSpecs: ScreenshotSpec[] = [
   // The event as the reference shows it: every spanning read is torn into four
   // pieces, so the pileup is a wall of clipping at two points 457 bp apart, and
@@ -44,19 +83,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/multihop_tumour_vs_normal',
-    viewportHeight: 1100,
+    viewportHeight: 860,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // tight enough that both chr3 breakpoints (25,359,111 and 25,359,568) sit
       // near the middle rather than against the right edge
       loc: 'chr3:25,357,600-25,361,000',
       tracks: [
-        GENES,
-        SV,
+        GENE_TRACK,
+        { trackId: SV, height: 70 },
         // soft-clipped tails are the whole signal here: with clipping hidden the
         // tumour pileup looks as flat as the normal
-        { trackId: TUMOUR, showSoftClipping: true, height: 320 },
-        { trackId: NORMAL, showSoftClipping: true, height: 260 },
+        {
+          trackId: TUMOUR,
+          showSoftClipping: true,
+          height: 270,
+          ...SUPER_COMPACT,
+        },
+        {
+          trackId: NORMAL,
+          showSoftClipping: true,
+          height: 150,
+          ...SUPER_COMPACT,
+        },
       ],
     }),
   },
@@ -67,7 +116,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/multihop_split_view',
-    viewportHeight: 1460,
+    viewportHeight: 1130,
     url: sessionSpec(CONFIG, {
       views: [
         {
@@ -76,11 +125,24 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // `views`, not `init`: the LaunchView handler a session spec goes
           // through takes the panel list flat, while `init` is the
           // config/defaultSession form
+          //
+          // Read-track heights follow each locus's depth (chr3 is the 200x
+          // primary tumour window, the two hops are 60-70x), so a panel is the
+          // size of its own pileup rather than 250px of white under a short one.
           views: [
-            { assembly: 'hg38', loc: HOPS.rarb, tracks: [GENES, TUMOUR] },
-            { assembly: 'hg38', loc: HOPS.bicc1, tracks: [GENES, TUMOUR] },
-            { assembly: 'hg38', loc: HOPS.trhde, tracks: [GENES, TUMOUR] },
-          ],
+            { loc: HOPS.rarb, readHeight: 250, geneHeight: 60 },
+            { loc: HOPS.bicc1, readHeight: 130, geneHeight: 60 },
+            // the chr12 window is the one that clears a gene's 5' end, so it
+            // stacks TRHDE over TRHDE-AS1 and needs the second row
+            { loc: HOPS.trhde, readHeight: 140, geneHeight: 100 },
+          ].map(({ loc, readHeight, geneHeight }) => ({
+            assembly: 'hg38',
+            loc,
+            tracks: [
+              { ...GENE_TRACK, height: geneHeight },
+              { trackId: TUMOUR, height: readHeight, ...SUPER_COMPACT },
+            ],
+          })),
         },
       ],
     }),
@@ -179,17 +241,36 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     }),
   },
 
-  // K562: the caller's whole output at once. Two calls tower over the rest and
-  // the tail is mitochondrial noise, which is the triage the arc display exists
-  // for.
+  // K562: the caller's whole output at once. Every call is an arc from its left
+  // breakpoint to its right, so the two reciprocal chr9<->chr22 calls (BCR--ABL1
+  // and NUP214--XKR3, the Philadelphia translocation from both sides) cross the
+  // frame while the artefact tail sits on chrM at the right edge.
+  //
+  // The arcs need the whole genome laid out, not a window: an arc is only drawn
+  // when *both* endpoints resolve through `view.bpToPx`, so in a single-locus
+  // view every interchromosomal call is silently dropped and the track renders
+  // as a lone breakend glyph (which is what this figure used to show).
   {
     mode: 'url',
     name: 'cancer_sv/k562_starfusion_triage',
-    viewportHeight: 470,
+    viewportHeight: 500,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
-      loc: 'chr22:23,180,000-23,320,000',
-      tracks: [GENES, 'K562_star_fusion'],
+      displayedRegionNames: HG38_MAIN_CHROMS,
+      tracks: [
+        {
+          trackId: 'K562_star_fusion',
+          type: 'LinearPairedArcDisplay',
+          height: 280,
+          // triage is the point of the figure, so the support level has to be
+          // visible: StarFusionAdapter puts JunctionReadCount on the feature's
+          // score, and three calls clear 100 against a tail in single digits.
+          // Two of them are the chr9<->chr22 pair and paint as the one red arc;
+          // the third (BAG6--SLC44A4) spans 0.21 Mb, under a pixel here, and
+          // Arcs.tsx drops any arc whose radius is <= 1px
+          color: "jexl:get(feature,'score') > 100 ? '#c62828' : '#9e9e9e'",
+        },
+      ],
     }),
   },
 
@@ -198,7 +279,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/k562_bcr_abl_split',
-    viewportHeight: 1020,
+    viewportHeight: 1010,
     url: sessionSpec(CONFIG, {
       views: [
         {
@@ -208,12 +289,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             {
               assembly: 'hg38',
               loc: 'chr22:23,285,000-23,295,000',
-              tracks: [GENES, 'K562_isoseq'],
+              tracks: [
+                { trackId: GENES, height: 90 },
+                // Iso-Seq reads are mostly intron line: at the default height a
+                // panel is a stack of near-empty rows, and the reads that
+                // actually cross the junction are spread over hundreds of px
+                { trackId: 'K562_isoseq', height: 260, ...COMPACT },
+              ],
             },
             {
               assembly: 'hg38',
               loc: 'chr9:130,850,000-130,860,000',
-              tracks: [GENES, 'K562_isoseq'],
+              tracks: [
+                { trackId: GENES, height: 90 },
+                { trackId: 'K562_isoseq', height: 260, ...COMPACT },
+              ],
             },
           ],
         },
