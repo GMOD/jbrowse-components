@@ -30,10 +30,17 @@ export const syntenyTrackPalette: readonly string[] = [
   '#a6761d', // gold
 ]
 
-export interface ColorableTrack {
+// What the palette needs: an identity and whether the user already pinned it.
+// Names are irrelevant to the assignment, so they aren't required here.
+export interface PalettableTrack {
   trackId: string
   /** explicit user pin, if any */
   color?: string
+}
+
+// A palettable track plus the label the legend and the palette menu show.
+export interface ColorableTrack extends PalettableTrack {
+  name: string
 }
 
 /**
@@ -51,7 +58,7 @@ export interface ColorableTrack {
  * identity. Anything worth keeping gets pinned.
  */
 export function assignTrackColors(
-  tracks: readonly ColorableTrack[],
+  tracks: readonly PalettableTrack[],
 ): Map<string, string> {
   const pinned = new Set(
     tracks.map(t => t.color).filter((c): c is string => c !== undefined),

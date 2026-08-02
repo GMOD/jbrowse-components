@@ -53,11 +53,13 @@ export {
 } from './colorUtils.ts'
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
-export type { ColorableTrack } from './trackColors.ts'
-export { colorByMenuItems } from './colorByMenuItems.tsx'
+export { TrackColorsMixin } from './TrackColorsMixin.ts'
+export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
+export { colorByMenuItems, colorByMenuTargetFor } from './colorByMenuItems.tsx'
 export type {
   ColorByMenuTarget,
   ColorByMenuTrack,
+  TrackColorsModel,
 } from './colorByMenuItems.tsx'
 export { continuousRampConfig } from './colorRamps.ts'
 export type { Rgb } from './colorRamps.ts'

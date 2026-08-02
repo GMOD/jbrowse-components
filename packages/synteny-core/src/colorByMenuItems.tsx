@@ -1,6 +1,7 @@
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 
 import type { SyntenyColorBy } from './colorUtils.ts'
+import type { ColorableTrack } from './trackColors.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // One table for both views. They had a copy each and the help text had already
@@ -90,6 +91,68 @@ export interface ColorByMenuTrack {
   pinned: boolean
 }
 
+/**
+ * #api
+ * Project a view carrying `TrackColorsMixin` onto the menu builder's input.
+ * Both palette menus were building this by hand, walking the model's tracks a
+ * third time (after `colorableTracks` and the legend) and repeating the same
+ * five setter lambdas.
+ */
+export function colorByMenuTargetFor(
+  model: TrackColorsModel,
+  {
+    pointBased,
+    showReference,
+  }: { pointBased: boolean; showReference: boolean },
+): ColorByMenuTarget {
+  return {
+    uniformColorBy: model.uniformColorBy,
+    tracks: model.colorableTracks.map(({ trackId, name, color }) => ({
+      trackId,
+      name,
+      colorBy: model.resolveColorBy(trackId),
+      overridden: model.trackColorBy.has(trackId),
+      trackColor: model.trackColorFor(trackId),
+      pinned: color !== undefined,
+    })),
+    pointBased,
+    showReference,
+    showColorLegend: model.showColorLegend,
+    setColorBy: value => {
+      model.setColorBy(value)
+    },
+    setTrackColorBy: (trackId, value) => {
+      model.setTrackColorBy(trackId, value)
+    },
+    setTrackColor: (trackId, value) => {
+      model.setTrackColor(trackId, value)
+    },
+    clearTrackColorSettings: () => {
+      model.clearTrackColorSettings()
+    },
+    setShowColorLegend: value => {
+      model.setShowColorLegend(value)
+    },
+  }
+}
+
+// The slice of a TrackColorsMixin-bearing view the adapter reads. Structural
+// rather than the concrete view model: dotplot and linear synteny both satisfy
+// it, and naming either here would drag a plugin type into this package.
+export interface TrackColorsModel {
+  colorableTracks: ColorableTrack[]
+  uniformColorBy: SyntenyColorBy | undefined
+  showColorLegend: boolean
+  trackColorBy: { has: (trackId: string) => boolean }
+  resolveColorBy: (trackId: string) => SyntenyColorBy
+  trackColorFor: (trackId: string) => string
+  setColorBy: (value: SyntenyColorBy) => void
+  setTrackColorBy: (trackId: string, value: SyntenyColorBy | undefined) => void
+  setTrackColor: (trackId: string, value: string | undefined) => void
+  clearTrackColorSettings: () => void
+  setShowColorLegend: (value: boolean) => void
+}
+
 export interface ColorByMenuTarget {
   /** the view-wide mode, or undefined when tracks disagree */
   uniformColorBy: SyntenyColorBy | undefined
@@ -106,7 +169,11 @@ export interface ColorByMenuTarget {
   setShowColorLegend: (value: boolean) => void
 }
 
-function visibleModes({ pointBased, showReference, tracks }: ColorByMenuTarget) {
+function visibleModes({
+  pointBased,
+  showReference,
+  tracks,
+}: ColorByMenuTarget) {
   return COLOR_MODES.filter(
     m =>
       (m.value !== 'reference' || showReference) &&
@@ -161,8 +228,7 @@ function perTrackSubMenu(
  */
 export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
   const { uniformColorBy, tracks, showColorLegend } = target
-  const anyOverride =
-    uniformColorBy === undefined || tracks.some(t => t.pinned)
+  const anyOverride = uniformColorBy === undefined || tracks.some(t => t.pinned)
   return [
     ...visibleModes(target).map(({ label, value, helpText }) => ({
       label,

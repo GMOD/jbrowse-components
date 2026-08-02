@@ -23,7 +23,7 @@ identity. Anything worth keeping gets pinned.
 
 ```js
 // type signature
-(tracks: readonly ColorableTrack[]) => Map<string, string>
+(tracks: readonly PalettableTrack[]) => Map<string, string>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackColors.ts)
@@ -37,7 +37,7 @@ sessions keep rendering instead of hitting an unhandled switch case.
 
 ```js
 // type signature
-(value: string | undefined) => "track" | "default" | "strand" | "query" | "target" | "reference" | "identity" | "meanQueryIdentity" | "mappingQuality"
+(value: string | undefined) => "default" | "strand" | "query" | "target" | "reference" | "identity" | "meanQueryIdentity" | "mappingQuality" | "track"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -51,6 +51,20 @@ and the legend toggle.
 ```js
 // type signature
 (target: ColorByMenuTarget) => MenuItem[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
+
+## colorByMenuTargetFor
+
+Project a view carrying `TrackColorsMixin` onto the menu builder's input. Both
+palette menus were building this by hand, walking the model's tracks a third
+time (after `colorableTracks` and the legend) and repeating the same five setter
+lambdas.
+
+```js
+// type signature
+(model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
@@ -94,7 +108,7 @@ Any other uniform mode has a fixed legend of its own and returns nothing.
 
 ```js
 // type signature
-(tracks: readonly {…}[], uniformColorBy: "track" | ... 8 more ... | undefined) => ColorChip[]
+(tracks: readonly {…}[], uniformColorBy: "default" | ... 8 more ... | undefined) => ColorChip[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)

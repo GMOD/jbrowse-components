@@ -22,13 +22,10 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import {
   DiagonalizeProgressMixin,
-  assignTrackColors,
-  coerceColorBy,
+  TrackColorsMixin,
   displaysSettled,
   lodMenuItems,
-  syntenyTrackPalette,
   trackHasLodTiers,
-  trackLegendChips,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -56,12 +53,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ColorChip,
-  ColorableTrack,
-  LodMode,
-  SyntenyColorBy,
-} from '@jbrowse/synteny-core'
+import type { LodMode } from '@jbrowse/synteny-core'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
@@ -165,6 +157,7 @@ export default function stateModelFactory(pm: PluginManager) {
         RenderLifecycleMixin(),
         HighlightsMixin(),
         DiagonalizeProgressMixin(),
+        TrackColorsMixin(),
         types.model({
           /**
            * #property
@@ -247,31 +240,6 @@ export default function stateModelFactory(pm: PluginManager) {
            * used for initializing the view from a session snapshot
            */
           init: types.frozen<DotplotViewInit | undefined>(),
-          /**
-           * #property
-           * Show the floating color-by legend in the top-right of the plot.
-           * Dismissible via the legend's close button; re-enable from the
-           * color-by (palette) menu.
-           */
-          showColorLegend: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           * The color-by mode the whole plot renders with, unless a track
-           * overrides it in `trackColorBy`.
-           */
-          colorBy: types.stripDefault(types.string, 'default'),
-          /**
-           * #property
-           * trackId -> color-by mode for that track alone. Absent means the
-           * track follows the plot-wide `colorBy`.
-           */
-          trackColorBy: types.map(types.string),
-          /**
-           * #property
-           * trackId -> explicit color under `colorBy: 'track'`. Absent means the
-           * track takes an automatic slot from the palette.
-           */
-          trackColors: types.map(types.string),
         }),
       )
       .volatile(() => ({
@@ -492,69 +460,11 @@ export default function stateModelFactory(pm: PluginManager) {
          * Every track that can take a palette slot, in paint order, paired with
          * whatever color the user pinned on it.
          */
-        get colorableTracks(): ColorableTrack[] {
+        colorableTrackConfigs() {
           return self.tracks.map(t => {
-            const { trackId } = t.configuration
-            return { trackId, color: self.trackColors.get(trackId) }
+            const { trackId, name } = t.configuration
+            return { trackId, name }
           })
-        },
-        /**
-         * #getter
-         * trackId -> the color it draws in under `colorBy: 'track'`. Assigned
-         * across the whole plot rather than per display so an automatic slot
-         * can't duplicate a color pinned on a sibling.
-         */
-        get trackColorAssignments(): Map<string, string> {
-          return assignTrackColors(this.colorableTracks)
-        },
-        /**
-         * #method
-         */
-        trackColorFor(trackId: string): string {
-          const assigned = this.trackColorAssignments.get(trackId)
-          // a display always belongs to a track in `tracks`; the fallback only
-          // covers a display read mid-teardown, where any color will do
-          return assigned === undefined ? syntenyTrackPalette[0]! : assigned
-        },
-        /**
-         * #method
-         * The mode one track renders with: its own override, else the plot-wide
-         * mode.
-         */
-        resolveColorBy(trackId: string): SyntenyColorBy {
-          return coerceColorBy(self.trackColorBy.get(trackId) ?? self.colorBy)
-        },
-        /**
-         * #getter
-         * The mode to report as "the plot's mode" — undefined when tracks
-         * disagree, so the menu shows nothing checked and the legend says so
-         * instead of picking one track's answer for everyone.
-         */
-        get uniformColorBy(): SyntenyColorBy | undefined {
-          const modes = new Set(
-            this.colorableTracks.map(t => this.resolveColorBy(t.trackId)),
-          )
-          return modes.size > 1
-            ? undefined
-            : (modes.values().next().value ?? coerceColorBy(self.colorBy))
-        },
-        /**
-         * #getter
-         * Legend rows naming the overlaid tracks — non-empty only when they are
-         * colored by track, or by different modes.
-         */
-        get colorLegendChips(): ColorChip[] {
-          return trackLegendChips(
-            self.tracks.map(t => {
-              const { trackId, name } = t.configuration
-              return {
-                name,
-                colorBy: this.resolveColorBy(trackId),
-                trackColor: this.trackColorFor(trackId),
-              }
-            }),
-            this.uniformColorBy,
-          )
         },
         /**
          * #getter
@@ -729,52 +639,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setLineWidth(value: number) {
           self.lineWidth = value
-        },
-        /**
-         * #action
-         */
-        setShowColorLegend(arg: boolean) {
-          self.showColorLegend = arg
-        },
-        /**
-         * #action
-         * Set the plot-wide mode. Clears every per-track override, so picking a
-         * mode from the top level of the palette menu really does mean "all
-         * tracks".
-         */
-        setColorBy(value: SyntenyColorBy) {
-          self.colorBy = value
-          self.trackColorBy.clear()
-        },
-        /**
-         * #action
-         * Point one track at its own mode, or back at the plot-wide one.
-         */
-        setTrackColorBy(trackId: string, value: SyntenyColorBy | undefined) {
-          if (value === undefined) {
-            self.trackColorBy.delete(trackId)
-          } else {
-            self.trackColorBy.set(trackId, value)
-          }
-        },
-        /**
-         * #action
-         * Pin one track's color under `colorBy: 'track'`, or release it back to
-         * an automatic palette slot.
-         */
-        setTrackColor(trackId: string, value: string | undefined) {
-          if (value === undefined) {
-            self.trackColors.delete(trackId)
-          } else {
-            self.trackColors.set(trackId, value)
-          }
-        },
-        /**
-         * #action
-         */
-        clearTrackColorSettings() {
-          self.trackColorBy.clear()
-          self.trackColors.clear()
         },
         /**
          * #action
