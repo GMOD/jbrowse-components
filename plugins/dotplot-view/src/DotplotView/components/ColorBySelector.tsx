@@ -1,87 +1,52 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { colorByMenuItems } from '@jbrowse/synteny-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
-
-const COLOR_BY_OPTIONS: readonly {
-  value: SyntenyColorBy
-  label: string
-  helpText: string
-}[] = [
-  {
-    value: 'default',
-    label: 'Default',
-    helpText:
-      'Draw all alignments in black, the conventional dotplot line color.',
-  },
-  {
-    value: 'identity',
-    label: 'Identity',
-    helpText:
-      'Color alignments by per-alignment sequence identity on a perceptually-uniform viridis scale: low identity is dark purple, high identity is bright yellow. Useful for distinguishing divergent vs. conserved regions.',
-  },
-  {
-    value: 'meanQueryIdentity',
-    label: 'Mean query identity',
-    helpText:
-      'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). A single long query split into many smaller hits is colored by its overall identity to the target. Similar to the program dotPlotly.',
-  },
-  {
-    value: 'mappingQuality',
-    label: 'Mapping quality',
-    helpText:
-      'Color alignments by per-alignment PAF mapping quality (MAPQ, 0–60) on a perceptually-uniform cividis scale: low MAPQ dark blue, high MAPQ yellow. Useful for identifying ambiguous or multi-mapping regions.',
-  },
-  {
-    value: 'strand',
-    label: 'Strand',
-    helpText:
-      'Color alignments by strand orientation. Forward and reverse strand alignments use different colors, making inversions and strand-specific patterns easy to spot.',
-  },
-  {
-    value: 'query',
-    label: 'Query',
-    helpText:
-      "Color by the query sequence (this assembly's own refName). Each unique sequence gets a consistent color, making it easy to distinguish different contigs/chromosomes.",
-  },
-  {
-    value: 'target',
-    label: 'Target',
-    helpText:
-      "Color by the target/mate sequence (the other assembly's refName). The complement of Query coloring — useful when one query maps across several targets.",
-  },
-]
 
 const ColorBySelector = observer(function ColorBySelector({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  const { colorBy, showColorLegend } = model
-
   return (
     <CascadingMenuButton
-      menuItems={[
-        ...COLOR_BY_OPTIONS.map(opt => ({
-          label: opt.label,
-          type: 'radio' as const,
-          checked: colorBy === opt.value,
-          onClick: () => {
-            model.setColorBy(opt.value)
-          },
-          helpText: opt.helpText,
-        })),
-        {
-          label: 'Show color legend',
-          type: 'checkbox' as const,
-          checked: showColorLegend,
-          onClick: () => {
-            model.setShowColorLegend(!showColorLegend)
-          },
+      data-testid="color_by_menu"
+      menuItems={colorByMenuItems({
+        uniformColorBy: model.uniformColorBy,
+        tracks: model.tracks.map(t => {
+          const { trackId, name } = t.configuration
+          return {
+            trackId,
+            name,
+            colorBy: model.resolveColorBy(trackId),
+            overridden: model.trackColorBy.has(trackId),
+            trackColor: model.trackColorFor(trackId),
+            pinned: model.trackColors.has(trackId),
+          }
+        }),
+        pointBased: true,
+        // the dotplot compares exactly two genomes, so there is no third
+        // assembly for 'reference' to anchor on
+        showReference: false,
+        showColorLegend: model.showColorLegend,
+        setColorBy: value => {
+          model.setColorBy(value)
         },
-      ]}
+        setTrackColorBy: (trackId, value) => {
+          model.setTrackColorBy(trackId, value)
+        },
+        setTrackColor: (trackId, value) => {
+          model.setTrackColor(trackId, value)
+        },
+        clearTrackColorSettings: () => {
+          model.clearTrackColorSettings()
+        },
+        setShowColorLegend: value => {
+          model.setShowColorLegend(value)
+        },
+      })}
     >
       <PaletteIcon />
     </CascadingMenuButton>

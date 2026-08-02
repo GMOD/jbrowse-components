@@ -33,7 +33,10 @@ above uses both:
 - The palette button's **Color by** menu. **Query** gives each sequence on the
   horizontal axis its own color, which separates real syntenic runs from
   scatter. **Strand** and **Identity** are there too, and each option carries a
-  description of what it colors.
+  description of what it colors. With more than one alignment file plotted
+  together, **Distinct color per track** gives each its own color, and
+  **Customize per track** below it overrides the mode or pins the color for one
+  track at a time.
 - **Min length**, in the settings popover, drops alignments shorter than the
   slider value. Divergent genomes align in many short fragments, and hiding them
   is usually what makes the syntenic blocks visible at all.

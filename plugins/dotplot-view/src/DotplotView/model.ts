@@ -22,10 +22,13 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import {
   DiagonalizeProgressMixin,
+  assignTrackColors,
   coerceColorBy,
   displaysSettled,
   lodMenuItems,
+  syntenyTrackPalette,
   trackHasLodTiers,
+  trackLegendChips,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -53,7 +56,12 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { LodMode, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  ColorChip,
+  ColorableTrack,
+  LodMode,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
@@ -246,6 +254,24 @@ export default function stateModelFactory(pm: PluginManager) {
            * color-by (palette) menu.
            */
           showColorLegend: types.stripDefault(types.boolean, false),
+          /**
+           * #property
+           * The color-by mode the whole plot renders with, unless a track
+           * overrides it in `trackColorBy`.
+           */
+          colorBy: types.stripDefault(types.string, 'default'),
+          /**
+           * #property
+           * trackId -> color-by mode for that track alone. Absent means the
+           * track follows the plot-wide `colorBy`.
+           */
+          trackColorBy: types.map(types.string),
+          /**
+           * #property
+           * trackId -> explicit color under `colorBy: 'track'`. Absent means the
+           * track takes an automatic slot from the palette.
+           */
+          trackColors: types.map(types.string),
         }),
       )
       .volatile(() => ({
@@ -463,17 +489,72 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * The color-by mode the whole plot renders with. colorBy is stored per
-         * display (it feeds the display's own geometry rebuild), but every
-         * control writes it to all of them at once, so the view resolves it
-         * once here instead of each consumer re-deriving it from
-         * `dotplotDisplays[0]` with its own fallback — two of them disagreed,
-         * one running the raw string through `coerceColorBy` and one not, so an
-         * unrecognized value lit the legend as 'default' while the menu showed
-         * no mode checked.
+         * Every track that can take a palette slot, in paint order, paired with
+         * whatever color the user pinned on it.
          */
-        get colorBy() {
-          return coerceColorBy(this.dotplotDisplays[0]?.colorBy)
+        get colorableTracks(): ColorableTrack[] {
+          return self.tracks.map(t => {
+            const { trackId } = t.configuration
+            return { trackId, color: self.trackColors.get(trackId) }
+          })
+        },
+        /**
+         * #getter
+         * trackId -> the color it draws in under `colorBy: 'track'`. Assigned
+         * across the whole plot rather than per display so an automatic slot
+         * can't duplicate a color pinned on a sibling.
+         */
+        get trackColorAssignments(): Map<string, string> {
+          return assignTrackColors(this.colorableTracks)
+        },
+        /**
+         * #method
+         */
+        trackColorFor(trackId: string): string {
+          const assigned = this.trackColorAssignments.get(trackId)
+          // a display always belongs to a track in `tracks`; the fallback only
+          // covers a display read mid-teardown, where any color will do
+          return assigned === undefined ? syntenyTrackPalette[0]! : assigned
+        },
+        /**
+         * #method
+         * The mode one track renders with: its own override, else the plot-wide
+         * mode.
+         */
+        resolveColorBy(trackId: string): SyntenyColorBy {
+          return coerceColorBy(self.trackColorBy.get(trackId) ?? self.colorBy)
+        },
+        /**
+         * #getter
+         * The mode to report as "the plot's mode" — undefined when tracks
+         * disagree, so the menu shows nothing checked and the legend says so
+         * instead of picking one track's answer for everyone.
+         */
+        get uniformColorBy(): SyntenyColorBy | undefined {
+          const modes = new Set(
+            this.colorableTracks.map(t => this.resolveColorBy(t.trackId)),
+          )
+          return modes.size > 1
+            ? undefined
+            : (modes.values().next().value ?? coerceColorBy(self.colorBy))
+        },
+        /**
+         * #getter
+         * Legend rows naming the overlaid tracks — non-empty only when they are
+         * colored by track, or by different modes.
+         */
+        get colorLegendChips(): ColorChip[] {
+          return trackLegendChips(
+            self.tracks.map(t => {
+              const { trackId, name } = t.configuration
+              return {
+                name,
+                colorBy: this.resolveColorBy(trackId),
+                trackColor: this.trackColorFor(trackId),
+              }
+            }),
+            this.uniformColorBy,
+          )
         },
         /**
          * #getter
@@ -521,34 +602,34 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * Per-display GPU geometry keyed by track index. The upload autorun
-         * diffs this map: new entries upload, vanished entries evict.
+         * Per-display GPU geometry keyed by `displayKey`. The upload autorun
+         * diffs this map: new entries upload, vanished entries evict. Drawn in
+         * insertion order, so tracks paint bottom-of-the-list last.
          */
-        get geometryByTrackIndex() {
+        get geometryByDisplayKey() {
           const m = new Map<number, DotplotGeometryData>()
-          const displays = this.dotplotDisplays
-          for (let idx = 0, l = displays.length; idx < l; idx++) {
-            const g = displays[idx]!.geometry
+          for (const display of this.dotplotDisplays) {
+            const g = display.geometry
             if (g) {
-              m.set(idx, g)
+              m.set(display.displayKey, g)
             }
           }
           return m
         },
         /**
          * #getter
-         * Aggregated per-frame render state. Built by walking each
-         * display that has uploaded geometry; returns undefined when none
-         * do, which gates the render pass.
+         * Aggregated per-frame render state — a resolved value, never
+         * undefined; "the view isn't measured yet" is the `canRender`
+         * precondition below.
+         *
+         * An empty `displayKeys` is a real frame, not a skip: both backends
+         * clear before drawing, so painting zero displays is what wipes the
+         * plot when the last track is hidden. Gating the render pass on it left
+         * the departed track's pixels on the canvas (its buffer was deleted,
+         * but nothing repainted).
          */
         get dotplotRenderState() {
-          if (!this.initialized) {
-            return undefined
-          }
-          const displayKeys = [...this.geometryByTrackIndex.keys()]
-          if (displayKeys.length === 0) {
-            return undefined
-          }
+          const displayKeys = [...this.geometryByDisplayKey.keys()]
           const { hview, vview } = self
           return {
             viewBpH: hview.offsetPx * hview.bpPerPx,
@@ -580,8 +661,20 @@ export default function stateModelFactory(pm: PluginManager) {
             : undefined
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
+         * default-true hook): before the axes have regions and a measured
+         * width there is nothing to paint against. Gating the autorun pair
+         * here is what lets `dotplotRenderState` stay a resolved getter.
+         */
+        get canRender() {
+          return self.initialized
+        },
+      }))
       // One canvas on the view, shared by all displays. The view aggregates
-      // per-display geometry from `geometryByTrackIndex` and runs both upload
+      // per-display geometry from `geometryByDisplayKey` and runs both upload
       // and render against the shared backend.
       .actions(self => ({
         startRenderingBackend(backend: DotplotRenderingBackend) {
@@ -596,15 +689,11 @@ export default function stateModelFactory(pm: PluginManager) {
           >()
           self.attachRenderingBackend<DotplotRenderingBackend>(backend, {
             upload: b => {
-              syncUpload(b, self.geometryByTrackIndex)
+              syncUpload(b, self.geometryByDisplayKey)
             },
             render: b => {
-              const state = self.dotplotRenderState
-              if (!state) {
-                return false
-              }
               b.resize(self.viewWidth, self.viewHeight)
-              b.render(state)
+              b.render(self.dotplotRenderState)
               return true
             },
           })
@@ -649,16 +738,43 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * Fan a per-display render setting out to every display, so the
-         * view-level getters above stay the single answer for the whole plot.
-         * The controls are view-level (one palette menu, one settings popover)
-         * even though the state is per-display, so every writer went through
-         * the same loop — it lives here now instead of at each call site.
+         * Set the plot-wide mode. Clears every per-track override, so picking a
+         * mode from the top level of the palette menu really does mean "all
+         * tracks".
          */
         setColorBy(value: SyntenyColorBy) {
-          for (const d of self.dotplotDisplays) {
-            d.setColorBy(value)
+          self.colorBy = value
+          self.trackColorBy.clear()
+        },
+        /**
+         * #action
+         * Point one track at its own mode, or back at the plot-wide one.
+         */
+        setTrackColorBy(trackId: string, value: SyntenyColorBy | undefined) {
+          if (value === undefined) {
+            self.trackColorBy.delete(trackId)
+          } else {
+            self.trackColorBy.set(trackId, value)
           }
+        },
+        /**
+         * #action
+         * Pin one track's color under `colorBy: 'track'`, or release it back to
+         * an automatic palette slot.
+         */
+        setTrackColor(trackId: string, value: string | undefined) {
+          if (value === undefined) {
+            self.trackColors.delete(trackId)
+          } else {
+            self.trackColors.set(trackId, value)
+          }
+        },
+        /**
+         * #action
+         */
+        clearTrackColorSettings() {
+          self.trackColorBy.clear()
+          self.trackColors.clear()
         },
         /**
          * #action

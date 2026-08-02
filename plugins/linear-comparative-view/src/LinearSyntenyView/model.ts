@@ -4,8 +4,12 @@ import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
+  assignTrackColors,
+  coerceColorBy,
   lodMenuItems,
+  syntenyTrackPalette,
   trackHasLodTiers,
+  trackLegendChips,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -35,6 +39,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   CigarOpMask,
+  ColorChip,
+  ColorableTrack,
   LodMode,
   SyntenyColorBy,
 } from '@jbrowse/synteny-core'
@@ -126,6 +132,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         colorBy: types.stripDefault(types.string, 'default'),
+        /**
+         * #property
+         * trackId -> color-by mode for that track alone. Absent means the track
+         * follows the view-wide `colorBy`.
+         */
+        trackColorBy: types.map(types.string),
+        /**
+         * #property
+         * trackId -> explicit color under `colorBy: 'track'`. Absent means the
+         * track takes an automatic slot from the palette.
+         */
+        trackColors: types.map(types.string),
         /**
          * #property
          * Show the floating color-by legend in the top-right of the synteny
@@ -317,6 +335,79 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
         return best
       },
+      /**
+       * #getter
+       * Every synteny track across every level, in order, paired with whatever
+       * color the user pinned on it. View-wide rather than per level: the
+       * floating legend is one box for the whole stack, so two levels handing
+       * out the same color would make that one legend lie.
+       */
+      get colorableTracks(): ColorableTrack[] {
+        return self.levels
+          .flatMap(l => l.tracks)
+          .map(t => {
+            const { trackId } = t.configuration
+            return { trackId, color: self.trackColors.get(trackId) }
+          })
+      },
+      /**
+       * #getter
+       * trackId -> the color it draws in under `colorBy: 'track'`.
+       */
+      get trackColorAssignments(): Map<string, string> {
+        return assignTrackColors(this.colorableTracks)
+      },
+      /**
+       * #method
+       */
+      trackColorFor(trackId: string): string {
+        const assigned = this.trackColorAssignments.get(trackId)
+        // a display always belongs to a track on some level; the fallback only
+        // covers a display read mid-teardown, where any color will do
+        return assigned === undefined ? syntenyTrackPalette[0]! : assigned
+      },
+      /**
+       * #method
+       * The mode one track renders with: its own override, else the view-wide
+       * mode.
+       */
+      resolveColorBy(trackId: string): SyntenyColorBy {
+        return coerceColorBy(self.trackColorBy.get(trackId) ?? self.colorBy)
+      },
+      /**
+       * #getter
+       * The mode to report as "the view's mode" — undefined when tracks
+       * disagree, so the menu shows nothing checked and the legend says so
+       * instead of picking one track's answer for everyone.
+       */
+      get uniformColorBy(): SyntenyColorBy | undefined {
+        const modes = new Set(
+          this.colorableTracks.map(t => this.resolveColorBy(t.trackId)),
+        )
+        return modes.size > 1
+          ? undefined
+          : (modes.values().next().value ?? coerceColorBy(self.colorBy))
+      },
+      /**
+       * #getter
+       * Legend rows naming the overlaid tracks — non-empty only when they are
+       * colored by track, or by different modes.
+       */
+      get colorLegendChips(): ColorChip[] {
+        return trackLegendChips(
+          self.levels
+            .flatMap(l => l.tracks)
+            .map(t => {
+              const { trackId, name } = t.configuration
+              return {
+                name,
+                colorBy: this.resolveColorBy(trackId),
+                trackColor: this.trackColorFor(trackId),
+              }
+            }),
+          this.uniformColorBy,
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -420,6 +511,39 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setColorBy(arg: SyntenyColorBy) {
         self.colorBy = arg
+        // "apply to all" has to mean all, so a view-wide pick drops the
+        // per-track overrides rather than leaving them silently in force
+        self.trackColorBy.clear()
+      },
+      /**
+       * #action
+       * Point one track at its own mode, or back at the view-wide one.
+       */
+      setTrackColorBy(trackId: string, value: SyntenyColorBy | undefined) {
+        if (value === undefined) {
+          self.trackColorBy.delete(trackId)
+        } else {
+          self.trackColorBy.set(trackId, value)
+        }
+      },
+      /**
+       * #action
+       * Pin one track's color under `colorBy: 'track'`, or release it back to an
+       * automatic palette slot.
+       */
+      setTrackColor(trackId: string, value: string | undefined) {
+        if (value === undefined) {
+          self.trackColors.delete(trackId)
+        } else {
+          self.trackColors.set(trackId, value)
+        }
+      },
+      /**
+       * #action
+       */
+      clearTrackColorSettings() {
+        self.trackColorBy.clear()
+        self.trackColors.clear()
       },
       /**
        * #action

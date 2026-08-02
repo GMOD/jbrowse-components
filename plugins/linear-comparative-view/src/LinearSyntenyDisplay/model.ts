@@ -3,10 +3,10 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { findParentThatIs, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
-  coerceColorBy,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
   regionSignature,
@@ -19,7 +19,6 @@ import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
-import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
@@ -269,7 +268,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Stable backend key under the view-shared backend.
        */
       get displayKey() {
-        return syntenyDisplayKey(self.id)
+        return sharedBackendKey(self.id)
       },
       /**
        * #getter
@@ -542,19 +541,47 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           instanceData,
           featureData,
           colorBy: this.effectiveColorBy,
+          trackColor: this.trackColor,
           opacityByIdentity,
         })
       },
       /**
        * #getter
-       * The view-level colorBy resolved for this specific level. 'reference' is
-       * a stacked-view mode that colors every level by the shared anchor
-       * assembly's chromosome names; each level maps it to 'query' or 'target'
-       * depending on which of its two assemblies is the anchor, so the coloring
-       * stays consistent across levels. Every other mode passes through.
+       */
+      get trackId(): string {
+        return self.parentTrack.configuration.trackId
+      },
+      /**
+       * #getter
+       * This track's slot in the view's palette, used by `colorBy: 'track'`.
+       * Assigned by the view, not locally: pinning a color on one track shifts
+       * which automatic slots its siblings can take.
+       */
+      get trackColor(): string {
+        return this.view.trackColorFor(this.trackId)
+      },
+      /**
+       * #getter
+       * The mode this track renders with, before the per-level 'reference'
+       * remap: its own override if the user set one, else the view-wide mode.
+       * This is the user-facing answer — menus and the legend title read it, so
+       * a uniform 'reference' view reports 'reference' rather than the
+       * query/target each level resolved it to.
+       */
+      get colorByMode(): SyntenyColorBy {
+        return this.view.resolveColorBy(this.trackId)
+      },
+      /**
+       * #getter
+       * `colorByMode` resolved for this specific level, for the renderer.
+       * 'reference' is a stacked-view mode that colors every level by the shared
+       * anchor assembly's chromosome names; each level maps it to 'query' or
+       * 'target' depending on which of its two assemblies is the anchor, so the
+       * coloring stays consistent across levels. Every other mode passes
+       * through.
        */
       get effectiveColorBy(): SyntenyColorBy {
-        const colorBy = coerceColorBy(this.view.colorBy)
+        const colorBy = this.colorByMode
         if (colorBy === 'reference') {
           const { anchorAssemblyName: anchor, views } = this.view
           // this level draws between views[level] (query) and views[level+1]

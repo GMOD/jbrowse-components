@@ -991,7 +991,7 @@ Options:
   --loc2                Location on the second assembly
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, or mappingQuality
+  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, or track
   --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
@@ -1036,7 +1036,7 @@ Options:
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, or mappingQuality
+  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, or track
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]

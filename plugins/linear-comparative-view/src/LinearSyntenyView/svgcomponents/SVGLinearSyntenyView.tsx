@@ -7,7 +7,7 @@ import {
   totalHeight,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
-import { SVGColorByLegend, coerceColorBy } from '@jbrowse/synteny-core'
+import { SVGColorByLegend } from '@jbrowse/synteny-core'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
@@ -142,7 +142,8 @@ export async function renderToSvg(
                 legend={
                   i === 0 && model.showColorLegend ? (
                     <SVGColorByLegend
-                      colorBy={coerceColorBy(model.colorBy)}
+                      colorBy={model.uniformColorBy}
+                      trackChips={model.colorLegendChips}
                       viewWidth={width}
                       alpha={model.alpha}
                       cigarOps={model.presentCigarKinds}

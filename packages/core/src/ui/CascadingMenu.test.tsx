@@ -196,6 +196,50 @@ describe('CascadingMenu endAdornment', () => {
 // appearing above an open submenu shifts its index — and an index-keyed flag
 // would close it and open whichever submenu slid into the vacated slot.
 describe('CascadingMenu submenus', () => {
+  // endAdornment is declared on BaseMenuItem, which SubMenuItem extends, so the
+  // type promises a submenu row can carry a control. The renderer used to drop
+  // it silently, which made a per-track color swatch in a "Per track >" list
+  // invisible with no type error to catch it.
+  it('renders an endAdornment on a submenu row without opening the submenu', () => {
+    const onSwatch = jest.fn()
+    const { getByText, getByTestId } = render(
+      <ThemeProvider theme={theme}>
+        <CascadingMenu
+          open
+          menuItems={() => [
+            {
+              label: 'Per track',
+              endAdornment: (
+                <span
+                  data-testid="swatch"
+                  onClick={event => {
+                    event.stopPropagation()
+                    onSwatch()
+                  }}
+                >
+                  swatch
+                </span>
+              ),
+              subMenu: [{ label: 'Inner', onClick: () => {} }],
+            },
+          ]}
+          onMenuItemClick={cb => {
+            cb()
+          }}
+          onClose={() => {}}
+        />
+      </ThemeProvider>,
+    )
+    expect(getByText('swatch')).toBeTruthy()
+
+    fireEvent.click(getByTestId('swatch'))
+    expect(onSwatch).toHaveBeenCalled()
+    // the swatch stopped propagation, so the row did not open
+    expect(
+      getByTestId('cascading-submenu-per_track').getAttribute('aria-expanded'),
+    ).toBe('false')
+  })
+
   it('keeps the same submenu open when a row appears above it', () => {
     const showExtra = observable.box(false)
     const { getByText, getByTestId } = render(

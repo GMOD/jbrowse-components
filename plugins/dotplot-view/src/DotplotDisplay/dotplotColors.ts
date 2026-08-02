@@ -107,8 +107,13 @@ export function createDotplotColorFunction(
   colorBy: SyntenyColorBy,
   alpha: number,
   data: DotplotRpcData,
+  trackColor: string,
 ): DotplotColorFn {
   switch (colorBy) {
+    // One flat color for every point in this track, so overlaid tracks are told
+    // apart by hue rather than all painting the conventional black.
+    case 'track':
+      return constantColorFn(packCss(trackColor, alpha))
     case 'strand':
       return strandColorFn(alpha)
     case 'query':
@@ -142,14 +147,17 @@ export function computeDotplotColors({
   rpcData,
   colorBy,
   alpha,
+  trackColor,
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
   colorBy: SyntenyColorBy
   alpha: number
+  // the display's slot in the view's track palette; only read by colorBy:'track'
+  trackColor: string
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createDotplotColorFunction(colorBy, alpha, rpcData)
+  const colorFn = createDotplotColorFunction(colorBy, alpha, rpcData, trackColor)
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {
     out[i] = colorFn(rpcData, instanceFeatureIdx[i]!)

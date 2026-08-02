@@ -82,8 +82,16 @@ interface ColorInputs {
 function createColorFunction(
   colorBy: SyntenyColorBy,
   d: ColorInputs,
+  trackColor: string,
 ): (index: number) => number {
   switch (colorBy) {
+    // One flat color for every alignment in this track, so overlaid tracks are
+    // told apart by hue. The CIGAR indel instances below keep their own colors
+    // (only 'strand' recolors those), so structural ops stay legible on top.
+    case 'track': {
+      const packed = cssColorToABGR(trackColor)
+      return () => packed
+    }
     case 'identity':
       return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
     case 'meanQueryIdentity':
@@ -152,15 +160,18 @@ export function computeSyntenyColors({
   instanceData,
   featureData,
   colorBy,
+  trackColor,
   opacityByIdentity,
 }: {
   instanceData: InstanceInputs
   featureData: ColorInputs
   colorBy: SyntenyColorBy
+  // the display's slot in the view's track palette; only read by colorBy:'track'
+  trackColor: string
   opacityByIdentity?: boolean
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createColorFunction(colorBy, featureData)
+  const colorFn = createColorFunction(colorBy, featureData, trackColor)
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
   const { identities } = featureData
   const out = new Uint32Array(instanceCount)

@@ -68,6 +68,7 @@ const syntenyColorByModes = [
   'identity',
   'meanQueryIdentity',
   'mappingQuality',
+  'track',
 ] as const satisfies readonly SyntenyColorBy[]
 
 // The built-in theme names, pinned to core's own defaultThemes registry so a

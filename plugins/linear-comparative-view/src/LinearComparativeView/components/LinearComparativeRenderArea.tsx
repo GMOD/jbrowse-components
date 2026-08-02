@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ColorByLegend, coerceColorBy } from '@jbrowse/synteny-core'
+import { ColorByLegend } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
@@ -87,7 +87,8 @@ const LevelSection = observer(function LevelSection({
         </div>
         {legendModel ? (
           <ColorByLegend
-            colorBy={coerceColorBy(legendModel.colorBy)}
+            colorBy={legendModel.uniformColorBy}
+            trackChips={legendModel.colorLegendChips}
             cigarOps={legendModel.presentCigarKinds}
             alpha={legendModel.alpha}
             onClose={() => {

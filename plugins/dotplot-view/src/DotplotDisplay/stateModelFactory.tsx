@@ -3,9 +3,9 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
   SyntenyFetchStateMixin,
-  coerceColorBy,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
   resolveLodTier,
@@ -51,11 +51,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           configuration: ConfigurationReference(configSchema),
           /**
            * #property
-           * color by setting that overrides the config setting
-           */
-          colorBy: types.optional(types.string, 'default'),
-          /**
-           * #property
            */
           alpha: types.optional(types.number, 1),
           /**
@@ -83,6 +78,15 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => ({
       /**
        * #getter
+       * Stable slot on the view-shared backend. Hashed from the node id, not
+       * taken from the track's index, so hiding or reordering a sibling can't
+       * hand this display another's buffer.
+       */
+      get displayKey() {
+        return sharedBackendKey(self.id)
+      },
+      /**
+       * #getter
        * A fetch has completed (data is present, even if it mapped zero
        * features). Not a feature-count test — an empty-but-finished fetch is
        * ready, otherwise an empty plot spins the loading overlay forever.
@@ -97,15 +101,41 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * alone, without re-walking a single CIGAR.
        */
       get computedColors() {
-        const { instanceData, rpcData, colorBy, alpha } = self
+        const { instanceData, rpcData, alpha } = self
         return instanceData && rpcData
           ? computeDotplotColors({
               instanceData,
               rpcData,
-              colorBy: coerceColorBy(colorBy),
+              colorBy: this.colorBy,
               alpha,
+              trackColor: this.trackColor,
             })
           : undefined
+      },
+      /**
+       * #getter
+       * The mode this track renders with: its own override if the user set one,
+       * else the plot-wide mode.
+       */
+      get colorBy(): SyntenyColorBy {
+        const view = getContainingView(self) as DotplotViewModel
+        return view.resolveColorBy(this.trackId)
+      },
+      /**
+       * #getter
+       * This track's slot in the plot's palette, used by `colorBy: 'track'`.
+       * Assigned by the view, not locally: pinning a color on one track shifts
+       * which automatic slots its siblings can take.
+       */
+      get trackColor(): string {
+        const view = getContainingView(self) as DotplotViewModel
+        return view.trackColorFor(this.trackId)
+      },
+      /**
+       * #getter
+       */
+      get trackId(): string {
+        return self.parentTrack.configuration.trackId
       },
       /**
        * #getter
@@ -302,12 +332,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMinAlignmentLength(value: number) {
         self.minAlignmentLength = value
-      },
-      /**
-       * #action
-       */
-      setColorBy(value: SyntenyColorBy) {
-        self.colorBy = value
       },
     }))
     .actions(self => ({

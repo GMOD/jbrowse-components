@@ -728,10 +728,11 @@ ribbons and stronger opacity:
 
 Supported init fields:
 
-- `colorBy`: one of `default`, `strand`, `query`, `target`, `reference`,
-  `identity`, `meanQueryIdentity`, `mappingQuality`. `query`/`target` paint
-  ribbons by source/target chromosome, useful for whole-genome views where the
-  default grey blends ribbons into mud.
+- `colorBy`: one of `default`, `strand`, `track`, `query`, `target`,
+  `reference`, `identity`, `meanQueryIdentity`, `mappingQuality`.
+  `query`/`target` paint ribbons by source/target chromosome, useful for
+  whole-genome views where the default grey blends ribbons into mud. `track`
+  gives each overlaid synteny track its own palette color.
 - `drawCurves`: render ribbons as bezier curves rather than straight chords.
   Reads better at whole-genome scale where straight crossings stack into noise.
 - `alpha`: per-feature opacity in `[0,1]` (default `0.2`, tuned for dense

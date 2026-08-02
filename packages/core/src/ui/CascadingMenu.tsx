@@ -182,6 +182,7 @@ function CascadingSubmenu({
   inset,
   disabled,
   disabledHelpText,
+  endAdornment,
   menuItems,
   onMenuItemClick,
   closeAfterItemClick,
@@ -196,6 +197,11 @@ function CascadingSubmenu({
   inset: boolean
   disabled?: boolean
   disabledHelpText?: string
+  // `endAdornment` is declared on BaseMenuItem, which SubMenuItem extends, so a
+  // submenu row can carry a control (a color swatch, a toggle) the same way a
+  // clickable row can. It sits before the chevron; the content stops its own
+  // click so interacting with it doesn't also open the submenu.
+  endAdornment?: React.ReactNode
   isOpen: boolean
   onOpen: () => void
   onClose: () => void
@@ -228,6 +234,7 @@ function CascadingSubmenu({
         >
           <MenuItemLeadingIcon Icon={Icon} />
           <ListItemText primary={title} inset={inset} />
+          {endAdornment}
           <ChevronRight />
         </MenuItem>
       </DisabledTooltip>
@@ -360,6 +367,7 @@ function CascadingMenuList({
               inset={hasIcon && !item.icon}
               disabled={item.disabled}
               disabledHelpText={item.disabledHelpText}
+              endAdornment={item.endAdornment}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}

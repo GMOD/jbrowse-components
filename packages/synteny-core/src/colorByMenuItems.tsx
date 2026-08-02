@@ -187,6 +187,7 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
               // short of the row or picking a color also opens the submenu
               endAdornment: (
                 <span
+                  data-testid={`color_by_track_swatch-${track.trackId}`}
                   onClick={event => {
                     event.stopPropagation()
                   }}

@@ -102,6 +102,9 @@ carries a **Show color legend** toggle:
   deletions, and skips inside an alignment are drawn in their own colors
 - Strand - forward and inverted alignments get different colors, so a ribbon
   that twists reads as an inversion
+- Distinct color per track - give every overlaid synteny track its own color
+  from a palette, so several alignment files drawn into the same view can be
+  told apart. Only offered once a view has more than one track
 - Query / Target - color by the refName on this side or on the other side, for
   telling contigs apart when one maps across several
 - Reference - color every level of a stacked view by the shared reference's
@@ -111,6 +114,11 @@ carries a **Show color legend** toggle:
 - Mean query identity - length-weighted identity across all alignments of a
   query/target pair, which smooths a contig split into many hits
 - Mapping quality - per-alignment PAF MAPQ on a cividis ramp
+
+**Customize per track** at the bottom of that menu overrides the choice above
+for one track at a time: each track can take its own mode, and its automatic
+palette color can be pinned to one you pick. Choosing any mode above clears
+those overrides.
 
 The settings button beside it has **Identity fade**, which modulates ribbon
 opacity by identity independently of the color mode, so low-identity blocks fade
