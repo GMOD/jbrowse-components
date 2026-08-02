@@ -137,6 +137,18 @@ than being unexplained row ranges. Both are also in the track menu.
 
 ```json
 {
+  "type": "VariantTrack",
+  "trackId": "tcga_brca_mutations",
+  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
+  "assemblyNames": ["hg38"],
+  "category": ["TCGA"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz",
+    "samplesTsvLocation": {
+      "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
+    }
+  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantMatrixDisplay",

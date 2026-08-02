@@ -83,8 +83,16 @@ expression:
 
 So a track can be colored by allele frequency without any preprocessing:
 
-```json
+```json addtrack
 {
+  "type": "VariantTrack",
+  "trackId": "my_maf_track",
+  "name": "Variants colored by allele frequency",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://yourhost/file.vcf.gz"
+  },
   "displayDefaults": {
     "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
   }
@@ -176,6 +184,14 @@ Consequence impact, via the `impactColor` helper:
 
 ```json
 {
+  "type": "VariantTrack",
+  "trackId": "diversity_panel",
+  "name": "Diversity Panel",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://yourhost/diversity.vcf.gz"
+  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
@@ -185,10 +201,18 @@ Consequence impact, via the `impactColor` helper:
 }
 ```
 
-SV type, via the literal value `svType`:
+SV type, via the literal value `svType`, on the same track:
 
 ```json
 {
+  "type": "VariantTrack",
+  "trackId": "diversity_panel",
+  "name": "Diversity Panel",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://yourhost/diversity.vcf.gz"
+  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",

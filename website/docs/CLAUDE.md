@@ -162,6 +162,22 @@ point at them, not re-copy their contents (which silently goes stale).
   `LinearPairedArcDisplay`, ...) or writes a session snapshot that needs real
   `displayId`s. Bonus: only `displayDefaults` blocks qualify for the
   ` ```json addtrack ` CLI tab.
+- **Show a whole track config, not a config fragment.** A block that is only
+  `{ "displayDefaults": { "color": ... } }` (or a bare `"displayDefaults": {…}`
+  with no enclosing object) is not something a reader can paste anywhere: they
+  have to work out which track it belongs on and where inside it the key goes.
+  Restate the full `type`/`trackId`/`name`/`assemblyNames`/`adapter` track with
+  the slot in place, even when that repeats a track shown earlier on the page.
+  Say it replaces the earlier one and keep the same `trackId`, so the two can't
+  both be pasted. The same goes for a `displays` entry shown on its own.
+  `check-config-blocks.ts` fails on a block whose only keys are
+  `displayDefaults`/`displays`.
+- **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`, and a
+  backtick template over string concatenation (`` `hsl(${hue},70%,50%)` ``, not
+  `'hsl(' + hue + ',70%,50%)'`). Both forms are equivalent and the verbose ones
+  still work, so old blocks are fine as they are. `config_guides/jexl.md`
+  documents the choice, including the one callback (`formatDetails`) where
+  `get()` does not work.
 - **`user_guides/<x>.md` vs `config_guides/<x>.md`.** Eight track types have
   both. The split is by audience, and each page owes the other the half it
   doesn't cover: the user guide drives the **UI** (menus, what the display looks

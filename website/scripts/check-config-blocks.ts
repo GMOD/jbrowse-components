@@ -57,6 +57,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 // (or the flattest `uri` shorthand for one).
 function shape(obj: Record<string, unknown>) {
   const type = typeof obj.type === 'string' ? obj.type : ''
+  const keys = Object.keys(obj)
   return type.endsWith('Adapter')
     ? 'adapter'
     : type.endsWith('Display')
@@ -65,7 +66,10 @@ function shape(obj: Record<string, unknown>) {
         ? 'track'
         : obj.name && (obj.sequence ?? obj.uri)
           ? 'assembly'
-          : 'other'
+          : keys.length > 0 &&
+              keys.every(k => k === 'displayDefaults' || k === 'displays')
+            ? 'fragment'
+            : 'other'
 }
 
 const problems: string[] = []
@@ -98,6 +102,13 @@ for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
         `  ${where}`,
         `    → bare ${kind} object at the top level (type: ${String(parsed.type)}).`,
         `      Show the whole track/assembly it belongs to, or prefix the parent key.\n`,
+      )
+    } else if (kind === 'fragment') {
+      problems.push(
+        `  ${where}`,
+        `    → only \`${Object.keys(parsed).join('`/`')}\`, so there is no track to paste it into.`,
+        `      Restate the whole track config with the slot in place (same trackId`,
+        `      as the track it replaces), or prefix the parent key.\n`,
       )
     } else if ((kind === 'track' || kind === 'assembly') && !tagged) {
       const derivable =

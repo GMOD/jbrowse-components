@@ -33,6 +33,11 @@ welcome your [feedback](/contact).
   `RgfaTabixAdapter` and `MinigraphBubbleAdapter`, which ship in it rather than
   in JBrowse Web
 
+## The GraphGenomeView plugin
+
+It is beta and not in the [plugin store](/docs/user_guides/plugin_store) yet, so
+it loads by URL:
+
 ```json
 {
   "plugins": [
@@ -44,11 +49,9 @@ welcome your [feedback](/contact).
 }
 ```
 
-The plugin is in beta and not in the
-[plugin store](/docs/user_guides/plugin_store) yet, so it loads by URL like
-this; the [graph genome view guide](/docs/user_guides/graph_genome_view) covers
-the view's layouts, colors and menus on a smaller graph than this one. The
-allele inventory and the variant callset need no plugin.
+The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
+view's layouts, colors and menus on a smaller graph than this one. The allele
+inventory and the variant callset need no plugin.
 
 ## What release 2 publishes
 
@@ -130,7 +133,7 @@ downloads nothing but the region in view; the adapter resolves
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
   "displayDefaults": {
-    "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
   }
 }
 ```
@@ -158,34 +161,49 @@ segment.
 
 The subgraph is cut from the same two files the track reads.
 
-<Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus and the graph below is what that bubble contains. Both panels use the graph's Reference position colors, so the segment blocks and the thread in the graph run red to magenta together and a loop's color says where above it attaches." src="/img/pangenome/hprc_c4_subgraph.png" />
+<Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus and the graph below is what that bubble contains. Both panels use the graph's Reference position colors, so the segment blocks and the backbone thread in the graph run red to magenta together, and the charcoal loops are the alleles, which sit on no GRCh38 coordinate and so take no hue." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 A force layout has no x axis to share with the linear view, so color is the only
 thing that can carry the correspondence. **Reference position** in the **Color**
 dropdown is built for that: it ramps hue over the window the subgraph was cut
-from, red at its start to magenta at its end, and a segment with no reference
-coordinate of its own takes the hue of the backbone it branches from.
+from, red at its start to magenta at its end. A segment with no reference
+coordinate of its own comes off the ramp and draws flat charcoal, so a hue
+always states a position on GRCh38 rather than an allele's attachment point.
 
 The ramp is two numbers and a midpoint, so a linear track can paint the same
-colors. Set this on the segments track for the same window and a block above and
-its node below are the same color:
+colors. This is the segments track above with the ramp in place of its rank
+colors, so a block above and its node below are the same color:
 
 ```json
 {
+  "type": "FeatureTrack",
+  "trackId": "hprc_minigraph_segments",
+  "name": "HPRC release 2 graph (rGFA segments)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+  },
   "displayDefaults": {
-    "color": "jexl:'hsl(' + min(300, max(0, ((get(feature,'start')+get(feature,'end'))/2 - 32500000) / 60000 * 300)) + ',70%,50%)'"
+    "color": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 31980000) / 70000 * 300))},70%,50%)`"
   }
 }
 ```
 
-The two constants are the window's start and its length, so this belongs on the
-view rather than in a hosted config.
+The two constants in the `color` are the window's start and its length, here the
+C4 window the figure above was cut from, so this belongs on the view rather than
+in a hosted config. The `rank` branch is the graph's own off-ramp charcoal; it
+fires only on a lane opened on a contributing assembly, where rank>0 segments
+have coordinates of their own.
 
 The asymmetry between the panels is structural. A rank-0 segment sits on GRCh38
 and has a coordinate, while a rank>0 segment sits on some other assembly's
 refName and has none, so no coloring will put those loops on a GRCh38 axis as
-segments. The ramp shows where each one attaches; the bubble lane and the
-[allele inventory](#the-allele-inventory) give their lengths.
+segments. Where each one attaches comes from the
+[anchored layout](#the-layout-dropdown), whose x is GRCh38 bp, or from a hover;
+the bubble lane and the [allele inventory](#the-allele-inventory) give their
+lengths.
 
 Two things control whether that picture is readable, and neither is obvious.
 
@@ -292,7 +310,7 @@ mode the deletion figure above uses, puts x back on GRCh38 and stacks the
 alternate alleles below the backbone by rank. The same MHC class II window drawn
 both ways:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing about it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs below the position it attaches to, stacked by rank. The rings mark the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it. Reference-position colors are on in both, so the segment above and the node below share a color either way, and in the anchored half an x as well." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing about it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each alternate allele hangs below the position it attaches to, stacked by rank. The rings mark the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it. Reference-position colors are on in both, so the ringed reference stretch carries the same green as the segment above it either way, and in the anchored half the same x; the allele is charcoal in both, being off the ramp." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is a window small enough to draw:
 
@@ -334,10 +352,9 @@ and copy number there is not callable from short reads:
 
 <Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
-Either way the attribution is the same one `discoveryRank` and `firstSeenIn`
-carry: the haplotype minigraph took the sequence from, not the set of haplotypes
-carrying it. Collapsing is what let the allele be found at all, so carriage
-remains the callset's job, [below](#structure-not-sequence).
+Either way a donor row names the haplotype the sequence was taken from, the same
+attribution the [allele inventory](#the-allele-inventory)'s `discoveryRank` and
+`firstSeenIn` carry, and not the set of haplotypes carrying it.
 
 ### Hovering one panel highlights the other
 
@@ -347,7 +364,7 @@ cursor brightens in the graph. This needs no configuration. For a rank>0 allele
 the interval shown is not the allele's own sequence, but the span between the
 two backbone segments it detaches from and rejoins. Both directions are pictured
 in the
-[E. coli tutorial](/docs/user_guides/graph_genome_view#hovering-one-panel-highlights-the-other).
+[graph genome view guide](/docs/user_guides/graph_genome_view#hovering-one-panel-highlights-the-other).
 
 ### From a node back to a coordinate
 
@@ -385,7 +402,7 @@ and those three state how common it is.
 Where the contributing assemblies are themselves loaded, a handful of genomes
 rather than hundreds, the same menu opens any of them, or all at once as a
 synteny view. See the
-[E. coli tutorial](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
+[graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
 
 ## The bubble track
 
@@ -440,12 +457,15 @@ draws at its real magnitude instead of as a 1 bp box.
 <Figure caption="The allele inventory over the complement factor H cluster, under the RefSeq genes and the rGFA segments. Grey bars are the reference span each allele replaces, labelled with it, and purple marks are insertions drawn at the size they insert, which is what the CIGAR in the BED buys. The long bar from CFHR3 to CFHR1 is the deletion the graph figure above draws as an arc. Rows are the display packing overlapping alleles, not haplotypes." src="/img/pangenome/hprc_allele_inventory.png" />
 
 The
-[E. coli tutorial](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
+[graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
 walks through the columns and how the walk derives them.
 
 The whole graph holds a few hundred thousand alleles, about half of them
-insertions. At that scale, start from a size filter in **Edit filters**, e.g.
-`jexl:get(feature,'delta')>10000`.
+insertions, so a wide window is dense. The alignments display filters by flag
+and tag rather than by expression, so a size filter wants the same file loaded a
+second time as a `FeatureTrack`, whose default display has **Edit filters**:
+`jexl:abs(feature.delta)>10000`. Filter on `abs`: `delta` is negative for a
+deletion, so an unsigned bound keeps only the insertions.
 
 Read `discoveryRank` and `firstSeenIn` as the first haplotype to contribute an
 allele rather than as who carries it. minigraph collapses, so an allele many
@@ -528,16 +548,16 @@ matrix row is carriage. A donor can appear on one haplotype in the graph and
 carry the same event on the other in the callset. What does line up is the
 event: mark an interval in the linear view and it crosses the genes, the
 segments lane and the genotype matrix in one column, and the reference-position
-ramp gives the graph's alleles at that position the same hue as the segments
-above them.
+ramp gives the graph's backbone at that position the same hue as the segments
+above it.
 
 <Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it, all 464 haplotypes clustered by genotype, carries it across a whole clade, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, which has no coordinate axis to draw the band on, so the ring marks the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 
-Two scripts and one gfatools call rebuild the hosted files, for a different
-graph. Their provenance (source, size, exact commands, build date) is in
-[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
+Two scripts and one gfatools call rebuild the hosted files, or build the same
+set for a different graph. Their provenance (source, size, exact commands, build
+date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
@@ -565,10 +585,17 @@ tabix -p bed out.bubbles.bed.gz
 reads only those two indexes, never the graph, and writes the allele inventory
 in seconds off the small index pair rather than the 842 MB download they came
 from. It therefore works with no assemblies loaded, which is the normal
-situation with someone else's graph. The E. coli tutorial's
+situation with someone else's graph. The guide's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 answer the carriage question instead, at the cost of re-mapping every haplotype.
 Both need htslib (`bgzip`, `tabix`) on your `PATH`.
+
+The two haplotype rows in the CFHR figure are a third script:
+[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
+picks a carrier and a non-carrier of the deletion out of the callset, slices
+their alignments out of release 2's own all-vs-GRCh38 PAF, and slices each
+haplotype's CAT annotation to the same window, giving one synteny row and one
+gene lane per haplotype.
 
 ## See also
 

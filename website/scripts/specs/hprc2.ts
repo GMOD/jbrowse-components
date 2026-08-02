@@ -2,7 +2,7 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// HPRC Release 2 (bioRxiv 2026.07.21.739710, 460 haplotypes). The Minigraph-Cactus
+// HPRC Release 2 (bioRxiv 2026.07.21.739710). The Minigraph-Cactus
 // `wave` VCF is the one HPRC2 product a browser can open with no preprocessing at
 // all: it ships tabix-indexed beside the graph, and the bucket serves range
 // requests with `Access-Control-Allow-Origin: *`, so these figures stream the

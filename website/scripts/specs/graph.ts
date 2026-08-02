@@ -567,9 +567,7 @@ const MHC_MARKED_DELETION = '6:32,514,842-32,529,438'
 //
 // That scheme is a hue ramp over the region the subgraph was cut from: hue 0
 // (red) at its start to 300 (magenta) at its end, at saturation 70% and
-// lightness 50%, and a node with no reference coordinate of its own takes the
-// hue of the backbone interval it branches from
-// (jbrowse-plugin-graphgenomeview renderer/GeometryBuilder.ts,
+// lightness 50% (jbrowse-plugin-graphgenomeview renderer/GeometryBuilder.ts,
 // REFERENCE_RAMP_MAX_HUE). It is a function of two stated numbers and a
 // midpoint, which is the whole reason it exists: a linear track can reproduce
 // it exactly, so a block above and a node below are the same color for the same
@@ -604,11 +602,14 @@ function referencePositionColor({
 }
 
 // The HPRC segments lane, shared by every figure that carries it so they read
-// the same. Labels off: the ids are the graph's own `s101124` counters, which
-// name nothing a reader can look up, and at these widths the display spends
-// three or four rows of text on them — in the 90 kb allele-inventory frame they
-// covered more area than the blocks did. What the lane is for is the blue rank-0
-// backbone tiling the reference.
+// the same. `showLabels: 'none'`: the ids are the graph's own `s101124`
+// counters, which name nothing a reader can look up, and at these widths the
+// display spends three or four rows of text on them — in the 90 kb
+// allele-inventory frame they covered more area than the blocks did. What the
+// lane is for is the blue rank-0 backbone tiling the reference. 'none' rather
+// than the legacy 'off', which migrateBasicConfigSnapshot folds onto
+// 'description' (names hidden, descriptions still drawn if the adapter emits
+// any) rather than onto no labels at all.
 //
 // `heightMode: 'grow'` rather than a pinned height. The lane packs 2-4 rows
 // depending on how the window's segments overlap, and a pinned 45 px fitted the
@@ -626,7 +627,7 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
   return {
     trackId: SEGMENTS_TRACK,
     type: 'LinearBasicDisplay',
-    showLabels: 'off',
+    showLabels: 'none',
     heightMode: 'grow',
     color: referencePositionColor(domain),
   }
@@ -759,7 +760,7 @@ function pggbLocusSession(
             type: 'LinearBasicDisplay',
             // labels off: at this density they are hundreds of overlapping
             // integer ids, and the lane is here for the color sweep
-            showLabels: 'off',
+            showLabels: 'none',
             height: 50,
             color: referencePositionColor(region),
           },
@@ -891,7 +892,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
             {
               trackId: ECOLI_SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
-              showLabels: 'off',
+              showLabels: 'none',
               heightMode: 'grow',
               color: referencePositionColor(PAA_RAMP_DOMAIN),
             },
@@ -934,13 +935,11 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
-        (graphNode): Annotation => ({
-          type: 'box',
-          anchor: { view: 1, graphNode },
-          strokeWidth: 3,
-        }),
-      ),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
+        type: 'box',
+        anchor: { view: 1, graphNode },
+        strokeWidth: 3,
+      })),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
@@ -1161,7 +1160,7 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
               // labels off in both halves: the pggb lane is hundreds of bare
               // integer ids at this width, and the halves have to be read the
               // same way for the density difference to be the only difference
-              showLabels: 'off',
+              showLabels: 'none',
               heightMode: 'grow',
               color: referencePositionColor(RESOLUTION_LANE_DOMAIN),
               // The pggb lane is ~2,400 segments over this span, which is past
@@ -1347,14 +1346,12 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map(
-        (graphNode): Annotation => ({
-          type: 'circle',
-          anchor: { view: 1, graphNode },
-          radius: 24,
-          strokeWidth: 3,
-        }),
-      ),
+      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
+        type: 'circle',
+        anchor: { view: 1, graphNode },
+        radius: 24,
+        strokeWidth: 3,
+      })),
       {
         type: 'text',
         text: label,

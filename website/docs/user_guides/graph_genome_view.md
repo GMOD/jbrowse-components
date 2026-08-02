@@ -17,7 +17,7 @@ assembly carries.
 pangenome graph in rGFA or GFA, and the contributing assemblies if you want to
 launch out into them.
 
-<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue. The alternate alleles take the paler tint of the segment they attach to; they have no K12 coordinates, which is why the linear track has nothing to show for them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue. The alternate alleles are the charcoal ones, off the ramp: they have no K12 coordinates, which is why the linear track has nothing to show for them either." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -245,30 +245,54 @@ is which coloring survives the trip between them. Three of the **Color**
 dropdown's schemes are worth knowing:
 
 - **Reference position** ramps hue over the window the subgraph was cut from,
-  red at its start to magenta at its end, and gives a segment with no reference
-  coordinate of its own the hue of the backbone it branches from. It is the one
-  scheme a linear track can reproduce exactly, because it is a function of two
-  numbers and a midpoint.
+  red at its start to magenta at its end. A segment with no reference coordinate
+  of its own comes off the ramp and draws flat charcoal, so a hue always states
+  a position on the reference. It is the one scheme a linear track can reproduce
+  exactly, because it is a function of two numbers and a midpoint.
 - **Stable rank** is the rank ladder above: rank 0 blue, then a ramp for the
   rest.
 - **Depth** is how many paths walk each segment, which is core-versus-accessory
   at the segment level.
 
 To paint a segments track in the same colors as the graph, put the matching
-expression on the track. Reference position, over a window from 32,500,000
-spanning 60,000 bp:
+expression on the track. Reference position, over the 50 kb window from
+4,050,000 that the figures above are cut from:
 
 ```json
-"displayDefaults": {
-  "color": "jexl:'hsl(' + min(300, max(0, ((get(feature,'start')+get(feature,'end'))/2 - 32500000) / 60000 * 300)) + ',70%,50%)'"
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_minigraph_segments",
+  "name": "minigraph graph: rGFA segments",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_minigraph"
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 4050000) / 50000 * 300))},70%,50%)`"
+  }
 }
 ```
 
-Stable rank, which needs no window and so can live in a hosted config:
+The `rank` branch is the graph's own off-ramp charcoal, and fires only on a lane
+opened on a contributing assembly, where rank>0 segments have coordinates of
+their own.
+
+Stable rank needs no window, so it is the one that can live in a hosted config:
 
 ```json
-"displayDefaults": {
-  "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_minigraph_segments",
+  "name": "minigraph graph: rGFA segments",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_minigraph"
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+  }
 }
 ```
 
@@ -391,14 +415,16 @@ bubbles cover about a tenth of the frame and a row is mostly blank. Read it as
 marks at the sites that vary, not as a per-base lane like the
 [](/docs/user_guides/maf_track).
 
-Each row also carries what that bubble looks like across all the strains, so the
-sites worth a look are a filter away in **Edit filters**:
+Each row also carries what that bubble looks like across all the strains. Those
+columns are in the popup, and a jexl expression over them narrows the track to
+the sites worth a look, from **Edit filters** on the track's default display
+(the multi-row display has no filter of its own):
 
-| Column    | What it is                                     | Use it for                                                                            |
-| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `alleles` | distinct paths anyone actually takes here      | `jexl:get(feature,'alleles')>2` cuts to the multi-allelic sites                       |
-| `nonRef`  | how many strains leave the reference path      | `jexl:get(feature,'nonRef')==1` finds the singletons, `==4` the sites K12 alone lacks |
-| `strand`  | the orientation the strain's contig aligned in | `jexl:get(feature,'strand')==-1` selects inverted alleles                             |
+| Column    | What it is                                     | Use it for                                                                     |
+| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| `alleles` | distinct paths anyone actually takes here      | `jexl:feature.alleles>2` cuts to the multi-allelic sites                       |
+| `nonRef`  | how many strains leave the reference path      | `jexl:feature.nonRef==1` finds the singletons, `==4` the sites K12 alone lacks |
+| `strand`  | the orientation the strain's contig aligned in | `jexl:feature.strand==-1` selects inverted alleles                             |
 
 Most bubbles here are biallelic, with a tail where all five strains carry
 something different: an allele-frequency spectrum whose end is the hypervariable
@@ -451,10 +477,11 @@ draws whatever carries a CIGAR, so the alleles pack into rows and each draws the
 same insertion marker and deletion bar a read does, at its real size. Without
 the CIGAR a 63 kb allele is a 1 bp feature with the number hidden in its label.
 
-`altLen`, `discoveryRank` and the traversed `segments` are in the popup, and
-`class`/`delta` drive the same **Edit filters** jexl the per-strain track uses.
-Start from `jexl:get(feature,'delta')>10000` on a large graph; it is the only
-filter that scales to the HPRC graph's two hundred thousand alleles.
+`altLen`, `discoveryRank` and the traversed `segments` are in the popup. A size
+filter on `delta` is what scales this lane to the HPRC graph's two hundred
+thousand alleles, and it wants the same file on a `FeatureTrack`, whose default
+display has **Edit filters**: `jexl:abs(feature.delta)>10000`. Filter on `abs`,
+since `delta` is negative for a deletion.
 
 The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
 **first** assembly to contribute a segment, because minigraph collapses: an
