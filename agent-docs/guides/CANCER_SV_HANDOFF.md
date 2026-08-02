@@ -40,9 +40,11 @@ derivative 33,126-39,549  -  chr3   25,352,683-25,359,111
 ```
 
 Two chr3 arms in opposite orientations (a foldback) with 199 bp of chr10 and
-183 bp of chr12 spliced in at the turn. That structure was derived twice
-independently, once from the caller's breakend brackets and once from a de novo
-consensus realigned back, and the two agree.
+183 bp of chr12 spliced in at the turn. That structure has now been derived three
+times independently — from the caller's breakend brackets, from a de novo
+consensus realigned back, and from a LINX-style breakend walk in a separate
+codebase ([below](#the-vcf-side-sibling-derivative-chromosome-utils)) — and all
+three agree.
 
 Supporting evidence, all measured rather than eyeballed:
 
@@ -116,6 +118,40 @@ are now pinned by behavior checks:
   Found by running the pipeline on a synthetic foldback (below); fixed by
   merging the windows.
 
+## The VCF-side sibling: derivative-chromosome-utils
+
+`github.com/cmdcolin/derivative-chromosome-utils` is a TypeScript library that
+reconstructs derivative chromosomes from BND records alone, adapted from LINX's
+chaining (GRIDSS/PURPLE/LINX) but decoupled from any caller. It is the other half
+of this problem, and the two halves are worth keeping distinct:
+
+| | source of truth | output |
+| --- | --- | --- |
+| derivative-chromosome-utils | the caller's breakends | the *expected* segment order and orientation |
+| `sv_multihop derive` | the tumour reads | the *observed* allele, plus its JBrowse wiring |
+
+Run against COLO829, its `walkBreakends` returns the same four segments as the
+read-derived reconstruction above — same chromosomes, same two templated inserts,
+same foldback — once the traversal is read from the other end (a derivative and
+its reverse complement are one molecule). Only the outer chr3 bounds differ, and
+necessarily: the walk has no left-hand breakend to stop at, while the reads bound
+the arms at read length. That agreement is the third independent derivation.
+
+**It needs one fix before it reproduces that**, which is worth knowing before
+trusting a walk: `parseAlt`'s ALT pattern matches at most one base either side of
+the bracket (`(.?)`), so any BND carrying an inserted sequence at the junction is
+silently dropped. That is **28 of the 66 BND records** in COLO829's own VCF, and
+in this chain it drops precisely the junction holding the chr12 templated insert
+— the segment the tutorial figure is about, leaving `deriveChromosomes` with a
+0-segment chain. Widening the pattern to `[ACGTNacgtn]*` either side fixes it and
+changes nothing on the repo's six fixtures. The class of failure is the same one
+this tool hit three times: a plausible answer rather than an error.
+
+The mate refName case trap applies there too, though the library dodges it —
+`buildGraph` pairs breakends by `MATEID`, not by chromosome. But `Breakend.mateChr`
+is handed to consumers exactly as the caller wrote it (`CHR10` against a `chr10`
+CHROM), so anything grouping on it needs to normalize.
+
 ## How to exercise `derive` without the demo data
 
 A synthetic foldback runs the whole pipeline in seconds and has a known answer,
@@ -179,6 +215,14 @@ and the tool (the build-script convention curls helpers from this repo's
 to run it on their own callset. Either makes the interface concrete instead of
 guessed. `--jbrowse-out` is the seam that makes a standalone run browsable, so
 that is now what an external user would exercise first.
+
+derivative-chromosome-utils is not that second consumer — it is a sibling, not a
+caller of this. But it does redraw the line: the VCF-side reconstruction now has
+a real home elsewhere, which leaves `sv_multihop`'s own `chains` (proximity
+unioning, no ordering, one guessed `--max-segment`) as the weakest part of a tool
+whose strength is the read-side evidence. The cheap version of "extract it" is
+therefore to *shrink* it — let the library do the chaining and have `derive`
+consume a walk — rather than to move it.
 
 ## Traps in this worktree
 
