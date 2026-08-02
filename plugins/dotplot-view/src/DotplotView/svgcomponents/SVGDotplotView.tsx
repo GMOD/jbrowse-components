@@ -66,6 +66,7 @@ export async function renderToSvg(
               colorBy={model.uniformColorBy}
               trackChips={model.colorLegendChips}
               viewWidth={viewWidth}
+              maxHeight={viewHeight}
               alpha={model.alpha}
               pointBased
             />

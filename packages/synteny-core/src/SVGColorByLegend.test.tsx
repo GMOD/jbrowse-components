@@ -84,6 +84,50 @@ test('ribbon mode lists the CIGAR indel chips it is handed', () => {
   expect(container.textContent).not.toContain('deletion')
 })
 
+// one chip per overlaid track, so a track-colored export can hand the legend
+// more rows than the plot is tall
+function renderTrackChips(count: number, maxHeight?: number) {
+  return render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <svg>
+        <SVGColorByLegend
+          colorBy="track"
+          viewWidth={800}
+          maxHeight={maxHeight}
+          trackChips={Array.from({ length: count }, (_, i) => ({
+            color: '#ff0000',
+            label: `track ${i}`,
+          }))}
+        />
+      </svg>
+    </ThemeProvider>,
+  )
+}
+
+test('chips past the plot height collapse into a summary row', () => {
+  // 100px holds the title row plus 5 body rows, the last of which is the summary
+  const { container } = renderTrackChips(10, 100)
+  expect(container.textContent).toContain('track 3')
+  expect(container.textContent).not.toContain('track 4')
+  expect(container.textContent).toContain('+6 more')
+  // the box grew to exactly the rows it drew, not the rows it was handed
+  expect(container.querySelector('rect')?.getAttribute('height')).toBe('96')
+})
+
+test('an unbounded legend lists every chip', () => {
+  const { container } = renderTrackChips(10)
+  expect(container.textContent).toContain('track 9')
+  expect(container.textContent).not.toContain('more')
+})
+
+// a band too short even for one chip still keys itself rather than collapsing
+// to a bare title
+test('a very short plot keeps one summary row', () => {
+  const { container } = renderTrackChips(10, 20)
+  expect(container.textContent).toContain('+10 more')
+  expect(container.textContent).not.toContain('track 0')
+})
+
 test('categorical mode falls back to the per-sequence note', () => {
   const { container } = renderLegend('query')
   expect(container.textContent).toContain('Query name')

@@ -145,6 +145,7 @@ export async function renderToSvg(
                       colorBy={model.uniformColorBy}
                       trackChips={model.colorLegendChips}
                       viewWidth={width}
+                      maxHeight={level.height}
                       alpha={model.alpha}
                       cigarOps={model.presentCigarKinds}
                     />

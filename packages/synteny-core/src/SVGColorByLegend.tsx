@@ -19,6 +19,8 @@ const rowH = 14
 const swatchBox = 10
 const gap = 4
 const barW = 54
+// inset from the plot's top-right corner, counted against maxHeight
+const margin = 4
 // keeps a long track name from turning the exported key into a very wide box
 const maxLabelChars = 28
 
@@ -41,6 +43,7 @@ function elide(label: string) {
 export function SVGColorByLegend({
   colorBy,
   viewWidth,
+  maxHeight,
   alpha = 1,
   pointBased = false,
   cigarOps,
@@ -50,6 +53,11 @@ export function SVGColorByLegend({
   // titles itself "Mixed" and lists the tracks rather than naming one mode
   colorBy: SyntenyColorBy | undefined
   viewWidth: number
+  // height of the plot the box floats over. Only the chip list can outgrow it —
+  // one chip per overlaid track, so a many-track colorBy:'track' export would
+  // otherwise run the key down past the plot it keys; chips past what fits
+  // collapse into a "+N more" row, as SvgColorLegend does elsewhere
+  maxHeight?: number
   // the display's alpha — chips are blended over white by it, matching what the
   // HTML legend does, so the exported key reads like the exported plot
   alpha?: number
@@ -78,33 +86,54 @@ export function SVGColorByLegend({
         gap +
         measureLegendText(swatch.maxLabel, rowSize)
       : 0
-  const chips =
+  const allChips =
     swatch?.kind === 'chips'
       ? swatch.chips.map(c => ({ ...c, label: elide(c.label) }))
       : undefined
+  // body rows the box can hold without running past the plot; at least one, so
+  // a band shorter than the title row still keys itself with something
+  const fitRows =
+    maxHeight === undefined
+      ? undefined
+      : Math.max(1, Math.floor((maxHeight - margin - pad * 2 - rowH) / rowH))
+  // the last fitting row goes to the summary, so it is one of the N hidden
+  const overflow =
+    allChips !== undefined && fitRows !== undefined && allChips.length > fitRows
+      ? {
+          shown: allChips.slice(0, fitRows - 1),
+          hidden: allChips.length - fitRows + 1,
+        }
+      : undefined
+  const chips = overflow ? overflow.shown : allChips
+  const overflowLabel = overflow ? `+${overflow.hidden} more` : undefined
+
   const chipRows = chips
     ? Math.max(
+        0,
         ...chips.map(
           c => swatchBox + gap + measureLegendText(c.label, rowSize),
         ),
       )
     : 0
+  const overflowRow =
+    overflowLabel === undefined ? 0 : measureLegendText(overflowLabel, rowSize)
   const noteRow = swatch ? 0 : measureLegendText(note, rowSize)
-  const bodyRows = chips ? chips.length : 1
+  const bodyRows = chips ? chips.length + (overflow ? 1 : 0) : 1
 
   const contentW = Math.max(
     measureLegendText(title, titleSize),
     rampRow,
     chipRows,
+    overflowRow,
     noteRow,
   )
   const boxW = Math.ceil(contentW + pad * 2)
   const boxH = pad + rowH + bodyRows * rowH + pad
-  const x = Math.max(viewWidth - boxW - 4, 4)
+  const x = Math.max(viewWidth - boxW - margin, margin)
   const bodyTop = pad + rowH
 
   return (
-    <g transform={`translate(${x} 4)`}>
+    <g transform={`translate(${x} ${margin})`}>
       <rect
         width={boxW}
         height={boxH}
@@ -199,6 +228,19 @@ export function SVGColorByLegend({
             </g>
           ))
         : null}
+
+      {overflowLabel === undefined || chips === undefined ? null : (
+        <text
+          x={pad}
+          y={bodyTop + chips.length * rowH + rowH / 2}
+          fontSize={rowSize}
+          dominantBaseline="middle"
+          fill={text}
+          opacity={0.7}
+        >
+          {overflowLabel}
+        </text>
+      )}
 
       {swatch ? null : (
         <text
