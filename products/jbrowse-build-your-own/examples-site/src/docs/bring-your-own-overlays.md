@@ -33,9 +33,9 @@ track without `createJBrowseTheme` throws
 `Cannot read properties of undefined (reading 'main')`.
 
 So the boundary today is: the status UI is yours, the palette is still JBrowse's,
-and you mount it with MUI's `ThemeProvider`. That is what `Palette.tsx` does in
-the demo above. A wiggle track happens not to need it, which is why the first
-three pages of this site have no such wrapper.
+and you mount it with MUI's `ThemeProvider`, as the source below does. A wiggle
+track happens not to need it, which is why the first two pages of this site have
+no such wrapper.
 
 If you are writing your own display component this does not apply, because you
 choose what your renderer reads.

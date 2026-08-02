@@ -1,42 +1,315 @@
-import { useMemo } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
-
-import Palette from '../browser/Palette.tsx'
-import {
-  alignmentsTrack,
-  featureTrack,
-  makeView,
-  wiggleTrack,
-} from '../browser/engine.ts'
-import TrackStack from '../browser/parts.tsx'
 
 // Three different display types -- a wiggle canvas, a feature layout, and an
 // alignments pileup -- stacked in one column.
 //
 // Nothing here knows which is which. `TrackStack` maps over track ids and
 // mounts each one's `activeDisplay.RenderingComponent`, and the differences
-// between a BigWig and a BAM are entirely inside the engine. Adding a new
-// display type to this page means adding a string to `trackIds`.
-const ids = ['volvox_microarray', 'volvox_genes', 'volvox_bam']
+// between a BigWig and a BAM are entirely inside the engine. Adding a display
+// type to this page means adding a string to `trackIds`.
+//
+// Self-contained: the parts introduced on the two previous pages are repeated
+// here rather than imported, so this file runs on its own.
+
+const volvox = {
+  name: 'volvox',
+  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+}
+
+const wiggleTrack = {
+  type: 'QuantitativeTrack',
+  trackId: 'volvox_microarray',
+  name: 'Microarray signal',
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+  },
+  displayDefaults: {
+    defaultRendering: 'xyplot',
+    height: 100,
+    color: '#3a7ca5',
+    minScore: 0,
+    maxScore: 1000,
+  },
+}
+
+const featureTrack = {
+  type: 'FeatureTrack',
+  trackId: 'volvox_genes',
+  name: 'Genes',
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+  },
+  displayDefaults: { height: 120 },
+}
+
+const alignmentsTrack = {
+  type: 'AlignmentsTrack',
+  trackId: 'volvox_bam',
+  name: 'Reads',
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'BamAdapter',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+  },
+  displayDefaults: { height: 150 },
+}
+
+const trackIds = ['volvox_microarray', 'volvox_genes', 'volvox_bam']
+
+function makeView() {
+  const state = createViewState({
+    assembly: volvox,
+    tracks: [wiggleTrack, featureTrack, alignmentsTrack] as never,
+  })
+  const { view } = state.session
+  view.setInit({
+    assembly: volvox.name,
+    loc: 'ctgA:1..20,000',
+    tracks: trackIds,
+  })
+  return view
+}
+
+type BrowserView = ReturnType<typeof makeView>
+
+function useViewWidth(view: BrowserView) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) {
+      return
+    }
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth
+      if (w > 0) {
+        view.setWidth(w)
+      }
+    })
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+    }
+  }, [view])
+  return ref
+}
+
+// see the One track page for why this is not `view.initialized`
+function isViewReady(view: BrowserView) {
+  return !view.showLoading && !view.error
+}
+
+const TrackRow = observer(function TrackRow({
+  view,
+  trackId,
+}: {
+  view: BrowserView
+  trackId: string
+}) {
+  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  if (!track) {
+    return null
+  }
+  const display = track.activeDisplay
+  const { RenderingComponent } = display
+  return (
+    <div
+      style={{
+        position: 'relative',
+        height: display.height,
+        contain: 'strict',
+      }}
+    >
+      <Suspense fallback={null}>
+        <RenderingComponent
+          model={display}
+          onHorizontalScroll={view.horizontalScroll}
+        />
+      </Suspense>
+    </div>
+  )
+})
+
+// see the Pan and zoom page for why the wheel listener is native and
+// non-passive, and for what `scrollZoom` decides
+function wheelPanZoom(
+  view: BrowserView,
+  el: HTMLElement,
+  { scrollZoom, onNeedsCtrl }: { scrollZoom: boolean; onNeedsCtrl: () => void },
+) {
+  return (event: WheelEvent) => {
+    const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
+    const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
+    const ctrlZoom = event.ctrlKey || event.metaKey
+    if (ctrlZoom || (scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))) {
+      event.preventDefault()
+      if (deltaY !== 0) {
+        const rect = el.getBoundingClientRect()
+        view.zoomTo(
+          view.bpPerPx * (deltaY > 0 ? 1.1 : 1 / 1.1),
+          event.clientX - rect.left,
+        )
+      }
+    } else if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      event.preventDefault()
+      view.horizontalScroll(deltaX)
+    } else if (deltaY !== 0) {
+      onNeedsCtrl()
+    }
+  }
+}
+
+const HINT_LINGER_MS = 1200
+
+function usePanZoom(
+  view: BrowserView,
+  ref: React.RefObject<HTMLDivElement | null>,
+  { scrollZoom = true }: { scrollZoom?: boolean } = {},
+) {
+  const dragging = useRef<number | undefined>(undefined)
+  const [hint, setHint] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) {
+      return
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const onWheel = wheelPanZoom(view, el, {
+      scrollZoom,
+      onNeedsCtrl() {
+        setHint(true)
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+          setHint(false)
+        }, HINT_LINGER_MS)
+      },
+    })
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      clearTimeout(timer)
+    }
+  }, [view, ref, scrollZoom])
+
+  return {
+    hint,
+    props: {
+      onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+        if (event.button === 0) {
+          dragging.current = event.clientX
+          event.currentTarget.setPointerCapture(event.pointerId)
+        }
+      },
+      onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+        const from = dragging.current
+        if (from !== undefined) {
+          view.horizontalScroll(from - event.clientX)
+          dragging.current = event.clientX
+        }
+      },
+      onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+        dragging.current = undefined
+        event.currentTarget.releasePointerCapture(event.pointerId)
+      },
+      onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
+        dragging.current = undefined
+        event.currentTarget.releasePointerCapture(event.pointerId)
+      },
+    },
+  }
+}
+
+function ZoomHint({ show }: { show: boolean }) {
+  return (
+    <div
+      aria-hidden={!show}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 3,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+        background: 'color-mix(in srgb, Canvas 62%, transparent)',
+        color: 'CanvasText',
+        fontSize: '0.95rem',
+        opacity: show ? 1 : 0,
+        transition: 'opacity 150ms ease',
+      }}
+    >
+      Use ctrl + scroll to zoom
+    </div>
+  )
+}
+
+/**
+ * The parts above, composed: a measured, pan/zoomable column of tracks and
+ * nothing else. This is the smallest thing that is recognisably a genome
+ * browser.
+ */
+const TrackStack = observer(function TrackStack({
+  view,
+}: {
+  view: BrowserView
+}) {
+  const ref = useViewWidth(view)
+  const { hint, props } = usePanZoom(view, ref)
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        touchAction: 'none',
+        cursor: 'grab',
+      }}
+    >
+      <ZoomHint show={hint} />
+      {isViewReady(view)
+        ? trackIds.map(trackId => (
+            <TrackRow key={trackId} view={view} trackId={trackId} />
+          ))
+        : null}
+    </div>
+  )
+})
+
+// The one piece of Material UI you cannot currently drop, and it is worth being
+// precise about why.
+//
+// JBrowse's stock displays read theme tokens to colour their actual *content*:
+// the feature display reads `palette.highlight.main` for its highlight boxes,
+// the CDS renderer reads `palette.framesCDS` for reading frames. Those are
+// augmented entries that a default MUI theme does not have, so without this
+// wrapper a feature or alignments track throws
+// `Cannot read properties of undefined (reading 'main')`.
+//
+// A wiggle track happens not to need it and renders fine bare, which is why the
+// two pages before this one mount no ThemeProvider at all. The next page draws
+// the line precisely: the status overlays are swappable, the palette is not.
+//
+// Note this costs you a theme *object*, not a look: nothing here styles the
+// chrome, because there is no chrome.
+const theme = createJBrowseTheme()
 
 const StackOfTracks = observer(function StackOfTracks() {
-  const view = useMemo(
-    () =>
-      makeView({
-        tracks: [wiggleTrack, featureTrack, alignmentsTrack],
-        loc: 'ctgA:1..20,000',
-        show: ids,
-      }),
-    [],
-  )
-  // Palette supplies JBrowse's augmented theme tokens, which the feature and
-  // alignments displays read to colour their content. See Palette.tsx -- the
-  // wiggle-only pages before this one need no such wrapper.
+  const view = useMemo(() => makeView(), [])
   return (
-    <Palette>
-      <TrackStack view={view} trackIds={ids} style={{ cursor: 'grab' }} />
-    </Palette>
+    <ThemeProvider theme={theme}>
+      <TrackStack view={view} />
+    </ThemeProvider>
   )
 })
 

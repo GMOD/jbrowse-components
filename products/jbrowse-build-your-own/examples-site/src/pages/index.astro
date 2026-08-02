@@ -5,7 +5,32 @@ import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
-import engineCode from '../browser/engine.ts?raw'
+
+// The engine call, spelled out. Every example page repeats this rather than
+// importing it from somewhere in this site, so each page's source is complete
+// and runs on its own.
+const engineCode = `import { createViewState } from '@jbrowse/react-linear-genome-view2'
+
+const state = createViewState({
+  assembly: {
+    name: 'volvox',
+    uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+  },
+  tracks: [myTrackConfig],
+})
+
+// a LinearGenomeViewModel: knows bpPerPx, offsetPx, displayedRegions, and how
+// to zoomTo/horizontalScroll. Draws nothing.
+const { view } = state.session
+
+// the same declarative path a URL launch or a saved session takes, so the
+// assembly load, the navigation and the track show-ing happen in order
+view.setInit({
+  assembly: 'volvox',
+  loc: 'ctgA:1..50,000',
+  tracks: ['my_track_id'],
+})
+`
 ---
 
 <Shell
@@ -70,7 +95,7 @@ import engineCode from '../browser/engine.ts?raw'
       highlight boxes), so they still need <code>createJBrowseTheme</code>
       mounted through MUI's <code>ThemeProvider</code>. Swapping the overlays
       changes the status UI, not the palette. A wiggle track does not need it;
-      the first three pages here have no theme at all.
+      the first two pages here have no theme at all.
     </p>
     <p>
       <strong>The engine.</strong> Nothing on this site rebuilds adapters, the

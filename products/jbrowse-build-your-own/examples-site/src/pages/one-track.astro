@@ -1,7 +1,6 @@
 ---
 import OneTrack from '../examples/OneTrack.tsx'
 import OneTrackCode from '../examples/OneTrack.tsx?raw'
-import partsCode from '../browser/parts.tsx?raw'
 import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
@@ -14,8 +13,4 @@ const sec = section(page, 'one-track')
   <Section {...sec} code={OneTrackCode}>
     <OneTrack client:only="react" />
   </Section>
-  <details class="source">
-    <summary>The parts it imports</summary>
-    <pre><code>{partsCode}</code></pre>
-  </details>
 </Layout>
