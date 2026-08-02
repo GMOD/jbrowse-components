@@ -194,11 +194,17 @@ function wheelPanZoom(
 
 const HINT_LINGER_MS = 1200
 
+// how far a press has to travel before it counts as a pan rather than a click;
+// see the Pan and zoom page
+const DRAG_THRESHOLD_PX = 4
+
 function usePanZoom(
   view: BrowserView,
   ref: React.RefObject<HTMLDivElement | null>,
 ) {
-  const dragging = useRef<number | undefined>(undefined)
+  const dragging = useRef<{ x: number; panning: boolean } | undefined>(
+    undefined,
+  )
   const [hint, setHint] = useState(false)
   const { scrollZoom } = view
 
@@ -229,25 +235,46 @@ function usePanZoom(
     hint,
     props: {
       onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+        // see the Pan and zoom page for both halves of this: why a press on a
+        // control (here, the track-sizing button each display draws in its
+        // corner) must not start a drag, and why the pointer is captured on
+        // move rather than here
+        if (
+          event.target instanceof Element &&
+          event.target.closest('button, [data-gesture-owner]')
+        ) {
+          return
+        }
         if (event.button === 0) {
-          dragging.current = event.clientX
-          event.currentTarget.setPointerCapture(event.pointerId)
+          dragging.current = { x: event.clientX, panning: false }
         }
       },
       onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const from = dragging.current
-        if (from !== undefined) {
-          view.horizontalScroll(from - event.clientX)
-          dragging.current = event.clientX
+        const drag = dragging.current
+        if (!drag) {
+          return
         }
+        if (!drag.panning) {
+          if (Math.abs(event.clientX - drag.x) < DRAG_THRESHOLD_PX) {
+            return
+          }
+          drag.panning = true
+          event.currentTarget.setPointerCapture(event.pointerId)
+        }
+        view.horizontalScroll(drag.x - event.clientX)
+        drag.x = event.clientX
       },
       onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
         dragging.current = undefined
-        event.currentTarget.releasePointerCapture(event.pointerId)
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }
       },
       onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
         dragging.current = undefined
-        event.currentTarget.releasePointerCapture(event.pointerId)
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }
       },
     },
   }

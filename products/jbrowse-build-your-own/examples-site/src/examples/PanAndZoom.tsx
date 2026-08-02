@@ -184,6 +184,11 @@ function wheelPanZoom(
 // read four words, short enough that it is gone before the next gesture.
 const HINT_LINGER_MS = 1200
 
+// How far the pointer has to travel before a press counts as a pan rather than
+// a click. See `onPointerMove`: under this, the gesture is still a click and
+// the track underneath gets to keep it.
+const DRAG_THRESHOLD_PX = 4
+
 /**
  * Navigation. Zoom anchors on the cursor rather than the centre, which is what
  * makes it feel like a map instead of a slider: pass the pixel offset of the
@@ -199,7 +204,11 @@ function usePanZoom(
   view: BrowserView,
   ref: React.RefObject<HTMLDivElement | null>,
 ) {
-  const dragging = useRef<number | undefined>(undefined)
+  // `x` is the last position the pan was applied from; `panning` is whether the
+  // press has travelled far enough to be a drag at all
+  const dragging = useRef<{ x: number; panning: boolean } | undefined>(
+    undefined,
+  )
   const [hint, setHint] = useState(false)
   // observable, so flipping the preference re-runs the effect below and every
   // display picks up the same flip in the same render
@@ -240,28 +249,65 @@ function usePanZoom(
     // spread onto the same element `ref` is on
     props: {
       onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-        // primary button only, so a right-click or a context menu doesn't pan
+        // Leave the press alone when it lands on a control: a control that
+        // claimed the press (`[data-gesture-owner]`, JBrowse's marker on the
+        // parts that drag on their own -- a display's vertical scrollbar,
+        // resize handles) or a button, such as the track-sizing button a
+        // display draws in its own corner. `closest` because the press usually
+        // lands on an icon inside the control. JBrowse's own click-drag pan
+        // skips exactly these.
+        if (
+          event.target instanceof Element &&
+          event.target.closest('button, [data-gesture-owner]')
+        ) {
+          return
+        }
+        // primary button only, so a right-click or a context menu doesn't pan.
+        // Note what this does *not* do: capture the pointer. See below.
         if (event.button === 0) {
-          dragging.current = event.clientX
-          event.currentTarget.setPointerCapture(event.pointerId)
+          dragging.current = { x: event.clientX, panning: false }
         }
       },
       onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const from = dragging.current
-        if (from !== undefined) {
-          view.horizontalScroll(from - event.clientX)
-          dragging.current = event.clientX
+        const drag = dragging.current
+        if (!drag) {
+          return
         }
+        if (!drag.panning) {
+          if (Math.abs(event.clientX - drag.x) < DRAG_THRESHOLD_PX) {
+            return
+          }
+          // Past the threshold this is a pan, so take the pointer: the gesture
+          // has to keep panning when the cursor leaves the container, and end
+          // even if it is released outside the window.
+          //
+          // Capturing is deferred to here because it retargets the whole rest
+          // of the gesture -- including the `click` that ends it -- at this
+          // element. Capture on `pointerdown` instead and every click inside
+          // the browser lands on this div, so nothing underneath ever sees one:
+          // a display's click-to-select-a-feature stops selecting. A press that
+          // never moves never captures, and stays the click it looks like.
+          drag.panning = true
+          event.currentTarget.setPointerCapture(event.pointerId)
+        }
+        view.horizontalScroll(drag.x - event.clientX)
+        drag.x = event.clientX
       },
       // pointercancel as well as pointerup: a touch drag interrupted by the
       // browser never fires `up`, and the drag would stay latched
       onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
         dragging.current = undefined
-        event.currentTarget.releasePointerCapture(event.pointerId)
+        // release only what the move handler took -- a press that stayed under
+        // the threshold never captured anything
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }
       },
       onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
         dragging.current = undefined
-        event.currentTarget.releasePointerCapture(event.pointerId)
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }
       },
     },
   }
