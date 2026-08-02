@@ -82,6 +82,7 @@ stacks, the worker→main fetch pipeline, SVG export, invariants. Start there.
 - [GRAPH_DELETION_ARC_HANDOFF.md](guides/GRAPH_DELETION_ARC_HANDOFF.md) — deletion arcs: the shipped plugin deploy, the anchored-fit regression the new hop default caused, and how to interrogate a graph layout instead of reading its pixels
 - [MAF_LARGE_BLOCKS.md](guides/MAF_LARGE_BLOCKS.md) — why megabase MAF-tabix blocks are slow at every layer, why the byte gate under-reports them, and why clipping to the visible region is the wrong fix
 - [MAF_CROSS_VIEW_NAVIGATION.md](guides/MAF_CROSS_VIEW_NAVIGATION.md) — jumping from a MAF row to that species' own genome; why the sample→assembly mapping is config data, not a name lookup
+- [CANCER_SV_HANDOFF.md](guides/CANCER_SV_HANDOFF.md) — the cancer_sv tutorial and `scripts/sv_multihop.py` (multi-hop SV chains, derivative-allele reconstruction): verified COLO829/K562 facts, the three silent-wrong-answer bugs, and what is left
 
 [architecture-decision-records/](architecture-decision-records/README.md) — why
 something is the way it is, indexed by number and status. That index is
