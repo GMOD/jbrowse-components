@@ -151,8 +151,8 @@ The PAF is a synteny track and the consensus is an assembly, so the
 reconstruction loads against the reference directly. The BED is the same
 segments as a feature track on the derivative, each labelled with the interval
 it came from. Adding `--jbrowse-out config.json` writes the config that wires
-those together — both assemblies, the synteny track, the segments and the
-realigned reads — and prints the URL that opens them as a synteny view.
+those together (both assemblies, the synteny track, the segments and the
+realigned reads) and prints the URL that opens them as a synteny view.
 
 A gene track cannot label a derivative this way. Junctions join whatever
 intervals they happen to join, and those usually land mid-intron: over this
@@ -184,12 +184,17 @@ The COLO829 event is genomic. What a fusion looks like in RNA, and how a
 caller's output relates to the reads under it, is easier to follow on a known
 fusion.
 
-Loading DepMap's STAR-Fusion output through `StarFusionAdapter` draws the whole
-call set as arcs. Most of it is noise: of K562's calls, ten are mitochondrial
-artefacts. `BCR--ABL1` and `NUP214--XKR3` carry an order of magnitude more
-support than the rest.
+Loading DepMap's STAR-Fusion output through `StarFusionAdapter` and switching the
+track to `Variant display arcs` draws the whole call set at once, each call an
+arc from its left breakpoint to its right. An arc needs both of its ends on
+screen, so this is a whole-genome view (`View` -> `Show...` ->
+`Show all regions in assembly`): in a single-locus window every interchromosomal
+call is dropped and the track shows a lone breakend glyph. Most of the output is
+noise — ten of K562's calls are mitochondrial artefacts — while `BCR--ABL1` and
+`NUP214--XKR3` carry an order of magnitude more support than the rest, and they
+are the two sides of the same chr9/chr22 junction.
 
-<Figure caption="K562 STAR-Fusion calls as arcs. Ranking by junction-read support separates two events from a tail of artefacts." src="/img/cancer_sv/k562_starfusion_triage.png" />
+<Figure caption="K562 STAR-Fusion calls as arcs across the genome, colored by junction-read support. The red arc is the reciprocal chr9/chr22 pair; the rest, including the calls that end on chrM at the right edge, are the artefact tail." src="/img/cancer_sv/k562_starfusion_triage.png" />
 
 ```json
 {
