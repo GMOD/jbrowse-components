@@ -1,0 +1,32 @@
+{
+  "name": "byo-examples-site",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6.0.2",
+    "@jbrowse/core": "workspace:*",
+    "@jbrowse/mobx-state-tree": "^6.0.0",
+    "@jbrowse/plugin-alignments": "workspace:*",
+    "@jbrowse/plugin-linear-genome-view": "workspace:*",
+    "@jbrowse/plugin-wiggle": "workspace:*",
+    "@jbrowse/react-linear-genome-view2": "workspace:*",
+    "astro": "^7.1.6",
+    "mobx": "^7.0.0",
+    "mobx-react": "^10.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@jbrowse/browser-test-utils": "workspace:*",
+    "typescript": "^6.0.3"
+  }
+}

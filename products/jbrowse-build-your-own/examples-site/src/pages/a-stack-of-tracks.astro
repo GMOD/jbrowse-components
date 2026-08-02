@@ -1,0 +1,16 @@
+---
+import StackOfTracks from '../examples/StackOfTracks.tsx'
+import StackOfTracksCode from '../examples/StackOfTracks.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('a-stack-of-tracks')
+const sec = section(page, 'a-stack-of-tracks')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={StackOfTracksCode}>
+    <StackOfTracks client:only="react" />
+  </Section>
+</Layout>

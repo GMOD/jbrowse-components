@@ -1,0 +1,16 @@
+---
+import BringYourOwnOverlays from '../examples/BringYourOwnOverlays.tsx'
+import BringYourOwnOverlaysCode from '../examples/BringYourOwnOverlays.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('bring-your-own-overlays')
+const sec = section(page, 'bring-your-own-overlays')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={BringYourOwnOverlaysCode}>
+    <BringYourOwnOverlays client:only="react" />
+  </Section>
+</Layout>

@@ -1,0 +1,83 @@
+---
+import { Code } from 'astro:components'
+
+import { examples } from '../examples.ts'
+import Gallery from '../layouts/Gallery.astro'
+import Shell from '../layouts/Shell.astro'
+import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+import engineCode from '../browser/engine.ts?raw'
+---
+
+<Shell
+  title="Build your own"
+  componentLabel={componentLabel}
+  examples={examples}
+  mainMaxWidth={mainMaxWidth}
+>
+  <h1>Build your own genome browser</h1>
+  <p class="lead">
+    JBrowse ships a finished linear genome browser, and most people should use
+    it. But underneath it is a set of parts, and if you are embedding genomic
+    data in an app that already has its own design system, you may want the
+    parts instead. These pages take the browser apart and put it back together
+    one piece at a time.
+  </p>
+
+  <div class="doc">
+    <h2>The two halves</h2>
+    <p>
+      A genome browser is an <strong>engine</strong> and some <strong
+        >chrome</strong
+      >. The engine resolves assemblies, chooses adapters, fetches and parses off
+      the main thread, and keeps the coordinate state. The chrome is the search
+      box, the ruler, the track labels, the loading spinner: everything around the
+      data.
+    </p>
+    <p>
+      The engine is the hard half and you should not rebuild it. One call gets
+      you all of it, plus a view model that knows where it is in the genome and
+      draws nothing:
+    </p>
+    <Code code={engineCode} lang="ts" />
+    <p>
+      From there every page in the sidebar adds exactly one thing. By the last
+      one you have a browser with pan, zoom, three kinds of track, your own
+      status overlays and your own ruler.
+    </p>
+
+    <h2>What you actually save</h2>
+    <p>
+      Measured on the eager (pre-first-paint) bundle, with React and MobX
+      external: the chrome layer costs <strong>302 KB</strong> with JBrowse's
+      own status components and <strong>140 KB</strong> with plain ones. The
+      difference is almost entirely Material UI, and almost all of that is the
+      loading overlay.
+    </p>
+    <p>
+      Bundle size is the smaller half of the argument. The larger half is that
+      no CSS-in-JS is injected into your page and nothing on screen has to be
+      talked out of looking like a Material widget.
+    </p>
+
+    <h2>What you do not get rid of</h2>
+    <p>
+      Two honest limits, both of which these pages hit and neither of which is
+      hidden in them.
+    </p>
+    <p>
+      <strong>The palette.</strong> Stock feature and alignments displays read
+      JBrowse theme tokens to colour their own <em>content</em> (reading frames,
+      highlight boxes), so they still need <code>createJBrowseTheme</code>
+      mounted through MUI's <code>ThemeProvider</code>. Swapping the overlays
+      changes the status UI, not the palette. A wiggle track does not need it;
+      the first three pages here have no theme at all.
+    </p>
+    <p>
+      <strong>The engine.</strong> Nothing on this site rebuilds adapters, the
+      RPC layer, or the fetch lifecycle, and you should not either. What is on
+      offer is control of the chrome, not a smaller JBrowse.
+    </p>
+  </div>
+
+  <Gallery examples={examples} />
+</Shell>

@@ -1,0 +1,21 @@
+---
+import AddTheChromeYouWant from '../examples/AddTheChromeYouWant.tsx'
+import AddTheChromeYouWantCode from '../examples/AddTheChromeYouWant.tsx?raw'
+import rulerCode from '../browser/Ruler.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('add-the-chrome-you-want')
+const sec = section(page, 'add-the-chrome-you-want')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={AddTheChromeYouWantCode}>
+    <AddTheChromeYouWant client:only="react" />
+  </Section>
+  <details class="source">
+    <summary>Ruler.tsx</summary>
+    <pre><code>{rulerCode}</code></pre>
+  </details>
+</Layout>

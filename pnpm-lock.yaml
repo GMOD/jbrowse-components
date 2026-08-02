@@ -1809,6 +1809,55 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
 
+  products/jbrowse-build-your-own/examples-site:
+    dependencies:
+      '@astrojs/react':
+        specifier: ^6.0.2
+        version: 6.0.2(@types/node@26.1.2)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(esbuild@0.28.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(terser@5.49.0)(yaml@2.9.0)
+      '@jbrowse/core':
+        specifier: workspace:*
+        version: link:../../../packages/core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.0.0
+        version: 6.0.0(mobx@7.0.0)
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:*
+        version: link:../../../plugins/alignments
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:*
+        version: link:../../../plugins/linear-genome-view
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:*
+        version: link:../../../plugins/wiggle
+      '@jbrowse/react-linear-genome-view2':
+        specifier: workspace:*
+        version: link:../../jbrowse-react-linear-genome-view
+      astro:
+        specifier: ^7.1.6
+        version: 7.1.6(@astrojs/markdown-remark@7.2.2(supports-color@8.1.1))(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(@types/node@26.1.2)(terser@5.49.0)(yaml@2.9.0)
+      mobx:
+        specifier: ^7.0.0
+        version: 7.0.0
+      mobx-react:
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@astrojs/check':
+        specifier: ^0.9.10
+        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+      '@jbrowse/browser-test-utils':
+        specifier: workspace:*
+        version: link:../../../packages/browser-test-utils
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   products/jbrowse-cli:
     dependencies:
       '@jbrowse/cigar-utils':
