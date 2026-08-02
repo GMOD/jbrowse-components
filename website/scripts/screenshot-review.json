@@ -1967,9 +1967,9 @@
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
     "status": "good",
-    "note": "FIXED: panel 4 is now the finished view — NCBI RefSeq Curated over RepeatMasker in BOTH panels (hg38-ncbiRefSeqCurated/hg38-rmsk, and mm39-ncbiRefSeqCurated/mm39-rmsk, which the hub connection the mate assembly pulls in does list), compact repeats at declared per-track heights. Not the ~30 UI actions the previous note priced: the stage DECLARES its own session instead of clicking one together, via a new `url` on a ScreenshotStage (generate-screenshots captureEachStage navigates and re-gates on the stage's own readySelector/declared views). Zero clicks in that frame, and the per-track heights it can only set declaratively are what make it fill its grid cell. The other unknown, height, is answered the same way: panel 3 now keeps the source LGV on screen (the minimize moved into stage 4, which no longer exists as a click either), so both bottom frames fill 836px instead of one padding 300px of background under the other. The curved-lines/transparent-indels frame it replaced is the subject of the ribbon_settings figure directly below it in the tutorial, so nothing was lost. FOLLOW-UP (figure is correct as committed, but will go stale): the synteny launch now carries the launching view's tracks onto its own panel (anchorPanelTracks + the launch dialog's \"Copy this view's tracks into its panel\"), so once that is built, panel 2 gains that checkbox and panel 3's human panel arrives with NCBI RefSeq Curated instead of being empty — which also invalidates the caption's \"both panels empty\" and the prose sentence after it. Verified working against a dev server; NOT regenerated, because a dev-server render moves every figure globally (an unrelated control, sequence_track, moved 14.7% the same way) and products/jbrowse-web/build can't be rebuilt today without baking another agent's in-flight packages/core/src/configuration + DisplayChrome edits into every figure regenerated after it. Regen with --filter=genomes_synteny/launch_sequence off a clean production build and raise both bottom stages ~50px (that render clipped 47 css px).",
-    "reviewedAt": "2026-08-02T22:11:00.381455Z",
-    "hash": "dfe4c18f44d9039a7059891c3e5d5f4075c13e38"
+    "note": "FIXED: the 4th panel is the finished view — NCBI RefSeq Curated over RepeatMasker in BOTH panels (hg38-ncbiRefSeqCurated/hg38-rmsk and mm39-ncbiRefSeqCurated/mm39-rmsk, which the hub connection the mate assembly pulls in does list), compact repeats at declared per-track heights. Not the ~30 UI actions the previous note priced, in two steps. (1) That stage now DECLARES its own session instead of clicking one together, via a new `url` on a ScreenshotStage: captureEachStage navigates and re-gates on the stage's own readySelector and declared views. Zero clicks in that frame, and the per-track heights only a spec can set are what make it fill its grid cell. (2) The app-side half: a synteny launch now carries the launching view's tracks onto the panel for its assembly (anchorPanelTracks + the dialog's \"Copy this view's tracks into its panel\"), so panel 3 shows what the launch really hands you — the human panel already carrying the gene track, the mouse panel empty because nothing in the source view speaks for it — and panel 4 is the step that remains. The height unknown the previous note raised is answered by panel 3 keeping the source LGV on screen (the minimize moved into the stage that no longer exists as a click), so both bottom frames fill 888px with neither padded. Caption and the prose under it rewritten to match. PROVENANCE for whoever diffs this PNG: it also picks up an unrelated global ~1px chrome/text shift that is already in the tree (control: sequence_track re-renders 14.2% off its committed copy against a clean production build, with identical content), so most of the changed pixels here are not this figure's edit.",
+    "reviewedAt": "2026-08-02T22:59:41.702406Z",
+    "hash": "ac0df1c28c32918c3e73b6e337bbef205f6a32ed"
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
@@ -2414,16 +2414,16 @@
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
     "status": "bad",
-    "note": "this is a little confusing and potentially not the strongest use of breakpoint split view. we may want it to just be a 'single level' linear genome view, with the two displayed regions left and right split. not sure if you agree. the result would look more like fusioninspector from igv.js DONE as asked, it is a single-level view now and it is the better picture. Two displayed regions in one LinearGenomeView (chr22 BCR window, chr9 ABL1 window), each banded at its own STAR-Fusion breakpoint via the view's own highlight, no breakpoint split view. What the split view was spending its frame on was a spline per read at ~600x Iso-Seq depth, which covered both pileups. The single level also lets one coverage lane carry the result: coverage runs out at the BCR band and picks up at the ABL1 band, which is the FusionInspector reading. Tried and rejected: cutting each region exactly AT its breakpoint so the seam IS the junction. It looks like a fusion contig, but reads end at a region edge whether or not a junction is there, so the frame proves nothing the caption does not assert. Intron collapsing (right-click a gene, Collapse introns) would give the true FusionInspector layout, but it reshapes the view to ONE gene's exons, so it cannot hold both partners.",
-    "reviewedAt": "2026-08-02T22:11:04.017Z",
-    "hash": "33b06c02b5f6c6aa8c9453e5a07b264964f18698"
+    "note": "is it possible to show sashimi arcs and/or split read arcs joining the two regions?",
+    "reviewedAt": "2026-08-02T22:58:13.121Z",
+    "hash": "e55fd8221c2f75abb60add526f5fdea2948f7b92"
   },
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
     "status": "bad",
-    "note": "this is interesting but it is somewhat of a 'data overload'...what can user get from this? why not just show the arcs in a circos instead? likely will look less crazy. or more ideally, work harder to get the derivative assembly and plot it versus the reference assembly with linearsyntenyview CIRCOS, as suggested, and it needed two small features to be readable: CircularView's init now takes displayedRegionNames (else hg38's alts and randoms each take a slice) and per-track display config in the TrackInit form the linear view already accepted (else every chord is the default orange and the support-level triage is lost). normalizeTrackInit moved from plugin-linear-genome-view to @jbrowse/core/util/tracks so both views share it; the LGV keeps re-exporting it. The circle is the better frame for the reason you gave: 44 arcs on a linear whole-genome view all bow the same way and overdraw into one grey mat, worst for the long ones, which are the ones worth reading. On the circle the three >=100-junction-read calls are red (the chr9/chr22 reciprocal pair plus BAG6--SLC44A4 on chr6) and the chrM artefact tail is a fan converging between chrY and chr1. NOT the derivative-assembly route: that needs long reads over the junction, and K562 here is PacBio Iso-Seq (transcripts) plus DepMap short-read calls, so there is no read that spans genomic breakpoints to assemble from. The derivative-vs-reference synteny view the other note asks for is already in this tutorial, on COLO829, where the ONT reads support it.",
-    "reviewedAt": "2026-08-02T21:53:00.749Z",
-    "hash": "c80cf5291ef7f9fda705ba4e1e2034a0c6f7e3f1"
+    "note": "are there any further things we should render? ",
+    "reviewedAt": "2026-08-02T22:59:33.187Z",
+    "hash": "9f20537510b2eab8ae3394c552f556885c1e49ed"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
@@ -2477,23 +2477,23 @@
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
     "status": "bad",
-    "note": "if it was possible to show gene models affected by this here, it could be a powerful figure DONE: the hg38 side now carries the gene track, so RARB, BICC1/FAM133CP and TRHDE/TRHDE-AS1 are named over the three windows the ribbons land in. They are line glyphs rather than exon stacks -- all three junctions fall deep inside an intron -- so this says which gene each piece was cut from, not which exons are affected; there are no exons in these windows to affect. This figure also absorbed cancer_sv/derivative_proof (see that note): the realigned reads are now the bottom track, under the segments they are evidence for.",
-    "reviewedAt": "2026-08-02T22:09:37.235Z",
-    "hash": "996688dd5c250ddd5ea801bdc2d29dbd9fdcad9c"
+    "note": "if it was possible to show gene models affected by this, and even the gene model on the DERIVED genome, it could be a powerful figure  previous notes: DONE: the hg38 side now carries the gene track, so RARB, BICC1/FAM133CP and TRHDE/TRHDE-AS1 are named over the three windows the ribbons land in. They are line glyphs rather than exon stacks -- all three junctions fall deep inside an intron -- so this says which gene each piece was cut from, not which exons are affected; there are no exons in these windows to affect. This figure also absorbed cancer_sv/derivative_proof (see that note): the realigned reads are now the bottom track, under the segments they are evidence for.",
+    "reviewedAt": "2026-08-02T22:57:31.744Z",
+    "hash": "cff0acea79527f09edc1ab8638df8e77748bffdd"
   },
   "cancer_sv/k562_cn_amplicon": {
     "name": "cancer_sv/k562_cn_amplicon",
     "status": "bad",
-    "note": "if it was possible to show 'where' the amplicon was derived from it may make a powerful figure, similar to ~/Downloads/skbr3.png DONE, and the old caption's claim was wrong, which the rework fixes. ~/Downloads/skbr3.png is not on this machine any more, so this follows the SplitThreader ERBB2 reasoning rather than that image. The figure is now three windows in one view -- chr22 at XKR3, chr9q34, chr22 at BCR -- with the STAR-Fusion calls as arcs across them, so both junctions are drawn (an arc needs both ends resolvable, which is why the single chr9 window could not show them). The amplified chr9 block sits between the two arcs' chr9 ends, which is the provenance the note asked for. MEASURED rather than asserted: the DepMap segments are chr9 130,731,326-131,152,326 at 6.79 and 131,152,326-131,280,326 at 4.63 against 1.0 flanking, and the breakpoints are chr9:130,854,064 and chr9:131,199,015 -- both inside the block, but 123 kb and 47 kb from its edges, so the previous caption's \"the amplified segment is bounded by the two fusion junctions\" was not true at this resolution and the new one says the breakpoints fall inside it. One honest wart, stated in the caption: DepMap's segmentation has no interval anywhere over BCR (nothing between chr22:21,953,396 and 23,472,352), so that window's copy-number lane is empty rather than low.",
-    "reviewedAt": "2026-08-02T21:51:02.291Z",
-    "hash": "d1128b64370f9a80393219034e65e19519868325"
+    "note": "i am not sure i understand the arcs here. is it helpful to show RNA-seq to show what is happening here? or some other orthogonal source of information? as is, it is confusing",
+    "reviewedAt": "2026-08-02T22:59:09.164Z",
+    "hash": "af585835b8d05f8730c6b93c26c0e82e6bfbaf95"
   },
   "cancer_sv/multihop_split_view": {
     "name": "cancer_sv/multihop_split_view",
     "status": "bad",
-    "note": "it would be ideal if we could  work harder to get the derivative assembly and plot it versus the reference assembly with linearsyntenyview ALREADY DONE, one section down, and this is the tutorial that does it: scripts/sv_multihop.py derive reconstructs the derivative allele from the spanning reads and cancer_sv/derivative_synteny plots that contig against the three reference loci in a LinearSyntenyView, with cancer_sv/derivative_inserts as the base-scale zoom. This figure is the step before it -- the same event in reference coordinates -- and the prose above it now points at the synteny view as \"the next section\" rather than \"two sections down\". The split view is also what the reader can reach without running anything, which is why it stays. Its panels shrank with the composed figure (see the tumour_vs_normal note).",
-    "reviewedAt": "2026-08-02T21:52:43.532Z",
-    "hash": "0b3e434de2258ab13c1cde5b395ee673f7a73b7e"
+    "note": "\"ALREADY DONE, one section down\" we might want to make it a multi-part figure then?? previous notes; it would be ideal if we could  work harder to get the derivative assembly and plot it versus the reference assembly with linearsyntenyview ALREADY DONE, one section down, and this is the tutorial that does it: scripts/sv_multihop.py derive reconstructs the derivative allele from the spanning reads and cancer_sv/derivative_synteny plots that contig against the three reference loci in a LinearSyntenyView, with cancer_sv/derivative_inserts as the base-scale zoom. This figure is the step before it -- the same event in reference coordinates -- and the prose above it now points at the synteny view as \"the next section\" rather than \"two sections down\". The split view is also what the reader can reach without running anything, which is why it stays. Its panels shrank with the composed figure (see the tumour_vs_normal note).",
+    "reviewedAt": "2026-08-02T23:00:02.449Z",
+    "hash": "21fcdd2149652a25ae8e654de963fec11252bdf3"
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
