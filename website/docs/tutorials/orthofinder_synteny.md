@@ -24,6 +24,23 @@ what makes the polyploid case readable.
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+OrthoFinder bundles its own DIAMOND, so one install covers both:
+[bioconda](https://bioconda.github.io/) has `orthofinder` directly, and the
+project also publishes a `davidemms/orthofinder` container with the same bundle.
+Without root, [Apptainer](https://apptainer.org/) runs that container rootless:
+
+```bash
+apptainer pull orthofinder.sif docker://davidemms/orthofinder:latest
+mkdir -p ~/.local/bin && cat > ~/.local/bin/orthofinder <<'EOF'
+#!/usr/bin/env bash
+exec apptainer exec --bind "$PWD" ~/orthofinder.sif orthofinder "$@"
+EOF
+chmod +x ~/.local/bin/orthofinder
+```
+
+`orthofinder` on `PATH` finds the container's own bundled DIAMOND automatically,
+so the script below needs no further changes.
+
 ## Orthology where alignment runs out
 
 [Pairwise minimap2](/docs/tutorials/synteny_visualization) aligns sequence to
@@ -48,6 +65,8 @@ share a common ancestor a few hundred million years back, and the orthologs
 still fall into chromosome-scale blocks. The teleost genome duplication shows up
 as a matter of counting: a human chromosome answers to one or two chicken
 chromosomes, and to more zebrafish ones.
+
+<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes, and Color by → Reference anchors every band on the row above it." src="/img/orthofinder_synteny/vertebrates.png" />
 
 `grasses` stacks rice, sorghum, maize, brachypodium and foxtail millet. Maize
 carries a whole-genome duplication the others do not, so a rice gene commonly
@@ -163,12 +182,19 @@ synteny track and a stacked default session.
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
 bash build_orthofinder_synteny.sh vertebrates   # or: grasses
-npx --yes serve orthofinder_vertebrates_build/jbrowse2  # then open the printed URL
+npx --yes serve -S orthofinder_vertebrates_build/jbrowse2  # then open the printed URL
 ```
 
 The OrthoFinder step is the long one: five proteomes is 25 DIAMOND searches, so
 allow a while on first run. Everything is guarded on its output file, so a
 re-run picks up where it stopped.
+
+A tagged `jbrowse-web` release (what `jbrowse create` fetches, and what
+`/code/jb2/latest/` on this site serves) may not yet include the fix a
+`ChromSizesAdapter` assembly needs inside a `LinearSyntenyView`; the continuous
+`/code/jb2/main/` build does. If the locally-served app opens to a fatal error,
+point that build at the local `config.json` instead: `/code/jb2/main/?config=`
+plus the served URL.
 
 ## See also
 

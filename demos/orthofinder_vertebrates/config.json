@@ -1,0 +1,244 @@
+{
+  "assemblies": [
+    {
+      "name": "human",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "human-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "human.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "chicken",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "chicken-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "chicken.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "frog",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "frog-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "frog.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "gar",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "gar-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "gar.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "zebrafish",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "zebrafish-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "zebrafish.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "Vertebrates orthology synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "human - chicken - frog - gar - zebrafish (OrthoFinder orthogroups)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            {
+              "assembly": "human"
+            },
+            {
+              "assembly": "chicken"
+            },
+            {
+              "assembly": "frog"
+            },
+            {
+              "assembly": "gar"
+            },
+            {
+              "assembly": "zebrafish"
+            }
+          ],
+          "tracks": [
+            ["vertebrates_orthogroups"],
+            ["vertebrates_orthogroups"],
+            ["vertebrates_orthogroups"],
+            ["vertebrates_orthogroups"]
+          ],
+          "colorBy": "reference",
+          "autoDiagonalize": true
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "human_genes",
+      "name": "human genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "human.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "human.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["human"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chicken_genes",
+      "name": "chicken genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "chicken.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "chicken.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["chicken"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "frog_genes",
+      "name": "frog genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "frog.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "frog.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["frog"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gar_genes",
+      "name": "gar genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "gar.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gar.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["gar"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "zebrafish_genes",
+      "name": "zebrafish genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "zebrafish.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "zebrafish.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["zebrafish"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "vertebrates_orthogroups",
+      "name": "Vertebrates orthogroups (OrthoFinder)",
+      "assemblyNames": ["human", "chicken", "frog", "gar", "zebrafish"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "human.blocks.gz",
+        "blockAssemblies": ["chicken", "frog", "gar", "human", "zebrafish"],
+        "bedLocations": [
+          {
+            "uri": "chicken.bed.gz"
+          },
+          {
+            "uri": "frog.bed.gz"
+          },
+          {
+            "uri": "gar.bed.gz"
+          },
+          {
+            "uri": "human.bed.gz"
+          },
+          {
+            "uri": "zebrafish.bed.gz"
+          }
+        ],
+        "assemblyNames": ["human", "chicken", "frog", "gar", "zebrafish"]
+      }
+    }
+  ]
+}

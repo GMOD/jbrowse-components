@@ -595,6 +595,51 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
     viewportHeight: 428,
   },
+
+  // orthofinder_synteny.md: human/chicken/frog/spotted gar/zebrafish, stacked
+  // on OrthoFinder orthogroups rather than a whole-genome aligner. One
+  // vertebrates_orthogroups track (MCScanBlocksAdapter) backs all four bands.
+  // The assemblies are ChromSizesAdapter (no sequence, names/lengths only, see
+  // the tutorial's "Assemblies without sequence" section) - a tagged
+  // jbrowse-web release may not carry the LinearSyntenyView fix that
+  // combination needs, so this renders against the site's own build (main)
+  // rather than a fixed jbrowse-web version the way the other synteny specs
+  // above do.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/vertebrates',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'human' },
+              { assembly: 'chicken' },
+              { assembly: 'frog' },
+              { assembly: 'gar' },
+              { assembly: 'zebrafish' },
+            ],
+            tracks: [
+              ['vertebrates_orthogroups'],
+              ['vertebrates_orthogroups'],
+              ['vertebrates_orthogroups'],
+              ['vertebrates_orthogroups'],
+            ],
+            colorBy: 'reference',
+            autoDiagonalize: true,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 860,
+  },
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',

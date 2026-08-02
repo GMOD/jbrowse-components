@@ -218,6 +218,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.14, 0.545],
     xband: [0, 0.36],
   },
+  orthofinder_synteny: {
+    // Left third only, same reason as multiway_synteny below: the per-row "No
+    // tracks active / Open track selector" chip is horizontally centered, so a
+    // left frame keeps the ribbons and genome labels without it. Taller band
+    // than that one (five rows here, not three) to carry two ribbon fans.
+    src: 'orthofinder_synteny/vertebrates.png',
+    band: [0.13, 0.6],
+    xband: [0, 0.36],
+  },
   allvsall_synteny: {
     // The five-strain stack, past the app chrome. collapseEmptyRows on this
     // figure's own spec dropped every row's "No tracks active" chip to a bare
