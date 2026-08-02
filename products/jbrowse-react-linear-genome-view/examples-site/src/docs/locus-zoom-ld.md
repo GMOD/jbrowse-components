@@ -20,7 +20,8 @@ Reference: [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack/),
 [PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter/),
 the
 [LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay/)
-`colorBy` slot, and the
-[Linkage disequilibrium tutorial](https://jbrowse.org/jb2/docs/tutorials/linkage_disequilibrium/),
-which covers reading an LD triangle, spotting a selective sweep, and when LD is
-the wrong tool.
+`colorBy` slot, and the two LD tutorials:
+[LD at a selective sweep](https://jbrowse.org/jb2/docs/tutorials/ld_human/),
+which computes a triangle live from phased genotypes, and
+[LD across an inversion](https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/),
+which reads precomputed PLINK LD through the adapter above.

@@ -31,11 +31,10 @@ The one allowed exception is **bulk data**: the `nextstrain_*.json` fixtures are
 imported because inlining them would bury the code the page is about. Data only,
 never code.
 
-### Known violation, not a precedent
-
-`SingleCellUmap.tsx` imports `../components/UmapScatter.tsx`, 185 lines of real
-component code. That page's shown source is therefore not runnable as pasted. Do
-not cite it as license to add more. Inline it if you are in there anyway.
+`SingleCellUmap.tsx` is the worked example of the rule: its UMAP canvas panel is
+185 lines that used to live in `src/components/`, and it is inlined under a
+banner comment because the page's single `?raw` block has to be the whole thing.
+There is no `src/components/` directory any more, and there should not be one.
 
 Snippets in `.astro` prose are held to the same bar: write the generic call as a
 literal, never `?raw` a private helper of this site.
