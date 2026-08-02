@@ -226,7 +226,11 @@ export type AssemblyAdapter =
   | {
       type: 'TwoBitAdapter'
       twoBitLocation: FileLocation
-      chromSizesLocation: FileLocation
+      // optional, and omitted rather than written blank: a 2bit carries its own
+      // sequence names, and a blank UriLocation here is resolved like any other
+      // relative location, which on desktop lands on the session file's own
+      // directory and fails the assembly with `EISDIR`
+      chromSizesLocation?: FileLocation
     }
 
 export type AssemblyConf = ReturnType<typeof getBaseAssemblyConfig> & {
@@ -493,6 +497,8 @@ export function getAdapterConfig({
   }
   return {
     kind: 'ready',
-    adapter: { type: 'TwoBitAdapter', twoBitLocation, chromSizesLocation },
+    adapter: isBlank(chromSizesLocation)
+      ? { type: 'TwoBitAdapter', twoBitLocation }
+      : { type: 'TwoBitAdapter', twoBitLocation, chromSizesLocation },
   }
 }

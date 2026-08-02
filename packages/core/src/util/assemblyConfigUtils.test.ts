@@ -263,6 +263,43 @@ describe('getAdapterConfig', () => {
       },
     })
   })
+
+  // A blank location is a UriLocation with an empty uri, which is resolved like
+  // any other relative one: on desktop it lands on the session file's directory
+  // and the assembly fails to load with EISDIR. The slot is optional, so leave
+  // it out.
+  test('TwoBitAdapter omits chromSizes when none was given', () => {
+    const result = getAdapterConfig({
+      ...base,
+      adapterSelection: 'TwoBitAdapter',
+      twoBitLocation: twobit,
+    })
+    expect(result).toEqual({
+      kind: 'ready',
+      adapter: { type: 'TwoBitAdapter', twoBitLocation: twobit },
+    })
+  })
+
+  test('TwoBitAdapter keeps a chromSizes that was given', () => {
+    const chromSizes = {
+      uri: 'hg38.chrom.sizes',
+      locationType: 'UriLocation' as const,
+    }
+    const result = getAdapterConfig({
+      ...base,
+      adapterSelection: 'TwoBitAdapter',
+      twoBitLocation: twobit,
+      chromSizesLocation: chromSizes,
+    })
+    expect(result).toEqual({
+      kind: 'ready',
+      adapter: {
+        type: 'TwoBitAdapter',
+        twoBitLocation: twobit,
+        chromSizesLocation: chromSizes,
+      },
+    })
+  })
 })
 
 describe('applyPrimaryFile', () => {
