@@ -41,6 +41,7 @@ function step({
   labelSide = 'right',
   labelDx = 0,
   labelDy = 0,
+  badgeSide = 'left',
   maxWidth,
 }: {
   n: number
@@ -49,6 +50,10 @@ function step({
   labelSide?: 'right' | 'left' | 'above' | 'below'
   labelDx?: number
   labelDy?: number
+  // which side of the control the badge sits on. Left by default; `right` is
+  // for a control whose own row identifies it to the LEFT (a table row's
+  // launch link, where the badge would otherwise cover the genome name).
+  badgeSide?: 'left' | 'right'
   maxWidth?: number
 }): Annotation[] {
   const badge: Annotation = {
@@ -57,8 +62,8 @@ function step({
     radius: 15,
     fontSize: 17,
     strokeWidth: 3,
-    anchor: { ...anchor, alignX: 'left' },
-    dx: -24,
+    anchor: { ...anchor, alignX: badgeSide },
+    dx: badgeSide === 'left' ? -24 : 24,
   }
   const box: Annotation = { type: 'box', strokeWidth: 3, anchor }
   if (!label) {
@@ -74,10 +79,18 @@ function step({
         : labelSide === 'left'
           ? { ...anchor, alignX: 'left' }
           : { ...anchor, alignX: 'right' }
-  // a left-side label ends clear of the badge, which is on that side too (the
+  // a label ends clear of the badge when the badge is on its side too: the
   // add-track form sits against the right edge of the window, so its callouts
-  // have nowhere else to go)
-  const dx = labelSide === 'right' ? 22 : labelSide === 'left' ? -52 : 0
+  // have nowhere to go but left, and a right-hand badge is 39px of the space a
+  // right-hand label would otherwise start in
+  const dx =
+    labelSide === 'right'
+      ? badgeSide === 'right'
+        ? 52
+        : 22
+      : labelSide === 'left'
+        ? -52
+        : 0
   const dy = labelSide === 'below' ? 30 : labelSide === 'above' ? -18 : 7
   return [
     box,
@@ -95,10 +108,6 @@ function step({
     },
   ]
 }
-
-// The location box identifies a linear genome view without depending on
-// anything the assembly puts in it.
-const LOCATION_BOX = 'input[placeholder="Search for location"]'
 
 export const PROCEDURES: Record<string, Procedure> = {
   'desktop-open-genome-steps.png': {
@@ -132,17 +141,12 @@ export const PROCEDURES: Record<string, Procedure> = {
         ],
       },
       {
+        // No callout: the frame IS the result, and a badge on the location box
+        // labelled "the assembly opens in a linear genome view" only narrates
+        // what the reader is already looking at. Same rule as the add-track
+        // procedure's last frame.
         title: 'linear genome view on the new assembly',
-        // clear of the view's centered "No tracks active" block, which is what
-        // a bare new assembly has under its ruler
-        annotations: step({
-          n: 4,
-          anchor: { selector: LOCATION_BOX },
-          label: 'The assembly opens in a linear genome view',
-          labelSide: 'below',
-          labelDx: 250,
-          labelDy: 10,
-        }),
+        annotations: [],
       },
     ],
   },
@@ -158,21 +162,27 @@ export const PROCEDURES: Record<string, Procedure> = {
         }),
       },
       {
+        // One callout, on the link that does something. The search box used to
+        // carry a second one; a reader who wants hg38 out of a table of
+        // hundreds does not need to be told that the box above it searches.
         title: 'available-genomes table',
-        annotations: [
-          ...step({
-            n: 2,
-            anchor: { selector: 'input[placeholder="Search genomes..."]' },
-            label: 'Search by name, species, or accession',
-            labelSide: 'above',
-          }),
-          ...step({
-            n: 3,
-            anchor: { text: 'launch' },
-            label: 'Opens the genome in a new session',
-            labelDx: 120,
-          }),
-        ],
+        // A `text` anchor takes the smallest-area match and ties keep the first,
+        // so this is the top row's link -- the same one the flow then clicks, so
+        // the callout cannot point at a row other than the one frame 3 shows.
+        // The badge goes right: on the left it lands on the genome's name, which
+        // is what tells the reader which row this is.
+        annotations: step({
+          n: 2,
+          anchor: { text: 'launch' },
+          label: 'Opens the genome in a new session',
+          badgeSide: 'right',
+          labelDx: 100,
+        }),
+      },
+      {
+        // No callout: the frame is what step 2 produced.
+        title: 'the launched genome',
+        annotations: [],
       },
     ],
   },
@@ -266,17 +276,36 @@ function trailingBackgroundPx(file: string): number {
   return count === rows.length ? 0 : count
 }
 
-// Trim a frame's dead bottom margin in place, keeping `keep` px of it so the
-// content doesn't butt against the separator rule below it.
-function trimFrame(file: string, keep = 20): void {
-  const slack = trailingBackgroundPx(file)
-  if (slack > keep) {
-    const [bin, ...args] = IDENTIFY
-    const identify = spawnSync(bin!, [...args, '-format', '%h', file], {
-      encoding: 'utf8',
-    })
-    const height = Number.parseInt((identify.stdout || '').trim(), 10)
-    if (Number.isFinite(height)) {
+function frameSize(file: string): { width: number; height: number } {
+  const [bin, ...args] = IDENTIFY
+  const identify = spawnSync(bin!, [...args, '-format', '%w %h', file], {
+    encoding: 'utf8',
+  })
+  const [width, height] = (identify.stdout || '')
+    .trim()
+    .split(' ')
+    .map(s => Number.parseInt(s, 10))
+  return { width: width ?? 0, height: height ?? 0 }
+}
+
+// Trim the frames' dead bottom margin in place, keeping `keep` px of it so the
+// content doesn't butt against the bottom of its window.
+//
+// Every frame loses the SAME amount: the smallest slack any of them has. The
+// captures are one fixed 1400x763 window whatever it is showing, so trimming
+// each to its own content made the rows three different heights, which reads as
+// three differently-sized windows rather than one window three times. Cropping
+// by the minimum keeps the rows identical AND still drops the dead page that
+// every frame shares (the start screen leaves ~200px under its panels, a
+// settled volvox view ~540px).
+function trimFrames(files: string[], keep = 20): void {
+  const slack = Math.min(...files.map(f => trailingBackgroundPx(f)))
+  if (slack <= keep) {
+    return
+  }
+  for (const file of files) {
+    const { height } = frameSize(file)
+    if (Number.isFinite(height) && height > 0) {
       execFileSync(IM, [
         file,
         '-crop',
@@ -297,24 +326,28 @@ function trimFrame(file: string, keep = 20): void {
 const TITLEBAR_PX = 28
 const TITLEBAR_COLOR = '#e9ebef'
 const WINDOW_BORDER = '#a9b0ba'
-// the three-dot cluster, in the order every client-side decoration draws it
-const WINDOW_DOTS = ['#ec6a5e', '#f4bf4f', '#61c554']
+// the button cluster, at the right of the bar and in the order a GNOME or
+// Windows title bar draws it: minimize, maximize, close, close outermost
+const WINDOW_DOTS = ['#f4bf4f', '#61c554', '#ec6a5e']
 const DOT_RADIUS = 5
 const DOT_PITCH = 20
-const DOT_X = 20
+// of the rightmost dot's center from the right edge
+const DOT_INSET = 20
 
 // Between frames, so the windows read as three pictures rather than a stack
-// welded together. Transparent rather than a page color: these figures render
-// on a docs page that has a light and a dark theme, and a baked-in white gap
-// would be a white bar down the middle of the dark one.
+// welded together, and around the whole figure, so the outermost windows are not
+// flush against whatever the docs page puts beside them. Transparent rather than
+// a page color: these figures render on a docs page that has a light and a dark
+// theme, and a baked-in white gap would be a white bar down the middle of the
+// dark one.
 const FRAME_GAP_PX = 26
 
 // A frame plus its simulated window chrome, as an ImageMagick parenthesized
 // group. The title bar is spliced above the capture and the dots are drawn into
 // it; the 1px border goes on last so it surrounds both.
-function windowFrame(file: string, gapAbove: boolean): string[] {
+function windowFrame(file: string, width: number, gapAbove: boolean): string[] {
   const dots = WINDOW_DOTS.flatMap((color, i) => {
-    const cx = DOT_X + i * DOT_PITCH
+    const cx = width - DOT_INSET - (WINDOW_DOTS.length - 1 - i) * DOT_PITCH
     const cy = Math.round(TITLEBAR_PX / 2)
     return [
       '-fill',
@@ -344,17 +377,20 @@ function windowFrame(file: string, gapAbove: boolean): string[] {
 
 // Stack the frames into one figure, each in its own window.
 export function composeProcedure(frames: string[], outPath: string): void {
-  for (const frame of frames) {
-    trimFrame(frame)
-  }
+  trimFrames(frames)
+  const { width } = frameSize(frames[0]!)
   execFileSync(IM, [
-    ...frames.flatMap((f, i) => windowFrame(f, i > 0)),
+    ...frames.flatMap((f, i) => windowFrame(f, width, i > 0)),
     '-background',
     'none',
     '-append',
     // splicing leaves the first frame's geometry as the result's virtual
     // canvas, which every later `convert` on this file then crops to
     '+repage',
+    '-bordercolor',
+    'none',
+    '-border',
+    String(FRAME_GAP_PX),
     outPath,
   ])
 }

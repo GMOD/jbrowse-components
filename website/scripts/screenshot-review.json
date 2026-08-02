@@ -1841,10 +1841,10 @@
   },
   "hprc2/mhc_clustered": {
     "name": "hprc2/mhc_clustered",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:08:59.531Z",
-    "hash": "df92739ebac2828bed839567230416f9027ff272"
+    "status": "bad",
+    "note": "add the variant as a plain old linearvariantdisplay also. if needed, we might want to even make the multisamplevariantdisplay support this...as an option...above the display...since it may be a common need",
+    "reviewedAt": "2026-08-02T19:17:01.857Z",
+    "hash": "dd8b9d1af46a9f8cc8733c5cd32c29fa8160e814"
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
@@ -2282,9 +2282,9 @@
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
     "status": "bad",
-    "note": "please zoom our a bit more. also potentially use 'proportional sizing' for the ld blocks with useGenomicPositions;true. previous notes: DONE, three of four asks; the fourth was offered as optional and declined. GENE TRACK added (hg19 RefSeq Curated, showOnlyGenes, longest isoform), which is also the answer to 'we need to see why this is important' - the block now visibly sits on LCT/MCM6 rather than on unlabelled sequence. ZOOMED OUT 800 kb -> 1.2 Mb, so the panel lane's block ends inside the frame on both sides. Measured 2 Mb first and rejected it: a second, larger block upstream of LCT then dominates both lanes and the pooled-versus-panel difference stops being what the eye lands on, which is the subject. LINEZONEHEIGHT 100 -> 70, not lower: with useGenomicPositions off, that zone is also where the recombination curve and its 0..1 axis are drawn (effectiveLineZoneHeight in LDDisplay/shared.ts), and at 40 the tick labels overlapped into a smudge - recombinationZoneHeight does not get the space back, it only applies on the genomic-positions path. NOT DONE, deliberately: comparing to a named non-lactase-persistent population. The figure's subject is an analysis choice ('subset your VCF'), and stacking two human population panels would teach the same statistics while making the picture a comparison between peoples; the population-specific-sweep lesson is carried by ld/anopheles_2la, where the populations are mosquitoes. BOTH ASKS DONE. useGenomicPositions:true on both lanes, which is the proportional sizing asked for, and it also retires the connector zone the last round was tuning: that fan of lines exists to say which column each SNP is, a question only the SNP-index axis raises. With it gone the space above each triangle is the recombination curve's (effectiveLineZoneHeight switches from lineZoneHeight to recombinationZoneHeight on this path), so lineZoneHeight came out entirely. Window 1.2 Mb -> 2.2 Mb, now shared with ld/lct_lactase. The old note that at 2 Mb \"a second, larger block upstream of LCT dominates\" was reading the same off-frame left edge as a separate block: on genomic positions there is one block and the wider window is where it ends. Both lanes are the same window and axis, so pooled-versus-panel is the only difference between them.",
-    "reviewedAt": "2026-08-01T20:56:35.470Z",
-    "hash": "1754d2fe7196cc3f0f236ed250c572ceb3424daa"
+    "note": "are you happy with this screenshot now? anything more you'd suggest? would a 'fst' track make sense or other population genomic scans?",
+    "reviewedAt": "2026-08-02T19:17:44.955Z",
+    "hash": "30aead747d5fd244cf5aecf79cc55a3513894d7a"
   },
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
@@ -2297,8 +2297,8 @@
     "name": "mcscan_synteny/dotplot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-30T14:00:44.976Z",
-    "hash": "86bb7a64be8e42a0accd234746ff11080fea7d37"
+    "reviewedAt": "2026-08-02T19:17:45.017Z",
+    "hash": "d90aa04dedfc3bb62b1f0647f77b538edcf630f2"
   },
   "multiway_synteny/blocks_one_vs_all": {
     "name": "multiway_synteny/blocks_one_vs_all",
@@ -2394,15 +2394,15 @@
     "name": "pangenome/pggb_variants",
     "status": "bad",
     "note": "this doesn't seem like a very interesting screenshot, anything you would suggest to make it more 'interesting'? can consider deleting also REWORKED rather than deleted, by moving it. It was the MAF figure's window, where all four rows are the same dense blue barcode -- a texture, not a result, which is what \"not very interesting\" was about. The window is now chr:480,000-600,000, picked on the genotypes rather than by eye: counting per-strain no-calls per 50 kb across the whole VCF and taking a span where the four strains disagree about what they are doing. The four rows now read four different ways in one frame -- IAI39 has a ~50 kb no-call block and CFT073 a shorter one inside it (neither aligns to K12 there), NCTC86 is nearly solid homozygous-reference across the whole 120 kb, and Sakai differs at sites right through it. That contrast is what a genotype matrix over a graph states and the depth/PAV projections cannot: they say how much covers a base, not which strains carry what. Caption rewritten to name the four behaviours instead of the display.",
-    "reviewedAt": "2026-08-01T15:04:33.592Z",
-    "hash": "567d1bc564e9c26be0b3ff41551b0ed620824b95"
+    "reviewedAt": "2026-08-02T19:21:29.199Z",
+    "hash": "09d5eabdaaf1d7da677a24a3644b8a34c0eee161"
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
     "status": "bad",
-    "note": "reduce the height of the display so it's e.g. just 300px tall, each row can be 'subpixel' itll still draw it as 1px high though.  and zoom in on the end of the gene The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. And zoomed to the end of the gene: the window is now exons 3-16, since CDH1's first intron is 63kb and the old whole-transcript window spent two thirds of its width on sequence carrying nothing while squeezing the exons the connector lines point into against the right edge.",
-    "reviewedAt": "2026-08-02T14:46:40.032Z",
-    "hash": "c4adc2e9ea48531dd74db292b3d52aebddcbc8fa"
+    "note": "if it helps, add compact clinvar or cosmic track that echoes what is being shown in the multisamplevariantdisplay. consider using collapse introns also.",
+    "reviewedAt": "2026-08-02T19:21:29.127Z",
+    "hash": "61bc2acc4b8b63cc375b51f78ab56b79b73bd08b"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2428,16 +2428,16 @@
   "tcga/mutations_pik3ca": {
     "name": "tcga/mutations_pik3ca",
     "status": "bad",
-    "note": "unfortunately, this is just still not a very interesting screenshot.can consider deleting? previous notes: hard to see what is significant without maybe interesting sample clustering. any patterns to this? MEASURED, THEN REWORKED, and the pattern the note asks for is real: PIK3CA is carried by 41.5% of the HR+/HER2- tumors against 11.2% of the triple-negative ones (bcftools over the hosted VCF crossed with the clinical TSV). Clustering was already on and was the problem rather than the fix -- it gathers every carrier into one block at the top, which does make each hotspot a solid bar but leaves two thirds of the frame an empty grey field and throws away the clinical axis. The figure is now grouped and colored by subtype with no clustering, and at 1900px of display (about 2px per tumor, against the 1px the old height gave) two things read at once: the three hotspot columns are dense vertical stripes, and they sit in the HR+/HER2- band. Both arrangements were rendered before choosing. KEPT, and reworked the way the CDH1 note asks rather than deleted -- at 1900px the objection was right, and the height was the whole of it. The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. The result is that the three hotspot columns are now solid vertical stripes rather than dashes strung down six screens of grey, and that they sit in the HR+/HER2- band reads in one glance. The legend used to cover the H1047R column (it is the right-most, at 93% of the width, and extending the window only adds three more) in exactly the band the figure is about; that is fixed by the taller connector zone rather than by hiding the color key.",
-    "reviewedAt": "2026-08-02T14:45:59.248Z",
-    "hash": "e2e617c9ab3c440286f91387f75c00950d013cf5"
+    "note": "unfortunately, this is just still,again, not a very interesting screenshot.can consider deleting? previous notes: hard to see what is significant without maybe interesting sample clustering. any patterns to this? MEASURED, THEN REWORKED, and the pattern the note asks for is real: PIK3CA is carried by 41.5% of the HR+/HER2- tumors against 11.2% of the triple-negative ones (bcftools over the hosted VCF crossed with the clinical TSV). Clustering was already on and was the problem rather than the fix -- it gathers every carrier into one block at the top, which does make each hotspot a solid bar but leaves two thirds of the frame an empty grey field and throws away the clinical axis. The figure is now grouped and colored by subtype with no clustering, and at 1900px of display (about 2px per tumor, against the 1px the old height gave) two things read at once: the three hotspot columns are dense vertical stripes, and they sit in the HR+/HER2- band. Both arrangements were rendered before choosing. KEPT, and reworked the way the CDH1 note asks rather than deleted -- at 1900px the objection was right, and the height was the whole of it. The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. The result is that the three hotspot columns are now solid vertical stripes rather than dashes strung down six screens of grey, and that they sit in the HR+/HER2- band reads in one glance. The legend used to cover the H1047R column (it is the right-most, at 93% of the width, and extending the window only adds three more) in exactly the band the figure is about; that is fixed by the taller connector zone rather than by hiding the color key.",
+    "reviewedAt": "2026-08-02T19:20:27.759Z",
+    "hash": "fe126911df8c0e8de012c24408bb60846553800f"
   },
   "tcga/mutations_tp53_subtype": {
     "name": "tcga/mutations_tp53_subtype",
     "status": "bad",
-    "note": "unfortunately, this is just still not a very interesting screenshot.can consider deleting. previous notes; hard to see what is happening here? might consider delete, or allowing larger 'squares' to be drawn just to emphasize when sparse like this KEPT, NOT DELETED, because the contrast is the strongest in the cohort and it was only the row height hiding it: 77.6% of triple-negative tumors carry a TP53 mutation against 19.3% of HR+/HER2- (same measurement as the PIK3CA entry). 'Larger squares' was the right diagnosis -- 979 rows in 990px is a 1px row, so a somatic call is a hairline dash and a 4x density difference between two bands is in the pixels but not legible. Fixed by giving each tumor about 2px (display 1900, viewport 2230) rather than by dilating the marks: a minimum drawn cell size would have to either overstate density (a fixed-size mark saturates the dense band and compresses the contrast) or scale alpha by true coverage the way the shader already does horizontally, which is a renderer change worth doing on its own terms, not as a figure fix. Say the word and it can be built (canvas2d + the matrix slang shader + SVG export + a slot). KEPT, same treatment as PIK3CA and CDH1. The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. The triple-negative band is now visibly darker than the HR+/HER2- band above it at a glance, which is the whole claim, and it costs a fifth of the frame it used to. No renderer change was needed after all, so the minimum-drawn-cell-size offer in the previous note is withdrawn as unnecessary here.",
-    "reviewedAt": "2026-08-02T14:46:04.648Z",
-    "hash": "c13b5787804f856b5047c54a8baa54157b3c2a29"
+    "note": "unfortunately, this is just still,again, not a very interesting screenshot.can consider deleting. previous notes; hard to see what is happening here? might consider delete, or allowing larger 'squares' to be drawn just to emphasize when sparse like this KEPT, NOT DELETED, because the contrast is the strongest in the cohort and it was only the row height hiding it: 77.6% of triple-negative tumors carry a TP53 mutation against 19.3% of HR+/HER2- (same measurement as the PIK3CA entry). 'Larger squares' was the right diagnosis -- 979 rows in 990px is a 1px row, so a somatic call is a hairline dash and a 4x density difference between two bands is in the pixels but not legible. Fixed by giving each tumor about 2px (display 1900, viewport 2230) rather than by dilating the marks: a minimum drawn cell size would have to either overstate density (a fixed-size mark saturates the dense band and compresses the contrast) or scale alpha by true coverage the way the shader already does horizontally, which is a renderer change worth doing on its own terms, not as a figure fix. Say the word and it can be built (canvas2d + the matrix slang shader + SVG export + a slot). KEPT, same treatment as PIK3CA and CDH1. The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. The triple-negative band is now visibly darker than the HR+/HER2- band above it at a glance, which is the whole claim, and it costs a fifth of the frame it used to. No renderer change was needed after all, so the minimum-drawn-cell-size offer in the previous note is withdrawn as unnecessary here.",
+    "reviewedAt": "2026-08-02T19:20:22.328Z",
+    "hash": "0ea8b1dd94cf4525ee6201a4c4750ee340a13f4d"
   },
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
@@ -2456,37 +2456,37 @@
   "cancer_sv/multihop_split_view": {
     "name": "cancer_sv/multihop_split_view",
     "status": "bad",
-    "note": "may need to use supercompact DONE: featureHeight 1 / featureSpacing 0 on all three read tracks, with per-panel heights matched to each locus's depth (chr3 250, chr10 130, chr12 140) so a panel is the size of its own pileup rather than 250px of white under a shallow one. Gene tracks collapsed to the longest coding isoform, which also puts the RARB / BICC1 / TRHDE labels back on screen (same clipping cause written up under multihop_tumour_vs_normal). The splines now read as individual reads instead of crossing a band of empty rows. Viewport 1460 -> 1130, nothing clipped.",
-    "reviewedAt": "2026-08-02T14:37:13.770Z",
-    "hash": "9e7599bbf0ebe4e61419c278fa3b32de0bc700da"
+    "note": "this is a great screenshot, but is there a way to visualize what is happening in a linearsyntenyview also? it can be more 'intuitive' as a linearsyntenyview style rendering.",
+    "reviewedAt": "2026-08-02T19:13:04.273Z",
+    "hash": "dcea8953128d7781af16058ebb3c2c8167aaf6eb"
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
     "status": "bad",
-    "note": "(1) no label visible on ncbi refseq genes. not sure if we can fix this but it would be valuable. (2) may want to use supercompact on read tracks.  (3) and since this is a translocation,  may benefit from breakpoint split view? multi-part figure showing how to set up breakpoint split view? (1) FIXED, and the cause is worth recording: the label was never missing, it was drawn outside the track. Probed against the live model: RARB is in the display's floatingLabelsData with nameLabel RARB, showLabels true, fit level full, and its DOM node exists at y=313 while the track band is 193..293. A top-level feature's floating label is drawn under its glyph and reserves no height of its own (only the transcript-child 'below' path reserves any, see labelUtils.ts), so RARB's stacked isoforms (~118px of glyph) push the label past the bottom of a 100px track, where it is clipped away. Two ways out: give the gene track ~135px, or collapse it to one row. The spec takes the second, geneGlyphMode longestCoding at height 60, which also answers the wasted vertical space -- every window in this tutorial is mid-intron, so the extra isoform rows were identical flat lines. The cost is the 'Longest isoform' chip the display shows while collapsed. The general fix (reserve the top-level label row so a fit/auto height accounts for it) is NOT done and is a real gap; say the word. (2) DONE: featureHeight 1 / featureSpacing 0 on both read tracks, tumour 270 / normal 150, viewport 1100 -> 860. (3) already one figure down: multihop_split_view IS the breakpoint split view of this same event, and the prose above it gives the click path (ADD -> Breakpoint split view, one import-form row per locus).",
-    "reviewedAt": "2026-08-02T14:38:45.389Z",
-    "hash": "bcd967b21b8297fa7c572205c1cc2881951f72aa"
+    "note": "if this is a multi-step with cancer_sv/multihop_split_view , consider making it a multi-part figure. since this are large, maybe side by side",
+    "reviewedAt": "2026-08-02T19:13:51.283Z",
+    "hash": "52d8cd03ce519063898c4af5eafbe29b8fb76b4f"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
-    "status": "bad",
-    "note": "reduce number of callouts...obvious ones like next ...not needed. people arent dumb DONE: the Next badge and the box-around-the-whole-view on the result frame are both gone, so the figure is three callouts (the menu item, the URL field, the inferred-index note) instead of five. The two that went were the two that narrated what the reader is already looking at; the three that stayed each say something the frame does not (the alternate path via the track selector, that the field takes a local file or a URL, and that the index is guessed from the main file). DONE both, in composeProcedure (products/jbrowse-desktop/test/procedures.ts), so every procedure figure gets them. (1) The frames are now separated by a 26px gap instead of a 4px rule, and the gap is TRANSPARENT rather than a page color, because these render on a docs page with a light and a dark theme and a baked-in white bar would be wrong in one of them. (2) Each frame is drawn inside simulated window chrome: a title bar with the three-dot cluster plus a hairline border. Simulated is the only option -- selenium screenshots the page, so a capture is the app's viewport and the real title bar belongs to the window manager, which is also why it would differ per machine. With the chrome doing the separating, the rule between frames is gone.",
-    "reviewedAt": "2026-08-02T14:39:06.110Z",
-    "hash": "dd33bbc871ca19f9cd560aea615c1b3be6dd0fa3"
+    "status": "good",
+    "note": "add margin on all sides. and make each row the same 'dimensions'...the varying height of each screenshot make it confusing. also the 'title bar' (minimize,expand,close) should be on right. ALL THREE DONE in composeProcedure, so every procedure figure gets them. MARGIN: the 26px transparent gap that was only between frames now surrounds the figure too (transparent, not a page color, since these render on a page with a light and a dark theme). TITLE BAR: the cluster moved to the right of the bar and its order changed with it -- minimize, maximize, close, close outermost, which is what a GNOME or Windows decoration draws. UNIFORM ROWS: the frames were each trimmed to their own content, which is what made them three different heights; now the slack is measured on every frame and all of them lose the SMALLEST amount, so the rows are identical and the dead page every frame shares still goes. The cost is deliberate: the app window is a fixed 1400x763 and cannot be resized (chromedriver's setRect throws on electron), so a state with short content -- the File menu over an empty view -- now keeps the blank page under it rather than being cropped to fit. Uniform windows were the ask and that blank is what the app really shows. Caption also fixed: it still narrated a (4) and a (5) that were removed last round.",
+    "reviewedAt": "2026-08-02T19:33:37.374Z",
+    "hash": "6d9291f9e8e252f35a0b186fdf42a77cda7c2cb7"
   },
   "desktop-available-genomes-steps": {
     "name": "desktop-available-genomes-steps",
-    "status": "bad",
-    "note": "(1) add margin between panels potentially.(2) ideally, the screenshots also add the 'desktop border' with the header/title bar or client side decoration (in all desktop screenshots) even if needed, simulating it DONE both, in composeProcedure (products/jbrowse-desktop/test/procedures.ts), so every procedure figure gets them. (1) The frames are now separated by a 26px gap instead of a 4px rule, and the gap is TRANSPARENT rather than a page color, because these render on a docs page with a light and a dark theme and a baked-in white bar would be wrong in one of them. (2) Each frame is drawn inside simulated window chrome: a title bar with the three-dot cluster plus a hairline border. Simulated is the only option -- selenium screenshots the page, so a capture is the app's viewport and the real title bar belongs to the window manager, which is also why it would differ per machine. With the chrome doing the separating, the rule between frames is gone.",
-    "reviewedAt": "2026-08-02T14:40:20.053Z",
-    "hash": "1b0e7a0fb38325a16591fae0cbae1085aa61761e"
+    "status": "good",
+    "note": "we dont need to tell people to search...remove this unnecessary annotation call out. make result of clicking the genome in a third screenshot BOTH DONE. The search callout is gone, so the table frame has one callout, on the link that does something; the searchable-by-name/species/accession detail moved into the prose above the figure, where it costs the picture nothing. THIRD FRAME added: the flow now clicks a launch link and captures the session it opens (T2T CHM13v2.0/hs1, with the assembly's hub tracks listed in the track selector). It clicks the FIRST launch link in the table, which is the one the frame above boxes -- a text anchor takes the first of several equal matches -- so the two frames cannot disagree about which row this is, and it launches through jbrowse.org/ucsc/<id>/config.json, the same path the hg19 favorite in this run already takes. The badge moved to the right of the link for it: on the left it sat on the genome's name, which is what tells the reader which row was clicked. This figure also gets the margin, right-hand title bar buttons and uniform rows described in the desktop-add-track-steps note.",
+    "reviewedAt": "2026-08-02T19:33:37.438Z",
+    "hash": "5f7a771e2033269d405916231bdd5c0f20691955"
   },
   "desktop-open-genome-steps": {
     "name": "desktop-open-genome-steps",
-    "status": "bad",
-    "note": "(1) add margin between panels potentially.(2) ideally, the screenshots also add the 'desktop border' with the header/title bar or client side decoration (in all desktop screenshots) even if needed, simulating it DONE both, in composeProcedure (products/jbrowse-desktop/test/procedures.ts), so every procedure figure gets them. (1) The frames are now separated by a 26px gap instead of a 4px rule, and the gap is TRANSPARENT rather than a page color, because these render on a docs page with a light and a dark theme and a baked-in white bar would be wrong in one of them. (2) Each frame is drawn inside simulated window chrome: a title bar with the three-dot cluster plus a hairline border. Simulated is the only option -- selenium screenshots the page, so a capture is the app's viewport and the real title bar belongs to the window manager, which is also why it would differ per machine. With the chrome doing the separating, the rule between frames is gone.",
-    "reviewedAt": "2026-08-02T14:40:24.254Z",
-    "hash": "fcb2af7960709f512c60ec850f437d4ee0a7274a"
+    "status": "good",
+    "note": "reduce amount of callouts. add margin on all sides. and make each row the same 'dimensions'...the varying height of each screenshot make it confusing. also the 'title bar' (minimize,expand,close) should be on right. DONE. CALLOUTS 4 -> 3: the one that went was (4) on the result frame, which put a badge on the location box to say 'the assembly opens in a linear genome view' -- narrating what the reader is already looking at, the same rule that emptied the add-track procedure's last frame. The two in the dialog stay: they are the two real alternative paths (drop the files, or paste URLs), not narration. MARGIN / TITLE BAR / UNIFORM ROWS are all in composeProcedure and shared by the three procedure figures -- see the desktop-add-track-steps note for what each does and for why a uniform row means the short frames keep their blank page.",
+    "reviewedAt": "2026-08-02T19:33:37.407Z",
+    "hash": "b7f7edf4efeb37bc3f0268a7d3d7e4f15ec1859c"
   },
   "pangenome/hprc_inversion": {
     "name": "pangenome/hprc_inversion",
@@ -2505,8 +2505,15 @@
   "tcga/cohort_cnv_recurrence_subtype": {
     "name": "tcga/cohort_cnv_recurrence_subtype",
     "status": "bad",
-    "note": "reduce total height of figure a bit. if needed, point out her2 position in genome with a callout annotation and other salient features if it helps DONE: display 620 -> 500 and viewport 830 -> 710. Two callouts, ERBB2 (17q12) into the HER2+ gain row and 16q loss into the HR+/HER2- loss row, each anchored to its own locus in the live view with dy measured in whole row pitches off the track top, so nothing is hand-measured and they move with the row height. They sit in the half of their row the bars leave empty (gains fill upward, losses hang down), which is what makes room for a label at this density. Note for the next person: moving a callout is only ~0.3% of the frame, so the regen kept the old image as unchanged and it needed --force.",
-    "reviewedAt": "2026-08-02T14:44:57.712Z",
-    "hash": "58b41022d56ebd748a44b19a1ef5e448d2747163"
+    "note": "the arrow renders on top of the label. unclear why 16q is \"bad\", does it include HER2? put the ERRB2 annotation label to the right",
+    "reviewedAt": "2026-08-02T19:19:32.991Z",
+    "hash": "f60543db710ed9756a492ae5e5cbb911f718a7a9"
+  },
+  "scrna/percell_ms4a1": {
+    "name": "scrna/percell_ms4a1",
+    "status": "bad",
+    "note": "unclear why sidebar 'green' shows up as orange density, and unfortunately, this is just kind of a boring screenshot. any better?",
+    "reviewedAt": "2026-08-02T19:18:31.457Z",
+    "hash": "44dab134ce8b281f11a009b75b45b808cb60cbd8"
   }
 }

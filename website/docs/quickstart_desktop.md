@@ -70,7 +70,7 @@ autosaves. Click a session name to reopen it (see
 **Open new genome** brings up the "Open genome(s)" dialog, and what you give it
 there becomes a new session on that assembly.
 
-<Figure src="/img/desktop-open-genome-steps.png" caption="Opening a genome from your own files. Open new genome (1) brings up the dialog, which takes the sequence file either from the drop area (2) or from pasted URLs (3), and the assembly opens in a linear genome view (4)."/>
+<Figure src="/img/desktop-open-genome-steps.png" caption="Opening a genome from your own files. Open new genome (1) brings up the dialog, which takes the sequence file either from the drop area (2) or from pasted URLs (3). The assembly then opens in a linear genome view, the third frame."/>
 
 The dialog is drop-first. Drop your sequence file (a FASTA, bgzip-compressed
 FASTA, or 2bit, along with any `.fai`/`.gzi` index files) onto the drop area, or
@@ -99,10 +99,12 @@ on the new assembly, ready for tracks.
 ### Using a pre-loaded genome
 
 If you just want a common reference genome, use **Show all available genomes**
-instead. No files are needed. Star a genome to add it to the **Favorite
-genomes** quick-launch list on the start screen.
+instead. No files are needed. The table is searchable by name, scientific name,
+or accession, and grouped by source (UCSC main genomes, GenArk, and so on). Star
+a genome to add it to the **Favorite genomes** quick-launch list on the start
+screen.
 
-<Figure src="/img/desktop-available-genomes-steps.png" caption="Launching a public assembly. Show all available genomes (1) opens a table searchable by name, scientific name, or accession (2), and launch (3) starts a session on that genome."/>
+<Figure src="/img/desktop-available-genomes-steps.png" caption="Launching a public assembly. Show all available genomes (1) opens the table, and launch (2) opens a session on that genome, here T2T CHM13v2.0/hs1 with the assembly's hub tracks listed in the track selector."/>
 
 The **Quickstart list** works the same way for genomes you've saved yourself
 (see
@@ -117,7 +119,7 @@ Once a genome is open, add data tracks from local files or URLs.
 Open the **File** menu and choose **Open track...**, or open the track selector
 and use its **Add track** button. Either opens the "Add a track" form.
 
-<Figure src="/img/desktop-add-track-steps.png" caption="Adding a track. File then Open track... (1) opens the form, which takes a main file as a local path or a URL (2) and infers the index from it (3). Next (4) confirms the guessed track type, and the track is added to the open view (5)."/>
+<Figure src="/img/desktop-add-track-steps.png" caption="Adding a track. File then Open track... (1) opens the form, which takes a main file as a local path or a URL (2) and infers the index from it (3). Confirming the guessed track type adds the track to the open view, the third frame."/>
 
 - Choose **Add a track from file or URL**.
 - Set the **Main file** (the data file) and optionally an **Index file**. For

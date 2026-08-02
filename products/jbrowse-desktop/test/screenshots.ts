@@ -933,7 +933,26 @@ async function main(): Promise<void> {
   await blurActiveElement(driver)
   await capture(driver, 'desktop-available-genomes.png')
   await procedureFrame(driver, 'desktop-available-genomes-steps.png', 1)
-  await cleanupUI(driver)
+
+  // ...and what that table's launch link produces, which is the third frame of
+  // the procedure. The FIRST launch link in the table, because that is the one
+  // the frame above puts its callout on (a `text` anchor takes the first of
+  // several equal matches), so the two frames cannot disagree about which row
+  // this is. It launches through jbrowse.org/ucsc/<id>/config.json, the same
+  // path the hg19 favorite below takes.
+  console.log('Launching the top genome from the table...')
+  const launchLink = await driver.wait(
+    until.elementLocated(By.xpath("//table//a[normalize-space(.)='launch']")),
+    30000,
+  )
+  await driver.executeScript('arguments[0].click();', launchLink)
+  await waitForAppReady(driver)
+  await freezeAnimations(driver)
+  await hideSnackbars(driver)
+  await waitForStableSession(driver)
+  await procedureFrame(driver, 'desktop-available-genomes-steps.png', 2)
+  await returnToStartScreen(driver)
+  await freezeAnimations(driver)
 
   // BLAT / in-silico PCR dialogs on hg19, then back to the start screen
   await captureIsPcrFigures(driver)
