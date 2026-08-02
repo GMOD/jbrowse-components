@@ -65,9 +65,7 @@ or the plot fills in solid at whole-chromosome zoom.
 
 The two axes come from a synteny track's two `assemblyNames`, so a self
 comparison needs two assembly entries pointing at the same sequence under
-different names. Avoid giving either one the same name as a sequence inside it:
-a locstring can carry an assembly prefix, so an assembly called `chrY` holding a
-`chrY` makes `chrY:1-1000` ambiguous and the view will not finish loading.
+different names.
 
 ## Navigation and interaction
 

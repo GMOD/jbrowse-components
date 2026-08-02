@@ -1871,7 +1871,19 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // reasonable time, and it would be empty here.
   //
   // 25 kb minimum. Below ~30 kb the dispersed repeats black the plot out
-  // entirely; above ~100 kb only the palindromes survive.
+  // entirely, above ~100 kb only the palindromes survive.
+  //
+  // The config's two assemblies read a two-line chrY chrom.sizes checked in
+  // beside it rather than UCSC's hs1.chrom.sizes.txt, which is what this spec
+  // originally used. hgdownload timed the fetch out mid-render and failed the
+  // spec, and a remote file that only ever supplies one line's worth of
+  // information here is not worth the dependency. It also keeps hs1's other
+  // ~2000 contigs off both axes.
+  //
+  // If this ever hangs with no error, suspect a remote fetch rather than
+  // anything about the config: an assembly named after a refName it contains
+  // was the first theory and it is wrong, verified by rendering that exact
+  // naming against the local chrom.sizes.
   {
     mode: 'url',
     name: 'dotplot_self_chry',
