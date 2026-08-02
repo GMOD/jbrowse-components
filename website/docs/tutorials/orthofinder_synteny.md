@@ -77,9 +77,12 @@ has two maize orthologs, and the conversion has to decide what to do about that.
 `wheat` stacks wheat's own polyploidy history rather than an abstract
 duplication: Aegilops tauschii (the diploid D-genome donor), bread wheat
 (hexaploid, genomes A+B+D), durum (domesticated tetraploid, A+B), wild emmer
-(durum's wild tetraploid ancestor) and Triticum urartu (the diploid A-genome
-donor), stacked so each adjacent pair is a real evolutionary step rather than an
-arbitrary one.
+(durum's wild tetraploid ancestor), Triticum urartu (the diploid A-genome donor)
+and T. timopheevii (a second, independent tetraploid that also traces to the
+A-genome donor). Stacked in that order, each adjacent pair is a real
+evolutionary step rather than an arbitrary one.
+
+<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. Each band is a real step (D-donor to hexaploid, hexaploid to durum, durum to its wild ancestor, wild ancestor to the A-genome donor, A-genome donor to the independent timopheevii tetraploid) rather than an arbitrary pairing, and the A/B/D subgenome suffixes in wheat's and durum's own chromosome names carry through the ribbons." src="/img/orthofinder_synteny/wheat.png" />
 
 ## The conversion
 

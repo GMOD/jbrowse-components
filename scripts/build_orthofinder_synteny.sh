@@ -138,11 +138,18 @@ PY
 
   # One BED row per gene, named by the bare Ensembl gene id — the same id the
   # proteome step below writes into the FASTA headers, which is what makes the
-  # orthogroup table resolve against these BEDs.
+  # orthogroup table resolve against these BEDs. The trailing .NN strip mirrors
+  # the one the proteome step applies to the FASTA header's gene: tag: most
+  # Ensembl annotations carry no version on the GFF3 ID at all, so this is a
+  # no-op there, but some (Triticum urartu's IGDB annotation) suffix every gene
+  # ID with a constant .01 that isn't a version and isn't on the FASTA side,
+  # which otherwise resolves every id in the column to nothing.
   [ -f "$name.bed" ] || gunzip -c "$name.gff3.gz" \
     | awk -F'\t' -v OFS='\t' '$3 == "gene" {
         match($9, /ID=gene:[^;]+/)
-        print $1, $4 - 1, $5, substr($9, RSTART + 8, RLENGTH - 8), 0, $7
+        id = substr($9, RSTART + 8, RLENGTH - 8)
+        sub(/\.[0-9]+$/, "", id)
+        print $1, $4 - 1, $5, id, 0, $7
       }' > "$name.bed"
 
   # OrthoFinder wants one protein per gene, and takes a sequence's id from the
@@ -221,12 +228,18 @@ for name in $NAMES; do
   jb add-assembly "$name.chrom.sizes" --name "$name" --load copy --force --out "$APP"
 done
 
-# Per-genome gene tracks, so the ribbons can be read down to the gene
+# Per-genome gene tracks, so the ribbons can be read down to the gene. CSI, not
+# the default TBI: TBI can't address a region past ~537 Mb, and wheat-family
+# chromosomes commonly run past a billion bp (a plain TBI build fails outright
+# on Aegilops tauschii here, "Region 0..651661114 cannot be stored in a tbi
+# index"). CSI has no such ceiling and costs nothing on the smaller genomes.
 for name in $NAMES; do
   gunzip -c "$name.gff3.gz" | jb sort-gff | bgzip > "$name.sorted.gff3.gz"
-  tabix -f -p gff "$name.sorted.gff3.gz"
+  tabix -f -C -p gff "$name.sorted.gff3.gz"
+  # --indexFile: add-track's own index-file inference only looks for .tbi
   jb add-track "$name.sorted.gff3.gz" -a "$name" --name "$name genes" \
-    --trackId "${name}_genes" --load copy --force --out "$APP"
+    --trackId "${name}_genes" --indexFile "$name.sorted.gff3.gz.csi" \
+    --load copy --force --out "$APP"
 done
 
 # ── The one multi-way track, and a session stacking the genomes in row order ─

@@ -1,0 +1,306 @@
+{
+  "assemblies": [
+    {
+      "name": "tauschii",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "tauschii-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "tauschii.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "wheat",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "wheat-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "wheat.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "durum",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "durum-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "durum.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "emmer",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "emmer-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "emmer.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "urartu",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "urartu-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "urartu.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "timopheevii",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "timopheevii-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "timopheevii.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "Wheat orthology synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "tauschii - wheat - durum - emmer - urartu - timopheevii (OrthoFinder orthogroups)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            {
+              "assembly": "tauschii"
+            },
+            {
+              "assembly": "wheat"
+            },
+            {
+              "assembly": "durum"
+            },
+            {
+              "assembly": "emmer"
+            },
+            {
+              "assembly": "urartu"
+            },
+            {
+              "assembly": "timopheevii"
+            }
+          ],
+          "tracks": [
+            ["wheat_orthogroups"],
+            ["wheat_orthogroups"],
+            ["wheat_orthogroups"],
+            ["wheat_orthogroups"],
+            ["wheat_orthogroups"]
+          ],
+          "colorBy": "reference",
+          "autoDiagonalize": true
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "tauschii_genes",
+      "name": "tauschii genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "tauschii.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "tauschii.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["tauschii"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "wheat_genes",
+      "name": "wheat genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "wheat.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "wheat.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["wheat"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "durum_genes",
+      "name": "durum genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "durum.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "durum.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["durum"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "emmer_genes",
+      "name": "emmer genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "emmer.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "emmer.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["emmer"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "urartu_genes",
+      "name": "urartu genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "urartu.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "urartu.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["urartu"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "timopheevii_genes",
+      "name": "timopheevii genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "timopheevii.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "timopheevii.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["timopheevii"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "wheat_orthogroups",
+      "name": "Wheat orthogroups (OrthoFinder)",
+      "assemblyNames": [
+        "tauschii",
+        "wheat",
+        "durum",
+        "emmer",
+        "urartu",
+        "timopheevii"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "tauschii.blocks.gz",
+        "blockAssemblies": [
+          "durum",
+          "emmer",
+          "tauschii",
+          "timopheevii",
+          "urartu",
+          "wheat"
+        ],
+        "bedLocations": [
+          {
+            "uri": "durum.bed.gz"
+          },
+          {
+            "uri": "emmer.bed.gz"
+          },
+          {
+            "uri": "tauschii.bed.gz"
+          },
+          {
+            "uri": "timopheevii.bed.gz"
+          },
+          {
+            "uri": "urartu.bed.gz"
+          },
+          {
+            "uri": "wheat.bed.gz"
+          }
+        ],
+        "assemblyNames": [
+          "tauschii",
+          "wheat",
+          "durum",
+          "emmer",
+          "urartu",
+          "timopheevii"
+        ]
+      }
+    }
+  ]
+}

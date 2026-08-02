@@ -682,6 +682,53 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     viewportHeight: 860,
   },
+
+  // orthofinder_synteny.md: wheat's own polyploidy/domestication history, not
+  // an abstract duplication. Stack order is the evolutionary chain: Aegilops
+  // tauschii (diploid D-genome donor) - bread wheat (hexaploid ABD) - durum
+  // (domesticated tetraploid AB) - wild emmer (durum's wild tetraploid
+  // ancestor) - Triticum urartu (diploid A-genome donor) - T. timopheevii (a
+  // second, independent AG tetraploid that also traces to the A-genome donor).
+  // Every adjacent band is therefore a real step rather than an arbitrary
+  // pairing. Six rows (one more than the other two sets here), hence the taller
+  // viewport.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/wheat',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_wheat/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'tauschii' },
+              { assembly: 'wheat' },
+              { assembly: 'durum' },
+              { assembly: 'emmer' },
+              { assembly: 'urartu' },
+              { assembly: 'timopheevii' },
+            ],
+            tracks: [
+              ['wheat_orthogroups'],
+              ['wheat_orthogroups'],
+              ['wheat_orthogroups'],
+              ['wheat_orthogroups'],
+              ['wheat_orthogroups'],
+            ],
+            colorBy: 'reference',
+            autoDiagonalize: true,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 950,
+  },
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',
