@@ -42,9 +42,9 @@ export default function LaunchBreakpointSplitViewF(
       // takes the panels flat, which is easy to get backwards because the view's
       // own snapshot property really is called `init`.
       throw new Error(
-        `BreakpointSplitView launch needs a "views" array of panels, but got ${
-          views === undefined ? 'nothing' : typeof views
-        }. A session spec passes the panels flat as "views"; "init" is the config/defaultSession form.`,
+        `BreakpointSplitView launch needs a "views" array of panels, but got ${JSON.stringify(
+          views,
+        )}. A session spec passes the panels flat as "views"; "init" is the config/defaultSession form.`,
       )
     }
     if (views.length < 2) {

@@ -596,7 +596,6 @@ const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
 // The node's own span on CHM13, from its `SN`/`SO` tags, padded to a round window.
 const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
-const CHM13_ALLELE_LOCUS = `chr17:${CHM13_ALLELE.start + 1}-${CHM13_ALLELE.end}`
 
 const AMY_WINDOW = 'chr1:103,600,000-103,745,000'
 const AMY_REGION = {
