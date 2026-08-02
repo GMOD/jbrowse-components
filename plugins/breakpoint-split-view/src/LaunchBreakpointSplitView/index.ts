@@ -36,6 +36,17 @@ export default function LaunchBreakpointSplitViewF(
   /** #extensionPoint LaunchView-BreakpointSplitView | async | Programmatically launch a breakpoint split view */
   pluginManager.addToExtensionPoint('LaunchView-BreakpointSplitView', args => {
     const { session, views, ...rest } = args
+    if (!Array.isArray(views)) {
+      // Naming the likely cause beats the `views.length` TypeError this used to
+      // throw: `init` is the config/defaultSession spelling and a session spec
+      // takes the panels flat, which is easy to get backwards because the view's
+      // own snapshot property really is called `init`.
+      throw new Error(
+        `BreakpointSplitView launch needs a "views" array of panels, but got ${
+          views === undefined ? 'nothing' : typeof views
+        }. A session spec passes the panels flat as "views"; "init" is the config/defaultSession form.`,
+      )
+    }
     if (views.length < 2) {
       throw new Error(
         'BreakpointSplitView requires at least 2 views to be specified',

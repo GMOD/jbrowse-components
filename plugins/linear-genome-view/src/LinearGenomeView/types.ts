@@ -69,6 +69,13 @@ export type TrackInit =
 // afterAttach's applyInit + an entry in its knownInitKeyMap; add a plain prop to
 // LinearGenomeViewLaunchProps (LaunchView forwards it automatically).
 export interface InitState {
+  /**
+   * A locstring, or several separated by spaces to open a discontinuous view:
+   * `'chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500'`. Multiple
+   * regions are the only declarative way to frame something spread across loci
+   * (a derivative allele against its sources, a gene's partners in a fusion) --
+   * `displayedRegionNames` takes whole chromosomes, not intervals.
+   */
   loc?: string
   // fractional zoom-out applied around `loc` for context (passed to
   // navToLocString's `grow`), e.g. 0.2 pads a region by 20% on each side.
