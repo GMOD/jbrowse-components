@@ -42,13 +42,16 @@
 # in the streamed window, and a reverse alignment draws the same crossing the
 # inversion does. Two things follow, and both were learned by drawing it wrong.
 #
-# A SYNTENY ROW DRAWS THE WHOLE FILE, not the visible window. Each haplotype row
-# is a one-contig assembly, so its displayedRegions is that whole contig and the
-# display fetches all of it: every record the PAF holds for that contig is drawn,
-# wherever the row happens to be scrolled. So the emitted PAF is cut to the
-# figure's frame (FRAME_START/FRAME_END below, the window it draws on GRCh38)
-# rather than to the classification window, and the classification is run over the
-# wider streamed file that is never handed to the browser.
+# A SYNTENY FIGURE DRAWS FAR MORE THAN ITS WINDOW. The fetch is region-scoped and
+# the PAF adapter filters to the region it is asked for, but that region is the
+# query axis's visible window widened by JBrowse's synteny pan buffer (2000 px of
+# bp per side at this width, ~700 kb, snapped outward to that grid) and the mate
+# axis is unscoped by design. So a 1.2 Mb slice is fetched whole, and a record
+# whose mate sits a megabase off the other row is drawn across the frame anyway.
+# The emitted PAF is therefore cut to the figure's frame (FRAME_START/FRAME_END
+# below, the window it draws on GRCh38) rather than to the classification window,
+# and the classification runs over the wider streamed file that the browser never
+# sees.
 #
 # WHICH PAIR IS PICKED IS THEN A PROPERTY OF THE FRAME. The script keeps only
 # haplotypes whose in-frame records are the inversion plus forward flanks, and
@@ -250,8 +253,9 @@ for line in open('inv_panel.txt'):
             left += max(0, min(te, bs) - max(ts, fs))
             right += max(0, min(te, fe) - max(ts, be))
         else:
-            # every record in the file is drawn, so a reverse one that is not
-            # the inversion is a crossing the caption does not account for
+            # the file is cut to the frame and the fetch window is wider than
+            # the frame, so every record in it is drawn: a reverse one that is
+            # not the inversion is a crossing the caption does not account for
             if not (label == 'carrier' and block > 0):
                 failures.append(
                     f'{sample}.{hap} ({label}) draws a reverse ribbon that is'
