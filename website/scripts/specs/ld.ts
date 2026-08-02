@@ -14,10 +14,20 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // genotypes, in a mosquito rather than a proxy human callset — the standing
 // rule is unchanged, don't add an inversion figure without genotypes behind it.
 //
-// Data is a region slice of the phase3 1000 Genomes VCF (chr2:135.8–137.4 Mb)
-// re-hosted on jbrowse.org S3 so the figure and its live "Open in JBrowse" link
-// load fast and don't depend on the EBI FTP being up. The VCF names the contig
-// "2"; the hosted UCSC hg19 hub's chromAlias reconciles "chr2" at query time.
+// Data is a region slice of the phase3 1000 Genomes VCF re-hosted on jbrowse.org
+// S3 so the figure and its live "Open in JBrowse" link load fast and don't depend
+// on the EBI FTP being up. The VCF names the contig "2"; the hosted UCSC hg19
+// hub's chromAlias reconciles "chr2" at query time.
+//
+// TWO SLICES, DELIBERATELY. The lactase figure reads a 3.3 Mb one
+// (chr2:134.6-137.9 Mb, scripts/build_lct_ld.sh); the pooled-vs-panel figure
+// keeps the original 1.65 Mb pair (chr2:135.8-137.4 Mb). The original began at
+// 135.75 Mb, which is also where the swept block begins, so the figure was cut
+// at the edge it was claiming and nothing in it distinguished "the LD ends here"
+// from "the file ends here" (review: "the recombination triangle covers whole
+// screen. what is user supposed to take away?"). The pooled figure is about
+// which SAMPLES went in rather than where the block ends, and a pooled slice of
+// the wider window is ~23 MB behind a live link.
 //
 // LD IS PER-POPULATION, SO THE SLICE IS TOO. The figure used to run on the
 // pooled 2504-sample file and the block came out pink and fragmented, because
@@ -44,7 +54,7 @@ const lctTrack = (name: string) => ({
   assemblyNames: ['hg19'],
   adapter: {
     type: 'VcfTabixAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/lct_1kg_chr2_eur.vcf.gz',
+    uri: 'https://jbrowse.org/demos/popgen/lct_1kg_chr2_eur_wide.vcf.gz',
     fetchSizeLimit: 500_000_000,
   },
   displays: [
@@ -69,27 +79,16 @@ const lctTrack = (name: string) => ({
   ],
 })
 
-// Wider than the block itself so the swept haplotype reads as a bounded block
-// against lower-LD flanks — contrast is what makes it legible as a block rather
-// than a wall of red.
-//
-// 800 kb -> 2.2 Mb (review: "zoom out even more"). With the triangle drawn on
-// SNP index the 800 kb window looked wide enough and was not: the swept
-// haplotype in this panel reaches ~135.75 Mb, so its left edge was off the
-// frame and the block ran into the corner. On genomic positions with this
-// window it is bounded by white on the left and by the pale long-range corner
-// on the right, and the ClinVar rs4988235 tick sits at its right edge — which
-// is where the causal variant is, upstream of LCT in an MCM6 intron.
-const LCT_LOC = 'chr2:135,300,000-137,500,000'
+// Wider than the block, so it reads as a block rather than a wall of red.
+// 800 kb -> 2.2 Mb -> 3.1 Mb, and the last step needed a wider FILE (see above).
+// Against rs4988235, scripts/build_lct_ld.sh measures r² of 0.72 at 135.8 Mb and
+// 0.06 by 135.0 Mb on the left, 0.37 at 136.8 Mb and 0.02 by 137.4 Mb on the
+// right, so this carries the block plus about a megabase either side of it.
+const LCT_LOC = 'chr2:134,700,000-137,800,000'
 
-// Both LCT figures take the same window, which on genomic positions is the one
-// that bounds the swept haplotype on both sides (see LCT_LOC). The earlier
-// 1.2 Mb was picked against the SNP-index axis, where the block's left edge sat
-// off the frame; the note behind it — that at 2 Mb "a second, larger block
-// upstream of LCT dominates" — was reading that same off-frame left edge as a
-// separate block. On genomic positions there is one block, and this is where it
-// ends.
-const LCT_WIDE_LOC = LCT_LOC
+// The pooled-vs-panel window, narrower because its files are: at LCT_LOC those
+// two lanes would start a megabase inside the frame, which reads as missing data.
+const LCT_WIDE_LOC = 'chr2:135,300,000-137,500,000'
 
 // Band the LCT/MCM6 locus so the reader sees the high-r² block sits right over
 // the lactase gene (the enhancer variant rs4988235 is in an MCM6 intron,
@@ -399,25 +398,16 @@ export const ldSpecs: ScreenshotSpec[] = [
       ],
     })}&sessionName=Screenshot`,
     readyText: 'variants shown',
-    readyTimeout: 180000,
+    // 3.1 Mb of genotypes rather than 1.65, so the fetch and the r² are both
+    // larger; the probe render of this window took well under this.
+    readyTimeout: 300000,
     // gene(60) + clinvar(70) + ld(510, incl. the recombination zone) + 3
     // headers + ruler/overview, with room for the triangle to reach its base
     viewportHeight: 950,
     settleMs: 14000,
-    annotations: [
-      {
-        type: 'text',
-        // bottom-left, in the triangle's empty long-range corner: clear of the
-        // banded LCT/MCM6 locus (highlight starts ~x=650) and, unlike the old
-        // y=245, clear of the ClinVar track header it used to cover. Shifted
-        // down 50px from the pre-recombination-track value to track the
-        // triangle, which the recombination zone now pushes down by that much.
-        x: 40,
-        y: 750,
-        maxWidth: 300,
-        fontSize: 16,
-        text: 'One block, inherited together',
-      },
-    ],
+    // No callout. It carried "One block, inherited together" at a hand-measured
+    // x/y, asserting what the old slice could not show. The block now has two
+    // visible edges, the highlight names the gene and the ClinVar tick names the
+    // causal variant.
   },
 ]

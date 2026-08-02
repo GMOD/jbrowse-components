@@ -1280,6 +1280,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // `runClustering` orders the rows by genotype similarity. The size swatch
   // comes from the samples TSV and is applied afterwards, so the row order and
   // the swatch are independent.
+  //
+  // STAYS CLUSTERED, on the 400 kb window. A grouped-by-size variant was
+  // rendered (groupBy: 'size', window narrowed to the differentiated core) and is
+  // the wrong figure twice over: the page's result is that clustering on
+  // genotypes RECOVERS the size classes, which grouping by size assumes rather
+  // than shows, and it is no more legible at card size, because the toy/giant
+  // contrast here is a frequency shift (|Δ| alt AF ≈ 0.5 over 41.44-41.58 Mb,
+  // ≈ 0.05-0.2 outside) rather than a fixed difference. The Fst scan above states
+  // the result in a shape, and is what the gallery card carries.
   {
     mode: 'url',
     name: 'dog10k-igf1-haplotype',

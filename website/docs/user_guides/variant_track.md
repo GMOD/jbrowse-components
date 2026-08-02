@@ -28,7 +28,7 @@ from the track menu's **Display types**:
   [multi-sample variant guide](/docs/user_guides/multivariant_track).
 - **LD heatmap display** computes pairwise r² from the phased genotypes live and
   draws the triangle. See the
-  [linkage disequilibrium tutorial](/docs/tutorials/linkage_disequilibrium).
+  [linkage disequilibrium tutorial](/docs/tutorials/ld_human).
 - **Paired arc display** joins the two ends of each breakend record with an arc.
 
 Adding the same track to a [circular view](/docs/user_guides/circular_view)

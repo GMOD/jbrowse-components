@@ -63,6 +63,15 @@ export const scrnaSpecs: ScreenshotSpec[] = [
   // are a sum over. The pinned low maximum is what makes the single-UMI cells in
   // the non-monocyte blocks visible at all, and those are ambient RNA, which the
   // smooth row above draws as a low flat line.
+  //
+  // THE 3' END, NOT THE 20 KB WINDOW THE ZARR COVERS. 10x 3' chemistry piles a
+  // cell's reads into the last ~1.5 kb of the gene and nowhere else, so over
+  // 20 kb (or over the 7 kb gene body, also tried) the result was a narrow column
+  // in a frame of empty white (review: "a better single cell under pseudobulk
+  // figure could be made"). Here the monocyte block spans the frame.
+  //
+  // maxScore 2, not 4: the non-monocyte blocks are not empty but one ambient UMI
+  // per cell, and at 4 those cells are a tint indistinguishable from white.
   {
     mode: 'url',
     name: 'scrna/percell_lyz',
@@ -70,21 +79,23 @@ export const scrnaSpecs: ScreenshotSpec[] = [
       views: [
         {
           assembly: 'hg38',
-          loc: 'chr12:69,340,000-69,360,000',
+          loc: 'chr12:69,353,000-69,354,500',
           type: 'LinearGenomeView',
           tracks: [
             genes,
             {
+              // 150, not 240: nine curves of which two carry the signal, so the
+              // extra height was empty axis. The per-cell rows take it instead.
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
-              height: 240,
+              height: 150,
             },
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
               type: 'MultiLinearWiggleDisplay',
               minScore: 0,
-              maxScore: 4,
-              height: 430,
+              maxScore: 2,
+              height: 620,
             },
           ],
         },
@@ -92,16 +103,25 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 20000,
-    viewportHeight: 1005,
+    // the per-cell track's 620 rows have to reach their own bottom edge: the
+    // monocyte block is the last of the nine cell-type blocks, so a frame that
+    // ends early cuts off the one band the figure is about
+    viewportHeight: 1110,
   },
   // The same per-cell store at the other marker, so the block moves with the
   // lineage rather than being a property of one window: MS4A1 fills the B block
   // and the monocyte block that carried LYZ is empty here. The Zarr covers one
   // window per chromosome and this is the chr11 one.
   //
-  // maxScore 2 rather than LYZ's 4. A B cell carries fewer MS4A1 UMIs than a
-  // monocyte carries LYZ, so at 4 the home block is mid-ramp and reads like the
-  // ambient speckle around it.
+  // maxScore 1 rather than LYZ's 2. A B cell carries fewer MS4A1 UMIs than a
+  // monocyte carries LYZ, so on LYZ's ramp the home block is mid-scale and reads
+  // like the ambient speckle around it.
+  //
+  // The 3' exons, and the same track heights as the LYZ figure above: the
+  // caption's claim is that the block which fills MOVES between the two, so a
+  // different window scale or row height on one of them makes that a comparison
+  // between two pictures. Wider than LYZ's window because MS4A1's per-cell reads
+  // spread over its exons rather than piling on the 3' end.
   {
     mode: 'url',
     name: 'scrna/percell_ms4a1',
@@ -109,21 +129,21 @@ export const scrnaSpecs: ScreenshotSpec[] = [
       views: [
         {
           assembly: 'hg38',
-          loc: 'chr11:60,452,000-60,475,000',
+          loc: 'chr11:60,465,000-60,471,500',
           type: 'LinearGenomeView',
           tracks: [
             genes,
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
-              height: 240,
+              height: 150,
             },
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
               type: 'MultiLinearWiggleDisplay',
               minScore: 0,
               maxScore: 1,
-              height: 430,
+              height: 620,
             },
           ],
         },
@@ -131,7 +151,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 20000,
-    viewportHeight: 1005,
+    viewportHeight: 1110,
   },
   // LYZ, so the pattern reads as general rather than one lucky gene: the two
   // monocyte rows and the cDC row carry it, and the lymphocyte rows are flat.

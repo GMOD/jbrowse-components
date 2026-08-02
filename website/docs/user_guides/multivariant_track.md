@@ -185,7 +185,7 @@ dendrogram shows haplotype-level relationships rather than sample-level ones.
 - [](/docs/tutorials/analyze_trio)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_genomics)
-- [](/docs/tutorials/linkage_disequilibrium)
+- [](/docs/tutorials/ld_human)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [](/docs/config_guides/customizing_feature_colors)
 - [Gallery: variants and populations](/gallery/#variants)

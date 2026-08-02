@@ -136,12 +136,26 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.4, 1],
     position: 'left',
   },
-  linkage_disequilibrium: {
-    // The LD triangle, starting past the figure's callout box at its left edge.
+  ld_human: {
+    // The block itself, roughly 5:3 already so the cover-crop barely trims. The
+    // `xband` used to start at 0.28 to clear a callout box at the figure's left
+    // edge; that callout is gone and the figure is on a wider window, so this
+    // frames the whole block instead of a corner of the triangle.
     src: 'ld/lct_lactase.png',
-    band: [0.52, 1],
-    xband: [0.28, 1],
+    band: [0.37, 1],
+    xband: [0.02, 0.72],
     position: 'left',
+  },
+  ld_mosquitoes: {
+    // Both lanes over the same span, one filled and one not, which is the whole
+    // figure. This one keeps its callouts rather than framing past them: they sit
+    // at x 0.62-0.9, so every crop that clears them also drops the filled
+    // triangle and leaves a white card. Centered, so the cover-crop takes the
+    // trim off both edges and neither callout ends up half a sentence.
+    src: 'ld/anopheles_2la.png',
+    band: [0.05, 1],
+    xband: [0.08, 1],
+    position: 'center',
   },
   bxd_qtl: {
     // the red/blue haplotype painting under the QTL scan, framed below the

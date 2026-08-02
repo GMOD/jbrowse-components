@@ -280,42 +280,20 @@ export const gallerySections: readonly GallerySection[] = [
           'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
       },
       {
-        // The mutation matrix, not the copy-number painting the "Coverage"
-        // section already carries for this cohort: different assay, different
-        // display, and the grouping is what the picture is about.
-        label: 'TCGA mutations by histology',
-        spec: 'tcga/mutations_cdh1_histology',
-        guide: 'tutorials/tcga_cohort_mutations',
-        description:
-          'Somatic mutations in CDH1 across a TCGA breast cohort, one column per mutation and one row per tumor, with the rows grouped by histology. The truncating mutations fall almost entirely in the lobular band.',
-      },
-      {
-        label: 'Dog10K wolfdog ancestry',
-        spec: 'dog10k-wolfdog-ancestry',
-        guide: 'tutorials/local_ancestry',
-        description:
-          'Dog10K haplotypes painted by FLARE against gray wolf and breed-dog panels, two rows per animal: wolf blocks tile the wolfdog breeds and are absent from the German Shepherds.',
-      },
-      {
-        label: 'Dog10K Collie eye deletion',
-        spec: 'dog10k-nhej1-cea-deletion',
-        guide: 'tutorials/dog10k_svs',
-        description:
-          'A 7.8 kb deletion in an NHEJ1 intron genotyped across dog breeds from the Dog10K structural-variant callset: carried by Collies and relatives, absent from other breeds and from wolves.',
-      },
-      {
-        label: 'Dog10K body size haplotype',
-        spec: 'dog10k-igf1-haplotype',
+        // One Dog10K card, not four: the single-variant figures (CYP1A2
+        // nonsense, the NHEJ1 deletion, the FLARE painting) are a thin band of
+        // genotypes in a mostly empty frame, which doesn't read at card size.
+        //
+        // The scan rather than the IGF1 genotype matrix that held this slot. The
+        // matrix "looks cool but is not a very clear message" (review) and can't
+        // be made into one: the toy/giant contrast there is a frequency shift
+        // rather than a fixed difference, so it is speckle whichever way the rows
+        // are ordered. The scan states the same result in a shape.
+        label: 'Dog10K body size scan',
+        spec: 'dog10k-size-fst-scan-genome',
         guide: 'tutorials/dog10k_selection',
         description:
-          'Dog10K SNVs across IGF1 for whole toy and giant breeds, clustered by genotype, with size class as the sidebar swatch.',
-      },
-      {
-        label: 'Dog10K CYP1A2 nonsense allele',
-        spec: 'dog10k-cyp1a2-nonsense',
-        guide: 'tutorials/dog10k_lof',
-        description:
-          'A stop-gained variant in a drug-metabolizing P450, genotyped across dog breeds: carried and often homozygous in several breeds, absent from every wolf and coyote in the Dog10K collection.',
+          'Fst between toy/small and giant dog breeds in 200 kb windows across all 38 autosomes. The differentiated windows sit on known body-size genes, labeled on the figure.',
       },
       {
         label: 'GWAS with LD coloring',
@@ -333,7 +311,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'LD triangle at the lactase locus',
         spec: 'ld/lct_lactase',
-        guide: 'tutorials/linkage_disequilibrium',
+        guide: 'tutorials/ld_human',
         description:
           'Haplotypic r² from phased 1000 Genomes genotypes, with a red block of high linkage in the middle and lower values to either side.',
       },
@@ -400,7 +378,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'scrna/percell_lyz',
         guide: 'tutorials/scrna_pseudobulk',
         description:
-          'A 10x PBMC experiment pooled by cell type into nine coverage BigWigs, above the 4390 cells they are a sum over, read one row per cell from a cells-by-bins Zarr matrix. The monocyte block is solid at LYZ and the lymphocyte blocks are speckle, one ambient UMI per cell.',
+          'Nine pseudobulk coverage rows from a 10x PBMC experiment, above the 4390 cells they sum over, read one row per cell from a cells-by-bins Zarr matrix. At LYZ the monocyte block is solid and the lymphocyte rows are ambient speckle, one UMI per cell.',
       },
       {
         label: 'Hi-C contact matrix',

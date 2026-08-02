@@ -63,6 +63,14 @@ export default defineConfig({
   // whitespace (the browser collapses runs to one space); the size cost is
   // negligible for a static docs site.
   compressHTML: false,
+  // Docs URLs are public and get shared, so a page that splits in two leaves a
+  // redirect behind rather than a 404. Static output renders these as
+  // meta-refresh pages. The key is base-relative (it picks the file's place under
+  // dist/) but the destination is written into the page verbatim, so that one
+  // carries BASE.
+  redirects: {
+    '/docs/tutorials/linkage_disequilibrium': `${BASE}/docs/tutorials/ld_human/`,
+  },
   // No React integration: every component here is .astro and there are no
   // client: directives, so adding it only emits an unreferenced ~190KB React
   // runtime chunk. Re-add it (and the react deps) if an island comes back.

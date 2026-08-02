@@ -60,7 +60,7 @@ shows this r² coloring running live in a React app.
 This is not the same feature as the LD triangle, which draws r² between every
 pair of nearby variants as a heatmap rather than coloring GWAS points against
 one index SNP, and can compute it live from phased genotypes. See the
-[linkage disequilibrium tutorial](/docs/tutorials/linkage_disequilibrium).
+[linkage disequilibrium tutorial](/docs/tutorials/ld_human).
 
 LD data must be in PLINK `--r2` output format (`.ld` or `.ld.gz`). Generate it
 from:
@@ -94,7 +94,7 @@ as the index; right-click any point or use the track menu to change it.
 
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/variant_track)
-- [Linkage disequilibrium tutorial](/docs/tutorials/linkage_disequilibrium)
+- [Linkage disequilibrium tutorial](/docs/tutorials/ld_human)
 - [](/docs/tutorials/bxd_qtl)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [GWASAdapter config schema](/docs/config/gwasadapter)
