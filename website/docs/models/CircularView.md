@@ -12,14 +12,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 ## Example usage
 
 Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
-`assembly` and the structural-variant `tracks` to draw as arcs:
+`assembly` and the structural-variant `tracks` to draw as chords. A track entry
+may carry display config inline, and `displayedRegionNames` keeps an assembly's
+alt/unplaced contigs off the circle:
 
 ```js
 {
   type: 'CircularView',
   init: {
     assembly: 'hg38',
-    tracks: ['my-sv-vcf'],
+    displayedRegionNames: ['chr1', 'chr2', 'chr3'],
+    tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
   },
 }
 ```
@@ -120,7 +123,7 @@ the whole surface.
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | CircularView |
 | <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  | CircularView |
 | <span id="action-setinit">**setInit**</span><br><code>(init?: CircularViewInit &#124; undefined) =&gt; void</code> |  | CircularView |
-| <span id="action-showtrack">**showTrack**</span><br><code>(trackId: string, initialSnapshot?: any) =&gt; any</code> |  | CircularView |
+| <span id="action-showtrack">**showTrack**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackId: string, initialSnapshot?: any, displayInitialSnapshot…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any) =&gt; any</code></pre></dialog></span> |  | CircularView |
 | <span id="action-addtrackconf">**addTrackConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(configuration: Record&lt;string, unknown&gt;, initialSnapshot?: any)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(configuration: Record&lt;string, unknown&gt;, initialSnapshot?: any) =&gt; any</code></pre></dialog></span> |  | CircularView |
 | <span id="action-hidetrack">**hideTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | CircularView |
 | <span id="action-openexportdialog">**openExportDialog**</span><br><code>() =&gt; void</code> |  | CircularView |

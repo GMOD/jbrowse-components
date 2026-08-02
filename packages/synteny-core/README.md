@@ -38,7 +38,7 @@ sessions keep rendering instead of hitting an unhandled switch case.
 
 ```js
 // type signature
-(value: string | undefined) => "default" | "strand" | "query" | "target" | "reference" | "identity" | "meanQueryIdentity" | "mappingQuality" | "track"
+(value: string | undefined) => "track" | "default" | "strand" | "query" | "target" | "reference" | "identity" | "meanQueryIdentity" | "mappingQuality"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -109,7 +109,7 @@ Any other uniform mode has a fixed legend of its own and returns nothing.
 
 ```js
 // type signature
-(tracks: readonly {…}[], uniformColorBy: "default" | ... 8 more ... | undefined) => ColorChip[]
+(tracks: readonly {…}[], uniformColorBy: "track" | ... 8 more ... | undefined) => ColorChip[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
