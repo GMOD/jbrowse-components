@@ -45,11 +45,19 @@ test('chips mode emits one swatch per chip', () => {
 // The exported points are drawn at the display's alpha, so a full-saturation
 // chip would key the plot wrong — same rule the on-screen ColorByLegend follows.
 test('chips blend over white by the display alpha', () => {
-  const { container } = renderLegend('strand', 0.2)
-  // forward #f00 / reverse #00f at alpha 0.2 over white, not full saturation
-  expect(container.querySelector('rect[fill="#ffcccc"]')).toBeTruthy()
-  expect(container.querySelector('rect[fill="#ccccff"]')).toBeTruthy()
+  const { container } = renderLegend('strand', 0.6)
+  // forward #f00 / reverse #00f at alpha 0.6 over white, not full saturation
+  expect(container.querySelector('rect[fill="#ff6666"]')).toBeTruthy()
+  expect(container.querySelector('rect[fill="#6666ff"]')).toBeTruthy()
   expect(container.querySelector('rect[fill="#ff0000"]')).toBeNull()
+})
+
+// Below legendChipColor's floor the match to the canvas is deliberately given
+// up — see the on-screen legend's counterpart test.
+test('a washed-out alpha is floored so the chip keeps its hue', () => {
+  const { container } = renderLegend('strand', 0.2)
+  expect(container.querySelector('rect[fill="#ffcccc"]')).toBeNull()
+  expect(container.querySelector('rect[fill="#ff8c8c"]')).toBeTruthy()
 })
 
 test('chips are unblended at full alpha', () => {

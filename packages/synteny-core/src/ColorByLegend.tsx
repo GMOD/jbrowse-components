@@ -2,10 +2,14 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Tooltip } from '@mui/material'
 
-import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
-import { blendOverWhite } from './colorUtils.ts'
+import {
+  colorByFallbackNote,
+  colorByShortLabel,
+  getColorBySwatch,
+} from './colorLegend.ts'
+import { legendChipColor } from './colorUtils.ts'
 
-import type { CigarOpMask } from './colorLegend.ts'
+import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -13,7 +17,9 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 4,
     right: 4,
-    zIndex: 100,
+    // above the views' canvas overlays, which sit at 100 and would otherwise
+    // paint the plot data over the legend
+    zIndex: 200,
     pointerEvents: 'auto',
     padding: '2px 2px 4px 6px',
     borderRadius: 4,
@@ -22,6 +28,10 @@ const useStyles = makeStyles()(theme => ({
     opacity: 0.9,
     boxShadow: theme.shadows[2],
     fontSize: '0.7rem',
+    // the box is shrink-to-fit, so without a floor the ramp collapses to
+    // whatever the title row leaves over; a floor here rather than a width on
+    // the bar keeps the bar shrinkable, so it can never overflow the border
+    minWidth: 130,
     maxWidth: 200,
   },
   header: {
@@ -74,6 +84,7 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     gap: 4,
     fontSize: '0.62rem',
+    overflow: 'hidden',
   },
   chipBox: {
     width: 10,
@@ -81,6 +92,16 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: 2,
     flexShrink: 0,
     border: `1px solid ${theme.palette.divider}`,
+  },
+  // Track names are arbitrarily long and the box is capped at 200px, so the
+  // label has to give rather than spill past the border. minWidth:0 is the
+  // load-bearing part — a flex item's default min-width:auto floors it at its
+  // content width, so the ellipsis never engages and the text just overflows.
+  chipLabel: {
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 }))
 
@@ -91,25 +112,35 @@ export function ColorByLegend({
   pointBased = false,
   cigarOps,
   alpha = 1,
+  trackChips,
   onClose,
 }: {
-  colorBy: SyntenyColorBy
+  // undefined when overlaid tracks are on different modes; the legend then
+  // titles itself "Mixed" and lists the tracks rather than naming one mode
+  colorBy: SyntenyColorBy | undefined
   // dotplot draws flat points, never CIGAR ops
   pointBased?: boolean
   // bitmask of indel ops actually drawn on screen; the ribbon view passes its
   // model-derived mask so the legend only lists indels the eye can find
   cigarOps?: CigarOpMask
   // the view's global ribbon alpha — chips are blended over white by it so the
-  // key matches the on-screen (alpha-composited) ribbon colors
+  // key matches the on-screen (alpha-composited) ribbon colors, subject to
+  // legendChipColor's legibility floor
   alpha?: number
+  // one chip per overlaid track, for colorBy:'track' — the view supplies these
+  trackChips?: ColorChip[]
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const swatch = getColorBySwatch(colorBy, { pointBased, cigarOps })
+  const swatch =
+    colorBy === undefined
+      ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
+      : getColorBySwatch(colorBy, { pointBased, cigarOps, trackChips })
+  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel[colorBy]
   return (
     <div className={classes.root} data-testid="color-by-legend">
       <div className={classes.header}>
-        <span className={classes.title}>{colorByShortLabel[colorBy]}</span>
+        <span className={classes.title}>{title}</span>
         <Tooltip title="Hide legend">
           <IconButton
             className={classes.close}
@@ -139,15 +170,22 @@ export function ColorByLegend({
             <span key={chip.label} className={classes.chipRow}>
               <span
                 className={classes.chipBox}
-                style={{ background: blendOverWhite(chip.color, alpha) }}
+                style={{
+                  background:
+                    chip.color === undefined
+                      ? 'transparent'
+                      : legendChipColor(chip.color, alpha),
+                }}
               />
-              {chip.label}
+              <span className={classes.chipLabel} title={chip.label}>
+                {chip.label}
+              </span>
             </span>
           ))}
         </div>
       ) : null}
-      {swatch ? null : (
-        <div className={classes.note}>Distinct color per sequence</div>
+      {swatch || colorBy === undefined ? null : (
+        <div className={classes.note}>{colorByFallbackNote(colorBy)}</div>
       )}
     </div>
   )

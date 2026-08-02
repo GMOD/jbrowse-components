@@ -42,7 +42,9 @@ function ramp(
 }
 
 export interface ColorChip {
-  color: string
+  // omitted for a row that names something with no single color — a track
+  // painting an identity ramp while a sibling paints flat, say
+  color?: string
   label: string
 }
 
@@ -112,6 +114,48 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   identity: 'Identity',
   meanQueryIdentity: 'Mean query identity',
   mappingQuality: 'Mapping quality',
+  track: 'Track',
+}
+
+/**
+ * #api
+ * The legend rows that name the overlaid tracks. Two cases produce them, and
+ * both views build them the same way so the on-screen and exported legends
+ * can't diverge:
+ *
+ * - every track on `'track'`: one chip per track, its palette color and name.
+ * - tracks on different modes: one row per track naming its mode, with a swatch
+ *   only where the track has a single color to show (a track on an identity
+ *   ramp has none).
+ *
+ * Any other uniform mode has a fixed legend of its own and returns nothing.
+ */
+export function trackLegendChips(
+  tracks: readonly {
+    name: string
+    colorBy: SyntenyColorBy
+    trackColor: string
+  }[],
+  uniformColorBy: SyntenyColorBy | undefined,
+): ColorChip[] {
+  if (uniformColorBy === 'track') {
+    return tracks.map(t => ({ color: t.trackColor, label: t.name }))
+  }
+  return uniformColorBy === undefined
+    ? tracks.map(t => ({
+        color: t.colorBy === 'track' ? t.trackColor : undefined,
+        label: `${t.name} — ${colorByShortLabel[t.colorBy]}`,
+      }))
+    : []
+}
+
+// What a mode with no swatch spec is doing instead. Lives here rather than
+// inline in each legend so the HTML and SVG legends can't say different things
+// — the same rule this file already applies to chip colors and ramp stops.
+export function colorByFallbackNote(colorBy: SyntenyColorBy) {
+  return colorBy === 'track'
+    ? 'Distinct color per track'
+    : 'Distinct color per sequence'
 }
 
 // Legend spec for a color-by mode: a gradient ramp for continuous modes, or a
@@ -125,7 +169,15 @@ export function getColorBySwatch(
   {
     pointBased = false,
     cigarOps = DEFAULT_CIGAR_OPS,
-  }: { pointBased?: boolean; cigarOps?: CigarOpMask } = {},
+    trackChips,
+  }: {
+    pointBased?: boolean
+    cigarOps?: CigarOpMask
+    // one chip per overlaid track, supplied by the view for colorBy:'track'
+    // (this file can't know the track list). Absent or empty falls back to the
+    // "distinct color per track" note.
+    trackChips?: ColorChip[]
+  } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
   const ops = pointBased ? NO_CIGAR_OPS : cigarOps
@@ -156,6 +208,8 @@ export function getColorBySwatch(
               ...indelChips(defaultCigar, ops),
             ],
       }
+    case 'track':
+      return trackChips?.length ? { kind: 'chips', chips: trackChips } : undefined
     case 'query':
     case 'target':
     case 'reference':

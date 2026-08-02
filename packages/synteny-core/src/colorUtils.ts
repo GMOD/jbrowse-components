@@ -67,6 +67,7 @@ const syntenyColorByValues = [
   'identity',
   'meanQueryIdentity',
   'mappingQuality',
+  'track',
 ] as const
 
 export type SyntenyColorBy = (typeof syntenyColorByValues)[number]
@@ -100,6 +101,23 @@ export function coerceColorBy(value: string | undefined): SyntenyColorBy {
  * shows as salmon, a blue deletion as pale blue. Blending the legend chip the
  * same way keeps the key matched to what's actually on screen.
  */
+/**
+ * #api
+ * `blendOverWhite` for a legend chip, with a floor on the alpha.
+ *
+ * Matching the chip to the composited ribbon is right down to a point and then
+ * inverts: the linear-synteny default alpha is 0.2, and at that value every
+ * chip washes to within a few percent of white, so a key meant to say "blue is
+ * this track, orange is that one" identifies nothing. Below the floor the chip
+ * gives up exactness for the one job it has. The ribbons themselves still draw
+ * at the real alpha.
+ */
+export const LEGEND_CHIP_ALPHA_FLOOR = 0.45
+
+export function legendChipColor(color: string, alpha: number) {
+  return blendOverWhite(color, Math.max(alpha, LEGEND_CHIP_ALPHA_FLOOR))
+}
+
 export function blendOverWhite(color: string, a: number) {
   if (a >= 1) {
     return color

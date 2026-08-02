@@ -41,8 +41,10 @@ export type {
 export { default as DiagonalizeRpcBase } from './DiagonalizeRpcBase.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
+  LEGEND_CHIP_ALPHA_FLOOR,
   blendOverWhite,
   coerceColorBy,
+  legendChipColor,
   colorSchemes,
   defaultCigarColors,
   getQueryColor,
@@ -50,6 +52,13 @@ export {
   strandCigarColors,
 } from './colorUtils.ts'
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
+export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
+export type { ColorableTrack } from './trackColors.ts'
+export { colorByMenuItems } from './colorByMenuItems.tsx'
+export type {
+  ColorByMenuTarget,
+  ColorByMenuTrack,
+} from './colorByMenuItems.tsx'
 export { continuousRampConfig } from './colorRamps.ts'
 export type { Rgb } from './colorRamps.ts'
 export { ColorByLegend } from './ColorByLegend.tsx'
@@ -59,12 +68,15 @@ export {
   CIGAR_OP_I,
   CIGAR_OP_N,
   NO_CIGAR_OPS,
+  colorByFallbackNote,
   colorByShortLabel,
   getColorBySwatch,
+  trackLegendChips,
 } from './colorLegend.ts'
 export type {
   CigarOpMask,
   ColorBySwatchSpec,
+  ColorChip,
   GradientStop,
 } from './colorLegend.ts'
 export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'

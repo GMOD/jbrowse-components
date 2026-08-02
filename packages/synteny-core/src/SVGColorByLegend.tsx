@@ -2,10 +2,14 @@ import { measureLegendText } from '@jbrowse/core/ui'
 import { getFillProps, getStrokeProps, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
-import { blendOverWhite } from './colorUtils.ts'
+import {
+  colorByFallbackNote,
+  colorByShortLabel,
+  getColorBySwatch,
+} from './colorLegend.ts'
+import { legendChipColor } from './colorUtils.ts'
 
-import type { CigarOpMask } from './colorLegend.ts'
+import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 const pad = 6
@@ -15,7 +19,16 @@ const rowH = 14
 const swatchBox = 10
 const gap = 4
 const barW = 54
-const perSequenceNote = 'Distinct color per sequence'
+// keeps a long track name from turning the exported key into a very wide box
+const maxLabelChars = 28
+
+// SVG <text> has no ellipsis, and the box sizes itself to its widest row, so a
+// long track name has to be cut here or the exported key grows without bound.
+function elide(label: string) {
+  return label.length > maxLabelChars
+    ? `${label.slice(0, maxLabelChars - 1)}…`
+    : label
+}
 
 // SVG counterpart of the on-screen ColorByLegend: a bordered, translucent box
 // floated at the top-right of the plot. Reads the same swatch spec the HTML
@@ -31,8 +44,11 @@ export function SVGColorByLegend({
   alpha = 1,
   pointBased = false,
   cigarOps,
+  trackChips,
 }: {
-  colorBy: SyntenyColorBy
+  // undefined when overlaid tracks are on different modes; the legend then
+  // titles itself "Mixed" and lists the tracks rather than naming one mode
+  colorBy: SyntenyColorBy | undefined
   viewWidth: number
   // the display's alpha — chips are blended over white by it, matching what the
   // HTML legend does, so the exported key reads like the exported plot
@@ -41,12 +57,18 @@ export function SVGColorByLegend({
   pointBased?: boolean
   // bitmask of indel ops actually drawn, as the ribbon legend passes on screen
   cigarOps?: CigarOpMask
+  // one chip per overlaid track, for colorBy:'track' — the view supplies these
+  trackChips?: ColorChip[]
 }) {
   const theme = useTheme()
-  const swatch = getColorBySwatch(colorBy, { pointBased, cigarOps })
-  const title = colorByShortLabel[colorBy]
+  const swatch =
+    colorBy === undefined
+      ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
+      : getColorBySwatch(colorBy, { pointBased, cigarOps, trackChips })
+  const note = colorBy === undefined ? '' : colorByFallbackNote(colorBy)
+  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel[colorBy]
   const text = stripAlpha(theme.palette.text.primary)
-  const gradientId = `colorby-ramp-${colorBy}`
+  const gradientId = `colorby-ramp-${colorBy ?? 'mixed'}`
 
   const rampRow =
     swatch?.kind === 'ramp'
@@ -56,16 +78,19 @@ export function SVGColorByLegend({
         gap +
         measureLegendText(swatch.maxLabel, rowSize)
       : 0
-  const chipRows =
+  const chips =
     swatch?.kind === 'chips'
-      ? Math.max(
-          ...swatch.chips.map(
-            c => swatchBox + gap + measureLegendText(c.label, rowSize),
-          ),
-        )
-      : 0
-  const noteRow = swatch ? 0 : measureLegendText(perSequenceNote, rowSize)
-  const bodyRows = swatch?.kind === 'chips' ? swatch.chips.length : 1
+      ? swatch.chips.map(c => ({ ...c, label: elide(c.label) }))
+      : undefined
+  const chipRows = chips
+    ? Math.max(
+        ...chips.map(
+          c => swatchBox + gap + measureLegendText(c.label, rowSize),
+        ),
+      )
+    : 0
+  const noteRow = swatch ? 0 : measureLegendText(note, rowSize)
+  const bodyRows = chips ? chips.length : 1
 
   const contentW = Math.max(
     measureLegendText(title, titleSize),
@@ -143,8 +168,8 @@ export function SVGColorByLegend({
         </>
       ) : null}
 
-      {swatch?.kind === 'chips'
-        ? swatch.chips.map((chip, i) => (
+      {chips
+        ? chips.map((chip, i) => (
             <g
               key={chip.label}
               transform={`translate(0 ${bodyTop + i * rowH})`}
@@ -155,7 +180,11 @@ export function SVGColorByLegend({
                 width={swatchBox}
                 height={swatchBox}
                 rx={2}
-                {...getFillProps(blendOverWhite(chip.color, alpha))}
+                {...getFillProps(
+                  chip.color === undefined
+                    ? 'none'
+                    : legendChipColor(chip.color, alpha),
+                )}
                 {...getStrokeProps(theme.palette.divider)}
               />
               <text
@@ -179,7 +208,7 @@ export function SVGColorByLegend({
           dominantBaseline="middle"
           fill={text}
         >
-          {perSequenceNote}
+          {note}
         </text>
       )}
     </g>
