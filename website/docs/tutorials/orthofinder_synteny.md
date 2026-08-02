@@ -56,9 +56,9 @@ collinearity you see in the ribbons is a property of the genomes rather than of
 the method, which is the opposite of an MCScan track, where collinearity is what
 the input file is made of.
 
-## Two genome sets, two things to look at
+## Three genome sets, three things to look at
 
-The [script](#reproduce-it-end-to-end) builds either.
+The [script](#reproduce-it-end-to-end) builds any of them.
 
 `vertebrates` stacks human, chicken, frog, spotted gar and zebrafish. These
 share a common ancestor a few hundred million years back, and the orthologs
@@ -71,6 +71,15 @@ chromosomes, and to more zebrafish ones.
 `grasses` stacks rice, sorghum, maize, brachypodium and foxtail millet. Maize
 carries a whole-genome duplication the others do not, so a rice gene commonly
 has two maize orthologs, and the conversion has to decide what to do about that.
+
+<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. Maize's whole-genome duplication shows up as visibly more ribbons per gene in its two bands than in the non-duplicated pairs." src="/img/orthofinder_synteny/grasses.png" />
+
+`wheat` stacks wheat's own polyploidy history rather than an abstract
+duplication: Aegilops tauschii (the diploid D-genome donor), bread wheat
+(hexaploid, genomes A+B+D), durum (domesticated tetraploid, A+B), wild emmer
+(durum's wild tetraploid ancestor) and Triticum urartu (the diploid A-genome
+donor), stacked so each adjacent pair is a real evolutionary step rather than an
+arbitrary one.
 
 ## The conversion
 

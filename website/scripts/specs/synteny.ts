@@ -640,6 +640,48 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     viewportHeight: 860,
   },
+
+  // orthofinder_synteny.md: rice/sorghum/maize/brachypodium/foxtail millet.
+  // Maize's whole-genome duplication is the thing to see: a maize gene's
+  // orthogroup commonly holds two maize copies, so the .blocks conversion's
+  // --pick expand default draws both rather than picking one arbitrarily,
+  // and the maize bands carry visibly more ribbons per rice/sorghum gene than
+  // the non-duplicated pairs do.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/grasses',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_grasses/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'rice' },
+              { assembly: 'sorghum' },
+              { assembly: 'maize' },
+              { assembly: 'brachypodium' },
+              { assembly: 'setaria' },
+            ],
+            tracks: [
+              ['grasses_orthogroups'],
+              ['grasses_orthogroups'],
+              ['grasses_orthogroups'],
+              ['grasses_orthogroups'],
+            ],
+            colorBy: 'reference',
+            autoDiagonalize: true,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 860,
+  },
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',

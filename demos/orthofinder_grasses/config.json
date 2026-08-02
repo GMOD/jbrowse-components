@@ -1,0 +1,250 @@
+{
+  "assemblies": [
+    {
+      "name": "rice",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "rice-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "rice.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "sorghum",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sorghum-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "sorghum.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "maize",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "maize-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "maize.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "brachypodium",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "brachypodium-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "brachypodium.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "setaria",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "setaria-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "setaria.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "Grasses orthology synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "rice - sorghum - maize - brachypodium - setaria (OrthoFinder orthogroups)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            {
+              "assembly": "rice"
+            },
+            {
+              "assembly": "sorghum"
+            },
+            {
+              "assembly": "maize"
+            },
+            {
+              "assembly": "brachypodium"
+            },
+            {
+              "assembly": "setaria"
+            }
+          ],
+          "tracks": [
+            ["grasses_orthogroups"],
+            ["grasses_orthogroups"],
+            ["grasses_orthogroups"],
+            ["grasses_orthogroups"]
+          ],
+          "colorBy": "reference",
+          "autoDiagonalize": true
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "rice_genes",
+      "name": "rice genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "rice.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "rice.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["rice"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "sorghum_genes",
+      "name": "sorghum genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "sorghum.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "sorghum.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["sorghum"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "maize_genes",
+      "name": "maize genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "maize.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "maize.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["maize"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "brachypodium_genes",
+      "name": "brachypodium genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "brachypodium.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "brachypodium.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["brachypodium"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "setaria_genes",
+      "name": "setaria genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "setaria.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "setaria.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["setaria"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grasses_orthogroups",
+      "name": "Grasses orthogroups (OrthoFinder)",
+      "assemblyNames": ["rice", "sorghum", "maize", "brachypodium", "setaria"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "rice.blocks.gz",
+        "blockAssemblies": [
+          "brachypodium",
+          "maize",
+          "rice",
+          "setaria",
+          "sorghum"
+        ],
+        "bedLocations": [
+          {
+            "uri": "brachypodium.bed.gz"
+          },
+          {
+            "uri": "maize.bed.gz"
+          },
+          {
+            "uri": "rice.bed.gz"
+          },
+          {
+            "uri": "setaria.bed.gz"
+          },
+          {
+            "uri": "sorghum.bed.gz"
+          }
+        ],
+        "assemblyNames": ["rice", "sorghum", "maize", "brachypodium", "setaria"]
+      }
+    }
+  ]
+}

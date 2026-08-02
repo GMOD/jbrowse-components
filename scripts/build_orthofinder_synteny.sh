@@ -6,8 +6,8 @@
 #
 # OrthoFinder groups genes by homology and knows nothing about position, so
 # unlike MCScan it needs no collinearity to work and no sequence alignment
-# between the genomes. That is what makes the two species sets here loadable at
-# all:
+# between the genomes. That is what makes the three species sets here loadable
+# at all:
 #
 #   vertebrates  human, chicken, frog, zebrafish, spotted gar (Ensembl 113).
 #                Too diverged for a whole-genome aligner, but the orthologs
@@ -17,14 +17,26 @@
 #                Plants 58). Maize's whole-genome duplication puts two maize
 #                genes against one rice gene, which is the case the .blocks
 #                conversion has to expand rather than resolve.
+#   wheat        wheat's own polyploidy history rather than an abstract
+#                duplication, stacked in evolutionary order: Aegilops tauschii
+#                (the diploid D-genome donor) - bread wheat (hexaploid ABD) -
+#                durum (domesticated tetraploid AB) - wild emmer (durum's wild
+#                tetraploid ancestor) - Triticum urartu (the diploid A-genome
+#                donor) - T. timopheevii (a second, independent tetraploid
+#                lineage (GG, a different genome, plus A) that also traces to
+#                the A-genome donor). Every adjacent band is a real step:
+#                D-donor to hexaploid, hexaploid to durum, durum to its wild
+#                ancestor, wild ancestor to the A-genome donor, and the A-genome
+#                donor to timopheevii's independently-formed tetraploid
+#                (Ensembl Plants 63).
 #
 # No genome FASTA is downloaded: each assembly is a ChromSizesAdapter built from
 # the `##sequence-region` header of that species' GFF3, which is all a
-# gene-level synteny view needs and keeps a five-vertebrate demo small.
+# gene-level synteny view needs and keeps a five-genome demo small.
 #
 # Requires: orthofinder + diamond, python3, bgzip/tabix (htslib), wget, and
 #           node (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
-# Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses] [outdir]
+# Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat] [outdir]
 #
 set -euo pipefail
 
@@ -55,8 +67,8 @@ EOF
   )
   ;;
 grasses)
-  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-58
-  REL=58
+  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-63
+  REL=63
   SPECIES=$(cat <<'EOF'
 rice         Oryza_sativa            IRGSP-1.0
 sorghum      Sorghum_bicolor         Sorghum_bicolor_NCBIv3
@@ -66,8 +78,21 @@ setaria      Setaria_italica         Setaria_italica_v2.0
 EOF
   )
   ;;
+wheat)
+  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-63
+  REL=63
+  SPECIES=$(cat <<'EOF'
+tauschii    Aegilops_tauschii    Aet_v4.0
+wheat       Triticum_aestivum    IWGSC
+durum       Triticum_turgidum    Svevo.v1
+emmer       Triticum_dicoccoides WEWSeq_v.1.0
+urartu      Triticum_urartu      IGDB
+timopheevii Triticum_timopheevii WRC_timopheevii_genome_with_organelles
+EOF
+  )
+  ;;
 *)
-  echo "unknown species set '$SET' (expected vertebrates or grasses)" >&2
+  echo "unknown species set '$SET' (expected vertebrates, grasses, or wheat)" >&2
   exit 1
   ;;
 esac
