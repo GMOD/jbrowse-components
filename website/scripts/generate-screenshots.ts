@@ -291,6 +291,103 @@ async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
   }
 }
 
+// The view tree a spec asks for, read back out of its own `session=spec-…`
+// query. Nested `views` (a synteny/dotplot/breakpoint view's panels) are kept,
+// because a parent that launches with no panels is the same failure one level
+// down. Specs with no session spec (the landing pages) declare nothing.
+interface DeclaredView {
+  type: string
+  views: DeclaredView[]
+}
+
+function declaredSubviews(views: unknown): DeclaredView[] {
+  return Array.isArray(views)
+    ? views.map(v => {
+        const view = (typeof v === 'object' && v !== null ? v : {}) as {
+          type?: unknown
+          views?: unknown
+        }
+        return {
+          type: typeof view.type === 'string' ? view.type : 'view',
+          views: declaredSubviews(view.views),
+        }
+      })
+    : []
+}
+
+function declaredViews(spec: BrowserScreenshotSpec): DeclaredView[] {
+  let declared: DeclaredView[] = []
+  if (spec.mode === 'url') {
+    const query = spec.url.slice(spec.url.indexOf('?') + 1)
+    const session = new URLSearchParams(query).get('session')
+    if (session?.startsWith('spec-')) {
+      try {
+        const parsed: unknown = JSON.parse(session.slice('spec-'.length))
+        if (typeof parsed === 'object' && parsed !== null) {
+          declared = declaredSubviews((parsed as { views?: unknown }).views)
+        }
+      } catch {
+        // a non-spec session (share link, encoded snapshot) declares nothing
+      }
+    }
+  }
+  return declared
+}
+
+// The semantic counterpart to the per-symptom checks below: a spec that asks for
+// N views and ends up with fewer is broken however the app reported it — an
+// error snackbar, a silent no-op, or nothing at all. Compares the spec's own
+// declared view tree against the live `window.JBrowseSession`, which is the same
+// model the annotation anchors resolve through.
+//
+// A floor, not an equality: an `actions` chain can legitimately OPEN a view (and
+// nothing in the suite closes one), so extra views are fine while a missing one
+// is not. Runs even under `allowUnsettled` — that opts out of "still loading",
+// not out of "the view never existed".
+async function assertViewsPresent(page: Page, spec: BrowserScreenshotSpec) {
+  const declared = declaredViews(spec)
+  if (declared.length > 0) {
+    const problems = await page.evaluate((want: DeclaredView[]) => {
+      interface LiveView {
+        views?: LiveView[]
+      }
+      const session = (
+        window as unknown as { JBrowseSession?: { views?: LiveView[] } }
+      ).JBrowseSession
+      const found: { path: string; declared: number; actual: number }[] = []
+      const walk = (
+        wanted: DeclaredView[],
+        live: LiveView[] | undefined,
+        path: string,
+      ) => {
+        const actual = live ?? []
+        if (actual.length < wanted.length) {
+          found.push({ path, declared: wanted.length, actual: actual.length })
+        }
+        wanted.forEach((w, i) => {
+          const child = actual[i]
+          if (child && w.views.length > 0) {
+            walk(w.views, child.views, `${path} > ${w.type}[${i}]`)
+          }
+        })
+      }
+      walk(want, session?.views, 'session')
+      return found
+    }, declared)
+    if (problems.length > 0) {
+      await debugDump(page, spec.name)
+      const detail = problems
+        .map(p => `${p.path}: declared ${p.declared}, got ${p.actual}`)
+        .join(' | ')
+      throw new Error(
+        `spec declares views that the session does not have: ${detail}. ` +
+          `A view that fails to launch leaves the capture blank or half-built ` +
+          `— check the session spec's shape (panels belong under \`views\`).`,
+      )
+    }
+  }
+}
+
 // Guard against capturing a view that rendered no content. The ViewContainer
 // always renders its header chrome, so a screenshot with header-but-empty-body
 // (e.g. a render regression) still "succeeds" and slips through review. A
@@ -807,6 +904,7 @@ async function renderSpecToTemp(
   // same as in captureStages: actions can kick off a re-render, so wait it out
   // before asserting/capturing rather than racing it
   await waitForDisplayPhases(page, readyTimeoutOf(spec))
+  await assertViewsPresent(page, spec)
   await assertViewsRendered(page, spec.name)
   if (!spec.allowUnsettled) {
     await assertRenderSettled(page, spec)
@@ -993,10 +1091,11 @@ async function captureEachStage(
     if (!spec.crop) {
       await recordOverflow(page, spec.name)
     }
-    // re-check after each stage capture: assertViewsRendered only runs once
-    // before the loop, so a stage that captures a blank view body (a rare
+    // re-check after each stage capture: these only run once before the loop,
+    // so a stage that dismisses a view or captures a blank view body (a rare
     // paint race after the stage's interaction) would otherwise be committed
     // silently — the staged frames ARE the published image.
+    await assertViewsPresent(page, spec)
     await assertViewsRendered(page, spec.name)
   }
 }
