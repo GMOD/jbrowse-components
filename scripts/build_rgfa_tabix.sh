@@ -3,9 +3,11 @@
 # Build the two tabix indexes RgfaTabixAdapter reads from an rGFA (minigraph, or
 # the minigraph stage of Minigraph-Cactus). rGFA tags every segment with SN/SO/SR
 # — stable sequence, offset, and rank — so both files are plain BED projections
-# of coordinates the file already states. Plain GFA (pggb, odgi, full
-# Minigraph-Cactus) has no such tags and is NOT supported here; use `odgi
-# extract` to cut a window offline instead.
+# of coordinates the file already states. Plain GFA (pggb, odgi, vg, base-level
+# Minigraph-Cactus) has no such tags and is not read here, but it states the
+# same coordinates in path order, so build_pggb_tabix.sh walks its P/W lines and
+# emits this identical pair. The index contract is what makes a graph browsable,
+# not the GFA flavour, so pick the producer that matches your file.
 #
 # The distinction matters and is easy to get backwards: HPRC release 2's
 # `hprc-v2.0-mc-grch38.sv.gfa.gz` IS rGFA (it is the minigraph stage), while the

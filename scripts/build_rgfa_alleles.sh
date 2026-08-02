@@ -37,8 +37,11 @@
 #            plugins/alignments draws for a read.
 #   discoveryRank
 #            lowest SR on the allele's path: the build order of the first
-#            assembly to contribute it. A weak rarity bound — rank r proves
-#            absence from haplotypes 1..r-1 and nothing more.
+#            assembly to contribute it. A weak rarity bound, and weaker than it
+#            reads: SR is construction order, so a haplotype earlier in that
+#            order may lack the sequence, may have had its copy merged into an
+#            existing path, or may simply not have aligned here. It bounds
+#            discovery, and it proves nothing about absence.
 #   firstSeenIn
 #            PanSN sample of that segment. Named for what it is, because the
 #            obvious misreading is expensive: minigraph COLLAPSES, so an allele

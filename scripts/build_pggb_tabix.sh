@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
-# Make a plain (pggb / odgi / Minigraph-Cactus base-level) GFA browsable by locus
-# in JBrowse, by building the same two tabix indexes RgfaTabixAdapter already
-# reads for rGFA. build_rgfa_tabix.sh does this with `gfatools gfa2bed -m`, which
-# only works because rGFA states SN/SO/SR per segment; a plain GFA states the
-# same information in its P lines instead, so the walk in pggb_gfa_to_bed.py
-# stands in for the tags and everything downstream is unchanged.
+# Make a plain (pggb / odgi / vg / Minigraph-Cactus base-level) GFA browsable by
+# locus in JBrowse, by building the same two tabix indexes RgfaTabixAdapter
+# already reads for rGFA. build_rgfa_tabix.sh does this with `gfatools gfa2bed
+# -m`, which only works because rGFA states SN/SO/SR per segment. A plain GFA
+# states the same information in its P or W lines instead, so the walk in
+# pggb_gfa_to_bed.py stands in for the tags and everything downstream is
+# unchanged.
 #
 # What that buys, against the `odgi extract` route the pangenome tutorial used
 # to require: no per-window extraction step, so the graph opens at any locus from

@@ -13,9 +13,15 @@ are `website/docs/tutorials/pangenome_graph_view.md`.
 
 - **rGFA** (minigraph, and the minigraph stage of Minigraph-Cactus) states
   `SN`/`SO`/`SR` per segment.
-- **A plain GFA** (pggb, odgi, base-level Minigraph-Cactus) states the same
+- **A plain GFA** (pggb, odgi, vg, base-level Minigraph-Cactus) states the same
   thing in path order: walking a path assigns every segment it visits an
-  interval on that path's own sequence.
+  interval on that path's own sequence. **P and W lines are both read** (W since
+  2026-08-02. It used to `sys.exit`, while three docs already claimed support).
+  A W line is the easier of the two, because it names sample and haplotype in
+  their own fields and gives the walk's start offset outright, where a P line
+  hides an `odgi extract` offset in a `:start-end` name suffix. A graph mixing them
+  (Minigraph-Cactus writes the reference as P and haplotypes as W) anchors on
+  the P line with no `--reference` argument, because file order picks it.
 
 Same information, different encoding. Both are consumed the same way, and there
 are two routes in:
@@ -23,17 +29,93 @@ are two routes in:
 | Route                       | Built by                                                                     | What it gives                                                             |
 | --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | indexed track (rGFA)        | `scripts/build_rgfa_tabix.sh` (`gfatools gfa2bed -m` + an awk pass over L)   | browse by locus, launch menus, hover sync, segments as a linear track      |
-| indexed track (plain GFA)   | `scripts/build_pggb_tabix.sh` → `scripts/pggb_gfa_to_bed.py` (the path walk) | the same, plus a `samples` column rGFA cannot express                      |
+| indexed track (plain GFA)   | `scripts/build_pggb_tabix.sh` → `scripts/pggb_gfa_to_bed.py` (the path walk) | the same, plus `SM:Z:` carriage rGFA cannot express                        |
+| coarse tier (any graph)     | `scripts/build_bubble_tier.sh` → `scripts/bubbles_to_tier_bed.py`            | the same, one node per bubble, so a whole chromosome is drawable           |
 | a GFA file                  | `odgi extract` / `vg chunk`, then **Add → Graph genome view**                | one window, no index; the view walks a chosen path in-app (`pathAnchoring.ts`) |
 
-Both builders emit the same pair, and `RgfaTabixAdapter` reconstructs a
+Every builder emits the same pair, and `RgfaTabixAdapter` reconstructs a
 synthetic rGFA from them (`formatSubgraph` in `rgfaBed.ts`), which is why
 nothing downstream had to learn a second format:
 
-- `<prefix>.segs.bed.gz`: `stableName start end segmentId rank [samples]`
+- `<prefix>.segs.bed.gz`: `stableName start end segmentId rank [tags]`
 - `<prefix>.links.bed.gz`: one row per L-line **per endpoint**, both endpoints
   stated in full, because a neighbour usually sits on another stable sequence
-  where tabix cannot look it up by id
+  where tabix cannot look it up by id, then `[srcTags tgtTags]`
+
+## The tag column is the extension point
+
+Column 6 of `segs.bed` is a space-separated list of **GFA tags**, written
+verbatim onto the S-line `formatSegment` synthesizes. The GFA parser already
+reads arbitrary tags into `GraphNode.tags`, typed, so a producer can state
+something new without touching the adapter, the parser or the renderer. rGFA
+files have no sixth column and are unaffected.
+
+This replaced a bespoke `samples` column, which had a positional slot per
+concept and would have needed five more for the tier alone. In use now:
+
+| tag                                  | written by                | means                                    |
+| ------------------------------------ | ------------------------- | ---------------------------------------- |
+| `SM:Z:`                              | `pggb_gfa_to_bed.py`      | carriage, comma separated                |
+| `ct:Z:`                              | `bubbles_to_tier_bed.py`  | node type, `bubble` or `backbone`         |
+| `cn:i: cw:i: cs:i: cl:i: cv:i:`      | `bubbles_to_tier_bed.py`  | segments, traversals, shortest, longest, inversion |
+
+adr-028's precomputed `LO:Z:` layout position lands here too, with no format
+change.
+
+**The tag grammar is checked, not trusted** (`GFA_TAG` in `rgfaBed.ts`). Files
+built before this column existed put a bare comma list there, and passing that
+through would put a non-tag field on an S-line, which is a malformed GFA rather
+than a missing annotation. Non-conforming fields are dropped, so an old file
+degrades to pre-tag behaviour. **The hosted E. coli pggb pair is one of those
+files and wants rebuilding** with the current `build_pggb_tabix.sh`, which is
+also what upgrades its carriage from sample to haplotype.
+
+**Carriage is per haplotype**, written `HG002.1`. Keying it on the PanSN sample
+alone merged a diploid sample's two haplotypes, so a segment carried only on the
+maternal copy read as "HG002 carries it". On haploid input the `.1` is accurate
+rather than noise.
+
+## Level of detail: one node per bubble
+
+The fine tier draws one node per GFA segment, so node count grows with sequence
+and the drawable window tops out near 100 kb. The coarse tier draws one node per
+bubble, with the invariant reference between bubbles as backbone nodes, and it
+needed **no adapter, glyph or renderer work** because a collapsed bubble already
+fits the contract above: a reference span, an id, a rank.
+
+Measured over HPRC release 2's hosted `bubbles.bed.gz` (130,510 bubbles), nodes
+returned for a whole 249 Mb chr1, against ~751k segments in the graph:
+
+| `--min-content` | chr1 nodes | index size        |
+| --------------- | ---------- | ----------------- |
+| 0               | 18,888     | 2.9 MB + 5.5 MB   |
+| 1000            | 3,342      | 582 kB + 1.1 MB   |
+| 10000           | 474        | 99 kB + 172 kB    |
+
+So a chromosome is drawable at 10 kb, a 10 Mb window at 1 kb (151 nodes), and a
+1 Mb window at full bubble resolution (111). Below that the fine tier takes
+over. That is the same shape as [SYNTENY_LOD.md](SYNTENY_LOD.md)'s two PIF
+tiers, so the view change is picking a prefix by `bpPerPx` rather than a new
+rendering mode.
+
+Facts behind it, each measured rather than assumed:
+
+- **Bubbles do not overlap.** 0 overlapping adjacent pairs across all 24 GRCh38
+  chromosomes, so one sorted walk per chromosome is a complete alternating
+  chain. `gfatools bubble` reporting top-level bubbles only is what buys this.
+- **Threshold on content, never on reference span.** 53,293 of the 130,510
+  bubbles are zero-length on GRCh38, because a pure insertion is an alternative
+  to nothing. `end - start` drops every one, including the 100 kb+ insertions
+  that are the pangenome's whole claim. Content is
+  `max(reference span, longest allele)`.
+- **A zero-span bubble draws 1 bp wide** and states its real size in `cl:i:`,
+  the same convention the allele inventory and the bubble CIGARs already use.
+- **The node id is the bubble's own source segment**, so a tier node joins back
+  to the fine tier and expanding one is a fine-index query over the same span.
+  Adjacent bubbles share a boundary segment (one bubble's sink is the next
+  one's source), so sources are distinct while sinks are not.
+- Covered by `bubbleTier.test.ts` in the plugin, over a committed whole-chrY
+  tier fixture (57 bubbles, 5.5 kB).
 
 ## Decisions that look like bugs and are not
 
@@ -108,8 +190,8 @@ about this, and the two workarounds are:
   (`chrom start end name score strand thickStart thickEnd itemRgb strain class
   delta pathLen refLen alleles nonRef path`); columns 1-14 are stable.
 - **a path GFA**, where every path visiting a segment is stated. The walk
-  records it in the `samples` column, though nothing reads that column yet (see
-  Open).
+  records it as an `SM:Z:` tag, per haplotype, and it reaches
+  `GraphNode.tags.SM`. See "The tag column is the extension point" above.
 
 `--call` traps, each a wrong first attempt:
 
@@ -376,9 +458,9 @@ what `segs.bed.gz` does with tabix.
 Each of these is written up with its files, its evidence and a definition of
 done in [guides/PANGENOME_GRAPH_NEXT.md](../guides/PANGENOME_GRAPH_NEXT.md).
 
-- **The `samples` column is emitted but not read.** Wiring it (`rgfaBed.ts` →
-  an `SM:Z:` tag on the synthetic GFA → `GraphNode.samples`) is what turns
-  sample rows from "the first path that walks it" into real carriage.
+- ~~**The `samples` column is emitted but not read.**~~ Done 2026-08-02, as the
+  general tag column above: `SM:Z:` reaches `GraphNode.tags.SM`. What is still
+  open is *displaying* it, and drawing a node once per carrier (next bullet).
 - **A node carried by several assemblies draws on one row.** Needs the layout to
   emit synthetic per-carrier ids and hit detection to resolve them back.
 - **Orientation is recorded but not drawn.** `StableCoordinate.strand` shows in
@@ -387,8 +469,9 @@ done in [guides/PANGENOME_GRAPH_NEXT.md](../guides/PANGENOME_GRAPH_NEXT.md).
   not built. It is no longer about determinism — FMMM is seeded now, see below —
   but about windows of one graph being laid out consistently with each other.
   The input exists: `~/ecoli_graph5/pggb/*.smooth.final.og.lay.tsv`.
-- **Bubble collapse is the one that matters** for scale. Path anchoring gives a
-  base-level graph an axis; it does not give it a node budget.
+- ~~**Bubble collapse is the one that matters** for scale.~~ Producer done
+  2026-08-02, see "Level of detail" above: a chromosome is 474 nodes. What is
+  open is the view picking a tier by `bpPerPx`, and expand-on-click.
 - **HPRC needs no per-haplotype path track after all.** `--call` would need the
   464 assemblies re-mapped, but `pgbi.vcf.gz` (above) already states carriage at
   bubble granularity and is tabix-indexed.

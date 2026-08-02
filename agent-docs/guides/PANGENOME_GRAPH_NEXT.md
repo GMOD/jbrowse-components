@@ -61,28 +61,28 @@ while the plugin source said "Stable rank", so publishing the source's own label
 broke `pangenome/rgfa_segment_neighbourhood`, whose spec clicked the old text.
 It read as a spec bug and was not.
 
-## 3. Carriage: read the `samples` column that is already written
+## 3. Carriage: the read path is wired, the display is not
 
-`scripts/pggb_gfa_to_bed.py` emits every carrier per segment (column 6 of
-`segs.bed.gz`, columns 14 and 15 of `links.bed.gz`), and nothing reads them. On
-an rGFA a row means "the assembly that contributed this first"; with this column
-read, a path-derived graph's sample rows would mean carriage, which is the one
-thing the format can say and rGFA structurally cannot.
+Done 2026-08-02, and more generally than this section proposed. Rather than a
+bespoke `samples` field, column 6 became a **GFA tag column** passed through
+verbatim onto the synthesized S-line, so `SM:Z:` reaches `GraphNode.tags.SM` via
+the ordinary parser and the level-of-detail tier's summary rides the same
+mechanism with no second plumbing job. See "The tag column is the extension
+point" in [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md).
+Carriage is also now per haplotype (`HG002.1`) rather than per sample, which was
+a real defect on any diploid graph.
 
-Plumbing, all in the plugin:
+Left to do:
 
-- `rgfaBed.ts`: parse the extra columns into `RgfaSegment.samples`, and emit
-  `SM:Z:a,b,c` from `formatSegment` (rGFA inputs simply have no column, so this
-  stays backward compatible)
-- the GFA parser: read `SM` into `GraphNode.samples`, which already exists and
-  is already populated by `pathAnchoring.ts` for whole-file imports
-- the node popup already lists `carriedBy` when it is set, so that comes free
-
-Stop there and it is already worth it. Drawing a node once per carrier is a
-bigger change — `sampleRowLayout` emits one position per node id and the
-renderer keys geometry by that id, so real multi-row carriage needs synthetic
-per-carrier ids plus hit detection resolving them back. Its own comment block
-says so.
+- **show it.** The node popup lists `carriedBy` when set. Nothing yet maps
+  `tags.SM` onto it, which is the cheap win.
+- **rebuild and rehost the E. coli pggb pair**, whose column 6 predates the tag
+  format and is dropped by the grammar check.
+- **draw a node once per carrier**, still the bigger change this section
+  described: `sampleRowLayout` emits one position per node id and the renderer
+  keys geometry by that id, so real multi-row carriage needs synthetic
+  per-carrier ids plus hit detection resolving them back. Its own comment block
+  says so.
 
 ## 4. Two small view improvements, started and parked
 
@@ -103,43 +103,50 @@ Both are cheap, and together they are one deploy.
   sentence in prose instead. A gradient strip labelled with the window's ends,
   shown only when that scheme is active, retires the sentence.
 
-## 5. The one that changes what the view is: level of detail
+## 5. Level of detail: producer done 2026-08-02, view side open
 
-Everything above improves a view that browses **a 1 kb window** of a base-level
-graph. That is not a budget problem, it is an abstraction problem: every GFA
-segment is a node, so node count grows with sequence and the view can only
-decline past `DEFAULT_MAX_GRAPH_NODES`.
+The spike this section asked for is done, and it did not need `vg snarls` or
+BubbleGun at all: HPRC already publishes the bubble decomposition we host
+(`hprc-v2.0-mc-grch38.bubbles.bed.gz`, 130,510 rows with segment count, path
+count and allele lengths per row), so the tier is a pass over a file we serve
+rather than a run over a 63 GB graph.
 
-The design, and every piece of it now exists except the middle one:
+`scripts/build_bubble_tier.sh` emits **the same segs/links pair** at bubble
+granularity. A whole 249 Mb chr1 comes back as 474 nodes at
+`--min-content 10000`, 3,342 at 1000, 18,888 at full bubble resolution, against
+~751k segments in the graph. Numbers, the three decisions behind them, and the
+`bubbleTier.test.ts` coverage are in
+[reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md), "Level of
+detail".
 
-1. the tabix pair from `build_pggb_tabix.sh` is the range index
-2. **missing**: a precomputed superbubble hierarchy beside it — each bubble's
-   reference span, its content summary (node count, allele count, longest
-   allele), and its parent, so a query can return *collapsed bubbles* above a
-   size threshold instead of their contents
-3. a collapsed-bubble glyph in the renderer, and expand-in-place on click
-   (PangyPlot's `/pop`)
+The part this file got wrong is worth keeping: it budgeted for a
+**collapsed-bubble glyph and a renderer change**, and neither was needed. A
+collapsed bubble already satisfies the segs contract (a reference span, an id, a
+rank), so the tier drew correctly with no plugin change beyond the tag column.
+Reach for a new glyph only once the tier is on screen and demonstrably unclear.
 
-Then zoom controls abstraction rather than scale, and the graph is navigable at
-chromosome scale like any other track.
+What is actually left:
 
-**Spike this before committing to it.** Run `vg snarls` (or BubbleGun) over
-`~/ecoli_graph5/pggb/*.smooth.final.gfa` and answer three questions with
-numbers: how many top-level bubbles, what fraction of the 606k segments they
-absorb at a few thresholds, and how deep the nesting goes. That tells you
-whether a chromosome's worth of collapsed bubbles is a few thousand nodes (a
-drawable view) or a few hundred thousand (a dead end).
+- **the view picks a tier by `bpPerPx`**, the way
+  [SYNTENY_LOD.md](../reference/SYNTENY_LOD.md)'s two PIF tiers already work.
+  Config is a prefix per tier plus its bp range, and there is no new rendering
+  mode.
+- **expand-on-click** (PangyPlot's `/pop`). The tier node id *is* the bubble's
+  source segment, so expanding is a fine-index query over the same span with no
+  cross-reference to maintain.
+- **build and host the tiers** beside the fine pair for HPRC, and rebuild the
+  E. coli pggb pair while there (its column 6 predates the tag format).
 
-Two findings to respect, both already paid for:
+Two findings to respect, both already paid for, and both now moot for this route
+since the bubbles are precomputed upstream:
 
 - **chain contraction is the wrong primitive.** adr-014 measured `vg mod -u` on
   HPRC chr20 at 0.95% reduction, because at 90 haplotypes almost no node has
   bidirected degree 2. Superbubbles do not depend on degree-2 runs.
 - **BubbleGun as published does not reach human chr1.** The PangyPlot team
   measured chrY 2 s / 1 GB, chrX 30 s / 11 GB, chr9 ~40 min / 13 GB, chr1
-  hanging at 15+ GB; the pointer-heavy Python data model is the cause and a flat
-  int64-CSR rewrite is their fix. For E. coli none of this matters, so the spike
-  is cheap; for human it is the whole cost.
+  hanging at 15+ GB. That is the cost this route avoids by consuming
+  `gfatools bubble` output the graph already ships with.
 
 ## 6. The axis: y in pixels, x from the linear view
 
