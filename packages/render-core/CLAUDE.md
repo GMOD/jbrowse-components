@@ -12,23 +12,16 @@ The WebGL→Canvas2D ladder runs at **backend construction only**. A context los
 afterwards surfaces as `renderError` with the page-wide `setGpuOverride` escape;
 don't add a second per-display fallback path.
 
-## The reversed-block family — three shapes of one bug
+## The reversed-block family
 
-All three are invisible on forward blocks, so they survive review.
-
-- **Per-base Canvas2D cells go through `makeCellLeftMapper`**, never
-  `makeBpMapper` directly — reversed runs bp leftward, so a raw mapper returns
-  the cell's _right_ edge and the fill covers the neighboring base.
-- **Min-width widening goes through `spanLeft(x1, x2, width)`**, not
-  `max(minPx, abs(dx))` off `min(x1, x2)` — only the first anchors the feature's
-  _start_ edge the way the shaders do.
-- **A strand crossing the worker boundary is _genomic_; flip it before it places
-  anything on screen** (`block.reversed ? -d : d`, or `flipX`). The worker
-  cannot know `reversed`. Both backends read the same field, so getting it wrong
-  usually means getting it wrong identically in both and the parity gate sees
-  nothing. Safest by construction: build geometry unflipped and `flipX` the
-  final position. A strand used only to pick a color or a symmetric glyph needs
-  no flip — say so where it isn't obvious.
+Three ways to place a mark wrong on a flipped region, all invisible on forward
+blocks. Don't hand-roll any of them: per-base cells take `makeCellLeftMapper`,
+min-width widening takes `spanLeft`, and a **genomic** strand from the worker
+takes a `block.reversed ? -d : d` / `flipX` before it becomes a left/right
+decision. Each helper's JSDoc says when to reach for it; `canvas2dUtils.test.ts`
+and `LinearBasicDisplay/reversedGlyphDirection.test.ts` pin the behavior, and
+the latter's header explains why a Canvas2D-vs-GPU parity gate cannot catch the
+strand case.
 
 ## Other invariants
 
