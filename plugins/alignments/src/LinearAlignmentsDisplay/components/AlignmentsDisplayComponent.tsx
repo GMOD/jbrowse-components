@@ -138,7 +138,16 @@ const AlignmentsDisplayComponent = observer(
         {({ canvasRef, canvas }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
-            <div className={classes.bottomRight}>
+            {/* claims the press so an embedder's own pointer-capturing pan
+             can't swallow the click that opens these — see
+             BottomRightIndicators, which does the same for canvas displays */}
+            <div
+              className={classes.bottomRight}
+              data-gesture-owner="true"
+              onPointerDown={event => {
+                event.stopPropagation()
+              }}
+            >
               {pileupTruncated ? (
                 <div className={classes.maxHeight}>
                   <span>Max layout height reached</span>

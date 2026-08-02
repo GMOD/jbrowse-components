@@ -38,6 +38,15 @@ function BottomRightIndicators({
     <div
       className={classes.root}
       style={{ right: hasOverflow ? SCROLLBAR_WIDTH + 2 : 2 }}
+      // Claim the press, the same way VerticalScrollbar does. An embedder that
+      // pans the view with its own pointer handler sits above this row; if it
+      // captures the pointer on pointerdown, the click that opens these menus
+      // is retargeted at the embedder's element and never arrives. JBrowse's
+      // own pan skips `button` targets, so this is for everyone else's.
+      data-gesture-owner="true"
+      onPointerDown={event => {
+        event.stopPropagation()
+      }}
     >
       {children}
     </div>
