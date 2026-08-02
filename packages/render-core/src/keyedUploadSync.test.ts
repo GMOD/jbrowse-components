@@ -1,4 +1,4 @@
-import { createKeyedUploadSync } from './keyedUploadSync.ts'
+import { createKeyedUploadSync, sharedBackendKey } from './keyedUploadSync.ts'
 
 interface Data {
   v: number
@@ -106,4 +106,18 @@ test('a backend swap re-uploads every key even when references are unchanged', (
   expect(b.uploads.map(u => u.key)).toEqual([0, 1])
   // and no spurious deletes fired against the fresh backend
   expect(b.deletes).toEqual([])
+})
+
+test('sharedBackendKey is stable per id and distinct across ids', () => {
+  expect(sharedBackendKey('display-1')).toBe(sharedBackendKey('display-1'))
+  expect(sharedBackendKey('display-1')).not.toBe(sharedBackendKey('display-2'))
+})
+
+test('sharedBackendKey stays a uint32', () => {
+  for (const id of ['a', 'display-1', 'x'.repeat(200), '']) {
+    const key = sharedBackendKey(id)
+    expect(Number.isInteger(key)).toBe(true)
+    expect(key).toBeGreaterThanOrEqual(0)
+    expect(key).toBeLessThanOrEqual(0xffffffff)
+  }
 })

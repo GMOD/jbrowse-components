@@ -7,6 +7,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // in one place instead of drifting across three partial copies.
 export interface ParentViewDuck {
   width: number
+  // measured + every row initialized; the level's `canRender` precondition,
+  // because reading `width` before first layout throws
+  initialized: boolean
   views: LinearGenomeViewModel[]
   scrollZoom: boolean
   overdrawPx: number

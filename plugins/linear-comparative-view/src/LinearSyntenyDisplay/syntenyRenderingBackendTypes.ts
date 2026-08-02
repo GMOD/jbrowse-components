@@ -37,13 +37,12 @@ export interface SyntenyRenderingBackend {
   uploadGeometry(key: number, data: SyntenyInstanceData): void
   deleteGeometry(key: number): void
   /**
-   * Paint the empty band — the background and nothing else. Called for a level
-   * that has no synteny display able to draw (no track on this row pair, or the
-   * one it had was hidden), where `render` has no state to work from: the
-   * Canvas2D backend would otherwise keep the last frame's ribbons on screen.
+   * Repaint the whole band: clear, then draw every key in `perTrack` that has
+   * geometry. Unconditional — an empty `perTrack` (no synteny track on this row
+   * pair, or the one it had was hidden) paints the background alone, which is
+   * what erases the departed track. Nothing else repaints this canvas.
    */
-  clear(): void
-  render(state: SyntenyRenderState): boolean
+  render(state: SyntenyRenderState): void
   // Pick takes the current render state explicitly — no stale-snapshot
   // coupling with the last render() call. Callers read state from the model
   // (the same getter that feeds render) and pass it in.

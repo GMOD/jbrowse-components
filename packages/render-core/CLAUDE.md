@@ -189,7 +189,12 @@ documents only what bites when editing _this package_.
   diffs through `createGlobalUploadSync`; a backend **shared by sibling
   displays** (the dotplot view's canvas, the synteny level's canvas) diffs
   through `createKeyedUploadSync`, which deletes departed keys one at a time
-  rather than active-set pruning a sibling's buffers away. All three drop their
+  rather than active-set pruning a sibling's buffers away — keyed by
+  `sharedBackendKey(display.id)`, never a list index, which renumbers on a hide
+  and aliases one display's buffer onto another. A shared-canvas backend's
+  `render` also returns `void` and repaints unconditionally (clear, then draw
+  what it holds): nothing else repaints that canvas, so an early return is how a
+  hidden display's pixels survive. All three drop their
   memos on a backend swap, which is the part a hand-rolled version forgets —
   context-loss recovery hands back a backend with empty GPU buffers. Create any
   of them _outside_ the `attachRenderingBackend` call (it captures callbacks

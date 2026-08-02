@@ -120,12 +120,13 @@ describe('GpuSyntenyRenderer CPU pick', () => {
   })
 })
 
-test('clear paints the empty band with no draw calls', () => {
+test('an empty render paints the background with no draw calls', () => {
   // What a level with no synteny display left asks for — see the render
-  // callback in LinearSyntenyViewHelper/stateModelFactory.
+  // callback in LinearSyntenyViewHelper/stateModelFactory. The repaint is what
+  // erases the departed track, so it must not be skipped.
   const hal = new MockHal(SYNTENY_PASSES)
   const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-  renderer.clear()
+  renderer.render(makeState([]))
 
   expect(hal.calls.map(c => c.method)).toEqual(['beginFrame', 'endFrame'])
 })

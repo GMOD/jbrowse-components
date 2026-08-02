@@ -118,11 +118,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   function pickAt(coords: { x: number; y: number }) {
     const backend = model.gpuRenderingBackend
-    const state = model.syntenyRenderState
-    if (!backend || !state) {
-      return undefined
-    }
-    return backend.pick(coords.x, coords.y, state)
+    return backend
+      ? backend.pick(coords.x, coords.y, model.syntenyRenderState)
+      : undefined
   }
 
   // `displaysByKey` is a computed no reaction observes, so each access rebuilds

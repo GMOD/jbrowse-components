@@ -418,10 +418,10 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps).toContain('lineTo(501.0,100.0)')
   })
 
-  test('clear repaints the background over a previous frame', () => {
-    // A level whose only synteny track is hidden has no render state left, so
-    // the level asks for a clear — without it Canvas2D keeps the last frame's
-    // ribbons on screen (unlike WebGL, whose drawing buffer is discarded).
+  test('an empty render repaints the background over a previous frame', () => {
+    // A level whose only synteny track is hidden renders zero tracks — that
+    // repaint is what erases them, since Canvas2D keeps the last frame
+    // otherwise (unlike WebGL, whose drawing buffer is discarded).
     const { canvas, ctx, pathOps } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
@@ -432,10 +432,12 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(1)
 
     ctx.fillRect.mockClear()
+    pathOps.length = 0
     renderer.deleteGeometry(0)
-    renderer.clear()
+    renderer.render(makeState([]))
 
     expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 800, 100)
+    expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
 
   test('deleteGeometry removes a track from rendering', () => {

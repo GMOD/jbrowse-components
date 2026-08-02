@@ -19,7 +19,7 @@ import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 interface RenderSvgView {
   viewWidth: number
   viewHeight: number
-  dotplotRenderState: DotplotRenderState | undefined
+  dotplotRenderState: DotplotRenderState
 }
 
 export async function renderSvg(
@@ -35,7 +35,7 @@ export async function renderSvg(
   // regionTooLarge state: the dotplot gates its fetch by LOD, not region size.
   return (
     <SvgChrome error={model.error} width={viewWidth} height={viewHeight}>
-      {geometry && dotplotRenderState ? (
+      {geometry ? (
         <PaintLayer
           width={viewWidth}
           height={viewHeight}

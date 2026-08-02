@@ -118,15 +118,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     this.hal.deleteRegion(key)
   }
 
-  clear() {
-    this.hal.beginFrame(1, 1, 1, 1)
-    this.hal.endFrame()
-  }
-
   render(state: SyntenyRenderState) {
-    if (this.cache.regions.size === 0) {
-      return false
-    }
     this.hal.beginFrame(1, 1, 1, 1)
     for (const [key, params] of state.perTrack) {
       const data = this.cache.regions.get(key)
@@ -150,7 +142,6 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       }
     }
     this.hal.endFrame()
-    return true
   }
 
   private ensureUploaded(

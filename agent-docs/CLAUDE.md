@@ -14,7 +14,9 @@ Violations cause silent bugs, not crashes.
 - **The render callback returns `true` only when real content was drawn.** The
   mixin does `if (cbs.render(b)) markCanvasDrawn()`, so a falsy return —
   including an accidental `void` — leaves `canvasDrawn` false and the loading
-  scrim up.
+  scrim up. Exception, by ADR-009's scope clause: the shared-canvas views
+  (dotplot, synteny level) repaint unconditionally and always return `true`,
+  because an empty frame is what erases a hidden track.
 - **Per-region upload values must be freshly constructed, never mutated.**
   Backends diff by reference identity; in-place mutation leaks stale bytes.
 - **Only write MST observables via actions.** A direct write inside an autorun
@@ -22,7 +24,11 @@ Violations cause silent bugs, not crashes.
 - **Shared backends (dotplot, synteny) diff through `createKeyedUploadSync`**,
   which deletes each departed key individually; an active-set prune (what
   `createRegionUploadSync` does for a single display) would wipe a sibling
-  display's data.
+  display's data. Key by `sharedBackendKey(self.id)`, never by list index — an
+  index renumbers when a sibling is hidden and aliases one display's buffer onto
+  another. Their `renderState` is a resolved getter (`canRender` carries the
+  not-measured-yet gate) and `render` repaints the whole canvas every tick, so
+  an empty key set paints the background and erases a hidden track.
 - **Structural types across lazy boundaries.** Importing MST model types across
   a lazy import is a circular-reference trap — use duck-typed interfaces.
 - **`readConfObject` / `getConf` are hot-path traversals.** Cache outside loops;

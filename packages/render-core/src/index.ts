@@ -58,7 +58,7 @@ export { installPerRegionLifecycle } from './installPerRegionLifecycle.ts'
 export type { PerRegionRender } from './installPerRegionLifecycle.ts'
 export { createRegionUploadSync } from './regionUploadSync.ts'
 export { createGlobalUploadSync } from './globalUploadSync.ts'
-export { createKeyedUploadSync } from './keyedUploadSync.ts'
+export { createKeyedUploadSync, sharedBackendKey } from './keyedUploadSync.ts'
 
 // --- Render blocks + display phase ---
 export { buildRenderBlocks } from './renderBlock.ts'

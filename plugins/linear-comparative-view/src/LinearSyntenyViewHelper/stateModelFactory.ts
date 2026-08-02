@@ -207,19 +207,24 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * Aggregated per-frame render state. Every display in the level draws
-       * starting at yTop=0 since each level owns its own canvas.
+       * Aggregated per-frame render state — a resolved value, never undefined;
+       * "the view isn't measured yet" is the `canRender` precondition below.
+       * Every display in the level draws starting at yTop=0 since each level
+       * owns its own canvas.
+       *
+       * An empty `perTrack` is a real frame, not a skip: the row pair has no
+       * synteny track (a legal launch — the rows just stack with no ribbons),
+       * the one it had was hidden, or every one is minimized. The backend
+       * clears before drawing, so painting zero tracks is what drops a hidden
+       * track's ribbons.
        */
-      get syntenyRenderState(): SyntenyRenderState | undefined {
+      get syntenyRenderState(): SyntenyRenderState {
         const perTrack = new Map<number, SyntenyTrackRenderParams>()
         for (const display of self.linearSyntenyDisplays) {
           const params = display.renderParams
           if (params) {
             perTrack.set(display.displayKey, params)
           }
-        }
-        if (perTrack.size === 0) {
-          return undefined
         }
         return {
           overdrawPx: self.parentView.overdrawPx,
@@ -236,6 +241,19 @@ export function linearSyntenyViewHelperModelFactory(
           m.set(display.displayKey, display)
         }
         return m
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
+       * default-true hook): the render callback sizes the canvas off
+       * `parentView.width`, which throws by design before the view is
+       * measured. Gating the autorun pair here is what lets
+       * `syntenyRenderState` stay a resolved getter.
+       */
+      get canRender() {
+        return self.parentView.initialized
       },
     }))
     .actions(self => ({
@@ -260,21 +278,7 @@ export function linearSyntenyViewHelperModelFactory(
             // closer (the view pushes it down to every row) and no assertion on
             // a row that may not exist yet
             b.resize(self.parentView.width, self.height)
-            const state = self.syntenyRenderState
-            if (state) {
-              return b.render(state)
-            }
-            // No display can paint this band: the row pair has no synteny track
-            // (a legal launch — the rows just stack with no ribbons), the one it
-            // had was hidden, or every one of them is minimized. Clearing is
-            // what drops a hidden track's ribbons off the Canvas2D backend,
-            // which keeps its last frame otherwise; reporting `true` is what
-            // lets `canvasDrawn` — and so `settled`, the synteny_canvas_done
-            // testid — resolve on a level that has nothing to show. Waiting on
-            // data is NOT this branch: a display with no data yet still
-            // contributes renderParams, and the backends answer that with
-            // `false` while their geometry cache is empty.
-            b.clear()
+            b.render(self.syntenyRenderState)
             return true
           },
         })

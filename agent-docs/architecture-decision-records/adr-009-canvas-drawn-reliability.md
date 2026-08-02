@@ -70,6 +70,20 @@ The mutation is owned by `RenderLifecycleMixin` via an explicit
 assignment to `canvasDrawn` outside the mixin's own actions is not allowed
 (MST enforces this).
 
+### Scope: per-region displays, not the shared-canvas views
+
+This decision governs displays that own their canvas and whose loading scrim
+reads `canvasDrawn` through `isReady` (`canvasDrawn && !isLoading`). It does
+**not** extend to the two views that hang one canvas above several displays —
+dotplot and the synteny level (ARCHITECTURE.md, "the empty frame is
+load-bearing"). There, nothing but the container ever repaints the canvas, so a
+render that returns early rather than painting is how a hidden track's pixels
+survive. Their backends' `render` returns `void` and repaints unconditionally,
+and `canvasDrawn` means "painted at least once". That is safe because neither
+view drives a scrim off it: both `settled` getters carry data-readiness
+separately via `displaysSettled`. Don't port the predicate below into that
+family — it caused the bug in both of them.
+
 ## Invariants
 
 - `renderBlocks` must return `false` when `regions.size === 0`, `true` after

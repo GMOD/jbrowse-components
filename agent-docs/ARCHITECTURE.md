@@ -168,6 +168,43 @@ what makes their upload callbacks keyed rather than per-region: they diff throug
 active-set prune computed from one display's map would wipe its siblings'
 buffers.
 
+**The key is `sharedBackendKey(self.id)` — a hash of the display's node id,
+never its index in the parent's list.** An index renumbers the moment a sibling
+is hidden or reordered, and then the survivor's key names a slot holding another
+display's bytes: the identity diff sees a changed reference and re-uploads every
+later display's whole buffer (a full re-pack of every segment), and any frame
+that lands between the two draws one display's geometry under another's
+parameters. Dotplot keyed by track index until that was fixed.
+
+A shared canvas also makes the **empty frame load-bearing**, and that is why
+this family's render callback is *unconditional* where the per-region family's
+is gated. When each display owns its canvas, hiding a track unmounts the canvas
+with it. When the canvas belongs to the container, nothing else ever repaints
+it — so a callback that skips the tick "because no display has geometry" leaves
+the hidden track's pixels on screen, its buffer deleted and nothing drawn over
+them. Both plugins' backends clear before drawing, so painting zero displays
+*is* the wipe. One shape, in both:
+
+- `renderState` is a **resolved getter**, never `undefined`; an empty
+  `displayKeys` / `perTrack` is a real frame.
+- `canRender` carries the "view isn't measured yet" precondition
+  (`view.initialized`), so the autorun pair idles instead of the state going
+  nullable.
+- `backend.render(state)` returns `void` and always repaints the whole canvas:
+  clear, then draw every key it holds geometry for.
+- The callback returns `true` — the canvas now reflects the model, which is what
+  lets `canvasDrawn`, and so `settled` and the `*_done` testid, resolve on a
+  view or level that legitimately has nothing to show.
+
+`canvasDrawn` therefore means "painted at least once" here rather than "real
+content reached the canvas" (ADR-009, written for the per-region family, whose
+loading scrim reads it through `isReady`). Nothing is lost: both `settled`
+getters carry data-readiness separately through `displaysSettled`, and neither
+view drives a scrim off `canvasDrawn`. Dotplot keyed by track index and gated
+its render on having geometry until both were fixed; synteny reached the same
+place by a different route, with a nullable state and a `clear()` method on the
+backend interface for the empty case.
+
 Circular view's `ChordVariantDisplay` is a fourth shape, off this axis
 entirely: it paints main-thread JSX SVG (radial, so it keeps a bespoke
 `<DisplayError>` instead of `SvgChrome`), composes none of the fetch
@@ -636,6 +673,9 @@ region and refetches stale ones.
 - Don't destructure model methods; call on the model.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
+- Don't skip a shared canvas's render tick when there is nothing to draw — an
+  empty frame is what erases a hidden track (see "the empty frame is
+  load-bearing" above).
 - Don't make a renderer class the *owner* of per-region data. The model's
   `rpcDataMap` / `laidOutDataMap` is the single source of truth. Most displays
   pass it in per frame (`renderBlocks(blocks, regions, state)`), and that is the
