@@ -16,6 +16,10 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// PAR1 through the end of the euchromatic male-specific region of T2T chrY,
+// which is what the self-alignment covers (Yq12 beyond it is DYZ satellite).
+const CHRY_MSY_LOCUS = 'chrY:2,700,000-26,600,000'
+
 // hg38 vs T2T-CHM13 (hs1) at TNNT3, the locus the genomes.jbrowse.org demo
 // session parks on. `view` carries the ribbon-drawing settings that differ
 // between the default figure and the curved/transparent-indel one.
@@ -333,13 +337,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
     //
     // Grape and peach are divergent enough that this PAF is all short hits: the
     // median block is well under a kb and the longest is ~12kb against a 227 x
-    // 486 Mbp plot. Drawn plain and black that is a uniform scatter with the
-    // syntenic runs lost inside it, which is what this figure used to be. The
-    // min-length filter keeps roughly the top tenth by block length, and
-    // per-query coloring separates what survives: the short diagonal runs read
-    // as blocks, and the horizontal band across grape chr12 stays visible but
-    // is now obviously every peach chromosome at once, i.e. a repeat-rich
-    // region rather than synteny.
+    // 486 Mbp plot, so every block draws as a single dot and the min-length
+    // filter is what leaves anything readable.
+    //
+    // No colorBy. Per-query coloring was added here to separate the survivors,
+    // and it does not: a rainbow of one-pixel dots reads as noise with extra
+    // steps (reviewer). Black is the house style for a dotplot, and where the
+    // plain plot has no structure to show, that is the dataset's problem to fix
+    // rather than the palette's.
     url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {
@@ -347,7 +352,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
           tracks: ['grape_peach_paf'],
           minAlignmentLength: 2000,
-          colorBy: 'query',
         },
       ],
     }),
@@ -1132,12 +1136,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The same MCScan run as a dotplot, which mcscan_synteny.md never mentioned:
   // one dot per orthologous gene pair, so the whole-genome plot is the one jcvi
-  // itself draws, from the file the tutorial has already loaded. Per-query
-  // coloring gives each peach chromosome its own color, which is what separates
-  // the syntenic runs from the scatter of single anchors. autoDiagonalize
+  // itself draws, from the file the tutorial has already loaded. autoDiagonalize
   // reorders the grape axis to follow peach: in raw .fai order the same runs are
   // scattered over the plot, and grape has 19 chromosomes to peach's 8, so
   // reading which pairs correspond is the whole point of the reorder.
+  //
+  // Black, like every other dotplot here. Per-query coloring was tried and
+  // dropped (reviewer): the diagonalized runs already separate on position, and
+  // the palette only competes with them.
   {
     mode: 'url',
     name: 'mcscan_synteny/dotplot',
@@ -1147,7 +1153,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'DotplotView',
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
           tracks: ['grape_peach_synteny_mcscan'],
-          colorBy: 'query',
           autoDiagonalize: true,
         },
       ],
@@ -1855,6 +1860,44 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // A chromosome against itself, which no pairwise plot can produce: the filled
+  // wedge on the diagonal at ~9.3 Mb is the TSPY tandem array, and the lattice
+  // of off-diagonal crossings at 21-26 Mb is the Yq palindrome family, each arm
+  // meeting its own inverted copy.
+  //
+  // The alignment covers chrY:2,700,000-26,600,000 (PAR1 through the end of the
+  // euchromatic MSY), so the view frames that rather than the whole chromosome:
+  // Yq12 is ~30 Mb of DYZ satellite that minimap2 with -P does not finish on in
+  // reasonable time, and it would be empty here.
+  //
+  // 25 kb minimum. Below ~30 kb the dispersed repeats black the plot out
+  // entirely; above ~100 kb only the palindromes survive.
+  {
+    mode: 'url',
+    name: 'dotplot_self_chry',
+    url: sessionSpec('test_data/chry_self/config.json', {
+      views: [
+        {
+          type: 'DotplotView',
+          tracks: ['hs1_chrY_self'],
+          views: [
+            { assembly: 'T2T_chrY', loc: CHRY_MSY_LOCUS },
+            { assembly: 'T2T_chrY_self', loc: CHRY_MSY_LOCUS },
+          ],
+          minAlignmentLength: 25000,
+        },
+      ],
+    }),
+    // near-square, so the diagonal reads at 45 degrees and the palindrome
+    // crossings stay symmetric
+    viewportWidth: 1000,
+    viewportHeight: 760,
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    // 21 MB PIF plus the hs1 chrom.sizes, both remote
+    readyTimeout: 180000,
+    settleMs: 10000,
+  },
+
   {
     mode: 'url',
     name: 'gallery/yeast_dotplot',

@@ -137,7 +137,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'dotplot',
         guide: 'user_guides/dotplot_view',
         description:
-          'Grape against peach from a minimap2 PAF, colored by query chromosome with short alignments filtered out. The dotplot pans and zooms like any other view, and drag-selecting a block opens that region as a linear synteny view.',
+          'Grape against peach from a minimap2 PAF, with short alignments filtered out. The dotplot pans and zooms like any other view, and drag-selecting a block opens that region as a linear synteny view.',
       },
       {
         label: 'Human vs mouse synteny',

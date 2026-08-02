@@ -200,7 +200,7 @@ chromosomes against 8 peach ones scatters the runs over the plot. **Re-order
 chromosomes** in the view menu sorts the vertical axis to follow the horizontal
 one, using the alignments themselves.
 
-<Figure caption="Grape against peach, every point one orthologous gene pair from the .anchors file, colored by peach chromosome after Re-order chromosomes. Each run of points is one MCScan block, and one peach color on several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
+<Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block, and a peach column crossing several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
 
 ## Reproduce it end to end
 

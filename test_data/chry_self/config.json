@@ -9,7 +9,7 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit",
-          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chrom.sizes.txt"
+          "chromSizes": "chrY.chrom.sizes"
         }
       }
     },
@@ -22,7 +22,7 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit",
-          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chrom.sizes.txt"
+          "chromSizes": "chrY.chrom.sizes"
         }
       }
     }
@@ -32,20 +32,14 @@
       "type": "SyntenyTrack",
       "trackId": "hs1_chrY_self",
       "name": "chrY self-alignment (minimap2)",
-      "assemblyNames": [
-        "T2T_chrY_self",
-        "T2T_chrY"
-      ],
+      "assemblyNames": ["T2T_chrY_self", "T2T_chrY"],
       "metadata": {
         "command": "minimap2 -x asm20 -P chrY.fa chrY.fa, over chrY:2,700,000-26,600,000",
         "note": "-P is required: without it minimap2 marks every off-diagonal hit secondary and drops it"
       },
       "adapter": {
         "type": "PairwiseIndexedPAFAdapter",
-        "assemblyNames": [
-          "T2T_chrY_self",
-          "T2T_chrY"
-        ],
+        "assemblyNames": ["T2T_chrY_self", "T2T_chrY"],
         "uri": "https://jbrowse.org/demos/scratch/hs1_chrY_self.pif.gz",
         "csi": true
       }
