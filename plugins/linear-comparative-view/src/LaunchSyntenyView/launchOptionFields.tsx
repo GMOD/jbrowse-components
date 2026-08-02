@@ -45,10 +45,43 @@ export function FlipInvertedTargetsCheckbox({
   )
 }
 
-// A launch gives no panel any tracks, so every row would open on the ~90px "No
+// The launching view's own tracks, carried onto the panel for its assembly (see
+// anchorPanelTracks). On by default — it is the state the user is already
+// looking at, and the alternative is reopening those tracks by hand in a panel
+// that just opened blank — but it is a checkbox rather than unconditional
+// because the copy costs a second fetch of everything open, which is a real
+// price when what's open is a BAM.
+export function CopySourceTracksCheckbox({
+  checked,
+  onChange,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <LabeledCheckbox
+      className={classes.formControl}
+      size="small"
+      checked={checked}
+      onChange={val => {
+        onChange(val)
+      }}
+      label={
+        <span>
+          Copy this view&apos;s tracks into its panel{' '}
+          <HelpTooltip help="The panel for the assembly you launched from opens with the tracks open here; the other panels open empty, since nothing here says what they should show" />
+        </span>
+      }
+    />
+  )
+}
+
+// A mate panel gets no tracks, so every such row would open on the ~90px "No
 // tracks active / Open track selector" block — on a five-row stack more of the
 // viewport than the ribbons the launch was for. Collapsed to rulers by default,
 // with this to opt out; a row also expands from its own MiniControls afterwards.
+// A row that has tracks (the anchor, when the copy above is on) is unaffected.
 export function CollapsePanelsCheckbox({
   checked,
   onChange,

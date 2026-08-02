@@ -8,6 +8,7 @@ import { findPosInCigar } from './findPosInCigar.ts'
 import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
 import type { SyntenyMate } from '../syntenyMate.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 // The clicked block's genomic span, used to clip the launched synteny view to
 // the region of interest. Only the span matters — the refName is the feature's
@@ -148,11 +149,16 @@ export interface BuildSyntenyViewSpecArgs {
   // coordinates still run left to right alongside the anchor's.
   flipReversedMates: boolean
   // Open the launched panels collapsed to their rulers. Unset means the launch's
-  // own default: a multi-way launch collapses (a launch gives no panel any
-  // tracks, so on a stack the per-row "No tracks active" block is the tallest
-  // thing in the view), a pairwise one does not, since two rows have the room.
-  // The dialog's checkbox passes it explicitly either way.
+  // own default: a multi-way launch collapses (a mate panel gets no tracks, so
+  // on a stack the per-row "No tracks active" block is the tallest thing in the
+  // view), a pairwise one does not, since two rows have the room. The dialog's
+  // checkbox passes it explicitly either way. A row that HAS tracks never
+  // collapses whatever this says — see buildViews' scalebarOnly.
   collapseEmptyRows?: boolean
+  // Tracks for the anchor panel, normally the launching view's own (see
+  // anchorPanelTracks). Only the anchor row: it is the only panel whose assembly
+  // the source view can speak for.
+  anchorTracks?: TrackInit[]
   region?: RegionOfInterest
 }
 
@@ -168,6 +174,7 @@ export function buildSyntenyViewSpec({
   trackId,
   flipReversedMates,
   collapseEmptyRows,
+  anchorTracks,
   region,
 }: BuildSyntenyViewSpecArgs): { init: LinearSyntenyViewInit } {
   const anchor = features[0]
@@ -196,6 +203,9 @@ export function buildSyntenyViewSpec({
       end: anchorEnd,
       windowSize,
     }),
+    // omitted rather than empty when there is nothing to carry over, so the
+    // launched view's snapshot says "no tracks" the same way it always did
+    ...(anchorTracks?.length ? { tracks: anchorTracks } : {}),
   }
   const mateViews = resolved.map(({ feature, mate, spans }) => ({
     assembly: mate.assemblyName,

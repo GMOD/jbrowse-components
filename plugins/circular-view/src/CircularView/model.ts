@@ -6,9 +6,11 @@ import {
   clamp,
   getSession,
   isSessionModelWithWidgets,
+  selectNamedRegions,
 } from '@jbrowse/core/util'
 import {
   hideTrackGeneric,
+  normalizeTrackInit,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
@@ -23,6 +25,7 @@ import { calculateStaticSlices } from './slices.ts'
 import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { FC, ReactNode } from 'react'
@@ -34,7 +37,12 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 export interface CircularViewInit {
   assembly: string
-  tracks?: string[]
+  // restrict the circle to these assembly refNames (whole chromosomes), in the
+  // order given — e.g. the main chromosomes without the unplaced/alt contigs,
+  // which otherwise take a slice each. Names resolve through the assembly's
+  // aliases and may be globs, the same as the linear view's key of this name.
+  displayedRegionNames?: string[]
+  tracks?: TrackInit[]
 }
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -50,13 +58,16 @@ export interface ExportSvgOptions {
  *
  * #example
  * Hand-authored under `defaultSession.views`. The `init` shorthand takes a
- * single `assembly` and the structural-variant `tracks` to draw as arcs:
+ * single `assembly` and the structural-variant `tracks` to draw as chords. A
+ * track entry may carry display config inline, and `displayedRegionNames` keeps
+ * an assembly's alt/unplaced contigs off the circle:
  * ```js
  * {
  *   type: 'CircularView',
  *   init: {
  *     assembly: 'hg38',
- *     tracks: ['my-sv-vcf'],
+ *     displayedRegionNames: ['chr1', 'chr2', 'chr3'],
+ *     tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
  *   },
  * }
  * ```
@@ -564,8 +575,17 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      showTrack(trackId: string, initialSnapshot = {}) {
-        return showTrackGeneric(self, trackId, initialSnapshot)
+      showTrack(
+        trackId: string,
+        initialSnapshot = {},
+        displayInitialSnapshot = {},
+      ) {
+        return showTrackGeneric(
+          self,
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+        )
       },
 
       /**
@@ -649,15 +669,25 @@ function stateModelFactory(pluginManager: PluginManager) {
               if (init) {
                 const session = getSession(self)
                 const { assemblyManager } = session
-                const regions = assemblyManager.get(init.assembly)?.regions
+                const assembly = assemblyManager.get(init.assembly)
+                const regions = assembly?.regions
 
                 if (regions) {
-                  self.setDisplayedRegions(regions)
+                  const names = init.displayedRegionNames
+                  self.setDisplayedRegions(
+                    names
+                      ? selectNamedRegions(regions, names, n =>
+                          assembly.getCanonicalRefName(n),
+                        )
+                      : regions,
+                  )
                 }
 
                 if (init.tracks) {
-                  for (const trackId of init.tracks) {
-                    self.showTrack(trackId)
+                  for (const t of init.tracks) {
+                    const { trackId, trackSnapshot, displaySnapshot } =
+                      normalizeTrackInit(t)
+                    self.showTrack(trackId, trackSnapshot, displaySnapshot)
                   }
                 }
 

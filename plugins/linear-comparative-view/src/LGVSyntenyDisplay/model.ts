@@ -32,6 +32,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
+import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
 import { getMate } from '../syntenyMate.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
@@ -266,9 +267,8 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // The anchor panel opens on the view's own assembly, which is what
             // the features were fetched against — more dependable than the
             // feature's own `assemblyName` field, which not every adapter sets.
-            const anchorAssembly = (
-              getContainingView(self) as LinearGenomeViewModel
-            ).assemblyNames[0]
+            const view = getContainingView(self) as LinearGenomeViewModel
+            const anchorAssembly = view.assemblyNames[0]
             const track = getContainingTrack(self)
             if (
               feature &&
@@ -300,6 +300,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                       handleClose,
                       session: getSession(self),
                       anchorAssembly,
+                      // the anchor panel opens on this view's assembly, so it
+                      // can open on this view's tracks too — this chain track
+                      // excluded, since it becomes the ribbon band
+                      anchorTracks: anchorPanelTracks(view.tracks),
                       feature,
                     },
                   ])

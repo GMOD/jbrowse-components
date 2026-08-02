@@ -329,3 +329,45 @@ test('multi-way launch collapses empty rows, pairwise does not', () => {
     }).init.collapseEmptyRows,
   ).toBe(false)
 })
+
+// The launching view's tracks land on the anchor panel and nowhere else: the
+// mate panels are other assemblies, which the source view says nothing about.
+test('anchor tracks go on the anchor panel only, wherever it sits in the stack', () => {
+  const args = {
+    features: [makeFeature(), makeFeature({ mateAssembly: 'volvox3' })],
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+    anchorTracks: [{ trackId: 'genes' }],
+  }
+  expect(buildSyntenyViewSpec(args).init.views.map(v => v.tracks)).toEqual([
+    [{ trackId: 'genes' }],
+    undefined,
+    undefined,
+  ])
+  // anchorIndex moves the anchor down the stack; the tracks follow it rather
+  // than staying on row 0
+  expect(
+    buildSyntenyViewSpec({ ...args, anchorIndex: 1 }).init.views.map(
+      v => v.tracks,
+    ),
+  ).toEqual([undefined, [{ trackId: 'genes' }], undefined])
+})
+
+// `tracks: []` on a panel would be a different snapshot than no key at all, and
+// the launches that pass nothing (or whose dialog checkbox is off) should keep
+// producing exactly the view they always did.
+test('no anchor tracks leaves the panel without a tracks key', () => {
+  const args = {
+    features: [makeFeature()],
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+  }
+  expect(buildSyntenyViewSpec(args).init.views[0]).not.toHaveProperty('tracks')
+  expect(
+    buildSyntenyViewSpec({ ...args, anchorTracks: [] }).init.views[0],
+  ).not.toHaveProperty('tracks')
+})

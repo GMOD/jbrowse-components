@@ -1,4 +1,4 @@
-import { normalizeTrackInit } from './normalizeTrackInit.ts'
+import { normalizeTrackInit } from './tracks.ts'
 
 test('bare string', () => {
   expect(normalizeTrackInit('t1')).toEqual({

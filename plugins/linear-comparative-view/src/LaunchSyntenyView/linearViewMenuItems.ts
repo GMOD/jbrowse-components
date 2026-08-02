@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
+import { anchorPanelTracks } from './anchorPanelTracks.ts'
 import {
   syntenyRegionMenuItems,
   widestRegion,
@@ -46,6 +47,9 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
             // what sorts it — see launchableTracks
             const openTrackIds = () =>
               self.tracks.map(track => getConf(track, 'trackId') as string)
+            // and what is open here is also what the launched view's own panel
+            // for this assembly opens with — read at menu time, so it is the
+            // track list as of the launch rather than as of the extend()
             return {
               views: {
                 menuItems() {
@@ -55,6 +59,7 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                     region: widestRegion(self.dynamicBlocks.contentBlocks),
                     session: getSession(self),
                     openTrackIds: openTrackIds(),
+                    anchorTracks: anchorPanelTracks(self.tracks),
                   })) {
                     pushLaunchViewMenuItem(items, item)
                   }
@@ -76,6 +81,7 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                       ),
                       session: getSession(self),
                       openTrackIds: openTrackIds(),
+                      anchorTracks: anchorPanelTracks(self.tracks),
                     }),
                   ]
                 },

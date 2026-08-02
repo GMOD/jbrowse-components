@@ -635,6 +635,44 @@ export function pickDisplayForView({
     : { type, conf: declaredDisplays.find(d => d.type === type) }
 }
 
+export type TrackInit =
+  | string
+  | {
+      trackId: string
+      // rarely-needed escape hatches: `trackSnapshot` applies to the track
+      // config node, `displaySnapshot` explicitly to the display node. Any
+      // OTHER key on this object is treated as a display-snapshot prop, so the
+      // common case sets display options inline with no nesting:
+      // `{ trackId, showDescriptions: false }` rather than
+      // `{ trackId, displaySnapshot: { showDescriptions: false } }`.
+      trackSnapshot?: Record<string, unknown>
+      displaySnapshot?: Record<string, unknown>
+      [key: string]: unknown
+    }
+
+// Resolve a session-spec `TrackInit` into the (trackId, trackSnapshot,
+// displaySnapshot) triple that `showTrackGeneric` expects. Display props written
+// inline on the track object (everything except trackId/trackSnapshot/
+// displaySnapshot) fold into the display snapshot, so a spec can write
+// `{ trackId, showDescriptions: false }` instead of nesting under
+// `displaySnapshot`. An explicit `displaySnapshot` still wins over an inline
+// key of the same name, and the older nested form keeps working unchanged.
+// `showTrackGeneric` then routes any inline key that is a real config slot (e.g.
+// `forceLoad`) onto the display config, so a session spec can declaratively
+// force-load a track with `{ trackId, forceLoad: true }`.
+export function normalizeTrackInit(t: TrackInit) {
+  if (typeof t === 'string') {
+    return { trackId: t, trackSnapshot: {}, displaySnapshot: {} }
+  } else {
+    const { trackId, trackSnapshot, displaySnapshot, ...rest } = t
+    return {
+      trackId,
+      trackSnapshot: trackSnapshot ?? {},
+      displaySnapshot: { ...rest, ...displaySnapshot },
+    }
+  }
+}
+
 export function showTrackGeneric(
   self: GenericView,
   trackId: string,

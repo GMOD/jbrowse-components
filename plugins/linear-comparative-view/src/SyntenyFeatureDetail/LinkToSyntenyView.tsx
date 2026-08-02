@@ -10,6 +10,7 @@ import {
 import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
+import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
 import { getMate } from '../syntenyMate.ts'
 
@@ -18,6 +19,7 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const LaunchSyntenyViewDialog = lazy(
@@ -55,6 +57,21 @@ export function findAnchorAssembly({ view, level }: SyntenyFeatureDetailModel) {
   return level !== undefined && 'views' in view
     ? view.views[level]?.assemblyNames[0]
     : view.assemblyNames[0]
+}
+
+// The tracks that panel already has open, for the launched view to open with —
+// the same two shapes findAnchorAssembly resolves, so the tracks and the
+// assembly always come from the same panel. A ribbon click with no `level` names
+// no row, so it offers nothing rather than guessing one.
+export function findAnchorTracks({
+  view,
+  level,
+}: SyntenyFeatureDetailModel): TrackInit[] {
+  if (!('views' in view)) {
+    return anchorPanelTracks(view.tracks)
+  }
+  const row = level === undefined ? undefined : view.views[level]
+  return row ? anchorPanelTracks(row.tracks) : []
 }
 
 const LinkToSyntenyView = observer(function LinkToSyntenyView({
@@ -134,6 +151,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                   session,
                   feature,
                   anchorAssembly,
+                  anchorTracks: findAnchorTracks(model),
                   trackId,
                   handleClose,
                 },

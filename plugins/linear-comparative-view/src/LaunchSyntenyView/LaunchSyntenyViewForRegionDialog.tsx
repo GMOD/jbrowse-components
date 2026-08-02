@@ -22,6 +22,7 @@ import {
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
   CollapsePanelsCheckbox,
+  CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
   WindowSizeField,
@@ -37,6 +38,7 @@ import {
 import type { MateDiscovery } from './discoverMates.ts'
 import type { PanelRow } from './panelOrder.ts'
 import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 // The panel list is one row per aligning assembly, so an all-vs-all locus can
 // produce a dozen; at MUI's default checkbox padding that list alone is taller
@@ -62,12 +64,15 @@ export default function LaunchSyntenyViewForRegionDialog({
   session,
   region,
   tracks,
+  anchorTracks = [],
   discoverMatesFor,
   handleClose,
 }: {
   session: AbstractSessionModel
   region: Region
   tracks: { trackId: string; name: string }[]
+  // the launching view's own tracks, for the panel that opens on its assembly
+  anchorTracks?: TrackInit[]
   discoverMatesFor: (trackId: string) => MateDiscovery
   handleClose: () => void
 }) {
@@ -77,6 +82,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   const [error, setError] = useState<unknown>()
   const [flipReversedMates, setFlipReversedMates] = useState(true)
   const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
+  const [copySourceTracks, setCopySourceTracks] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
@@ -130,6 +136,7 @@ export default function LaunchSyntenyViewForRegionDialog({
             features: mates.map(row => row.feature),
             anchorAssembly: region.assemblyName,
             anchorIndex,
+            anchorTracks: copySourceTracks ? anchorTracks : undefined,
             windowSize,
             flipReversedMates,
             collapseEmptyRows,
@@ -266,6 +273,14 @@ export default function LaunchSyntenyViewForRegionDialog({
           setFlipReversedMates(val)
         }}
       />
+      {anchorTracks.length ? (
+        <CopySourceTracksCheckbox
+          checked={copySourceTracks}
+          onChange={val => {
+            setCopySourceTracks(val)
+          }}
+        />
+      ) : null}
       <CollapsePanelsCheckbox
         checked={collapseEmptyRows}
         onChange={val => {

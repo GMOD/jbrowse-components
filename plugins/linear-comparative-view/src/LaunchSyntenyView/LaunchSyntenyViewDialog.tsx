@@ -5,6 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
+  CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
   WindowSizeField,
@@ -12,6 +13,7 @@ import {
 
 import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
   formControl: {
@@ -29,6 +31,7 @@ export default function LaunchSyntenyViewDialog({
   region,
   feature,
   anchorAssembly,
+  anchorTracks = [],
   trackId,
   handleClose,
 }: {
@@ -36,6 +39,8 @@ export default function LaunchSyntenyViewDialog({
   region?: RegionOfInterest
   feature: Feature
   anchorAssembly: string
+  // the launching view's own tracks, for the panel that opens on its assembly
+  anchorTracks?: TrackInit[]
   trackId: string
   handleClose: () => void
 }) {
@@ -43,6 +48,7 @@ export default function LaunchSyntenyViewDialog({
   const inverted = feature.get('strand') === -1
   const hasCIGAR = !!feature.get('CIGAR')
   const [flipReversedMates, setFlipReversedMates] = useState(inverted)
+  const [copySourceTracks, setCopySourceTracks] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
@@ -60,6 +66,7 @@ export default function LaunchSyntenyViewDialog({
           launchSyntenyViewForFeatures({
             features: [feature],
             anchorAssembly,
+            anchorTracks: copySourceTracks ? anchorTracks : undefined,
             windowSize,
             flipReversedMates,
             trackId,
@@ -86,6 +93,14 @@ export default function LaunchSyntenyViewDialog({
           checked={flipReversedMates}
           onChange={val => {
             setFlipReversedMates(val)
+          }}
+        />
+      ) : null}
+      {anchorTracks.length ? (
+        <CopySourceTracksCheckbox
+          checked={copySourceTracks}
+          onChange={val => {
+            setCopySourceTracks(val)
           }}
         />
       ) : null}

@@ -51,6 +51,7 @@ function menuItems(session: AbstractSessionModel, openTrackIds: string[] = []) {
     region,
     session,
     openTrackIds,
+    anchorTracks: [],
   })
 }
 
@@ -74,6 +75,7 @@ test('no region means no menu item', () => {
       region: undefined,
       session,
       openTrackIds: [],
+      anchorTracks: [],
     }),
   ).toEqual([])
 })
@@ -187,6 +189,7 @@ test('the queued dialog gets the rounded region', () => {
     region: { ...region, start: 100.4, end: 200.6 },
     session,
     openTrackIds: [],
+    anchorTracks: [],
   })[0]!
   if (!('onClick' in item)) {
     throw new Error('expected a flat item')

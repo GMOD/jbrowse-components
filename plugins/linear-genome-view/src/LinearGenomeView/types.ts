@@ -1,4 +1,5 @@
 import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 export interface BpOffset {
   refName?: string
@@ -43,20 +44,7 @@ export interface VolatileGuide {
   xPos: number
 }
 
-export type TrackInit =
-  | string
-  | {
-      trackId: string
-      // rarely-needed escape hatches: `trackSnapshot` applies to the track
-      // config node, `displaySnapshot` explicitly to the display node. Any
-      // OTHER key on this object is treated as a display-snapshot prop, so the
-      // common case sets display options inline with no nesting:
-      // `{ trackId, showDescriptions: false }` rather than
-      // `{ trackId, displaySnapshot: { showDescriptions: false } }`.
-      trackSnapshot?: Record<string, unknown>
-      displaySnapshot?: Record<string, unknown>
-      [key: string]: unknown
-    }
+export type { TrackInit }
 
 // A declarative LGV `init` blob holds ONLY keys that need on-attach
 // resolution/conversion and have no direct MST representation — `loc` (→
