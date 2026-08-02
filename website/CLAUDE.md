@@ -13,9 +13,11 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 - **Display config in a session spec goes on the track**, inside its own
   `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are
   silently dropped and the display falls back to schema defaults.
-- **A regen only rewrites a PNG whose capture changed.** When a rebuild is
-  supposed to change a figure and the regen says unchanged, `--force` and diff
-  the two rather than trusting the gate.
+- **An unfiltered regen only rewrites a PNG whose capture changed**, so a sweep
+  can't churn 288 figures over antialiasing. `--filter` implies `--force`: a run
+  that names its specs rewrites them, since the gate's 0.5% is wider than a
+  renamed label. If an unfiltered sweep says unchanged where you expected a
+  change, `--force` and diff the two rather than trusting the gate.
 - **No spec sets `diffThreshold`.** Treat a request for one as a bug in whatever
   is producing the nondeterminism.
 - **Downscale before reading a PNG** — captures are ~3000px and Read rejects

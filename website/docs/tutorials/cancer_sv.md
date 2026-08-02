@@ -112,9 +112,9 @@ introduced for this.
 
 Stacked panels confirm that reads cross a junction, but they describe the event
 in reference coordinates. Laying it out along the derivative instead shows the
-order and orientation of the pieces, which is the synteny view two sections
-down: the same three loci along the top, and the reconstructed derivative along
-the bottom with a ribbon per segment.
+order and orientation of the pieces, which is the synteny view in the next
+section: the same three loci along the top, and the reconstructed derivative
+along the bottom with a ribbon per segment.
 
 ## Reconstructing the derivative allele
 
@@ -155,28 +155,22 @@ those together (both assemblies, the synteny track, the segments and the
 realigned reads) and prints the URL that opens them as a synteny view.
 
 A gene track cannot label a derivative this way. Junctions join whatever
-intervals they happen to join, and those usually land mid-intron: over this
-window the RefSeq track draws one line with arrows plus a sliver of TRHDE, which
-costs a row and carries nothing.
+intervals they happen to join, and those usually land mid-intron, so on the
+derivative the RefSeq track has nothing to draw. On the reference side it still
+names the gene each piece was cut from.
 
 <Figure caption="The reconstructed derivative against its three source loci, each segment labelled with its origin. The wide ribbon is the chr3 arm; the crossing ribbon at right is chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
 
-Zoomed to the kilobase holding the junctions, the two inserts are the same width
-as the arms flanking them.
-
-<Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards." src="/img/cancer_sv/derivative_inserts.png" />
-
 ## Checking the reconstruction
 
-Realigned against the derivative, reads that were split into four pieces on the
-reference should run straight through, without clipping at the joins and without
-a dip in depth. None of the 29 spanning reads clips at any of the four junction
-positions.
+Zoomed to the kilobase holding the junctions, the two inserts are the same width
+as the arms flanking them. Realigned against the derivative, reads that the
+reference split into four pieces run straight through: none of the 29 spanning
+reads clips at any of the four junction positions, and depth does not dip at
+them. Both the reconstruction and this check come from the reads, so the figure
+is evidence rather than illustration.
 
-<Figure caption="The spanning reads realigned to the reconstructed derivative, over the labelled segments. Depth holds across all three junctions and no read clips at a join." src="/img/cancer_sv/derivative_proof.png" />
-
-Both the reconstruction and this check come from the reads, so the figure is
-evidence rather than illustration.
+<Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards, with RARB, BICC1 and TRHDE named on the reference side. The reads below the segments cross every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
 ## The transcript view
 
@@ -184,17 +178,17 @@ The COLO829 event is genomic. What a fusion looks like in RNA, and how a
 caller's output relates to the reads under it, is easier to follow on a known
 fusion.
 
-Loading DepMap's STAR-Fusion output through `StarFusionAdapter` and switching
-the track to `Variant display arcs` draws the whole call set at once, each call
-an arc from its left breakpoint to its right. An arc needs both of its ends on
-screen, so this is a whole-genome view (`View` -> `Show...` ->
-`Show all regions in assembly`): in a single-locus window every interchromosomal
-call is dropped and the track shows a lone breakend glyph. Most of the output is
-noise, ten of K562's calls being mitochondrial artefacts, while `BCR--ABL1` and
-`NUP214--XKR3` carry an order of magnitude more support than the rest and are
-the two sides of the same chr9/chr22 junction.
+Loading DepMap's STAR-Fusion output through `StarFusionAdapter` and opening it
+in a circular view draws the whole call set at once, each call a chord from its
+left breakpoint to its right. A chord needs both of its ends on the circle, so
+the track is opened in a `Circular view` (`ADD` -> `Circular view`) rather than
+a window: in a single-locus linear view every interchromosomal call is dropped
+and the track shows a lone breakend glyph. Most of the output is noise, ten of
+K562's calls being mitochondrial artefacts, while `BCR--ABL1` and `NUP214--XKR3`
+carry an order of magnitude more support than the rest and are the two sides of
+the same chr9/chr22 junction.
 
-<Figure caption="K562 STAR-Fusion calls as arcs across the genome, colored by junction-read support. The red arc is the reciprocal chr9/chr22 pair; the rest, including the calls landing on chrM at the right edge, are the artefact tail." src="/img/cancer_sv/k562_starfusion_triage.png" />
+<Figure caption="K562 STAR-Fusion calls as chords, colored by junction-read support. Red is the reciprocal chr9/chr22 pair plus one intrachromosomal call on chr6; the fan converging on chrM, between chrY and chr1, is the artefact tail." src="/img/cancer_sv/k562_starfusion_triage.png" />
 
 ```json
 {
@@ -209,19 +203,22 @@ the two sides of the same chr9/chr22 junction.
 }
 ```
 
-The Iso-Seq reads split at the base STAR-Fusion reported from short reads, and
-because they are full-length transcripts they also show which exons are joined.
+The Iso-Seq reads stop and start at the bases STAR-Fusion reported from short
+reads. Putting both partners in one view as two displayed regions, rather than
+in two stacked panels, lays the fusion out the way FusionInspector does: type
+both locations into the location box, separated by a space.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9, Iso-Seq reads bridging them. The chr9 panel starts at the base the short-read caller reported." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint. Iso-Seq exon coverage drops after the BCR band and starts at the ABL1 band, where nothing is aligned before it." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
-The fusion is also amplified, and the boundaries of the amplified segment are
-the two fusion junctions.
+The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
+roughly seven copies, while the chr22 partners sit at one, so what is amplified
+is the piece of chr9 that the two junctions cut out.
 
-<Figure caption="Copy number across chr9q34. The amplified segment is bounded by the two fusion junctions, so the amplified unit is the derivative rather than the normal chromosome." src="/img/cancer_sv/k562_cn_amplicon.png" />
+<Figure caption="Copy number in three windows, with the STAR-Fusion calls as arcs across them: the amplified chr9q34 block in the middle carries both chr9 breakpoints, and the arcs run to its chr22 partners, XKR3 on the left and BCR on the right. DepMap's segmentation covers no interval over BCR." src="/img/cancer_sv/k562_cn_amplicon.png" />
 
-This is the reasoning SplitThreader applied to the ERBB2 amplicon in SK-BR-3: a
-copy-number step that coincides with a breakpoint is evidence that the two
-describe one event.
+This is the reasoning SplitThreader applied to the ERBB2 amplicon in SK-BR-3:
+copy-number steps and breakpoints that describe the same interval are evidence
+of one event.
 
 ## Reproduce it end to end
 

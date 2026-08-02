@@ -67,6 +67,17 @@ export interface ScreenshotAction {
 export interface ScreenshotStage {
   actions?: ScreenshotAction[]
   annotations?: Annotation[]
+  // Load this session URL for the stage instead of continuing from the state
+  // the previous stage left. For the frame of a multi-stage figure that is a
+  // RESULT rather than a step: the end state is declared as a session spec and
+  // loaded, rather than clicked together through the UI — which is both fewer
+  // moving parts and the only way to set things a spec can write but a menu
+  // can't reach (per-track heights on a view the app creates at click time).
+  // The stage's frame is still composed into the same figure. `readySelector`
+  // goes with it: a stage that opens a different view type than the spec's
+  // first page needs its own ready gate.
+  url?: string
+  readySelector?: string
   // press Escape before this stage's actions to dismiss a menu/popover the
   // previous stage left open
   closeMenusFirst?: boolean

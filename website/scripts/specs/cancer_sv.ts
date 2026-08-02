@@ -45,10 +45,12 @@ const SUPER_COMPACT = { featureHeight: 1, featureSpacing: 0 }
 
 // The two halves of cancer_sv/multihop_reads: the evidence at one breakpoint and
 // the chain across all three loci, side by side rather than a screen of figure
-// each. `+append` needs them the same height, and half the usual width each
-// keeps the pair the width of any other wide figure on the site.
-const MULTIHOP_HEIGHT = 960
-const MULTIHOP_WIDTH = 950
+// each. `+append` needs them the same height, but not the same width, so the
+// tumour/normal half takes the narrower one: a 3.4 kb window with two pileups in
+// it says what it has to say in less page than the three-locus chain does.
+const MULTIHOP_HEIGHT = 885
+const MULTIHOP_WIDTH = 940
+const MULTIHOP_NARROW_WIDTH = 660
 
 // The Compact preset (featureHeight 3 / featureSpacing 0). K562's Iso-Seq is
 // ~600x over BCR, and at one row per pixel that many reads merge into a solid
@@ -70,9 +72,9 @@ const GENE_TRACK = {
   height: 60,
 }
 
-// hg38's primary chromosomes, in order, for the whole-genome arc view. The
+// hg38's primary chromosomes, in order, for the whole-genome views. The
 // assembly is the full GRCh38 with alts and random scaffolds, and laying those
-// out too spends most of the width on contigs no fusion call touches.
+// out too spends most of the circle on contigs no fusion call touches.
 const HG38_MAIN_CHROMS = [
   ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
   'chrX',
@@ -81,6 +83,12 @@ const HG38_MAIN_CHROMS = [
   // it, and those arcs are the artefact tail the figure is about
   'chrM',
 ]
+
+// Triage is the point of the whole-callset figure, so the support level has to
+// be visible: StarFusionAdapter puts JunctionReadCount on the feature's score,
+// and three calls clear 100 against a tail in single digits.
+const FUSION_ARC_COLOR =
+  "jexl:get(feature,'score') > 100 ? '#c62828' : '#9e9e9e'"
 
 export const cancerSvSpecs: ScreenshotSpec[] = [
   // The event as the reference shows it: every spanning read is torn into four
@@ -91,18 +99,20 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cancer_sv/multihop_tumour_vs_normal',
     // this and multihop_split_view are the two halves of
-    // cancer_sv/multihop_reads, which +appends them, so they share a HEIGHT and
-    // each takes half the width a single figure would
+    // cancer_sv/multihop_reads, which +appends them, so the two share a HEIGHT;
+    // this half is the narrower of the two
     viewportHeight: MULTIHOP_HEIGHT,
-    viewportWidth: MULTIHOP_WIDTH,
+    viewportWidth: MULTIHOP_NARROW_WIDTH,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // tight enough that both chr3 breakpoints (25,359,111 and 25,359,568) sit
       // near the middle rather than against the right edge
       loc: 'chr3:25,357,600-25,361,000',
       tracks: [
-        GENE_TRACK,
-        { trackId: SV, height: 70 },
+        // no gene track: this window is deep inside RARB's first intron, so the
+        // glyph is a line with arrows on it, and the three-locus half of the
+        // composed figure already names every gene
+        { trackId: SV, height: 60 },
         // soft-clipped tails are the whole signal here: with clipping hidden the
         // tumour pileup looks as flat as the normal.
         //
@@ -112,13 +122,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: TUMOUR,
           showSoftClipping: true,
-          height: 300,
+          height: 350,
           ...SUPER_COMPACT,
         },
         {
           trackId: NORMAL,
           showSoftClipping: true,
-          height: 170,
+          height: 190,
           ...SUPER_COMPACT,
         },
       ],
@@ -146,11 +156,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // primary tumour window, the two hops are 60-70x), so a panel is the
           // size of its own pileup rather than 250px of white under a short one.
           views: [
-            { loc: HOPS.rarb, readHeight: 185, geneHeight: 50 },
-            { loc: HOPS.bicc1, readHeight: 95, geneHeight: 55 },
+            { loc: HOPS.rarb, readHeight: 140, geneHeight: 45 },
+            { loc: HOPS.bicc1, readHeight: 75, geneHeight: 50 },
             // the chr12 window is the one that clears a gene's 5' end, so it
             // stacks TRHDE over TRHDE-AS1 and needs the second row
-            { loc: HOPS.trhde, readHeight: 105, geneHeight: 80 },
+            { loc: HOPS.trhde, readHeight: 85, geneHeight: 75 },
           ].map(({ loc, readHeight, geneHeight }) => ({
             assembly: 'hg38',
             loc,
@@ -222,13 +232,20 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     }),
   },
 
-  // The same reconstruction at the scale of the stitching. Zoomed onto the
-  // ~900 bp where the three junctions sit, the two templated inserts stop being
-  // hairlines and become ribbons the same width as the chr3 arms flanking them.
+  // The same reconstruction at the scale of the stitching, and the check on it
+  // in the same frame. Zoomed onto the ~900 bp where the three junctions sit,
+  // the two templated inserts stop being hairlines and become ribbons the same
+  // width as the chr3 arms flanking them; the realigned reads under those
+  // segments run straight through every join at flat depth, which is only true
+  // if the contig is right.
+  //
+  // The reads are what a separate figure used to carry on its own. Realigned
+  // depth means nothing without the segment boundaries to read it against, and
+  // those boundaries are this figure, so the two belong in one frame.
   {
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
-    viewportHeight: 940,
+    viewportHeight: 1240,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       views: [
@@ -239,7 +256,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             {
               assembly: 'hg38',
               loc: 'chr3:25358900-25359700 chr10:58717380-58717740 chr12:72273040-72273360',
-              tracks: ['hg38-ReferenceSequenceTrack'],
+              // the genes each junction lands in, named. All three windows are
+              // deep inside an intron, so the glyphs are lines rather than exon
+              // stacks, but they answer which gene each piece was taken from
+              // without the reader going back to the text
+              tracks: [
+                { ...GENE_TRACK, height: 55 },
+                'hg38-ReferenceSequenceTrack',
+              ],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
@@ -247,111 +271,118 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               tracks: [
                 'der3_segments',
                 'der3_RARB_BICC1_TRHDE-ReferenceSequenceTrack',
+                // default read height, not the super-compact preset the
+                // reference-side pileups use: 29 spanning reads is a stack that
+                // fits, and one row per pixel would draw them as hairlines
+                { trackId: 'reads_vs_der3', height: 260 },
               ],
             },
           ],
           tracks: [['der3_vs_hg38']],
           drawCurves: true,
-          levelHeights: [300],
+          levelHeights: [220],
         },
       ],
     }),
   },
 
-  // The check on the reconstruction. Realigned against the derivative the same
-  // reads run straight through all three junctions at flat depth, with no
-  // clipping at the joins -- which is only true if the contig is right.
-  {
-    mode: 'url',
-    name: 'cancer_sv/derivative_proof',
-    viewportHeight: 900,
-    url: lgvSession(CONFIG, {
-      assembly: 'der3_RARB_BICC1_TRHDE',
-      loc: 'der3_RARB_BICC1_TRHDE:32,400-33,500',
-      tracks: ['der3_segments', { trackId: 'reads_vs_der3', height: 500 }],
-    }),
-  },
-
-  // K562: the caller's whole output at once. Every call is an arc from its left
-  // breakpoint to its right, so the two reciprocal chr9<->chr22 calls (BCR--ABL1
-  // and NUP214--XKR3, the Philadelphia translocation from both sides) cross the
-  // frame while the artefact tail sits on chrM at the right edge.
+  // K562: the caller's whole output at once, as chords on a circle. Every call
+  // is a chord from its left breakpoint to its right, so the two reciprocal
+  // chr9<->chr22 calls (BCR--ABL1 and NUP214--XKR3, the Philadelphia
+  // translocation from both sides) cross the middle in red while the artefact
+  // tail runs into chrM.
   //
-  // The arcs need the whole genome laid out, not a window: an arc is only drawn
-  // when *both* endpoints resolve through `view.bpToPx`, so in a single-locus
-  // view every interchromosomal call is silently dropped and the track renders
-  // as a lone breakend glyph (which is what this figure used to show).
+  // Circular rather than a whole-genome linear view: laid out linearly the same
+  // 44 arcs all bow the same way and overlap into a single grey mat, and the
+  // ones worth reading are the tall ones, which are also the ones most
+  // overdrawn. On a circle a chord's length is its span and the crossings sit in
+  // the middle, away from the chromosome names.
   {
     mode: 'url',
     name: 'cancer_sv/k562_starfusion_triage',
-    viewportHeight: 500,
-    url: lgvSession(CONFIG, {
-      assembly: 'hg38',
-      displayedRegionNames: HG38_MAIN_CHROMS,
-      tracks: [
-        {
-          trackId: 'K562_star_fusion',
-          type: 'LinearPairedArcDisplay',
-          height: 280,
-          // triage is the point of the figure, so the support level has to be
-          // visible: StarFusionAdapter puts JunctionReadCount on the feature's
-          // score, and three calls clear 100 against a tail in single digits.
-          // Two of them are the chr9<->chr22 pair and paint as the one red arc;
-          // the third (BAG6--SLC44A4) spans 0.21 Mb, under a pixel here, and
-          // Arcs.tsx drops any arc whose radius is <= 1px
-          color: "jexl:get(feature,'score') > 100 ? '#c62828' : '#9e9e9e'",
-        },
-      ],
-    }),
-  },
-
-  // BCR on the left, ABL1 on the right, Iso-Seq reads bridging them. The
-  // right-hand panel starts at the base STAR-Fusion called from short reads.
-  {
-    mode: 'url',
-    name: 'cancer_sv/k562_bcr_abl_split',
-    viewportHeight: 1010,
+    viewportHeight: 900,
+    viewportWidth: 1100,
     url: sessionSpec(CONFIG, {
       views: [
         {
-          type: 'BreakpointSplitView',
-          displayName: 'BCR (chr22) - ABL1 (chr9)',
-          views: [
-            {
-              assembly: 'hg38',
-              loc: 'chr22:23,285,000-23,295,000',
-              tracks: [
-                { trackId: GENES, height: 90 },
-                // Iso-Seq reads are mostly intron line: at the default height a
-                // panel is a stack of near-empty rows, and the reads that
-                // actually cross the junction are spread over hundreds of px
-                { trackId: 'K562_isoseq', height: 260, ...COMPACT },
-              ],
-            },
-            {
-              assembly: 'hg38',
-              loc: 'chr9:130,850,000-130,860,000',
-              tracks: [
-                { trackId: GENES, height: 90 },
-                { trackId: 'K562_isoseq', height: 260, ...COMPACT },
-              ],
-            },
+          type: 'CircularView',
+          assembly: 'hg38',
+          displayedRegionNames: HG38_MAIN_CHROMS,
+          // the circle auto-fits its container, so this is the drawing's size
+          height: 820,
+          tracks: [
+            { trackId: 'K562_star_fusion', strokeColor: FUSION_ARC_COLOR },
           ],
         },
       ],
     }),
   },
 
-  // The fusion is not merely present, it is amplified: chr9q34 sits at ~7 copies
-  // against flanking sequence at ~1, and the step lands on the junction.
+  // BCR beside ABL1 in one row, the way FusionInspector lays a fusion out: two
+  // displayed regions in a single view rather than two stacked panels, each
+  // window centred on its own STAR-Fusion breakpoint and banded there. Iso-Seq
+  // coverage is the thing to read: it steps down at the BCR band and up at the
+  // ABL1 band, so the transcript's exons come from BCR up to the junction and
+  // from ABL1 after it.
+  //
+  // One level rather than a breakpoint split view: that view stacks the partners
+  // and draws a spline per read between them, and at ~600x Iso-Seq depth the
+  // bundle of splines covers both pileups.
+  {
+    mode: 'url',
+    name: 'cancer_sv/k562_bcr_abl_split',
+    viewportHeight: 780,
+    url: lgvSession(CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000',
+      // the two breakpoints the DepMap STAR-Fusion call reports for BCR--ABL1,
+      // one band each, so the coverage step has a marked position to sit on
+      highlight: [
+        { refName: 'chr22', start: 23_290_313, end: 23_290_513 },
+        { refName: 'chr9', start: 130_853_964, end: 130_854_164 },
+      ],
+      tracks: [
+        { ...GENE_TRACK, height: 90 },
+        // Iso-Seq reads are mostly intron line: at the default read height the
+        // pileup is a stack of near-empty rows, so it takes the smaller share
+        // here and the coverage band takes the rest
+        {
+          trackId: 'K562_isoseq',
+          height: 400,
+          coverageHeight: 220,
+          ...COMPACT,
+        },
+      ],
+    }),
+  },
+
+  // Where the amplified copies came from: chr22q11 beside chr9q34, one region
+  // each, with the fusion calls drawn as arcs across the pair. Both regions step
+  // up in copy number, and the arcs land on the two steps' inner edges, so the
+  // amplified unit is the piece of chr22 plus the piece of chr9 the junctions
+  // join, not either chromosome on its own.
+  //
+  // Two regions rather than the chr9 window alone: an arc is only drawn when
+  // both of its endpoints resolve through `view.bpToPx`, so with chr9 by itself
+  // the copy-number step has nothing pointing at it and the figure asserts the
+  // link in its caption instead of showing it.
   {
     mode: 'url',
     name: 'cancer_sv/k562_cn_amplicon',
-    viewportHeight: 600,
+    viewportHeight: 780,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
-      loc: 'chr9:129,500,000-132,000,000',
-      tracks: [GENES, 'K562_cn', 'K562_star_fusion'],
+      loc: 'chr22:16,700,000-16,950,000 chr9:130,600,000-131,350,000 chr22:23,150,000-23,400,000',
+      tracks: [
+        { ...GENE_TRACK, height: 70 },
+        { trackId: 'K562_cn', height: 130 },
+        {
+          trackId: 'K562_star_fusion',
+          type: 'LinearPairedArcDisplay',
+          height: 290,
+          color: FUSION_ARC_COLOR,
+        },
+      ],
     }),
   },
 ]

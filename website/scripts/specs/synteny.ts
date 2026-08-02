@@ -62,6 +62,33 @@ function tnnt3Session(view: Record<string, unknown> = {}) {
   })
 }
 
+// Genes over repeats in each panel of the finished SHH comparison, one entry
+// per track. RefSeq Curated is the same gene track (and the same longest-isoform
+// glyph) the LGV the launch came from is showing. The heights are the figure's,
+// which is the point of declaring this frame rather than clicking it together:
+// they are what makes it fill the grid cell it shares with the launch it came
+// out of, exactly, instead of the 100px default four times over. Compact
+// repeats, since a 300 kb window of RepeatMasker is a texture rather than a set
+// of features to pick out, and the leftover height goes to them.
+const SHH_PANEL_TRACKS = {
+  hg38: [
+    {
+      trackId: 'hg38-ncbiRefSeqCurated',
+      geneGlyphMode: 'longestCoding',
+      height: 70,
+    },
+    { trackId: 'hg38-rmsk', displayMode: 'compact', height: 155 },
+  ],
+  mm39: [
+    {
+      trackId: 'mm39-ncbiRefSeqCurated',
+      geneGlyphMode: 'longestCoding',
+      height: 70,
+    },
+    { trackId: 'mm39-rmsk', displayMode: 'compact', height: 155 },
+  ],
+}
+
 // shared framing for the TNNT3 figures: remote 2bit genomes + hosted PIF/GFF,
 // so allow headroom, and equal heights so the two-part stack is clean
 const TNNT3_FRAME = {
@@ -1278,16 +1305,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // genomes_synteny tutorial: the whole launch path in one figure, reached the
   // way a reader reaches it on genomes.jbrowse.org, from a plain hg38 LGV. Loads
   // that site's own hg38 config, so the track names, categories and menu are the
-  // ones on screen there. That config declares only hg38; hs1 arrives on its
+  // ones on screen there. That config declares only hg38; mm39 arrives on its
   // own because the Hubs plugin it loads answers Core-handleUnrecognizedAssembly
   // for the name the liftOver track references, and the launch menu item is
   // gated on exactly that mate assembly resolving.
   //
-  // Four stages of one spec rather than four specs: a context menu, the dialog
-  // it opens, the view that dialog creates and the two ribbon settings applied
-  // to it are each reachable only through the UI, so `compose` over declarative
-  // parts can't express them, and the reader (and the reviewer) sees the
-  // sequence as one figure instead of four near-identical frames.
+  // Four stages of one spec rather than four specs. The first three are one live
+  // session — a context menu, the dialog it opens, the view that dialog creates
+  // — each reachable only by driving the one before it. The fourth is the
+  // RESULT, so it declares its own session (`url` on the stage) instead of being
+  // clicked out of the third. They stay one spec because the grid is what puts
+  // them side by side: `compose` appends committed PNGs with no gutter and no
+  // rows, so a figure split across specs would lose the 2x2 layout below.
   //
   // In a 2x2 grid (`stageColumns`), not a column: stacked, four frames of the
   // same app chrome ran 4320px tall and a reader scrolled past the launch to
@@ -1339,13 +1368,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // the composed width, and the frame still holds the launch dialog (~500px)
     // and the context menu.
     viewportWidth: 900,
-    // tall enough for the whole context menu in stage 1 (the binding frame) —
-    // the menu opens below the clicked block, so the boxed "Launch synteny
-    // view" item is its last line — and, in stage 3, the collapsed LGV header
-    // plus the launched synteny view.
+    // the top row's height: tall enough for the whole context menu in stage 1
+    // (the binding frame) — the menu opens below the clicked block, so the boxed
+    // "Launch synteny view" item is its last line. The bottom row sets its own,
+    // taller, height per stage.
     viewportHeight: 540,
     stageColumns: 2,
     hideTooltip: true,
+    // resolving mm39 through the hub plugin raises a "Successfully loaded"
+    // snackbar over whichever frame the connection lands in
+    hideSelectors: ['.MuiSnackbar-root'],
     readySelector: '[data-testid="pileup-display-done"]',
     // the UCSC hub config is ~570 tracks and pulls three remote plugins
     readyTimeout: 120000,
@@ -1398,23 +1430,24 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Submit' },
-          // addView appends the synteny view below this LGV, and ViewHeader
-          // suppresses its scroll-into-view under webdriver, so collapse the LGV
-          // (first minimize_view in the DOM) to bring the new view on screen
-          { type: 'click', selector: '[data-testid="minimize_view"]' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="synteny_canvas_done"]',
             timeout: 120000,
           },
-          // hs1 resolves through the hub plugin and the chain track refetches at
-          // the launched view's own bpPerPx, both after the canvas first paints
+          // mm39 resolves through the hub plugin and the chain track refetches
+          // at the launched view's own bpPerPx, both after the canvas first
+          // paints
           { type: 'delay', ms: 10000 },
         ],
-        // the launched view is shorter than the context menu of stage 1, so the
-        // bottom row of the grid takes its own height rather than carrying 82px
-        // of page background under both of its panels
-        viewportHeight: 458,
+        // addView appends the synteny view BELOW the LGV it was launched from,
+        // and this row of the grid is as tall as stage 4's four tracks make it,
+        // so both fit unscrolled and the frame keeps the view it came from —
+        // which is also what makes the two bottom panels the same height. (The
+        // LGV is minimized in stage 4 instead, where the room is needed. It
+        // can't just be scrolled past: ViewHeader suppresses scroll-into-view
+        // under webdriver.)
+        viewportHeight: 888,
         annotations: [
           {
             type: 'text',
@@ -1425,40 +1458,57 @@ export const syntenySpecs: ScreenshotSpec[] = [
           },
         ],
       },
-      // The two ribbon settings the tutorial's other figure teaches, on the view
-      // this launch just made: 'Transparent indels' takes the color out of the
-      // CIGAR wedges so strand is the only thing painting a ribbon, and curved
-      // lines trace where each block lands instead of shearing across the gap.
-      // Both live on the comparative view's own header button, which the
-      // minimized LGV above has no counterpart for, so the selector is
-      // unambiguous.
+      // The payoff frame: the same comparison once BOTH panels have genes and
+      // repeats. Stage 3 is what the launch hands you — its human panel arrives
+      // carrying the launching view's gene track (anchorPanelTracks; the dialog's
+      // "Copy this view's tracks into its panel"), and the mouse panel, which
+      // nothing in that view can speak for, arrives empty. So the step left to
+      // the reader is the mate panel plus the repeats on both, and the figure
+      // shows the result rather than the click path to it.
       //
-      // A radio/checkbox row leaves its menu standing (that is what makes a
-      // settings menu usable), so the stage closes the cascade before its frame
-      // — the subject here is the ribbons, not the menu.
+      // Declared as its own session rather than clicked together on the page
+      // stage 3 left. The launched view is created by the app at click time, so
+      // driving it means opening each panel's track selector, filtering, ticking
+      // and closing — a dozen brittle clicks that also can't set a per-track
+      // height, which is what lets this frame match its grid neighbour's.
+      // Written as a session spec it is four track entries. Same view, same two
+      // windows: the locstrings are the ones the CIGAR mapping produced in stage
+      // 3, so this is that view with tracks on, not a different one.
+      //
+      // mm39 needs no setup here either, for the same reason it needs none in
+      // the LGV above: naming it resolves it through the hub plugin, which also
+      // brings the mm39 hub's tracks (jbrowse.org/ucsc/mm39/config.json) — which
+      // is where mm39-ncbiRefSeqCurated and mm39-rmsk come from.
       {
-        actions: [
-          { type: 'click', selector: '[aria-label="View options"]' },
-          { type: 'hover', text: 'CIGAR display mode' },
-          { type: 'waitForText', text: 'Transparent indels' },
-          // same submenu-rasterization race as genomes_synteny/ribbons_default
-          { type: 'delay', ms: 1000 },
-          { type: 'click', text: 'Transparent indels' },
-          { type: 'hover', text: 'Show...' },
-          { type: 'waitForText', text: 'Show curved lines' },
-          { type: 'delay', ms: 1000 },
-          { type: 'click', text: 'Show curved lines' },
-          { type: 'delay', ms: 1000 },
-        ],
-        closeMenusAfter: true,
-        viewportHeight: 458,
+        url: sessionSpec(UCSC_HG38_CONFIG, {
+          views: [
+            {
+              type: 'LinearSyntenyView',
+              tracks: [['hg38_to_mm39_liftOver']],
+              views: [
+                {
+                  assembly: 'hg38',
+                  loc: 'chr7:155,648,868-155,950,868',
+                  tracks: SHH_PANEL_TRACKS.hg38,
+                },
+                {
+                  assembly: 'mm39',
+                  loc: 'chr5:28,525,529-28,836,048',
+                  tracks: SHH_PANEL_TRACKS.mm39,
+                },
+              ],
+            },
+          ],
+        }),
+        readySelector: '[data-testid="synteny_canvas_done"]',
+        viewportHeight: 888,
         annotations: [
           {
             type: 'text',
             x: 24,
             y: 56,
             fontSize: 20,
-            text: '(4) Curved lines + transparent indels',
+            text: '(4) Add each panel’s genes and repeats',
           },
         ],
       },

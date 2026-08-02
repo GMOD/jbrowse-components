@@ -103,6 +103,15 @@ function optNum(name: string, raw: string | undefined) {
 }
 
 const { headed, filter, exact, force, check, firefox } = values
+const filterTokens = parseFilterTokens(filter)
+// A filtered run names its specs, so it means them: the content-stable diff gate
+// below exists to keep an unfiltered sweep from rewriting 288 PNGs over
+// antialiasing jitter, and applying it to a spec the author just asked for is
+// how a figure gets "regenerated" and silently keeps its stale text (a rename or
+// a shortened label moves well under 0.5% of a 3000px figure). Rendering is
+// deterministic, so forcing here rewrites an unaffected figure byte-identically
+// and git sees nothing.
+const forceCommit = force || filterTokens.length > 0
 // With dithering disabled (see optimizePng) flat-UI specs re-render byte-for-
 // byte, but text-heavy specs still drift ~0.2% from headless-Chrome sub-pixel
 // glyph-positioning jitter (ruler/track labels, SNP ticks render a hair
@@ -156,10 +165,11 @@ Options:
   -h, --help              Show this help and exit
   -f, --filter <a,b,c>    Only render specs whose name matches any token
                           (substring match; see --exact). Repeatable; every
-                          occurrence's tokens are unioned
+                          occurrence's tokens are unioned. Implies --force: a
+                          run that names its specs means them
       --exact             Make --filter tokens match spec names exactly
       --force             Overwrite every PNG, bypassing the content-stable
-                          diff gate
+                          diff gate (already implied by --filter)
       --check             Render each spec twice and report specs that drift
                           past the threshold; commits nothing
       --firefox           Render with the Firefox backend instead of Chrome
@@ -981,7 +991,7 @@ async function renderSpecToTemp(
 
   const renderPath = tempPath('jb-final', spec.name, suffix)
   if (spec.stages && spec.stages.length > 0) {
-    await captureStages(page, spec, spec.stages, renderPath)
+    await captureStages(page, spec, spec.stages, renderPath, port)
   } else {
     await shoot(page, spec, spec.annotations, renderPath)
     if (!spec.crop) {
@@ -1004,6 +1014,7 @@ async function captureStages(
   spec: BrowserScreenshotSpec,
   stages: ScreenshotStage[],
   renderPath: string,
+  port: number,
 ) {
   const stageFiles = stages.map((_, i) =>
     tempPath('jb-shot', spec.name, `-${i}`),
@@ -1012,7 +1023,7 @@ async function captureStages(
     tempPath('jb-row', spec.name, `-${i}`),
   )
   try {
-    await captureEachStage(page, spec, stages, stageFiles)
+    await captureEachStage(page, spec, stages, stageFiles, port)
     const cols = spec.stageColumns ?? 0
     if (cols > 1) {
       // rows of `cols` frames, then the rows stacked. A trailing partial row is
@@ -1115,14 +1126,52 @@ async function closeOpenMenus(page: Page, name: string) {
   }
 }
 
+// The spec a stage is judged against: its own if it loaded a session of its
+// own, else the figure's. `url` carries the declared view tree that
+// assertViewsPresent checks and the ready gate that captureUrl waits on, so a
+// stage that navigates has to bring both, or it would be readied and asserted
+// against the page it replaced.
+function specForStage(
+  spec: BrowserScreenshotSpec,
+  stage: ScreenshotStage,
+): BrowserScreenshotSpec {
+  if (!stage.url) {
+    return spec
+  }
+  if (spec.mode !== 'url') {
+    throw new Error(
+      `${spec.name}: a stage "url" needs a url-mode spec (this one is ${spec.mode})`,
+    )
+  }
+  return {
+    ...spec,
+    url: stage.url,
+    readySelector: stage.readySelector ?? spec.readySelector,
+    readyText: undefined,
+  }
+}
+
 // Drive each stage and leave its frame in the matching stageFiles entry.
 async function captureEachStage(
   page: Page,
   spec: BrowserScreenshotSpec,
   stages: ScreenshotStage[],
   stageFiles: string[],
+  port: number,
 ) {
   for (const [i, stage] of stages.entries()) {
+    const stageSpec = specForStage(spec, stage)
+    // A stage that declares its own session loads it instead of inheriting the
+    // page the previous stage left. For a frame that is a RESULT rather than a
+    // step: the end state is written as a session spec, not clicked together.
+    // Resize first, so the load lays out at the height the frame is captured at.
+    if (stage.url && stageSpec.mode === 'url') {
+      const viewport = page.viewport()
+      if (stage.viewportHeight && viewport) {
+        await page.setViewport({ ...viewport, height: stage.viewportHeight })
+      }
+      await captureUrl(page, stageSpec, port)
+    }
     // Resized before the stage acts, not just before its shot, so the actions
     // hit the layout they are captured against. Width is left alone — the
     // frames stack with `-append`.
@@ -1164,7 +1213,7 @@ async function captureEachStage(
     // so a stage that dismisses a view or captures a blank view body (a rare
     // paint race after the stage's interaction) would otherwise be committed
     // silently — the staged frames ARE the published image.
-    await assertViewsPresent(page, spec)
+    await assertViewsPresent(page, stageSpec)
     await assertViewsRendered(page, spec.name)
   }
 }
@@ -1179,7 +1228,7 @@ function specThreshold(spec: ScreenshotSpec) {
 // force / diff-gate options, reporting what happened.
 function commit(renderPath: string, outputPath: string, spec: ScreenshotSpec) {
   return commitScreenshot(renderPath, outputPath, spec.name, {
-    force,
+    force: forceCommit,
     diffThreshold: specThreshold(spec),
     baseThreshold: diffThreshold,
   })
@@ -1317,7 +1366,7 @@ function printSummary(totals: RunTotals) {
   }
   if (suppressed.length > 0) {
     printReport(
-      `KEPT BEHIND A RAISED diffThreshold (${suppressed.length}) — re-run these with --force if you changed them on purpose`,
+      `KEPT BEHIND A RAISED diffThreshold (${suppressed.length}) — re-run these under --filter if you changed them on purpose`,
       suppressed.map(
         ({ name, frac }) =>
           `• ${name}.png: ${pct(frac)} differs, over the ${pct(diffThreshold)} default`,
@@ -1368,8 +1417,8 @@ function printSummary(totals: RunTotals) {
 async function main() {
   // `--filter a,b,c` matches a spec when any comma-separated token matches, so
   // "re-render these few" is one invocation instead of a shell loop. The flag is
-  // repeatable and the tokens union.
-  const filterTokens = parseFilterTokens(filter)
+  // repeatable and the tokens union. Parsed once at module scope, since it also
+  // decides forceCommit.
   const selected = specs.filter(s =>
     matchesFilterTokens(s.name, filterTokens, exact),
   )

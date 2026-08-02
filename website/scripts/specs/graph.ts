@@ -1016,14 +1016,16 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
-        type: 'box',
-        anchor: { view: 1, graphNode },
-        strokeWidth: 3,
-        // clear of the node's own "43 bp" / "558 bp" label, which the graph
-        // writes across the node rather than inside its bounding box
-        pad: 22,
-      })),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
+        (graphNode): Annotation => ({
+          type: 'box',
+          anchor: { view: 1, graphNode },
+          strokeWidth: 3,
+          // clear of the node's own "43 bp" / "558 bp" label, which the graph
+          // writes across the node rather than inside its bounding box
+          pad: 22,
+        }),
+      ),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
@@ -1447,12 +1449,14 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
-        type: 'circle',
-        anchor: { view: 1, graphNode },
-        radius: 24,
-        strokeWidth: 3,
-      })),
+      ...MHC_LANDMARK_NODES.map(
+        (graphNode): Annotation => ({
+          type: 'circle',
+          anchor: { view: 1, graphNode },
+          radius: 24,
+          strokeWidth: 3,
+        }),
+      ),
       {
         type: 'text',
         text: label,

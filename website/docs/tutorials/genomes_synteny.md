@@ -50,7 +50,14 @@ the whole block's endpoints. A reverse-strand block adds a second checkbox,
 still reads left to right. **Submit** opens a two-panel synteny view on that
 position, with the liftOver track drawn as ribbons between the panels.
 
-<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the view it opens: 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, ribbon per chain block, then the same view under the two ribbon settings below. The launched view carries the chain track and nothing else, so each panel starts empty until you add its genes." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the finished comparison: right-click a chain block, confirm how the target panel is framed, and the view that opens below the LGV it was launched from — 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, one ribbon per chain block, both panels empty. The last frame is the same view with each panel's NCBI RefSeq Curated and RepeatMasker turned on: SHH sits opposite mouse Shh across the ribbons, while the two RepeatMasker bands share no pattern." src="/img/genomes_synteny/launch_sequence.png" />
+
+The launched view carries the chain track and nothing else, so each panel starts
+empty. Its tracks come from its own track selector, which the view header's
+track-selector button lists one of per panel — on genomes.jbrowse.org that is
+the same **NCBI RefSeq - RefSeq Curated** and **RepeatMasker** for the mouse
+panel as for the human one, because naming mm39 also brought in the mm39 hub's
+tracks.
 
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.
