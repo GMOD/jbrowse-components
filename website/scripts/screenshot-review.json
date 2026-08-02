@@ -260,7 +260,7 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name \u2014 the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
+    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name — the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
     "reviewedAt": "2026-07-15T03:11:55.433Z",
     "hash": "66134b6ee309d9cf5a7007bf1d0721842a3cd91d"
   },
@@ -497,7 +497,7 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
-    "note": "FIXED in the pipeline, not the spec: the before/after was identical because the only difference was text antialiasing. Chrome self-updates under the generator, and the 25.3 -> 25.4 puppeteer bump shifted glyph metrics fractionally, repainting every character's outline \u2014 0.545% of pixels here, just over the 0.5% gate, so the PNG was rewritten with no visible change (five other figures landed at 0.505-0.513%, i.e. a coin flip). pngDiffFraction now erodes the thresholded difference by a pixel before measuring it: one-pixel glyph fringes vanish (this figure drops to 0.131%), a real change survives (a figure with changed menu contents only falls 5.0% -> 3.8%). The noise rewrite was reverted, so no spec needs its own lowered sensitivity.",
+    "note": "FIXED in the pipeline, not the spec: the before/after was identical because the only difference was text antialiasing. Chrome self-updates under the generator, and the 25.3 -> 25.4 puppeteer bump shifted glyph metrics fractionally, repainting every character's outline — 0.545% of pixels here, just over the 0.5% gate, so the PNG was rewritten with no visible change (five other figures landed at 0.505-0.513%, i.e. a coin flip). pngDiffFraction now erodes the thresholded difference by a pixel before measuring it: one-pixel glyph fringes vanish (this figure drops to 0.131%), a real change survives (a figure with changed menu contents only falls 5.0% -> 3.8%). The noise rewrite was reverted, so no spec needs its own lowered sensitivity.",
     "reviewedAt": "2026-07-29T21:21:26.988Z",
     "hash": "4779ca26ab2825d5a69eca2f54f47ed2d3504e5a"
   },
@@ -636,7 +636,7 @@
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
     "status": "good",
-    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections \u2014 Genotypes (cell coloring) vs Population (sidebar row-label coloring) \u2014 making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
+    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections — Genotypes (cell coloring) vs Population (sidebar row-label coloring) — making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "gwas/locuszoom_ld": {
@@ -649,7 +649,7 @@
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md \u2014 genome-wide real-world Manhattan.",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
@@ -687,19 +687,19 @@
   "product_architecture": {
     "name": "product_architecture",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one \u2014 the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source \u2014 tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
     "status": "good",
-    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views \u2014 structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
@@ -773,7 +773,7 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
@@ -797,7 +797,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -929,13 +929,13 @@
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
     "status": "good",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING \u2014 GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision \u2014 renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "good",
-    "note": "resolved: deleted \u2014 the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
+    "note": "resolved: deleted — the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "trio-hapibd-painting": {
@@ -1349,21 +1349,21 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow \u2014 normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
+    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
     "reviewedAt": "2026-07-27T01:36:59.480Z",
     "hash": "dcf5af3276ce03f366a974bc5ab1779d502bd06e"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode fit->grow \u2014 repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
+    "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
     "reviewedAt": "2026-07-27T01:37:05.667Z",
     "hash": "893243aeadc65f44357c1ddc5eca217c93c301a7"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode grow \u2014 normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
+    "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
     "reviewedAt": "2026-07-27T01:37:02.644Z",
     "hash": "d83bfa176ca90aeda7ef59b2af3edf4048922233"
   },
@@ -1384,13 +1384,13 @@
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
     "status": "good",
-    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima\u2019s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima\u2019s D are read off the one combined figure.",
+    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima’s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima’s D are read off the one combined figure.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
     "status": "good",
-    "note": "DELETED as asked. Spec removed from scripts/specs/qtl.ts and the PNG deleted; it was an orphan (no doc <Figure> referenced it \u2014 the tutorial embeds qtl/bxd_tyrp1_locus and qtl/bxd_painting_sorted, which are the same Manhattan-over-painting view with the gene marked and with the sort menu open). Its one consumer was the bxd_qtl tutorial card, which now crops qtl/bxd_tyrp1_locus at the same band (below that figure's Tyrp1 callout). galleryLinks + figure manifest regenerated.",
+    "note": "DELETED as asked. Spec removed from scripts/specs/qtl.ts and the PNG deleted; it was an orphan (no doc <Figure> referenced it — the tutorial embeds qtl/bxd_tyrp1_locus and qtl/bxd_painting_sorted, which are the same Manhattan-over-painting view with the gene marked and with the sort menu open). Its one consumer was the bxd_qtl tutorial card, which now crops qtl/bxd_tyrp1_locus at the same band (below that figure's Tyrp1 callout). galleryLinks + figure manifest regenerated.",
     "reviewedAt": "2026-07-29T21:22:59.057Z",
     "hash": ""
   },
@@ -1492,13 +1492,13 @@
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
     "status": "good",
-    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section\u2019s how-to pipeline and reworded the figure-referencing prose.",
+    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section’s how-to pipeline and reworded the figure-referencing prose.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
     "status": "good",
-    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle \u2014 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
+    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle — 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
     "reviewedAt": "2026-07-11T01:56:16.000Z",
     "hash": ""
   },
@@ -1595,14 +1595,14 @@
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
     "status": "bad",
-    "note": "not sure if it is because we are only looking at a small 'slice' of the 1000 genomes file, we might need larger slice. i want to try to show proper zoom out to show this is an increased linkage, but maybe this is futile? the entire region has very high r^2? i am unclear about the 'story here'. previous agent notes;  FIXED, and the root cause was the data, not the wording. The block was pale and the recombination curve was noise everywhere because r2 was computed over the pooled 2504-sample callset: pooling panels that carry different haplotypes at different frequencies averages the correlation away. Measured over chr2:136.4-136.7 Mb, mean pairwise r2 is 0.48 pooled and 0.83 within the 1000G European panel (0.18 in the African panel, i.e. the block is a property of the panel, not of the locus). The figure now runs on a 503-sample panel slice (bcftools view -S, uploaded to jbrowse.org/demos/popgen/lct_1kg_chr2_eur.vcf.gz): the block is solid, its right edge is visible where the recombination curve goes from flat to spiking, and the tutorial's claim about that curve is now something the reader can see. Annotation reworded to 'One block, inherited together' (no swept/dragged). Block extent measured rather than guessed: r2 vs rs4988235 stays above 0.5 from 136.49 to 136.82 Mb, which the 800kb window frames with flanks on both sides. A EUR-vs-AFR two-panel version was rendered and then dropped: side-by-side continental panels read as a comparison between groups rather than one about how r2 is computed, so the point is made in prose ('Compute LD within one panel') instead. NOTE: the AFR slice is still uploaded at lct_1kg_chr2_afr.vcf.gz, unreferenced, pending that framing call. BOTH ASKS DONE, and the second explains the first. useGenomicPositions was off, so the triangle x axis was SNP INDEX while the ruler and the gene lane above it were bp; SNP density is not uniform across this window, so the block occupied about two thirds of the frame while spanning about a quarter of the bp, and no amount of zooming out was going to bound it. On genomic positions the cells are sized by distance and the block edges land under the coordinates they are at. With that fixed the window went 800 kb -> 2.2 Mb (chr2:135,300,000-137,500,000): the swept haplotype in this panel reaches back to about 135.75 Mb, so it is now bounded by white on the left and by the pale long-range corner on the right, and the ClinVar rs4988235 tick sits at its right edge where the causal variant is. The recombination curve reads against the same axis now, which is what makes the caption claim about its spike checkable.",
-    "reviewedAt": "2026-08-01T15:26:34.173Z",
-    "hash": "c1fa942e12f23a7a22779c5fa8fdd3427c756a81"
+    "note": "looks better now. anything else you would suggest?",
+    "reviewedAt": "2026-08-02T14:41:36.029Z",
+    "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
     "status": "good",
-    "note": "RESOLVED (deleted, moot). The MAPT 17q21.31 figure was already dropped in commit 969c44cc21 \u2014 no accessible callset has per-sample inversion genotypes to display (1000G phase3 SV has only a 16kb AC=1 singleton, gnomAD only a 53Mb whole-arm call, HGSVC2 a single merged row), so it was removed rather than padded with a proxy. No spec, no PNG, no doc reference remains; the reviewer's 'too complex / can't see the SV track' concern is addressed by removal.",
+    "note": "RESOLVED (deleted, moot). The MAPT 17q21.31 figure was already dropped in commit 969c44cc21 — no accessible callset has per-sample inversion genotypes to display (1000G phase3 SV has only a 16kb AC=1 singleton, gnomAD only a 53Mb whole-arm call, HGSVC2 a single merged row), so it was removed rather than padded with a proxy. No spec, no PNG, no doc reference remains; the reviewer's 'too complex / can't see the SV track' concern is addressed by removal.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "a396651fda247fd6b21d13f8ca363f4fb133b561"
   },
@@ -1630,7 +1630,7 @@
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
     "status": "good",
-    "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) \u2014 the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
+    "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) — the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
     "reviewedAt": "2026-07-20T22:02:04.675Z"
   },
   "pangenome/pav": {
@@ -1649,7 +1649,7 @@
   "pangenome/depth": {
     "name": "pangenome/depth",
     "status": "good",
-    "note": "FIXED (data unblocked + rendered + embedded). Uploaded the odgi-depth bigWig (built in ~/depth_build) to s3://jbrowse.org/demos/ecoli_pangenome/, added the ecoli_pggb_depth QuantitativeTrack to the hosted config.json, invalidated CloudFront, then regenerated. Dropped the useless K12 gene lane (at 4.6Mb the ~4300 genes only trip the too-many-features gate) so the depth curve carries the figure: a solid plateau near 4 (core, all 4 strains) dropping toward 1 over accessory. Embedded as a new <Figure> in pangenome.md Projection 4 (it had a JSON block but no image \u2014 the reviewer's 'no image here').",
+    "note": "FIXED (data unblocked + rendered + embedded). Uploaded the odgi-depth bigWig (built in ~/depth_build) to s3://jbrowse.org/demos/ecoli_pangenome/, added the ecoli_pggb_depth QuantitativeTrack to the hosted config.json, invalidated CloudFront, then regenerated. Dropped the useless K12 gene lane (at 4.6Mb the ~4300 genes only trip the too-many-features gate) so the depth curve carries the figure: a solid plateau near 4 (core, all 4 strains) dropping toward 1 over accessory. Embedded as a new <Figure> in pangenome.md Projection 4 (it had a JSON block but no image — the reviewer's 'no image here').",
     "reviewedAt": "2026-07-20T18:49:10.000Z"
   },
   "multisv_svtype": {
@@ -1966,10 +1966,10 @@
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "good",
-    "note": "if possible add margin between each figure panel DONE. The grid path in generate-screenshots.ts now white-borders each frame before it +appends the row (GRID_GUTTER_PX 24 captured px, so 12 CSS px of gutter between panels and half that around the outside). Applied in the stageColumns branch only, so no stacked before/after figure moved.",
-    "reviewedAt": "2026-08-01T20:56:35.377Z",
-    "hash": "8bd10eb346aca53d7f6d6ac15677a05ecb5b507e"
+    "status": "bad",
+    "note": "ideally, in final 4th panel, show gene track and repeats track on top and bottom, compact to reduce y-axis space",
+    "reviewedAt": "2026-08-02T14:41:24.092Z",
+    "hash": "e5d19b587b6dcc8c086bc1c60c0a0ca4c5ef5ceb"
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
@@ -2240,7 +2240,7 @@
   "sv_synteny/linear_synteny_ortholog_colors": {
     "name": "sv_synteny/linear_synteny_ortholog_colors",
     "status": "good",
-    "note": "DELETED as asked. The complaint holds: the locus-tag-only genes have no 'gene' attribute, so they all take one fallback color, and that color (magenta) was most of every lane \u2014 the six named orthologs the figure existed to show were the minority of the pixels. Spec, PNG and the <Figure> in synteny_visualization.md are gone; the 'Coloring genes by ortholog' section stays as prose since Color by attribute is still worth teaching. hpyloriSyntenyWithGenes lost its now-unused geneColor param.",
+    "note": "DELETED as asked. The complaint holds: the locus-tag-only genes have no 'gene' attribute, so they all take one fallback color, and that color (magenta) was most of every lane — the six named orthologs the figure existed to show were the minority of the pixels. Spec, PNG and the <Figure> in synteny_visualization.md are gone; the 'Coloring genes by ortholog' section stays as prose since Color by attribute is still worth teaching. hpyloriSyntenyWithGenes lost its now-unused geneColor param.",
     "reviewedAt": "2026-07-29T21:24:58.560Z",
     "hash": ""
   },
@@ -2399,10 +2399,10 @@
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
-    "status": "good",
-    "note": "this is pretty interesting. are there any further changes you'd make to generate interesting biological figure here? cany other tracks we should load? you can consider increasing linezoneheight also LINEZONEHEIGHT DONE, and it turned out to be the biological half of the figure rather than a tidy-up: at the 20px default the connector band is a grey smear, so the matrix said which tumors carry a mutation and nothing about where in CDH1 it is. At 130 the fan resolves and lands across the exons of the MANE lane above -- 90 of the window's 114 columns are HIGH impact and they are spread along the whole transcript, which is the tumor-suppressor signature and the contrast with the PIK3CA figure's three hotspot bars. height went 1010 -> 1120 so the rows kept their 990px. The tutorial gained a paragraph saying why to drag the band open. OTHER TRACKS: tried one and dropped it. The candidate was the second hit -- the same cohort's copy-number recurrence, which reads -43.6% loss over CDH1 against -1.9% on 16p, so 16q loss is real and specific to that arm. Over a 110 kb window that lane draws as a flat blue slab across the full width: it states one number in 160px of figure and shows no structure, which is the hand-computed-statistic failure in picture form. The per-tumor CNV lane cannot go beside the matrix either -- that track is 1104 tumors partitioned by sample name with no clinical grouping (rowGroups matches a regex on the row name), so its rows cannot be put in the same histology bands and would sit under the matrix implying a correspondence that is not there. The window needs no filtering help: 90 HIGH, 16 MODERATE, 1 LOW, no MODIFIER noise. SAME HEIGHT TREATMENT as the other two matrices this round (display 2030 including the 130px connector band, about 2px per tumor). At 1px the lobular band was denser than the ductal one but you had to look for it; at 2px it is a solid red band against an empty field. The tutorial's figure order changed with it -- PIK3CA now leads the grouping section, TP53 follows on the same subtype column, CDH1 shows the histology column -- and clustering moved to a short section of its own saying it is the alternative arrangement rather than a step before reading.",
-    "reviewedAt": "2026-08-01T21:00:41.006Z",
-    "hash": "033502a0e9d1c2fb4805e1bec3a82ff038692199"
+    "status": "bad",
+    "note": "reduce the height of the display so it's e.g. just 300px tall, each row can be 'subpixel' itll still draw it as 1px high though.  and zoom in on the end of the gene The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. And zoomed to the end of the gene: the window is now exons 3-16, since CDH1's first intron is 63kb and the old whole-transcript window spent two thirds of its width on sequence carrying nothing while squeezing the exons the connector lines point into against the right edge.",
+    "reviewedAt": "2026-08-02T14:46:40.032Z",
+    "hash": "c4adc2e9ea48531dd74db292b3d52aebddcbc8fa"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2413,30 +2413,100 @@
   },
   "scrna/percell_lyz": {
     "name": "scrna/percell_lyz",
-    "status": "good",
-    "note": "this is quite compelling, i think seeing the single cells is great. more examples like this is valuable MORE OF THESE, as asked: scrna/percell_ms4a1 is the same 4390-cell Zarr at the B-cell marker, so the block that fills moves with the lineage instead of being a property of one window. The store covers one marker window per chromosome (chr11 is the MS4A1 one), so the other markers in it -- CD8A, IL7R, PPBP, FCGR2A -- are available for further examples without a rebuild. This card is also the gallery's single-cell entry now.",
-    "reviewedAt": "2026-08-01T20:58:15.133Z",
-    "hash": "7f63728bc88d264c9a3baea6ccbff5a6352aa0c9"
+    "status": "bad",
+    "note": "this is sort of interesting but its somewhat unclear why the purple labels have brown color, and the orange lael has purple color, etc.",
+    "reviewedAt": "2026-08-02T14:43:10.717Z",
+    "hash": "212da06cc3327ac4f9980f37581373f019c0553c"
   },
   "scrna/rna_atac_ms4a1": {
     "name": "scrna/rna_atac_ms4a1",
-    "status": "good",
-    "note": "unfortunately not a very compelling screenshot, might consider deleting KEPT AND FIXED rather than deleted, since it is the only cross-assay figure on the site. What made it uncompelling was measurable: the ATAC track had 12 subadapters in 380px, so the accessibility peaks were a few px tall and the bottom row was cut by the frame. 480px (40px a row) and a viewport that fits it. If it still does not earn its place, the section it illustrates can point at the scATAC tutorial instead and the figure can go.",
-    "reviewedAt": "2026-08-01T20:58:36.340Z",
-    "hash": "c9d041d48b2adf39849fe20585e647a2290690eb"
+    "status": "bad",
+    "note": "unfortunately still not a very compelling screenshot, might consider deleting. previous agent wanted to keep because it is cross-assay but doesnt really matter",
+    "reviewedAt": "2026-08-02T14:44:05.520Z",
+    "hash": "088956a73b8a7f4b721c4e18d84c33557a781fc2"
   },
   "tcga/mutations_pik3ca": {
     "name": "tcga/mutations_pik3ca",
-    "status": "good",
-    "note": "hard to see what is significant without maybe interesting sample clustering. any patterns to this? MEASURED, THEN REWORKED, and the pattern the note asks for is real: PIK3CA is carried by 41.5% of the HR+/HER2- tumors against 11.2% of the triple-negative ones (bcftools over the hosted VCF crossed with the clinical TSV). Clustering was already on and was the problem rather than the fix -- it gathers every carrier into one block at the top, which does make each hotspot a solid bar but leaves two thirds of the frame an empty grey field and throws away the clinical axis. The figure is now grouped and colored by subtype with no clustering, and at 1900px of display (about 2px per tumor, against the 1px the old height gave) two things read at once: the three hotspot columns are dense vertical stripes, and they sit in the HR+/HER2- band. Both arrangements were rendered before choosing.",
-    "reviewedAt": "2026-08-01T20:59:28.774Z",
-    "hash": "bc8bb3fe055326840eeaed705af4fd6c7f4f7029"
+    "status": "bad",
+    "note": "unfortunately, this is just still not a very interesting screenshot.can consider deleting? previous notes: hard to see what is significant without maybe interesting sample clustering. any patterns to this? MEASURED, THEN REWORKED, and the pattern the note asks for is real: PIK3CA is carried by 41.5% of the HR+/HER2- tumors against 11.2% of the triple-negative ones (bcftools over the hosted VCF crossed with the clinical TSV). Clustering was already on and was the problem rather than the fix -- it gathers every carrier into one block at the top, which does make each hotspot a solid bar but leaves two thirds of the frame an empty grey field and throws away the clinical axis. The figure is now grouped and colored by subtype with no clustering, and at 1900px of display (about 2px per tumor, against the 1px the old height gave) two things read at once: the three hotspot columns are dense vertical stripes, and they sit in the HR+/HER2- band. Both arrangements were rendered before choosing. KEPT, and reworked the way the CDH1 note asks rather than deleted -- at 1900px the objection was right, and the height was the whole of it. The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. The result is that the three hotspot columns are now solid vertical stripes rather than dashes strung down six screens of grey, and that they sit in the HR+/HER2- band reads in one glance. The legend used to cover the H1047R column (it is the right-most, at 93% of the width, and extending the window only adds three more) in exactly the band the figure is about; that is fixed by the taller connector zone rather than by hiding the color key.",
+    "reviewedAt": "2026-08-02T14:45:59.248Z",
+    "hash": "e2e617c9ab3c440286f91387f75c00950d013cf5"
   },
   "tcga/mutations_tp53_subtype": {
     "name": "tcga/mutations_tp53_subtype",
-    "status": "good",
-    "note": "hard to see what is happening here? might consider delete, or allowing larger 'squares' to be drawn just to emphasize when sparse like this KEPT, NOT DELETED, because the contrast is the strongest in the cohort and it was only the row height hiding it: 77.6% of triple-negative tumors carry a TP53 mutation against 19.3% of HR+/HER2- (same measurement as the PIK3CA entry). 'Larger squares' was the right diagnosis -- 979 rows in 990px is a 1px row, so a somatic call is a hairline dash and a 4x density difference between two bands is in the pixels but not legible. Fixed by giving each tumor about 2px (display 1900, viewport 2230) rather than by dilating the marks: a minimum drawn cell size would have to either overstate density (a fixed-size mark saturates the dense band and compresses the contrast) or scale alpha by true coverage the way the shader already does horizontally, which is a renderer change worth doing on its own terms, not as a figure fix. Say the word and it can be built (canvas2d + the matrix slang shader + SVG export + a slot).",
-    "reviewedAt": "2026-08-01T21:00:19.499Z",
-    "hash": "62f2a6b2fa7584b241d26451ae22259a91b886e2"
+    "status": "bad",
+    "note": "unfortunately, this is just still not a very interesting screenshot.can consider deleting. previous notes; hard to see what is happening here? might consider delete, or allowing larger 'squares' to be drawn just to emphasize when sparse like this KEPT, NOT DELETED, because the contrast is the strongest in the cohort and it was only the row height hiding it: 77.6% of triple-negative tumors carry a TP53 mutation against 19.3% of HR+/HER2- (same measurement as the PIK3CA entry). 'Larger squares' was the right diagnosis -- 979 rows in 990px is a 1px row, so a somatic call is a hairline dash and a 4x density difference between two bands is in the pixels but not legible. Fixed by giving each tumor about 2px (display 1900, viewport 2230) rather than by dilating the marks: a minimum drawn cell size would have to either overstate density (a fixed-size mark saturates the dense band and compresses the contrast) or scale alpha by true coverage the way the shader already does horizontally, which is a renderer change worth doing on its own terms, not as a figure fix. Say the word and it can be built (canvas2d + the matrix slang shader + SVG export + a slot). KEPT, same treatment as PIK3CA and CDH1. The rows are now 320px for all three matrix figures (was 1900), and the mechanism behind your suggestion checks out but is not quite a 1px floor: drawVariantMatrixBlocks draws each cell at float coordinates with a 0.3px overdraw and its comment explicitly forbids snapping or a 1px minimum (that decimates sub-pixel columns), and effectiveRowHeight only floors at 1 when the line zone has swallowed the display. So a 0.33px row paints as an antialiased smear that accumulates with its neighbours, which is better than a floor for this: a band's density reads as how dark it is. The connector zone also goes to 130px on all three, which moves the floating legend (it pins to the top right of the DISPLAY, not the rows) off the matrix and onto the connector band. The triple-negative band is now visibly darker than the HR+/HER2- band above it at a glance, which is the whole claim, and it costs a fifth of the frame it used to. No renderer change was needed after all, so the minimum-drawn-cell-size offer in the previous note is withdrawn as unnecessary here.",
+    "reviewedAt": "2026-08-02T14:46:04.648Z",
+    "hash": "c13b5787804f856b5047c54a8baa54157b3c2a29"
+  },
+  "cancer_sv/k562_bcr_abl_split": {
+    "name": "cancer_sv/k562_bcr_abl_split",
+    "status": "bad",
+    "note": "need to use supercompact probably DONE, but at the Compact preset (featureHeight 3 / featureSpacing 0) rather than Super-compact: both were rendered, and at one row per pixel K562's ~600x Iso-Seq merges into a solid teal slab, because nearly every row is intron line. Three px keeps individual transcripts separable while still fitting several times more of the pileup than the default. Gene tracks pinned to 90px, viewport 1020 -> 1010, nothing clipped.",
+    "reviewedAt": "2026-08-02T14:36:14.822Z",
+    "hash": "7ccd0b9b7749cc290a3ba6892c09291ed92c2ac7"
+  },
+  "cancer_sv/k562_starfusion_triage": {
+    "name": "cancer_sv/k562_starfusion_triage",
+    "status": "bad",
+    "note": "no arcs are visible. FIXED, and it was not a styling problem: the track had no arc display at all, and the old window could not have drawn one either. An arc is only drawn when BOTH endpoints resolve through view.bpToPx (Arcs.tsx returns null otherwise), so in the old chr22 140kb window every interchromosomal call was silently dropped and the track fell back to its default variant display, i.e. one breakend glyph. The spec now selects LinearPairedArcDisplay and lays the whole genome out (displayedRegionNames: primary chromosomes plus chrM), and colors by junction-read support, since StarFusionAdapter puts JunctionReadCount on the feature score. Two of the three calls over 100 are BCR--ABL1 and NUP214--XKR3, the same chr9/chr22 junction from both sides, and they overlap into the one red arc; the third (BAG6--SLC44A4, 0.21Mb intrachromosomal) is under a pixel wide at this scale and is not drawn. Tutorial prose and caption rewritten to match, including the Show-all-regions step, since the old caption already claimed the whole call set as arcs.",
+    "reviewedAt": "2026-08-02T14:36:52.104Z",
+    "hash": "eac34b7cafb2dedb8cd623128891bf049972f651"
+  },
+  "cancer_sv/multihop_split_view": {
+    "name": "cancer_sv/multihop_split_view",
+    "status": "bad",
+    "note": "may need to use supercompact DONE: featureHeight 1 / featureSpacing 0 on all three read tracks, with per-panel heights matched to each locus's depth (chr3 250, chr10 130, chr12 140) so a panel is the size of its own pileup rather than 250px of white under a shallow one. Gene tracks collapsed to the longest coding isoform, which also puts the RARB / BICC1 / TRHDE labels back on screen (same clipping cause written up under multihop_tumour_vs_normal). The splines now read as individual reads instead of crossing a band of empty rows. Viewport 1460 -> 1130, nothing clipped.",
+    "reviewedAt": "2026-08-02T14:37:13.770Z",
+    "hash": "9e7599bbf0ebe4e61419c278fa3b32de0bc700da"
+  },
+  "cancer_sv/multihop_tumour_vs_normal": {
+    "name": "cancer_sv/multihop_tumour_vs_normal",
+    "status": "bad",
+    "note": "(1) no label visible on ncbi refseq genes. not sure if we can fix this but it would be valuable. (2) may want to use supercompact on read tracks.  (3) and since this is a translocation,  may benefit from breakpoint split view? multi-part figure showing how to set up breakpoint split view? (1) FIXED, and the cause is worth recording: the label was never missing, it was drawn outside the track. Probed against the live model: RARB is in the display's floatingLabelsData with nameLabel RARB, showLabels true, fit level full, and its DOM node exists at y=313 while the track band is 193..293. A top-level feature's floating label is drawn under its glyph and reserves no height of its own (only the transcript-child 'below' path reserves any, see labelUtils.ts), so RARB's stacked isoforms (~118px of glyph) push the label past the bottom of a 100px track, where it is clipped away. Two ways out: give the gene track ~135px, or collapse it to one row. The spec takes the second, geneGlyphMode longestCoding at height 60, which also answers the wasted vertical space -- every window in this tutorial is mid-intron, so the extra isoform rows were identical flat lines. The cost is the 'Longest isoform' chip the display shows while collapsed. The general fix (reserve the top-level label row so a fit/auto height accounts for it) is NOT done and is a real gap; say the word. (2) DONE: featureHeight 1 / featureSpacing 0 on both read tracks, tumour 270 / normal 150, viewport 1100 -> 860. (3) already one figure down: multihop_split_view IS the breakpoint split view of this same event, and the prose above it gives the click path (ADD -> Breakpoint split view, one import-form row per locus).",
+    "reviewedAt": "2026-08-02T14:38:45.389Z",
+    "hash": "bcd967b21b8297fa7c572205c1cc2881951f72aa"
+  },
+  "desktop-add-track-steps": {
+    "name": "desktop-add-track-steps",
+    "status": "bad",
+    "note": "reduce number of callouts...obvious ones like next ...not needed. people arent dumb DONE: the Next badge and the box-around-the-whole-view on the result frame are both gone, so the figure is three callouts (the menu item, the URL field, the inferred-index note) instead of five. The two that went were the two that narrated what the reader is already looking at; the three that stayed each say something the frame does not (the alternate path via the track selector, that the field takes a local file or a URL, and that the index is guessed from the main file). DONE both, in composeProcedure (products/jbrowse-desktop/test/procedures.ts), so every procedure figure gets them. (1) The frames are now separated by a 26px gap instead of a 4px rule, and the gap is TRANSPARENT rather than a page color, because these render on a docs page with a light and a dark theme and a baked-in white bar would be wrong in one of them. (2) Each frame is drawn inside simulated window chrome: a title bar with the three-dot cluster plus a hairline border. Simulated is the only option -- selenium screenshots the page, so a capture is the app's viewport and the real title bar belongs to the window manager, which is also why it would differ per machine. With the chrome doing the separating, the rule between frames is gone.",
+    "reviewedAt": "2026-08-02T14:39:06.110Z",
+    "hash": "dd33bbc871ca19f9cd560aea615c1b3be6dd0fa3"
+  },
+  "desktop-available-genomes-steps": {
+    "name": "desktop-available-genomes-steps",
+    "status": "bad",
+    "note": "(1) add margin between panels potentially.(2) ideally, the screenshots also add the 'desktop border' with the header/title bar or client side decoration (in all desktop screenshots) even if needed, simulating it DONE both, in composeProcedure (products/jbrowse-desktop/test/procedures.ts), so every procedure figure gets them. (1) The frames are now separated by a 26px gap instead of a 4px rule, and the gap is TRANSPARENT rather than a page color, because these render on a docs page with a light and a dark theme and a baked-in white bar would be wrong in one of them. (2) Each frame is drawn inside simulated window chrome: a title bar with the three-dot cluster plus a hairline border. Simulated is the only option -- selenium screenshots the page, so a capture is the app's viewport and the real title bar belongs to the window manager, which is also why it would differ per machine. With the chrome doing the separating, the rule between frames is gone.",
+    "reviewedAt": "2026-08-02T14:40:20.053Z",
+    "hash": "1b0e7a0fb38325a16591fae0cbae1085aa61761e"
+  },
+  "desktop-open-genome-steps": {
+    "name": "desktop-open-genome-steps",
+    "status": "bad",
+    "note": "(1) add margin between panels potentially.(2) ideally, the screenshots also add the 'desktop border' with the header/title bar or client side decoration (in all desktop screenshots) even if needed, simulating it DONE both, in composeProcedure (products/jbrowse-desktop/test/procedures.ts), so every procedure figure gets them. (1) The frames are now separated by a 26px gap instead of a 4px rule, and the gap is TRANSPARENT rather than a page color, because these render on a docs page with a light and a dark theme and a baked-in white bar would be wrong in one of them. (2) Each frame is drawn inside simulated window chrome: a title bar with the three-dot cluster plus a hairline border. Simulated is the only option -- selenium screenshots the page, so a capture is the app's viewport and the real title bar belongs to the window manager, which is also why it would differ per machine. With the chrome doing the separating, the rule between frames is gone.",
+    "reviewedAt": "2026-08-02T14:40:24.254Z",
+    "hash": "fcb2af7960709f512c60ec850f437d4ee0a7274a"
+  },
+  "pangenome/hprc_inversion": {
+    "name": "pangenome/hprc_inversion",
+    "status": "bad",
+    "note": "would be interesting to see the graph also, as a sidebar or second screenshot in two part screenshot here",
+    "reviewedAt": "2026-08-02T14:42:13.261Z",
+    "hash": "fdad2f26d184689490456c969128cd8c0cd94993"
+  },
+  "scrna/lyz_monocyte": {
+    "name": "scrna/lyz_monocyte",
+    "status": "bad",
+    "note": "pretty boring screenshot unfortunately, i know it is biologically interesting but its just not visually interesting. can consider removal",
+    "reviewedAt": "2026-08-02T14:42:38.044Z",
+    "hash": "59bc30fd3673ed6112be8b7e96eb503149a592cc"
+  },
+  "tcga/cohort_cnv_recurrence_subtype": {
+    "name": "tcga/cohort_cnv_recurrence_subtype",
+    "status": "bad",
+    "note": "reduce total height of figure a bit. if needed, point out her2 position in genome with a callout annotation and other salient features if it helps DONE: display 620 -> 500 and viewport 830 -> 710. Two callouts, ERBB2 (17q12) into the HER2+ gain row and 16q loss into the HR+/HER2- loss row, each anchored to its own locus in the live view with dy measured in whole row pitches off the track top, so nothing is hand-measured and they move with the row height. They sit in the half of their row the bars leave empty (gains fill upward, losses hang down), which is what makes room for a label at this density. Note for the next person: moving a callout is only ~0.3% of the frame, so the regen kept the old image as unchanged and it needed --force.",
+    "reviewedAt": "2026-08-02T14:44:57.712Z",
+    "hash": "58b41022d56ebd748a44b19a1ef5e448d2747163"
   }
 }

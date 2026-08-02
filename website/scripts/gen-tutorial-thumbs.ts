@@ -280,12 +280,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   tcga_cohort_mutations: {
-    // the histology-grouped CDH1 matrix, framed on the boundary between the
-    // empty ductal band and the dense lobular one: a card cropped anywhere else
-    // in this figure is flat gray
+    // the histology-grouped CDH1 matrix: everything under the navigation row,
+    // so the card carries the exons, the connector fan and the whole row stack
+    // with its dense lobular band at the bottom. A tighter band on the bands
+    // themselves is much wider than 5:3, so the cover-crop would keep a sixth
+    // of the width and the card would be mostly empty gray.
     src: 'tcga/mutations_cdh1_histology.png',
-    band: [0.7, 0.97],
-    position: 'left',
+    band: [0.175, 1],
+    position: 'center',
   },
   // The 2504-row cohort heatmap rather than the page's hero: the hero carries a
   // callout pill, and this one is the cleanest render of the same pattern.
