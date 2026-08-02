@@ -399,6 +399,14 @@ const graphSettingsField = (
 }
 
 export const viewFields: Record<string, FieldRecipe> = {
+  // not a menu item: ViewContainerTitle renders the header title as an
+  // EditableTypography whose tooltip is "(click to rename)"
+  displayName: value => {
+    const name = typeof value === 'string' ? value : undefined
+    return name
+      ? { path: `Click the view's title in its header and enter "${name}"` }
+      : undefined
+  },
   showCenterLine: value =>
     typeof value === 'boolean'
       ? {
