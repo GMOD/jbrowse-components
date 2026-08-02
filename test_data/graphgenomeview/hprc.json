@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/0bd37c5ac9a2/jbrowse-plugin-graphgenomeviewer.esm.js"
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/9e8a983a6b62/jbrowse-plugin-graphgenomeviewer.esm.js"
     }
   ],
   "assemblies": [
@@ -33,6 +33,19 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "uri": "hprc_cfhr_HG00099.1.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "hs1",
+      "displayName": "Human (T2T-CHM13v2.0/hs1)",
+      "aliases": ["CHM13", "T2T-CHM13v2.0"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "hs1.chrom.sizes"
         }
       }
     },
@@ -68,6 +81,17 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hs1_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hs1)",
+      "assemblyNames": ["hs1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hs1/hs1.gff.gz",
         "csi": true
       }
     },
@@ -118,12 +142,13 @@
       "type": "FeatureTrack",
       "trackId": "hprc_minigraph_segments",
       "name": "HPRC release 2 graph (rGFA segments)",
-      "assemblyNames": ["hg38"],
+      "assemblyNames": ["hg38", "hs1"],
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
         "assemblyNameToPanSN": {
-          "hg38": "GRCh38"
+          "hg38": "GRCh38",
+          "hs1": "CHM13"
         }
       },
       "displayDefaults": {

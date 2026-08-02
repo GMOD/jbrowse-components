@@ -536,13 +536,14 @@ const CFHR_DELETED_LOCUS = `chr1:${CFHR_DELETED.start + 1}-${CFHR_DELETED.end}`
 // It also picks the panel, and NOT on record counts, which was the first attempt
 // and put a crossed ribbon on the non-carrier row. Every haplotype in this window
 // carries inverted paralogs -- 1q21.1 is a segmental duplication -- and each of
-// those draws the same crossing the inversion does. A haplotype row is also a
-// one-contig assembly, so its displayedRegions is the whole contig and the
-// display draws every record its file holds, wherever the row is scrolled: what
-// the figure shows is the file, not the window. So the script cuts each emitted
-// PAF to the frame below and keeps only haplotypes whose in-frame records are the
-// inversion plus forward flanks (31 of 64 carriers, 12 of 23 non-carriers). The
-// two windows below are its output, not measurements.
+// those draws the same crossing the inversion does. What decides whether one is
+// drawn is not the frame: a level fetches its QUERY axis's visible window widened
+// by `syntenyPanBufferPx` (2000 px of bp per side here, 700 kb, snapped to that
+// grid) and leaves the mate axis unscoped, so a 1.2 Mb slice is fetched whole and
+// a mate a megabase off the other row still draws. So the script cuts each
+// emitted PAF to the frame below and keeps only haplotypes whose in-frame records
+// are the inversion plus forward flanks (31 of 64 carriers, 12 of 23
+// non-carriers). The two windows below are its output, not measurements.
 const INV_CARRIER = 'HG01891.1'
 const INV_CARRIER_TRACK = 'hprc_inv_synteny_HG01891_1'
 const INV_NONCARRIER = 'HG02698.2'
@@ -566,6 +567,36 @@ const INV_BLOCK_LOCUS = `chr1:${INV_BLOCK.start + 1}-${INV_BLOCK.end}`
 // The left edge of a window, as a point locus: what a row label anchors to, so
 // the callout sits at the start of the row it names instead of at a measured x.
 const windowStart = (loc: string) => loc.split('-')[0]!
+
+// The CHM13 figure, at 17q25.3. Every other haplotype in this graph names contigs
+// by GenBank accession and is not a loadable assembly, so a donor node's
+// right-click menu has nothing to open. CHM13 is the exception: it is in the graph
+// as a contributor (rank 61, added after 60 haplotypes, so it is credited with
+// little), it spells its contigs `chr17`, and T2T-CHM13v2.0 is hosted at UCSC. So
+// this is the one HPRC window where the graph's own sequence can be opened on the
+// assembly that contributed it.
+//
+// The node is the largest CHM13-only segment in the graph that touches GRCh38 at
+// all, found by scanning `tabix links.bed.gz CHM13#0#chr<n>` for rows with a
+// GRCh38 endpoint: 142,227 bp of CHM13 chr17 hanging off a 75 bp GRCh38 anchor,
+// one link in and one link out. Subtelomeric, which is where T2T has sequence and
+// GRCh38 has none.
+const CHM13_WINDOW = 'chr17:83,010,000-83,040,000'
+const CHM13_REGION = {
+  refName: 'chr17',
+  assemblyName: 'hg38',
+  start: 83010000,
+  end: 83040000,
+}
+const CHM13_NODE = 's504955'
+// The bubble the node is the long allele of: 34 segments over a 1,023 bp
+// reference span, longest allele 146,023 bp (`tabix bubbles.bed.gz
+// 'GRCh38#0#chr17:83,022,000-83,024,000'`).
+const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
+// The node's own span on CHM13, from its `SN`/`SO` tags, padded to a round window.
+const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
+const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
+const CHM13_ALLELE_LOCUS = `chr17:${CHM13_ALLELE.start + 1}-${CHM13_ALLELE.end}`
 
 const AMY_WINDOW = 'chr1:103,600,000-103,745,000'
 const AMY_REGION = {
@@ -2433,6 +2464,108 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 1090,
     hideTooltip: true,
+  },
+  // A donor node opened on the assembly that contributed it, which needs a
+  // contributor the session can load: see CHM13_WINDOW for why CHM13 is the only
+  // one in this graph, and for how the node was found.
+  //
+  // Three panes, and the middle one is the join. Top: the 30 kb GRCh38 window,
+  // whose segments lane ends where the reference does. Middle: the graph cut from
+  // that window, where the boxed node is 142 kb of CHM13 attached at a 75 bp
+  // anchor -- an insertion the reference has no coordinates for, which is why the
+  // top pane cannot show it. Bottom: that node on CHM13's own chr17, where it is
+  // an ordinary interval with RefSeq genes over it and the same segments track
+  // draws it as one feature.
+  //
+  // `resolveContributors` matches a node's PanSN sample against the session's
+  // assembly *names*, so the assembly has to be named `CHM13` for the node menu to
+  // offer it. `hs1` is an alias, not the name.
+  //
+  // The fixture's hs1 is a committed chrom.sizes, where the tutorial tells a
+  // reader to load UCSC's `hs1.2bit`. Not a preference: hgdownload fetches fail
+  // often enough from the capture box to have committed a broken figure twice (a
+  // whole-file GET times out outright; the ranged 2bit read failed 2 of 6 times),
+  // and this pane draws no sequence at 180 kb. Same shape as the four haplotype
+  // assemblies beside it in that config. The genes are ours, not UCSC's,
+  // `jbrowse.org/ucsc/hs1/hs1.gff.gz`, which is what the hg38 lane above reads
+  // too.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_chm13_allele',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: CHM13_WINDOW,
+          highlight: [{ ...CHM13_BUBBLE, color: 'rgba(60,65,72,0.10)' }],
+          tracks: [
+            // no gene lane on this pane: 17q25.3 is subtelomeric and RefSeq has
+            // one gene edge in the whole 30 kb, so the lane was blank. The bubble
+            // is what this pane is for -- a 1,023 bp reference span whose longest
+            // alternative is 146,023 bp, which is the number the graph below
+            // draws.
+            {
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              // cut to the one bubble this figure is about. 29 bubbles land in
+              // this 30 kb, each labelled over two lines, so the unfiltered lane
+              // packs ten rows of small print and the reader has to find the
+              // subject in it.
+              jexlFiltersSetting: ['jexl:feature.longestAlleleLength>100000'],
+              height: 60,
+            },
+            hprcSegmentsLane(CHM13_REGION),
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: CHM13_REGION,
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+        },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hs1',
+          loc: CHM13_ALLELE_WINDOW,
+          // the node's own span, drawn by the app from its coordinates rather
+          // than painted over the capture
+          highlight: [{ ...CHM13_ALLELE, color: 'rgba(60,65,72,0.10)' }],
+          tracks: [
+            {
+              trackId: 'hs1_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            // the same lane as the pane above, deliberately: a display's config
+            // is per track, so a second color here would repaint the first pane
+            // too. It needs no second color anyway -- the ramp's other branch
+            // paints every rank>0 segment dark grey, which is what the graph
+            // paints the boxed node, and every segment on this pane is rank 61.
+            hprcSegmentsLane(CHM13_REGION),
+          ],
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 180000,
+    allowUnsettled: true,
+    // the graph's own fetch is ~7 s here and the node box is anchored through the
+    // view's nodePositions, so a shorter settle can capture before there are any
+    settleMs: 14000,
+    viewportWidth: 1000,
+    viewportHeight: 1380,
+    hideTooltip: true,
+    annotations: [
+      {
+        type: 'box',
+        anchor: { view: 1, graphNode: CHM13_NODE },
+        strokeWidth: 3,
+      },
+    ],
   },
   // The allele inventory, which the HPRC tutorial documents in JSON and had no
   // picture of. It is a BED read by an AlignmentsTrack, and that pairing is the

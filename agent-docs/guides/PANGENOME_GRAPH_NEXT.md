@@ -237,14 +237,42 @@ Every file, locus and measured cost behind these is in
 [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) — the bubble
 scan, the release-2 files, and why CHM13 is the only donor worth loading.
 
-- **Load CHM13 as a second assembly. Cheapest item in this file by far.** Three
-  built interaction paths are dead on HPRC only because the config loads one
-  assembly: right-click a node → open the donor, highlight into the donor's view,
-  and the whole synteny launch (which needs two openable contributors). CHM13
-  contributes alleles throughout, spells its contigs `chr6`, and needs no
-  hosting — UCSC's `hs1` TwoBit, `hs1` gene bigBed, and the 2.7 MB
-  `hg38ToHs1.over.chain.gz` through `ChainAdapter`. The figure is one click:
-  an allele in the graph, opened on T2T coordinates with its own genes beside it.
+- ~~**Load CHM13 as a second assembly.**~~ Done 2026-08-02:
+  `test_data/graphgenomeview/hprc.json` carries an `hs1` assembly aliased
+  `CHM13`, the hosted `jbrowse.org/ucsc/hs1/hs1.gff.gz` genes, and a segments
+  track on both assemblies; `pangenome/hprc_chm13_allele` is the figure — a
+  142 kb CHM13-only node boxed in the graph, then that node on hs1's own chr17.
+  Four things this section got wrong or left out, each measured:
+  - **the plugin had to change, and did.** `resolveContributors` matched a node's
+    PanSN sample against `session.assemblyNames`, so the graph's `CHM13` only
+    resolved if the reader renamed their assembly after the graph. It now takes a
+    lookup built off `assemblyManager` (keyed by name *and* aliases) and replaces
+    the sample with the canonical name, so `hs1` with `CHM13` in `aliases` works
+    and the launch names the assembly `addView` can open. Deployed as
+    `9e8a983a6b62`; the adapter side still wants the explicit
+    `assemblyNameToPanSN: { hs1: 'CHM13' }`, which is what that slot is for.
+  - **CHM13 does not contribute "throughout".** It enters at rank 61, so
+    `tabix segs.bed.gz 'CHM13#0#chr1'` is 60 segments for all of chr1, and most
+    of them attach only to other donors. The figure's node was found by scanning
+    the links index per chromosome for CHM13 rows with a GRCh38 endpoint.
+  - **`hgdownload.soe.ucsc.edu` is not dependable from the capture box.** A
+    whole-file GET times out outright (`net::ERR_TIMED_OUT`, reproduced with a
+    bare in-browser `fetch`, while the same URL ranged returns 206), the ranged
+    2bit header read failed 2 of 6 captures, and the RefSeq bigBed failed twice
+    with generic-filehandle's "chrome CORS header caching bug" refetch failing
+    too. Three broken figures were committed before this was pinned down. Read
+    hs1 genes off `jbrowse.org/ucsc/hs1/hs1.gff.gz` (ours, and what the hg38 lane
+    already uses), and give a fixture assembly a committed `chrom.sizes` the way
+    the four haplotype rows in that config already do.
+  - **a display's config is per track, not per view.** The figure draws the
+    segments track in two panes; a `color` on the second pane repainted the
+    first. Both panes share `hprcSegmentsLane`, and the ramp's rank>0 branch
+    already paints CHM13's segments the dark grey the graph paints that node.
+
+  Still open from this item: the synteny launch (two openable contributors is now
+  true, and `jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz` is already
+  hosted and used by `test_data/hg38_hs1_synteny`) and
+  highlight-into-the-donor-view, neither of which has a figure yet.
 - **The mitochondrial pangenome, force-directed. Built and verified, needs two
   files hosted.** HPRC release 2's pggb build ships per chromosome and **chrM is
   78 kb compressed** against 2.5-7.4 GB for every autosome, so it is the one
@@ -345,3 +373,18 @@ All of these cost time on 2026-07-26.
   class.
 - **A raised `diffThreshold` keeps changes you meant to make.** See item 1, and
   the website `CLAUDE.md` section on `⚠ kept`.
+- **A synteny figure draws far more than its window, on both axes for different
+  reasons.** The fetch is region-scoped and `PAFAdapter` filters to the region it
+  is asked for, so the surprise is what that region is:
+  `LinearSyntenyDisplay.fetchRegions` is `syntenyFetchRegions` over the **query
+  axis only**, which is the visible window expanded by
+  `syntenyPanBufferPx = max(width * 0.5, 2000)` px of bp per side and snapped
+  outward to that grid. At 1000 px and 350 bp/px that is 700 kb per side, so the
+  inversion figure's level fetched `chr1:143.5-145.6 Mb` for a 350 kb frame — the
+  whole 1.2 Mb fixture slice. The target axis is then unscoped by design ("query
+  regions in, every mate out"), so a record whose mate sits a megabase off the
+  other row's window comes back too and draws a ribbon across the frame. That is
+  what put a crossed ribbon on the inversion figure's non-carrier row. Cut the
+  fixture PAF to the frame, and ask
+  `node scripts/probe-synteny-features.ts <spec>` what a figure actually drew
+  rather than reasoning about which records the view "should" have fetched.

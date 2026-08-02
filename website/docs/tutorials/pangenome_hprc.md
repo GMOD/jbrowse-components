@@ -440,6 +440,88 @@ rather than hundreds, the same menu opens any of them, or all at once as a
 synteny view. See the
 [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
 
+### The one donor worth loading
+
+On this graph exactly one contributor can be loaded as an assembly: CHM13. The
+haplotypes name their contigs by GenBank accession (`CM102524.1`), and there are
+464 of them; CHM13 spells its contigs `chr17`, and it is a published reference,
+T2T-CHM13v2.0, which UCSC serves as `hs1`. Its coordinates are that assembly's:
+the graph's largest CHM13 segment on chr17 ends at 84,141,510, past the end of
+GRCh38's chr17 and inside hs1's.
+
+Load it under its own name, with the graph's spelling as an alias. The view
+resolves a donor through `assemblyManager`, which is keyed by name and aliases
+alike, so `hs1` is what the launch opens and `CHM13` is what the graph says:
+
+```json addassembly
+{
+  "name": "hs1",
+  "displayName": "Human (T2T-CHM13v2.0/hs1)",
+  "aliases": ["CHM13", "T2T-CHM13v2.0"],
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "hs1-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
+    }
+  }
+}
+```
+
+Its genes are the same UCSC RefSeq set the hg38 lane above reads, on hs1:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hs1_ncbiRefSeq_ucsc",
+  "name": "NCBI RefSeq genes (hs1)",
+  "assemblyNames": ["hs1"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/ucsc/hs1/hs1.gff.gz",
+    "csi": true
+  }
+}
+```
+
+The segments track can draw on hs1 as well, which is where the `assemblyNameToPanSN`
+map earns its second entry: `hs1` asks for `CHM13#0#chr17` the same way `hg38`
+asks for `GRCh38#0#chr17`. This replaces the track [above](#load-the-graph), same
+`trackId`, one more assembly:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hprc_minigraph_segments",
+  "name": "HPRC release 2 graph (rGFA segments)",
+  "assemblyNames": ["hg38", "hs1"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "assemblyNameToPanSN": { "hg38": "GRCh38", "hs1": "CHM13" }
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+  }
+}
+```
+
+<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window, its bubble lane cut to bubbles holding an allele over 100 kb, with the banded bubble a 1,023 bp reference span. Middle: the graph cut from that window, where the boxed node is 142.2 kb of CHM13 sequence attached at a 75 bp anchor. Bottom: that node on hs1's own chr17, an interval with RefSeq genes over it, drawn by the same segments track." src="/img/pangenome/hprc_chm13_allele.png" />
+
+CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
+carries was already in the graph and little is credited to it:
+`tabix hprc-v2.0-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns 60 segments for
+the whole of chr1, and most attach only to other donors. Finding one that touches
+GRCh38, like the node above, means scanning the links index for CHM13 rows with a
+GRCh38 endpoint:
+
+```bash
+tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
+  'CHM13#0#chr17' |
+  awk -F'\t' '$6 ~ /^GRCh38/ || $10 ~ /^GRCh38/'
+```
+
 ## The bubble track
 
 A bubble is where haplotypes diverge and rejoin. The bubble track reports where
