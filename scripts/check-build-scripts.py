@@ -10,6 +10,7 @@ real pipeline steps. It does NOT download data or run the pipelines.
 Usage: python3 scripts/check-build-scripts.py
 """
 import ast
+import contextlib
 import glob
 import io
 import importlib.util
@@ -18,6 +19,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import sys
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -118,9 +120,9 @@ for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
             print(f"FAIL {doc} cites scripts/{name}, which does not exist")
             failed = True
 
-# Behavior, not just syntax, for the two helpers whose output is a hosted demo
-# artifact nobody re-derives by hand. Both had a bug that a syntax check cannot
-# see and that only shows up as a wrong figure weeks later.
+# Behavior, not just syntax, for the helpers whose output is a hosted demo
+# artifact nobody re-derives by hand. Each has had a bug that a syntax check
+# cannot see and that only shows up as a wrong figure weeks later.
 behavior = 0
 
 
@@ -254,6 +256,98 @@ check("depth ramp midpoint is the middle stop",
       gfa_nodes.sample_gradient(ramp, 0.5), (33, 145, 140))
 check("depth ramp clamps out-of-range t",
       gfa_nodes.sample_gradient(ramp, 2.0), (253, 231, 37))
+
+# sv_multihop.py: reconstructs the COLO829 derivative allele the cancer_sv demo
+# serves. Three bugs here produced a plausible-looking but wrong figure rather
+# than an error, which is what these pin.
+sv_multihop = load("scripts/sv_multihop.py", "sv_multihop")
+
+vcf = os.path.join(tempfile.mkdtemp(), "sv.vcf")
+with open(vcf, "w") as fh:
+    fh.write(
+        "##fileformat=VCFv4.2\n"
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        # reciprocal breakend pair, mate refName upper-cased as nanomonsv writes it
+        "chr3\t25359111\ta1\tG\tGTGATGGATTCA[CHR12:72273112[\t.\tPASS\tSVTYPE=BND\n"
+        "chr12\t72273112\ta0\tG\t]CHR3:25359111]TGAATCCATCAG\t.\tPASS\tSVTYPE=BND\n"
+        "chr3\t25359568\tb1\tG\tG[CHR10:58717464[\t.\tPASS\tSVTYPE=BND\n"
+        "chr10\t58717662\tc0\tG\tGC]CHR12:72273294]\t.\tPASS\tSVTYPE=BND\n"
+        "chr5\t1000\td\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000\n"
+    )
+junctions = sv_multihop.parse_junctions(vcf)
+# the reciprocal pair describes one junction twice; matching it needs the mate
+# refName lower-cased, or the chain silently comes out one junction too long
+check("parse_junctions collapses a reciprocal breakend pair", len(junctions), 4)
+check("parse_junctions reads a symbolic DEL's END",
+      ("chr5", 2000) in [e for j in junctions for e in j], True)
+
+chains = sv_multihop.find_chains(junctions, 20000, 3)
+check("find_chains groups junctions bridged by a short segment", len(chains), 1)
+check("find_chains leaves the unrelated DEL out", len(chains[0]), 3)
+check("chain_loci reports one position per distinct locus",
+      [c for c, _ in sv_multihop.chain_loci(chains[0], 20000)],
+      ["chr10", "chr12", "chr3"])
+check("find_chains needs the segment to be short",
+      sv_multihop.find_chains(junctions, 100, 3), [])
+
+check("reference_span counts only reference-consuming ops",
+      sv_multihop.reference_span("10S5M2I3D4N6M2H"), 18)
+
+# A read's chr3 arm can begin 50 kb from the breakpoint it crosses at its far
+# end. Testing proximity to the segment START (rather than containment) missed
+# half the spanning reads, including the longest, and the reconstruction was
+# built from what was left.
+far = [("chr3", 25309233, 25360000), ("chr10", 58717464, 58717663)]
+check("touches_all accepts a locus inside a segment, however it starts",
+      sv_multihop.touches_all(far, [("chr3", 25359111)], 5000), True)
+check("touches_all rejects a locus no segment covers",
+      sv_multihop.touches_all(far, [("chr12", 72273112)], 5000), False)
+check("touches_all requires every locus, not any",
+      sv_multihop.touches_all(far, [("chr3", 25359111), ("chr12", 72273112)], 5000),
+      False)
+check("touches_all matches refName case-insensitively",
+      sv_multihop.touches_all([("CHR3", 1, 100)], [("chr3", 50)], 0), True)
+
+# depmap_to_jbrowse.py: StarFusionAdapter keys off a '#'-prefixed header and
+# finds the breakpoint columns by name, so a plain CSV->TSV dump loads as an
+# empty track rather than failing.
+depmap = load("scripts/depmap_to_jbrowse.py", "depmap_to_jbrowse")
+d = tempfile.mkdtemp()
+src = os.path.join(d, "fusions.csv")
+with open(src, "w") as fh:
+    fh.write("ModelID,FusionName,JunctionReadCount,SpanningFragCount,SpliceType,"
+             "LeftGene,LeftBreakpoint,RightGene,RightBreakpoint,LargeAnchorSupport,"
+             "FFPM,LeftBreakDinuc,LeftBreakEntropy,RightBreakDinuc,RightBreakEntropy,"
+             "annots,CCLE_count\n"
+             "M1,LOW--CALL,3,1,X,A,chr1:1:+,B,chr2:2:-,YES,0.07,GT,1,AG,1,x,1\n"
+             "M1,BCR--ABL1,182,163,X,A,chr22:23290413:+,B,chr9:130854064:+,YES,3.99,GT,1,AG,1,x,1\n"
+             "M2,OTHER--LINE,9,9,X,A,chr3:3:+,B,chr4:4:+,YES,9.0,GT,1,AG,1,x,1\n")
+out = os.path.join(d, "sf.tsv")
+quiet = io.StringIO()
+with contextlib.redirect_stdout(quiet):
+    depmap.fusions(src, "M1", out)
+lines = open(out).read().splitlines()
+check("fusions writes the '#' header StarFusionAdapter looks for",
+      lines[0].startswith("#FusionName\t"), True)
+check("fusions keeps the breakpoint columns the adapter finds by name",
+      [lines[0].lstrip("#").split("\t").index(c)
+       for c in ("LeftBreakpoint", "RightBreakpoint")], [5, 7])
+check("fusions selects one model", len(lines) - 1, 2)
+check("fusions puts the strongest call first",
+      lines[1].split("\t")[0], "BCR--ABL1")
+
+seg_src = os.path.join(d, "seg.csv")
+with open(seg_src, "w") as fh:
+    fh.write("ProfileID,Chromosome,Start,End,SegmentMean,NumProbes,Status\n"
+             "P1,9,130731327,131152326,6.78,420,\n"
+             "P2,1,1,100,1.0,10,\n")
+seg_out = os.path.join(d, "seg.bedGraph")
+with contextlib.redirect_stdout(quiet):
+    depmap.segments(seg_src, "P1", seg_out)
+# DepMap names chromosomes bare and starts them 1-based; bedGraph is neither
+check("segments prefixes chr and converts to a 0-based start",
+      open(seg_out).read().split("\n")[0].split("\t")[:3],
+      ["chr9", "130731326", "131152326"])
 
 if failed:
     sys.exit(1)
