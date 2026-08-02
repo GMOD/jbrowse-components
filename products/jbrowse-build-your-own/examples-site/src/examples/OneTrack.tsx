@@ -56,9 +56,7 @@ const wiggleTrack = {
 function makeView() {
   const state = createViewState({
     assembly: volvox,
-    // createViewState's types describe the full config-schema shape; the plain
-    // literals above are the documented shorthand for it
-    tracks: [wiggleTrack] as never,
+    tracks: [wiggleTrack],
   })
   const { view } = state.session
   view.setInit({

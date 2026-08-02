@@ -69,7 +69,7 @@ const trackIds = ['volvox_microarray', 'volvox_genes', 'volvox_bam']
 function makeView() {
   const state = createViewState({
     assembly: volvox,
-    tracks: [wiggleTrack, featureTrack, alignmentsTrack] as never,
+    tracks: [wiggleTrack, featureTrack, alignmentsTrack],
   })
   const { view } = state.session
   view.setInit({

@@ -83,7 +83,7 @@ const RULER_HEIGHT = 22
 function makeView() {
   const state = createViewState({
     assembly: volvox,
-    tracks: [wiggleTrack, featureTrack, alignmentsTrack] as never,
+    tracks: [wiggleTrack, featureTrack, alignmentsTrack],
   })
   const { view } = state.session
   view.setInit({

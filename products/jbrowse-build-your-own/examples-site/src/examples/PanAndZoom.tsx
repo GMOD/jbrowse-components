@@ -40,7 +40,7 @@ const wiggleTrack = {
 function makeView() {
   const state = createViewState({
     assembly: volvox,
-    tracks: [wiggleTrack] as never,
+    tracks: [wiggleTrack],
   })
   const { view } = state.session
   view.setInit({
