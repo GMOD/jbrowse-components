@@ -274,8 +274,13 @@ documentation is not always an accurate list of what it emits. Read the types
 out of the file itself before writing the table:
 
 ```bash
-zcat annotations.gff.gz | grep -v '^#' | cut -f3 | sort | uniq -c | sort -rn
+awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
+  sort | uniq -c | sort -rn
 ```
+
+The `/^##FASTA/{exit}` matters: a GFF3 may carry its sequence inline after that
+marker, and those lines have no `#` to skip, so a plain `grep -v '^#' | cut -f3`
+counts DNA as feature types and buries the real ones under thousands of rows.
 
 Any type missing from the table falls through to `|| 'gray'`, so gray is the
 signal to go back and check that list.
@@ -302,9 +307,11 @@ that produced it used. That is the usual reason a key is missing, and the reason
 to read the types out of the file you actually have rather than from the
 pipeline's current documentation.
 
-Note these GFFs carry their sequence inline in a `##FASTA` block, which is most
-of the file size. Cut the file at that line before `bgzip`/`tabix` if you want
-an indexed track rather than a whole-file `Gff3Adapter` one.
+These are the GFFs with the inline `##FASTA` block noted above, which is most of
+their size. `Gff3Adapter` reads them as-is and stops at the sequence, so a
+whole-file track needs no preparation. Cut the file at that marker if you want a
+`bgzip`/`tabix` indexed track instead, since the sequence lines are not
+tab-delimited and tabix has no way to skip them.
 
 Wrap a callback in `log(...)` to print what it returns for each feature to the
 browser console.
