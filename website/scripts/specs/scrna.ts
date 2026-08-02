@@ -5,7 +5,9 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The tutorial's own config, rather than config_demo: the per-cell track needs
 // the Zarr plugin declared, which is a config-level thing. It carries the RefSeq
 // genes, the nine pseudobulk BigWigs, the per-cell Zarr matrix, and a copy of
-// the PBMC scATAC set so the two assays can be shown over one locus.
+// the PBMC scATAC set (which the prose covers; no figure uses it, since a
+// twelve-row accessibility stack under the nine RNA rows was a lot of frame for
+// "and the promoter is open too").
 const CONFIG = 'test_data/scrna_pbmc5k/config.json'
 
 // Figures for the single-cell RNA pseudobulk tutorial (scrna_pseudobulk.md).
@@ -22,34 +24,83 @@ const genes = {
   height: 60,
 }
 
+// The same lane for the multi-region marker panel, where showOnlyGenes is not
+// enough: several of those windows hold a gene with a dozen RefSeq isoforms, and
+// stacked they push the gene's own label out of a 60px lane. One transcript per
+// gene keeps each column labelled with the marker it is.
+const oneTranscriptPerGene = {
+  ...genes,
+  showOnlyGenes: false,
+  geneGlyphMode: 'longestCoding',
+  height: 80,
+}
+
+// One marker gene per row of the pseudobulk track, each as its own 4 kb region
+// in a single discontinuous view. Each window is the 3' 2 kb of a canonical PBMC
+// marker (10x 3' chemistry piles a cell's reads into the last ~1.5 kb of the
+// transcript), and the regions are in the same order as the track's rows, so the
+// signal walks diagonally down the frame: the row that carries each column is
+// the cell type that marker defines.
+//
+// Coordinates are the MANE Select transcript's 3' end for each gene, from the
+// UCSC `mane` track (a + strand gene's chromEnd, a - strand gene's chromStart).
+const MARKER_PANEL = [
+  // CD4 T
+  ['IL7R', 'chr5', 35879603],
+  // CD8 T
+  ['CD8A', 'chr2', 86784609],
+  // NK
+  ['GNLY', 'chr2', 85698852],
+  // B
+  ['MS4A1', 'chr11', 60470752],
+  // CD14 Mono
+  ['LYZ', 'chr12', 69354234],
+  // CD16 Mono
+  ['FCGR3A', 'chr1', 161541758],
+  // cDC
+  ['FCER1A', 'chr1', 159308202],
+  // pDC
+  ['LILRA4', 'chr19', 54333184],
+  // Platelet
+  ['PPBP', 'chr4', 73986438],
+] as const
+
+const MARKER_PANEL_LOC = MARKER_PANEL.map(
+  ([, refName, threePrime]) =>
+    `${refName}:${threePrime - 2000}-${threePrime + 2000}`,
+).join(' ')
+
 export const scrnaSpecs: ScreenshotSpec[] = [
-  // The same PBMCs through two assays. The RNA rows measure how much of the
-  // transcript each cell type made; the ATAC rows below measure whether the
-  // locus is open in that cell type at all.
+  // The whole point of a pseudobulk track in one frame: nine cell types down the
+  // rows, nine marker loci across the columns, and a peak wherever the two
+  // agree.
+  //
+  // Replaces three single-locus figures (one gene under the nine rows, the same
+  // gene's per-cell block at a second locus, and an RNA-over-ATAC pair) that
+  // each showed one column of this.
+  //
+  // Log scale, not linear. LYZ in monocytes is an order of magnitude above IL7R
+  // in CD4 T cells, and the nine rows share one autoscaled axis, so on a linear
+  // axis the LYZ column is the only one with visible height and the diagonal
+  // stops being the picture.
   {
     mode: 'url',
-    name: 'scrna/rna_atac_ms4a1',
+    name: 'scrna/marker_panel',
     url: sessionSpec(CONFIG, {
       views: [
         {
           assembly: 'hg38',
-          loc: 'chr11:60,452,000-60,475,000',
+          loc: MARKER_PANEL_LOC,
           type: 'LinearGenomeView',
           tracks: [
-            genes,
+            oneTranscriptPerGene,
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
-              height: 300,
-            },
-            {
-              // 12 subadapters, so 480 is 40px a row. At the 380 this had, the
-              // accessibility peaks were a few px tall and the last row was cut
-              // by the frame, which is what made the ATAC half unreadable next
-              // to the RNA half.
-              trackId: 'pbmc5k_scatac_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
-              height: 480,
+              scaleType: 'log',
+              // 9 rows, so 45px each: enough for a peak to have a shape rather
+              // than being a spike two pixels tall
+              height: 405,
             },
           ],
         },
@@ -57,7 +108,9 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 1115,
+    viewportWidth: 1900,
+    // nine rows plus the gene lane and the view's chrome
+    viewportHeight: 730,
   },
   // The pseudobulk row above its own cells: nine curves, then the 4390 rows they
   // are a sum over. The pinned low maximum is what makes the single-UMI cells in
@@ -107,76 +160,5 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     // monocyte block is the last of the nine cell-type blocks, so a frame that
     // ends early cuts off the one band the figure is about
     viewportHeight: 1110,
-  },
-  // The same per-cell store at the other marker, so the block moves with the
-  // lineage rather than being a property of one window: MS4A1 fills the B block
-  // and the monocyte block that carried LYZ is empty here. The Zarr covers one
-  // window per chromosome and this is the chr11 one.
-  //
-  // maxScore 1 rather than LYZ's 2. A B cell carries fewer MS4A1 UMIs than a
-  // monocyte carries LYZ, so on LYZ's ramp the home block is mid-scale and reads
-  // like the ambient speckle around it.
-  //
-  // The 3' exons, and the same track heights as the LYZ figure above: the
-  // caption's claim is that the block which fills MOVES between the two, so a
-  // different window scale or row height on one of them makes that a comparison
-  // between two pictures. Wider than LYZ's window because MS4A1's per-cell reads
-  // spread over its exons rather than piling on the 3' end.
-  {
-    mode: 'url',
-    name: 'scrna/percell_ms4a1',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          assembly: 'hg38',
-          loc: 'chr11:60,465,000-60,471,500',
-          type: 'LinearGenomeView',
-          tracks: [
-            genes,
-            {
-              trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
-              height: 150,
-            },
-            {
-              trackId: 'pbmc5k_scrna_percell_hg38',
-              type: 'MultiLinearWiggleDisplay',
-              minScore: 0,
-              maxScore: 1,
-              height: 620,
-            },
-          ],
-        },
-      ],
-    }),
-    readyTimeout: 120000,
-    settleMs: 20000,
-    viewportHeight: 1110,
-  },
-  // LYZ, so the pattern reads as general rather than one lucky gene: the two
-  // monocyte rows and the cDC row carry it, and the lymphocyte rows are flat.
-  {
-    mode: 'url',
-    name: 'scrna/lyz_monocyte',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          assembly: 'hg38',
-          loc: 'chr12:69,340,000-69,360,000',
-          type: 'LinearGenomeView',
-          tracks: [
-            genes,
-            {
-              trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
-              height: 330,
-            },
-          ],
-        },
-      ],
-    }),
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 630,
   },
 ]

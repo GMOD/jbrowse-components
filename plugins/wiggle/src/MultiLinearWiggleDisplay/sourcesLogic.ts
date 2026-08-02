@@ -28,6 +28,14 @@ export function withSourceAlias(s: SourceInfo): EditableSource {
 // instead, which the row-label sidebar paints and the ramp ignores. This is the
 // same split the Set Color dialog already makes by editing `labelColor` rather
 // than `color` in density mode.
+//
+// In density the row label falls back to the source's OWN `color` before the
+// group palette, because that color is what the ramp paints the row with: a
+// per-cell store that ships `color: #8c564b` for its monocytes and groups them
+// as "Monocyte" was drawing a brown block beside a purple label, two palettes
+// for one grouping (set1 by group index against the store's own). The label is
+// the key to the rows, so it has to name the color the rows actually are; the
+// group palette is for stores that supply no color of their own.
 function synthesizeColors(
   s: Source,
   index: number,
@@ -38,7 +46,7 @@ function synthesizeColors(
   const groupColor =
     s.group === undefined ? undefined : groupColors.get(s.group)
   return isDensityMode
-    ? { color: s.color, labelColor: s.labelColor ?? groupColor }
+    ? { color: s.color, labelColor: s.labelColor ?? s.color ?? groupColor }
     : {
         color:
           s.color ??

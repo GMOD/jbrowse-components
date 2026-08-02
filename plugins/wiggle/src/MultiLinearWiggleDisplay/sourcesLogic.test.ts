@@ -210,6 +210,27 @@ describe('buildSources', () => {
     expect(out[0]!.labelColor).toBeDefined()
   })
 
+  // The row label is the key to the rows, so where the source ships its own
+  // color -- which is what the density ramp paints the row with -- the label has
+  // to be that color rather than the group palette's entry for its group.
+  it('labels a density row with the source color rather than the group palette', () => {
+    const editable = buildEditableSources(
+      [
+        { name: 'a', color: '#8c564b', group: 'Monocyte' },
+        { name: 'b', color: '#e377c2', group: 'Monocyte' },
+        { name: 'c', group: 'Platelet' },
+      ],
+      [],
+    )
+    const out = buildSources(editable, undefined, false, true)
+    expect(out[0]!.labelColor).toBe('#8c564b')
+    // two cell types inside one group keep their own colors rather than
+    // collapsing to the group's
+    expect(out[1]!.labelColor).toBe('#e377c2')
+    // no color of its own, so the group palette still fills it in
+    expect(out[2]!.labelColor).toBe(overlayColors[1])
+  })
+
   it('keeps an explicitly set labelColor over the group color', () => {
     const editable = buildEditableSources(
       [{ name: 'a', labelColor: '#00ff00', group: 'PUR' }],

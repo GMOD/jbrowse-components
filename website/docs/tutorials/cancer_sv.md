@@ -88,22 +88,20 @@ every read crossing the junction has its remainder aligned elsewhere. The
 matched normal at the same locus is clean, which is what separates a somatic
 event from a mapping artefact.
 
-<Figure caption="COLO829 tumour above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumour reads clip; normal reads read through. The nanomonsv records between them name chr12 and chr10 in their ALT." src="/img/cancer_sv/multihop_tumour_vs_normal.png" />
+<Figure caption="Left: COLO829 tumour above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumour reads clip; normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT. Right: the same event as a breakpoint split view over all three loci, tumour reads only, where the reads leaving the chr3 panel reappear in the chr10 and chr12 panels." src="/img/cancer_sv/multihop_reads.png" />
 
 Soft clipping is off by default. Turn it on from the track menu with
 `Show soft clipping`.
 
 ## Following the chain across panels
 
-A breakpoint split view stacks the loci and draws the reads that leave one panel
-and arrive in another.
+A breakpoint split view, the right half of the figure above, stacks the loci and
+draws the reads that leave one panel and arrive in another.
 
 `ADD` -> `Breakpoint split view` opens an import form with one row per panel.
 The `+` button adds rows, and each row takes an assembly and a location, so the
-three loci from the `--loci` line above give the view below without writing any
+three loci from the `--loci` line above give that view without writing any
 session JSON.
-
-<Figure caption="The three loci of the chain side by side, tumour reads only. Reads leaving the chr3 panel reappear in the chr10 and chr12 panels." src="/img/cancer_sv/multihop_split_view.png" />
 
 For one read rather than the pileup, right-click a read and choose
 `Linear read vs ref`. That builds a synteny view with the read as its own
@@ -114,7 +112,9 @@ introduced for this.
 
 Stacked panels confirm that reads cross a junction, but they describe the event
 in reference coordinates. Laying it out along the derivative instead shows the
-order and orientation of the pieces.
+order and orientation of the pieces, which is the synteny view two sections
+down: the same three loci along the top, and the reconstructed derivative along
+the bottom with a ribbon per segment.
 
 ## Reconstructing the derivative allele
 

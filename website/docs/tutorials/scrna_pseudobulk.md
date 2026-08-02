@@ -28,7 +28,7 @@ A UMAP answers how much of a gene each cell type made. It cannot show where in
 the gene the reads landed, and that is the part a browser puts back: which end,
 which exons, which annotated transcript the pile actually agrees with.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset over LYZ, loaded as one MultiQuantitativeTrack. The two monocyte rows and the cDC row carry the pile, the lymphocyte rows are flat, and the pile sits at the 3' end of the gene rather than across it." src="/img/scrna/lyz_monocyte.png" />
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view: the 3' end of IL7R, CD8A, GNLY, MS4A1, LYZ, FCGR3A, FCER1A, LILRA4 and PPBP, in the same order as the rows they mark. The signal walks down the diagonal, and each column's pile sits at the 3' end of its gene rather than across it. Log scale, because LYZ in monocytes is an order of magnitude above IL7R in CD4 T cells and the rows share one axis." src="/img/scrna/marker_panel.png" />
 
 The pile at one end is not a defect. 10x 3' chemistry sequences the 3' end of
 each transcript, so a coverage track of that library is a spike near the
@@ -95,8 +95,6 @@ cells-by-bins Zarr matrix instead of one file per cell.
 
 <Figure caption="The nine pseudobulk rows at LYZ above the 4390 cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
-<Figure caption="The same store at MS4A1, on a lower pinned maximum. The block that carried LYZ is empty and the B block is the one that fills, so the pattern moves with the lineage rather than being a property of one window." src="/img/scrna/percell_ms4a1.png" />
-
 The speckle is the point. Above, the lymphocyte rows look like a low flat line
 next to the monocyte peak, which reads as silence. Per cell it is not silence: a
 third of those cells carry exactly one UMI of a monocyte gene, which is ambient
@@ -130,8 +128,8 @@ under a megabyte.
 ## Both assays over one locus
 
 Because the rows are just BigWigs, an RNA set and an ATAC set stack in one view.
-
-<Figure caption="The RNA rows above the scATAC rows at MS4A1, both from the same PBMCs. The RNA rows say which cell types transcribed the gene; the ATAC rows say where the locus is open, including the promoter that the RNA spike is nowhere near." src="/img/scrna/rna_atac_ms4a1.png" />
+The demo config carries a pseudobulk scATAC set over the same PBMCs beside the
+RNA one, so both can be opened at a marker locus from the track selector.
 
 The two assays disagree about where the interesting coordinate is, which is the
 point of looking at them together: accessibility marks the promoter and the

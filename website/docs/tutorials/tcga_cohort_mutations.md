@@ -117,13 +117,14 @@ Three choices there:
   on the adapter, which is what makes the clinical columns available to group
   and color rows by. Nothing groups until you ask for it, below.
 
-[`height`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-height) is
-worth setting generously at this row count. Rows auto-fit by dividing the
+[`height`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-height) sets
+how much of the page a cohort this size gets. Rows auto-fit by dividing the
 display height, and unlike the multi-row feature display they are allowed to go
-below a pixel: at 979 tumors in a short display, a mutation carried by one tumor
-paints a fraction of a pixel and effectively disappears. The figures below give
-each tumor about two pixels, which is what makes one band's mutation density
-comparable to another's by eye.
+below a pixel: a mutated tumor in a crowded band is then an antialiased smear
+that accumulates with its neighbors, so a band's mutation density reads as how
+dark it is. Giving every tumor its own visible row instead spreads the same
+marks over a frame several screens tall, where two bands can no longer be
+compared at a glance.
 
 ## Group the rows by clinical annotation
 
@@ -152,55 +153,60 @@ than being unexplained row ranges. Both are also in the track menu.
   "displays": [
     {
       "type": "LinearMultiSampleVariantMatrixDisplay",
-      "height": 1900,
+      "height": 450,
+      "lineZoneHeight": 130,
       "featureColor": "jexl:impactColor(feature)",
-      "groupBy": "subtype",
-      "colorBy": "subtype"
+      "groupBy": "histology",
+      "colorBy": "histology"
     }
   ]
 }
 ```
 
-<Figure caption="PIK3CA across 979 TCGA-BRCA primary tumors, rows grouped and colored by receptor subtype. Each column is one distinct somatic mutation and each row one tumor. Two things read at once: three columns are dense stripes where every other column is a tumor or two wide, and those stripes sit in the HR+/HER2- band rather than the triple-negative one below it." src="/img/tcga/mutations_pik3ca.png" />
+Point the two slots at `histology` and the rows band by how the tumor was called
+under the microscope:
 
-The three stripes are the canonical PIK3CA hotspots, H1047R in the kinase domain
-and E542K/E545K in the helical domain
-([TCGA 2012](https://doi.org/10.1038/nature11412)). Hovering a column in the
-live view names its mutation and its consequence, and clicking one opens the
-variant popup with the per-tumor read counts.
-
-The rest of the picture is the shape of somatic mutation data: most columns are
-one tumor wide. That is why the whole-genome view of this track is not worth
-opening, and why the figures here are all gene-scale. The GDC's open mutation
-calls are exome only, so there is no intergenic signal to see.
-
-## The same mechanic on other genes and other columns
-
-TP53 on the same subtype grouping puts the density in the other band:
-
-<Figure caption="TP53's coding exons with rows grouped and colored by receptor subtype. The triple-negative band is dense with mutations while the HR+/HER2- band, the cohort's largest, stays sparse, which is the opposite of what PIK3CA does on the same rows." src="/img/tcga/mutations_tp53_subtype.png" />
-
-The bottom band is `unknown`, the tumors whose receptor calls do not resolve a
-subtype. It is a gap in the annotation rather than a fourth subtype, which is
-worth knowing before reading anything into how dense it looks.
-
-Point the two slots at `histology` instead and the rows band by how the tumor
-was called under the microscope:
-
-<Figure caption="CDH1 with rows grouped and colored by histology. The truncating (HIGH impact) cells crowd into the lobular band, leaving the much larger ductal band nearly empty, and the connector fan ties each column to the exon it was called in." src="/img/tcga/mutations_cdh1_histology.png" />
+<Figure caption="CDH1's exons with rows grouped and colored by histology, the gene's introns collapsed, and ClinVar's germline submissions in the lane above. The truncating (HIGH impact) cells crowd into the lobular band and the much larger ductal band above it is nearly empty; the connector fan ties each column to the exon it was called in." src="/img/tcga/mutations_cdh1_histology.png" />
 
 E-cadherin loss is the defining lesion of lobular breast cancer
 ([Ciriello et al. 2015](https://doi.org/10.1016/j.cell.2015.09.033)), and
 grouping is what turns this window from a scatter of private mutations into that
 result.
 
-That figure also drags the connector band open
-([`lineZoneHeight`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-linezoneheight),
-or the handle under the band), which is worth doing wherever _where_ a mutation
-sits is part of the reading. A tumor suppressor is inactivated by any truncating
-call anywhere in the coding sequence, so the fan lands across the whole
-transcript; PIK3CA's stripes come off three codons, and at the default band that
-difference is not in either picture.
+Three things in that figure travel to any gene-scale matrix:
+
+- Right-clicking the gene and choosing **Collapse introns** reshapes the view to
+  its exons (see [](/docs/user_guides/linear_genome_view)). With the introns in
+  frame, every private intronic call takes a column of the matrix, and the
+  coding mutations are spread out among them; collapsed, every column is an
+  exonic change.
+- [`lineZoneHeight`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-linezoneheight)
+  (or the handle under the band) drags the connector band open, which is what
+  says whether a gene's calls pile on one codon or run the length of the
+  transcript. A tumor suppressor is inactivated by any truncating call anywhere
+  in the coding sequence, so CDH1's fan lands in exon after exon, where PIK3CA's
+  comes off three codons.
+- A ClinVar track over the same window puts the germline record beside the
+  somatic one. It is the same variant display and the same coordinates, so a
+  column of the matrix and a red tick in the lane above line up when a somatic
+  call sits where a pathogenic germline variant has been submitted.
+
+The shape of the rest of the picture is the shape of somatic mutation data: most
+columns are one tumor wide. That is why the whole-genome view of this track is
+not worth opening, and why the figures here are all gene-scale. The GDC's open
+mutation calls are exome only, so there is no intergenic signal to see.
+
+## The same mechanic on other columns
+
+Point the slots at `subtype` instead and the rows band by receptor status, which
+is where the cohort's other well-known contrast lives: TP53 mutations
+concentrate in the triple-negative band, and PIK3CA's hotspot codons (H1047R in
+the kinase domain, E542K/E545K in the helical one) in the HR+/HER2- band
+([TCGA 2012](https://doi.org/10.1038/nature11412)). Hovering a column in the
+live view names its mutation and its consequence, and clicking one opens the
+variant popup with the per-tumor read counts. The `unknown` band is the tumors
+whose receptor calls do not resolve a subtype, a gap in the annotation rather
+than a fourth subtype.
 
 ## Clustering instead of grouping
 

@@ -130,10 +130,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   scrna_pseudobulk: {
-    // the pseudobulk rows from the track header down, so the card carries the
-    // nine cell-type labels beside the rows that have the pile
-    src: 'scrna/lyz_monocyte.png',
-    band: [0.4, 1],
+    // the marker panel from the track header down, so the card carries the nine
+    // cell-type labels beside the diagonal the peaks walk down
+    src: 'scrna/marker_panel.png',
+    band: [0.35, 1],
     position: 'left',
   },
   ld_human: {

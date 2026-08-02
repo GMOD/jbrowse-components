@@ -123,7 +123,20 @@ function subtypeCallout({
 }): Annotation[] {
   const at = { track: 'tcga_brca_cnv_recurrence_by_subtype', locus, fracY: 0 }
   const y = (frac: number) => (row + frac) * SUBTYPE_ROW_PITCH
+  // The arrow FIRST, so the label's pill (opaque white) draws over its tail. A
+  // tail has to start inside the label to leave from it -- the pill's width is
+  // only known at capture time, so it can't be dodged by a dx -- and drawn
+  // second the shaft ran across the text instead.
+  //
+  // The tail leaves from the side of the label the head is on: a label to the
+  // right of its locus (labelDx > 0) is left by its left edge.
+  const tailDx = labelDx > 0 ? labelDx - 20 : labelDx + 20
   return [
+    {
+      type: 'arrow',
+      fromAnchor: { ...at, dx: tailDx, dy: y(labelDy) },
+      anchor: { ...at, dy: y(headDy) },
+    },
     {
       type: 'text',
       text,
@@ -131,11 +144,6 @@ function subtypeCallout({
       maxWidth: 240,
       anchor: { ...at, dy: y(labelDy) },
       dx: labelDx,
-    },
-    {
-      type: 'arrow',
-      fromAnchor: { ...at, dx: labelDx + 20, dy: y(labelDy) },
-      anchor: { ...at, dy: y(headDy) },
     },
   ]
 }
@@ -345,6 +353,35 @@ const LINE_ZONE_HEIGHT = 130
 // of the display height.
 const MATRIX_CHROME_HEIGHT = 330
 
+// Collapse the gene's introns by driving the app's own action: right-click the
+// gene in the MANE lane, "Collapse introns", then replace the current view. The
+// exon intervals come out of the live feature, so nothing here is a coordinate
+// list that could drift from the transcript the lane is drawing.
+const collapseIntrons = (gene: string) => [
+  { type: 'waitForText' as const, text: gene },
+  { type: 'rightclick' as const, text: gene },
+  { type: 'waitForText' as const, text: 'Collapse introns' },
+  { type: 'click' as const, text: 'Collapse introns' },
+  { type: 'waitForText' as const, text: 'Replace current view' },
+  {
+    type: 'click' as const,
+    selector: 'button::-p-text(Replace current view)',
+  },
+  {
+    type: 'waitForText' as const,
+    text: 'Replace current view',
+    hidden: true,
+  },
+  // the reshaped view refetches every track: the matrix's own done-testid is
+  // the only thing that says the 979 rows are back
+  {
+    type: 'waitForSelector' as const,
+    selector: '[data-testid="loading-overlay"]',
+    hidden: true,
+  },
+  { type: 'waitForSelector' as const, selector: MATRIX_DONE, timeout: 180000 },
+]
+
 // MANE gives one transcript per gene, so the lane names the gene in a single row
 // instead of an isoform stack. 84px is two rows' worth: content starts ~4px in
 // and the row pitch is 40px.
@@ -354,18 +391,33 @@ const MANE_TRACK = {
   height: 84,
 }
 
+// ClinVar's own submissions over the same window, as a one-row lane under the
+// gene: the germline record of a gene the cohort is mutating somatically. The
+// track ships with a CLNSIG color jexl in the config, so pathogenic calls are red
+// and benign ones blue without a per-figure color table.
+const CLINVAR_TRACK = {
+  trackId: 'clinvar_ncbi_hg38',
+  type: 'LinearVariantDisplay',
+  // one row of ticks, not a stack: this lane is here to be compared with the
+  // matrix's columns, not read variant by variant
+  displayMode: 'collapsed',
+  height: 40,
+}
+
 function mutationFigure({
   loc,
   groupBy = '',
   colorBy = '',
   height = 1010,
   lineZoneHeight = 20,
+  clinvar = false,
 }: {
   loc: string
   groupBy?: string
   colorBy?: string
   height?: number
   lineZoneHeight?: number
+  clinvar?: boolean
 }) {
   return kgUrl({
     sessionTracks: [
@@ -379,6 +431,7 @@ function mutationFigure({
         trackLabels: 'offset',
         tracks: [
           MANE_TRACK,
+          ...(clinvar ? [CLINVAR_TRACK] : []),
           {
             trackId: 'tcga_brca_mutations',
             type: 'LinearMultiSampleVariantMatrixDisplay',
@@ -586,65 +639,33 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
     settleMs: 10000,
     annotations: [
-      // row 1, HER2+ gain: the amplicon that names the subtype
+      // row 1, HER2+ gain: the amplicon that names the subtype. To the RIGHT of
+      // its locus, over chr18-22 where this row is flat; chr17 sits far enough
+      // from the frame's right edge for the pill to fit beside it.
       ...subtypeCallout({
         text: 'ERBB2 (17q12)',
         locus: '17:39,688,094',
         row: 1,
         labelDy: 0.25,
         headDy: 0.7,
-        labelDx: -250,
+        labelDx: 60,
       }),
       // row 4, HR+/HER2- loss: the arm-scale loss that is this subtype's
-      // signature the way 17q gain is HER2+'s
+      // signature the way 17q gain is HER2+'s. The label names a gene on the arm
+      // rather than the arm alone -- CDH1 is at 16q22.1, and it is the gene the
+      // mutation figures on this cohort are about -- since "16q loss" on its own
+      // says where the bar is and not why it is worth a callout. ERBB2 is on 17q,
+      // not here.
       ...subtypeCallout({
-        text: '16q loss',
+        text: '16q loss (CDH1 arm)',
         locus: '16:70,000,000',
         row: 4,
         labelDy: 0.6,
         headDy: 0.3,
-        // far enough left to clear the ERBB2 callout above it and to sit over
-        // chr13-14, where this row is flat
+        // far enough left to sit over chr13-14, where this row is flat
         labelDx: -420,
       }),
     ],
-  },
-
-  // PIK3CA, the cohort's most-mutated gene. The window is the whole MANE
-  // transcript, and every distinct mutation in it is one column: the three
-  // canonical hotspot codons (H1047R in the kinase domain, E542K/E545K in the
-  // helical one) are the columns carried by a large fraction of the cohort,
-  // against columns one tumor wide for everything else.
-  //
-  // Grouped by receptor subtype rather than clustered by genotype, which is the
-  // inverse of the TP53 figure and reads two things at once: the hotspot columns
-  // are dense vertical stripes wherever they fall, and they fall mostly in the
-  // HR+/HER2- band. Clustering instead puts every carrier in one block at the
-  // top, which does make each hotspot a solid bar, but two thirds of the frame
-  // is then the empty field below it and the clinical axis is gone. Both were
-  // rendered before choosing.
-  //
-  // No callouts naming those codons. The matrix lays columns out by feature
-  // index rather than at genomic x, so an `anchor: {track, locus}` would resolve
-  // through the bp->px layout and land next to whichever column happens to sit
-  // at that coordinate, which is not the one it names. The caption names them
-  // instead, and hovering a column in the live view labels it.
-  {
-    mode: 'url',
-    name: 'tcga/mutations_pik3ca',
-    url: mutationFigure({
-      loc: '3:179,148,000-179,240,500',
-      groupBy: 'subtype',
-      colorBy: 'subtype',
-      lineZoneHeight: LINE_ZONE_HEIGHT,
-      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
-    }),
-    readySelector: MATRIX_DONE,
-    readyTimeout: 300000,
-    viewportWidth: 1500,
-    viewportHeight:
-      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-    settleMs: 15000,
   },
 
   // CDH1 grouped by histology. E-cadherin loss is the defining lesion of lobular
@@ -665,47 +686,30 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'tcga/mutations_cdh1_histology',
     url: mutationFigure({
-      // exons 3-16 (68,801,670-68,835,537), not the whole transcript: CDH1's
-      // first intron is 63kb, so a window on the gene spends two thirds of its
-      // width on sequence carrying nothing and squeezes the exons the connector
-      // lines point into against the right edge
-      loc: '16:68,800,000-68,837,000',
+      // the whole transcript, which the actions below then collapse to its
+      // exons. Two reasons for collapsing beyond the empty space: CDH1's first
+      // intron alone is 63 kb, and a window with introns in it fills the matrix
+      // with intronic MODIFIER columns -- one grey column per private intronic
+      // call -- which is what spread the coding mutations thin. Collapsed, every
+      // column in the frame is an exonic change and the connector fan lands in
+      // one bundle per exon.
+      loc: '16:68,730,000-68,842,000',
       groupBy: 'histology',
       colorBy: 'histology',
       lineZoneHeight: LINE_ZONE_HEIGHT,
       height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+      clinvar: true,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
+    actions: collapseIntrons('CDH1'),
+    // collapsing introns raises an "Introns collapsed / UNDO" toast, which is
+    // real UI for a real click and has no business in the published frame
+    hideSelectors: ['.MuiSnackbar-root'],
     viewportWidth: 1500,
+    // the ClinVar lane on top of the matrix figures' usual chrome
     viewportHeight:
-      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-    settleMs: 10000,
-  },
-
-  // TP53 grouped by receptor subtype, the same mechanic on the other clinical
-  // column: the triple-negative band is mutated at several times the rate of
-  // the HR+/HER2- band, which is the cohort's largest.
-  //
-  // The coding exons rather than the whole 20kb transcript. Over the transcript
-  // the window carries 210 columns, most of them one intronic MODIFIER call, and
-  // spreading the real mutations across those columns is what made the density
-  // difference between the bands hard to read.
-  {
-    mode: 'url',
-    name: 'tcga/mutations_tp53_subtype',
-    url: mutationFigure({
-      loc: '17:7,673,000-7,677,000',
-      groupBy: 'subtype',
-      colorBy: 'subtype',
-      lineZoneHeight: LINE_ZONE_HEIGHT,
-      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
-    }),
-    readySelector: MATRIX_DONE,
-    readyTimeout: 180000,
-    viewportWidth: 1500,
-    viewportHeight:
-      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
+      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT + 60,
     settleMs: 10000,
   },
 ]

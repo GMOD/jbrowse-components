@@ -197,63 +197,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Projection 2: the decomposed variant tier, which had no figure at all while
-  // this page's only view of it was the lane riding above the MAF. The matrix
-  // display rather than the per-position one: it is the display that reads a
-  // pangenome VCF as a sample-by-site matrix, which is what a callset over a
-  // graph is for.
-  //
-  // No jexl length filter, unlike the MAF figure. That filter existed to hide
-  // the snarl tree's wide parent records, and `pggb -V K12:10000` pops them in
-  // the pipeline instead (vcfbub -l 0 -a 10000 | vcfwave), so the track loads
-  // an already-flat tier and the display needs nothing said to it.
-  //
-  // 120 kb at chr:480,000, NOT the MAF figure's window (review: "this doesn't
-  // seem like a very interesting screenshot ... can consider deleting also").
-  // That window gave every row the same dense blue barcode, which is a texture
-  // rather than a result. This one is picked on the genotypes themselves —
-  // counting per-strain no-calls per 50 kb over the whole VCF and taking a span
-  // where the four strains disagree about what they are doing — so the four
-  // rows read four different ways: IAI39 and CFT073 have long no-call blocks
-  // where they do not align to K12 at all, NCTC86 is nearly solid
-  // homozygous-reference across the window, and Sakai differs at sites right
-  // through it. That contrast is the thing a genotype matrix over a graph can
-  // state and the coverage projections cannot.
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_variants',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:480,000-600,000',
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
-            {
-              trackId: 'ecoli_pggb_variants',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 260,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: '540,000',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    // tall enough for the gene lane plus all four non-reference rows: at 480 the
-    // capture cut the matrix off after CFT073 and IAI39, so the figure showed
-    // two strains under a caption that says one row per strain
-    viewportHeight: 600,
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-
   // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, above
   // graph complexity from `odgi degree`, as a whole-chromosome overview so the
   // shared plateau and the accessory dips read at a glance. No gene lane: at

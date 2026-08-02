@@ -43,6 +43,13 @@ const SV = 'COLO829_somatic_sv'
 // what makes the wall of clipping legible as a wall.
 const SUPER_COMPACT = { featureHeight: 1, featureSpacing: 0 }
 
+// The two halves of cancer_sv/multihop_reads: the evidence at one breakpoint and
+// the chain across all three loci, side by side rather than a screen of figure
+// each. `+append` needs them the same height, and half the usual width each
+// keeps the pair the width of any other wide figure on the site.
+const MULTIHOP_HEIGHT = 960
+const MULTIHOP_WIDTH = 950
+
 // The Compact preset (featureHeight 3 / featureSpacing 0). K562's Iso-Seq is
 // ~600x over BCR, and at one row per pixel that many reads merge into a solid
 // block; three keeps individual transcripts separable while still fitting an
@@ -83,7 +90,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/multihop_tumour_vs_normal',
-    viewportHeight: 860,
+    // this and multihop_split_view are the two halves of
+    // cancer_sv/multihop_reads, which +appends them, so they share a HEIGHT and
+    // each takes half the width a single figure would
+    viewportHeight: MULTIHOP_HEIGHT,
+    viewportWidth: MULTIHOP_WIDTH,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // tight enough that both chr3 breakpoints (25,359,111 and 25,359,568) sit
@@ -93,17 +104,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         GENE_TRACK,
         { trackId: SV, height: 70 },
         // soft-clipped tails are the whole signal here: with clipping hidden the
-        // tumour pileup looks as flat as the normal
+        // tumour pileup looks as flat as the normal.
+        //
+        // Each track is the size of its own pileup at one row per pixel, and
+        // MULTIHOP_HEIGHT is set from the total: a taller track here is blank
+        // page under the reads rather than more of them.
         {
           trackId: TUMOUR,
           showSoftClipping: true,
-          height: 270,
+          height: 300,
           ...SUPER_COMPACT,
         },
         {
           trackId: NORMAL,
           showSoftClipping: true,
-          height: 150,
+          height: 170,
           ...SUPER_COMPACT,
         },
       ],
@@ -116,7 +131,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/multihop_split_view',
-    viewportHeight: 1130,
+    viewportHeight: MULTIHOP_HEIGHT,
+    viewportWidth: MULTIHOP_WIDTH,
     url: sessionSpec(CONFIG, {
       views: [
         {
@@ -130,11 +146,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // primary tumour window, the two hops are 60-70x), so a panel is the
           // size of its own pileup rather than 250px of white under a short one.
           views: [
-            { loc: HOPS.rarb, readHeight: 250, geneHeight: 60 },
-            { loc: HOPS.bicc1, readHeight: 130, geneHeight: 60 },
+            { loc: HOPS.rarb, readHeight: 185, geneHeight: 50 },
+            { loc: HOPS.bicc1, readHeight: 95, geneHeight: 55 },
             // the chr12 window is the one that clears a gene's 5' end, so it
             // stacks TRHDE over TRHDE-AS1 and needs the second row
-            { loc: HOPS.trhde, readHeight: 140, geneHeight: 100 },
+            { loc: HOPS.trhde, readHeight: 105, geneHeight: 80 },
           ].map(({ loc, readHeight, geneHeight }) => ({
             assembly: 'hg38',
             loc,
@@ -146,6 +162,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+  },
+
+  // The two above as one figure, since they are one event twice: the reads clip
+  // at the chr3 breakpoint on the left, and the panels on the right are where
+  // the clipped halves went. Side by side rather than stacked, because they are
+  // alternative views of the same locus rather than steps of a procedure, and
+  // because two screens of pileup down a tutorial page is a lot of page.
+  {
+    mode: 'compose',
+    name: 'cancer_sv/multihop_reads',
+    parts: [
+      'cancer_sv/multihop_tumour_vs_normal',
+      'cancer_sv/multihop_split_view',
+    ],
+    direction: 'horizontal',
   },
 
   // The reconstruction: the derivative contig on the bottom row against the

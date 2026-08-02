@@ -266,10 +266,12 @@ its genomic position:
 }
 ```
 
-<Figure caption="The decomposed variant tier over 120 kb of K12 in the matrix display: one column per site, one row per strain, colored by genotype, with the gene lane above. Each strain reads differently — IAI39 and CFT073 have long yellow stretches where they do not align to K12 at all, NCTC86 is almost all reference across the whole window, and Sakai differs at sites throughout it." src="/img/pangenome/pggb_variants.png" />
-
 Stack the MAF alignment (below) in the same window and each variant row sits
-above the per-strain alignment it was decomposed from.
+above the per-strain alignment it was decomposed from, which is the figure under
+[Whole-genome alignment (MAF) projection](#whole-genome-alignment-maf-projection):
+the same track over the same coordinates as the alignment rows the calls came
+out of. On its own the tier reads as a barcode; over the alignment, a strain's
+no-call block and the gap it has in the alignment are the same event twice.
 
 ### Why the reference path takes a length
 

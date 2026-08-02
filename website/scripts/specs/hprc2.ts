@@ -69,6 +69,14 @@ export const hprc2Specs: ScreenshotSpec[] = [
   // would spread them evenly across the width and break that correspondence.
   // Matrix mode earns its keep on thousands of tightly-spaced columns, which is
   // exactly what the SV filter removes.
+  //
+  // A plain LinearVariantDisplay of the SAME calls rides above the haplotype
+  // rows (reviewer). The multi-sample display answers "which haplotypes carry
+  // it" and says nothing about the call itself; the lane above is one glyph per
+  // site, so a column of the matrix has a variant with a width, a type and a
+  // popup over it. It is a second track config on the same VCF because a track
+  // appears once in a view: same adapter, same jexl filter, so the two lanes
+  // cannot disagree about which sites they are showing.
   {
     mode: 'url',
     name: 'hprc2/mhc_clustered',
@@ -96,6 +104,16 @@ export const hprc2Specs: ScreenshotSpec[] = [
             },
           },
         },
+        {
+          type: 'VariantTrack',
+          trackId: 'hprc2_wave_grch38_sites',
+          name: 'HPRC2 pangenome: structural alleles (>=50 bp)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz',
+          },
+        },
       ],
       views: [
         {
@@ -111,6 +129,20 @@ export const hprc2Specs: ScreenshotSpec[] = [
               // lane spent 145 px of a 780 px frame on ~40 px of glyphs, all of
               // it taken off the matrix, which is what the figure is for
               height: 70,
+            },
+            {
+              trackId: 'hprc2_wave_grch38_sites',
+              type: 'LinearVariantDisplay',
+              // jexlFiltersSetting, not jexlFilters: on this display family the
+              // config slot holds UNPREFIXED expressions and activeFilters()
+              // prefixes them on read, so passing the multi-sample display's
+              // already-prefixed strings there produces `jexl:jexl:...`
+              jexlFiltersSetting: SV_FILTER,
+              // one row of glyphs: the sites are what this lane is for, and
+              // stacking them by overlap would spend the frame's remaining
+              // height on the same 198 calls
+              displayMode: 'collapsed',
+              height: 45,
             },
             {
               trackId: TRACK,
@@ -133,7 +165,7 @@ export const hprc2Specs: ScreenshotSpec[] = [
     // the last haplotype rows ran off the frame, which reads as a clipped track
     // rather than as the bottom of the cohort (the run's own below-the-fold
     // report is what this is measured against, not the PNG)
-    viewportHeight: 825,
+    viewportHeight: 910,
     settleMs: 5000,
     hideTooltip: true,
     actions: [
