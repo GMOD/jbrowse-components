@@ -83,6 +83,8 @@ export {
   BaseLinearDisplayComponent,
   BlockMsg,
   DisplayChrome,
+  DisplayChromeBase,
+  DisplayChromeOverlayProvider,
   DisplayContainer,
   DisplayErrorBar,
   DisplayLoadingOverlay,
@@ -116,10 +118,15 @@ export {
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  DisplayChromeOverlays,
   FetchContext,
   HeightMode,
   HeightModeMenuModel,
 } from './BaseLinearDisplay/index.ts'
+// plain, toolkit-free overlays: pair with DisplayChromeOverlayProvider to make
+// JBrowse's own displays render without MUI, or with DisplayChromeBase to also
+// keep MUI out of the bundle. See components/chromeOverlays.ts.
+export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
 // re-exported so LGV plugins that host their own (non-GPU) chrome can share the
 // single terminal-state precedence instead of re-encoding it (arc's SVG chrome)
 export { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'

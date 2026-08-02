@@ -9,6 +9,13 @@ export {
 export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'
 export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'
+// The toolkit-free half of the chrome, for embedders supplying their own
+// overlays. Importing DisplayChromeBase + plainChromeOverlays instead of
+// DisplayChrome keeps MUI out of the graph entirely; see chromeOverlays.ts.
+export { DisplayChromeOverlayProvider } from './components/DisplayChrome.tsx'
+export { default as DisplayChromeBase } from './components/DisplayChromeBase.tsx'
+export { default as plainChromeOverlays } from './components/plainChromeOverlays.tsx'
+export type { DisplayChromeOverlays } from './components/chromeOverlays.ts'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
