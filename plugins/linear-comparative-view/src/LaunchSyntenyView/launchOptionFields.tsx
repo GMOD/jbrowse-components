@@ -111,6 +111,11 @@ export function CollapsePanelsCheckbox({
 // Padding added to both sides of every launched panel. `undefined` is a cleared
 // or invalid field, which the dialogs turn into a disabled Submit rather than
 // silently launching on the default.
+//
+// Inline-level, like the checkboxes above it, so with an odd number of them it
+// shares the last one's line as a second column. Checked at full resolution in
+// genomes_synteny/launch_sequence's dialog frame: it reads as a labelled field
+// of its own there, so it is left flowing rather than forced onto a new row.
 export function WindowSizeField({
   onChange,
 }: {
