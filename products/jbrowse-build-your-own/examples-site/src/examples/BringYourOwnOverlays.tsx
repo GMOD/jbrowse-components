@@ -94,6 +94,9 @@ function makeView() {
     loc: 'ctgA:1..20,000',
     tracks: trackIds,
   })
+  // see the Pan and zoom page: scroll-to-zoom is a session preference, shared
+  // with any display that scrolls vertically inside itself
+  view.setScrollZoom(true)
   return view
 }
 
@@ -157,13 +160,17 @@ const TrackRow = observer(function TrackRow({
 })
 
 // see the Pan and zoom page for why the wheel listener is native and
-// non-passive, and for what `scrollZoom` decides
+// non-passive, for what `scrollZoom` decides, and for why shift+wheel is left
+// to whatever is under the cursor
 function wheelPanZoom(
   view: BrowserView,
   el: HTMLElement,
   { scrollZoom, onNeedsCtrl }: { scrollZoom: boolean; onNeedsCtrl: () => void },
 ) {
   return (event: WheelEvent) => {
+    if (event.shiftKey && scrollZoom) {
+      return
+    }
     const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
     const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
     const ctrlZoom = event.ctrlKey || event.metaKey
@@ -190,10 +197,10 @@ const HINT_LINGER_MS = 1200
 function usePanZoom(
   view: BrowserView,
   ref: React.RefObject<HTMLDivElement | null>,
-  { scrollZoom = true }: { scrollZoom?: boolean } = {},
 ) {
   const dragging = useRef<number | undefined>(undefined)
   const [hint, setHint] = useState(false)
+  const { scrollZoom } = view
 
   useEffect(() => {
     const el = ref.current

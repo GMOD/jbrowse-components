@@ -48,6 +48,10 @@ function makeView() {
     loc: 'ctgA:1..50,000',
     tracks: ['volvox_microarray'],
   })
+  // scroll-to-zoom is a *session* preference, off by default, and the displays
+  // read it too -- see the note on `wheelPanZoom`. Set it here, not in a piece
+  // of React state of your own.
+  view.setScrollZoom(true)
   return view
 }
 
@@ -127,8 +131,19 @@ const TrackRow = observer(function TrackRow({
  * there is no way to discover why. `onNeedsCtrl` is the fix Google Maps uses --
  * say so, on the element, at the moment it happens.
  *
- * shift+wheel stays an escape hatch in both modes: browsers report it as a
- * horizontal delta, so it falls through to the pan branch.
+ * **Read `scrollZoom` off the view, don't invent your own copy.** Some displays
+ * scroll vertically inside themselves -- an alignments pileup is the one you
+ * will hit first -- and their own wheel handler consults the very same
+ * `view.scrollZoom` to decide whether the plain wheel is already spoken for. A
+ * private `useState` here that disagrees with the session gets you both at once:
+ * the pileup scrolls its reads *and* the view zooms under the cursor.
+ *
+ * That handoff is also what the shift bail below is for. With scrolling-zoom on,
+ * the plain wheel is taken, so shift+wheel is what those inner panels scroll
+ * with, and this handler has to keep its hands off it. With scrolling-zoom off
+ * the plain wheel is free, and shift+wheel falls through to the pan branch --
+ * browsers report it as a horizontal delta. JBrowse's own view draws the line in
+ * exactly the same place.
  */
 function wheelPanZoom(
   view: BrowserView,
@@ -136,6 +151,9 @@ function wheelPanZoom(
   { scrollZoom, onNeedsCtrl }: { scrollZoom: boolean; onNeedsCtrl: () => void },
 ) {
   return (event: WheelEvent) => {
+    if (event.shiftKey && scrollZoom) {
+      return
+    }
     // deltas arrive in pixels, lines or pages depending on browser and device;
     // without this a Firefox notch pans a fraction of a Chrome one
     const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
@@ -180,10 +198,12 @@ const HINT_LINGER_MS = 1200
 function usePanZoom(
   view: BrowserView,
   ref: React.RefObject<HTMLDivElement | null>,
-  { scrollZoom = true }: { scrollZoom?: boolean } = {},
 ) {
   const dragging = useRef<number | undefined>(undefined)
   const [hint, setHint] = useState(false)
+  // observable, so flipping the preference re-runs the effect below and every
+  // display picks up the same flip in the same render
+  const { scrollZoom } = view
 
   // Wheel is a native listener rather than React's `onWheel` prop, and that is
   // not a style preference. React registers `wheel` at the root as a *passive*
@@ -283,11 +303,10 @@ function ZoomHint({ show }: { show: boolean }) {
 
 const PanAndZoom = observer(function PanAndZoom() {
   const view = useMemo(() => makeView(), [])
-  // `scrollZoom` is on by default, because a browser that owns its area of the
-  // page should zoom the way a map does. Uncheck to see the other mode.
-  const [scrollZoom, setScrollZoom] = useState(true)
+  // `makeView` turns this on, because a browser that owns its area of the page
+  // should zoom the way a map does. Uncheck to see the other mode.
   const ref = useViewWidth(view)
-  const { hint, props } = usePanZoom(view, ref, { scrollZoom })
+  const { hint, props } = usePanZoom(view, ref)
 
   return (
     <div>
@@ -302,9 +321,9 @@ const PanAndZoom = observer(function PanAndZoom() {
       >
         <input
           type="checkbox"
-          checked={scrollZoom}
+          checked={view.scrollZoom}
           onChange={event => {
-            setScrollZoom(event.target.checked)
+            view.setScrollZoom(event.target.checked)
           }}
         />
         Wheel zooms directly (uncheck to require ctrl, and see the prompt)
