@@ -20,7 +20,7 @@ tool behind it and is meant to be reusable against any somatic SV callset.
 | `https://jbrowse.org/demos/cancer_sv/` | hosted data, 2.3 GB, 18 files |
 
 Behavior checks for both python helpers live in `scripts/check-build-scripts.py`
-(40 checks total, was 24). It also gained a `contextlib`/`tempfile` import.
+(54 checks total, was 24). It also gained a `contextlib`/`tempfile` import.
 
 ## Verified facts, do not re-derive
 
@@ -93,9 +93,9 @@ Three things about the contig-to-reference alignment are not obvious:
 added for building a fusion-transcript contig from Iso-Seq and nothing has run
 that path yet.
 
-## Three bugs worth knowing about
+## Four bugs worth knowing about
 
-All three produced a plausible wrong answer rather than an error, and all three
+All four produced a plausible wrong answer rather than an error, and all four
 are now pinned by behavior checks:
 
 - `touches_all` originally tested proximity to a segment's **start** rather than
@@ -108,47 +108,77 @@ are now pinned by behavior checks:
 - `depmap_to_jbrowse` must emit the `#`-prefixed header; `StarFusionAdapter`
   finds `LeftBreakpoint`/`RightBreakpoint` by name off that line and otherwise
   loads an empty track without complaining.
+- The reference windows `derive` aligns the contig against were unmerged, so two
+  loci on one chromosome — which is what a foldback is — put that sequence in
+  the target twice. Every genuine hit then tied at MAPQ 0 and `--min-mapq`
+  dropped it, leaving a "reconstruction" consisting of the templated insert
+  alone. COLO829's own run passed one locus per chromosome and never hit it.
+  Found by running the pipeline on a synthetic foldback (below); fixed by
+  merging the windows.
+
+## How to exercise `derive` without the demo data
+
+A synthetic foldback runs the whole pipeline in seconds and has a known answer,
+which is how the MAPQ-0 bug above surfaced. Build a two-contig reference, splice
+a derivative out of it (`chrA[0:20000] + chrB[1000:1200] +
+revcomp(chrA[10000:16000])`), simulate a dozen whole-molecule reads at ~1% error
+plus a few that touch one locus only, `minimap2 -ax map-ont | samtools sort`,
+then `derive --loci chrA:20000,chrB:1100,chrA:13000`. The PAF should come back as
+the three segments, at MAPQ 60, matching the splice above; anything less is the
+window/tie failure. Feeding the emitted `--jbrowse-out` config to jbrowse-web
+(serve it under `products/jbrowse-web/build/`) is what proves the wiring.
+
+## Done since this was written
+
+- **The settle gate is semantic.** `assertViewsPresent` in
+  `website/scripts/generate-screenshots.ts` reads each spec's own
+  `session=spec-…` back out of its url and compares that view tree — nested
+  panels included — against live `window.JBrowseSession.views`. A floor, not an
+  equality: an `actions` chain can open a view and nothing in the suite closes
+  one. It runs even under `allowUnsettled`, which opts out of "still loading",
+  not out of "the view never existed".
+- **`derive --jbrowse-out`** writes the `config.json` wiring the four outputs
+  (both assemblies, synteny PAF, segment BED, realigned reads) with paths
+  relative to the config, and prints the `session=spec-` url that opens them as
+  a synteny view. `--ref-name` names the reference assembly. Verified end to end
+  against jbrowse-web on the synthetic foldback above.
 
 ## Open items, ranked
 
-1. **Re-render the two synteny figures from a clean build.**
-   `derivative_synteny` and `derivative_inserts` were captured against a
-   `products/jbrowse-web` build that contained other agents' uncommitted synteny
-   and dotplot source changes. They are committed as-is and should not be
-   treated as a baseline until re-rendered.
-2. **Sweep the new error-snackbar gate across all figures.** It caught two
-   broken figures of mine; it has only been sampled against three existing ones.
-   A full `pnpm screenshots --force` run is the real test and needs a quiet
-   worktree (port 3334 is exclusive).
-3. **Make the settle gate semantic.** The snackbar check is per-symptom. A spec
-   that declares N views and ends with zero views is broken however the failure
-   was reported, and `window.JBrowseSession.views.length` is already reachable
-   from the harness (it is what annotation anchoring resolves through).
-4. **`derive --jbrowse-out`.** The tool emits an assembly, a PAF, a labelled BED
-   and a BAM, but not the `config.json` wiring them. That config was hand
-   written for the demo. Emitting it would make the tool self-contained for
-   someone running it on their own tumour, and is the natural integration seam.
-5. **HCC1395 multi-caller copy number.** SEQC2 publishes CNV output from six
-   callers plus SNP arrays on one tumour, all hg38, and PacBio Revio HiFi
-   tumour/normal BAMs are public at
-   `downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/`. "Callers disagree,
-   adjudicate them against the reads" is a distinct tutorial from the existing
-   C-GIAB one.
-6. **COLO320-DM ecDNA.** The strongest remaining focal-amplification story
-   (MYC on ecDNA, CN ~100). Blocked here only by disk: the ONT data is raw
-   fastq in `PRJNA1110283` (33-53 GB per run) and needs a genome-wide minimap2
-   run before anything is browsable.
+- **Re-render the two synteny figures from a clean build.**
+  `derivative_synteny` and `derivative_inserts` were captured against a
+  `products/jbrowse-web` build that contained other agents' uncommitted synteny
+  and dotplot source changes. They are committed as-is and should not be
+  treated as a baseline until re-rendered.
+- **Sweep the new capture gates across all figures.** The error-snackbar check
+  caught two broken figures; it has only been sampled against three existing
+  ones. The semantic gate above ships unswept for the same reason — it was
+  exercised against a single-view spec, a nested-panel synteny spec, a dotplot
+  and an import form (0 declared views), plus its failure path against an
+  injected phantom view at both levels. A full `pnpm screenshots --force` run is
+  the real test and needs a quiet worktree (port 3334 is exclusive).
+- **HCC1395 multi-caller copy number.** SEQC2 publishes CNV output from six
+  callers plus SNP arrays on one tumour, all hg38, and PacBio Revio HiFi
+  tumour/normal BAMs are public at
+  `downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/`. "Callers disagree,
+  adjudicate them against the reads" is a distinct tutorial from the existing
+  C-GIAB one.
+- **COLO320-DM ecDNA.** The strongest remaining focal-amplification story
+  (MYC on ecDNA, CN ~100). Blocked here only by disk: the ONT data is raw
+  fastq in `PRJNA1110283` (33-53 GB per run) and needs a genome-wide minimap2
+  run before anything is browsable.
 
 ## Should sv_multihop become its own repo
 
-Deferred, deliberately. It is ~470 lines with two PATH dependencies and one
+Deferred, deliberately. It is ~600 lines with two PATH dependencies and one
 proven consumer. Extracting now would put a version skew between the tutorial
 and the tool (the build-script convention curls helpers from this repo's
 `main`), and would move the only CI it has.
 
 **Trigger for revisiting:** a second real consumer, or an external user wanting
 to run it on their own callset. Either makes the interface concrete instead of
-guessed. Item 4 above is the seam to build first either way.
+guessed. `--jbrowse-out` is the seam that makes a standalone run browsable, so
+that is now what an external user would exercise first.
 
 ## Traps in this worktree
 
