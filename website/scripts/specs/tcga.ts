@@ -1,6 +1,6 @@
 import { kgUrl } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The 1000 Genomes config's hg38 assembly names its contigs bare (`1`, `X`), so
 // the view's displayedRegionNames use that form. The BED's own `chr`-prefixed
@@ -95,6 +95,51 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
   ],
 }
 
+// Eight equal rows share this, so a row is SUBTYPE_ROWS_HEIGHT/8 px tall and
+// SUBTYPE_ROW_PITCH is what the callouts below measure their dy against.
+const SUBTYPE_ROWS_HEIGHT = 500
+const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 8
+
+// A label for one event in one of the eight subtype rows, with an arrow into the
+// bars. `row` is the row index and `labelDy`/`headDy` are fractions of that
+// row's own height, so every offset is stated in the layout's own units and a
+// change to SUBTYPE_ROWS_HEIGHT moves the callouts with the rows. fracY stays 0
+// (the track's top edge) rather than a fraction of the whole track, so a row
+// index reads as a row index.
+function subtypeCallout({
+  text,
+  locus,
+  row,
+  labelDy,
+  headDy,
+  labelDx,
+}: {
+  text: string
+  locus: string
+  row: number
+  labelDy: number
+  headDy: number
+  labelDx: number
+}): Annotation[] {
+  const at = { track: 'tcga_brca_cnv_recurrence_by_subtype', locus, fracY: 0 }
+  const y = (frac: number) => (row + frac) * SUBTYPE_ROW_PITCH
+  return [
+    {
+      type: 'text',
+      text,
+      fontSize: 18,
+      maxWidth: 240,
+      anchor: { ...at, dy: y(labelDy) },
+      dx: labelDx,
+    },
+    {
+      type: 'arrow',
+      fromAnchor: { ...at, dx: labelDx + 20, dy: y(labelDy) },
+      anchor: { ...at, dy: y(headDy) },
+    },
+  ]
+}
+
 // The same tally as TCGA_BRCA_RECURRENCE_TRACK, run once per receptor subtype:
 // cnv_recurrence.py --groups gives each group its own gain and loss column,
 // BedGraphTabixAdapter reads every column past `end` as its own signal, and
@@ -136,7 +181,7 @@ const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
   displays: [
     {
       type: 'MultiLinearWiggleDisplay',
-      height: 620,
+      height: SUBTYPE_ROWS_HEIGHT,
       posColor: '#b2182b',
       negColor: '#2166ac',
       minScore: -70,
@@ -271,16 +316,33 @@ function mutationTrack({
 // each capture on real completion rather than on a duration guess.
 const MATRIX_DONE = '[data-testid="variant-matrix-display-done"]'
 
-// Display height for the 979-row cohort matrices, i.e. about 2px per tumor.
-// Rows auto-fit by dividing the height and are allowed below a pixel, and at
-// 1px a somatic call is a hairline dash: the density difference between two
-// clinical bands (measured 78% of triple-negative tumors against 19% of
-// HR+/HER2- at TP53) is in the pixels but not legible. Rendered at both heights
-// before picking this one.
-const MATRIX_ROWS_HEIGHT = 1900
+// Display height for the 979-row cohort matrices, i.e. about a third of a pixel
+// per tumor. Rows auto-fit by dividing the height and are allowed below a pixel
+// (effectiveRowHeight only floors at 1 when the line zone has swallowed the
+// display), and drawVariantMatrixBlocks deliberately draws sub-pixel cells at
+// float coordinates with a 0.3px overdraw rather than snapping them to a pixel.
+// So a mutated tumor in a crowded band is an antialiased smear that accumulates
+// with its neighbours, and the density difference between two clinical bands
+// reads as one band being darker than the other -- which is the comparison
+// these figures exist to make. Giving each tumor its own visible row instead
+// (1900px, reviewed and rejected) spreads the same marks over a frame six times
+// taller, where the contrast is a property of two screens of grey.
+const MATRIX_ROWS_HEIGHT = 320
 
-// The gene track, the view's own chrome and the connector band above the rows,
-// on top of the display height.
+// The connector band between the gene lane and the rows, where each column's
+// line lands on the base it came from. Tall enough to be read as a fan rather
+// than a fringe, which is what says whether a gene's calls pile on one codon
+// (PIK3CA) or run the length of the transcript (CDH1, TP53) -- the matrix packs
+// columns by feature index and on its own says nothing about position.
+//
+// It also decides where the floating legend sits. The legend pins to the top
+// right of the DISPLAY, so with a thin band it covers the top rows of the
+// right-most columns, which on PIK3CA is the H1047R hotspot in the band the
+// figure is about. A band this tall puts it over the connector zone instead.
+const LINE_ZONE_HEIGHT = 130
+
+// The gene track and the view's own chrome (header, ruler, track label), on top
+// of the display height.
 const MATRIX_CHROME_HEIGHT = 330
 
 // MANE gives one transcript per gene, so the lane names the gene in a single row
@@ -487,10 +549,13 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // 10p gain the triple-negative row, and 1q gain is the event they share. A
   // zoom would carry one of those and imply the rest are alike.
   //
-  // No callouts. Eight rows of 100kb bars across 23 chromosomes leaves no space
-  // a label could sit in without covering a row, and the arm-scale blocks the
-  // figure is read at are wide enough to find from the ruler. The caption names
-  // them instead.
+  // Two callouts, one per subtype-specific event, each sitting in the half of
+  // its own row that the bars leave empty: a gain row fills upward from its
+  // baseline, so its label goes near the row's top edge, and a loss row hangs
+  // downward, so its label goes near the bottom. Both anchor to the locus in the
+  // live view (`{track, locus}` resolves through the same bp->px layout that
+  // painted the bar), with dy measured off the track's top edge in whole row
+  // pitches, so neither has a hand-measured coordinate in it.
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_recurrence_subtype',
@@ -506,7 +571,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
             {
               trackId: 'tcga_brca_cnv_recurrence_by_subtype',
               type: 'MultiLinearWiggleDisplay',
-              height: 620,
+              height: SUBTYPE_ROWS_HEIGHT,
             },
           ],
         },
@@ -517,10 +582,32 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // raised navigation or ready budget
     readyTimeout: 180000,
     viewportWidth: 1900,
-    // the 620px display plus the view's own chrome: the generator reported 62px
-    // clipped at 760
-    viewportHeight: 830,
+    // the display plus the view's own chrome (ruler, header, track label)
+    viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
     settleMs: 10000,
+    annotations: [
+      // row 1, HER2+ gain: the amplicon that names the subtype
+      ...subtypeCallout({
+        text: 'ERBB2 (17q12)',
+        locus: '17:39,688,094',
+        row: 1,
+        labelDy: 0.25,
+        headDy: 0.7,
+        labelDx: -250,
+      }),
+      // row 4, HR+/HER2- loss: the arm-scale loss that is this subtype's
+      // signature the way 17q gain is HER2+'s
+      ...subtypeCallout({
+        text: '16q loss',
+        locus: '16:70,000,000',
+        row: 4,
+        labelDy: 0.6,
+        headDy: 0.3,
+        // far enough left to clear the ERBB2 callout above it and to sit over
+        // chr13-14, where this row is flat
+        labelDx: -420,
+      }),
+    ],
   },
 
   // PIK3CA, the cohort's most-mutated gene. The window is the whole MANE
@@ -549,12 +636,14 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       loc: '3:179,148,000-179,240,500',
       groupBy: 'subtype',
       colorBy: 'subtype',
-      height: MATRIX_ROWS_HEIGHT,
+      lineZoneHeight: LINE_ZONE_HEIGHT,
+      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 300000,
     viewportWidth: 1500,
-    viewportHeight: MATRIX_ROWS_HEIGHT + MATRIX_CHROME_HEIGHT,
+    viewportHeight:
+      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 15000,
   },
 
@@ -567,29 +656,30 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // rows contiguous, `colorBy` puts the color strip in the gutter that says
   // which band is which. Without the strip the bands are unlabeled row ranges.
   //
-  // A tall connector band, unlike the other two figures. The matrix packs
-  // columns by feature index, so on its own it says nothing about where in the
-  // gene a mutation is; here that is half the result. CDH1 is a tumor
-  // suppressor and its truncating calls are spread along the transcript rather
-  // than piled on a codon, which is the contrast with the PIK3CA figure's three
-  // hotspot bars, and the connector fan is what makes it visible: 90 of the
-  // window's 114 columns are HIGH impact and their lines land right across the
-  // exons of the lane above. `height` goes up by the same amount so the rows
-  // keep the 990px they had.
+  // The connector fan is half the result here. CDH1 is a tumor suppressor and its
+  // truncating calls are spread along the transcript rather than piled on a
+  // codon, which is the contrast with PIK3CA's three hotspot bars: most of this
+  // window's columns are HIGH impact and their lines land right across the exons
+  // of the lane above.
   {
     mode: 'url',
     name: 'tcga/mutations_cdh1_histology',
     url: mutationFigure({
-      loc: '16:68,730,000-68,840,000',
+      // exons 3-16 (68,801,670-68,835,537), not the whole transcript: CDH1's
+      // first intron is 63kb, so a window on the gene spends two thirds of its
+      // width on sequence carrying nothing and squeezes the exons the connector
+      // lines point into against the right edge
+      loc: '16:68,800,000-68,837,000',
       groupBy: 'histology',
       colorBy: 'histology',
-      lineZoneHeight: 130,
-      height: MATRIX_ROWS_HEIGHT + 130,
+      lineZoneHeight: LINE_ZONE_HEIGHT,
+      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
     viewportWidth: 1500,
-    viewportHeight: MATRIX_ROWS_HEIGHT + 130 + MATRIX_CHROME_HEIGHT,
+    viewportHeight:
+      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 10000,
   },
 
@@ -608,12 +698,14 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       loc: '17:7,673,000-7,677,000',
       groupBy: 'subtype',
       colorBy: 'subtype',
-      height: MATRIX_ROWS_HEIGHT,
+      lineZoneHeight: LINE_ZONE_HEIGHT,
+      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
     viewportWidth: 1500,
-    viewportHeight: MATRIX_ROWS_HEIGHT + MATRIX_CHROME_HEIGHT,
+    viewportHeight:
+      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 10000,
   },
 ]
