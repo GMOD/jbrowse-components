@@ -619,6 +619,75 @@ async function assertSamePageAsReady(page: Page, spec: BrowserScreenshotSpec) {
   }
 }
 
+// What a spec's page asked the network for, so a timeout can say which fetch
+// it was waiting on.
+//
+// A `readySelector` that never appears is the same error message whether the
+// app crashed, the selector is wrong, or a remote file the view needs is
+// unreachable — and the last of those is the common one, because most specs
+// read 2bit/chrom.sizes/PIF straight off hgdownload or jbrowse.org. The console
+// listener does print `net::ERR_TIMED_OUT` when it happens, but interleaved
+// across four concurrent specs and hundreds of lines above a FAILURE SUMMARY
+// that repeats only "Waiting for selector failed". That is how a spec whose
+// real problem was one flaky UCSC fetch got diagnosed as a config bug and
+// "fixed" by an unrelated rename.
+//
+// So: hold the failed and the still-outstanding requests, and let the failure
+// path name them.
+function trackNetwork(page: Page) {
+  const failed = new Map<string, { errorText: string; count: number }>()
+  const inflight = new Map<object, { url: string; start: number }>()
+  page.on('request', r => {
+    inflight.set(r, { url: r.url(), start: Date.now() })
+  })
+  const settle = (r: object) => inflight.delete(r)
+  page.on('requestfinished', settle)
+  page.on('requestfailed', r => {
+    settle(r)
+    // a navigation supersedes its pending requests and aborts them; that is
+    // routine and says nothing about reachability
+    const errorText = r.failure()?.errorText ?? 'unknown'
+    if (errorText !== 'net::ERR_ABORTED') {
+      const prev = failed.get(r.url())
+      failed.set(r.url(), { errorText, count: (prev?.count ?? 0) + 1 })
+    }
+  })
+  return { failed, inflight }
+}
+
+// Requests are keyed by URL for the report because the interesting case is one
+// file retried: `generic-filehandle` refetches once to work around a Chrome CORS
+// caching bug, so a host that is genuinely down shows up as the same URL twice
+// rather than as two separate lines.
+function describeNetwork(
+  { failed, inflight }: ReturnType<typeof trackNetwork>,
+  now = Date.now(),
+) {
+  const short = (url: string) =>
+    url.length > 100 ? `${url.slice(0, 97)}...` : url
+  const lines = [
+    ...[...failed].map(
+      ([url, { errorText, count }]) =>
+        `    ${errorText}${count > 1 ? ` (x${count})` : ''} ${short(url)}`,
+    ),
+    // Anything still outstanding when the wait gave up. Sub-second requests are
+    // just whatever was in flight at that instant, so only report the ones that
+    // have been open long enough to be the reason.
+    ...[...inflight.values()]
+      .filter(({ start }) => now - start > 5000)
+      .sort((a, b) => a.start - b.start)
+      .map(
+        ({ url, start }) =>
+          `    still pending after ${Math.round((now - start) / 1000)}s ${short(url)}`,
+      ),
+  ]
+  return lines.length
+    ? `\n  network:\n${lines.slice(0, 8).join('\n')}${
+        lines.length > 8 ? `\n    ...and ${lines.length - 8} more` : ''
+      }`
+    : ''
+}
+
 // Kill CSS transitions and animations for the whole capture session, installed
 // before any app script runs so it covers the action chain too, not just the
 // final frame. Menus, ripples and MUI Grow/Fade fly-outs then jump straight to
@@ -1466,7 +1535,19 @@ async function main() {
       page.on('pageerror', (err: unknown) => {
         report('pageerror', err instanceof Error ? err.message : String(err))
       })
-      return await body(page)
+      const net = trackNetwork(page)
+      try {
+        return await body(page)
+      } catch (err) {
+        // Attach the diagnosis to the error itself rather than logging it here,
+        // so it travels into `failures` and gets reprinted in the FAILURE
+        // SUMMARY. That summary is the only part of a long concurrent run
+        // anyone reads.
+        const detail = describeNetwork(net)
+        throw detail && err instanceof Error
+          ? new Error(`${err.message}${detail}`, { cause: err })
+          : err
+      }
     } finally {
       await browser.close()
     }
