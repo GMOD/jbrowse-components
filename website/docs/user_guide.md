@@ -67,6 +67,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/mcscan_synteny)
+- [](/docs/tutorials/orthofinder_synteny)
 
 ### Structural variation
 

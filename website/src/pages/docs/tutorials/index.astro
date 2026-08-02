@@ -118,7 +118,14 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
 // - embedding_examples links out to the Storybook. Nothing in the repo is a
 //   capture of that site, and any doc figure would be a picture of something
 //   else.
-const NO_THUMB = new Set(['cli_desktop', 'embedding_examples'])
+// - orthofinder_synteny has no figure yet: its view needs an OrthoFinder run
+//   hosted as a demo config, which no spec can build. Give it a figure and it
+//   comes off this list.
+const NO_THUMB = new Set([
+  'cli_desktop',
+  'embedding_examples',
+  'orthofinder_synteny',
+])
 const HAS_THUMB = new Set(
   tutorials.map(t => t.key).filter(k => !NO_THUMB.has(k)),
 )

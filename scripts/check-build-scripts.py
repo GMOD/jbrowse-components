@@ -484,6 +484,43 @@ check("unmatched_refnames passes the stripped names",
       mcx.unmatched_refnames(mcx.bed_rows(mcx_genes, "at", {}, False, ""), fai)[0],
       [])
 
+# orthogroups_to_blocks.py: an OrthoFinder cell holds every gene of that genome
+# in the orthogroup, so the duplicated case is the whole design. Reducing it to
+# one gene draws a confident link the data does not support, and in a polyploid
+# it hides the duplication that is the reason for looking.
+og = load("scripts/orthogroups_to_blocks.py", "orthogroups_to_blocks")
+dup = ["Os01g1", "Zm01a, Zm01b", "Sb01g"]
+check("expand emits a row per copy, every direct link kept",
+      og.orthogroup_rows(dup, "expand", 4, [None] * 3),
+      [["Os01g1", "Zm01a", "Sb01g"], ["Os01g1", "Zm01b", "Sb01g"]])
+check("single empties an ambiguous cell rather than choosing",
+      og.orthogroup_rows(dup, "single", 4, [None] * 3),
+      [["Os01g1", ".", "Sb01g"]])
+check("first takes the gene OrthoFinder happened to list first",
+      og.orthogroup_rows(dup, "first", 4, [None] * 3),
+      [["Os01g1", "Zm01a", "Sb01g"]])
+# expansion is index-paired, not a product: two duplicated columns cost two rows
+check("expand pairs copies by index instead of multiplying them out",
+      len(og.orthogroup_rows(["A1, A2", "B1, B2", "C1"], "expand", 4, [None] * 3)), 2)
+check("a cell past --max-copies is a gene family and contributes nothing",
+      og.orthogroup_rows(["Os1", "Z1, Z2, Z3", "Sb1"], "expand", 2, [None] * 3),
+      [["Os1", ".", "Sb1"]])
+# a row with one gene names no link, and would draw nothing while inflating the
+# table
+check("an orthogroup present in one genome only is dropped",
+      og.orthogroup_rows(["Os1", "", ""], "expand", 4, [None] * 3), [])
+# OrthoFinder ids come from the protein FASTA headers; ids the BED cannot
+# resolve draw nothing, so they are dropped here where the count is reported
+check("a gene the BED does not have is not counted as an answer",
+      og.orthogroup_rows(dup, "expand", 4, [None, {"Zm01b"}, None]),
+      [["Os01g1", "Zm01b", "Sb01g"]])
+# the header row is the column order, which is what blockAssemblies must be
+check("column_names drops the proteome file's extensions",
+      og.column_names(["rice.pep.fa", "maize.pep"], {}), ["rice", "maize"])
+check("column_names applies --assembly to the raw or stripped name",
+      og.column_names(["rice.pep.fa", "Zm-B73.pep"], {"Zm-B73": "maize"}),
+      ["rice", "maize"])
+
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "

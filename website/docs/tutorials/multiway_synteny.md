@@ -113,24 +113,21 @@ tutorial's `.anchors` files instead of a table.
 
 `Orthogroups.tsv` is already one row per orthogroup and one column per genome,
 but it carries a header row, a leading `Orthogroup` id column, and
-comma-separated gene lists per cell. Drop the first two and keep one gene per
-cell:
+comma-separated gene lists per cell:
 
 ```bash
-tail -n +2 Orthogroups.tsv \
-  | cut -f2- \
-  | awk -F'\t' -v OFS='\t' '{
-      for (i = 1; i <= NF; i++) {
-        sub(/,.*/, "", $i)
-        gsub(/ /, "", $i)
-        if ($i == "") $i = "."
-      }
-      print
-    }' > orthogroups.blocks
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
+python3 orthogroups_to_blocks.py Orthogroups.tsv -o grape.blocks \
+  --bed grape=grape.bed --bed peach=peach.bed
 ```
 
-`blockAssemblies` then lists the genomes in the order of the header row you
-dropped, which is the order of the FASTAs you gave OrthoFinder.
+`blockAssemblies` comes from the header row rather than from the order the
+FASTAs were given to OrthoFinder, and the script prints it. Reducing a cell that
+holds several genes is the part worth choosing deliberately: by default a
+duplicated gene becomes one row per copy, so a polyploid draws a ribbon to each,
+rather than one link to whichever gene happened to be listed first. See
+[](/docs/tutorials/orthofinder_synteny), which builds a five-genome view this
+way.
 
 ### From reciprocal best BLAST hits
 
