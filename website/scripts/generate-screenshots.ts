@@ -387,6 +387,24 @@ async function assertRenderSettled(page: Page, spec: BrowserScreenshotSpec) {
         })
       }
     }
+    // error snackbar (session.notifyError -> SnackbarContents, which tags its
+    // Alert data-testid="snackbar-<level>"). A different surface from the
+    // ErrorBar above, and it carries no reload_button, so a view that failed to
+    // *launch* used to capture a blank page and report success: two
+    // BreakpointSplitView figures that passed their panels under `init` instead
+    // of `views` shipped as empty sessions before this check existed. Warnings
+    // are not failures; only the error level is.
+    for (const el of document.querySelectorAll(
+      '[data-testid="snackbar-error"]',
+    )) {
+      if (isVisible(el)) {
+        found.push({
+          kind: 'error-snackbar',
+          text: (el as HTMLElement).innerText.slice(0, 300),
+        })
+      }
+    }
+
     // region-too-large message (TooLargeMessage's BlockMsg carries no test-id, so
     // key off its own literal); own text nodes only, so the wrapping Alert and
     // every ancestor up to body don't each report the same message
