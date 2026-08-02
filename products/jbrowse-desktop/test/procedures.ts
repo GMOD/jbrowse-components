@@ -206,25 +206,14 @@ export const PROCEDURES: Record<string, Procedure> = {
             labelSide: 'left',
             maxWidth: 190,
           }),
-          ...step({
-            n: 4,
-            anchor: { text: 'Next' },
-            label: 'Then confirm the guessed track type',
-            labelSide: 'left',
-            maxWidth: 190,
-          }),
         ],
       },
       {
+        // No callout. The frame is the result, and a box around the whole view
+        // labelled "the track is added to the view" tells a reader what they
+        // are already looking at -- as did a badge on the form's Next button.
         title: 'session with the new track',
-        annotations: step({
-          n: 5,
-          anchor: { view: 0 },
-          label: 'The track is added to the open view',
-          labelSide: 'below',
-          labelDx: 40,
-          labelDy: 14,
-        }),
+        annotations: [],
       },
     ],
   },
@@ -299,28 +288,73 @@ function trimFrame(file: string, keep = 20): void {
   }
 }
 
-// Stack the frames into one figure, separated by a rule so a reader sees three
-// screenshots rather than one tall one.
-const SEPARATOR = '#8b93a1'
-const SEPARATOR_PX = 4
+// Window decoration, drawn on rather than captured. Selenium screenshots the
+// page, so a frame is the app's viewport with nothing around it -- the title
+// bar belongs to the window manager and never appears. Stacked, bare rectangles
+// read as one long scroll of app, which is why the frames used to need a rule
+// between them to separate at all. A title bar per frame says "this is a
+// window" without a rule, and says it the same way on every machine's WM.
+const TITLEBAR_PX = 28
+const TITLEBAR_COLOR = '#e9ebef'
+const WINDOW_BORDER = '#a9b0ba'
+// the three-dot cluster, in the order every client-side decoration draws it
+const WINDOW_DOTS = ['#ec6a5e', '#f4bf4f', '#61c554']
+const DOT_RADIUS = 5
+const DOT_PITCH = 20
+const DOT_X = 20
 
+// Between frames, so the windows read as three pictures rather than a stack
+// welded together. Transparent rather than a page color: these figures render
+// on a docs page that has a light and a dark theme, and a baked-in white gap
+// would be a white bar down the middle of the dark one.
+const FRAME_GAP_PX = 26
+
+// A frame plus its simulated window chrome, as an ImageMagick parenthesized
+// group. The title bar is spliced above the capture and the dots are drawn into
+// it; the 1px border goes on last so it surrounds both.
+function windowFrame(file: string, gapAbove: boolean): string[] {
+  const dots = WINDOW_DOTS.flatMap((color, i) => {
+    const cx = DOT_X + i * DOT_PITCH
+    const cy = Math.round(TITLEBAR_PX / 2)
+    return [
+      '-fill',
+      color,
+      '-draw',
+      `circle ${cx},${cy} ${cx},${cy + DOT_RADIUS}`,
+    ]
+  })
+  return [
+    '(',
+    file,
+    '-background',
+    TITLEBAR_COLOR,
+    '-splice',
+    `0x${TITLEBAR_PX}`,
+    ...dots,
+    '-bordercolor',
+    WINDOW_BORDER,
+    '-border',
+    '1',
+    ...(gapAbove
+      ? ['-background', 'none', '-splice', `0x${FRAME_GAP_PX}`]
+      : []),
+    ')',
+  ]
+}
+
+// Stack the frames into one figure, each in its own window.
 export function composeProcedure(frames: string[], outPath: string): void {
   for (const frame of frames) {
     trimFrame(frame)
   }
-  const [first, ...rest] = frames
   execFileSync(IM, [
-    first!,
-    ...rest.flatMap(f => [
-      '(',
-      f,
-      '-background',
-      SEPARATOR,
-      '-splice',
-      `0x${SEPARATOR_PX}`,
-      ')',
-    ]),
+    ...frames.flatMap((f, i) => windowFrame(f, i > 0)),
+    '-background',
+    'none',
     '-append',
+    // splicing leaves the first frame's geometry as the result's virtual
+    // canvas, which every later `convert` on this file then crops to
+    '+repage',
     outPath,
   ])
 }
