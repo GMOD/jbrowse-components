@@ -38,11 +38,12 @@ The blue curve is the recombination track
 − r² between adjacent variants. It sits near zero across the block and spikes at
 its edges.
 
-### Cut the window wider than the block
+### Cut the slice wider than the block
 
 A slice that begins where the block begins cannot show that it ends, and renders
 as a triangle filling the frame. The reproduce script prints r² against the
-causal variant along the slice, which is how to pick the edges.
+causal variant along the slice, which is how to pick the edges. Note this is the
+file, not the view: zooming out past the end of the file only adds white.
 
 ### Subset the VCF to one panel
 

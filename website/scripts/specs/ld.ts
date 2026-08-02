@@ -19,15 +19,17 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // on the EBI FTP being up. The VCF names the contig "2"; the hosted UCSC hg19
 // hub's chromAlias reconciles "chr2" at query time.
 //
-// TWO SLICES, DELIBERATELY. The lactase figure reads a 3.3 Mb one
-// (chr2:134.6-137.9 Mb, scripts/build_lct_ld.sh); the pooled-vs-panel figure
-// keeps the original 1.65 Mb pair (chr2:135.8-137.4 Mb). The original began at
-// 135.75 Mb, which is also where the swept block begins, so the figure was cut
-// at the edge it was claiming and nothing in it distinguished "the LD ends here"
-// from "the file ends here" (review: "the recombination triangle covers whole
-// screen. what is user supposed to take away?"). The pooled figure is about
-// which SAMPLES went in rather than where the block ends, and a pooled slice of
-// the wider window is ~23 MB behind a live link.
+// BOTH LCT FIGURES READ THE 3.3 Mb SLICES (chr2:134.6-137.9 Mb, built by
+// scripts/build_lct_ld.sh: `_eur_wide` 4.5 MB, `_pooled_wide` 16.6 MB). The
+// original 1.65 Mb pair began at 135.75 Mb, which is also where the swept block
+// begins, so a figure on them was cut at the edge it was claiming and nothing in
+// it distinguished "the LD ends here" from "the file ends here" (review: "the
+// recombination triangle covers whole screen. what is user supposed to take
+// away?"). The pooled-vs-panel figure was left narrow for one round, on the
+// grounds that its point is which SAMPLES went in; that made the page teach "cut
+// the window wider than the block" above a figure that doesn't, so it moved too.
+// The pooled lane's live link now fetches 16.6 MB, which is the cost of the
+// wider window on 2504 samples.
 //
 // LD IS PER-POPULATION, SO THE SLICE IS TOO. The figure used to run on the
 // pooled 2504-sample file and the block came out pink and fragmented, because
@@ -86,9 +88,15 @@ const lctTrack = (name: string) => ({
 // right, so this carries the block plus about a megabase either side of it.
 const LCT_LOC = 'chr2:134,700,000-137,800,000'
 
-// The pooled-vs-panel window, narrower because its files are: at LCT_LOC those
-// two lanes would start a megabase inside the frame, which reads as missing data.
-const LCT_WIDE_LOC = 'chr2:135,300,000-137,500,000'
+// Both LCT figures take the same window. This one is the expensive render of the
+// two: r² is computed live, and the pooled lane correlates 5008 haplotypes
+// against the panel's 1006. It still lands in about 100 s, so the readyTimeout
+// below is headroom rather than a measured need. Two intermediate windows (1.4
+// and 2.1 Mb) were rendered while narrowing this down after the full window
+// appeared to hang twice; that turned out to be CPU contention with another
+// generator run on the same machine, not the window. If it hangs again, check for
+// a second `generate-screenshots` process before shrinking anything.
+const LCT_WIDE_LOC = LCT_LOC
 
 // Band the LCT/MCM6 locus so the reader sees the high-r² block sits right over
 // the lactase gene (the enhancer variant rs4988235 is in an MCM6 intron,
@@ -192,6 +200,15 @@ const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 // not what this page is for. The population-specific-sweep lesson is carried by
 // the Anopheles figure, where the populations are mosquitoes and presence or
 // absence of the arrangement is itself the result.
+//
+// A second panel lane was measured rather than argued about, and the measurement
+// does NOT say it would look bad: over the block, mean pairwise r² is 0.826 in
+// this panel, 0.508 pooled, and 0.175 in the release's largest other panel, but
+// that third number is long-range pairs. Locally (pairs within 100 kb) that panel
+// runs 0.06-0.54 against this one's 0.20-0.90, with a short-range peak of its
+// own, so the lane would read as fine-grained speckle against one long block
+// rather than as a blank. The reason not to draw it is the editorial one above,
+// not legibility.
 const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   type: 'VariantTrack',
   trackId,
@@ -233,12 +250,12 @@ export const ldSpecs: ScreenshotSpec[] = [
         lctPanelTrack(
           'kgp_lct_pooled',
           'All panels pooled (r²)',
-          'lct_1kg_chr2.vcf.gz',
+          'lct_1kg_chr2_pooled_wide.vcf.gz',
         ),
         lctPanelTrack(
           'kgp_lct_panel',
           'One population panel (r²)',
-          'lct_1kg_chr2_eur.vcf.gz',
+          'lct_1kg_chr2_eur_wide.vcf.gz',
         ),
       ],
       views: [
@@ -268,7 +285,8 @@ export const ldSpecs: ScreenshotSpec[] = [
     // duration guess
     readySelector:
       'body:has([data-testid="ld-display-done"][data-display-phase="ready"]):not(:has([data-testid="ld-display"])):not(:has([data-display-phase="loading"]))',
-    readyTimeout: 240000,
+    // 21 MB of genotypes across the two lanes, the pooled one on 2504 samples
+    readyTimeout: 600000,
     // the gene lane, then two LD tracks (330 triangle + 50 recombination zone
     // each) + 2 headers + ruler/overview
     viewportHeight: 995,

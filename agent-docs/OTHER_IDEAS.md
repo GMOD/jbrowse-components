@@ -2431,8 +2431,7 @@ under the matrix.
 `PlinkLDTabixAdapter` ship with LocusZoom-style r-squared coloring and
 right-click re-anchoring of the index SNP. The gallery card
 (`gallery/gwas_bmi_fto`) points at a user guide because no tutorial exists.
-Distinct from `linkage_disequilibrium.md`, which teaches the triangle and
-deliberately argues the triangle is a kb-scale tool.
+Distinct from `ld_human.md`, which teaches the triangle at a kb-scale sweep.
 
 **Conservation and multiple alignments.** phyloP 100-way (hg19 and hg38, line
 and density variants) is hosted, and the MAF stack (bigMaf, MafTabix, taffy,

@@ -231,22 +231,6 @@ Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
 nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
 graph rather than HPRC.
 
-## Gallery cards hide their live links behind the guide link
-
-`website/src/pages/gallery.astro:117-140` renders the guide link **or** the live
-link, never both. 38 of the 39 cards set `guide:`, so all but one show only
-"Read the guide", and "Open in JBrowse" is reachable there only by clicking the
-image into the lightbox. That is most of why the gallery reads as pointing at
-reference pages rather than at a browser you can drive. Showing both is a few
-lines and needs no new docs.
-
-While in there, one duplicate-capability pair is still standing, left alone
-pending a decision to cut one: `Clustered copy-number heatmap` (1000 Genomes)
-against `TCGA-BRCA cohort copy number`. The 1000G card also still points its
-`guide:` at `user_guides/multiquantitative_track`, written before
-`tutorials/population_cnv` existed, which is now the better destination.
-
-
 ## consider rehosting
 
 https://jbrowse.org/jb2-staging/docs/tutorials/population_genomics/
