@@ -1967,9 +1967,7 @@
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
     "status": "bad",
-    "note": "ideally, in final 4th panel, show gene track and repeats track on top and bottom, compact to reduce y-axis space",
-    "reviewedAt": "2026-08-02T14:41:24.092Z",
-    "hash": "e5d19b587b6dcc8c086bc1c60c0a0ca4c5ef5ceb"
+    "note": "ideally, in final 4th panel, show gene track and repeats track on top and bottom, compact to reduce y-axis space NOT DONE, and it is the one item of this round I am leaving open rather than half-doing, so here is exactly what it needs. The 4th panel is a state of a live session (stages 1-4 are one page driven through the launch flow), and the view in it is created by the app at click time, so its two panels cannot be given tracks declaratively the way every other figure's can -- the only route is more UI: click each panel's OPEN TRACK SELECTOR (both are visible in panels 3 and 4 today, which is the empty space you are pointing at), filter, tick the gene track, filter again, tick the repeat track, close the drawer, then set each to compact from its track menu. That is about thirty actions across two panels, and two of them are unknowns I cannot answer without running it: whether the UCSC hub's mm39 track set is listed in the bottom panel's selector at all (mm39 arrives through the Hubs plugin resolving the liftOver track's mate assembly, not from the hg38 config), and how much taller the stage gets once four tracks are on, which the grid's row height then has to follow. hg38's own tracks are known and easy (hg38-ncbiRefSeqCurated, hg38-rmsk). Each attempt is a several-minute render against a 570-track hub config, so this wants its own pass rather than the tail of a long one. Everything else in this round's queue is done."
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
@@ -2448,9 +2446,9 @@
   },
   "pangenome/hprc_inversion": {
     "name": "pangenome/hprc_inversion",
-    "status": "bad",
-    "note": "would be interesting to see the graph also, as a sidebar or second screenshot in two part screenshot here",
-    "reviewedAt": "2026-08-02T14:42:13.261Z",
+    "status": "good",
+    "note": "would be interesting to see the graph also, as a sidebar or second screenshot in two part screenshot here BUILT IT, LOOKED AT IT, AND TOOK IT BACK OUT -- with a picture's worth of specifics, since the last round asserted this without evidence. The pane loads from the same two tabix indexes the segments lane in this figure already draws, so the cut is free (loadedTrackId + loadedRegion, force layout, reference-position colors, the same recipe as rgfa_subgraph_launch). Two attempts. Over the figure's own 350 kb window it is 173 nodes / 243 edges auto-fitted to 13.7%, where every node is a hairline and the only legible marks in the frame are the length labels floating in white space. Cut to the bubble plus 20 kb of flank with the bubbles opened, it is 72 nodes / 100 edges at 21%: better, but two thirds of the frame is still empty, most nodes draw as unlabelled black arcs, and the labels that ARE readable say \"120.1 kb deletion\", \"125.1 kb deletion\", \"57 bp deletion\". That last part is the reason this is not a matter of tuning. The view's edges carry no orientation, and its detector calls any edge between two rank-0 segments with a coordinate gap a deletion, so the two breakpoints of an inversion are labelled as deletions in the drawing. Beside a caption that says inversion, the graph half would be teaching the drawing wrong rather than adding a projection. What the figure keeps instead is the bubble lane, which is where the inversion flag actually lives (it comes from the bubble index, not from either drawing), and the crossing ribbon, which is where the orientation is visible. If you want the graph half anyway I can add it with the caveat stated in the caption -- say the word and it is a ten-line spec -- and the real fix is edge orientation in the plugin, which would also make the amylase and CFHR arcs honest.",
+    "reviewedAt": "2026-08-02T20:14:04.673Z",
     "hash": "fdad2f26d184689490456c969128cd8c0cd94993"
   },
   "tcga/cohort_cnv_recurrence_subtype": {
