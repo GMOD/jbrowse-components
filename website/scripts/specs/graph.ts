@@ -1016,11 +1016,13 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map((graphNode): Annotation => ({
-        type: 'box',
-        anchor: { view: 1, graphNode },
-        strokeWidth: 3,
-      })),
+      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
+        (graphNode): Annotation => ({
+          type: 'box',
+          anchor: { view: 1, graphNode },
+          strokeWidth: 3,
+        }),
+      ),
       label(text),
       // the arrow only exists in the half that has an interior to point at
       ...(subgraphContext > 0
@@ -1427,12 +1429,14 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
-        type: 'circle',
-        anchor: { view: 1, graphNode },
-        radius: 24,
-        strokeWidth: 3,
-      })),
+      ...MHC_LANDMARK_NODES.map(
+        (graphNode): Annotation => ({
+          type: 'circle',
+          anchor: { view: 1, graphNode },
+          radius: 24,
+          strokeWidth: 3,
+        }),
+      ),
       {
         type: 'text',
         text: label,

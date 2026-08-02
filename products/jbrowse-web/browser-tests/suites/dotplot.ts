@@ -7,8 +7,8 @@ import {
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 
-import type { Page } from 'puppeteer'
 import type { TestSuite } from '../types.ts'
+import type { Page } from 'puppeteer'
 
 async function openPaletteMenu(page: Page) {
   const alreadyOpen = await page.$('[role="menu"]')
@@ -91,9 +91,7 @@ function readRadios(page: Page) {
           const checked = paths.some(d => d.startsWith(checkedGlyph))
           const isRadio =
             checked || paths.some(d => d.startsWith(uncheckedGlyph))
-          return isRadio
-            ? { label: li.textContent.trim(), checked }
-            : undefined
+          return isRadio ? { label: li.textContent.trim(), checked } : undefined
         })
         .filter(r => r !== undefined)
     },

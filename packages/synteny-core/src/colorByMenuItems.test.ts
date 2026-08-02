@@ -1,6 +1,9 @@
 import { colorByMenuItems } from './colorByMenuItems.tsx'
 
-import type { ColorByMenuTarget, ColorByMenuTrack } from './colorByMenuItems.tsx'
+import type {
+  ColorByMenuTarget,
+  ColorByMenuTrack,
+} from './colorByMenuItems.tsx'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const track = (n: number, over: Partial<ColorByMenuTrack> = {}) =>
@@ -33,7 +36,10 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
 const labels = (items: ReturnType<typeof colorByMenuItems>) =>
   items.map(i => ('label' in i ? i.label : `<${i.type}>`))
 
-function findSubMenu(items: ReturnType<typeof colorByMenuItems>, label: string) {
+function findSubMenu(
+  items: ReturnType<typeof colorByMenuItems>,
+  label: string,
+) {
   const found = items.find(i => 'label' in i && i.label === label)
   return found && 'subMenu' in found ? found.subMenu : undefined
 }
@@ -64,9 +70,9 @@ test('a single track gets no per-track section and no Track mode', () => {
 
 test("'Reference' only appears for a stack of two or more levels", () => {
   expect(labels(colorByMenuItems(target()))).not.toContain('Reference')
-  expect(
-    labels(colorByMenuItems(target({ showReference: true }))),
-  ).toContain('Reference')
+  expect(labels(colorByMenuItems(target({ showReference: true })))).toContain(
+    'Reference',
+  )
 })
 
 test('the dotplot gets point-based help text for Default', () => {
@@ -92,7 +98,9 @@ test('each track submenu offers "Use view setting" plus the same modes', () => {
 
 test('reset rows are disabled until something is actually overridden', () => {
   const clean = colorByMenuItems(target())
-  const reset = clean.find(i => 'label' in i && i.label === 'Reset per-track colors')
+  const reset = clean.find(
+    i => 'label' in i && i.label === 'Reset per-track colors',
+  )
   expect(reset && 'disabled' in reset && reset.disabled).toBe(true)
 
   const dirty = colorByMenuItems(
@@ -121,7 +129,9 @@ test('mixed modes leave every view-wide radio unchecked', () => {
 describe('per-track "Use view setting"', () => {
   const submenuFor = (t: ColorByMenuTarget, name: string) => {
     const items = colorByMenuItems(t)
-    const perTrack = items.find(i => 'label' in i && i.label === 'Customize per track')
+    const perTrack = items.find(
+      i => 'label' in i && i.label === 'Customize per track',
+    )
     const list = perTrack && 'subMenu' in perTrack ? perTrack.subMenu : []
     const row = list.find(i => 'label' in i && i.label === name)
     return row && 'subMenu' in row ? row.subMenu : []
@@ -149,10 +159,15 @@ describe('per-track "Use view setting"', () => {
   test('exactly one radio is checked in a track submenu', () => {
     for (const t of [
       target(),
-      target({ tracks: [track(0, { colorBy: 'strand', overridden: true }), track(1)] }),
+      target({
+        tracks: [track(0, { colorBy: 'strand', overridden: true }), track(1)],
+      }),
       target({
         uniformColorBy: 'strand',
-        tracks: [track(0, { colorBy: 'strand', overridden: true }), track(1, { colorBy: 'strand' })],
+        tracks: [
+          track(0, { colorBy: 'strand', overridden: true }),
+          track(1, { colorBy: 'strand' }),
+        ],
       }),
     ]) {
       const sub = submenuFor(t, 'track 0')

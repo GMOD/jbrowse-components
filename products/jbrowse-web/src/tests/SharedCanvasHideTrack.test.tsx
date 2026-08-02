@@ -125,9 +125,9 @@ async function loadedSynteny(tracks: string[]) {
 
 test('dotplot: hiding the last track repaints the canvas empty', async () => {
   const { view, calls } = await loadedDotplot(['subset'])
-  const [key] = view.dotplotDisplays.map((d: { displayKey: number }) => (
-    d.displayKey
-  ))
+  const [key] = view.dotplotDisplays.map(
+    (d: { displayKey: number }) => d.displayKey,
+  )
 
   const rendersBefore = calls.rendered.length
   view.hideTrack('subset')

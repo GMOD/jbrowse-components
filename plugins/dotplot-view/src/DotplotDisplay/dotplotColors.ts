@@ -157,7 +157,12 @@ export function computeDotplotColors({
   trackColor: string
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createDotplotColorFunction(colorBy, alpha, rpcData, trackColor)
+  const colorFn = createDotplotColorFunction(
+    colorBy,
+    alpha,
+    rpcData,
+    trackColor,
+  )
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {
     out[i] = colorFn(rpcData, instanceFeatureIdx[i]!)

@@ -194,13 +194,13 @@ documents only what bites when editing _this package_.
   and aliases one display's buffer onto another. A shared-canvas backend's
   `render` also returns `void` and repaints unconditionally (clear, then draw
   what it holds): nothing else repaints that canvas, so an early return is how a
-  hidden display's pixels survive. All three drop their
-  memos on a backend swap, which is the part a hand-rolled version forgets —
-  context-loss recovery hands back a backend with empty GPU buffers. Create any
-  of them _outside_ the `attachRenderingBackend` call (it captures callbacks
-  from the first call only), and keep every input read unconditional so none
-  drops out of the dependency set. A display whose slots share one source (LD)
-  needs none of them.
+  hidden display's pixels survive. All three drop their memos on a backend swap,
+  which is the part a hand-rolled version forgets — context-loss recovery hands
+  back a backend with empty GPU buffers. Create any of them _outside_ the
+  `attachRenderingBackend` call (it captures callbacks from the first call
+  only), and keep every input read unconditional so none drops out of the
+  dependency set. A display whose slots share one source (LD) needs none of
+  them.
 - **Multi-pass renderers bracket `sync()` with `hal.beginUpload()` /
   `hal.endUpload()`.** Between them every `uploadBuffer` is recorded;
   `endUpload` destroys any pass buffer _not_ rewritten — so a pass whose data

@@ -485,10 +485,10 @@ Its genes are the same UCSC RefSeq set the hg38 lane above reads, on hs1:
 }
 ```
 
-The segments track can draw on hs1 as well, which is where the `assemblyNameToPanSN`
-map earns its second entry: `hs1` asks for `CHM13#0#chr17` the same way `hg38`
-asks for `GRCh38#0#chr17`. This replaces the track [above](#load-the-graph), same
-`trackId`, one more assembly:
+The segments track can draw on hs1 as well, which is where the
+`assemblyNameToPanSN` map earns its second entry: `hs1` asks for `CHM13#0#chr17`
+the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
+[above](#load-the-graph), same `trackId`, one more assembly:
 
 ```json addtrack
 {
@@ -512,9 +512,9 @@ asks for `GRCh38#0#chr17`. This replaces the track [above](#load-the-graph), sam
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:
 `tabix hprc-v2.0-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns 60 segments for
-the whole of chr1, and most attach only to other donors. Finding one that touches
-GRCh38, like the node above, means scanning the links index for CHM13 rows with a
-GRCh38 endpoint:
+the whole of chr1, and most attach only to other donors. Finding one that
+touches GRCh38, like the node above, means scanning the links index for CHM13
+rows with a GRCh38 endpoint:
 
 ```bash
 tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \

@@ -61,8 +61,8 @@ of 205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
   suppresses recombination there
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
   This megabase-scale signal is exactly what a windowed scan catches and a
-  pairwise [LD triangle](/docs/tutorials/ld_human) misses. See
-  that tutorial for why the two tools work at different scales.
+  pairwise [LD triangle](/docs/tutorials/ld_human) misses. See that tutorial for
+  why the two tools work at different scales.
 - Genome-wide nucleotide diversity (π): the diversity landscape, dropping in
   low-recombination regions near the centromeres and at loci under selection
   such as `Cyp6g1`, an insecticide-resistance gene

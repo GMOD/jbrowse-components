@@ -209,7 +209,9 @@ export function getColorBySwatch(
             ],
       }
     case 'track':
-      return trackChips?.length ? { kind: 'chips', chips: trackChips } : undefined
+      return trackChips?.length
+        ? { kind: 'chips', chips: trackChips }
+        : undefined
     case 'query':
     case 'target':
     case 'reference':
