@@ -16,9 +16,17 @@ const CHROME_PATHS = [
 ]
 
 // First installed system Chrome/Chromium, or undefined to let Puppeteer use its
-// bundled browser.
+// bundled browser. `CHROME_PATH` wins, so a run can be pinned to one binary --
+// which is how you answer "did the browser move under us?" when a figure regen
+// reports the whole corpus as changed.
+//
+// Measured 2026-08-02, because that question came up and the answer was no: the
+// same spec rendered under Chrome 147.0.7727.57 and 151.0.7922.47 produces
+// byte-identical PNGs, and the system package's 151.0.7922.47 -> .71 roll
+// likewise changed nothing. So a corpus-wide diff is accumulated app change
+// since the last `Bump snaps` sweep, not the browser -- don't chase it here.
 export function findChromeExecutable(): string | undefined {
-  return CHROME_PATHS.find(p => fs.existsSync(p))
+  return process.env.CHROME_PATH ?? CHROME_PATHS.find(p => fs.existsSync(p))
 }
 
 // GPU/WebGL lifecycle chatter that isn't a real error. Real GPU failures
