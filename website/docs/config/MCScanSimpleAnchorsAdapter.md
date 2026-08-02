@@ -31,6 +31,9 @@ _See the **Config slots** section below for all available configuration fields._
 
 used to load MCScan (jcvi) `.anchors.simple` files with their two BED files
 
+See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny), which also
+covers converting an MCScanX run into these files.
+
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)

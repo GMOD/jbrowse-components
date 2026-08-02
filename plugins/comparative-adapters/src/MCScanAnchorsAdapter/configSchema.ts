@@ -8,6 +8,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #fileFormat synteny | MCScan anchors | Gene-level synteny; also needs one BED per assembly
  * used to load MCScan (jcvi) `.anchors` files with their two BED files
  *
+ * See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny), which
+ * also covers converting an MCScanX run into these files.
+ *
  * #example
  * ```js
  * {

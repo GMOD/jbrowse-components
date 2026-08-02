@@ -409,6 +409,81 @@ check("segments prefixes chr and converts to a 0-based start",
       open(seg_out).read().split("\n")[0].split("\t")[:3],
       ["chr9", "130731326", "131152326"])
 
+# mcscanx_to_anchors.py: the MCScan adapters throw on a gene id missing from the
+# BED and silently mis-draw a block whose columns are the wrong way round, so
+# what is pinned is the genome split and the column normalization.
+mcx = load("scripts/mcscanx_to_anchors.py", "mcscanx_to_anchors")
+mcx_genes = {
+    "a1": ("at1", 100, 200), "a2": ("at1", 300, 400), "a3": ("at1", 500, 600),
+    "p1": ("pp3", 1000, 1100), "p2": ("pp3", 2000, 2100),
+    "p3": ("pp3", 3000, 3100), "h1": ("at2", 10, 20),
+}
+mcx_tags = ["at", "pp"]
+converted, counts = mcx.convert_blocks(
+    [("-", [("a1", "p3", 30), ("a2", "p2", 20), ("a3", "p1", 10)]),
+     # MCScanX writes the same file's blocks in either column order, and reports
+     # self-synteny alongside the cross-genome ones
+     ("+", [("p1", "a1", 5), ("p2", "a2", 5)]),
+     ("+", [("a1", "h1", 5)])],
+    mcx_genes, mcx_tags)
+check("convert_blocks keeps the cross-genome blocks only", counts["kept"], 2)
+check("convert_blocks skips a same-genome block", counts["skipped"], 1)
+check("convert_blocks puts the first --species in column 1 either way round",
+      [p[0] for p in converted[1][0]], ["a1", "a2"])
+check("convert_blocks keeps the block's orientation off the header",
+      [c[1][5] for c in converted], ["-", "+"])
+check("convert_blocks names each side's first and last gene by coordinate",
+      converted[0][1][:4], ("a1", "a3", "p1", "p3"))
+check("convert_blocks scores the simple row with the anchor count",
+      converted[0][1][4], "3")
+check("convert_blocks drops a pair on an unlisted genome",
+      mcx.convert_blocks([("+", [("a1", "zz9", 5)])], mcx_genes, mcx_tags)[1],
+      {"kept": 0, "skipped": 1, "unknown": 1})
+# one --species is MCScanX's whole-genome-duplication use, where the blocks the
+# pairwise case discards are the entire result
+self_out, self_counts = mcx.convert_blocks(
+    [("+", [("a1", "h1", 5)]), ("+", [("a1", "p1", 5)])], mcx_genes, ["at"])
+check("convert_blocks keeps the same-genome blocks for one --species",
+      [p[:2] for p in self_out[0][0]], [("a1", "h1")])
+check("convert_blocks skips the cross-genome block for one --species",
+      (self_counts["kept"], self_counts["unknown"]), (1, 1))
+# three genomes go to a .blocks table instead, anchored on the first --species.
+# A cell holds one id and MCScanBlocksAdapter joins the non-reference columns
+# through column 0, so what is pinned is the one-ortholog-per-cell reduction and
+# that a pair missing the reference is dropped rather than written somewhere.
+mcx_genes["c1"] = ("tc5", 10, 20)
+mcx_genes["c2"] = ("tc5", 30, 40)
+rows, counts = mcx.build_table(
+    [("+", [("a1", "p1", 10), ("a2", "p2", 10), ("a1", "c1", 10)]),
+     ("+", [("a1", "p3", 99)]),
+     ("+", [("p1", "c2", 10)])],
+    mcx_genes, ["at", "pp", "tc"])
+check("build_table writes a row per reference gene, columns in --species order",
+      rows, [["a1", "p3", "c1"], ["a2", "p2", "."]])
+check("build_table drops a pair between two non-reference genomes",
+      counts["indirect"], 1)
+# an e_value, not a bit score; e_value=0 is MCScanX's "below what it prints"
+check("score_from_evalue is -log10", mcx.score_from_evalue("1e-77"), 77)
+check("score_from_evalue caps a zero e_value", mcx.score_from_evalue("0"), 1000)
+# BED column 1 has to match the assembly, which never carries MCScanX's tag
+check("bed_rows strips the species tag and converts to a 0-based start",
+      mcx.bed_rows(mcx_genes, "pp", {"p1": "-"}, False, "Pp0")[0],
+      ("Pp03", 999, 1100, "p1", 0, "-"))
+check("bed_rows defaults an unknown strand to +",
+      mcx.bed_rows(mcx_genes, "at", {}, True, "")[0],
+      ("at1", 99, 200, "a1", 0, "+"))
+# a refName the assembly does not have draws nothing rather than erroring, so
+# the tag-stripping is checked against the .fai before the BED is written
+fai = os.path.join(tempfile.mkdtemp(), "grape.fa.fai")
+with open(fai, "w") as fh:
+    fh.write("1\t100\t0\t60\t61\n2\t100\t0\t60\t61\n")
+check("unmatched_refnames names the BED refNames the assembly lacks",
+      mcx.unmatched_refnames(mcx.bed_rows(mcx_genes, "at", {}, True, ""), fai)[0],
+      ["at1", "at2"])
+check("unmatched_refnames passes the stripped names",
+      mcx.unmatched_refnames(mcx.bed_rows(mcx_genes, "at", {}, False, ""), fai)[0],
+      [])
+
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "

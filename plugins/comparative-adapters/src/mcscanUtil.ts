@@ -54,16 +54,27 @@ export function checkAnyRowsJoined(rows: BlockRow[], sourceRows: number) {
   return rows
 }
 
+// The sides of a link that face `assemblyName`. Normally one, but a
+// self-alignment (a MCScanX whole-genome-duplication run, say) names the same
+// assembly on both sides, and then both do: the two copies of a duplicated
+// block are each other's mate, so a query has to answer for either one.
+function facingSides(
+  assemblyNames: string[],
+  assemblyName: string | undefined,
+) {
+  return assemblyNames.flatMap((name, idx) =>
+    name === assemblyName ? [idx] : [],
+  )
+}
+
 // refNames of the given assembly across all links (the side that faces it).
 export function getBlockRefNames(
   assemblyNames: string[],
   feats: BlockRow[],
   assemblyName: string | undefined,
 ) {
-  const idx =
-    assemblyName === undefined ? -1 : assemblyNames.indexOf(assemblyName)
   const set = new Set<string>()
-  if (idx !== -1) {
+  for (const idx of facingSides(assemblyNames, assemblyName)) {
     for (const { a, b } of feats) {
       set.add(idx === 0 ? a.refName : b.refName)
     }
@@ -84,9 +95,8 @@ export function makeBlockFeatures(
   region: Region,
   idPrefix = '',
 ) {
-  const index = assemblyNames.indexOf(region.assemblyName)
   const out: Feature[] = []
-  if (index !== -1) {
+  for (const index of facingSides(assemblyNames, region.assemblyName)) {
     const mateIndex = index === 0 ? 1 : 0
     for (const { a, b, rowNum, strand, score } of feats) {
       const [f1, f2] = index === 0 ? [a, b] : [b, a]

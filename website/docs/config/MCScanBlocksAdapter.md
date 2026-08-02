@@ -52,6 +52,10 @@ view or the "Linear synteny view" launcher asking what a locus aligns to, gets
 every pair the track declares at once, one set of links per other genome. Group
 the display by mate assembly to read them as a lane apiece.
 
+See the [ortholog tables tutorial](/docs/tutorials/multiway_synteny), which
+covers building the table from jcvi, OrthoFinder, reciprocal best hits or
+MCScanX, and stacking the genomes in one view.
+
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)

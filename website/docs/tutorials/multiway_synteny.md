@@ -15,6 +15,9 @@ reference are direct alignments and row order is a real choice.
 
 - [jcvi](https://github.com/tanghaibao/jcvi) with the
   [LAST](https://gitlab.com/mcfrith/last) aligner
+- Or any other ortholog table, including an
+  [MCScanX](https://github.com/wyp1125/MCScanX) run
+  ([converting one](#from-mcscanx) needs only python3)
 - `samtools`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
@@ -77,6 +80,34 @@ uses the gzipped `.gz` names.
 Any ortholog or all-vs-all homology result reshapes into that. Two columns is a
 valid table, so a plain reciprocal-best-hit list already works as a pairwise
 synteny track with no MCScan step at all.
+
+### From MCScanX
+
+[MCScanX](https://github.com/wyp1125/MCScanX) writes one `.collinearity` file
+holding every block it found across every pair of genomes in the run, rather
+than a table.
+[`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
+pivots one into a table, given the two-letter chromosome tag MCScanX uses for
+each genome:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
+python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
+  --species vv=grape --species pp=peach --species tc=cacao
+```
+
+That writes `grape.blocks` and a BED per genome, which the config below loads as
+they are. The first `--species` is column 0, so it is the reference this table
+is anchored on: only pairs that include it fill a cell, and a MCScanX block
+between two non-reference genomes is dropped, since the adapter derives that
+pair through the reference anyway. Where MCScanX puts one reference gene in
+blocks against several genes of another genome, the best-scoring one takes the
+cell, because a cell holds a single id.
+
+The same script's refName and strand handling is described in the
+[pairwise MCScan tutorial](/docs/tutorials/mcscan_synteny#coming-from-mcscanx),
+and applies to the BEDs written here too. Given two `--species` it writes that
+tutorial's `.anchors` files instead of a table.
 
 ### From OrthoFinder
 

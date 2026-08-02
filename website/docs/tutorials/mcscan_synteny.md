@@ -2,7 +2,8 @@
 title: Synteny visualization (MCScan anchors)
 sidebar_label: Synteny (MCScan anchors)
 description:
-  Load a pairwise jcvi MCScan run as gene-level and block-level synteny tracks
+  Load a pairwise jcvi MCScan run as gene-level and block-level synteny tracks,
+  and convert an MCScanX run into the same files
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -18,6 +19,9 @@ so each also needs a BED per genome mapping gene ids to coordinates.
 
 - [jcvi](https://github.com/tanghaibao/jcvi) with the
   [LAST](https://gitlab.com/mcfrith/last) aligner
+- Or, in place of jcvi, an existing
+  [MCScanX](https://github.com/wyp1125/MCScanX) run:
+  [converting one](#coming-from-mcscanx) needs only python3
 - `samtools`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
@@ -98,6 +102,91 @@ python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 
 That leaves `grape.peach.anchors` and `grape.peach.anchors.simple` in the
 working directory. The adapters read anchors and BED files plain or gzipped.
+
+## Coming from MCScanX
+
+[MCScanX](https://github.com/wyp1125/MCScanX) is a different program from jcvi's
+MCScan and neither adapter reads its output as it stands. It writes one
+`.collinearity` file holding every block it found, self-synteny and
+cross-species together, and tells the genomes apart only by the two-letter tag
+it requires on each chromosome name in its `.gff`.
+
+[`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
+splits a run into the four files above:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
+python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
+  --species at=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
+```
+
+That writes `grape.bed`, `peach.bed`, `grape.peach.anchors` and
+`grape.peach.anchors.simple`, which the track configs below load unchanged.
+`--species` is given twice, and its order is the anchors column order, so it has
+to match the track's `assemblyNames`.
+
+Two options decide whether the result draws:
+
+- `--chr-prefix peach=Pp0` prepends to the refNames, and `--keep-chr-tag` leaves
+  MCScanX's tag on them. The tag is stripped by default (`at1` becomes `1`),
+  because it is a requirement of MCScanX rather than a name the assembly knows,
+  and BED column 1 has to match the assembly byte for byte.
+- `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation the
+  MCScanX input came from. MCScanX's `.gff` has no strand column, so without it
+  every BED row is `+` and no `.anchors` pair draws as inverted. Block
+  orientation is unaffected either way: `.anchors.simple` takes it from the
+  plus/minus on the collinearity block header.
+
+Pass `--fai peach=peach.fa.fai` to have the refNames checked against the
+assembly rather than finding out in the browser: a name the assembly does not
+have resolves to nothing, so the track draws empty instead of erroring. The
+script names the mismatched sequences and what the assembly does have.
+
+Scores are converted too, since the two formats mean different things by that
+column: an anchors score becomes `-log10` of MCScanX's e-value, where jcvi
+writes a bit score, and a simple row is scored with the block's anchor count, as
+jcvi scores it.
+
+A MCScanX run of three or more genomes is one `.collinearity` covering every
+pair, so naming a third `--species` writes an ortholog table instead of the
+anchor files. See
+[ortholog tables](/docs/tutorials/multiway_synteny#from-mcscanx), which stacks
+those genomes in one view.
+
+### A genome against itself
+
+MCScanX is as often run on one genome to find its own duplicated blocks, which
+is the case the two-genome conversion above discards. Name a single `--species`
+and the script keeps those blocks instead:
+
+```bash
+python3 mcscanx_to_anchors.py --gff grape.gff --collinearity grape.collinearity \
+  --species vv=grape --strand-gff3 grape=grape.gff3.gz
+```
+
+The anchor files that writes name grape on both sides, so the track lists the
+assembly twice and both rows of the synteny view are the same genome:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_self_anchors",
+  "name": "Grape duplicated blocks (MCScanX)",
+  "assemblyNames": ["grape", "grape"],
+  "adapter": {
+    "type": "MCScanAnchorsAdapter",
+    "uri": "grape.grape.anchors",
+    "bed1": "grape.bed",
+    "bed2": "grape.bed",
+    "assemblyNames": ["grape", "grape"]
+  }
+}
+```
+
+Both copies of a block are served, so either one draws its link to the other
+wherever you are looking. A dotplot of the track puts the genome on both axes,
+where each duplicated block is a run of points away from the diagonal: there is
+no diagonal itself, since a gene is not its own anchor.
 
 ## Loading both tracks
 

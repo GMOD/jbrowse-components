@@ -89,6 +89,70 @@ test('skips an anchor whose gene is missing from the BED', async () => {
   expect(fa[0]!.get('strand')).toBe(-1)
 })
 
+// MCScanX is as often run on one genome, whose duplicated blocks pair it with
+// itself. That loads as a self-alignment track: one BED on both sides and the
+// assembly named twice, which the synteny view puts on both of its rows.
+test('serves a self-alignment naming one assembly twice', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mcscan-self-'))
+  const bed = join(dir, 'grape.bed')
+  writeFileSync(bed, 'chr1\t100\t200\tg1\t0\t+\nchr2\t500\t600\tg2\t0\t-\n')
+  const anchors = join(dir, 'grape.grape.anchors')
+  writeFileSync(anchors, '###\ng1\tg2\t100\n')
+  const location = (localPath: string) => ({
+    localPath,
+    locationType: 'LocalPathLocation' as const,
+  })
+  const adapter = new Adapter(
+    configSchema.create({
+      bed1Location: location(bed),
+      bed2Location: location(bed),
+      mcscanAnchorsLocation: location(anchors),
+      assemblyNames: ['grape', 'grape'],
+    }),
+  )
+  const feats = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'chr1',
+        start: 0,
+        end: 10000,
+        assemblyName: 'grape',
+      })
+      .pipe(toArray()),
+  )
+  expect(feats.length).toBe(1)
+  expect(feats[0]!.get('assemblyName')).toBe('grape')
+  // the duplicate copy rides along as the mate, on the same assembly and on the
+  // other chromosome, which is what the second row of the view draws
+  expect(feats[0]!.get('mate')).toMatchObject({
+    assemblyName: 'grape',
+    refName: 'chr2',
+    name: 'g2',
+  })
+
+  // the block's other copy answers too, with the first as its mate. Both sides
+  // of a self-alignment are the queried assembly, so keying off the first
+  // matching one left the second copy of every duplication undrawable.
+  const other = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'chr2',
+        start: 0,
+        end: 10000,
+        assemblyName: 'grape',
+      })
+      .pipe(toArray()),
+  )
+  expect(other.length).toBe(1)
+  expect(other[0]!.get('name')).toBe('g2')
+  expect(other[0]!.get('mate')).toMatchObject({ refName: 'chr1', name: 'g1' })
+  expect(other[0]!.id()).not.toBe(feats[0]!.id())
+  expect(await adapter.getRefNames({ assemblyName: 'grape' })).toEqual([
+    'chr1',
+    'chr2',
+  ])
+})
+
 test('throws when no anchor joins at all', async () => {
   await expect(gets(makeInlineAdapter('nope1\tnope2\t10'))).rejects.toThrow(
     /name genes present in both BED files/,
