@@ -71,6 +71,14 @@ downloading the whole file: the VCF ships its index, and we host small BED
 projections of the graph (below). Release 3 has no graphs at all (it is the
 verkko assembly and QC release), so release 2 is the one for this.
 
+Every file above is published twice, once per reference. This page uses the
+GRCh38 build because that is the assembly most readers already have loaded, but
+every locus it features (MHC, KIR, LPA, AMY1, CFHR) is one where GRCh38 is the
+weaker backbone, and the T2T-CHM13 build of the same graph and the same callset
+sits beside it. Nothing here is specific to GRCh38: both build scripts run on
+the CHM13 files unchanged, and the only config change is the PanSN prefix
+(`{ "chm13": "CHM13" }` in place of `{ "hg38": "GRCh38" }`).
+
 ## Regular GFA vs rGFA
 
 Whether a graph opens by locus straight from the file depends on whether its
@@ -294,14 +302,28 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz \
 # GRCh38#0#chr1  103611080  103732636  95  269401  1  26889  316616
 ```
 
-After the span: segments, paths, the inversion flag, then the shortest and
-longest allele the bubble holds. Bubbles are indexed under the graph's PanSN
-names and the alleles under plain GRCh38 contigs, which is why only the bubble
-track config carries `assemblyNameToPanSN`.
+After the span: segments, paths, the inversion flag, then the lengths of the
+shortest and longest allele the bubble holds. Two columns further out
+(`cut -f13,14`, dropped from the query above) carry those two alleles as
+**sequence**, so a bubble's own sequence is one tabix query away and the adapter
+puts it in the feature details panel. The segments and links projections drop
+sequence entirely, being coordinate BEDs, so going from an interior node id back
+to its bases means the GFA itself: `gfatools view -l <segment> -r 0` prints the
+S-line, and `gfatools gfa2fa` writes the whole graph out as FASTA. Bubbles are
+indexed under the graph's PanSN names and the alleles under plain GRCh38
+contigs, which is why only the bubble track config carries
+`assemblyNameToPanSN`.
 
-Copy number is not among those numbers: minigraph records the distinct sequence
-a bubble can hold, not how many times a haplotype repeats it. Length is the
-proxy, and the shape of the alternatives is what the graph adds.
+Copy number is not among those numbers, and that is a property of these two
+projections rather than of the release. `gfatools bubble` and the rGFA tags
+state the distinct sequence a bubble can hold, not how many times a given
+haplotype repeats it, so length is the proxy here and the shape of the
+alternatives is what the graph adds. The `.gbz` beside them does carry a walk
+per haplotype, which at KIV-2 or AMY1 _is_ a copy count. Reading it is a vg job
+rather than a browser one, and out of scope for this page. The callset offers no
+shortcut either: release 2 strips the `AT` (allele traversal) field from the
+wave VCF, which its own header records as `bcftools annotate -x INFO/AT`, so no
+traversal is recoverable from the VCF.
 
 ### The Layout dropdown
 
@@ -332,8 +354,11 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz \
 ```
 
 An empty answer needs reading carefully. `chr5:70,925,000-70,954,000`, over
-SMN1, returns nothing at all: near-identical duplications collapse, and
-minigraph merged SMN1 and SMN2 onto one path. A quiet window means collapsed or
+SMN1, returns nothing at all: minigraph merged SMN1 and SMN2 onto one path. That
+is the graph's general limitation rather than a curiosity of one locus.
+Near-identical segmental duplications collapse into a single path, which rules
+this graph out for the whole class of genes defined by one: SMN1/SMN2, RHD/RHCE,
+PMS2/PMS2CL and the CYP clusters among them. A quiet window means collapsed or
 invariant rather than checked and found nothing.
 
 ### Which haplotype an allele came from
@@ -386,7 +411,18 @@ each segment's source sequence (`SN`) and offset (`SO`):
   detaches from and rejoins, the same span the hover highlights.
 
 Either way the node's haplotype is named, in the tooltip and in the details
-panel a left-click opens.
+panel a left-click opens. Read that name as `contributingAssembly`, which is
+what the panel calls it: the first assembly to contribute the segment, not the
+set of haplotypes that walk it. The panel has a `carriedBy` row for the set, and
+on this graph it is empty, because the rGFA route anchors nodes on their `SN`
+tags and an rGFA records no traversals at all. Load a GFA that carries `P` or
+`W` lines instead, as the
+[graph genome view guide](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
+does, and the view anchors on those paths: `carriedBy` then lists every sample
+through the node and **Sample rows** becomes carriage rather than attribution.
+At HPRC scale the same answer comes from `minigraph --call` over the assemblies,
+from the `.gbz` and vg, or from the [callset](#the-variant-callset) at that
+site.
 
 <Figure caption="Right-clicking one haplotype's allele (circled), over the band Highlight in hg38 left in the linear view above. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
@@ -430,6 +466,64 @@ combinatorially rather than haplotypes observed, and saturates at `2147483647`
 (the track labels those bubbles uncountable). HPRC publishes no bubble file, so
 this one is ours too, built with `gfatools bubble`.
 
+### Inversions
+
+Insertions are nodes and deletions are edges, and an inversion is neither: the
+same reference sequence, walked backwards. The bubble file is where it is
+findable. `gfatools bubble` sets a column when a bubble's paths disagree about
+orientation, and the adapter exposes it as an `inversion` boolean, so **Edit
+filters** on the bubble track cuts the lane to them:
+
+```
+jexl:feature.inversion
+```
+
+The AMY1 bubble row printed
+[earlier](#what-the-graph-shows-that-a-linear-view-cannot) carries a `1` in that
+column, and 246 of the graph's 130,510 bubbles do. Their breakpoints are in the
+links index, stated as an orientation disagreement between two backbone
+segments, which is what makes them readable without the graph:
+
+```bash
+tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
+  'GRCh38#0#chr1:144,400,000-144,600,000' |
+  awk -F'\t' '!s[$4$5]++ && $9==0 && $13==0 &&
+              substr($4,length($4)) != substr($5,length($5))' | cut -f4,5,7,8,11,12
+# s12829+  s12842-  144418665 144419292  144495968 144539697
+# s12830-  s12843+  144419292 144419591  144539697 144540296
+# s12831-  s12861+  144419591 144442163  144567263 144572458
+```
+
+Three links, rank 0 at both ends, each pairing a `+` with a `-`: the segments
+between them are walked backwards, which brackets `chr1:144,419,292-144,572,458`
+as inverted on some haplotypes.
+
+Read the flag as where to look rather than as a call. An inverted paralog and an
+inverted haplotype look alike to the graph, and the callset does not settle it
+either: `INV` is declared in the wave VCF's header and no record at these loci
+carries it.
+
+The alignments do settle it, and the test is the flanks rather than the block. A
+haplotype whose whole window aligns reverse says nothing, since its contig may
+simply be deposited that way. A block that reverses between forward flanks is an
+inversion.
+[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
+runs that classification over HPRC's published all-vs-GRCh38 PAF at the bubble
+above, prints the split it finds (64 haplotypes reverse it between forward
+flanks, 23 keep it forward, and the rest are mixed or reverse throughout and are
+evidence for neither), and slices out one of each. Which one of each matters,
+because 1q21.1 is a segmental duplication and every haplotype here also aligns
+inverted paralogs somewhere nearby: each of those crosses on screen exactly the
+way the inversion does, so the script keeps only haplotypes whose alignments
+inside the drawn window are the inversion and its two forward flanks.
+
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles with the boxed one the subject, and the rGFA segments. The top row is HG01891 hap 1: its ribbon crosses inside the boxed span and runs parallel either side of it. The bottom row is HG02698 hap 2, one forward ribbon across the whole window." src="/img/pangenome/hprc_inversion.png" />
+
+The [allele inventory](#the-allele-inventory) has nothing for them by
+construction, since a mixed-orientation pair of backbone segments is a
+breakpoint rather than a skipped span and `build_rgfa_alleles.sh` leaves those
+pairs out of its deletions rather than report a length that is not one.
+
 ## The allele inventory
 
 The bubbles say where the graph varies. A third hosted file says what the
@@ -454,6 +548,12 @@ against the reference span it replaces (`2062M63348I`), and the alignments
 display draws whatever has one, so the alleles pack into rows and each insertion
 draws at its real magnitude instead of as a 1 bp box.
 
+The magnitude is measured, the position inside the span is not. A bubble states
+what sequence replaces a reference interval, never where inside that interval it
+sits, so the CIGAR puts the indel at the end of the span by convention. Over a 2
+kb anchor nothing turns on it, but the CFHR-scale spans in the same figure carry
+a marker that is placed rather than located.
+
 <Figure caption="The allele inventory over the complement factor H cluster, under the RefSeq genes and the rGFA segments. Grey bars are the reference span each allele replaces, labelled with it, and purple marks are insertions drawn at the size they insert, which is what the CIGAR in the BED buys. The long bar from CFHR3 to CFHR1 is the deletion the graph figure above draws as an arc. Rows are the display packing overlapping alleles, not haplotypes." src="/img/pangenome/hprc_allele_inventory.png" />
 
 The
@@ -467,11 +567,21 @@ second time as a `FeatureTrack`, whose default display has **Edit filters**:
 `jexl:abs(feature.delta)>10000`. Filter on `abs`: `delta` is negative for a
 deletion, so an unsigned bound keeps only the insertions.
 
+One column decides whether a length is _the_ length. `nested` is set when the
+walk that derived the row passed a branch point, so that row's `delta` is one
+route through a nested bubble rather than the only one. It is not a rare flag:
+the build script's closing summary prints how many rows carry it, and on the
+HPRC graph that is a large minority. Add `jexl:feature.nested==0` to the filter
+above before reading lengths off this lane in bulk.
+
 Read `discoveryRank` and `firstSeenIn` as the first haplotype to contribute an
 allele rather than as who carries it. minigraph collapses, so an allele many
 haplotypes share is credited to whichever was added first, and one sample can
-end up named on half the rows in a dense window purely by build order. Carriage
-is the callset's job, [below](#structure-not-sequence).
+end up named on half the rows in a dense window purely by build order. Nor does
+a high rank mean the earlier haplotypes lack the sequence: they may have lacked
+it, or had their copy merged into an existing path, or simply not aligned there.
+It bounds discovery and nothing else. Carriage is the callset's job,
+[below](#structure-not-sequence).
 
 ## The variant callset
 
@@ -499,9 +609,14 @@ only the slice you are viewing out of the 2.3 GB file. Paste the S3 URL into a
 ```
 
 `renderingMode: "phased"` is the setting to note. The VCF carries 232 phased
-samples, and phased mode splits each into its two haplotypes, giving 464
+sample columns, and phased mode splits each into its two haplotypes, giving 464
 independent rows instead of 232 diploid ones. Co-inherited blocks are visible
-only in that form.
+only in that form. Three counts circulate around this data and they are one
+thing: 231 diploid HPRC samples plus a haploid CHM13 give the 232 columns and
+463 assembled haplotypes, which is where `AN` tops out, and the display draws
+464 rows because CHM13's second row exists and is entirely no-call.
+`hprc465vsgrch38`, the PAF the CFHR figure slices, is HPRC's own file, named for
+the assemblies it aligns rather than for these columns.
 
 The VCF is fully decomposed, so `chr6:32,450,000-32,650,000` (the window in the
 figure below) holds over fourteen thousand records, most of them SNPs and the
@@ -509,13 +624,40 @@ rest small indels. The structural tier is what a pangenome adds over a
 short-read callset, and it is already in this file. Add the filter
 
 ```
-jexl:alleleLength(feature) >= 50
+jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
 ```
 
-from **Edit filters** and the same window drops to a couple of hundred alleles,
-each a real insertion or deletion. (`alleleLength` is the longest allele the
-record describes; a filter on `end - start` would keep only deletions, since an
-insertion consumes no reference.)
+from **Edit filters** and the same window drops to a couple of hundred sites.
+
+Both halves are load-bearing. `alleleLength` is the longest allele the record
+describes, and a filter on `end - start` would keep only deletions, since an
+insertion consumes no reference. `LV` is the record's level in vg's snarl tree,
+and `LV==0` keeps the top-level sites. Without it the panel paints some events
+twice at two positions, because this file writes a nested child as its own
+record beside its parent, with `PS` naming that parent, and a reader counting
+columns counts those events twice. The pair is the standard idiom for a
+pangenome VCF and belongs in the filter the same way `renderingMode: "phased"`
+belongs in the config.
+
+One thing the filter cannot promise is what a given cell holds. It admits a
+record on its longest allele, and most records it admits here are multi-allelic,
+so a site can enter the panel on one haplotype's 60 bp insertion while another
+haplotype's cell in the same column is colored for a SNP at the same position.
+Read a column as a site that holds a structural allele, which is what the block
+structure below is about, rather than as a guarantee about every cell in it. The
+file states the rest per allele: `TYPE` gives each ALT's class (`snp`, `ins`,
+`del`, `complex`) and `LEN` its length, both in the feature details panel a
+click on the column opens, so which of a site's alleles a haplotype carries is
+one click away rather than an inference.
+
+Frequency is in the file rather than in the picture. `AC`, `AF`, `AN` and `NS`
+are on every record, so `jexl:feature.INFO.AF[0]>0.05` selects the common
+alleles without clustering anything. `AC`/`AF` are per-ALT arrays, so on a
+multi-allelic site index the allele you mean. Two fields guard the reading. A
+no-call is not a reference call, and `missingness(feature)` is available as a
+filter for exactly that, which matters where assembly coverage is thin (KIR,
+LPA) more than it does here. `CONFLICT` names samples the graph gives two
+disagreeing paths, and it fires on no record in this window.
 
 Because an insertion consumes no reference, it would not otherwise draw at its
 true width. The display widens each insertion cell to a marker sized by the
@@ -529,7 +671,7 @@ up with the genes above. **Clustering → Cluster rows by genotype... → Run
 clustering** in the track menu reorders the 464 rows by genotype similarity and
 draws a dendrogram beside them:
 
-<Figure caption="Structural alleles (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. Haplotypes that share whole sets of insertions and deletions cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
+<Figure caption="Top-level sites holding a structural allele (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. Haplotypes that share whole sets of alleles cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
 
 ## Structure, not sequence
 
@@ -541,17 +683,32 @@ ends. The graph states an allele and its length but cannot say whose it is,
 since collapsing is what let it be found at all, while the callset never lost
 the samples.
 
-The two do not line up row by row, and it is worth being clear why. rGFA's `SN`
-tag names the assembly a segment was **first contributed by**, so a graph row is
-attribution; a genotype names every haplotype that **carries** an allele, so a
-matrix row is carriage. A donor can appear on one haplotype in the graph and
-carry the same event on the other in the callset. What does line up is the
-event: mark an interval in the linear view and it crosses the genes, the
-segments lane and the genotype matrix in one column, and the reference-position
-ramp gives the graph's backbone at that position the same hue as the segments
-above it.
+They still do not line up row for row, for two reasons, in this order.
 
-<Figure caption="One window, both products. The band marks a single deletion from the callset: the matrix below it, all 464 haplotypes clustered by genotype, carries it across a whole clade, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, which has no coordinate axis to draw the band on, so the ring marks the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
+The first is decomposition, and the file states it outright. `ORIGIN` on a
+record names the position of the complex record vcfwave split it out of, so one
+graph bubble arrives as many VCF records, and `LV`/`PS` are the file's own map
+of that fan-out. Counting records against bubbles compares a decomposed callset
+with an undecomposed graph, which is what the `LV==0` filter above undoes.
+
+The second is attribution against carriage. rGFA's `SN` tag names the assembly a
+segment was **first contributed by**, so a graph row is attribution, and a
+genotype names every haplotype that **carries** an allele, so a matrix row is
+carriage. A donor can appear on one haplotype in the graph and carry the same
+event on the other in the callset.
+
+The word "bubble" also covers two different decompositions here. The bubble lane
+is `gfatools bubble`'s top-level superbubbles over the rGFA; `LV`/`PS` are vg's
+snarl tree over the graph the callset was deconstructed from. They agree about
+where the graph varies without being in one-to-one correspondence, so match a
+bubble to a record by interval rather than by count.
+
+What does line up is the event: mark an interval in the linear view and it
+crosses the genes, the segments lane and the genotype matrix in one column, and
+the reference-position ramp gives the graph's backbone at that position the same
+hue as the segments above it.
+
+<Figure caption="One window, both products. The band marks one deletion site from the callset: the matrix below it, all 464 haplotypes clustered by genotype, colors the clade carrying a deletion there, and the segments lane above it is the graph's own sequence at that position, in the ramp the graph draws with. The graph is the force-directed layout of the same window, which has no coordinate axis to draw the band on, so the ring marks the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 
@@ -585,10 +742,18 @@ tabix -p bed out.bubbles.bed.gz
 reads only those two indexes, never the graph, and writes the allele inventory
 in seconds off the small index pair rather than the 842 MB download they came
 from. It therefore works with no assemblies loaded, which is the normal
-situation with someone else's graph. The guide's
+situation with someone else's graph.
+
+Carriage is reachable here, not merely deferred. HPRC publishes every release 2
+assembly, so
+[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
+runs `minigraph --call` over them and writes one row per haplotype per bubble,
+which the guide's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
-answer the carriage question instead, at the cost of re-mapping every haplotype.
-Both need htslib (`bgzip`, `tabix`) on your `PATH`.
+draw as a lane each. What that costs is a 464-assembly download and a mapping
+run, which is why this page takes the index route: a scope decision, not a
+property of the data. Both scripts need htslib (`bgzip`, `tabix`) on your
+`PATH`.
 
 The two haplotype rows in the CFHR figure are a third script:
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)

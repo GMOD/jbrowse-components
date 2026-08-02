@@ -156,6 +156,15 @@ menu → Settings → Reference path**. `odgi extract` writes the window into th
 path name (`K12#1#chr:1004500-1004961`), which is where the offsets come from; a
 whole-genome path simply starts at zero.
 
+Anchoring on paths is also what answers "which samples go through this node".
+The `P` and `W` lines state every traversal, so each node knows its visitors and
+**Node details** lists them under `carriedBy`; **Sample rows** then draws real
+carriage. A track anchored on rGFA tags instead (route 1) has no traversals to
+read: `carriedBy` is empty there and the panel reports `contributingAssembly`,
+the one assembly `SN` credits the segment to. That is the file rather than the
+view, and it is why the two routes answer different questions about the same
+graph.
+
 ## Three layouts
 
 The **Layout** dropdown draws the same subgraph three ways, differing in what
@@ -477,18 +486,31 @@ draws whatever carries a CIGAR, so the alleles pack into rows and each draws the
 same insertion marker and deletion bar a read does, at its real size. Without
 the CIGAR a 63 kb allele is a 1 bp feature with the number hidden in its label.
 
-`altLen`, `discoveryRank` and the traversed `segments` are in the popup. A size
-filter on `delta` is what scales this lane to the HPRC graph's two hundred
-thousand alleles, and it wants the same file on a `FeatureTrack`, whose default
-display has **Edit filters**: `jexl:abs(feature.delta)>10000`. Filter on `abs`,
-since `delta` is negative for a deletion.
+The size is measured, the position inside the anchor span is not: a bubble does
+not state where in the span its indel sits, so the CIGAR puts it at the end by
+convention. Over a 2 kb anchor that is invisible. Over a 100 kb one the marker
+is placed rather than located.
+
+`altLen`, `nested`, `discoveryRank` and the traversed `segments` are in the
+popup. A size filter on `delta` is what scales this lane to the HPRC graph's two
+hundred thousand alleles, and it wants the same file on a `FeatureTrack`, whose
+default display has **Edit filters**: `jexl:abs(feature.delta)>10000`. Filter on
+`abs`, since `delta` is negative for a deletion.
+
+`nested` says whether that `delta` is _the_ length. It is set when the walk
+passed a branch point, so the row is one route through a nested bubble rather
+than the only one, and the build script's closing summary prints how many rows
+carry it. Add `jexl:feature.nested==0` before reading lengths off the lane in
+bulk.
 
 The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
 **first** assembly to contribute a segment, because minigraph collapses: an
 allele four strains share is credited to whichever was added first. That is
 build order, not carriage, which is why this is a lane of alleles rather than
-rows of haplotypes. Use the per-strain route when you have the assemblies, this
-one when you do not.
+rows of haplotypes, and a high rank does not mean the earlier assemblies lacked
+the sequence: theirs may have been merged into an existing path, or may not have
+aligned there. Use the per-strain route when you have the assemblies, this one
+when you do not.
 
 ## See also
 

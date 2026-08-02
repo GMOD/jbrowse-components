@@ -481,9 +481,13 @@ const MHC_REGION = {
 // 200 kb, and the graph holds three deletions across it.
 const CFHR_WINDOW = 'chr1:196,700,000-196,900,000'
 
-// The two haplotypes hprc_cfhr_deletion draws against hg38: HG01109 hap 1, which
-// is homozygous for the 84.7 kb deletion, and HG00099 hap 1, which is homozygous
-// reference. Their alignments to GRCh38 come out of HPRC's own
+// The two haplotypes hprc_cfhr_deletion draws against hg38: hap 1 of HG01109,
+// which is homozygous for the 84.7 kb deletion, and hap 1 of HG00099, which is
+// homozygous reference. A haplotype carries an allele; only the sample it comes
+// from can be homozygous for one, and both of these were picked out of the
+// callset on the sample's genotype (scripts/build_hprc_cfhr_synteny.sh), so the
+// drawn row is one of two identical haplotypes either way. Their alignments to
+// GRCh38 come out of HPRC's own
 // impg/pafs/hprc465vsgrch38.aln.paf.gz, sliced to this window by
 // scripts/build_hprc_cfhr_synteny.sh -- one record for the non-carrier running
 // straight through, two for the carrier with the deleted span between them.
@@ -513,6 +517,51 @@ const CFHR_REGION = {
 // inside it, so the two cannot part company.
 const CFHR_DELETED = { refName: 'chr1', start: 196753088, end: 196837771 }
 const CFHR_DELETED_LOCUS = `chr1:${CFHR_DELETED.start + 1}-${CFHR_DELETED.end}`
+
+// The inversion figure, at 1q21.1. `hprc-v2.0-mc-grch38.bubbles.bed.gz` flags
+// this bubble as an inversion (246 of its 130,510 rows carry that column), and
+// the links index states the breakpoints as three mixed-orientation rank-0
+// links, bracketing chr1:144,419,292-144,572,458.
+//
+// The flag alone is not the finding, which is why this figure exists at all:
+// gfatools cannot tell a polymorphic inversion from an inverted paralog, 1q21.1
+// is a segmental duplication, and the wave VCF never sets its own INV flag here.
+// scripts/build_hprc_inversion_synteny.sh settles it against HPRC's published
+// all-vs-GRCh38 PAF, classifying every haplotype by TWO orientations -- the
+// bubble's, and the sequence outside it -- because a haplotype whose whole
+// window is reverse says nothing (its contig may be deposited that way). 64
+// haplotypes reverse the bubble with forward flanks and 23 keep it forward; the
+// script prints both counts, so the split is its output rather than prose.
+//
+// It also picks the panel, and NOT on record counts, which was the first attempt
+// and put a crossed ribbon on the non-carrier row. Every haplotype in this window
+// carries inverted paralogs -- 1q21.1 is a segmental duplication -- and each of
+// those draws the same crossing the inversion does. A haplotype row is also a
+// one-contig assembly, so its displayedRegions is the whole contig and the
+// display draws every record its file holds, wherever the row is scrolled: what
+// the figure shows is the file, not the window. So the script cuts each emitted
+// PAF to the frame below and keeps only haplotypes whose in-frame records are the
+// inversion plus forward flanks (31 of 64 carriers, 12 of 23 non-carriers). The
+// two windows below are its output, not measurements.
+const INV_CARRIER = 'HG01891.1'
+const INV_CARRIER_TRACK = 'hprc_inv_synteny_HG01891_1'
+const INV_NONCARRIER = 'HG02698.2'
+const INV_NONCARRIER_TRACK = 'hprc_inv_synteny_HG02698_2'
+// Each row's own window: the span its in-frame records cover on that haplotype.
+const INV_CARRIER_WINDOW = 'JAGYVO020000062.1:6,437,000-6,868,942'
+const INV_NONCARRIER_WINDOW = 'JBHDTM010000033.1:3,912,000-4,309,991'
+// The drawn reference window, and the frame the script selects against. Its right
+// edge stops short of 144,610,000 because past there most haplotypes carry a
+// paralogous record of their own.
+const INV_WINDOW = 'chr1:144,260,000-144,610,000'
+const INV_REGION = {
+  refName: 'chr1',
+  assemblyName: 'hg38',
+  start: 144260000,
+  end: 144610000,
+}
+const INV_BLOCK = { refName: 'chr1', start: 144419292, end: 144572458 }
+const INV_BLOCK_LOCUS = `chr1:${INV_BLOCK.start + 1}-${INV_BLOCK.end}`
 
 // The left edge of a window, as a point locus: what a row label anchors to, so
 // the callout sits at the start of the row it names instead of at a measured x.
@@ -651,8 +700,10 @@ function cfhrGeneLane(trackId: string) {
 // graph: minigraph collapses everything under ~50 bp, so an unfiltered callset
 // is thousands of SNP columns the graph never had. `alleleLength` rather than
 // end-start because an insertion consumes no reference and a span filter would
-// keep only deletions. Same filter the hprc2 matrix figures use.
-const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
+// keep only deletions. LV==0 drops the nested children vcfwave's decomposition
+// writes beside their parents, which would otherwise put one event in two
+// columns. Same filter the hprc2 matrix figures use.
+const SV_FILTER = ['jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50']
 
 // The hover figure's session: the genes and the graph's own segments over the
 // bubble window, with the subgraph launched from that same track in the view's
@@ -2219,6 +2270,102 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // The inversion figure. Insertions are nodes and deletions are edges, and the
+  // tutorial drew both; an inversion is neither, and until this figure the page
+  // named the class without ever showing one.
+  //
+  // The graph pane is deliberately NOT here. The view's edges carry no
+  // orientation -- its deletion detector takes any edge between two rank-0
+  // segments with a coordinate gap, whatever the two orientations are -- so an
+  // inversion's breakpoints draw as two dashed deletion arcs. Putting that under
+  // a caption saying "inversion" would teach the drawing wrong. The bubble lane
+  // is what states the flag, and the alignment is what shows the event.
+  //
+  // Same shape as hprc_cfhr_deletion: carrier above the reference, non-carrier
+  // below, so both bands are against hg38. The highlight is the bubble's own
+  // span from the links index rather than a measured one, and the carrier's
+  // ribbon crosses inside it while its flanking ribbons run parallel, which is
+  // the whole figure.
+  //
+  // `cigarMode: 'off'` because the one thing this figure means by a crossing is
+  // an inversion. HPRC's PAF carries a CIGAR per record, and at 400 kb a record
+  // the default 'full' mode paints each large indel in it as a wedge pinching to
+  // a point -- several thin lines crossing each other, which read as exactly what
+  // the caption says to look for. Blocks only, so a crossing is a reversed
+  // record and nothing else.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_inversion',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [[INV_CARRIER_TRACK], [INV_NONCARRIER_TRACK]],
+          drawCurves: true,
+          cigarMode: 'off',
+          levelHeights: [150, 150],
+          collapseEmptyRows: true,
+          views: [
+            { assembly: INV_CARRIER, loc: INV_CARRIER_WINDOW, tracks: [] },
+            {
+              assembly: 'hg38',
+              loc: INV_WINDOW,
+              highlight: [{ ...INV_BLOCK, color: 'rgba(60,65,72,0.10)' }],
+              tracks: [
+                {
+                  trackId: 'hg38_ncbiRefSeq_ucsc',
+                  type: 'LinearBasicDisplay',
+                  geneGlyphMode: 'longestCoding',
+                  displayMode: 'compact',
+                  height: 70,
+                },
+                {
+                  trackId: 'hprc_minigraph_bubbles',
+                  type: 'LinearBasicDisplay',
+                  // the lane the flag lives on, cut to the flagged bubbles so
+                  // the one under the band is the subject rather than one row
+                  // among the window's bubbles
+                  jexlFiltersSetting: ['jexl:feature.inversion'],
+                  height: 60,
+                },
+                hprcSegmentsLane(INV_REGION),
+              ],
+            },
+            {
+              assembly: INV_NONCARRIER,
+              loc: INV_NONCARRIER_WINDOW,
+              tracks: [],
+            },
+          ],
+        },
+      ],
+    }),
+    // the synteny canvas, not TOOLBAR_READY: this is the one HPRC figure with no
+    // graph pane, so the plugin's toolbar never appears
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    // the two ribbon bands, the three lanes between them and the bottom row's
+    // ruler; 900 left 79 px of blank under it, per the run's own report
+    viewportHeight: 820,
+    hideTooltip: true,
+    // Only the box. The haplotype rows carry no track of their own to anchor a
+    // label to (the CFHR figure's labels hang off its per-haplotype gene lanes),
+    // and the view chrome already names each row's assembly at its left edge, so
+    // a callout would restate it.
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          view: [0, 1],
+          track: 'hprc_minigraph_bubbles',
+          locus: INV_BLOCK_LOCUS,
+        },
+      },
+    ],
+  },
   // The amylase locus on chr1, which is the figure for "this scales to a whole
   // chromosome". chr1 is 248 Mb and the graph holds 464 haplotypes of it; the
   // view fetches this 145 kb window out of two tabix indexes and draws 101
@@ -2230,11 +2377,14 @@ export const graphSpecs: ScreenshotSpec[] = [
   // that flag and this is one of the largest.
   //
   // Force-directed with the bubbles opened, which is the whole point of the
-  // pairing: AMY1 copy number is what the graph cannot state (minigraph records
-  // the distinct sequence a bubble can hold, not how many times a haplotype
-  // repeats it), so what is worth drawing here is the *shape* of the
-  // alternatives rather than an x axis. The bubbles lane above carries the
-  // length range that stands in for copy number.
+  // pairing: AMY1 copy number is what THESE TWO PROJECTIONS cannot state
+  // (gfatools bubble and the rGFA tags record the distinct sequence a bubble can
+  // hold, not how many times a haplotype repeats it), so what is worth drawing
+  // here is the *shape* of the alternatives rather than an x axis. The bubbles
+  // lane above carries the length range that stands in for copy number. The
+  // release itself is not silent on it -- the .gbz carries a walk per haplotype,
+  // which IS a copy count -- but that is a vg job, and the wave VCF is no
+  // shortcut either since release 2 strips INFO/AT from it.
   {
     mode: 'url',
     name: 'pangenome/hprc_amylase_graph',
@@ -2453,8 +2603,16 @@ export const graphSpecs: ScreenshotSpec[] = [
   //
   // The callset is filtered to the structural tier so the two hold the same
   // class of event: minigraph collapses everything under ~50 bp, and
-  // `alleleLength(feature) >= 50` takes the VCF to the same tier (a span filter
-  // would keep deletions only, since an insertion consumes no reference).
+  // `alleleLength(feature)>=50` takes the VCF to the same tier (a span filter
+  // would keep deletions only, since an insertion consumes no reference). The
+  // LV==0 half of SV_FILTER matters here too: vcfwave decomposed this file, so
+  // an undecomposed bubble in the graph pane above can face several records
+  // below, and the nested children would put one event in two columns.
+  //
+  // The marked deletion survives that filter (LV=0 on its own record) but is
+  // MULTI-ALLELIC -- five deletion ALTs, four of 584 bp and one of 14,595 -- so
+  // the colored block under the band is the site's carriers, not the 14,596 bp
+  // allele's alone. The caption says "a deletion there" for that reason.
   //
   // The regular multi-sample display, not the matrix: these columns have to
   // land under the graph rows above them, and matrix mode spreads columns

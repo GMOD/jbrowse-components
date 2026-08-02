@@ -20,15 +20,23 @@ const TRACK = 'hprc2_wave_grch38'
 // The MHC window the matrix figures cover: 200 kb of HLA class II/III.
 const MHC_WINDOW = 'chr6:32,450,000-32,650,000'
 
-// The wave VCF is fully decomposed, so that window holds ~14,300 records and
-// all but a couple of hundred are SNPs — 13,000 one-pixel columns of point
+// The wave VCF is fully decomposed, so that window holds 14,321 records and all
+// but a couple of hundred are SNPs — 14,000 one-pixel columns of point
 // divergence that read as noise (reviewer: "should probably use SV vcf instead
 // of snps"). HPRC release 2 publishes no separate SV callset, but the SV tier
 // is already in this file: filtering to alleles of 50 bp or more leaves 220
-// columns over the same window, each a real insertion or deletion, wide enough
-// to see per haplotype. `alleleLength` rather than end-start because an
-// insertion consumes no reference — a span filter would keep only deletions.
-const SV_FILTER = ['jexl:alleleLength(feature) >= 50']
+// records over this window, wide enough to see per haplotype. `alleleLength`
+// rather than end-start because an insertion consumes no reference — a span
+// filter would keep only deletions.
+//
+// LV is the second half and is not optional. vcfwave decomposed this file (its
+// ORIGIN field says so), so a nested child is written as its own record beside
+// its parent, PS naming the parent. 22 of those 220 are children of a parent
+// that is also in frame, so unfiltered the panel paints those events twice at
+// two positions and a reader counting columns counts them twice. LV==0 keeps
+// the top-level sites and leaves 198. Every INFO value @gmod/vcf parses is an
+// array, including Number=1 fields, hence LV[0].
+const SV_FILTER = ['jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50']
 
 // Readiness. The track *name* is a useless gate here — it renders the moment the
 // track mounts, long before a byte of the 2.3 GB VCF has been fetched, and
