@@ -35,7 +35,7 @@ SequenceSearchAdapter
 SharedLDDisplay
 TrixTextSearchAdapter
 UCSCTrackHubConnection
-# models (90)
+# models (91)
 AddTrackModel
 AppCoreJBrowseModel
 AppSessionMixin
@@ -114,6 +114,7 @@ SyntenyFetchStateMixin
 ThemeManagerSessionMixin
 TimeTraveller
 TokenEntryInternetAccount
+TrackColorsMixin
 TrackHeightMixin
 TrackMenuItemsSessionMixin
 TrackMenuSessionMixin
