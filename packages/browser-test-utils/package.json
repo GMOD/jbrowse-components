@@ -6,6 +6,10 @@
   "description": "Shared Puppeteer harness primitives for jbrowse-web browser tests and website screenshot generation",
   "license": "Apache-2.0",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./annotationOverlay": "./src/annotationOverlay.ts"
+  },
   "dependencies": {
     "puppeteer": "^25.4.0",
     "serve-handler": "^6.1.7"

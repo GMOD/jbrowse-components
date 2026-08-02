@@ -5,7 +5,7 @@ import {
   ANNOTATION_OVERLAY_ID,
   drawAnnotationOverlay,
   parseAnnotationLocus,
-} from '@jbrowse/browser-test-utils/src/annotationOverlay.ts'
+} from '@jbrowse/browser-test-utils/annotationOverlay'
 
 import { graphNodeRect } from './graphAnchor.ts'
 
@@ -14,7 +14,7 @@ import type {
   AnnotationAnchor,
   PayloadAnnotation,
   ResolvedAnnotationAnchor,
-} from '@jbrowse/browser-test-utils/src/annotationOverlay.ts'
+} from '@jbrowse/browser-test-utils/annotationOverlay'
 import type { Page } from 'puppeteer'
 
 // Attach the parsed region so page context never parses strings, plus the

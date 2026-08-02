@@ -7,12 +7,12 @@ import type { KeyInput } from 'puppeteer'
 export type {
   Annotation,
   AnnotationAnchor,
-} from '@jbrowse/browser-test-utils/src/annotationOverlay.ts'
+} from '@jbrowse/browser-test-utils/annotationOverlay'
 
 import type {
   Annotation,
   AnnotationAnchor,
-} from '@jbrowse/browser-test-utils/src/annotationOverlay.ts'
+} from '@jbrowse/browser-test-utils/annotationOverlay'
 
 export interface ScreenshotAction {
   type:

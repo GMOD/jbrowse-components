@@ -2,14 +2,14 @@ import {
   ANNOTATION_OVERLAY_ID,
   drawAnnotationOverlay,
   parseAnnotationLocus,
-} from '@jbrowse/browser-test-utils/src/annotationOverlay.ts'
+} from '@jbrowse/browser-test-utils/annotationOverlay'
 
 import type {
   Annotation,
   AnnotationAnchor,
   PayloadAnnotation,
   ResolvedAnnotationAnchor,
-} from '@jbrowse/browser-test-utils/src/annotationOverlay.ts'
+} from '@jbrowse/browser-test-utils/annotationOverlay'
 import type { WebDriver } from 'selenium-webdriver'
 
 export type { Annotation, AnnotationAnchor }
