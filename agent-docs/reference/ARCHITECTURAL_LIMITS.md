@@ -498,8 +498,11 @@ build-time gate today, and gives the `@public` audit a factual starting point.
 
 **Status:** Open.
 
-`agent-docs/` plus the 24 in-tree `CLAUDE.md` files carry on the order of 15k
-lines of contract, including ~60 imperative bullet rules. Rules the compiler
+`agent-docs/` plus the in-tree `CLAUDE.md` files carry on the order of 20k lines
+of contract. The `CLAUDE.md` half was cut from 3.7k lines to 840 in 2026-08 —
+rationale, measurements, and rejected alternatives were dropped in favor of the
+imperative rule alone, on the theory that git history and the ADRs already hold
+the why. `agent-docs/` itself has had no equivalent pass. Rules the compiler
 already owns are still written as warnings, spending the attention the
 unenforceable ones need.
 

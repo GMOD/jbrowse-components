@@ -136,7 +136,7 @@ export function drawCoverageBins(
     // Ordering the edges also fixes the cull, which assumed px < px2 and so
     // dropped bins straddling either viewport edge when reversed.
     // Kept inline rather than shared: this loop runs per covered bp, and
-    // returning a {left,right} would allocate per bin (see CLAUDE.md).
+    // returning a {left,right} would allocate per bin.
     const pxA = bpToX(pos)
     const pxB = bpToX(pos + 1)
     const px = Math.min(pxA, pxB)

@@ -80,7 +80,7 @@ the canvas feature-glyph passes ship theirs in `alignmentsUniforms.slang` and
 `hpSplitUint` directly from a draw shader** — the wrapper takes a `uint`, so it
 can't be handed an already-converted float. (A shader that only calls
 `bpToClipX` doesn't need `import hpmath` at all; see
-`plugins/alignments/src/LinearAlignmentsDisplay/shaders/CLAUDE.md`.)
+`plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`.)
 
 The copies are deliberate. Hoisting the wrapper into `hpmath.slang` would need a
 Slang interface every plugin's `Uniforms` had to conform to, leaking render-core

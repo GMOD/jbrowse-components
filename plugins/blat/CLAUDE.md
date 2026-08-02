@@ -1,47 +1,12 @@
 # BLAT plugin
 
-UCSC hgBlat and In-Silico PCR, bundled in **jbrowse-desktop only** (web
-cold-load bundle size; BLAT is niche). Results become an **AlignmentsTrack**:
-`pslToSam.ts` converts the PSL hits to SAM text and hands it to a `SamAdapter`
-as inline `samText`, so blocks, indels and soft-clipped query ends render as a
-real alignment. The hit list and its navigation still run off the PSL features.
+Bundled in **jbrowse-desktop only** — BLAT is niche and web pays for it in
+cold-load bundle size. The access model (Turnstile, `apiKey`, the CORS split
+between the proxy and the desktop bridge) is documented at each site;
+`liveBlat.test.ts`'s header covers why that test is skipped unconditionally.
 
-## Access
-
-UCSC removed open programmatic BLAT in 2025 — a Cloudflare Turnstile fronts
-keyless hgBlat. An account `apiKey` (Genome Browser account → Hub Development →
-generate) bypasses it. The electron CAPTCHA-solve window
-(`openBlatChallenge`/`cf_clearance`/`BlatChallengeError`) stays as the fallback
-for users with no key. Rate limit is 1 hit/15s and 5000/day, key or not, so
-batch queries into one multi-record FASTA rather than looping.
-
-Browser→UCSC is CORS-blocked, which is why web needs the
-`products/aws/blat-proxy` Lambda (injects a shared key, adds CORS) while desktop
-hits UCSC directly through the main-process `blatFetch` bridge.
-
-## Live round-trip test
-
-`src/liveBlat.test.ts` is the only test that talks to UCSC. It's
-`describe.skip`ped unconditionally — not just gated on `UCSC_API_KEY` — so
-neither CI nor a routine local/agent test run ever spends the rate limit or
-makes a real request under your account key. To run it manually, remove the
-`.skip` and set the key:
-
-```bash
-set -a; . ~/.env; set +a
-pnpm jest plugins/blat/src/liveBlat
-```
-
-Put the `.skip` back afterward.
-
-It fetches a known hg38 locus from `api.genome.ucsc.edu`, submits four variants
-of it (exact, 6bp deletion, junk-prefixed, three SNVs) as one FASTA, and asserts
-the converted SAM places each back where the sequence came from. Set
-`BLAT_DEBUG=1` to also log each placement, which is what you read when a
-UCSC-side change breaks the response shape the offline tests fake — quiet by
-default so a routine run with `UCSC_API_KEY` set doesn't print to the test
-report.
-
-Expect the junk-prefixed query's soft clip to be a base or two shorter than the
-junk — BLAT extends a block through junk bases that happen to match, and that is
-its call, not the conversion's.
+Two things not stated in the source: UCSC caps a key at **5000 hits/day** on top
+of the 1-per-15s rate limit, and in a live run the junk-prefixed query's soft
+clip comes back a base or two shorter than the junk — BLAT extends a block
+through junk bases that happen to match, which is its call, not the
+conversion's.

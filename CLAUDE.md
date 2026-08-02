@@ -1,104 +1,43 @@
 # CLAUDE.md
 
-## Architecture
-
-We fetch data in RPC workers and render on the main thread (WebGPU, with WebGL
+Data is fetched in RPC workers, rendered on the main thread (WebGPU, with WebGL
 and Canvas2D fallbacks). Worker output is **absolute genomic uint32** — no
-regionStart-relative arithmetic crosses the worker boundary. See
-`agent-docs/ARCHITECTURE.md`.
+regionStart-relative arithmetic crosses the worker boundary.
 
-**Agent front door: [`agent-docs/CLAUDE.md`](agent-docs/CLAUDE.md)** —
-invariants, definition of done, and pointers to the ADRs, reference notes, and
-guides under `agent-docs/`. Start there before non-trivial work on the rendering
-pipeline.
-
-## Example plugins
-
-Worked examples backing the developer guides live in `example-plugins/*`, not
-`plugins/*` (which is for shipping plugins and publishes to npm). They are
-`private: true` but still packed, because `component_tests/plugin-vite` installs
-`example-plugins/score-example` from a packed tarball and renders it in
-puppeteer on every push. That is the only CI job resolving `@jbrowse/*` through
-the `publishConfig` exports map and built `esm/` instead of workspace-linked
-source, so it's what catches a packaging break before it reaches external plugin
-authors. Don't turn it into a workspace dependency.
-
-## GPU rendering (`plugins/canvas`, `packages/render-core`)
-
-See `agent-docs/reference/GPU_RENDERING.md` for the render lifecycle, backends,
-upload patterns, HAL, and shaders.
-
-- **Never hand-edit `*.generated.ts` shader files.** Edit `.slang` source and
-  run `pnpm gen:shaders`.
-- `canvas_width`/`canvas_height` uniforms are CSS pixels — don't scale by
-  devicePixelRatio. Uniforms struct/UBO layout must match byte offsets in
-  `GpuCanvasFeatureRenderer.ts`.
+Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
+`reference/`, `guides/`, and the ADRs).
 
 ## MST
 
-- `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream
-  MST.
-- Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`);
-  don't split `.views()`/`.actions()` across files. Small mixins/utilities can
-  be extracted.
-- To override a config-slot default, write the slot directly (`setSlot`) and
-  read it back via `getConf`; the old `<name>Override` shadow-property system
-  was removed. For a default that must resolve across tiers at read time (config
-  → display-type/session default → instance pin), use promotable slots and read
-  them with `resolveConf` — `getConf` stays raw
-  (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`).
-- A bare getter must return a resolved value, never `undefined`. When a bespoke
-  (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` =
-  fit-to-height), expose the resolved value under a distinct getter
-  (`effectiveRowHeight`) and make every consumer — render, SVG export, overlays
-  — read that, never the raw prop.
-- In React, use `autorun` inside `useEffect` to track observables (prefer over
-  `reaction`); `untracked` for untracked code.
+- `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream.
+- Keep the main model chain in one file; don't split `.views()`/`.actions()`
+  across files.
+- A bare getter returns a resolved value, never `undefined`. Where a prop
+  encodes a sentinel (`rowHeight === 0` = fit-to-height), expose the resolved
+  value under a distinct getter every consumer reads.
+- Write config with `setConf`, not `configuration.setSlot`. Promotable slots
+  resolve only through `resolveConf`, never `getConf`.
+- In React, `autorun` inside `useEffect` to track observables (prefer over
+  `reaction`).
 
 ## React Compiler × MobX
 
-`babel-plugin-react-compiler` does NOT compile inline `observer(function(){})` /
-`observer(()=>…)` — always write observers that way, so MobX drives their
-reactivity. The `function F(){}; observer(F)` form DOES get compiled and can
-stale a MobX read (memoizes on stable identity); avoid it, or add
-`'use no memo'`. See `agent-docs/reference/COMPILER_TERNARY_FINDING.md`.
-
-## Hosted demo configs (`demos/`)
-
-The configs behind `jbrowse.org/demos/<name>/config.json` are checked in under
-`demos/<name>/config.json`. Edit that copy, commit it, then
-`scripts/deploy-demo.sh <name>/config.json` (upload + CloudFront invalidation;
-it refuses a local file that differs from the repo copy). Never `aws s3 cp` a
-config assembled somewhere else: the bucket has no versioning, so an overwrite
-that silently drops a track is both invisible in review and unrecoverable — that
-is how `ecoli_pangenome` lost `ecoli_ava` and four figures started failing with
-"Could not resolve identifier".
-
-`node scripts/check-demo-configs.ts` diffs repo against live and names the
-tracks/assemblies each side is missing; `--fix` pulls live into the repo. It
-needs the network and reports on state no commit controls, so it is manual
-rather than a CI gate — run it before editing a demo config and after deploying
-one.
-
-`@jbrowse/core/util`'s export list is snapshotted by
-`packages/core/src/util/publicApi.test.ts`, because that barrel is the runtime
-ABI published external plugins resolve against. Removing an export typechecks
-and passes every test here while breaking a plugin we don't build. Update the
-snapshot deliberately, in the same commit, and say which plugins you checked.
+`babel-plugin-react-compiler` does not compile inline `observer(function(){})` /
+`observer(()=>…)` — always write observers that way. The
+`function F(){}; observer(F)` form does get compiled and can stale a MobX read.
 
 ## Tooling
 
-- Run `pnpm test <directory>`, not the full suite.
-- **`pnpm autogen` rewrites every generated-and-committed artifact** (docs,
-  guide indexes, gallery links, thumbnails, core exports, tsconfig refs). CI
-  runs `pnpm autogen --check` off the same list in `scripts/autogen.ts`, so
-  there is one answer to any "X is out of date" failure. `pnpm check-docs` is
-  the read-only counterpart for validators with no fix mode.
-- Two TypeScript versions on purpose: `typescript` stays on 6.x (lint needs it),
-  `pnpm typecheck` uses the aliased `typescript7`. Don't unify them —
-  `agent-docs/guides/TOOLCHAIN.md`.
-- `tsconfig.build.esm.json` `references` arrays are generated — run
-  `pnpm gen-tsconfig-refs`, don't hand-edit. A cross-package `declare module`
-  (`ExtensionPointRegistry`, `RpcRegistry`) only applies if its file is
-  reachable from the package entry, so put it in a feature `index.ts`/`model.ts`
-  the entry re-exports — `agent-docs/guides/TOOLCHAIN.md`.
+- Run `pnpm test <directory>`, not the full suite. Lint with `--fix`.
+- **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
+  one answer to any "X is out of date" CI failure. It owns `*.generated.ts`
+  shaders (via `.slang`), `package.json` `exports` maps, and
+  `tsconfig.build.esm.json` `references` — never hand-edit those.
+- Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
+  `typescript7` for `pnpm typecheck`. Don't unify them.
+- `@jbrowse/core/util`'s exports are the ABI external plugins resolve against.
+  Changing `publicApi.test.ts`'s snapshot needs a deliberate note on which
+  plugins you checked.
+- `demos/<name>/config.json` deploys via `scripts/deploy-demo.sh`. Never
+  `aws s3 cp` a config from elsewhere — the bucket has no versioning, so an
+  overwrite that drops a track is unrecoverable.

@@ -1,48 +1,18 @@
-# jbrowse-cli CLAUDE.md
+# jbrowse-cli
 
-## Always use cliFetch, not global fetch
+Every module in `src/` must `import fetch from './cliFetch.ts'` so
+`jest.mock('../cliFetch')` intercepts it; global `fetch` hits the real API.
 
-All modules in `src/` must import and use `cliFetch` instead of the global
-`fetch` function. This allows tests to mock API calls via Jest's
-`jest.mock('../cliFetch')`. If a module uses global `fetch`, test mocks won't
-intercept those calls and tests will hit the real API instead.
+The exception is code in other packages: `@jbrowse/text-indexing-core` uses
+global `fetch` on purpose (it also runs in the desktop indexing worker), and CLI
+tests' `@jest-environment node` docblock opts them out of the fetch mock setup —
+so an inert `mockFetch` there silently hits the network. Use `mockGlobalFetch`
+from `testUtil.ts` for anything reached through text-indexing-core.
 
-Example:
+## Synteny `--assemblyNames` is query,target
 
-```typescript
-import fetch from './cliFetch.ts' // ✓ Correct
-
-// const response = await fetch(url)  // ✗ Wrong - uses global fetch
-```
-
-This applies to all files including utils, commands, types, and helpers.
-
-The exception is code in other packages that the CLI calls into:
-`@jbrowse/text-indexing-core` uses global `fetch` on purpose, because the same
-module runs in the desktop indexing worker. `jest.mock('../cliFetch')` does not
-intercept it, and the CLI test files carry an `@jest-environment node` docblock,
-which also opts them out of `config/jest/fetchMockAfterEnv.js` — so an inert
-`mockFetch` there means the test silently hits the real network. Use
-`mockGlobalFetch` from `testUtil.ts` for anything reached through
-text-indexing-core.
-
-## Synteny `--assemblyNames` order is query,target (reverse of aligner args)
-
-For synteny tracks (`PAFAdapter`, `DeltaAdapter`, `ChainAdapter`),
-`--assemblyNames`/`-a` is `query,target` — **query first**. This is the
-**reverse** of the order minimap2/nucmer take their inputs (`target query`). So
-`minimap2 ref.fa qry.fa` → `add-track -a qry,ref`.
-
-Source of truth: `getAssemblyNamesFromConf` in
-`plugins/comparative-adapters/src/util.ts` returns
-`[queryAssembly, targetAssembly]`, and PAFAdapter maps `assemblyNames[0]` to the
-PAF query columns (col 1-4) and `assemblyNames[1]` to the target columns (col
-6-9). Verified by `PAFAdapter.test.ts` (assembly index 0 resolves to the query
-refName). In the dotplot the query is the horizontal axis; in linear synteny it
-is the top row.
-
-Do not "correct" this to `target,query` — that is the common point of confusion
-and produces a broken track (refNames won't match their assembly).
-
-MCScan adapters are different: their order follows `bed1Location`/`bed2Location`
-(bed1 → `assemblyNames[0]`), not query/target.
+**Query first** — the reverse of the order minimap2/nucmer take their inputs. So
+`minimap2 ref.fa qry.fa` → `add-track -a qry,ref`. Do not "correct" this to
+`target,query`; that is the common point of confusion and produces a track whose
+refNames won't match their assembly. MCScan adapters differ: their order follows
+`bed1Location`/`bed2Location`.

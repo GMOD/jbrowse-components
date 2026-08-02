@@ -1,27 +1,14 @@
-Aim to show (using interesting informative generate-screenshots specs) rather
-than tell (reduce extended prose to minimum)
+Show rather than tell — use informative screenshot specs and keep prose minimal.
+No numeric values in prose unless programmatically derived. No em-dashes
+anywhere, including code comments.
 
-Avoid reference to specific detailed numeric values (bp ranges, track scores,
-etc) in prose, as these are difficult to verify unless they are programmatically
-derived.
+These are about _using JBrowse_, not bioinformatics scripting. Commands that
+produce an input file belong in the tutorial's `scripts/build_*.sh` under
+`## Reproduce it end to end`. Link to `quickstart_web.md` for bgzip/tabix/
+`text-index` prep rather than re-pasting it.
 
-Every tutorial with real requirements has a `## Prerequisites` section directly
-under the TL;DR, before any intro prose, listing what the reader must have
-before starting: a JBrowse instance, files to download, tools to install, or a
-pipeline to run. It is the first thing someone deciding between tutorials needs,
-and a title cannot carry it. A page whose whole requirement is "nothing to
-install" needs no such section.
+A tutorial with real requirements opens with a `## Prerequisites` section under
+the TL;DR: a bulleted list and nothing else. The intro goes under its own `##`
+heading, or the TOC files it under "Prerequisites".
 
-That section is a bulleted list and nothing else, in a dry register. At most a
-four-word scoping line above it ("To build the tracks:") and an install hint
-below it (`apt install ...`). The tutorial's intro goes under its own `##`
-heading, never trailing the list: the on-page TOC anchors everything up to the
-next heading, so prose left there files a whole introduction under
-"Prerequisites".
-
-Don't sell the hosted data. "Nothing to install", "reading needs only a
-browser", "every figure has an Open this view link that loads the finished
-tracks" is padding, and it is already handled: each figure carries its own live
-link plus a "do it yourself" recipe of the menu steps that produced it, and
-`quickstart_desktop.md` documents the mechanism once. Say what the reader needs
-and what each step does, and let the screenshots carry the rest.
+Don't sell the hosted data — the figures already carry their own live links.

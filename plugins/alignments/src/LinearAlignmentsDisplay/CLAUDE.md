@@ -2,373 +2,80 @@
 
 ## Settings: storage + invalidation tiers
 
-Adding a track-menu setting? Decide two things.
+Track-menu display options are **config slots** (they survive hide/retick and
+take a declarative default). Plain MST props / volatiles are for transient state
+only — hover, selection, scroll.
 
-**Storage:** every track-menu display option is a **config slot**. Add a slot to
-`configSchema.ts`, read it with a thin
-`get key() { return getConf(self, 'key') }` view, and write it with
-`self.configuration.setSlot('key', value)`. This survives hide/retick (fixes
-#5591 — the slot lives on the persistent track config, not the ephemeral display
-node) and lets a config default be set declaratively. Don't add plain MST props
-for display options anymore — the former MST-prop toggles (`linkedReads`,
-`showCoverage`, `showPileup`, `readConnections`, `showSoftClipping`, the
-sashimi/arc settings, …) were all promoted to slots. Reserve plain MST props /
-volatiles for genuinely per-instance transient state (hover, selection, scroll).
+Which getter reads a setting decides what it invalidates: `rpcProps()`
+refetches, `laidOutPileupMap` relayouts, `arcsByGroup` rebuilds arcs,
+`renderState` repaints. Tiers 2-4 are auto-wired by MobX; **tier 1 is manual**,
+because the worker boundary defeats MobX tracking.
 
-**Blast radius:** which getter reads it decides what it invalidates. Tiers 2–4
-are auto-wired by MobX; **tier 1 is manual** because the worker boundary defeats
-MobX tracking.
+- **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
+  `colorTagMap` is the canonical trap: the worker reports raw tag values and the
+  main thread bakes colors at tier 2.
+- **Tier 4 repaints the whole canvas**, so per-mousemove state must not be
+  there. The hover highlight is a React overlay on purpose; selection stays in
+  `renderState` (rare, and belongs in SVG export).
+- Read color is classified once at tier 2, so `flipStrandLongReadChains` /
+  `colorSupplementaryChains` are deliberately absent from `renderState`.
 
-| Tier            | Effect                              | Where to wire it                            |
-| --------------- | ----------------------------------- | ------------------------------------------- |
-| 1 refetch       | clears `rpcDataMap`, worker re-runs | list in `rpcProps()` **and** read in worker |
-| 2 relayout      | redo main-thread Y-layout           | read in `laidOutPileupMap` getter           |
-| 3 arc recompute | rebuild arcs (no refetch)           | read in `arcsByGroup` getter                |
-| 4 rerender      | redraw only                         | read in `renderState` getter                |
+## Three different "is it grouped?" questions
 
-**Tier 4 means a full canvas repaint** — every field in `renderState` redraws
-all pileup layers. So per-mousemove state must NOT be tier 4. The hover
-highlight is deliberately a React overlay (`HighlightOverlay` /
-`computeHighlightBoxes` / `model.highlightBoxes`), not a `renderState` field:
-`featureIdUnderMouse` changes on nearly every mousemove, and routing it through
-the canvas re-rasterized the whole pileup each move (catastrophic on the
-Canvas2D fallback with per-base-quality — every base is a `fillRect`). Selection
-(`selectedFeatureId`/`selectedChainIds`) stays in `renderState` on purpose: it
-changes on click (rare) and belongs in SVG export. Don't move the hover
-highlight back into `renderState`.
+`isGrouped` (>1 section) is the scroll model. `showsGroupLabels` is the chips —
+grouping that yields one section still reserves the label offset, so it must
+still name that section. `rpcDataMap.size === 0` is whether data arrived; never
+gate first paint on a laid-out map, since a grouped fetch over an empty region
+partitions to zero groups and the overlay never clears.
 
-Gotchas: arc settings
-(`drawInter`/`drawLongRange`/`arcColorByType`/`pairedArcs`) stay tier 3 — don't
-add them to `rpcProps()`. Only `sortedBy.tag` flows to the worker (`sortTag`
-getter), so sort-_position_ changes re-layout without refetching. Never put a
-fetch-result derivative in `rpcProps()` (infinite loop — see
-`agent-docs/ARCHITECTURE.md`).
+`hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
+(coverage stats, legend, sashimi, arcs) or a hidden lane sizes the axis the
+visible ones share — for arcs, before `poolArcScale`.
 
-`colorTagMap` is the canonical trap: it's derived from worker output, so feeding
-it back through `rpcProps()` makes a discover→assign→refetch loop. It's now
-tier-2 — worker reports raw `readTagValues`, main thread bakes `readTagColors`
-in `laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
+`collapseGroupRows` puts depth in the overlap tint, so the collapsed path must
+**not** run `mergeSpans`.
 
-### Read color is classified at tier 2, not painted at tier 4
+## Read height vs track height
 
-A read's color bucket is decided **once**, on the main thread, by
-`readColorCategory` → `buildReadColorCategories`, and overlaid onto each
-laid-out group by `overlayReadColorCategories` (`groupLayout.ts`, immediately
-after `overlayReadTagColors` — the `noTagValue` bucket is read off the baked tag
-colors, so that order is load-bearing). Both renderers and the legend consume
-the resulting `readColorCategories` byte array; `read.slang` paints an `RC_*`
-index and does not classify. See `colorCategory.test.ts`.
+**`fit` is the sole `heightMode` that also drives the read-height axis** — every
+awkward special case follows from that, including that the fit cap uses the
+Normal height rather than the configured one.
 
-Two consequences for this table:
-
-- **`flipStrandLongReadChains` / `colorSupplementaryChains` are tier 2**, not
-  tier 4. They are classification inputs, so they belong in
-  `groupLayoutContext.readColorOpts` and are deliberately **absent from
-  `renderState`** — leaving them there would additionally invalidate the canvas
-  for a value no renderer reads.
-- **`colorLegendCategories` reads `laidOutByGroup`**, not `rpcDataMap`. It must:
-  `readTagColors` is empty on the raw map, and `noTagValue` is decided from it,
-  so the raw scan listed "Tag" for reads the renderer painted with the no-value
-  neutral. The cost is that the legend recomputes on relayout (e.g. a resize);
-  it is gated on `showLegend` and scans a `Uint8Array`.
-
-If classification ever needs to stop re-running per relayout, the bake depends
-only on `(rawByGroup, colorScheme, readColorOpts)` — never on Y placement — so
-it can be hoisted to its own memoized getter. Tag colors would have to move with
-it to keep the ordering above.
-
-## Grouping: three different "is it grouped?" questions
-
-Don't collapse these — each gates something different, and one is not derived
-from the section count at all.
-
-- **`isGrouped`** (`groupOrder.length > 1`) — the **scroll model**. >1 section
-  scrolls each section's coverage with its rows; one section keeps coverage
-  sticky and scrolls only the pileup. `buildSectionRenders` and `makeScroll`
-  re-spell the same >1 rule for the pure passes.
-- **`showsGroupLabels`** (`groupBy !== undefined && groupOrder.length > 0`) —
-  the **label chips + dividers**, on screen and in SVG export. Grouping that
-  yields one section (one strand present, a tag with a single value) still
-  reserves the label offset via `prefersOffset`, so it must still name that
-  section — gating labels on `isGrouped` left blank space with nothing in it.
-- **`rpcDataMap.size === 0`** — whether **data has arrived** at all, which gates
-  first paint (`canvasDrawn`). Never gate that on a group's laid-out map: a
-  grouped fetch over a region with no reads partitions to zero groups, so the
-  first group's map is empty while the fetch is complete, and the loading
-  overlay never cleared.
-
-Group keys are also the identity for the volatile per-group state
-(`collapsedGroups`, `groupMaxHeightOverrides`), which is why `setGroupBy` clears
-both — a key means something different under a new dimension.
-
-### `hiddenGroupKeys`: a lane the fetch produced but the display drops
-
-`hiddenGroupKeys` (empty here; LGVSyntenyDisplay hides an all-vs-all track's
-self-alignment lane) is filtered out of `groupOrder`, so the lane never draws —
-but it must also be filtered out of the **cross-group derivations** that walk
-`rpcDataMap` directly (`coverageStats`, `colorLegendCategories`, the sashimi
-down-strip), or a hidden lane still sizes the axis the visible ones share. Pass
-the set as the last argument to `eachGroup`, the one generator every such scan
-walks. The per-group regroupers keep every lane on purpose — consumers look them
-up by an already-filtered `groupOrder` key.
-
-Arcs take the set the same way (last argument to `computeArcsByGroup`) rather
-than being pre-filtered by the caller, because the drop has to happen **before**
-`poolArcScale` — a hidden lane's insert radii would otherwise still set the
-long-range coloring threshold the visible lanes share.
-
-### Collapse groups to one row (`collapseGroupRows`)
-
-A fourth question, orthogonal to the three above: how tall is each group?
-`collapseGroupRows` draws every group as a single row (`collapsedLayout.ts` —
-all-zero `readYs`, no packing pass, so `maxY` is 1 by construction) and puts the
-depth in the **overlap tint** instead of in the row count. `overlapIntervals`
-(`spanOverlaps.ts`) emits a position covered by `d` features exactly `d - 1`
-times, and the tint alpha-blends, so a segment darkens monotonically with depth.
-That property is why the collapsed path must NOT run `mergeSpans` — chain mode
-merges precisely to avoid it.
-
-Two things hang off this and are easy to get wrong:
-
-- **A group with a height override opts out** (`collapsesRows`). That is what
-  makes the label chip's expand affordance a true-stack toggle rather than a
-  separate mode, and it is why `truncated` is set on a collapsed group that has
-  any overlap — `truncated` is the "there is more here than is shown, offer the
-  expand" signal the chip reads, not a claim that reads were clipped.
-- **A labelled section reserves `GROUP_LABEL_HEIGHT`** (`minSectionHeight` in
-  `computeStackedSections`). Chips are anchored at their section's top, so
-  one-row sections shorter than a chip stack their chips on top of each other.
-  The floor pads only the _advance_ to the next section, never `pileupHeight`,
-  so the pad is dead space rather than clickable pileup.
-
-Chain mode never collapses: its rows are chains, and one row would drop the
-connecting lines that are the point of the mode.
-
-The menu item lives in **"Show..."**, not in the Group-by radios — it is a
-group's drawn height, not a dimension — and `canCollapseGroupRows`
-(`prefersOffset && !isChainMode`) decides whether it appears at all. Omitted
-rather than disabled: outside that gate `collapseGroupRows` reads `false`
-whatever the slot holds, so a visible box sat unchecked on LGVSyntenyDisplay
-(which defaults the slot on) and clicking it did nothing.
-
-## Read height vs track height: two axes, one crossover
-
-The "Read height" menu drives **two orthogonal axes**, and almost every subtle
-rule below is a _consequence_ of one exception. Learn the model once and the
-special-cases stop being surprising.
-
-- **Read-height axis** — how tall each read is drawn. The `featureHeight` slot:
-  Normal (7) / Compact (3) / Super-compact (1) / Custom. Spacing is _derived_
-  from it, never stored (`featureSpacing` = `h > 3 ? 1 : 0`).
-- **Track-height axis** — how the track absorbs more content than fits. The
-  `heightMode` slot (shared vocabulary with the canvas display via
-  `HeightModeMixin`): `fixed` scrolls, `grow` autogrows the track (up to
-  `GROW_MAX_HEIGHT`), `fit` shrinks reads to fill the current height.
-
-**The one crossover: `fit` is the sole `heightMode` that also drives the
-read-height axis.** `fixed` and `grow` both render reads at the configured
-`featureHeight`; only `fit` _derives_ the size. So `fit` and the compactness
-presets are mutually exclusive answers to "how tall are reads?", while `grow`
-stays independent (you can autogrow at any fixed size). Everything awkward flows
-from that:
-
-- `sizeActive = heightMode !== 'fit'` (`featureSize.ts`) hides the preset
-  checkmarks while fitting — no fixed size is "selected" when the size is
-  derived.
-- `setFeatureHeight` drops `fit → fixed` — a chosen size would be dormant under
-  fit, so picking one exits fit to make it take effect.
-- The fit cap in `fittedFeatureHeight` uses the **Normal** height, NOT
-  `configuredFeatureHeight` — fit _overrides_ the compactness preset, so a
-  Compact selection must not clamp the fit (else Compact would override fit).
-- `isFitting = fitHeightToDisplay && fittedHeightPx > 0` gates the derived path;
-  when nothing fits (no rows / no room) the getters fall back to the config.
-
-**Naming traps in the read-height getters** (all in `model.ts`), because the
-resolved value is confusingly named like the raw slot:
-
-- `getConf(self, 'featureHeight')` is the **raw configured** slot value, but the
-  `self.featureHeight` _getter_ is the **effective** (fit-squeezed) render
-  value. Editors that mutate the size (the dialog) must read
-  `configuredFeatureHeight`, never `featureHeight`, or they bake the squeezed
-  height.
-- `fittedHeightPx` / `fittedFeatureHeight` are **pitches** (body + spacing);
-  `featureHeight` is a **body**.
-  `featureHeight = fittedHeightPx - featureSpacing`. Don't conflate pitch and
-  body.
-- `fittedHeightPx` is a volatile bridged by an `afterAttach` autorun purely to
-  break a MobX cycle: `fittedFeatureHeight` reads _late_ layout getters, but
-  `featureHeight` is an _early_ getter the layout depends on. The volatile is
-  the seam; don't try to make `featureHeight` read `fittedFeatureHeight`
-  directly.
+Naming trap: `getConf(self, 'featureHeight')` is the raw slot but the
+`self.featureHeight` getter is the fit-squeezed value, so editors that mutate
+the size must read `configuredFeatureHeight`. `fittedHeightPx` is a **pitch**,
+`featureHeight` a **body**; the volatile bridging them breaks a MobX cycle, so
+don't collapse it.
 
 ## Context menu: build items from the id, not the feature
 
-A right-click knows a read's **id** synchronously (the hit test carries it into
-`openContextMenu` → `contextMenuFeatureId`) but not the read itself.
-`contextMenuFeature` is filled by a `GetPileupFeatureDetails` round trip and is
-`undefined` for the first paint of every menu.
+`contextMenuFeature` arrives a round trip after the click. Gate items on
+`contextMenuFeatureId`; items needing the read's own fields are pushed **after**
+the id-built ones, so arriving late appends rather than shifting what is under
+the cursor. Use `withContextMenuFeature` — reading `contextMenuFeature` live
+inside an `onClick` gets nothing, `closeContextMenu` ran first.
 
-**So gate a new menu item on `contextMenuFeatureId`, never on
-`contextMenuFeature`** — the latter is what left a right-click showing an empty
-menu that grew its contents a fetch later (worst on a synteny block, whose
-lookup used to re-read the whole block). Items that need the read's own fields
-(mate coordinates, tags, name, sequence) genuinely have to wait, so they read
-`contextMenuFeature` and are pushed **after** the id-built ones: arriving late
-then appends to the menu instead of shifting what is already under the cursor.
-`getContextMenuItems` is split on exactly this line, and LGVSyntenyDisplay plus
-both `ReadVsRef` extension points follow it.
+## Layout and draw paths
 
-To act on the whole feature from an item, call the exported
-`withContextMenuFeature(self, featureId, feat, onFeat)`. It uses `feat` — the
-feature as captured when this menu was built, present on the rebuild the fetch
-triggers — and only falls back to `withFeatureById` when a click beats the RPC,
-so the common path costs no second lookup. Don't read `contextMenuFeature` or
-`contextMenuBlock` live inside an `onClick`: `closeContextMenu` runs first and
-has already cleared them, which is why everything is captured at build time.
+Layout is main-thread because a read spanning a region boundary must share one
+row, and each worker sees one region. **Don't reintroduce a levels /
+right-edge-only array** in `placeRect` — features arrive out of start order in
+both layouts, so it would fragment layout.
 
-Two more constraints on that path, both load-bearing:
+On-screen and SVG export share `drawAlignmentBlocks`; don't reintroduce SVG-only
+draw functions. Sashimi and linked-read bezier arcs are interactive SVG overlays
+that each share one geometry source with the export — don't port them into
+`drawAlignmentBlocks`. Sashimi's source is a model computed because the math
+depends on pan/zoom but **not** `scrollTop`, and recomputing per scroll frame
+re-ran an O(n²) side assignment.
 
-- **The lookup queries a single base at the feature's start**, not its extent —
-  the adapter returns everything overlapping and the id picks the row out. This
-  is only sound because ids don't depend on the queried region (every adapter
-  here numbers features from file offsets). `model.coupling.test.ts` asserts the
-  query shape; an adapter that numbered per query would break it silently.
-- **It sends `rpcProps().lodMode`.** A tiered PIF adapter numbers coarse and
-  fine rows from different file offsets, so ids only compare within one tier.
-  Reading it live is safe because `lodMode` is in `rpcProps`, so a tier flip
-  trips `SettingsInvalidate` and drops every fetched region.
+`computeArcBand` is the single source of truth for the arc band and is decoupled
+from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi
+strips are reserved **per section**, so resize handles gate on the section,
+never on `belowCoverageBands`. `coverageDisplayHeight` and the fit-height row
+budget stay global on purpose: re-deriving them from `sections` routes the fit
+volatile back through the layout it feeds.
 
-## Layout architecture
-
-Pileup and chain layout are computed on the **main thread**, not in the RPC
-worker. Required because consistent Y-row assignment across multiple
-`displayedRegions` is impossible per-region — each worker sees only one region,
-so mates spanning region boundaries can't be placed on the same row.
-
-Layout flows through the `laidOutPileupMap` getter. Raw fetched data lives in
-`rpcDataMap` with zero-filled Y arrays; the getter returns shallow clones with
-filled Y arrays, `maxY`, and (chain mode) connecting-line / Flatbush data. MobX
-caches this — recomputes only when `rpcDataMap`, `sortedBy`, `showSoftClipping`,
-or `renderingMode` change. Raw entries are never mutated.
-
-### `placeRect` invariant
-
-Both pileup (`sortLayout.ts`) and chain (`computeChainLayout.ts`) use
-`placeRect(rows, start, end)`. Each row is a sorted `[s1,e1,s2,e2,...]` flat
-list; placement is first-fit with gap-filling. **Do not reintroduce a
-levels/right-edge-only array** — features arrive out of start order in both
-chain layout (sorted by distance) and pileup sort-by-base/strand, so
-right-edge-only would fragment layout. Start-sorted input hits an O(1) fast-path
-that matches end-array performance in the common case.
-
-### Worker contract
-
-`executeRenderAlignmentData.ts` (chain branch) returns chain metadata arrays and
-all Y arrays initialized to 0. The main thread fills real Y values and builds
-connecting lines / Flatbush.
-
-## SVG export pipeline
-
-On-screen and SVG export share one builder: `renderSvg.tsx` calls
-`drawAlignmentsToCtx` (wraps `buildAlignmentsRegionMap` + `drawAlignmentBlocks`)
-— the same `drawAlignmentBlocks` the on-screen `Canvas2DAlignmentsRenderer`
-uses, against a real canvas or an `SvgCanvas`. Everything (coverage, arcs,
-pileup, mismatches, clips, modifications, connecting lines) flows through this
-unified pass — don't reintroduce parallel SVG-only draw functions.
-
-### Arc band placement (`computeArcBand`) and z-order
-
-`computeArcBand(state)` in `rendererTypes.ts` is the single source of truth for
-where the paired-end arc band lives — `{ top, height, down }` — and is
-**decoupled from `showCoverage`**: up-mode arcs overlay the coverage band when
-it's shown, else take their own `readConnectionsHeight` band; down-mode arcs
-always sit in their own band below coverage. Both renderers and SVG draw the
-band in a **single pass after the pileup** (the band never overlaps the pileup
-region, so up-mode arcs still land in front of the coverage histogram, which
-paints earlier). Don't reintroduce a `covH > 0` gate or a separate up/down draw
-block — that re-couples arcs to coverage and resurrects the `arcTop === 0`
-anchor heuristic that mis-anchored down-mode arcs when coverage was hidden.
-
-### Both below-coverage strips are reserved PER SECTION
-
-The arc strip and the sashimi strip are reserved per lane, not display-wide.
-Grouping by split-read status puts every junction in one lane, so the others
-were each carrying an empty 40px strip — that dead space was the whole reason
-for the change. Each strip's rule is split in two halves, deliberately:
-
-- the **settings** half — `reservesArcsBand` / `reservesSashimiBand`, one
-  spelling each, shared by `belowCoverageBandsGeometry` (global geometry, fit
-  budget) and `computeStackedSections`;
-- the **data** half, per lane — `SectionGroupInput.hasArcs` (from
-  `anyArcsDrawn(arcsByGroup.get(key))`) and `hasSashimiDownArcs` (from the
-  `sashimiDownArcLanes` getter, i.e. `groupsWithSashimiDownArcs`). The
-  display-wide question `belowCoverageBandsInput` asks is that same set being
-  non-empty — one memoized scan, since 'auto' mode's crossing test is
-  O(junctions²) per lane.
-
-Consequences worth knowing:
-
-- Both **resize handles** gate on the section (`section.hasArcsBand` /
-  `hasSashimiBand`), never on `belowCoverageBands` — on a lane whose strip was
-  dropped the handle would land on the pixel of the handle above it.
-- `coverageDisplayHeight` stays the **reserved** (global) below-coverage height
-  and is deliberately NOT re-derived from `sections[0].pileupTop`: that getter
-  runs in an earlier `.views` block and `fittedFeatureHeight` reads it, so
-  making it depend on `sections` would route the fit-height volatile back
-  through the layout it feeds. The ungrouped viewport/content pair both use the
-  global value, so the difference cancels in `scrollableHeight`; and
-  `groupPileupOffset` composes correctly because every caller adds
-  `coverageDisplayHeight` back.
-- The **fit-height row budget stays global too**, for the same block-ordering
-  reason (`laidOutByGroup` runs before `arcsByGroup` exists), so it charges
-  every lane for every strip. That only ever over-reserves — a fit stack can end
-  up a strip or two short of filling the height, never overlapping. Don't "fix"
-  it by moving `arcsByGroup` earlier without checking the fit-volatile cycle.
-
-### Two distinct "arc" concepts — keep them apart
-
-- **Paired-end coverage arcs** (`features/arcs`, `drawArcs`, `arcsRpcDataMap`)
-  draw in the coverage band and flow through the unified canvas pass, so they
-  serialize straight into `SvgCanvas` on export. Non-interactive.
-- **Linked-read bezier arcs** (`PileupBezierOverlay`, `computePileupBezierArcs`,
-  gated on the `showBezierConnections` flag) span the pileup and are an
-  interactive React SVG overlay (hover tooltip + click-to-select), like sashimi
-  below. `showBezierConnections` is orthogonal to `linkedReads` layout — the
-  curves draw over an ordinary pileup or a chain layout. Toggling it is a
-  main-thread tier-2/4 setting (`laidOutPileupMap` + `renderState`), never in
-  `rpcProps`. The horizontal-tangent oval shape mirrors BreakpointSplitView's
-  `AlignmentConnections`.
-
-The overlay was renamed from `PileupArcsOverlay` precisely so "Arcs" reads as
-the coverage-band feature and "Bezier" as the linked-read overlay. Don't route
-paired-end coverage arcs through the overlay, and don't port the bezier overlay
-into `drawAlignmentBlocks`.
-
-### Sashimi + bezier overlays are intentionally SVG — but the math is shared
-
-Sashimi (`SashimiArcsOverlay.tsx` / `computeSashimiArcs`) and linked-read bezier
-(`PileupBezierOverlay.tsx` / `computePileupBezierArcsFromModel`) are vector SVG
-on both the on-screen and export paths. Each shares one geometry source between
-the live overlay and `renderSvg.tsx`, so the two paths cannot drift in curve
-shape, color, or stroke width. Don't add a second draw path; if the arcs need to
-change, change the shared compute.
-
-Sashimi shares that source as a **model computed** — `sashimiArcSections` (tier
-3), which pairs each section's band tops with its arcs already split into
-`up`/`down`. The overlay and `SashimiArcsSvg` both just map over it. It's a
-computed rather than a per-render call because the arc math depends on the
-view's pan/zoom but **not** on `scrollTop`: computing it inside the overlay's
-render re-ran the O(n²) 'auto' side assignment for every section on every scroll
-frame of a grouped track. Anything scroll-dependent stays at the call site (as
-bezier does with its `scrollTop` parameter over `bezierPairSections`).
-
-Screen-x is not start/end-ordered — a reversed displayed region projects a
-junction's start to the larger x. `computeSashimiArcs` normalizes each arc to
-screen order (`left <= right`) as it builds `RawArc`; the cubic is symmetric
-under that swap, but `crosses` compares left edges and silently mis-assigns
-sides in 'auto' if fed a flipped pair. Keep new geometry on the normalized
-fields.
-
-The "vector by design" choice is about the rendering medium (low arc count +
-native SVG hover/click behavior the rasterized pipeline can't match), not the
-math — do not "port these overlays into `drawAlignmentBlocks`."
+Screen-x is not start/end-ordered — keep new sashimi geometry on the normalized
+fields. In shaders use `bpToClipX`/`bpToLinear`, never
+`hpClipX(hpSplitUint(…))`.

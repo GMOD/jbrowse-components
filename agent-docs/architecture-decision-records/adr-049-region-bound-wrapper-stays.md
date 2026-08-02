@@ -19,7 +19,8 @@ object wrapping one. The stated motivation was memory.
 But the wrapper was not actually eliminated. `withRegionRef` allocates a
 `RegionBoundBamFeature` per read per fetch, because the record is shared across
 regions by `@gmod/bam`'s chunk LRU and per-region state therefore cannot be
-assigned onto it (see `BamAdapter/CLAUDE.md` — writing `record.ref` let the last
+assigned onto it (see `plugins/alignments/src/CLAUDE.md` — writing `record.ref`
+let the last
 fetch to resolve rebind the read for every other region still holding it).
 
 So the honest question is whether `recordClass` bought anything, and whether the
