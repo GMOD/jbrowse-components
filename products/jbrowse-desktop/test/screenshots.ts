@@ -14,7 +14,6 @@ import { fileURLToPath } from 'url'
 import { By, WebDriver, until } from 'selenium-webdriver'
 
 import { clearAnnotations, drawAnnotations } from './annotations.ts'
-import { PROCEDURES, composeProcedure, optimizePng } from './procedures.ts'
 import {
   APP_BINARY,
   REPO_ROOT,
@@ -40,6 +39,7 @@ import {
   waitForStableSession,
   waitForStartScreen,
 } from './harness.ts'
+import { PROCEDURES, composeProcedure, optimizePng } from './procedures.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = resolve(__dirname, '../../../website/static/img')
