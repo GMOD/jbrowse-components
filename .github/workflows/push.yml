@@ -370,14 +370,16 @@ jobs:
           for entry in \
             "lgv-examples-site:jbrowse-react-linear-genome-view:lgv" \
             "app-examples-site:jbrowse-react-app:app" \
-            "cgv-examples-site:jbrowse-react-circular-genome-view:cgv"; do
+            "cgv-examples-site:jbrowse-react-circular-genome-view:cgv" \
+            "byo-examples-site:jbrowse-build-your-own:byo"; do
             IFS=: read -r filter dir prefix <<<"$entry"
             pnpm --filter "$filter" build
             aws s3 sync "products/$dir/examples-site/dist" "s3://jbrowse.org/storybook/$prefix"
           done
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/storybook/lgv/*" "/storybook/app/*" "/storybook/cgv/*"
+            --paths "/storybook/lgv/*" "/storybook/app/*" "/storybook/cgv/*" \
+              "/storybook/byo/*"
 
   # Builds each Astro examples-site with Vite/Rollup (whose strict ESM surfaces
   # circular-dependency init-order errors that webpack tolerates), then loads
@@ -404,6 +406,9 @@ jobs:
           - site: cgv-examples-site
             dir: jbrowse-react-circular-genome-view
             prefix: cgv
+          - site: byo-examples-site
+            dir: jbrowse-build-your-own
+            prefix: byo
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:

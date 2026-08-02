@@ -1,7 +1,7 @@
 import { getSnapshot, getType } from '@jbrowse/mobx-state-tree'
 
-import { getEnv } from '../util/mstUtils.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
+import { getEnv } from '../util/mstUtils.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   getConfigurationSchemaDefinition,

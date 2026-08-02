@@ -15,8 +15,9 @@ import type { ComponentPropsWithRef, ReactNode } from 'react'
 export type { ChromeModel } from './DisplayChromeBase.tsx'
 
 // The MUI overlay set, and the only reason MUI is a dependency of a display's
-// startup path (measured: ~165KB of the eager bundle, essentially all of it
-// `DisplayLoadingOverlay` -> core/ui `LoadingOverlay` -> Tooltip/IconButton).
+// startup path. `pnpm measure-chrome-bundle` bundles this file and the
+// base+plain pairing separately and writes scripts/chromeBundleSizes.json; CI
+// re-checks it, so that file is the current cost, not a number in a comment.
 // Module-scope so the object identity is stable across renders.
 const muiOverlays: DisplayChromeOverlays = {
   RenderError: DisplayRenderErrorOverlay,
@@ -49,8 +50,7 @@ const DisplayChromeOverlayContext = createContext<
   DisplayChromeOverlays | undefined
 >(undefined)
 
-export const DisplayChromeOverlayProvider =
-  DisplayChromeOverlayContext.Provider
+export const DisplayChromeOverlayProvider = DisplayChromeOverlayContext.Provider
 
 /**
  * The chrome every in-tree GPU/Canvas2D display renders: `DisplayChromeBase`

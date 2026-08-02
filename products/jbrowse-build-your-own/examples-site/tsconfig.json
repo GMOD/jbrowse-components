@@ -3,6 +3,13 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    // mirrors the `~repo` alias in astro.config.mjs, so the landing page's
+    // import of the measured bundle sizes typechecks against the real file. A
+    // renamed field then fails `astro check` rather than rendering undefined.
+    "paths": {
+      "~repo/*": ["../../../*"]
+    }
   }
 }

@@ -40,6 +40,17 @@ const GENERATORS: Generator[] = [
     argv: ['node', 'packages/core/scripts/generateExports.mjs'],
   },
   {
+    // The bring-your-own-overlays docs quote what the chrome layer costs. This
+    // bundles both entry points for real so the claim is measured rather than
+    // remembered, and the byo landing page imports the result.
+    name: 'chrome bundle sizes',
+    argv: [
+      'node',
+      '--experimental-strip-types',
+      'scripts/measureChromeBundle.ts',
+    ],
+  },
+  {
     name: 'tsconfig references',
     argv: [
       'node',

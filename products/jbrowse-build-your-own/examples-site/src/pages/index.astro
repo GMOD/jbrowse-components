@@ -5,6 +5,12 @@ import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+// Measured, not asserted. `pnpm measure-chrome-bundle` bundles both chrome
+// entry points for real and writes this file; CI re-checks it, so the figures
+// below cannot drift from what the code costs. `~repo` is the repo root, see
+// astro.config.mjs -- and because it is a typed JSON import, a renamed field
+// fails `astro check` instead of rendering "undefined KB".
+import bundle from '~repo/scripts/chromeBundleSizes.json'
 
 // The engine call, spelled out. Every example page repeats this rather than
 // importing it from somewhere in this site, so each page's source is complete
@@ -53,10 +59,10 @@ view.setInit({
     <p>
       A genome browser is an <strong>engine</strong> and some <strong
         >chrome</strong
-      >. The engine resolves assemblies, chooses adapters, fetches and parses off
-      the main thread, and keeps the coordinate state. The chrome is the search
-      box, the ruler, the track labels, the loading spinner: everything around the
-      data.
+      >. The engine resolves assemblies, chooses adapters, fetches and parses
+      off the main thread, and keeps the coordinate state. The chrome is the
+      search box, the ruler, the track labels, the loading spinner: everything
+      around the data.
     </p>
     <p>
       The engine is the hard half and you should not rebuild it. One call gets
@@ -72,11 +78,20 @@ view.setInit({
 
     <h2>What you actually save</h2>
     <p>
-      Measured on the eager (pre-first-paint) bundle, with React and MobX
-      external: the chrome layer costs <strong>302 KB</strong> with JBrowse's
-      own status components and <strong>140 KB</strong> with plain ones. The
-      difference is almost entirely Material UI, and almost all of that is the
-      loading overlay.
+      Bundling the chrome layer on its own, with React and MobX external, it
+      costs <strong>{bundle.muiGzipKb} KB gzipped</strong> ({bundle.muiKb} KB raw)
+      with JBrowse's own status components and <strong
+        >{bundle.plainGzipKb} KB gzipped</strong
+      > ({bundle.plainKb} KB raw) with plain ones. The difference is almost entirely
+      Material UI. Both figures are the eager, pre-first-paint cost: no renderer and
+      no display is in either, because <code>RenderingComponent</code> is lazy in
+      every plugin.
+    </p>
+    <p>
+      Those numbers are produced by <code>pnpm measure-chrome-bundle</code>,
+      which builds both entry points and writes the result to a committed file
+      this page reads. CI re-runs it, so the figures above cannot drift away
+      from what the code costs.
     </p>
     <p>
       Bundle size is the smaller half of the argument. The larger half is that
@@ -90,17 +105,17 @@ view.setInit({
       hidden in them.
     </p>
     <p>
-      <strong>The palette.</strong> Stock feature and alignments displays read
-      JBrowse theme tokens to colour their own <em>content</em> (reading frames,
-      highlight boxes), so they still need <code>createJBrowseTheme</code>
+      <strong>The palette.</strong> Stock feature and alignments displays read JBrowse
+      theme tokens to colour their own <em>content</em> (reading frames, highlight
+      boxes), so they still need <code>createJBrowseTheme</code>
       mounted through MUI's <code>ThemeProvider</code>. Swapping the overlays
       changes the status UI, not the palette. A wiggle track does not need it;
       the first two pages here have no theme at all.
     </p>
     <p>
-      <strong>The engine.</strong> Nothing on this site rebuilds adapters, the
-      RPC layer, or the fetch lifecycle, and you should not either. What is on
-      offer is control of the chrome, not a smaller JBrowse.
+      <strong>The engine.</strong> Nothing on this site rebuilds adapters, the RPC
+      layer, or the fetch lifecycle, and you should not either. What is on offer is
+      control of the chrome, not a smaller JBrowse.
     </p>
   </div>
 

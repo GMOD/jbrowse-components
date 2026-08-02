@@ -1,5 +1,3 @@
-import { types } from '@jbrowse/mobx-state-tree'
-import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 import {
   isGpuRenderingDisabled,
   setGpuOverride,
@@ -8,9 +6,9 @@ import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBack
 import { act, render, waitFor } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
+import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // Fast guard that the banner/overlay/canvas subtrees actually COMMIT to the DOM
 // (via Testing Library `findBy*`) across mobx-driven transitions — the historical
@@ -28,84 +26,12 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 // products/jbrowse-web/src/tests/StatsEstimation.test.tsx remains the heavier
 // end-to-end guard (real force-load path); this file is the fast co-located one.
 
-interface StubBackend {
-  dispose(): void
-}
-
-// Minimal real MST model satisfying `ChromeModel & RenderLifecycleModel`.
-// `displayPhase` is computed through the production `computeDisplayPhase` with a
-// lazy loading thunk, so the model mirrors the real precedence/laziness contract
-// rather than hard-coding a phase string.
-const TestChromeModel = types
-  .model('TestChromeModel', {
-    height: 100,
-    regionTooLarge: false,
-    regionTooLargeReason: '',
-    canvasDrawn: false,
-    statusMessage: types.maybe(types.string),
-    statusProgress: types.maybe(types.number),
-  })
-  .volatile(
-    (): {
-      error: unknown
-      renderError: unknown
-      loadingCondition: boolean
-    } => ({
-      error: undefined,
-      renderError: undefined,
-      loadingCondition: false,
-    }),
-  )
-  .views(self => ({
-    get displayPhase(): DisplayPhase {
-      return computeDisplayPhase(
-        {
-          renderError: self.renderError,
-          regionTooLarge: self.regionTooLarge,
-          error: self.error,
-        },
-        () => self.loadingCondition,
-      )
-    },
-  }))
-  .actions(self => ({
-    reload() {},
-    forceLoad() {},
-    renderNow() {},
-    startRenderingBackend(_backend: StubBackend) {},
-    stopRenderingBackend() {},
-    setRenderError(error: unknown) {
-      self.renderError = error
-    },
-    setError(error: unknown) {
-      self.error = error
-    },
-    setRegionTooLarge(value: boolean, reason = '') {
-      self.regionTooLarge = value
-      self.regionTooLargeReason = reason
-    },
-    setCanvasDrawn(value: boolean) {
-      self.canvasDrawn = value
-    },
-    setLoadingCondition(value: boolean) {
-      self.loadingCondition = value
-    },
-    setStatus(message?: string, progress?: number) {
-      self.statusMessage = message
-      self.statusProgress = progress
-    },
-  }))
-
 function renderChrome(
   model: Instance<typeof TestChromeModel>,
   testid?: string,
 ) {
   return render(
-    <DisplayChrome
-      model={model}
-      factory={() => Promise.resolve<StubBackend>({ dispose() {} })}
-      testid={testid}
-    >
+    <DisplayChrome model={model} factory={stubFactory} testid={testid}>
       {({ canvasRef }) => <canvas data-testid="probe-canvas" ref={canvasRef} />}
     </DisplayChrome>,
   )

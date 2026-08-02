@@ -94,7 +94,11 @@ const TrackRow = observer(function TrackRow({
   const { RenderingComponent } = display
   return (
     <div
-      style={{ position: 'relative', height: display.height, contain: 'strict' }}
+      style={{
+        position: 'relative',
+        height: display.height,
+        contain: 'strict',
+      }}
     >
       <Suspense fallback={null}>
         <RenderingComponent
