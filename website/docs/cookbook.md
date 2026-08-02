@@ -269,6 +269,43 @@ instance, carries a `repClass` column:
 
 <Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray." src="/img/cookbook_color_by_type.png"/>
 
+A lookup table is only as good as its keys, and an annotation pipeline's own
+documentation is not always an accurate list of what it emits. Read the types
+out of the file itself before writing the table:
+
+```bash
+zcat annotations.gff.gz | grep -v '^#' | cut -f3 | sort | uniq -c | sort -rn
+```
+
+Any type missing from the table falls through to `|| 'gray'`, so gray is the
+signal to go back and check that list.
+
+The
+[EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
+is a worked case. Its GFF is flat, and column 3 carries mobile element types
+rather than genes, so the whole mobilome paints in the one default color. MGnify
+publishes one of these per representative genome, alongside the genome FASTA and
+its `.fai`, under
+[`mgnify_genomes`](https://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/)
+(`<accession>_mobilome.gff`). A single table separates the element classes and
+greys the passenger CDSs back so the elements read first:
+
+```json
+{
+  "color": "jexl:{prophage:'#8e44ad',viral_sequence:'#9b59b6',plasmid:'#2980b9',insertion_sequence:'#e67e22',terminal_inverted_repeat_element:'#d35400',inverted_repeat_element:'#d35400',integron:'#16a085',conjugative_integron:'#1abc9c',attC_site:'#0e6655',compositional_outlier:'#c0392b',direct_repeat:'#7f8c8d',CDS:'#bdc3c7'}[feature.type] || 'gray'"
+}
+```
+
+The repeat flanks appear under two names because that pipeline has renamed the
+type across releases, and a file is annotated with whichever name the release
+that produced it used. That is the usual reason a key is missing, and the reason
+to read the types out of the file you actually have rather than from the
+pipeline's current documentation.
+
+Note these GFFs carry their sequence inline in a `##FASTA` block, which is most
+of the file size. Cut the file at that line before `bgzip`/`tabix` if you want
+an indexed track rather than a whole-file `Gff3Adapter` one.
+
 Wrap a callback in `log(...)` to print what it returns for each feature to the
 browser console.
 
