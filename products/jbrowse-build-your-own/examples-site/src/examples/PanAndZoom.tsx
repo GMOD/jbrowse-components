@@ -395,7 +395,8 @@ const PanAndZoom = observer(function PanAndZoom() {
 })
 
 // Reading position straight off the view, to show it is a live observable and
-// not something the chrome has to be told about.
+// not something the chrome (the UI you draw around the data) has to be told
+// about.
 const Position = observer(function Position({ view }: { view: BrowserView }) {
   // The gate is not optional politeness: `view.width` throws by design before
   // the view has been measured, and the block getters read it, so anything

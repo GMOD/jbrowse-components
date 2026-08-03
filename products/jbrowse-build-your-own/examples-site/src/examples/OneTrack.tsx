@@ -41,7 +41,8 @@ const wiggleTrack = {
  * of that is what makes a browser *look* like a browser, and none of it is what
  * these examples rebuild -- `createViewState` hands it all over in one call.
  *
- * What it does NOT give you is chrome. `state.session.view` knows `bpPerPx`,
+ * What it does NOT give you is chrome (the UI drawn around the data -- ruler,
+ * track labels, status overlays). `state.session.view` knows `bpPerPx`,
  * `offsetPx`, `displayedRegions` and how to `zoomTo`/`horizontalScroll`, but it
  * draws nothing. Rendering it is the part you own.
  *

@@ -303,8 +303,9 @@ function ZoomHint({ show }: { show: boolean }) {
 }
 
 // A coordinate ruler, written against the same view model the tracks use. This
-// is chrome: nothing needs it, and that is the point of putting it on its own
-// page. You add the pieces your app wants and skip the rest.
+// is chrome (UI drawn around the data, as opposed to the engine underneath it):
+// nothing needs it, and that is the point of putting it on its own page. You
+// add the pieces your app wants and skip the rest.
 //
 // The maths is two view methods. `dynamicBlocks.contentBlocks` is exactly what
 // is on screen right now (one entry per contiguous region, so a discontinuous
