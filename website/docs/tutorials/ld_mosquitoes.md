@@ -30,12 +30,13 @@ in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, far past what
 can be computed live from a VCF, so this LD is precomputed with PLINK and read
 through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings in both panels. r² fills the published 2La extent in the Cameroon panel and there is nothing there in the Gabon panel. Both panels carry a separate block at the low-coordinate end of the arm."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Each population's r² heatmap sits above its own karyotype lane: 297 Cameroon mosquitoes, 69 from Gabon, one row each. r² fills the published 2La extent in the Cameroon panel, where the lane below it shows both arrangements segregating, and there is nothing in the Gabon panel, whose lane is almost all standard arrangement. Both panels carry a separate block at the low-coordinate end of the arm."/>
 
-The band comes from the published breakpoint coordinates, so the block's edges
-can be checked against them by eye.
+The heatmap's block comes out at the published breakpoint coordinates, so its
+edges can be checked against them by eye — and against the karyotype lane below
+it, whose cells are drawn at those same coordinates from a different file.
 
-The lower panel is a control, not a second example: that population is
+The Gabon panel is a control, not a second example: that population is
 effectively fixed for one arrangement, so it has nothing to correlate there. It
 still carries a block at the low-coordinate end of the arm, near the
 voltage-gated sodium channel, which says the display works and the banded region
@@ -54,9 +55,9 @@ because the call is a single feature no matter how wide it is.
 Use the regular multi-sample display rather than its matrix mode. Matrix mode
 spaces one evenly sized column per variant, which discards the call's genomic
 extent; the regular display draws each genotype at the call's true span, so the
-carrier rows begin and end at the breakpoints.
-
-<Figure src="/img/ld/anopheles_2la_karyotype.png" caption="Whole chromosome arm 2L, the same two populations as the heatmaps above, one row per mosquito and one lane per population. Cells are shaded by allele dosage, so each lane sorts into standard, heterozygous and homozygous-inverted blocks between the breakpoints. Inversions draw as a tapered glyph, so every row fades toward its left breakpoint."/>
+carrier rows begin and end at the breakpoints. That is what the karyotype lanes
+in the figure above are: cells shaded by allele dosage, each lane sorted into
+standard, heterozygous and homozygous-inverted blocks.
 
 Load each population as a `VariantTrack` whose adapter carries the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
@@ -80,8 +81,7 @@ with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
       "type": "LinearMultiSampleVariantDisplay",
       "groupBy": "karyotype",
       "colorBy": "karyotype",
-      "referenceDrawingMode": "draw",
-      "rowHeight": 3
+      "referenceDrawingMode": "skip"
     }
   ]
 }
@@ -92,17 +92,20 @@ Two settings there are doing real work.
 keeps the karyotype classes contiguous; without it the rows keep the VCF's
 column order and the split only reads as blocks by luck. And
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
-has to be `draw` here. Its default, `skip`, fills the whole track background
-with the reference color and paints only alt cells, which is right when carriers
-are the story but wrong when non-carriers are: the Gabon lane would render as an
-empty track, indistinguishable from one that failed to load. Drawing reference
-gives every mosquito a cell at the call's span, so the lane says "these
-mosquitoes are standard arrangement" rather than saying nothing.
+is left on its default, `skip`, which colors the whole lane with the reference
+color and paints only alt cells on top. The lane is then a solid grey field with
+the carriers' blocks on it, and a standard-arrangement mosquito is grey rather
+than blank. The alternative, `draw`, paints a grey cell per row at the call's
+span instead — the same information, but as a rectangle striped by the gaps
+between rows, which reads as a texture rather than as background.
 
-One track per population, rather than one track holding both, because the
-display draws a row for every sample in the file and has no sample filter. The
-file is the row set, and at a three-pixel row the sidebar has no space to render
-a text label, so the track header is the only place a population name can go.
+There is no `rowHeight` here, because it is a display model property rather than
+a config slot: rows divide the lane's height between them, so the lane height is
+the row height. 297 mosquitoes in a 297-pixel lane get a pixel each. That is
+also why one track per population rather than one track holding both — the
+display draws a row for every sample in the file and has no sample filter, so
+the file is the row set, and at a one-pixel row the sidebar has no space for a
+text label, leaving the track header as the only place a population name can go.
 
 ### What is inferred here, and what is not
 

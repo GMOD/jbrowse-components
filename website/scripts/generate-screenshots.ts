@@ -241,14 +241,28 @@ function readyTimeoutOf(spec: BrowserScreenshotSpec) {
   return spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
 }
 
-// One round of the post-first-paint settle: nothing is drawing, every canvas
-// display has painted, and no display is still in its `loading` phase. Each keys
+// One round of the post-first-paint settle: nothing is drawing, no display is
+// still in its `loading` phase, and every canvas display has painted. Each keys
 // off a different signal, and none is sufficient alone — see the waits' own docs
 // in @jbrowse/browser-test-utils.
+//
+// FETCH FIRST, THEN PAINT. `-done` is canvasDrawn (first paint), which a display
+// can reach on an empty canvas while its fetch is still in flight, so waiting on
+// it *before* the phase gate proves nothing about content; waiting after it
+// means every display has both finished fetching and drawn what it fetched.
+// That ordering is what lets a spec's `readySelector` stay a single
+// `[data-testid="…-done"]` instead of a hand-written `body:has(…):not(:has(…))`
+// puzzle enumerating each panel — the generic pair below already says "all of
+// them, fetched and painted" for every display DisplayChrome wraps.
+//
+// The paint wait keeps its short `settleMs` bound, which is now the right size
+// for it: it starts once nothing is fetching, so it is waiting out a repaint,
+// not a download. Ordered the other way it expired mid-fetch on every slow
+// figure and — being best-effort — was swallowed silently.
 async function settlePass(page: Page, spec: BrowserScreenshotSpec) {
   await waitForQuiescent(page, { timeout: readyTimeoutOf(spec) })
-  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
   await waitForDisplayPhases(page, readyTimeoutOf(spec))
+  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
 // Wait out a spec's readiness signals before capture: its readyText/readySelector

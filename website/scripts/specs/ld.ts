@@ -205,9 +205,9 @@ const AG_POPGEN = 'https://jbrowse.org/demos/popgen'
 
 // One track per population, not one track holding both. The display draws one
 // row per sample in the VCF and has no sample filter, so the file is the row set
-// — and at a 3px row the sidebar cannot render a text label, which leaves the
-// track header as the only place a population name can go. It also puts this
-// figure in the same two-lane structure as the heatmaps above.
+// — and at a 1px row the sidebar cannot render a text label, which leaves the
+// track header as the only place a population name can go. It also lets each
+// karyotype lane sit directly under its own LD panel in the combined figure.
 const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
   type: 'VariantTrack',
   trackId: `ag1000g_2la_karyotype_${pop.toLowerCase()}`,
@@ -230,25 +230,28 @@ const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
       // contiguous blocks in dosage order.
       groupBy: 'karyotype',
       colorBy: 'karyotype',
-      // 'draw', not the default 'skip'. Skip mode fills the entire track
-      // background with REFERENCE_COLOR and paints only ALT cells, so a
-      // standard-arrangement mosquito is indistinguishable from empty canvas —
-      // which is exactly the distinction this figure exists to make for the
-      // near-fixed population, whose track would otherwise read as failed to
-      // load. Drawing reference puts a grey cell at the call's span on those
-      // rows, so every mosquito shows a block over the inversion and its shade is
-      // its karyotype.
-      referenceDrawingMode: 'draw',
+      // 'skip', the default: the display fills the whole lane with
+      // REFERENCE_COLOR in CSS and paints only ALT cells on top, so the lane is
+      // a solid grey field with the carriers' blocks on it (review: "it should
+      // use 'drawreferencealleles' as solid grey background"). 'draw' instead
+      // paints a grey cell per row at the call's span, and at these row heights
+      // the per-row gaps broke that field into a striped rectangle that read as
+      // a texture rather than as background.
+      referenceDrawingMode: 'skip',
       // No featureColor. The default alt shade is keyed to allele dosage
       // (`getAltColorForDosage`), so a heterozygote paints lighter than a
       // homozygote and the three classes read apart; an override flattens het and
       // hom-alt to one flat color, which is what the first cut of this figure did
       // and it threw the distinction away.
       //
-      // 3px rows, not 1px: a 1px row is shorter than the inversion glyph's taper,
-      // so the left end of every block antialiases into a gradient instead of
-      // reading as a shape.
-      rowHeight: 3,
+      // No rowHeight here. It is a display *model* prop, not a config slot, so a
+      // track config carries it nowhere — the previous 891/207 lanes read as
+      // "297 x 3px" only because `height / nrow` happens to land on the same
+      // number. The lane height IS the row height: rows auto-fit
+      // `availableHeight / nrow`, so this is the one knob, and at 297px the
+      // Cameroon panel's 297 mosquitoes get a pixel each. The class boundaries
+      // survive that because rows are grouped — a 1px row is not readable on its
+      // own, but a contiguous run of one karyotype is a band tens of px deep.
       height,
     },
   ],
@@ -357,10 +360,9 @@ export const ldSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    // same real signal as the Anopheles figure: both LD panels finished, not a
-    // duration guess
-    readySelector:
-      'body:has([data-testid="ld-display-done"][data-display-phase="ready"]):not(:has([data-testid="ld-display"])):not(:has([data-display-phase="loading"]))',
+    // same real signal as the Anopheles figure: an LD panel exists to settle on,
+    // and the generator's settle takes it from there
+    readySelector: '[data-testid="ld-display-done"]',
     // 21 MB of genotypes across the two lanes, the pooled one on 2504 samples
     readyTimeout: 600000,
     // the gene lane, then two LD tracks (330 triangle + 50 recombination zone
@@ -370,6 +372,13 @@ export const ldSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
+    // ONE FIGURE, four lanes: each population's LD panel with its own karyotype
+    // lane under it (review: "this should be combined with the linkage tracks").
+    // The karyotype lanes were a second figure until this round, which made the
+    // reader carry the population names between two pictures to pair a block
+    // with the mosquitoes that produce it. Stacked, the pairing is vertical: the
+    // Cameroon block sits directly above the carriers it comes from, and the
+    // empty Gabon panel above a lane with nothing to carry.
     name: 'ld/anopheles_2la',
     url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
@@ -378,11 +387,20 @@ export const ldSpecs: ScreenshotSpec[] = [
           'Cameroon, both arrangements segregating (r²)',
           'ag1000g_2L_CMgam.ld.gz',
         ),
+        // 297 and 69 mosquitoes (the script prints both). The Cameroon lane
+        // takes its row count as its height, so a row is a pixel. The Gabon lane
+        // cannot: its floating legend is clipped to the display's own bounds and
+        // 69px cut that legend in half, so it takes the legend's height and its
+        // 69 rows auto-fit to ~2px each. The cost is that lane height is no
+        // longer proportional to panel size across the two, which is why the
+        // caption names both counts.
+        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 297),
         agLdTrack(
           'ag1000g_2l_gagam',
           'Gabon, fixed for one arrangement (r²)',
           'ag1000g_2L_GAgam.ld.gz',
         ),
+        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 150),
       ],
       views: [
         {
@@ -397,24 +415,34 @@ export const ldSpecs: ScreenshotSpec[] = [
           // features are admitted, not whether they can be resolved.
           tracks: [
             { trackId: 'ag1000g_2l_cmgam', type: 'LDTrackDisplay' },
+            {
+              trackId: 'ag1000g_2la_karyotype_cmgam',
+              type: 'LinearMultiSampleVariantDisplay',
+            },
             { trackId: 'ag1000g_2l_gagam', type: 'LDTrackDisplay' },
+            {
+              trackId: 'ag1000g_2la_karyotype_gagam',
+              type: 'LinearMultiSampleVariantDisplay',
+            },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
-    // Wait on the model's own state, not a duration. DisplayChrome publishes
-    // `data-display-phase` for exactly this; note the sibling `-done` testid is
-    // canvasDrawn (FIRST PAINT), which flips on an empty canvas while the fetch
-    // is still in flight, so it would happily screenshot a blank triangle.
-    // Both LD panels must reach `ready`.
-    // An LD panel is `ld-display` until first paint and `ld-display-done`
-    // after, so "no bare ld-display left" means both panels painted, and "no
-    // phase=loading left" means both finished fetching.
-    readySelector:
-      'body:has([data-testid="ld-display-done"][data-display-phase="ready"]):not(:has([data-testid="ld-display"])):not(:has([data-display-phase="loading"]))',
+    // One testid, not a selector enumerating the four lanes: the generator's
+    // own settle already waits for every DisplayChrome-wrapped display to leave
+    // `loading` and then to paint (see settlePass in generate-screenshots.ts),
+    // which is what "all four are done" means. This only has to hold until the
+    // first LD panel exists to settle on.
+    readySelector: '[data-testid="ld-display-done"]',
+    // 180s. The data is small; what takes the time is the anoGam3 hub's
+    // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches
+    // often enough to blow through 120s on a bad day.
     readyTimeout: 180000,
-    // two LD tracks(300 each) + 2 headers + ruler/overview
-    viewportHeight: 770,
+    // two LD tracks (300 each) + 297 + 69 of karyotype rows + 4 headers +
+    // ruler/overview. Undersize this and the rows past the fold are cropped away
+    // silently: first paint still fires, so the capture succeeds with the
+    // informative rows missing.
+    viewportHeight: 1382,
     settleMs: 8000,
     // One callout per lane, saying what each lane shows rather than only naming
     // the span (review: "a red text annotation on both cameroon and gabon
@@ -450,51 +478,6 @@ export const ldSpecs: ScreenshotSpec[] = [
         maxWidth: 430,
       },
     ],
-  },
-  {
-    mode: 'url',
-    name: 'ld/anopheles_2la_karyotype',
-    url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [
-        // Heights are the row counts times rowHeight, so each lane is exactly as
-        // tall as its panel is large and neither scrolls. 297 and 69 mosquitoes
-        // (the script prints both), so the Cameroon lane is the tall one.
-        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 891),
-        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 207),
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'anoGam3',
-          // the whole arm, same frame as the LD figure above, so the call is
-          // bounded by standard-arrangement sequence on both sides rather than
-          // cropped to its own extent
-          loc: 'chr2L',
-          tracks: [
-            {
-              trackId: 'ag1000g_2la_karyotype_cmgam',
-              type: 'LinearMultiSampleVariantDisplay',
-            },
-            {
-              trackId: 'ag1000g_2la_karyotype_gagam',
-              type: 'LinearMultiSampleVariantDisplay',
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="variant-display-done"]',
-    // 180s to match the sibling LD figure. The data here is three tiny files;
-    // what actually takes the time is the anoGam3 hub's chrom.sizes off
-    // hgdownload.soe.ucsc.edu, which times out and refetches often enough to blow
-    // through 120s on a bad day.
-    readyTimeout: 180000,
-    // 891 + 207 of rows + 2 track headers + each lane's legend + ruler/overview
-    // + app bar. Undersize this and the rows past the fold are cropped away
-    // silently: first paint still fires, so the capture succeeds with the
-    // informative rows missing. 1290 clipped the last 45 px of the Gabon lane.
-    viewportHeight: 1345,
-    settleMs: 12000,
   },
   {
     mode: 'url',
