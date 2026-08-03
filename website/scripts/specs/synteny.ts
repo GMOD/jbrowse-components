@@ -654,7 +654,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
-            alpha: 0.06,
+            alpha: 0.15,
             drawCurves: false,
           },
         ],
@@ -714,7 +714,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // accumulates color, so the bundles are the visible thing and the
             // singletons stay background. 0.12 was rendered too and still
             // filled its bands.
-            alpha: 0.06,
+            alpha: 0.15,
             // Straight chords, though this is the one case the drawCurves
             // docstring recommends itself for. Rendered both: the bezier version
             // is by far the prettier picture and the worse figure, because a
@@ -776,7 +776,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
             levelHeights: [170, 170, 170, 170, 170],
-            alpha: 0.06,
+            alpha: 0.15,
             drawCurves: false,
           },
         ],

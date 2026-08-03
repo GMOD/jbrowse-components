@@ -913,14 +913,15 @@ function pggbLocusSession(
 // sides"). Without that, the difference is stated only as a node count in a
 // header over two FMMM tangles that share no visible landmark, so the reader has
 // nothing to compare. Boxed on their ids rather than their positions, so the two
-// layouts can put them wherever they like:
+// layouts can put them wherever they like, and one colour per node so the pair
+// is legible ACROSS the composite rather than only within a half:
 //
-// - s2093 (43 bp) and s2095 (558 bp) are where one CFT073 detour leaves the
-//   backbone and rejoins it. At None they are the two loose ends. At 1 hop the
-//   same two boxes are the two sides of a closed bubble.
+// - s2093 (43 bp, blue) and s2095 (558 bp, orange) are where one CFT073 detour
+//   leaves the backbone and rejoins it. At None they are the two loose ends. At
+//   1 hop the same two boxes are the two sides of a closed bubble.
 // - s2094 (5.5 kb) is that detour's interior. It sits on CFT073's own contig, so
 //   no K12 coordinate names it and the region query cannot reach it. It is what
-//   the hop adds, and the arrow in that half points at it.
+//   the hop adds, and the red arrow in that half points at it.
 //
 // The hop reaches five other segments too, which is why the right half still has
 // loose ends: one step out lands on a new frontier (s2092, s2387, s2633), and two
@@ -940,6 +941,20 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
   const DETOUR_ENTRY = 's2093+'
   const DETOUR_EXIT = 's2095+'
   const DETOUR_INTERIOR = 's2094+'
+  // One colour per node, the same colour in both halves, which is what makes the
+  // composite readable as one picture: the blue box is s2093 on the left and
+  // s2093 on the right, and the reader can see that without reading a caption.
+  // All three boxed one red was a figure where the left 43 bp box and the right
+  // 43 bp box asserted no relationship (review: "might want to use different
+  // colors for the different annotation boxes so it is clear what the
+  // correspondence is across the left and right panels"). The interior keeps the
+  // callout red because it is the half's one asymmetry rather than a member of
+  // the pair, and the label pill is slate so the panel's caption does not read as
+  // a third mark of the same kind.
+  const ENTRY_COLOR = '#1a56db'
+  const EXIT_COLOR = '#e8710a'
+  const INTERIOR_COLOR = '#e3242b'
+  const LABEL_COLOR = '#37474f'
   // The label sits in the graph pane's own top-right, which is empty in both
   // layouts, anchored on the canvas the graph draws into. NOT on the node-count
   // readout beside it, which was the first thing tried: that element is text, so
@@ -949,9 +964,10 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
   // thing it is captioning. The canvas is sized by the viewport instead, and its
   // 13px height difference between the halves is the only thing dy inherits.
   //
-  // maxWidth is what keeps the pill inside its own half of the composite: with
-  // the pill's left edge at the canvas centre plus dx, the wrap has to leave room
-  // for it inside the remaining ~260px.
+  // It names the setting and nothing else — one short label per panel, with what
+  // the two halves mean in the page's <Figure caption>. maxWidth keeps the pill
+  // inside its own half of the composite if a setting name ever grows past the
+  // ~260px left of the canvas centre plus dx.
   const canvasAnchor = { selector: '[data-testid="graph-genome-canvas"]' }
   const label = (text: string): Annotation => ({
     type: 'text',
@@ -961,6 +977,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     dy: -278,
     maxWidth: 205,
     fontSize: 18,
+    color: LABEL_COLOR,
   })
   const part = (
     name: string,
@@ -1045,43 +1062,50 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportHeight: 1006,
     hideTooltip: true,
     annotations: [
-      ...[DETOUR_ENTRY, DETOUR_EXIT].map(
-        (graphNode): Annotation => ({
-          type: 'box',
-          anchor: { view: 1, graphNode },
-          strokeWidth: 3,
-          // clear of the node's own "43 bp" / "558 bp" label, which the graph
-          // writes across the node rather than inside its bounding box
-          pad: 22,
-        }),
-      ),
+      ...(
+        [
+          [DETOUR_ENTRY, ENTRY_COLOR],
+          [DETOUR_EXIT, EXIT_COLOR],
+        ] as const
+      ).map(([graphNode, color]): Annotation => ({
+        type: 'box',
+        anchor: { view: 1, graphNode },
+        strokeWidth: 3,
+        color,
+        // a wash the node's own colour cannot be mistaken for, so the pairing
+        // survives being read at thumbnail size, where a 3px outline does not
+        fillOpacity: 0.1,
+        // clear of the node's own "43 bp" / "558 bp" label, which the graph
+        // writes across the node rather than inside its bounding box
+        pad: 22,
+      })),
       label(text),
-      // the arrow only exists in the half that has an interior to point at
+      // the arrow only exists in the half that has an interior to point at.
+      // A third box would be the honest shape, but the interior draws BETWEEN
+      // the two boxed nodes, so a box at pad 22 overlaps both of theirs.
       ...(subgraphContext > 0
         ? [
             {
               type: 'arrow',
               anchor: { view: 1, graphNode: DETOUR_INTERIOR },
               // out of the pill's lower left corner, which is where the label
-              // above puts it
-              fromAnchor: { ...canvasAnchor, dx: 160, dy: -206 },
+              // above puts it — the one-line pill's baseline plus its descent
+              // and padding
+              fromAnchor: { ...canvasAnchor, dx: 150, dy: -262 },
               strokeWidth: 3,
+              color: INTERIOR_COLOR,
+              // down the interior's own arc, away from the entry node's box: at
+              // the node's centre the head sits under that box's lower corner
+              // and can be read as pointing at it
+              dy: 12,
             } satisfies Annotation,
           ]
         : []),
     ],
   })
   return [
-    part(
-      'pangenome/graph_context_none',
-      0,
-      'Graph context: None\nthe boxed ends stop in mid-air',
-    ),
-    part(
-      'pangenome/graph_context_hop1',
-      1,
-      'Graph context: 1 hop\nthe interior arrives, closing the bubble',
-    ),
+    part('pangenome/graph_context_none', 0, 'Graph context: None'),
+    part('pangenome/graph_context_hop1', 1, 'Graph context: 1 hop'),
   ]
 }
 
@@ -1455,14 +1479,12 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map(
-        (graphNode): Annotation => ({
-          type: 'circle',
-          anchor: { view: 1, graphNode },
-          radius: 24,
-          strokeWidth: 3,
-        }),
-      ),
+      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
+        type: 'circle',
+        anchor: { view: 1, graphNode },
+        radius: 24,
+        strokeWidth: 3,
+      })),
       {
         type: 'text',
         text: label,
@@ -1873,6 +1895,18 @@ export const graphSpecs: ScreenshotSpec[] = [
           // starts at its right edge.
           tracks: [[ECOLI_AVA_TRACK], [ECOLI_AVA_TRACK]],
           drawCurves: true,
+          // ALPHA 0.1, half the default, for the same reason
+          // pangenome/pggb_synteny takes it: this file inks every
+          // correspondence TWICE. wfmash maps all-to-all in both directions, so
+          // the K12<->NCTC86 alignment is in the PAF as a qK12 record and again
+          // as a tK12 one, and the adapter unions both perspectives of the
+          // anchor. Over this window that is two ribbons per band covering the
+          // same span, and two 0.2 ribbons composite to #FFA3A3 where every
+          // other synteny figure's one draws #FFCCCC (review: "the polygons are
+          // oddly darker than expected ... other synteny figs lighter
+          // red/pink"). At 0.1 the band is #FFCFCF, so the gene lanes and the
+          // pale indel wedges inside it stay legible.
+          alpha: 0.1,
           levelHeights: [150, 150],
           views: [
             {

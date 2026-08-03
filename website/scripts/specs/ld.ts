@@ -465,16 +465,27 @@ export const ldSpecs: ScreenshotSpec[] = [
     // "version", but recombination is named ("recombine"), which is the term
     // the tutorial prose and every source on 2La uses and the one word a reader
     // can look up (review: "the term 'shuffle' should use biological language
-    // e.g. 'recombine'"). The mechanism — a flipped copy and a normal copy
-    // cannot recombine — is stated rather than implied, because it is the whole
-    // reason one panel is red and the other is
-    // not. "Fixed" is gone on the facts: Gabon is not fixed, it is 64
-    // standard homozygotes and 5 heterozygotes out of 69 (the counts
-    // build_ag1000g_ld.sh prints, and the same sample TSV this figure colours
-    // its rows from). Those five are visible in the lane below, so the label
-    // sends the reader to them instead of denying they exist (review: "there
-    // are inversions in the gabon population, so unclear if that is considered
-    // here").
+    // e.g. 'recombine'"). The mechanism — two versions that cannot recombine
+    // with each other — is stated rather than implied, because it is the whole
+    // reason one panel is red and the other is not.
+    //
+    // Flat statements, no counts and no emphasis (review: "very 'strong'
+    // language ... prefer to be a little more dry ... avoid referring to exact
+    // numbers, just general concepts"). The numbers behind them are in the
+    // caption and the tutorial prose, where they can be attributed: Gabon is 64
+    // standard homozygotes and 5 heterozygotes of 69, Cameroon 168/79/50 of 297
+    // (build_ag1000g_ld.sh prints these, and the sample TSVs this figure
+    // colours its rows from carry them). Gabon is therefore "nearly every",
+    // never "fixed", and the label points at the carriers in the lane below
+    // rather than denying they exist (review: "there are inversions in the
+    // gabon population, so unclear if that is considered here").
+    //
+    // "Recombines freely" is a claim about the COMMON variation only, which is
+    // all these panels contain: both are built at --maf 0.2, and Gabon's
+    // inverted version sits at 5 of 138 haplotypes, so the variants that tag it
+    // are below that floor and absent from the file. A label reading "nothing
+    // stays linked" would claim more — unfiltered, those five carriers' own
+    // rare tag SNPs would still correlate with each other.
     annotations: [
       {
         type: 'text',
@@ -484,7 +495,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        text: 'Both versions of this stretch are common here, and\na flipped copy cannot recombine with a normal one,\nso all 22 Mb is inherited as one piece.',
+        text: 'Both versions are common here, and they do not\nrecombine with each other, so this span is\ninherited as one piece.',
         // 16, not the 18 the one-line labels used: these say more, and at 18 a
         // ~50 character line runs past maxWidth 430, which is where the r²
         // legend sits in the top right corner of both panels.
@@ -499,17 +510,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        // "Far too rare to hold this stretch together", not "nothing stays
-        // linked": both LD panels are
-        // built at --maf 0.2 (build_ag1000g_ld.sh), and Gabon's flipped copy
-        // sits at 5 of 138 haplotypes, so the variants that mark it are below
-        // that floor and are not in this file at all. What the empty panel is
-        // evidence about is therefore the COMMON variation, which recombines
-        // freely because 64 of the 69 mosquitoes are standard homozygotes. A
-        // label reading "nothing stays linked" would have claimed more than
-        // that: unfiltered, those five carriers' own rare tag SNPs would
-        // correlate with each other.
-        text: 'Almost every mosquito here has the same version:\nonly 5 of 69 carry a flipped copy (blue rows below).\nFar too rare to hold this stretch together, so it\nrecombines freely and is passed on in pieces.',
+        text: 'Nearly every mosquito here carries the same\nversion (the few that do not are the blue rows\nbelow), so this span recombines freely.',
         fontSize: 16,
         maxWidth: 430,
       },
