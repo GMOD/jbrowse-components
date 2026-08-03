@@ -1,4 +1,5 @@
 import { lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
+import { DER3_GENES_TRACK } from './cancer_sv_der3_genes.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -52,11 +53,19 @@ const MULTIHOP_HEIGHT = 885
 const MULTIHOP_WIDTH = 940
 const MULTIHOP_NARROW_WIDTH = 660
 
-// The Compact preset (featureHeight 3 / featureSpacing 0). K562's Iso-Seq is
-// ~600x over BCR, and at one row per pixel that many reads merge into a solid
-// block; three keeps individual transcripts separable while still fitting an
-// order of magnitude more of the pileup than the default.
-const COMPACT = { featureHeight: 3, featureSpacing: 0 }
+// K562's Iso-Seq is ~600x over BCR and the split-read subset of it is still
+// ~250 rows, so the row height is what decides whether the pileup ends inside
+// the figure or behind a scrollbar. Two pixels fits all of it and still leaves
+// each read a row the bezier connector can leave from; one merges the rows into
+// a solid block and the connectors then fan out of a smear.
+const SPLIT_READS = { featureHeight: 2, featureSpacing: 0 }
+
+// The 29 reads realigned to the derivative, in the two figures that carry them.
+// Every one of them spans the junctions, so the pileup is 29 rows however it is
+// laid out, and at the default row height only two thirds of them are above the
+// fold. Five pixels with a gap is the largest row that fits all 29 while leaving
+// the mismatch ticks and the clipping (or its absence) visible.
+const READS = { featureHeight: 5, featureSpacing: 1 }
 
 // Every COLO829 window in this tutorial falls inside a large intron (RARB,
 // BICC1, TRHDE), where the gene track draws one flat line per isoform and no
@@ -196,9 +205,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
-    viewportHeight: 950,
+    viewportHeight: 1230,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
+      sessionTracks: [DER3_GENES_TRACK],
       views: [
         {
           type: 'LinearSyntenyView',
@@ -211,17 +221,42 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // two templated inserts -- the whole point of the figure --
               // pointing at nothing.
               loc: 'chr3:25325000-25361000 chr10:58716500-58718500 chr12:72272000-72274500',
-              // deliberately no gene track: all three windows fall inside large
-              // introns, so the glyph is a bare line with arrows either side of
-              // a sliver of TRHDE, which costs a track row and says nothing
-              tracks: [SV],
+              // the annotation this figure's bottom row is the projection of,
+              // in its original coordinates, so the two rows can be read
+              // against each other one ribbon at a time. The somatic SV calls
+              // are two sections up; here they would only overprint their own
+              // breakend labels across the three narrow windows.
+              //
+              // Taller than the glyphs need: the isoform-collapse chip is
+              // anchored bottom-right, and the chr12 window is the rightmost
+              // thing in the panel, so the slack is what keeps the chip off
+              // TRHDE's label
+              tracks: [{ ...GENE_TRACK, height: 95 }],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
               loc: 'der3_RARB_BICC1_TRHDE:1-39,549',
-              // the provenance track carries what the gene track cannot: which
-              // reference interval each stretch of the contig came from
-              tracks: ['der3_segments', 'reads_vs_der3'],
+              // the provenance track says which reference interval each stretch
+              // came from; the projected genes say what that stretch is -- the
+              // allele carries RARB's first coding exon at 14 kb and comes back
+              // to RARB inverted after the two inserts. Same glyph mode as the
+              // reference row above, so the pair differs by coordinates alone
+              tracks: [
+                'der3_segments',
+                // seven genes in one coordinate space, and the arm that spans
+                // 32 kb of it puts every other one on a row of its own, so this
+                // is the tall track in the figure rather than the thin one it is
+                // on the reference side
+                {
+                  ...GENE_TRACK,
+                  trackId: DER3_GENES_TRACK.trackId,
+                  height: 220,
+                },
+                // sized to the pileup: 29 spanning reads is 29 rows, and a
+                // height that shows twenty of them puts the rest behind a
+                // scrollbar, which reads as a pileup that stops
+                { trackId: 'reads_vs_der3', height: 290, ...READS },
+              ],
             },
           ],
           tracks: [['der3_vs_hg38']],
@@ -245,9 +280,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
-    viewportHeight: 1240,
+    viewportHeight: 1412,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
+      sessionTracks: [DER3_GENES_TRACK],
       views: [
         {
           type: 'LinearSyntenyView',
@@ -261,20 +297,31 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // stacks, but they answer which gene each piece was taken from
               // without the reader going back to the text
               tracks: [
-                { ...GENE_TRACK, height: 55 },
+                { ...GENE_TRACK, height: 75 },
                 'hg38-ReferenceSequenceTrack',
               ],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
               loc: 'der3_RARB_BICC1_TRHDE:32,300-33,400',
+              // the projected CDS carries no reading frame -- a junction can cut
+              // a codon in half -- so the per-codon shading this window is
+              // zoomed in far enough to trigger would be drawn in a frame
+              // nothing here establishes
+              showAminoAcids: false,
               tracks: [
                 'der3_segments',
+                // the same annotation as the top row, in the allele's
+                // coordinates and under the same glyph mode: the whole chr12
+                // insert is a TRHDE coding exon, and on this side it is on the
+                // other strand
+                {
+                  ...GENE_TRACK,
+                  trackId: DER3_GENES_TRACK.trackId,
+                  height: 130,
+                },
                 'der3_RARB_BICC1_TRHDE-ReferenceSequenceTrack',
-                // default read height, not the super-compact preset the
-                // reference-side pileups use: 29 spanning reads is a stack that
-                // fits, and one row per pixel would draw them as hairlines
-                { trackId: 'reads_vs_der3', height: 260 },
+                { trackId: 'reads_vs_der3', height: 250, ...READS },
               ],
             },
           ],
@@ -326,12 +373,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // from ABL1 after it.
   //
   // One level rather than a breakpoint split view: that view stacks the partners
-  // and draws a spline per read between them, and at ~600x Iso-Seq depth the
-  // bundle of splines covers both pileups.
+  // one above the other and runs its splines down the page between them, which
+  // is a second screen of figure for the same read set. Side by side, the same
+  // splines run across the gap the fusion actually closes.
   {
     mode: 'url',
     name: 'cancer_sv/k562_bcr_abl_split',
-    viewportHeight: 780,
+    viewportHeight: 1030,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000',
@@ -343,14 +391,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       ],
       tracks: [
         { ...GENE_TRACK, height: 90 },
-        // Iso-Seq reads are mostly intron line: at the default read height the
-        // pileup is a stack of near-empty rows, so it takes the smaller share
-        // here and the coverage band takes the rest
+        // Only the split alignments: a read whose chr22 alignment has a chr9
+        // supplementary is the fusion's own support, and dropping the reads that
+        // stay on one chromosome leaves a pileup whose every row crosses the
+        // junction. Bezier connectors then join each read's two alignments, so
+        // the fan between the two regions is that read set, read by read.
         {
           trackId: 'K562_isoseq',
-          height: 400,
-          coverageHeight: 220,
-          ...COMPACT,
+          height: 700,
+          coverageHeight: 190,
+          showBezierConnections: true,
+          showOnlySplitAlignments: true,
+          ...SPLIT_READS,
         },
       ],
     }),

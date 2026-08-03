@@ -368,6 +368,78 @@ check("session_spec track ids match the emitted config",
       sorted(view["views"][1]["tracks"]),
       sorted(t["trackId"] for t in cfg["tracks"][1:]))
 
+# --genes: the reference annotation projected onto the derivative. A junction
+# cuts wherever it cuts, so the interesting features are the clipped ones, and an
+# inverted segment has to flip the feature strand with the interval -- an exon
+# spliced in backwards is transcribed off the other strand of the allele.
+fwd = ["der1", "0", "1000", "2000", "+", "chrA", "0", "5000", "6000"] + ["60"] * 4
+rev = ["der1", "0", "2000", "3000", "-", "chrA", "0", "8000", "9000"] + ["60"] * 4
+check("project_feature maps a forward segment by offset",
+      sv_multihop.project_feature(fwd, "chrA", 5100, 5200, 1), (1100, 1200, 1))
+check("project_feature reverses the interval and the strand on an inverted segment",
+      sv_multihop.project_feature(rev, "chrA", 8100, 8200, 1), (2800, 2900, -1))
+check("project_feature clips a feature the junction cuts",
+      sv_multihop.project_feature(fwd, "chrA", 5900, 7000, 1), (1900, 2000, 1))
+check("project_feature ignores a feature on another chromosome",
+      sv_multihop.project_feature(fwd, "chrB", 5100, 5200, 1), None)
+check("project_feature ignores a feature the segment misses",
+      sv_multihop.project_feature(fwd, "chrA", 100, 200, 1), None)
+
+# A foldback visits the same reference twice, so the gene it cuts belongs to the
+# allele twice; keeping one copy would draw the allele as if it were simple.
+gff = [
+    "chrA\tRefSeq\texon\t5101\t5200\t.\t+\t.\tID=exon:x.1;Parent=x",
+    "chrA\tRefSeq\texon\t8101\t8200\t.\t+\t.\tID=exon:x.2;Parent=x",
+    "chrA\tRefSeq\tintron\t5101\t5200\t.\t+\t.\tID=intron:x.1",
+    "#comment",
+]
+projected = sv_multihop.project_gff([fwd, rev], gff, "der1")
+check("project_gff keeps only annotated feature types", len(projected), 2)
+check("project_gff writes derivative coordinates in GFF3 1-based form",
+      [l.split("\t")[3:5] for l in projected], [["1101", "1200"], ["2801", "2900"]])
+check("project_gff renames the contig", {l.split("\t")[0] for l in projected}, {"der1"})
+check("project_gff flips the strand of an inverted copy",
+      [l.split("\t")[6] for l in projected], ["+", "-"])
+# same ID on two copies collapses them into one feature in the browser
+check("project_gff makes each copy's ID unique",
+      len({l.split("\t")[8].split(";")[0] for l in projected}), 2)
+
+# The transcript rows have to survive the projection with the exons: the gene
+# glyph is gene -> transcript -> exon/CDS, and an exon whose Parent was dropped
+# is an orphan block beside a bare gene bar. Both ends of the link are rewritten
+# per copy, so a copy's exon points at that copy's transcript and not the other's.
+nested = [
+    "chrA\tRefSeq\tgene\t5001\t9000\t.\t+\t.\tID=g1",
+    "chrA\tRefSeq\ttranscript\t5001\t9000\t.\t+\t.\tID=t1;Parent=g1",
+    # one exon in each segment's reference window, so both copies of the gene
+    # carry one and the two Parents can be told apart
+    "chrA\tRefSeq\texon\t5101\t5200\t.\t+\t.\tID=exon:t1.1;Parent=t1",
+    "chrA\tRefSeq\texon\t8101\t8200\t.\t+\t.\tID=exon:t1.2;Parent=t1",
+]
+by_id = {l.split("\t")[8].split(";")[0].removeprefix("ID="): l.split("\t")
+         for l in sv_multihop.project_gff([fwd, rev], nested, "der1")}
+check("project_gff keeps the transcript row the exons hang off",
+      sorted(by_id), ["exon:t1.1.seg0", "exon:t1.2.seg1", "g1.seg0", "g1.seg1",
+                      "t1.seg0", "t1.seg1"])
+check("a projected exon's Parent is its own copy's transcript",
+      [by_id["exon:t1.1.seg0"][8].split(";")[1],
+       by_id["exon:t1.2.seg1"][8].split(";")[1]],
+      ["Parent=t1.seg0", "Parent=t1.seg1"])
+check("a projected transcript's Parent is its own copy's gene",
+      [by_id["t1.seg0"][8].split(";")[1], by_id["t1.seg1"][8].split(";")[1]],
+      ["Parent=g1.seg0", "Parent=g1.seg1"])
+
+genes_cfg = sv_multihop.jbrowse_config("der1", "hg38", "/data/GRCh38.fa", "/data/der1",
+                                       "/data", genes=True)
+check("jbrowse_config adds the projected gene track only with --genes",
+      [t["trackId"] for t in genes_cfg["tracks"]
+       if t["trackId"] not in [x["trackId"] for x in cfg["tracks"]]],
+      [sv_multihop.track_ids("der1", "hg38")["genes"]])
+check("the projected gene track belongs to the derivative",
+      [t["assemblyNames"] for t in genes_cfg["tracks"]
+       if t["trackId"] == sv_multihop.track_ids("der1", "hg38")["genes"]],
+      [["der1"]])
+
 # depmap_to_jbrowse.py: StarFusionAdapter keys off a '#'-prefixed header and
 # finds the breakpoint columns by name, so a plain CSV->TSV dump loads as an
 # empty track rather than failing.

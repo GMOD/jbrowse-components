@@ -2413,10 +2413,10 @@
   },
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
-    "status": "bad",
-    "note": "is it possible to show sashimi arcs and/or split read arcs joining the two regions?",
-    "reviewedAt": "2026-08-02T22:58:13.121Z",
-    "hash": "e55fd8221c2f75abb60add526f5fdea2948f7b92"
+    "status": "good",
+    "note": "DONE, both kinds of arc. Sashimi: the coverage row's arcs are the split reads' own exon junctions. Split-read arcs joining the two regions: Show only split alignments drops every read that stays on one chromosome, and bezier connectors join each remaining read's chr22 alignment to its chr9 supplementary, so the fan across the gap between the two displayed regions is the fusion's read support one read at a time. Rows are 2px: the split subset is still ~250 reads and anything taller ends behind a scrollbar, anything shorter merges them into a smear the connectors fan out of.  previous notes: is it possible to show sashimi arcs and/or split read arcs joining the two regions?",
+    "reviewedAt": "2026-08-03T01:05:23.999Z",
+    "hash": "a32a27066a265e96871f3150890b37316fac8ff1"
   },
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
@@ -2476,10 +2476,10 @@
   },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
-    "status": "bad",
-    "note": "if it was possible to show gene models affected by this, and even the gene model on the DERIVED genome, it could be a powerful figure  previous notes: DONE: the hg38 side now carries the gene track, so RARB, BICC1/FAM133CP and TRHDE/TRHDE-AS1 are named over the three windows the ribbons land in. They are line glyphs rather than exon stacks -- all three junctions fall deep inside an intron -- so this says which gene each piece was cut from, not which exons are affected; there are no exons in these windows to affect. This figure also absorbed cancer_sv/derivative_proof (see that note): the realigned reads are now the bottom track, under the segments they are evidence for.",
-    "reviewedAt": "2026-08-02T22:57:31.744Z",
-    "hash": "cff0acea79527f09edc1ab8638df8e77748bffdd"
+    "status": "good",
+    "note": "DONE as asked, both halves of it: sv_multihop.py derive --genes now projects a tabix-indexed reference GFF3 through the same PAF segments the synteny track draws, so the DERIVED genome has its own gene track (44 features from 41 reference rows), and this figure shows it under the segments it is derived from with the reference annotation in the same frame above. The chr12 insert reads as a TRHDE coding exon on the allele's other strand, the chr10 insert as BICC1/FAM133CP, and RARB's transcript is cut at the first junction -- which is the gene-model consequence the note asked for, not just which gene each piece came from. The projection keeps the transcript rows, not only gene/exon/CDS: an exon whose Parent was dropped renders as a loose block beside a bare gene bar rather than as the cut transcript.  previous notes: if it was possible to show gene models affected by this, and even the gene model on the DERIVED genome, it could be a powerful figure  previous notes: DONE: the hg38 side now carries the gene track, so RARB, BICC1/FAM133CP and TRHDE/TRHDE-AS1 are named over the three windows the ribbons land in. They are line glyphs rather than exon stacks -- all three junctions fall deep inside an intron -- so this says which gene each piece was cut from, not which exons are affected; there are no exons in these windows to affect. This figure also absorbed cancer_sv/derivative_proof (see that note): the realigned reads are now the bottom track, under the segments they are evidence for.",
+    "reviewedAt": "2026-08-03T01:05:23.999Z",
+    "hash": "fb5d549946f5de096c88d104b127533e54f7a584"
   },
   "cancer_sv/k562_cn_amplicon": {
     "name": "cancer_sv/k562_cn_amplicon",
@@ -2511,9 +2511,9 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "bad",
-    "note": "not sure if relevant but could brainstorm a way to combine this figure and cancer_sv/derivative_inserts and/or cancer_sv/derivative_proof  together, then standalones can be deleted PARTLY COMBINED, and here is what was not. derivative_proof is gone, merged into derivative_inserts (see its note), so the reconstruction is two figures instead of three. This one and derivative_inserts were NOT merged: they are the same view at 39.5 kb and at 1.1 kb, so a compose would stack two 1600px-wide synteny views into a 1600x2200 image, and the site would scale that to where neither panel's ribbons are legible -- the horizontal compose that works for multihop_reads needs both halves to be half-width, and a synteny view at 800px cannot hold three reference windows. The overview also already carries the reads across the whole contig, so the two figures now differ by scale alone, which is the split worth keeping.",
-    "reviewedAt": "2026-08-02T22:09:40.829Z",
-    "hash": "b7a04a7574ec08d369f5efed6bd7651c7a988add"
+    "status": "good",
+    "note": "DONE, and this is now the figure the projection is for: the hg38 row carries the RefSeq gene track and the derivative row carries the same annotation projected onto the allele, under the same longest-coding glyph mode, so the two rows differ by coordinates alone and a ribbon connects a gene to its own copy. The somatic SV track it replaced was overprinting its breakend labels across the three narrow windows and is already the subject of multihop_reads, two sections up. The derivative row is the tall one (220px): seven genes in one coordinate space with a 32 kb arm across it puts nearly every one on its own row, where the reference row's three separated windows share rows. The realigned reads went to featureHeight 5 so all 29 rows are above the fold instead of twenty of them.  previous notes: not sure if relevant but could brainstorm a way to combine this figure and cancer_sv/derivative_inserts and/or cancer_sv/derivative_proof  together, then standalones can be deleted PARTLY COMBINED, and here is what was not. derivative_proof is gone, merged into derivative_inserts (see its note), so the reconstruction is two figures instead of three. This one and derivative_inserts were NOT merged: they are the same view at 39.5 kb and at 1.1 kb, so a compose would stack two 1600px-wide synteny views into a 1600x2200 image, and the site would scale that to where neither panel's ribbons are legible -- the horizontal compose that works for multihop_reads needs both halves to be half-width, and a synteny view at 800px cannot hold three reference windows. The overview also already carries the reads across the whole contig, so the two figures now differ by scale alone, which is the split worth keeping.",
+    "reviewedAt": "2026-08-03T01:05:23.999Z",
+    "hash": "a6ad97b6eab812dc6e602ccf7e661485afff35e7"
   }
 }

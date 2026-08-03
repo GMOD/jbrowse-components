@@ -229,6 +229,17 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
+  // Both live on the alignments display but in different submenus: the curve is
+  // a rendering choice (menus/readConnections.ts), the filter a read-set one
+  // (menus/reads.ts, inside the same "Show..." submenu as soft clipping).
+  showBezierConnections: checkbox(
+    'Read connections → Use curved connectors',
+    "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
+  ),
+  showOnlySplitAlignments: checkbox(
+    'Show... → Show only split alignments',
+    'Keeps only reads the aligner gave a supplementary segment (SAM flag 0x800), so what is left is the breakpoint evidence rather than the pileup it sits in.',
+  ),
   // Same label in the same submenu on both displays that have the slot: the
   // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
   // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.

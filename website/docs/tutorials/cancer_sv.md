@@ -154,12 +154,25 @@ it came from. Adding `--jbrowse-out config.json` writes the config that wires
 those together (both assemblies, the synteny track, the segments and the
 realigned reads) and prints the URL that opens them as a synteny view.
 
-A gene track cannot label a derivative this way. Junctions join whatever
-intervals they happen to join, and those usually land mid-intron, so on the
-derivative the RefSeq track has nothing to draw. On the reference side it still
-names the gene each piece was cut from.
+The reference's own gene annotation belongs on the derivative too, since what
+the allele does to a gene is the reason to build it. `--genes` takes a
+tabix-indexed GFF3 and projects it through those same segments, so each feature
+lands in derivative coordinates, clipped where a junction cut it and flipped
+where a segment is inverted:
 
-<Figure caption="The reconstructed derivative against its three source loci, each segment labelled with its origin. The wide ribbon is the chr3 arm; the crossing ribbon at right is chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
+```bash
+python3 scripts/sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
+```
+
+```
+wrote der3_RARB.derivative_genes.gff3 (44 features from 41 reference rows)
+```
+
+This allele carries RARB's first coding exon and its start codon, then the
+183 bp of chr12 that the second junction splices in, which is TRHDE coding
+sequence in reverse, then RARB again inverted.
+
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes on the reference row, the same annotation projected onto the allele on the derivative row, with each segment labelled with the interval it came from. RARB's transcript starts partway along the allele and is cut off at the first junction. The wide ribbon is the chr3 arm; the crossing ribbon at right is chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
@@ -170,7 +183,7 @@ reads clips at any of the four junction positions, and depth does not dip at
 them. Both the reconstruction and this check come from the reads, so the figure
 is evidence rather than illustration.
 
-<Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards, with RARB, BICC1 and TRHDE named on the reference side. The reads below the segments cross every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
+<Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. The projected genes under the segments carry the same names as the reference row above, so the chr12 insert reads as a piece of TRHDE on the allele's other strand. The reads below cross every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
 ## The transcript view
 
@@ -208,7 +221,13 @@ reads. Putting both partners in one view as two displayed regions, rather than
 in two stacked panels, lays the fusion out the way FusionInspector does: type
 both locations into the location box, separated by a space.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint. Iso-Seq exon coverage drops after the BCR band and starts at the ABL1 band, where nothing is aligned before it." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+A read that crosses the junction is one alignment on chr22 and a supplementary
+alignment on chr9. `Read connections` -> `Use curved connectors` draws a curve
+between the two, and with both partners displayed those curves cross from one
+region into the other. `Show...` -> `Show only split alignments` then drops every
+read that stays on one chromosome, so the pileup is the fusion's own support.
+
+<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads. Coverage drops after the BCR band and starts at the ABL1 band, the arcs over the coverage are the reads' own exon junctions, and each curve in the fan joins a read's chr22 alignment to its chr9 supplementary." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified

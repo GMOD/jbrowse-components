@@ -222,10 +222,84 @@ def track_ids(name, ref_name):
         'synteny': f'{name}_vs_{ref_name}',
         'segments': f'{name}_segments',
         'reads': f'{name}_reads',
+        'genes': f'{name}_genes',
     }
 
 
-def jbrowse_config(name, ref_name, ref_fasta, out, config_dir):
+def project_feature(row, chrom, start, end, strand):
+    """One reference feature in derivative coordinates, or None if it misses.
+
+    `row` is a PAF row: query (derivative) start/end, strand, target chromosome
+    and target start/end, all 0-based half-open. `start`/`end` are the feature's
+    0-based half-open reference span. A feature is clipped to the segment, since
+    a junction cuts wherever it cuts -- half an exon on the derivative is the
+    result being shown, not a case to drop.
+
+    An inverted segment reverses the interval AND the feature's strand: an exon
+    of a plus-strand gene spliced in backwards is transcribed on the other
+    strand of the derivative, which is the thing the picture is about.
+
+    Offsets are measured from the segment's leading edge rather than walked
+    through its CIGAR, so an indel between that edge and the feature shifts it by
+    the indel's length. The templated inserts this is built for align gaplessly
+    (199M, 183M), and on a 30 kb arm the worst case is the arm's own indel total,
+    which is under a pixel at any zoom that shows the arm.
+    """
+    qs, qe, seg_strand = int(row[2]), int(row[3]), row[4]
+    if chrom != row[5]:
+        return None
+    ts, te = int(row[7]), int(row[8])
+    lo, hi = max(start, ts), min(end, te)
+    if lo >= hi:
+        return None
+    if seg_strand == '-':
+        ds, de = qs + (te - hi), qs + (te - lo)
+    else:
+        ds, de = qs + (lo - ts), qs + (hi - ts)
+    # a feature can only land inside the segment it was projected through
+    return (max(qs, min(ds, qe)), max(qs, min(de, qe)), strand * (-1 if seg_strand == '-' else 1))
+
+
+# The transcript row is here for the same reason the exons are: a gene glyph is
+# gene -> transcript -> exon/CDS, and a projection that keeps the exons but drops
+# the transcript they name as their Parent leaves them orphaned, drawn as loose
+# blocks beside a bare gene bar instead of as the cut transcript.
+GFF_FEATURE_TYPES = ('gene', 'mRNA', 'transcript', 'exon', 'CDS',
+                     'start_codon', 'stop_codon')
+
+
+def project_gff(rows, lines, name, types=GFF_FEATURE_TYPES):
+    """Reference GFF3 lines projected onto the derivative, as GFF3 lines.
+
+    Every segment is projected independently, so a gene the chain visits twice
+    is written twice -- once per copy in the allele, which is what a foldback
+    does to it. `ID`s and `Parent`s are suffixed with the segment for the same
+    reason: it keeps each copy's hierarchy pointing within that copy.
+    """
+    out = []
+    for line in lines:
+        if line.startswith('#'):
+            continue
+        f = line.rstrip('\n').split('\t')
+        if len(f) < 9 or f[2] not in types:
+            continue
+        strand = -1 if f[6] == '-' else 1
+        for i, row in enumerate(rows):
+            hit = project_feature(row, f[0], int(f[3]) - 1, int(f[4]), strand)
+            if hit is None:
+                continue
+            ds, de, dstrand = hit
+            attrs = re.sub(r'\bID=([^;]*)', rf'ID=\1.seg{i}', f[8])
+            attrs = re.sub(r'\bParent=([^;]*)', rf'Parent=\1.seg{i}', attrs)
+            out.append('\t'.join([
+                name, f[1], f[2], str(ds + 1), str(de), f[5],
+                '-' if dstrand < 0 else '+', f[7], attrs,
+            ]))
+    out.sort(key=lambda l: int(l.split('\t')[3]))
+    return out
+
+
+def jbrowse_config(name, ref_name, ref_fasta, out, config_dir, genes=False):
     """The config.json that wires derive's four outputs together.
 
     Without it the tool leaves a reader with an assembly, a PAF, a BED and a BAM
@@ -285,6 +359,16 @@ def jbrowse_config(name, ref_name, ref_fasta, out, config_dir):
                     'bedLocation': loc(f'{out}.derivative_segments.bed'),
                 },
             },
+            *([{
+                'type': 'FeatureTrack',
+                'trackId': ids['genes'],
+                'name': 'Reference genes projected onto the derivative',
+                'assemblyNames': [name],
+                'adapter': {
+                    'type': 'Gff3Adapter',
+                    'gffLocation': loc(f'{out}.derivative_genes.gff3'),
+                },
+            }] if genes else []),
             {
                 'type': 'AlignmentsTrack',
                 'trackId': ids['reads'],
@@ -511,6 +595,24 @@ def cmd_derive(args):
             )
     print(f'wrote {segments_bed}')
 
+    # What the allele does to the genes it cuts, in the allele's own
+    # coordinates: which exons each piece carries, and which way round. Read off
+    # the reference annotation rather than asserted, so a junction landing
+    # mid-exon shows as the half-exon it is.
+    if args.genes:
+        genes_gff = f'{args.out}.derivative_genes.gff3'
+        spans = merge_spans([(f[5], int(f[7]) + 1, int(f[8])) for f in rows], 0)
+        lines = subprocess.run(
+            ['tabix', args.genes, *(f'{c}:{s}-{e}' for c, s, e in spans)],
+            check=True, stdout=subprocess.PIPE, text=True,
+        ).stdout.splitlines()
+        projected = project_gff(rows, lines, args.name)
+        with open(genes_gff, 'w') as fh:
+            fh.write('##gff-version 3\n')
+            for line in projected:
+                fh.write(line + '\n')
+        print(f'wrote {genes_gff} ({len(projected)} features from {len(lines)} reference rows)')
+
     # The reads, realigned to the reconstruction: end-to-end coverage with no
     # clipping is the evidence that the reconstruction is right.
     proof = f'{args.out}.reads_vs_derivative.bam'
@@ -529,7 +631,8 @@ def cmd_derive(args):
         ref_name = args.ref_name or re.sub(
             r'\.(fa|fasta|fna)(\.gz)?$', '', os.path.basename(args.ref)
         )
-        config = jbrowse_config(args.name, ref_name, args.ref, args.out, config_dir)
+        config = jbrowse_config(args.name, ref_name, args.ref, args.out, config_dir,
+                                genes=bool(args.genes))
         with open(args.jbrowse_out, 'w') as fh:
             json.dump(config, fh, indent=2)
             fh.write('\n')
@@ -579,6 +682,9 @@ def main():
                    help='align the contig to the reference splice-aware, for a '
                         'fusion transcript whose exons are adjacent in the contig '
                         'but separated by introns in the genome')
+    d.add_argument('--genes', metavar='GFF_GZ',
+                   help='tabix-indexed reference GFF3; its genes/exons/CDS are '
+                        'projected onto the derivative as their own track')
     d.add_argument('--threads', type=int, default=4)
     d.add_argument('--jbrowse-out', metavar='CONFIG_JSON',
                    help='also write a JBrowse config.json wiring the outputs '
