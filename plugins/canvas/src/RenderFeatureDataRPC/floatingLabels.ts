@@ -75,9 +75,7 @@ export function createTranscriptFloatingLabel({
       relativeY,
       // overlay labels sit on a light backing rect, so keep them dark; inline
       // ones read against the track and follow the theme text color
-      color: isOverlay
-        ? palette.common.black
-        : palette.text.primary,
+      color: isOverlay ? palette.common.black : palette.text.primary,
       textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
       isOverlay,
     },

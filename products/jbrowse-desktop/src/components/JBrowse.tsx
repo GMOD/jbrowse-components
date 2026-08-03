@@ -1,7 +1,7 @@
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useEffect } from 'react'
 
 import { App } from '@jbrowse/app-core'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'

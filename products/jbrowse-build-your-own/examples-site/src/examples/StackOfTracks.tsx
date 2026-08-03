@@ -1,8 +1,8 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
-import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 

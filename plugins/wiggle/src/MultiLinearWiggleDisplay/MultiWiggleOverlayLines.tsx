@@ -1,7 +1,7 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getStrokeProps } from '@jbrowse/core/util'
 import { CrossHatchLines } from '@jbrowse/wiggle-core'
-import { alpha } from '@jbrowse/core/ui/palette'
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'

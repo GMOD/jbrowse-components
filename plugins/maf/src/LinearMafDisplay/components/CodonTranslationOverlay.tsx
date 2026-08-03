@@ -1,5 +1,5 @@
-import { OverlayCanvas } from '@jbrowse/render-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawMafCodons } from '../../LinearMafRenderer/rendering/codons.ts'

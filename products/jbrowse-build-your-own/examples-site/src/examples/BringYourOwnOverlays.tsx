@@ -1,12 +1,12 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
+import { setConf } from '@jbrowse/core/configuration'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import {
   DisplayChromeOverlayProvider,
   plainChromeOverlays,
 } from '@jbrowse/plugin-linear-genome-view'
-import { setConf } from '@jbrowse/core/configuration'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 

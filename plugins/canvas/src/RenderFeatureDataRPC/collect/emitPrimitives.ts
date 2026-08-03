@@ -1,9 +1,9 @@
+import { lighten } from '@jbrowse/core/ui/palette'
 import {
   cssColorToABGR as colorToUint32,
   formatHEX,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import { lighten } from '@jbrowse/core/ui/palette'
 
 import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
 import { hasVisibleText, isUTR } from '../util.ts'

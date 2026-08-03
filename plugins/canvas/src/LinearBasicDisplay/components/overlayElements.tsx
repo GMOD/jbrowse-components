@@ -1,5 +1,5 @@
-import { alpha } from '@jbrowse/core/ui/palette'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -17,8 +17,6 @@ import {
 } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
-import type { CSSProperties } from 'react'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -27,7 +25,9 @@ import type {
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { CSSProperties } from 'react'
 
 type LGV = LinearGenomeViewModel
 

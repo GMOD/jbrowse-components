@@ -1,7 +1,7 @@
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { Suspense } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'

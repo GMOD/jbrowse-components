@@ -1,7 +1,7 @@
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useEffect, useState } from 'react'
 
 import { App } from '@jbrowse/app-core'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'

@@ -1,7 +1,7 @@
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 

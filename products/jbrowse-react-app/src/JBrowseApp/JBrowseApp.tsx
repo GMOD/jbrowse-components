@@ -1,7 +1,7 @@
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'

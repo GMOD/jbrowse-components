@@ -1,6 +1,6 @@
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { useMemo, useRef } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 
 import { getMismatchContrastMap } from '../../shared/util.ts'

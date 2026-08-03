@@ -4,8 +4,8 @@ import {
 } from '@jbrowse/core/util/colorBits'
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const INTERBASE_TYPES = new Set<VisibleLabel['type']>([
   'insertion',

@@ -1,7 +1,7 @@
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
-import type { Feature } from '@jbrowse/core/util'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { Feature } from '@jbrowse/core/util'
 
 export const defaultFilterFlags = {
   flagInclude: 0,

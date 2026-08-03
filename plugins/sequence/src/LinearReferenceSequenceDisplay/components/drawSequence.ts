@@ -1,3 +1,4 @@
+import { getContrastText } from '@jbrowse/core/ui/palette'
 import { complement, revcom } from '@jbrowse/core/util'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
@@ -14,12 +15,10 @@ import {
 
 import type { SequenceRegionData } from '../model.ts'
 import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import { getContrastText } from '@jbrowse/core/ui/palette'
-
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 const BORDER_COLOR = 'rgb(85,85,85)'
 

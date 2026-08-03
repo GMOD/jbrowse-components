@@ -168,9 +168,9 @@ python3 scripts/sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
 wrote der3_RARB.derivative_genes.gff3 (44 features from 41 reference rows)
 ```
 
-This allele carries RARB's first coding exon and its start codon, then the
-183 bp of chr12 that the second junction splices in, which is TRHDE coding
-sequence in reverse, then RARB again inverted.
+This allele carries RARB's first coding exon and its start codon, then the 183
+bp of chr12 that the second junction splices in, which is TRHDE coding sequence
+in reverse, then RARB again inverted.
 
 <Figure caption="The reconstructed derivative against its three source loci: RefSeq genes on the reference row, the same annotation projected onto the allele on the derivative row, with each segment labelled with the interval it came from. RARB's transcript starts partway along the allele and is cut off at the first junction. The wide ribbon is the chr3 arm; the crossing ribbon at right is chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
 
@@ -224,8 +224,9 @@ both locations into the location box, separated by a space.
 A read that crosses the junction is one alignment on chr22 and a supplementary
 alignment on chr9. `Read connections` -> `Use curved connectors` draws a curve
 between the two, and with both partners displayed those curves cross from one
-region into the other. `Show...` -> `Show only split alignments` then drops every
-read that stays on one chromosome, so the pileup is the fusion's own support.
+region into the other. `Show...` -> `Show only split alignments` then drops
+every read that stays on one chromosome, so the pileup is the fusion's own
+support.
 
 <Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads. Coverage drops after the BCR band and starts at the ABL1 band, the arcs over the coverage are the reads' own exon junctions, and each curve in the fan joins a read's chr22 alignment to its chr9 supplementary." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 

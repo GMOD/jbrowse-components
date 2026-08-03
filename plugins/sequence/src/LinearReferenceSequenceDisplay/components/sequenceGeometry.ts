@@ -1,7 +1,7 @@
 import { defaultStarts } from '@jbrowse/core/util'
 
-import type { Frame } from '@jbrowse/core/util'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { Frame } from '@jbrowse/core/util'
 
 export type RGB = readonly [number, number, number]
 

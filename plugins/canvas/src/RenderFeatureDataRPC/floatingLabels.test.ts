@@ -30,9 +30,7 @@ describe('floatingLabels', () => {
         palette,
       })
       expect(result.nameLabel!.color).toBe(palette.text.primary)
-      expect(result.descriptionLabel!.color).toBe(
-        palette.featureDescription,
-      )
+      expect(result.descriptionLabel!.color).toBe(palette.featureDescription)
     })
 
     it('returns no labels when name and description are whitespace-only', () => {
