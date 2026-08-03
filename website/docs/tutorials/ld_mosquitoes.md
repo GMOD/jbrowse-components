@@ -57,7 +57,10 @@ spaces one evenly sized column per variant, which discards the call's genomic
 extent; the regular display draws each genotype at the call's true span, so the
 carrier rows begin and end at the breakpoints. That is what the karyotype lanes
 in the figure above are: cells shaded by allele dosage, each lane sorted into
-standard, heterozygous and homozygous-inverted blocks.
+standard, heterozygous and homozygous-inverted blocks. The `karyotype` column,
+and so the legend, names those three classes by genotype: `2L+a/2L+a`
+(standard/standard, the `+` marking the non-inverted arrangement),
+`2La/2L+a` (heterozygous), `2La/2La` (inverted/inverted).
 
 Load each population as a `VariantTrack` whose adapter carries the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
