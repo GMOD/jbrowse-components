@@ -310,10 +310,10 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'LD triangle at the lactase locus',
-        spec: 'ld/lct_lactase',
+        spec: 'ld/lct_pooled_vs_panel',
         guide: 'tutorials/ld_human',
         description:
-          'Haplotypic r² from phased 1000 Genomes genotypes, with a red block of high linkage in the middle and lower values to either side.',
+          'Haplotypic r² computed in the browser from phased 1000 Genomes genotypes, the same window twice: every panel pooled breaks the lactase block into a mosaic, one panel resolves it into a single block.',
       },
       {
         label: 'BXD QTL with haplotype painting',

@@ -107,8 +107,8 @@
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:36:54.852Z",
-    "hash": "1c9b4fcfad5ac7cc7b92da9e244aeb48c889e298"
+    "reviewedAt": "2026-08-03T13:16:06.022Z",
+    "hash": "f9952c823da5c9e5fe9e7ed1db7f3fd25bc6ad23"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
@@ -153,8 +153,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T12:51:11.328Z",
-    "hash": "5712b6aca92aaef61ff9ffefd97dae1c5b85ffd3"
+    "reviewedAt": "2026-08-03T13:14:53.629Z",
+    "hash": "60dedb99e9c03837116b3d00cc9bd6e382ea4532"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -1136,8 +1136,8 @@
     "name": "maf_470way_codon",
     "status": "good",
     "note": "display more compact maf. reduce height of gene track. FIXED: gene track (MANE Select) switched from the default display to displayMode:'compact', height:40 (one MANE transcript needs one row, not the default reserved multi-row space); MAF display heightOverride 560->460 for a tighter per-row height. Regenerated (viewportHeight 700->830 to clear the resulting layout).",
-    "reviewedAt": "2026-07-27T06:30:00.000Z",
-    "hash": "090ceecea78112c5d712887c3a2f6e13f3f477ba"
+    "reviewedAt": "2026-08-03T13:14:51.077Z",
+    "hash": "bbdb1ec03fa92e32b304700ac1e0c8cfa4090bd6"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
@@ -1227,8 +1227,8 @@
     "name": "display_settings_url_snapshot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:47:45.297Z",
-    "hash": "b6fc01d41836cc1e4557ab5affa15ec3bc4b464b"
+    "reviewedAt": "2026-08-03T13:22:51.751Z",
+    "hash": "ce13beff033066e20a435977eadd54b4b794caa9"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
@@ -1377,9 +1377,9 @@
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
     "status": "good",
-    "note": "FIXED: dropped the pi row. It carried a strong broad arm-scale profile of its own that has nothing to do with the inversion, and no surrounding prose read it, so it competed with the one thing the figure exists to show. pi keeps its own figure at Cyp6g1, where the dip alongside Tajima's D IS the point. Fst grew 280->340, viewport 840->660, caption/gallery description/tutorial card band updated.",
-    "reviewedAt": "2026-07-27T03:10:00.000Z",
-    "hash": "a42f4d765112ceb96add998b85b9aa9ee44cc844"
+    "note": "",
+    "reviewedAt": "2026-08-03T13:16:03.838Z",
+    "hash": "6a5c687f0c9096bc5ba436db32eb60b5c9ed8b3a"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
@@ -1595,7 +1595,7 @@
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
     "status": "bad",
-    "note": "this screenshot might be effectively a dupe of ld/lct_pooled_vs_panel. it might want to be deleted from gallery.",
+    "note": "this screenshot might be effectively a dupe of ld/lct_pooled_vs_panel. it might want to be deleted from gallery. DONE, gallery only. The LD-triangle card now opens ld/lct_pooled_vs_panel (the gallery keeps one card per capability, so the card was moved rather than dropped, which is also what removes the dupe). The figure stays in ld_human.md as the page's first LD picture, where the ClinVar rs4988235 lane sets up the block, and the ld_human tutorial-card thumb still crops it because a single triangle crops better at 1200x600 than two stacked lanes do.",
     "reviewedAt": "2026-08-03T01:29:28.146Z",
     "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
@@ -1609,9 +1609,9 @@
   "pangenome/maf": {
     "name": "pangenome/maf",
     "status": "bad",
-    "note": "still dont understand this marker 5593, it should be pruple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
-    "reviewedAt": "2026-07-29T21:00:35.775Z",
-    "hash": "41371019c9542af610025b52e8f469e4773caad3"
+    "note": "still dont understand this marker 5593, it should be purple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
+    "reviewedAt": "2026-08-03T13:15:58.993Z",
+    "hash": "35282756b177e9c6257e7a98a8fceb3b8c1f2486"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1656,8 +1656,8 @@
     "name": "multisv_svtype",
     "status": "good",
     "note": "DONE: heightMode 'fit' on the RefSeq lane, so the whole gene stack sits inside the 140px lane instead of four labeled rows with the fifth sliced against the lane border and the rest behind an internal scrollbar. At 5Mb the fit ladder lands on its 'bodies' rung, so the names go: tried a 220px lane to get them back and it still dropped them, just with 90px of whitespace added, because the labeled stack does not fit any lane height this figure can afford. The lane now reads as where in the window the genes are, which is what a 5Mb SV-type figure can use it for.",
-    "reviewedAt": "2026-08-01T12:51:14.870Z",
-    "hash": "d9a004dc1df7eafc8b3ed179c5576f428f18edf6"
+    "reviewedAt": "2026-08-03T13:14:55.719Z",
+    "hash": "c7046e2dcb34a0cbaa65d8c4617c5df669118e01"
   },
   "scatac/alb_hepatocyte": {
     "name": "scatac/alb_hepatocyte",
@@ -1761,8 +1761,8 @@
     "name": "pangenome_cactus/graph_correspondence",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T15:00:08.970Z",
-    "hash": "570c5c6df645802a215ecc52b039a7f696c10c9e"
+    "reviewedAt": "2026-08-03T13:15:38.592Z",
+    "hash": "a863dd9a37140148d908395f909c1ee2bb94171e"
   },
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
@@ -1987,10 +1987,10 @@
   },
   "multiway_synteny/ecoli_launch_from_selection": {
     "name": "multiway_synteny/ecoli_launch_from_selection",
-    "status": "good",
-    "note": "FIXED: we do have them. all_vs_all.paf is built with `minimap2 -c` and the launched view's cigarMode already defaults to 'full', so the wedges inside those ribbons ARE the insertions and deletions -- they were just unlabeled. The result frame now turns on the view's own color legend (palette button -> Show color legend), which lists only the ops actually painted, so they are named as insertion/deletion; the tutorial text points at CIGAR display mode too. NOTE: the launch dialog frame predates commit 4c96431 (anchor as a movable row, select all/none, shared window-size field) and needs a jbrowse-web rebuild + regen to match.",
-    "reviewedAt": "2026-08-01T14:59:25.671Z",
-    "hash": "b71f7a0897a9b51a80a04d6b3fcbedec8a6c9294"
+    "status": "bad",
+    "note": "the color by menu does not need to be open in last screenshot and legend should not be either DONE: the result frame no longer opens the palette menu or the color legend. The menu was a full-height overlay across the left half of the frame and the legend a floating box in the top-right corner, and between them they covered more of the five-row stack than naming the CIGAR ops was worth. The wedges are still drawn (cigarMode defaults to 'full'); the prose above the figure names Show color legend as the way to label them, and the caption no longer says 'named in the legend'. All three parts and the compose regenerated.",
+    "reviewedAt": "2026-08-03T13:15:36.241Z",
+    "hash": "73ccbe20b56614cb21341cba469579d8ff832341"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2226,8 +2226,8 @@
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
     "status": "bad",
-    "note": "this is likely not a gallery worthy screenshot. are you happy with this figure? are there any interesting genes in this region?, make combined figure instead of the 'dissected below' if it helps ANSWERED, figure unchanged (no defect found: 22 rows all present, last row not clipped, legend intact). Interesting genes: no, and I would not invent one. The highlighted 7.9 Mb block holds 411 genes, 279 of them named, and it is the dog-chr1 orthologue of human chr19q -- 21 ZNFs, 13 kallikreins, 7 CEACAMs, the APOC cluster. Gene-dense but nothing that says anything about wolf ancestry; the block is where it is because of recombination since the founder cross, not selection, and naming a gene would manufacture a selection story the data does not support. Combined figure: addressed differently and I think better. The coupling the note is reacting to was a forward reference ('the wolf block dissected below') that the second figure could not repay, because that figure did not visibly show anything. It now carries FLARE's per-haplotype call in its own row labels, so it stands alone and the caption here just names the window rather than promising a dissection. Stacking them would have made a ~1585px compose with the FLARE pipeline explanation sitting inside the gap between the two halves.",
-    "reviewedAt": "2026-07-31T17:19:13.364Z",
+    "note": "are you happy with this figure? are there any interesting genes in this region?, make combined figure instead of the 'dissected below' if it helps ANSWERED, figure unchanged (no defect found: 22 rows all present, last row not clipped, legend intact). Interesting genes: no, and I would not invent one. The highlighted 7.9 Mb block holds 411 genes, 279 of them named, and it is the dog-chr1 orthologue of human chr19q -- 21 ZNFs, 13 kallikreins, 7 CEACAMs, the APOC cluster. Gene-dense but nothing that says anything about wolf ancestry; the block is where it is because of recombination since the founder cross, not selection, and naming a gene would manufacture a selection story the data does not support. Combined figure: addressed differently and I think better. The coupling the note is reacting to was a forward reference ('the wolf block dissected below') that the second figure could not repay, because that figure did not visibly show anything. It now carries FLARE's per-haplotype call in its own row labels, so it stands alone and the caption here just names the window rather than promising a dissection. Stacking them would have made a ~1585px compose with the FLARE pipeline explanation sitting inside the gap between the two halves.",
+    "reviewedAt": "2026-08-03T13:25:06.692Z",
     "hash": "8f1bf2e9087f0e94b7e6ed4457be929d5c581bf2"
   },
   "mcscan_anchors": {
@@ -2268,8 +2268,8 @@
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
     "status": "bad",
-    "note": "dog10k-cyp1a2-cohort-copy-number  is a more powerful figure now, can consider deleting NOT A GLITCH, and now the frame says so instead of leaving it to the caption. Traced it: the stripe is exactly one 5 kb window, chr1:75,575,000-75,580,000, missing from both lanes' BEDs (tabix shows Grand Basset Griffon Vendeen 1 running 75,530,000-75,575,000 then resuming at 75,580,000). build_dog10k_slc28a3_cn.sh drops any window whose median across the whole collection sits below two copies, on the stated grounds that a window every canid reads low is measuring the reference rather than any dog; the same rule suppresses four blue stripes that would otherwise run down the collection lane at the weight of the duplication. Checked the obvious alternative and ruled it out: RepeatMasker over that window is 44.3% masked with 2,784 unique bp, in line with its neighbours on both sides, so this is not the MINUNIQUE dropout that produced the CYP1A2 gap. What it IS is where the duplication's left breakpoint falls (ELEMENT_START 75,578,115 is inside the window), which is why depth there reads low in every animal. Since the same gap has now been read as a rendering bug twice and a caption did not stop it, the figure carries an anchored 'no call: every canid reads low here' callout with an arrow onto the stripe. Caption also states it.",
-    "reviewedAt": "2026-08-01T03:57:29.637Z",
+    "note": "dog10k-cyp1a2-cohort-copy-number  is a more powerful figure now, can consider deleting RETIRED per your call. Spec, PNG, figure-manifest entry and gallery link are gone, and the 'Copy number, at SLC28A3' section now states the depth-ratio method and points at the CYP1A2 cohort figure that carries it, instead of asserting the per-breed numbers a deleted figure used to show. dog10k_slc28a3_breed_cn and dog10k_slc28a3_cohort_cn stay in the config and build_dog10k_slc28a3_cn.sh stays in Reproduce it end to end, so a reader can still open the lanes.",
+    "reviewedAt": "2026-08-03T13:24:30.986Z",
     "hash": "5221134576bd196dd79d34352a9c54a6857c6305"
   },
   "ld/anopheles_2la": {
@@ -2282,7 +2282,7 @@
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
     "status": "bad",
-    "note": "are you happy with this screenshot now? anything more you'd suggest? reduce heights of the linkage tracks.  is there any \"story\" here around the fact that there is one triangle in the EUR pop vs the All population? also would a 'fst' track make sense or other population genomic scans? You can make the FST track that you say you can do and we can upload it to jbrowse.org, it would complement our selection scan demo. HAPPY WITH IT, yes: both lanes are the same window on the same axis, so the pooled-versus-panel difference is the only difference between them, which is what the figure claims. FST WOULD MAKE SENSE AND IT IS BUILDABLE, but it needs a new hosted file, so I have not built it unasked. The recipe is small: scripts/build_lct_ld.sh already slices the 1000 Genomes chr2 phase 3 VCF per population panel, so the same script can run `vcftools --weir-fst-pop EUR --weir-fst-pop <rest> --fst-window-size 10000` (or scikit-allel's windowed_weir_cockerham_fst) over the pooled slice, and the result goes to bigwig the way scripts/build_dgrp_popgen.sh does for the Drosophila Fst track the popgen tutorial already uses. That gives the LCT window a lane whose peak sits exactly on the block, and it says the thing an LD triangle cannot: the haplotype is not just long, it is differentiated between populations, which is the signature of the sweep. What it costs: a new file in s3://jbrowse.org/demos/, which is an upload to a public bucket, and picking the contrast populations is a scientific choice with a political edge (EUR vs AFR over lactase is exactly the comparison to state carefully in the caption). iHS/nSL would be the other option and is a bigger build (selscan on phased haplotypes). Say which contrast you want and I will build and upload it.",
+    "note": "are you happy with this screenshot now? anything more you'd suggest? reduce heights of the linkage tracks.  is there any \"story\" here around the fact that there is one triangle in the EUR pop vs the All population? also would a 'fst' track make sense or other population genomic scans? You can make the FST track that you say you can do and we can upload it to jbrowse.org, it would complement our selection scan demo. HAPPY WITH IT, yes: both lanes are the same window on the same axis, so the pooled-versus-panel difference is the only difference between them, which is what the figure claims. FST WOULD MAKE SENSE AND IT IS BUILDABLE, but it needs a new hosted file, so I have not built it unasked. The recipe is small: scripts/build_lct_ld.sh already slices the 1000 Genomes chr2 phase 3 VCF per population panel, so the same script can run `vcftools --weir-fst-pop EUR --weir-fst-pop <rest> --fst-window-size 10000` (or scikit-allel's windowed_weir_cockerham_fst) over the pooled slice, and the result goes to bigwig the way scripts/build_dgrp_popgen.sh does for the Drosophila Fst track the popgen tutorial already uses. That gives the LCT window a lane whose peak sits exactly on the block, and it says the thing an LD triangle cannot: the haplotype is not just long, it is differentiated between populations, which is the signature of the sweep. What it costs: a new file in s3://jbrowse.org/demos/, which is an upload to a public bucket, and picking the contrast populations is a scientific choice with a political edge (EUR vs AFR over lactase is exactly the comparison to state carefully in the caption). iHS/nSL would be the other option and is a bigger build (selscan on phased haplotypes). Say which contrast you want and I will build and upload it. FST NOT BUILT, per your answer this pass (skip for now). The recipe stays in the build_lct_ld.sh comments if you want it later: vcftools --weir-fst-pop over the same per-panel slices, 10 kb windows, out to bigwig the way build_dgrp_popgen.sh does. Nothing was uploaded.",
     "reviewedAt": "2026-08-03T01:29:44.425Z",
     "hash": "30aead747d5fd244cf5aecf79cc55a3513894d7a"
   },
@@ -2379,8 +2379,8 @@
   "pangenome/pggb_haplotype_paths": {
     "name": "pangenome/pggb_haplotype_paths",
     "status": "bad",
-    "note": "this is kind of cool but it is hard to see which nodes follow which paths. is there any further improvement we can make? REWORKED, new locus and new hosted cut. The old window was the 561 bp chr:1,004,500 subgraph, which is flat by construction: pggb cuts a segment at every SNP, so every allele in it is a 1 bp stub and the path strokes were specks on a grey line. The figure is now the IS5 bubble at K12 chr:1,299,400-1,300,800, two arms of 1,199 bp and 0 bp, with the four strains that skip the element drawn as four strokes on the arc the view labels \"1.2 kb deletion\" and K12 the one colour missing from it -- carriage stated as an absence, which is the reading the section is about. Same locus pggb_locus_graph opens from the index, deliberately: the tabix cut rebuilds segments and links only, so it has no P lines and this setting has nothing to draw there, which is exactly what the file route is still for. New hosted file ecoli_pggb_is5.gfa (odgi extract -E, 20 segments/26 links/5 paths), uploaded to the demo bucket and emitted by build_ecoli_pangenome_graph.sh; the tutorial carries the same odgi command. FORCE with bubbleSpread open, and both halves were measured rather than picked: under the anchored layout the deletion arc bows out by 0.35x the drawn length of the backbone it bypasses (bowAround, ALONG_FRACTION), which at 1,199 bp is deeper than the two-row anchored pane and the arc drew off the bottom of it -- the zoom-to-fit sizes on node positions and does not see the arc. Under FMMM at Bandage proportional scale the 1,199 bp node snakes across the frame and crosses everything; wide shrinks it to the smallest thing in the drawing because the 1 bp alleles inflate to 10x mean. Open is the one that leaves the IS5 bubble the largest lens.",
-    "reviewedAt": "2026-08-01T20:57:24.858Z",
+    "note": "this is kind of cool but it is hard to see which nodes follow which paths,and i think it is just an artifact that the deletion path shows more of the individual paths since it uses dashed line. is there any further improvement we can make? REWORKED, new locus and new hosted cut. The old window was the 561 bp chr:1,004,500 subgraph, which is flat by construction: pggb cuts a segment at every SNP, so every allele in it is a 1 bp stub and the path strokes were specks on a grey line. The figure is now the IS5 bubble at K12 chr:1,299,400-1,300,800, two arms of 1,199 bp and 0 bp, with the four strains that skip the element drawn as four strokes on the arc the view labels \"1.2 kb deletion\" and K12 the one colour missing from it -- carriage stated as an absence, which is the reading the section is about. Same locus pggb_locus_graph opens from the index, deliberately: the tabix cut rebuilds segments and links only, so it has no P lines and this setting has nothing to draw there, which is exactly what the file route is still for. New hosted file ecoli_pggb_is5.gfa (odgi extract -E, 20 segments/26 links/5 paths), uploaded to the demo bucket and emitted by build_ecoli_pangenome_graph.sh; the tutorial carries the same odgi command. FORCE with bubbleSpread open, and both halves were measured rather than picked: under the anchored layout the deletion arc bows out by 0.35x the drawn length of the backbone it bypasses (bowAround, ALONG_FRACTION), which at 1,199 bp is deeper than the two-row anchored pane and the arc drew off the bottom of it -- the zoom-to-fit sizes on node positions and does not see the arc. Under FMMM at Bandage proportional scale the 1,199 bp node snakes across the frame and crosses everything; wide shrinks it to the smallest thing in the drawing because the 1 bp alleles inflate to 10x mean. Open is the one that leaves the IS5 bubble the largest lens.",
+    "reviewedAt": "2026-08-03T13:25:36.209Z",
     "hash": "e9fe5aed5f3579d321d8c0e2b180f45b245d420e"
   },
   "pangenome/pggb_untangle": {
@@ -2421,7 +2421,7 @@
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
     "status": "bad",
-    "note": "are there any further things we should render? ",
+    "note": "are there any further things we should render?  NOTHING FURTHER TO RENDER, and it stays a solo figure. The circle is the whole 44-call output at the triage step, before a locus is chosen; the two loci it triages into are the next two figures. Its companion k562_cn_amplicon gained mate-direction ticks this pass (see that item), which is where the extra rendering went.",
     "reviewedAt": "2026-08-02T22:59:33.187Z",
     "hash": "9f20537510b2eab8ae3394c552f556885c1e49ed"
   },
@@ -2484,14 +2484,14 @@
   "cancer_sv/k562_cn_amplicon": {
     "name": "cancer_sv/k562_cn_amplicon",
     "status": "bad",
-    "note": "i am not sure i understand the arcs here. is it helpful to show RNA-seq to show what is happening here? or some other orthogonal source of information? as is, it is confusing",
-    "reviewedAt": "2026-08-02T22:59:09.164Z",
+    "note": "i am not sure i understand the arcs here. is it helpful to show RNA-seq to show what is happening here? or some other orthogonal source of information? as is, it is confusing. the arcs would also benefit from rendering the 'strandedness feet', and if it is relevant, we can combine multiple figures like cancer_sv/k562_starfusion_triage  and this into a multi-part screenshot and then delete cancer_sv/k562_starfusion_triage  as a solo screenshot STRANDEDNESS FEET DONE, and they turn out to be the reading the figure was missing. StarFusionAdapter dropped the per-breakpoint strand that STAR-Fusion states in LeftBreakpoint/RightBreakpoint (chr22:23290413:+), so every arc had mateDirection 0 and LinearPairedArcDisplay drew no ticks. The adapter now emits it on both ends: the donor keeps the sequence 5' of its junction and the acceptor the sequence 3' of it, so the tick runs from the breakpoint out over the piece the fusion retains. In the frame the two chr9 ticks now point inward at the amplified block from either end of it, which is exactly the figure's claim. makeFeaturePair also had to read a feature's own mateDirection (it only ever read the VCF ALT via parseSvAlt), so any paired adapter can state it. NO RNA LANE, and this was measured rather than judged: K562_isoseq over these three windows is a 6.22 Mb fetch, so the lane renders its too-much-data banner instead of coverage, and even force-loaded, 1.25 Mb of window across ~1500px puts an Iso-Seq exon under a pixel. The RNA reading of this junction already has its own figure one section up, k562_bcr_abl_split, at a zoom where a transcript resolves. NOT COMBINED with k562_starfusion_triage: stacked they are ~1700px of one figure, and the triage circle is the whole callset before any locus is picked, which is a different step in the tutorial rather than a second panel of this one.",
+    "reviewedAt": "2026-08-03T13:24:12.691Z",
     "hash": "af585835b8d05f8730c6b93c26c0e82e6bfbaf95"
   },
   "cancer_sv/multihop_split_view": {
     "name": "cancer_sv/multihop_split_view",
     "status": "bad",
-    "note": "\"ALREADY DONE, one section down\" we might want to make it a multi-part figure then?? previous notes; it would be ideal if we could  work harder to get the derivative assembly and plot it versus the reference assembly with linearsyntenyview ALREADY DONE, one section down, and this is the tutorial that does it: scripts/sv_multihop.py derive reconstructs the derivative allele from the spanning reads and cancer_sv/derivative_synteny plots that contig against the three reference loci in a LinearSyntenyView, with cancer_sv/derivative_inserts as the base-scale zoom. This figure is the step before it -- the same event in reference coordinates -- and the prose above it now points at the synteny view as \"the next section\" rather than \"two sections down\". The split view is also what the reader can reach without running anything, which is why it stays. Its panels shrank with the composed figure (see the tumour_vs_normal note).",
+    "note": "\"ALREADY DONE, one section down\" we might want to make it a multi-part figure then?? previous notes; it would be ideal if we could  work harder to get the derivative assembly and plot it versus the reference assembly with linearsyntenyview ALREADY DONE, one section down, and this is the tutorial that does it: scripts/sv_multihop.py derive reconstructs the derivative allele from the spanning reads and cancer_sv/derivative_synteny plots that contig against the three reference loci in a LinearSyntenyView, with cancer_sv/derivative_inserts as the base-scale zoom. This figure is the step before it -- the same event in reference coordinates -- and the prose above it now points at the synteny view as \"the next section\" rather than \"two sections down\". The split view is also what the reader can reach without running anything, which is why it stays. Its panels shrank with the composed figure (see the tumour_vs_normal note). IT ALREADY IS ONE. This spec is not published on its own: it is the wide half of cancer_sv/multihop_reads, which +appends it beside multihop_tumour_vs_normal, and that compose is the only <Figure> the section carries. Folding the derivative synteny in as a third panel is the thing not done, deliberately: derivative_synteny sits 84 lines further down under its own heading, after the section that explains reconstructing the allele, and a reader meets it there having been told what it is.",
     "reviewedAt": "2026-08-02T23:00:02.449Z",
     "hash": "21fcdd2149652a25ae8e654de963fec11252bdf3"
   },
@@ -2529,5 +2529,12 @@
     "note": "RESOLVED: merged into ld/anopheles_2la per the review ('this should be combined with the linkage tracks'), spec + PNG deleted, ld_mosquitoes.md now carries one four-lane figure. Compact as asked: the two karyotype lanes are 297 + 150 css px instead of 891 + 207, because rowHeight was never doing anything (it is a display MODEL prop, so a track config carries it nowhere) and rows auto-fit height/nrow — 297 mosquitoes in a 297px lane is a pixel each. referenceDrawingMode is now the default 'skip', which is the solid grey background asked for: the display colors the whole lane with REFERENCE_COLOR and paints only ALT cells on it. Also fixed in code, because the grey made it obvious: a 22 Mb <INV> genotype cell was drawn as a triangle spanning the whole call, so each row faded in over ~5 Mb and the left breakpoint was invisible. variantShape.ts + variant.slang now cap the taper at the cell height (unchanged for w<=h, i.e. every SNP-scale cell), and the shader's small-glyph fade keys on width instead of min(w,h) so a wide short inversion is no longer dimmed to 74%. Cameroon's het/hom-alt blocks now start hard at the breakpoint. The Gabon lane takes 150px not 69 because its floating legend is clipped to the display's bounds; caption names both counts so the unequal lane heights are not read as panel sizes.",
     "reviewedAt": "2026-08-03T01:52:38.311Z",
     "hash": "959f209e38086306c09c01dc0383ceb9b44e3921"
+  },
+  "pangenome/hprc_chm13_allele": {
+    "name": "pangenome/hprc_chm13_allele",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-03T13:15:41.214Z",
+    "hash": "172608c16e12f5a520804fed67fe31ae6e3d6b16"
   }
 }

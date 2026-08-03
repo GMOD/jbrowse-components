@@ -226,17 +226,15 @@ _SLC28A3_, the transporter that moves gemcitabine into cells, carried by every
 Grand Basset Griffon Vendéen it sequenced. Its copy-number estimates were never
 released, but the SNV callset carries a per-sample `DP` at every site, and the
 ratio of a dog's depth over the element to its depth over the flanks is a copy
-number for all 1,987 canids. [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof)
-builds that estimate and validates it against read depth.
+number for all 1,987 canids.
 
-<Figure caption="Copy number over SLC28A3 from callset depth, each 5 kb window colored by its rounded call, grey being two copies. Above, every Grand Basset Griffon Vendéen, Basset Hound and German Shepherd in the collection. Below, all 1,987 canids sorted by copy number over the duplication. Every GBGV carries it, three of the seven Basset Hounds carry it, and the collection lane is grey apart from the band at the top. The unpainted stripe is one window that every canid in the collection reads below two copies, which measures the reference rather than any dog, so the build script paints nothing there." src="/img/dog10k-slc28a3-copy-number.png" />
-
-The element runs wider than the gene, and its edges land where the SV callset
-puts a duplication. Under 5% of the collection carry it, which is why the lower
-lane is a grey field: at this locus the named panel is the finding and the
-distribution is the context. The white column inside it is a window the whole
-collection reads below two copies, which is a property of the reference rather
-than of any dog, so it is dropped instead of painted.
+[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that estimate,
+validates it against read depth, and carries the figure it makes: a named panel
+of animals above the whole collection, at a locus where enough of the collection
+carries the duplication for the lower lane to hold a distribution rather than a
+single band. `dog10k_slc28a3_breed_cn` and `dog10k_slc28a3_cohort_cn` are in
+this tutorial's config, so the same pair of lanes opens here from the track
+selector.
 
 ## A variant that is not there, at FGF4
 

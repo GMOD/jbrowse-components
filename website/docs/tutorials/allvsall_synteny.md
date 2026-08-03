@@ -437,7 +437,7 @@ falls, and the palette button's **Show color legend** names the colors. **CIGAR
 display mode** in the view menu switches between colored indels, transparent
 ones, and none.
 
-<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view. The dialog lists the four strains that align there, all checked, in the order their rows will stack, and the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. At this zoom the CIGAR shows: the wedges inside the ribbons are the insertions and deletions named in the legend." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view. The dialog lists the four strains that align there, all checked, in the order their rows will stack, and the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. At this zoom the CIGAR shows: the wedges inside the ribbons are the insertions and deletions." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Reproduce it end to end
 

@@ -299,18 +299,14 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
         // prefix is the attribution, not the counter above them.
         { type: 'click', selector: '[data-testid="close_view"]' },
         { type: 'delay', ms: 3000 },
-        // Turn the color legend on. The launched view already draws the PAF's
-        // CIGAR (cigarMode defaults to 'full', and all_vs_all.paf is built with
-        // `minimap2 -c`), so the wedges inside these ribbons are insertions and
-        // deletions — but unlabeled they read as rendering noise. The legend
-        // lists only the ops actually painted, so it names them. The palette
-        // button carries no testid; its tooltip becomes the aria-label.
-        { type: 'click', selector: '[aria-label^="Color by"]' },
-        {
-          type: 'click',
-          selector: '[data-testid="cascading-menuitem-show_color_legend"]',
-        },
-        { type: 'delay', ms: 2000 },
+        // No color legend and no palette menu (reviewer). The launched view
+        // already draws the PAF's CIGAR (cigarMode defaults to 'full', and
+        // all_vs_all.paf is built with `minimap2 -c`), so the wedges inside
+        // these ribbons are the insertions and deletions; the legend that names
+        // them is one floating box in the corner, and the menu it is turned on
+        // from is a full-height overlay across the left half of the frame —
+        // together they cost more of the five-row stack than the naming is
+        // worth here. The prose above the figure names Show color legend.
       ],
     },
   ]
