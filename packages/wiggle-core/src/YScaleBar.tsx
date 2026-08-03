@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import type { YScaleTicks } from './index.ts'
@@ -10,13 +10,13 @@ const YScaleBar = observer(function YScaleBar({
   ticks: YScaleTicks | undefined
   orientation?: 'left' | 'right'
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   if (!ticks) {
     return null
   }
   const { items, yTop, yBottom } = ticks
-  const bg = theme.palette.background.default
-  const fg = theme.palette.text.primary
+  const bg = palette.background.default
+  const fg = palette.text.primary
   const isLeft = orientation !== 'right'
   const k = isLeft ? -1 : 1
   const tickLength = 6

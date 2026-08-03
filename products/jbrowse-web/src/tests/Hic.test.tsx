@@ -12,6 +12,8 @@ import {
   setup,
 } from './util.tsx'
 
+import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 beforeEach(() => {
@@ -51,11 +53,8 @@ test(
     fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
     await findByTestId('hic-display-done', {}, delay)
 
-    const display = view.tracks[0]!.displays[0] as {
-      setFitToHeight: (arg: boolean) => void
-      yScalar: number
-    }
-    display.setFitToHeight(true)
+    const display = view.tracks[0]!.displays[0] as LinearHicDisplayModel
+    display.setSquashToHeight(true)
     const { yScalar } = display
     expect(yScalar).not.toBe(1)
 

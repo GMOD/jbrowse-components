@@ -1,4 +1,6 @@
 import { measureLegendText } from '@jbrowse/core/ui'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { stripAlpha } from '@jbrowse/core/util'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
 import { formatScore } from '../util.ts'
@@ -23,7 +25,6 @@ export interface ScoreRamp {
 const MIN_BAR_WIDTH = 110
 const BAR_HEIGHT = 8
 const LABEL_SIZE = 10
-const PAPER = 'rgba(255,255,255,0.8)'
 const TEXT_LEGEND_HEIGHT = 16
 const RAMP_LEGEND_HEIGHT = BAR_HEIGHT + LABEL_SIZE + 8
 
@@ -63,6 +64,7 @@ function ScoreTextLegend({
   suffix: string
   canvasWidth: number
 }) {
+  const palette = usePalette()
   const legend = `[${formatScore(domain[0])}, ${formatScore(domain[1])}]${suffix}`
   const len = measureLegendText(legend, 12)
   const xpos = Math.max(0, canvasWidth - len - 10)
@@ -73,9 +75,10 @@ function ScoreTextLegend({
         y={0}
         width={len + 6}
         height={TEXT_LEGEND_HEIGHT}
-        fill={PAPER}
+        fill={stripAlpha(palette.background.paper)}
+        fillOpacity={0.8}
       />
-      <text y={12} x={xpos} fontSize={12}>
+      <text y={12} x={xpos} fontSize={12} fill={palette.text.primary}>
         {legend}
       </text>
     </g>
@@ -95,6 +98,7 @@ function ScoreRampLegend({
   ramp: ScoreRamp
   isLog: boolean
 }) {
+  const palette = usePalette()
   const [min, max] = domain
   const minLabel = formatScore(min)
   const maxLabel = `${formatScore(max)}${suffix}`
@@ -136,7 +140,8 @@ function ScoreRampLegend({
         y={0}
         width={barWidth + 6}
         height={RAMP_LEGEND_HEIGHT}
-        fill={PAPER}
+        fill={stripAlpha(palette.background.paper)}
+        fillOpacity={0.8}
       />
       <rect
         x={xpos}
@@ -144,7 +149,8 @@ function ScoreRampLegend({
         width={barWidth}
         height={BAR_HEIGHT}
         fill={`url(#${ramp.gradientId})`}
-        stroke="rgba(0,0,0,0.25)"
+        stroke={stripAlpha(palette.text.primary)}
+        strokeOpacity={0.25}
         strokeWidth={0.5}
       />
       {pivotX === undefined ? null : (
@@ -153,11 +159,17 @@ function ScoreRampLegend({
           x2={xpos + pivotX}
           y1={3}
           y2={3 + BAR_HEIGHT}
-          stroke="rgba(0,0,0,0.4)"
+          stroke={stripAlpha(palette.text.primary)}
+          strokeOpacity={0.4}
           strokeWidth={0.5}
         />
       )}
-      <text x={xpos} y={labelY} fontSize={LABEL_SIZE}>
+      <text
+        x={xpos}
+        y={labelY}
+        fontSize={LABEL_SIZE}
+        fill={palette.text.primary}
+      >
         {minLabel}
       </text>
       {labelPivot ? (
@@ -166,6 +178,7 @@ function ScoreRampLegend({
           y={labelY}
           fontSize={LABEL_SIZE}
           textAnchor="middle"
+          fill={palette.text.primary}
         >
           {pivotLabel}
         </text>
@@ -175,6 +188,7 @@ function ScoreRampLegend({
         y={labelY}
         fontSize={LABEL_SIZE}
         textAnchor="end"
+        fill={palette.text.primary}
       >
         {maxLabel}
       </text>
