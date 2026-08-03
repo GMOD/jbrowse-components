@@ -176,10 +176,10 @@ result.
 Three things in that figure travel to any gene-scale matrix:
 
 - Right-clicking the gene and choosing **Collapse introns** reshapes the view to
-  its exons (see [](/docs/user_guides/gene_track)). With the introns in
-  frame, every private intronic call takes a column of the matrix, and the
-  coding mutations are spread out among them; collapsed, every column is an
-  exonic change.
+  its exons (see [](/docs/user_guides/gene_track)). With the introns in frame,
+  every private intronic call takes a column of the matrix, and the coding
+  mutations are spread out among them; collapsed, every column is an exonic
+  change.
 - [`lineZoneHeight`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-linezoneheight)
   (or the handle under the band) drags the connector band open, which is what
   says whether a gene's calls pile on one codon or run the length of the

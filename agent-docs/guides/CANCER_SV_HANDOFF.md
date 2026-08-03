@@ -169,7 +169,8 @@ plus a few that touch one locus only, `minimap2 -ax map-ont | samtools sort`,
 then `derive --loci chrA:20000,chrB:1100,chrA:13000`. The PAF should come back as
 the three segments, at MAPQ 60, matching the splice above; anything less is the
 window/tie failure. Feeding the emitted `--jbrowse-out` config to jbrowse-web
-(serve it under `products/jbrowse-web/build/`) is what proves the wiring.
+(serve it under the built `jbrowse-web` package's `build/` output) is what
+proves the wiring.
 
 ## Done since this was written
 
