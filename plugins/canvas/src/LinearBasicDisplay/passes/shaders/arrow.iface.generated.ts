@@ -11,6 +11,8 @@ export const STEM_HALF_H_PX = 0.5
 
 export const HEAD_HALF_H_PX = 2.5
 
+export const ARROW_MIN_FEATURE_WIDTH_PX = 14
+
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.
@@ -62,8 +64,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.rightIsCanvasEdge
 }
 
-export const INSTANCE_STRIDE_BYTES = 20
-export const INSTANCE_STRIDE_F32 = 5
+export const INSTANCE_STRIDE_BYTES = 24
+export const INSTANCE_STRIDE_F32 = 6
 
 export const FIELD_OFFSET_F32 = {
   x: 0,
@@ -71,6 +73,7 @@ export const FIELD_OFFSET_F32 = {
   direction: 2,
   color: 3,
   height: 4,
+  widthBp: 5,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
@@ -79,6 +82,7 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_direction', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_height', components: 1, type: 'float', offsetBytes: 16, integer: false },
+  { name: 'a_widthBp', components: 1, type: 'uint', offsetBytes: 20, integer: true },
 ]
 
 export interface InstanceArrays {
@@ -87,6 +91,7 @@ export interface InstanceArrays {
   direction: ArrayLike<number>
   color: ArrayLike<number>
   height: ArrayLike<number>
+  widthBp: ArrayLike<number>
 }
 
 export function packInstances(
@@ -96,7 +101,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x, y, direction, color, height } = arrays
+  const { x, y, direction, color, height, widthBp } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_F32
     u32[o + 0] = x[i]!
@@ -104,6 +109,7 @@ export function packInstances(
     f32[o + 2] = direction[i]!
     u32[o + 3] = color[i]!
     f32[o + 4] = height[i]!
+    u32[o + 5] = widthBp[i]!
   }
   return buf
 }

@@ -124,6 +124,13 @@ export interface FeatureDataResult {
   // Box height each arrow sits on, so the renderer snaps it onto the box's
   // drawn center row rather than ~1px off in odd-height modes.
   arrowHeights: Float32Array
+  // Length in bp of the feature each arrow marks. The arrow is drawn outside the
+  // box, so on a narrow feature it covers more ground than the feature itself and
+  // lands on the neighbor; both renderers drop it below
+  // ARROW_MIN_FEATURE_WIDTH_PX on screen. Carried as bp because the worker never
+  // sees bpPerPx — same division of labor as rectDensityFade, where the pixel
+  // decision is made downstream.
+  arrowWidthsBp: Uint32Array
   arrowDirections: Int8Array
   arrowColors: Uint32Array
 
@@ -182,6 +189,7 @@ export type RegionRenderData = Pick<
   | 'arrowXs'
   | 'arrowYs'
   | 'arrowHeights'
+  | 'arrowWidthsBp'
   | 'arrowDirections'
   | 'arrowColors'
 >

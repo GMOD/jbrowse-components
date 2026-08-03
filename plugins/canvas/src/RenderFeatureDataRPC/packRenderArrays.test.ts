@@ -25,7 +25,15 @@ function line(start: number, end: number): LineData {
   }
 }
 function arrow(x: number): ArrowData {
-  return { x, y: 0, height: 10, direction: 1, color: 0, flatbushIdx: 0 }
+  return {
+    x,
+    y: 0,
+    height: 10,
+    widthBp: 1000,
+    direction: 1,
+    color: 0,
+    flatbushIdx: 0,
+  }
 }
 
 // Spans (rect/line) use a half-open overlap test against [regionStart, regionEnd);

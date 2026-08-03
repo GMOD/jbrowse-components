@@ -2,7 +2,7 @@
 // 9 vertices per arrow: 6 stem vertices (two triangles) + 3 arrowhead
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
-//! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX
+//! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX
 
 import hpmath;
 import colorPack;
@@ -14,6 +14,16 @@ static const float STEM_LENGTH_PX = 7.0;
 static const float STEM_HALF_H_PX = 0.5;
 static const float HEAD_HALF_H_PX = 2.5;
 
+// The arrow is drawn OUTSIDE the box it annotates (from the feature boundary
+// outward), so on a narrow feature it is both wider than the box and sitting on
+// the neighbor. Below this width the direction marker would occupy more space
+// than the thing whose direction it marks, so it is dropped entirely — a run of
+// repeats packed a few px apart reads as boxes, not as a mess of overlapping
+// arrowheads. Set to 2x the arrow's own footprint (STEM_LENGTH_PX). Same
+// principle as chevron.slang's short-line gate and the label decimation ladder:
+// an annotation that doesn't fit is dropped, never shrunk.
+static const float ARROW_MIN_FEATURE_WIDTH_PX = 14.0;
+
 struct ArrowInstance {
   uint  x         : ATTR0;
   float y         : ATTR1;
@@ -21,6 +31,10 @@ struct ArrowInstance {
   uint  color     : ATTR3;
   // Box height this arrow sits on, so it snaps onto the box's drawn center row.
   float height    : ATTR4;
+  // Length of the feature this arrow marks, in bp — the width gate below is a
+  // pixel decision, and bpPerPx is only known at draw time. A length, not a
+  // coordinate, so it needs no hp splitting.
+  uint  widthBp   : ATTR5;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
@@ -30,8 +44,18 @@ struct VsOut {
   float4 color    : COLOR0;
 };
 
+// Off-clip vertex; the GPU culls any triangle that contains it.
+static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
+
 [shader("vertex")]
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
+  if (float(inst.widthBp) / u.bpPerPx < ARROW_MIN_FEATURE_WIDTH_PX) {
+    VsOut culled;
+    culled.position = OFFSCREEN;
+    culled.color = float4(0.0);
+    return culled;
+  }
+
   float cx = bpToClipX(inst.x, u);
 
   float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);

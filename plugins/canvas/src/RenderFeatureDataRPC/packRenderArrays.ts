@@ -28,6 +28,10 @@ export interface ArrowData {
   // Height of the box this arrow sits on, so the renderer can snap it onto the
   // box's drawn center row (see snapBoxCenterY).
   height: number
+  // Length of the feature this arrow marks, in bp. The renderers drop the arrow
+  // when this comes out narrower than ARROW_MIN_FEATURE_WIDTH_PX on screen; the
+  // worker can't make that call itself since it never sees bpPerPx.
+  widthBp: number
   direction: number
   color: number
   flatbushIdx: number
@@ -79,6 +83,7 @@ export function packRenderArrays(
   | 'arrowXs'
   | 'arrowYs'
   | 'arrowHeights'
+  | 'arrowWidthsBp'
   | 'arrowDirections'
   | 'arrowColors'
   | 'arrowFeatureIndices'
@@ -137,6 +142,7 @@ export function packRenderArrays(
   const arrowXs = new Uint32Array(visibleArrows.length)
   const arrowYs = new Float32Array(visibleArrows.length)
   const arrowHeights = new Float32Array(visibleArrows.length)
+  const arrowWidthsBp = new Uint32Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
   const arrowColors = new Uint32Array(visibleArrows.length)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
@@ -145,6 +151,7 @@ export function packRenderArrays(
     arrowXs[i] = arrow.x
     arrowYs[i] = arrow.y
     arrowHeights[i] = arrow.height
+    arrowWidthsBp[i] = arrow.widthBp
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
@@ -167,6 +174,7 @@ export function packRenderArrays(
     arrowXs,
     arrowYs,
     arrowHeights,
+    arrowWidthsBp,
     arrowDirections,
     arrowColors,
     arrowFeatureIndices,

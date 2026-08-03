@@ -22,6 +22,7 @@ export {
   CHEVRON_W_PX,
 } from './shaders/chevron.iface.generated.ts'
 export {
+  ARROW_MIN_FEATURE_WIDTH_PX,
   HEAD_HALF_H_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,

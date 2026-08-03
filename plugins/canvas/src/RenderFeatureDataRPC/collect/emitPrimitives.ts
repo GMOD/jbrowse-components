@@ -173,10 +173,13 @@ export function emitStrandArrow(
 ) {
   const strand = feature.get('strand') ?? 0
   if (strand !== 0) {
+    const start = feature.get('start')
+    const end = feature.get('end')
     arrows.push({
-      x: strand === 1 ? feature.get('end') : feature.get('start'),
+      x: strand === 1 ? end : start,
       y: topPx + height / 2,
       height,
+      widthBp: end - start,
       direction: strand,
       color: strokeUint,
       flatbushIdx,

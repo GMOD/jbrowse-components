@@ -15,6 +15,7 @@ import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegio
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
+  ARROW_MIN_FEATURE_WIDTH_PX,
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
@@ -212,9 +213,21 @@ function drawArrows(
 ) {
   for (let i = 0; i < region.arrowYs.length; i++) {
     const xBp = region.arrowXs[i]!
-    const cx = toX(xBp)
-    const y = boxCenterY(region.arrowYs[i]!, region.arrowHeights[i]!, scrollY)
     const rawDir = region.arrowDirections[i]!
+    // `xBp` is whichever end the arrow points off of, so the feature's other end
+    // is a widthBp step back along its strand. Measured through `toX` like
+    // drawLines' chevron gate rather than off a bpPerPx of our own.
+    const otherEndBp =
+      rawDir === 1
+        ? xBp - region.arrowWidthsBp[i]!
+        : xBp + region.arrowWidthsBp[i]!
+    const cx = toX(xBp)
+    // Mirrors arrow.slang: a feature too narrow to be worth a direction marker
+    // gets none, so a dense repeat run doesn't drown in overlapping arrowheads.
+    if (Math.abs(toX(otherEndBp) - cx) < ARROW_MIN_FEATURE_WIDTH_PX) {
+      continue
+    }
+    const y = boxCenterY(region.arrowYs[i]!, region.arrowHeights[i]!, scrollY)
     const dir = block.reversed ? -rawDir : rawDir
     ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
 

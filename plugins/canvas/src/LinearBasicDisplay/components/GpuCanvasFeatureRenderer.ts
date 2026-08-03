@@ -110,6 +110,7 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
           x: data.arrowXs,
           y: data.arrowYs,
           height: data.arrowHeights,
+          widthBp: data.arrowWidthsBp,
           direction: data.arrowDirections,
           color: data.arrowColors,
         },

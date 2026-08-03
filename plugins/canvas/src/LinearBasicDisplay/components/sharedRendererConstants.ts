@@ -37,6 +37,7 @@ export const OVERFLOW_INDICATOR_Z_INDEX = 999
 // ← baseModel ← the plugin entry), and the pass barrel namespace-imports the
 // generated shader source, which would then ride into the always-loaded chunk.
 export {
+  ARROW_MIN_FEATURE_WIDTH_PX,
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
