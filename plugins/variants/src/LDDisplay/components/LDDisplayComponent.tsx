@@ -135,7 +135,7 @@ const LDCanvas = observer(function LDCanvas({
     showLegend,
     ldMetric,
     lineZoneHeight,
-    fitToHeight,
+    squashToHeight,
     ldCanvasHeight,
     useGenomicPositions,
     signedLD,
@@ -144,7 +144,7 @@ const LDCanvas = observer(function LDCanvas({
   } = model
 
   const triangleHeight = width / 2
-  const canvasOnlyHeight = fitToHeight ? ldCanvasHeight : triangleHeight
+  const canvasOnlyHeight = squashToHeight ? ldCanvasHeight : triangleHeight
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const containerRef = useRef<HTMLDivElement>(null)

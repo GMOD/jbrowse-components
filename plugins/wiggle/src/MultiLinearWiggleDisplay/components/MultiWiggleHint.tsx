@@ -9,7 +9,7 @@ import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 // case carries its own escape hatch: clearing the filter is the fix for the
 // first and would make the second (too many rows) strictly worse.
 function hint(model: MultiWiggleDisplayModel) {
-  const { numSources, isOverlay, isDensityMode, rowHeight } = model
+  const { numSources, isOverlay, isDensityMode, effectiveRowHeight } = model
   // A subtree filter that matches nothing: loaded adapter sources exist but the
   // filter removed them all (numSources is the post-filter count). Otherwise,
   // multi-row mode packed so tight rows are sub-pixel — the canvas draws, but
@@ -24,7 +24,7 @@ function hint(model: MultiWiggleDisplayModel) {
         message: 'No subtracks match the current subtree filter',
         clearFilter: true,
       }
-    : !isOverlay && !isDensityMode && numSources > 0 && rowHeight < 1
+    : !isOverlay && !isDensityMode && numSources > 0 && effectiveRowHeight < 1
       ? {
           message: `${numSources} subtracks in ${Math.round(model.height)}px leaves rows below 1px. Switch to an overlay or density rendering, or increase the track height.`,
           clearFilter: false,

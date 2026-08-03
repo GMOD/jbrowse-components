@@ -1,11 +1,14 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
 import configFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
 import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
 import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 
-// The raw `rowHeight` property holds px, or 0 for fit-to-display-height; the
+// The raw `rowHeight` setting holds px, or 0 for fit-to-display-height; the
 // resolved value is the `effectiveRowHeight` getter (0 -> availableHeight/nrow).
-// These lock in that contract and the proportional drag-resize.
+// These lock in that contract and the drag-resize behavior.
 function createDisplay() {
   const configSchema = configFactory()
   return stateModelFactory(configSchema).create({
@@ -98,28 +101,36 @@ describe('row height resolution', () => {
     expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
 
-  it('resizeHeight scales a pinned rowHeight proportionally', () => {
+  // A pinned row height is the size the user asked for, so a drag changes how
+  // many rows fit, not how big they are. Scaling the pin by the same ratio
+  // would keep content and viewport locked together, making a taller track
+  // unable to reveal one extra sample.
+  it('resizeHeight leaves a pinned rowHeight alone and reveals more rows', () => {
     const m = createDisplay()
+    m.setSources([{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }])
     m.setRowHeight(10)
     const oldHeight = m.height
+    const oldVisible = m.availableHeight / m.effectiveRowHeight
     m.resizeHeight(oldHeight) // double the display height
     expect(m.height).toBe(oldHeight * 2)
-    expect(m.rowHeight).toBeCloseTo(20)
+    expect(m.rowHeight).toBe(10)
+    expect(m.effectiveRowHeight).toBe(10)
+    expect(m.availableHeight / m.effectiveRowHeight).toBeGreaterThan(oldVisible)
   })
 
-  it('resizeHeight leaves fit mode (rowHeight 0) untouched', () => {
+  it('resizeHeight restretches the rows in fit mode', () => {
     const m = createDisplay()
     const oldHeight = m.height
     m.resizeHeight(oldHeight)
     expect(m.rowHeight).toBe(0)
     expect(m.height).toBe(oldHeight * 2)
+    expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
 
   // The matrix display reserves a `lineZoneHeight` (20px) for the connector
   // zone, so rows live in `availableHeight = height - lineZoneHeight`. A pinned
-  // rowHeight must scale by the available-height ratio, not the full-height
-  // ratio, or the visible fraction of rows drifts on resize.
-  it('resizeHeight scales a pinned rowHeight by availableHeight (matrix)', () => {
+  // height is unaffected by either; only the row count that fits changes.
+  it('resizeHeight leaves a pinned rowHeight alone (matrix)', () => {
     const configSchema = matrixConfigFactory()
     const m = matrixStateModelFactory(configSchema).create({
       type: 'LinearMultiSampleVariantMatrixDisplay',
@@ -130,19 +141,15 @@ describe('row height resolution', () => {
     })
     m.setRowHeight(10)
     const oldHeight = m.height
-    // grow the display so availableHeight exactly doubles
     m.resizeHeight(oldHeight - m.lineZoneHeight)
     expect(m.height).toBe(2 * oldHeight - m.lineZoneHeight)
-    expect(m.rowHeight).toBeCloseTo(20)
+    expect(m.rowHeight).toBe(10)
   })
 
   // Shrinking the matrix to its 20px floor leaves no room for rows at all (the
-  // default 20px connector zone takes the lot), and a proportional rescale onto
-  // that would land the pinned height on 0 -- the fit-to-height sentinel -- or
-  // below it. Either silently changes the mode, and a negative height then
-  // sticks: `rowHeight > 0` gates the rescale, so growing back never repairs it.
-  // The pinned height has to survive the trip down and scale again on the way
-  // up.
+  // default 20px connector zone takes the lot). The pinned height has to
+  // survive the trip down -- landing it on 0 would silently flip the display
+  // into fit mode -- and come back unchanged.
   it('resizeHeight keeps a pinned rowHeight through a zero-room shrink (matrix)', () => {
     const configSchema = matrixConfigFactory()
     const m = matrixStateModelFactory(configSchema).create({
@@ -158,8 +165,16 @@ describe('row height resolution', () => {
     expect(m.height).toBe(20)
     expect(m.availableHeight).toBe(0)
     expect(m.rowHeight).toBe(10)
-    // and the pinned height still scales once there is room again
     m.resizeHeight(oldHeight - 20)
-    expect(m.rowHeight).toBeCloseTo(10)
+    expect(m.rowHeight).toBe(10)
+  })
+
+  // rowHeight lives on the config node, which outlives the display instance, so
+  // a pinned height survives unticking and reticking the track.
+  it('pins the row height on the config slot, not the display snapshot', () => {
+    const m = createDisplay()
+    m.setRowHeight(25)
+    expect(readConfObject(m.configuration, 'rowHeight')).toBe(25)
+    expect('rowHeight' in getSnapshot(m)).toBe(false)
   })
 })

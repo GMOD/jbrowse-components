@@ -19,7 +19,7 @@ function makeModel(args?: { rowHeight?: number; isDensityMode?: boolean }) {
   return {
     sources: [{ name: 'a_very_long_sample_name' }, { name: 'sample2' }],
     isOverlay: false,
-    rowHeight,
+    effectiveRowHeight: rowHeight,
     isDensityMode: args?.isDensityMode ?? false,
     domain: [0, 100] as [number, number],
     scaleType: 'linear',

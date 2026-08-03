@@ -36,7 +36,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   const {
     height,
     sources,
-    rowHeight,
+    effectiveRowHeight,
     sidebarOffset,
     showLegend,
     colorLegend,
@@ -82,7 +82,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         >
           <SvgRowLabels
             sources={sources}
-            rowHeight={rowHeight}
+            rowHeight={effectiveRowHeight}
             labelOffset={sidebarOffset}
             availableHeight={height}
           />

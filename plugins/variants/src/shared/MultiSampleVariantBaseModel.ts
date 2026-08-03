@@ -322,10 +322,6 @@ export default function MultiSampleVariantBaseModelF(
         types.model({
           type: types.string,
           configuration: ConfigurationReference(configSchema),
-          // Raw per-row height in px; `0` means fit-to-display-height (rows
-          // divide the available height). The resolved value is the
-          // `effectiveRowHeight` getter — consumers read that, never this.
-          rowHeight: types.stripDefault(types.number, 0),
           jexlFilters: types.stripDefault(
             types.maybe(types.array(types.string)),
             undefined,
@@ -338,10 +334,10 @@ export default function MultiSampleVariantBaseModelF(
           runClustering: types.maybe(types.boolean),
         }),
       )
-      // Legacy props from old BaseLinearDisplay snapshots (blockState,
-      // showTooltips, the removed lengthCutoffFilter, display-instance
-      // height/heightOverride) need no handling — MST drops unknown snapshot
-      // keys, and length filtering is now a general jexl filter
+      // Unknown keys in an old display snapshot (blockState, showTooltips, the
+      // removed lengthCutoffFilter, display-instance height/heightOverride, a
+      // pre-config-slot rowHeight) need no handling — MST drops them, and
+      // length filtering is now a general jexl filter
       // (`jexl:get(feature,'end')-get(feature,'start')<N`).
       .volatile(() => ({
         /**
@@ -520,6 +516,18 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
+         * Raw per-row height setting: `0` is fit-to-display-height, any
+         * positive value is a pinned px height. The resolved value is
+         * `effectiveRowHeight` — consumers read that, never this. On the config
+         * for the same reason `height` and `lineZoneHeight` are: a drag-resized
+         * dimension outlives the display instance.
+         */
+        get rowHeight(): number {
+          return getConf(self, 'rowHeight')
+        },
+
+        /**
+         * #getter
          * The effective sample-grouping attribute (config default or runtime
          * override). Drives the sidebar row coloring and the legend's group
          * section; '' means no grouping.
@@ -630,7 +638,7 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setRowHeight(arg: number) {
-          self.rowHeight = arg
+          setConf(self, 'rowHeight', arg)
         },
         /**
          * #action
@@ -753,39 +761,22 @@ export default function MultiSampleVariantBaseModelF(
          * `effectiveRowHeight` divide `availableHeight` across the rows.
          */
         setFitToHeight() {
-          self.rowHeight = 0
+          setConf(self, 'rowHeight', 0)
           self.scrollTop = 0
         },
         /**
          * #action
-         * Override resizeHeight to scale a pinned row height proportionally when
-         * the display is vertically resized. Rows live in `availableHeight`
-         * (`height - lineZoneHeight`), not the full height, so scale by the
-         * available-height ratio — otherwise the visible fraction of rows drifts
-         * on resize whenever `lineZoneHeight` is non-zero (the matrix display).
-         *
-         * Both available heights have to be positive to rescale at all. A
-         * display shrunk to where `lineZoneHeight` swallows it has no room for
-         * rows, and scaling onto that lands the pinned height on 0 — which is
-         * the fit-to-height sentinel, so the mode flips — or below it, which
-         * then sticks, since `rowHeight > 0` is what gates the rescale on the
-         * way back up. Leaving the pinned height alone while there is nothing to
-         * draw in keeps it exactly where the user put it.
+         * Drag-resize the track. In fit-to-display-height mode the new height
+         * flows straight into `autoRowHeight`, so the rows stretch with the
+         * drag. With a pinned `rowHeight` the rows keep the size the user
+         * pinned and the drag reveals more of them — scaling the pin by the
+         * same ratio instead would keep content and viewport locked together,
+         * so dragging a track taller could not show one extra sample.
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height
           const newHeight = Math.max(oldHeight + distance, 20)
-          const oldAvailableHeight = oldHeight - self.lineZoneHeight
-          const newAvailableHeight = newHeight - self.lineZoneHeight
           setConf(self, 'height', newHeight)
-          if (
-            self.rowHeight > 0 &&
-            oldAvailableHeight > 0 &&
-            newAvailableHeight > 0
-          ) {
-            self.rowHeight =
-              (self.rowHeight * newAvailableHeight) / oldAvailableHeight
-          }
           return newHeight - oldHeight
         },
         /**
@@ -1009,9 +1000,9 @@ export default function MultiSampleVariantBaseModelF(
             ? buildSampleIndex(self.cellData.sampleNames)
             : undefined
         },
-        // Row-height model: keep `rowHeight`, `autoRowHeight`,
-        // `effectiveRowHeight`, and the proportional `resizeHeight` in sync
-        // across related displays.
+        // Row-height model: `rowHeight` (raw setting, 0 = fit), `autoRowHeight`
+        // (the fit height), `effectiveRowHeight` (resolved). Shared spelling
+        // across the row displays — see agent-docs/reference/ROW_HEIGHT_AND_FIT.
         /**
          * #getter
          * Available height for rows (total height minus lineZoneHeight).
@@ -1042,9 +1033,10 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Resolved per-row height. `rowHeight === 0` means auto-fit (computed
          * from availableHeight / nrow); any positive value is a user-pinned
-         * height. `resizeHeight` scales pinned values proportionally so manual +
-         * display-resize stay in sync without snap-back fuzziness. Every consumer
-         * reads this, never the raw `rowHeight` property.
+         * height, used as-is however many samples there are — the rows area is
+         * a scroll viewport, so rows that don't fit cost scroll extent rather
+         * than a resize. Every consumer reads this, never the raw `rowHeight`
+         * setting.
          *
          * Floored at 1px only when non-positive: `availableHeight` floors at
          * 0 (see above), so `autoRowHeight` can still be exactly 0 when

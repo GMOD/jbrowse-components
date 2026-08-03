@@ -35,7 +35,7 @@ export interface RenderSvgModel extends SvgExportable {
   renderBlocks: RenderBlock[]
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
-  rowHeight: number
+  effectiveRowHeight: number
   treeAreaWidth: number
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
@@ -93,7 +93,7 @@ function MultiRowSvgBody({
         showTree={self.showTree}
         hierarchy={self.hierarchy}
         sources={self.sources}
-        rowHeight={self.rowHeight}
+        rowHeight={self.effectiveRowHeight}
         treeAreaWidth={self.treeAreaWidth}
         availableHeight={height}
       />

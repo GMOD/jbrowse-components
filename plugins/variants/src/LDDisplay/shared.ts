@@ -16,7 +16,7 @@ import {
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
-  fitToHeightCheckboxItem,
+  squashToHeightCheckboxItem,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -122,8 +122,8 @@ export default function sharedModelFactory(
       setShowRecombination(show: boolean) {
         setConf(self, 'showRecombination', show)
       },
-      setFitToHeight(value: boolean) {
-        setConf(self, 'fitToHeight', value)
+      setSquashToHeight(value: boolean) {
+        setConf(self, 'squashToHeight', value)
       },
       setHweFilter(threshold: number) {
         setConf(self, 'hweFilterThreshold', threshold)
@@ -178,8 +178,8 @@ export default function sharedModelFactory(
       get recombinationZoneHeight() {
         return getConf(self, 'recombinationZoneHeight')
       },
-      get fitToHeight() {
-        return getConf(self, 'fitToHeight')
+      get squashToHeight() {
+        return getConf(self, 'squashToHeight')
       },
       get hweFilterThreshold() {
         return getConf(self, 'hweFilterThreshold')
@@ -365,14 +365,14 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Per-frame yScalar squash factor. When fitToHeight is on, squashes
+       * Per-frame yScalar squash factor. When squashToHeight is on, squashes
        * the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on
        * the main thread so resize doesn't trigger a worker re-fetch.
        */
       get yScalar() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return computeTriangleYScalar({
-          fitToHeight: self.fitToHeight,
+          squashToHeight: self.squashToHeight,
           displayHeight: this.ldCanvasHeight,
           triangleWidth: view.dynamicBlocks.totalWidthPxWithoutBorders,
         })
@@ -400,7 +400,7 @@ export default function sharedModelFactory(
        * #getter
        * Per-frame render state for the GPU backend. Read by the upload/render
        * autorun — every change to any tracked observable (view.bpPerPx,
-       * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
+       * view.offsetPx, model.squashToHeight, rpcData contents, …) re-fires it.
        */
       // Resolved geometry, never undefined: it's pure view/settings state, and
       // "no data yet" is the render callback's gate. The two data-derived
@@ -415,7 +415,7 @@ export default function sharedModelFactory(
         return {
           yScalar: this.yScalar,
           canvasWidth,
-          canvasHeight: self.fitToHeight
+          canvasHeight: self.squashToHeight
             ? this.ldCanvasHeight
             : canvasWidth / 2,
           viewScale: scale,
@@ -720,7 +720,7 @@ export default function sharedModelFactory(
                 // "Show..." grouping (plugins/hic trackMenuItems.ts) so the
                 // two contact-map displays stay consistent — the fit-to-height
                 // row is literally the same builder they share.
-                fitToHeightCheckboxItem(self),
+                squashToHeightCheckboxItem(self),
                 checkboxItem(
                   'Show cells with genome proportions',
                   self.useGenomicPositions,

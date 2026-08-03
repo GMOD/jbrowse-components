@@ -100,7 +100,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       rowColorsByIndex: [undefined, undefined],
     },
     sources: [{ name: 'a' }, { name: 'b' }],
-    rowHeight: 50,
+    effectiveRowHeight: 50,
     treeAreaWidth: 80,
     showTree: false,
     hierarchy: undefined,

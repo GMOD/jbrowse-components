@@ -26,7 +26,7 @@ interface ScaleModel {
     group?: string
   }[]
   isOverlay: boolean
-  rowHeight: number
+  effectiveRowHeight: number
   isDensityMode: boolean
   domain: [number, number] | undefined
   scaleType: string
@@ -55,7 +55,7 @@ export default observer(function MultiWiggleSvgScales({
   const {
     sources,
     isOverlay,
-    rowHeight,
+    effectiveRowHeight,
     isDensityMode,
     domain,
     scaleType,
@@ -79,7 +79,7 @@ export default observer(function MultiWiggleSvgScales({
     numSources > 1 && !isOverlay ? (
       <SvgRowLabels
         sources={sources}
-        rowHeight={rowHeight}
+        rowHeight={effectiveRowHeight}
         labelOffset={
           scalebarsShown
             ? Math.max(labelOffset, scalebarLeft + AXIS_TO_LABEL_GAP_PX)
@@ -98,7 +98,7 @@ export default observer(function MultiWiggleSvgScales({
         <g
           // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one scalebar per source row
           key={`scalebar-${idx}`}
-          transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
+          transform={`translate(0 ${getRowTop(idx, effectiveRowHeight)})`}
         >
           <YScaleBar ticks={ticks} orientation="left" />
         </g>

@@ -1,6 +1,6 @@
 import { checkboxItem, radioItems } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { fitToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
+import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
 import {
   makeRadioSubMenu,
   makeResolutionSubMenuItem,
@@ -20,7 +20,7 @@ interface HicMenuSelf {
   useColorPercentile: boolean
   showLegend: boolean
   showResolutionControls: boolean
-  fitToHeight: boolean
+  squashToHeight: boolean
   colorScheme: HicColorScheme
   hasResolutions: boolean
   canStepResolutionFiner: boolean
@@ -33,7 +33,7 @@ interface HicMenuSelf {
   setUseColorPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowResolutionControls: (f: boolean) => void
-  setFitToHeight: (f: boolean) => void
+  setSquashToHeight: (f: boolean) => void
   setColorScheme: (s: HicColorScheme) => void
   setActiveNormalization: (s: string) => void
   stepResolution: (delta: number) => void
@@ -104,7 +104,7 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
           ),
         ]
       : []),
-    fitToHeightCheckboxItem(self),
+    squashToHeightCheckboxItem(self),
     checkboxItem('Log scale', self.useLogScale, () => {
       self.setUseLogScale(!self.useLogScale)
     }),

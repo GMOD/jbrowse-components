@@ -77,7 +77,7 @@ export function findRowHit(
 // What findMultiWiggleHit reads off the display model — spelled out rather than
 // taking the full model so the hit logic stays unit-testable without MST.
 export interface MultiWiggleHitModel {
-  rowHeight: number
+  effectiveRowHeight: number
   sources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   summaryScoreMode: string
@@ -103,7 +103,13 @@ export function findMultiWiggleHit(
   offsetX: number,
   offsetY: number,
 ): WiggleFeatureUnderMouse | undefined {
-  const { rowHeight, sources, rpcDataMap, summaryScoreMode, isOverlay } = model
+  const {
+    effectiveRowHeight,
+    sources,
+    rpcDataMap,
+    summaryScoreMode,
+    isOverlay,
+  } = model
   if (sources.length === 0 || offsetX < treeSidebarRightEdge(model)) {
     return undefined
   }
@@ -119,7 +125,7 @@ export function findMultiWiggleHit(
         sources,
         bp,
         offsetY,
-        rowHeight,
+        effectiveRowHeight,
         region.refName,
         summaryScoreMode,
       )

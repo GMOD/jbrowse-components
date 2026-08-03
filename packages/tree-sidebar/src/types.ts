@@ -49,9 +49,10 @@ export interface TreeDrawingModel {
   height: number
   lineZoneHeight?: number
   scrollTop?: number
-  // Resolved px row height, never a fit-to-height sentinel: variants/maf keep a
-  // raw `rowHeight` where 0 means auto-fit, so this must be their
-  // `effectiveRowHeight`.
+  // Resolved px row height, never a fit-to-height sentinel. Every row display
+  // spells the raw setting `rowHeight` (0 = fit to display height) and the
+  // resolved value `effectiveRowHeight`, which is the one to pass here — see
+  // agent-docs/reference/ROW_HEIGHT_AND_FIT.
   effectiveRowHeight: number
   totalHeight?: number
   hoveredTreeNode?: HoveredTreeNode

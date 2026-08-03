@@ -65,7 +65,7 @@ the whole surface.
 | <span id="getter-showldtriangle">**showLDTriangle**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-showrecombination">**showRecombination**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-recombinationzoneheight">**recombinationZoneHeight**</span><br><code>number</code> |  | SharedLDModel |
-| <span id="getter-fittoheight">**fitToHeight**</span><br><code>boolean</code> |  | SharedLDModel |
+| <span id="getter-squashtoheight">**squashToHeight**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-hwefilterthreshold">**hweFilterThreshold**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-callratefilter">**callRateFilter**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  | SharedLDModel |
@@ -89,8 +89,8 @@ the whole surface.
 | <span id="getter-bytegateenabled">**byteGateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's derived byte gate (byte axis only, no density axis), except for pre-computed LD. `CoreGetRegionByteEstimate` measures via `getFeatures`, which only the VCF-computed path's feature adapter implements — a PlinkLD* adapter would throw "Adapter does not support retrieving features", and it ships pre-thinned files that need no gate anyway. | SharedLDModel |
 | <span id="getter-effectivelinezoneheight">**effectiveLineZoneHeight**</span><br><code>number</code> | Pixel height of the SVG zone above the canvas (variant labels + lines, or recombination scale). The hit-test subtracts this from mouseY before reversing the render transform. | SharedLDModel |
 | <span id="getter-ldcanvasheight">**ldCanvasHeight**</span><br><code>number</code> | Effective height for the LD canvas (total height minus the zone the recombination overlay / variant lines occupy above the matrix). | SharedLDModel |
-| <span id="getter-yscalar">**yScalar**</span><br><code>number</code> | Per-frame yScalar squash factor. When fitToHeight is on, squashes the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on the main thread so resize doesn't trigger a worker re-fetch. | SharedLDModel |
-| <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> | Per-frame render state for the GPU backend. Read by the upload/render autorun — every change to any tracked observable (view.bpPerPx, view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it. | SharedLDModel |
+| <span id="getter-yscalar">**yScalar**</span><br><code>number</code> | Per-frame yScalar squash factor. When squashToHeight is on, squashes the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on the main thread so resize doesn't trigger a worker re-fetch. | SharedLDModel |
+| <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> | Per-frame render state for the GPU backend. Read by the upload/render autorun — every change to any tracked observable (view.bpPerPx, view.offsetPx, model.squashToHeight, rpcData contents, …) re-fires it. | SharedLDModel |
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | The connector lines tying each matrix column to its SNP's genomic position, in viewport pixels, plus the label the hover tooltip and `VariantLabels` show. Only meaningful in index mode (genomic-positions mode already draws columns at their genomic x). | SharedLDModel |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
 | <span id="getter-parentdisplay">**parentDisplay**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ type?: string &#124; undefined; effectiveRpcDriverName?: string &#124; undefined; } &#124; undefined</code></pre></dialog></span> | <span data-pagefind-ignore>Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)</span> | [BaseDisplay](../basedisplay#getter-parentdisplay) |
@@ -153,7 +153,7 @@ the whole surface.
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setshowldtriangle">**setShowLDTriangle**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setshowrecombination">**setShowRecombination**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |
-| <span id="action-setfittoheight">**setFitToHeight**</span><br><code>(value: boolean) =&gt; void</code> |  | SharedLDModel |
+| <span id="action-setsquashtoheight">**setSquashToHeight**</span><br><code>(value: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-sethwefilter">**setHweFilter**</span><br><code>(threshold: number) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setcallratefilter">**setCallRateFilter**</span><br><code>(threshold: number) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setshowverticalguides">**setShowVerticalGuides**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |

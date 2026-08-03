@@ -10,9 +10,9 @@ import { observer } from 'mobx-react'
 const SetRowHeightDialog = observer(function (props: {
   model: {
     // Seed from the raw setting (0 = squeeze to fit), never the resolved
-    // rowHeight getter, which in fit mode returns the computed fractional
-    // height — submitting that would silently pin it.
-    rowHeightSetting: number
+    // effectiveRowHeight getter, which in fit mode returns the computed
+    // fractional height — submitting that would silently pin it.
+    rowHeight: number
     setRowHeight: (arg: number) => void
     // 0 is the fit sentinel this dialog advertises, so submitting it takes the
     // same route as the "Squeeze to fit view" radio rather than writing the
@@ -23,7 +23,7 @@ const SetRowHeightDialog = observer(function (props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [value, setValue] = useState<number | undefined>(model.rowHeightSetting)
+  const [value, setValue] = useState<number | undefined>(model.rowHeight)
 
   return (
     <SubmitDialog
@@ -43,7 +43,7 @@ const SetRowHeightDialog = observer(function (props: {
       }}
     >
       <NumberTextField
-        defaultValue={model.rowHeightSetting}
+        defaultValue={model.rowHeight}
         helperText="Enter row height in px (0 = squeeze to fit view)"
         autoFocus
         onValueChange={setValue}

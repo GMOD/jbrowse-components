@@ -20,7 +20,7 @@ interface OverlayModel {
   showCrossHatches: boolean
   numSources: number
   numRows: number
-  rowHeight: number
+  effectiveRowHeight: number
   ticks?: YScaleTicks
 }
 
@@ -38,7 +38,7 @@ export default observer(function MultiWiggleOverlayLines({
     showCrossHatches,
     numSources,
     numRows,
-    rowHeight,
+    effectiveRowHeight,
     ticks,
   } = model
   const palette = usePalette()
@@ -54,7 +54,7 @@ export default observer(function MultiWiggleOverlayLines({
       ? Array.from({ length: numSources - 1 }).map((_, idx) => {
           // +0.5 lands the 1px stroke on a device-pixel boundary so it renders
           // crisp instead of anti-aliased across two rows.
-          const y = Math.round(getRowTop(idx + 1, rowHeight)) + 0.5
+          const y = Math.round(getRowTop(idx + 1, effectiveRowHeight)) + 0.5
           return (
             <line
               // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one separator per row boundary
@@ -82,7 +82,7 @@ export default observer(function MultiWiggleOverlayLines({
             key={`ch-${rowIdx}`}
             ticks={ticks}
             width={width}
-            offsetY={getRowTop(rowIdx, rowHeight)}
+            offsetY={getRowTop(rowIdx, effectiveRowHeight)}
           />
         ))
       : null

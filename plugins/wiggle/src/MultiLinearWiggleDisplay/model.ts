@@ -166,7 +166,15 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get rowHeight() {
+      /**
+       * #getter
+       * Resolved per-row height. This display is always fit-to-display-height —
+       * there is no pinned-height setting and so no `rowHeight` sentinel to
+       * resolve — but it carries the same name every row display exposes its
+       * resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT),
+       * which is also what tree-sidebar's `TreeDrawingModel` reads.
+       */
+      get effectiveRowHeight() {
         return self.isOverlay
           ? self.height
           : getRowHeight(self.height, self.numSources)
@@ -184,13 +192,8 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      // `rowHeight` is already resolved here; this satisfies tree-sidebar's
-      // `TreeDrawingModel`, whose other users keep a raw fit-sentinel prop.
-      get effectiveRowHeight() {
-        return self.rowHeight
-      },
       get rowHeightTooSmallForScalebar() {
-        return self.rowHeight < 70
+        return self.effectiveRowHeight < 70
       },
 
       /**
@@ -214,7 +217,7 @@ export default function stateModelFactory(
 
       get ticks() {
         return computeYTicks({
-          height: self.rowHeight,
+          height: self.effectiveRowHeight,
           domain: self.domain,
           scaleType: self.scaleType,
           minimalTicks: getConf(self, 'minimalTicks'),

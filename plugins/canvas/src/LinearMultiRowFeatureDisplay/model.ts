@@ -367,10 +367,11 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Resolved fixed row-height setting: `0` is auto-fit, any positive value is
-       * a pinned px height. Drag-resize / fit-toggle write it via `setSlot`.
+       * Raw per-row height setting: `0` is auto-fit, any positive value is a
+       * pinned px height. The resolved value is `effectiveRowHeight` —
+       * consumers read that, never this.
        */
-      get rowHeightSetting(): number {
+      get rowHeight(): number {
         return readConfObject(self.conf, 'rowHeight')
       },
     }))
@@ -431,37 +432,43 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display
-       * height split evenly across rows so all rows stay visible as the row count
-       * grows. Any positive value is a pinned px height. Every consumer reads
-       * this, never `rowHeightSetting`.
+       * The auto-fit row height: the display height split evenly across rows,
+       * so all rows stay visible as the row count grows.
        *
-       * Auto-fit is not floored at a pixel: a display given thousands of rows
-       * would otherwise stop fitting and grow to a pixel a row instead, which is
-       * a track thousands of pixels tall rather than the dense overview asked
+       * Not floored at a pixel: a display given thousands of rows would
+       * otherwise stop fitting and grow to a pixel a row instead, which is a
+       * track thousands of pixels tall rather than the dense overview asked
        * for. The floor lives in `rowBand`, where a sub-pixel row is widened for
        * drawing without changing how many rows fit.
        */
-      get rowHeight(): number {
-        return self.rowHeightSetting === 0
-          ? self.fitTargetHeight / self.nrow
-          : self.rowHeightSetting
+      get autoRowHeight(): number {
+        return self.fitTargetHeight / self.nrow
       },
     }))
     .views(self => ({
-      // `rowHeight` is already resolved here; this satisfies tree-sidebar's
-      // `TreeDrawingModel`, whose other users keep a raw fit-sentinel prop.
+      /**
+       * #getter
+       * Resolved per-row height: `rowHeight === 0` auto-fits, any positive
+       * value is the pinned px height. Every consumer reads this, never the raw
+       * `rowHeight` setting.
+       */
       get effectiveRowHeight(): number {
-        return self.rowHeight
+        return self.rowHeight === 0 ? self.autoRowHeight : self.rowHeight
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * Override BaseLinearDisplay.height so the track container matches the
-       * rendering canvas (numRows × rowHeight). In auto-fit mode this resolves to
-       * `fitTargetHeight`; in fixed mode it grows with the row count.
+       * rendering canvas (numRows × effectiveRowHeight). In auto-fit mode this
+       * resolves to `fitTargetHeight`; in fixed mode it grows with the row
+       * count — this display grows to its content rather than scrolling a
+       * fixed viewport, which is why a fixed-mode drag re-pins the row height
+       * (see `setHeight`) instead of leaving it alone the way the scrolling row
+       * displays do.
        */
       get height(): number {
-        return self.nrow * self.rowHeight
+        return self.nrow * self.effectiveRowHeight
       },
     }))
     .views(self => ({
@@ -509,7 +516,7 @@ export default function stateModelFactory(
           // outline, so renderSvg.tsx stays on view.width.)
           canvasWidth: view.trackWidthPx,
           canvasHeight: self.height,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
           rowIndexByValue: self.rowIndexByValue,
           rowColorsByIndex: self.rowColorsByIndex,
@@ -562,7 +569,7 @@ export default function stateModelFactory(
         if (mouseX < treeSidebarRightEdge(self)) {
           return undefined
         }
-        const targetRow = Math.floor(mouseY / self.rowHeight)
+        const targetRow = Math.floor(mouseY / self.effectiveRowHeight)
         if (!self.sources[targetRow]) {
           return undefined
         }
@@ -638,7 +645,7 @@ export default function stateModelFactory(
           ? blockScreenRect({
               hit,
               blocks: self.renderBlocks,
-              rowHeight: self.rowHeight,
+              rowHeight: self.effectiveRowHeight,
               rowProportion: self.rowProportion,
             })
           : undefined
@@ -792,7 +799,7 @@ export default function stateModelFactory(
        * mode it's distributed across the current rows as a pinned row height.
        */
       setHeight(newHeight: number) {
-        if (self.rowHeightSetting === 0) {
+        if (self.rowHeight === 0) {
           setConf(self, 'height', Math.max(newHeight, MIN_DISPLAY_HEIGHT))
         } else {
           setConf(self, 'rowHeight', Math.max(1, newHeight / self.nrow))
@@ -813,7 +820,7 @@ export default function stateModelFactory(
        * #action
        * Switch to auto-fit: seed the `height` config slot from the current
        * content height (so toggling on doesn't jump), then `rowHeight = 0`
-       * makes `rowHeight` derive from it.
+       * makes `effectiveRowHeight` derive from it.
        */
       setFitToHeight() {
         setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))

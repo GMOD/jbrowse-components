@@ -85,7 +85,7 @@ export default function sharedLDConfigFactory() {
        * #slot
        * When true, squash the LD triangle to fit the display height
        */
-      fitToHeight: {
+      squashToHeight: {
         type: 'boolean',
         defaultValue: false,
         advanced: true,

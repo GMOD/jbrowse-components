@@ -8,16 +8,21 @@ import type { MenuItem } from '@jbrowse/core/ui'
  * One helper so the label and the explanation of what a resize does can't drift
  * between the two — they had already drifted to two wordings of the same
  * sentence.
+ *
+ * Named for the squash rather than the fit because the row displays' unrelated
+ * `setFitToHeight()` means "write the `rowHeight` fit sentinel"; a triangle has
+ * no rows to fit. Same user-facing idea, so the label still reads "Fit to
+ * display height" — see agent-docs/reference/ROW_HEIGHT_AND_FIT.
  */
-export function fitToHeightCheckboxItem(self: {
-  fitToHeight: boolean
-  setFitToHeight: (arg: boolean) => void
+export function squashToHeightCheckboxItem(self: {
+  squashToHeight: boolean
+  setSquashToHeight: (arg: boolean) => void
 }): MenuItem {
   return checkboxItem(
     'Fit to display height',
-    self.fitToHeight,
+    self.squashToHeight,
     () => {
-      self.setFitToHeight(!self.fitToHeight)
+      self.setSquashToHeight(!self.squashToHeight)
     },
     {
       helpText:

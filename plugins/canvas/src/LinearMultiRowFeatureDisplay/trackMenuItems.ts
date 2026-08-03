@@ -39,12 +39,12 @@ const ROW_HEIGHT_PRESETS = [
 // Which preset the current setting is, or undefined for a hand-entered height
 // (the "Custom..." row). `rowHeight` is one coupled axis — 0 is the fit-to-view
 // sentinel, any positive value a pinned px height — so these are radios.
-function rowHeightPreset(rowHeightSetting: number) {
-  return rowHeightSetting === 0
+function rowHeightPreset(rowHeight: number) {
+  return rowHeight === 0
     ? 'fit'
-    : rowHeightSetting === ROW_HEIGHT_NORMAL
+    : rowHeight === ROW_HEIGHT_NORMAL
       ? 'normal'
-      : rowHeightSetting === ROW_HEIGHT_COMPACT
+      : rowHeight === ROW_HEIGHT_COMPACT
         ? 'compact'
         : undefined
 }
@@ -62,7 +62,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   sourcesWithoutLayout: MultiRowSource[]
   clusterTree?: string
   runClustering?: boolean
-  rowHeightSetting: number
+  rowHeight: number
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   toggleCategory: (label: string) => void
@@ -98,7 +98,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
 }
 
 function rowHeightMenuItems(self: MultiRowMenuSelf): MenuItem[] {
-  const preset = rowHeightPreset(self.rowHeightSetting)
+  const preset = rowHeightPreset(self.rowHeight)
   return [
     ...radioItems(ROW_HEIGHT_PRESETS, preset, value => {
       if (value === 'fit') {

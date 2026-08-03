@@ -124,7 +124,7 @@ const HicTrackConfigFactory = () => {
       /**
        * #slot
        */
-      fitToHeight: {
+      squashToHeight: {
         type: 'boolean',
         defaultValue: false,
         description:

@@ -108,7 +108,7 @@ export {
   computeTriangleYScalar,
   fetchAllRegions,
   fetchEachRegion,
-  fitToHeightCheckboxItem,
+  squashToHeightCheckboxItem,
   getHeightModeOptions,
   heightModeLabel,
   heightModeMenuItems,

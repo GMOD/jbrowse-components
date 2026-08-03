@@ -180,8 +180,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        */
-      get fitToHeight(): boolean {
-        return getConf(self, 'fitToHeight')
+      get squashToHeight(): boolean {
+        return getConf(self, 'squashToHeight')
       },
     }))
     .views(self => ({
@@ -262,7 +262,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get yScalar() {
         return computeTriangleYScalar({
-          fitToHeight: self.fitToHeight,
+          squashToHeight: self.squashToHeight,
           displayHeight: self.height,
           triangleWidth: self.view.totalWidthPxWithoutBorders,
         })
@@ -477,8 +477,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setFitToHeight(arg: boolean) {
-        setConf(self, 'fitToHeight', arg)
+      setSquashToHeight(arg: boolean) {
+        setConf(self, 'squashToHeight', arg)
       },
       /**
        * #action

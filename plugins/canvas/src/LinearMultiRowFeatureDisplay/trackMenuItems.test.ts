@@ -22,7 +22,7 @@ function makeSelf(
     layout: [],
     editableSources: rows,
     sourcesWithoutLayout: rows,
-    rowHeightSetting: 0,
+    rowHeight: 0,
     setShowTree: () => {},
     setShowLegend: () => {},
     toggleCategory: () => {},
@@ -132,8 +132,8 @@ describe('multi-row track menu', () => {
     [14, 'Normal'],
     [8, 'Compact'],
     [23, 'Custom...'],
-  ])('row height %p checks %p', (rowHeightSetting, expected) => {
-    const items = buildMultiRowTrackMenuItems(makeSelf({ rowHeightSetting }))
+  ])('row height %p checks %p', (rowHeight, expected) => {
+    const items = buildMultiRowTrackMenuItems(makeSelf({ rowHeight }))
 
     expect(checkedLabel(subMenuOf(items, 'Row height'))).toEqual([expected])
   })

@@ -262,7 +262,7 @@ describe('findMultiWiggleHit', () => {
 
   function makeModel(over: Partial<MultiWiggleHitModel> = {}) {
     return {
-      rowHeight: 20,
+      effectiveRowHeight: 20,
       sources: [{ name: 's1' }],
       rpcDataMap: new Map([
         [
@@ -334,12 +334,12 @@ describe('findMultiWiggleHit', () => {
   })
 
   test('row mode past the last row is a miss, not the last source', () => {
-    const model = makeModel({ rowHeight: 20 })
+    const model = makeModel({ effectiveRowHeight: 20 })
     expect(findMultiWiggleHit(model, regions, 50, 25)).toBeUndefined()
   })
 
   test('a zero-height display is a miss rather than NaN row math', () => {
-    const model = makeModel({ rowHeight: 0 })
+    const model = makeModel({ effectiveRowHeight: 0 })
     expect(findMultiWiggleHit(model, regions, 50, 0)).toBeUndefined()
   })
 })

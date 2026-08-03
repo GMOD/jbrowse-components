@@ -128,10 +128,10 @@ describe('viewportMatchesLastDrawn', () => {
 })
 
 describe('computeTriangleYScalar', () => {
-  test('fitToHeight off → identity regardless of dimensions', () => {
+  test('squashToHeight off → identity regardless of dimensions', () => {
     expect(
       computeTriangleYScalar({
-        fitToHeight: false,
+        squashToHeight: false,
         displayHeight: 100,
         triangleWidth: 800,
       }),
@@ -142,7 +142,7 @@ describe('computeTriangleYScalar', () => {
     // natural apex = 800/2 = 400, squash into 100 → 0.25
     expect(
       computeTriangleYScalar({
-        fitToHeight: true,
+        squashToHeight: true,
         displayHeight: 100,
         triangleWidth: 800,
       }),
@@ -153,7 +153,7 @@ describe('computeTriangleYScalar', () => {
     // natural apex = 400, stretch into 600 → 1.5
     expect(
       computeTriangleYScalar({
-        fitToHeight: true,
+        squashToHeight: true,
         displayHeight: 600,
         triangleWidth: 800,
       }),
@@ -163,7 +163,7 @@ describe('computeTriangleYScalar', () => {
   test('zero-width triangle → identity, never divides by zero', () => {
     expect(
       computeTriangleYScalar({
-        fitToHeight: true,
+        squashToHeight: true,
         displayHeight: 300,
         triangleWidth: 0,
       }),

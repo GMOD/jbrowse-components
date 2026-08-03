@@ -184,9 +184,11 @@ Where to put a new setting:
   (config default → display-type/session default → per-instance pin), use the
   promotable-slot mechanism / `resolveConf` rather than a shadow property.
 - **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
-  volatile, or a sentinel like `rowHeight === 0` = fit-to-height). When a prop
-  encodes a sentinel, expose the resolved value under a distinct getter
-  (`effectiveRowHeight`) and make every consumer read that, never the raw prop.
+  volatile). A sentinel is not a reason to avoid a slot: `rowHeight === 0` =
+  fit-to-height sits on a config slot in every display that has it. What a
+  sentinel does require is a distinct resolved getter (`effectiveRowHeight`)
+  that every consumer reads instead of the raw setting — see
+  `ROW_HEIGHT_AND_FIT.md`.
 
 The wholesale `displayConfig: { ...getConfigSnapshotWithPromotables(self) }` form
 above ships every slot to the worker (canvas/wiggle, minus the handful of
