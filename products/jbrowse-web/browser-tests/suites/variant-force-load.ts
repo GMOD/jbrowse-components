@@ -30,10 +30,22 @@ import type { Page } from 'puppeteer'
 // a config slot, and `userByteLimit` was a volatile — so it was dropped and the
 // gate never tripped. Force-load is a track-wide boolean now, with no ceiling to
 // preset at all.)
+//
+// The track rides INSIDE the session spec's `sessionTracks` key, not a
+// `&sessionTracks=` URL param: that param is read only by
+// `decodeJb1StyleSession`, i.e. the `loc=`/`tracks=` JB1 path. A `session=spec-`
+// URL dispatches to `decodeSessionSpec`, which parses the spec and nothing else,
+// so a sibling param is silently dropped and the config's own 5MB-limit track
+// loads in its place.
 const TRACK_ID = 'volvox multi-sample sv force load'
 
 // Same track as the config's 'volvox multi-sample sv', with a 1-byte adapter
 // fetch budget so every region is over budget.
+//
+// Root-relative uris, unlike the config's bare filenames: `addRelativeUris`
+// resolves those against the config's own location, and a spec's sessionTracks
+// never pass through it. A bare `volvox.sv.vcf.gz` would resolve against the
+// worker script's directory and 404.
 const gatedTrack = {
   type: 'VariantTrack',
   trackId: TRACK_ID,
@@ -41,9 +53,9 @@ const gatedTrack = {
   assemblyNames: ['volvox'],
   adapter: {
     type: 'VcfTabixAdapter',
-    uri: 'volvox.sv.vcf.gz',
+    uri: '/test_data/volvox/volvox.sv.vcf.gz',
     samplesTsvLocation: {
-      uri: 'volvox.sv.samples.tsv',
+      uri: '/test_data/volvox/volvox.sv.samples.tsv',
       locationType: 'UriLocation',
     },
     fetchSizeLimit: 1,
@@ -83,6 +95,7 @@ function forceLoadTest({
     name,
     fn: async (page: Page) => {
       const spec = encodeSessionSpec({
+        sessionTracks: [gatedTrack],
         views: [
           {
             type: 'LinearGenomeView',
@@ -97,7 +110,6 @@ function forceLoadTest({
       await navigateToUrl(
         page,
         `config=test_data/volvox/config.json&session=${spec}` +
-          `&sessionTracks=${encodeURIComponent(JSON.stringify([gatedTrack]))}` +
           `&sessionName=Test%20Session`,
       )
 
