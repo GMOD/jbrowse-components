@@ -1,3 +1,4 @@
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
@@ -41,7 +42,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   viewState: ViewModel
 }) {
   const { session } = viewState
-  const { view, theme } = session
+  const { view, theme, palette } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
   const { classes } = useStyles()
@@ -64,29 +65,31 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
 
   return (
     <ThemeProvider theme={theme}>
-      <div className={classes.avoidParentStyle}>
-        <ScopedCssBaseline>
-          <div className={classes.root} style={style}>
-            {drawerPosition === 'left' && drawerVisible ? (
-              <Suspense fallback={null}>
-                <DrawerWidget session={session} />
-              </Suspense>
-            ) : null}
-            <div className={classes.container}>
-              <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
-                <Suspense fallback={<LoadingEllipses />}>
-                  <ReactComponent model={view} session={session} />
+      <PaletteProvider palette={palette}>
+        <div className={classes.avoidParentStyle}>
+          <ScopedCssBaseline>
+            <div className={classes.root} style={style}>
+              {drawerPosition === 'left' && drawerVisible ? (
+                <Suspense fallback={null}>
+                  <DrawerWidget session={session} />
                 </Suspense>
-              </EmbeddedViewContainer>
+              ) : null}
+              <div className={classes.container}>
+                <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
+                  <Suspense fallback={<LoadingEllipses />}>
+                    <ReactComponent model={view} session={session} />
+                  </Suspense>
+                </EmbeddedViewContainer>
+              </div>
+              {drawerPosition === 'right' && drawerVisible ? (
+                <Suspense fallback={null}>
+                  <DrawerWidget session={session} />
+                </Suspense>
+              ) : null}
             </div>
-            {drawerPosition === 'right' && drawerVisible ? (
-              <Suspense fallback={null}>
-                <DrawerWidget session={session} />
-              </Suspense>
-            ) : null}
-          </div>
-        </ScopedCssBaseline>
-      </div>
+          </ScopedCssBaseline>
+        </div>
+      </PaletteProvider>
     </ThemeProvider>
   )
 })

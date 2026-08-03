@@ -1,7 +1,7 @@
 import { defaultStarts } from '@jbrowse/core/util'
 
 import type { Frame } from '@jbrowse/core/util'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 export type RGB = readonly [number, number, number]
 
@@ -38,13 +38,13 @@ export interface ColorPalette {
 }
 
 export function buildColorPalette(
-  theme: Theme,
+  palette: JBrowsePalette,
   colorByCDS: boolean,
 ): ColorPalette {
-  const themeBases = theme.palette.bases as Record<string, { main: string }>
+  const paletteBases: Record<string, { main: string }> = palette.bases
   const bases = new Map<string, ColorEntry>()
   for (const base of ['A', 'C', 'G', 'T']) {
-    bases.set(base, entry(themeBases[base]!.main))
+    bases.set(base, entry(paletteBases[base]!.main))
   }
   const frames = new Map<Frame, ColorEntry>()
   // Frames array layout: [null, f1, f2, f3, f-3, f-2, f-1]
@@ -52,17 +52,15 @@ export function buildColorPalette(
   // negative frames use JS .at() negative-index semantics.
   // colorByCDS matches the bright per-frame CDS palette used by gene tracks so
   // the translation rows line up visually with colored CDS features.
-  const framePalette = colorByCDS
-    ? theme.palette.framesCDS
-    : theme.palette.frames
+  const framePalette = colorByCDS ? palette.framesCDS : palette.frames
   for (const frame of [1, 2, 3, -1, -2, -3] as Frame[]) {
     frames.set(frame, entry(framePalette.at(frame)!.main))
   }
   return {
     bases,
     frames,
-    start: entry(theme.palette.startCodon),
-    stop: entry(theme.palette.stopCodon),
+    start: entry(palette.startCodon),
+    stop: entry(palette.stopCodon),
     fallback: entry('#aaaaaa'),
   }
 }

@@ -1,5 +1,5 @@
 import { OverlayCanvas } from '@jbrowse/render-core'
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import { drawMafAnnotations } from '../../LinearMafRenderer/rendering/annotations.ts'
@@ -19,7 +19,7 @@ const AnnotationOverlay = observer(function AnnotationOverlay({
   width: number
   height: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   if (markers.length === 0) {
     return null
   }
@@ -28,7 +28,7 @@ const AnnotationOverlay = observer(function AnnotationOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        drawMafAnnotations(ctx, markers, getFrameColors(theme))
+        drawMafAnnotations(ctx, markers, getFrameColors(palette))
       }}
     />
   )

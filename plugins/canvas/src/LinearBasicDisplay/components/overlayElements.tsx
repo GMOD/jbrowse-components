@@ -1,5 +1,6 @@
+import { alpha } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import PeptideCanvas from './PeptideCanvas.tsx'
@@ -16,6 +17,8 @@ import {
 } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
+import type { CSSProperties } from 'react'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -100,8 +103,38 @@ function overlaysReady(
   return viewInitialized && !!width && !!bpPerPx && visibleRegions.length > 0
 }
 
-const useStyles = makeStyles()(theme => {
-  const highlightBox = highlightBoxColors(theme.palette.highlight.main)
+// Geometry only. The colors live in `overlayBoxStyles` below, applied inline,
+// because they come from JBrowse's palette rather than a Material UI theme:
+// `highlight`, `featureHover` and `featureSelected` are JBrowse's own entries,
+// which a bare Material UI theme does not have. Keeping them out of here is
+// what lets this display render in a host that mounts a `PaletteProvider` and
+// no `ThemeProvider` at all.
+/**
+ * The palette-dependent half of the overlay boxes, as inline styles. Pure, so
+ * SVG export and tests can build the same boxes without mounting anything.
+ */
+function overlayBoxStyles(palette: JBrowsePalette) {
+  const highlightBox = highlightBoxColors(palette.highlight.main)
+  return {
+    hover: { backgroundColor: palette.featureHover },
+    solo: {
+      border: `2px dashed ${palette.primary.main}`,
+      borderRadius: 3,
+      backgroundColor: alpha(palette.primary.main, 0.15),
+    },
+    searchHighlight: {
+      border: `1px solid ${highlightBox.border}`,
+      borderRadius: 3,
+      backgroundColor: highlightBox.fill,
+    },
+    selected: {
+      border: `2px solid ${palette.featureSelected}`,
+      borderRadius: 3,
+    },
+  }
+}
+
+const useStyles = makeStyles()(() => {
   return {
     // Absolute layer holding the highlight boxes. Owned here rather than by the
     // canvas body, so the layer and the boxes it wraps can't disagree about
@@ -160,23 +193,6 @@ const useStyles = makeStyles()(theme => {
     overlayBase: {
       position: 'absolute',
       pointerEvents: 'none',
-    },
-    hoverOverlay: {
-      backgroundColor: theme.palette.featureHover,
-    },
-    soloBox: {
-      border: `2px dashed ${theme.palette.primary.main}`,
-      borderRadius: 3,
-      backgroundColor: alpha(theme.palette.primary.main, 0.15),
-    },
-    searchHighlightBox: {
-      border: `1px solid ${highlightBox.border}`,
-      borderRadius: 3,
-      backgroundColor: highlightBox.fill,
-    },
-    selectedBox: {
-      border: `2px solid ${theme.palette.featureSelected}`,
-      borderRadius: 3,
     },
   }
 })
@@ -403,6 +419,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     featureItemMap,
   } = model
   const { classes, cx } = useStyles()
+  const boxStyles = overlayBoxStyles(usePalette())
   const viewInitialized = view.initialized
   const width = viewInitialized ? view.trackWidthPx : undefined
   const bpPerPx = view.bpPerPx
@@ -423,15 +440,17 @@ export const HighlightLayer = observer(function HighlightLayer({
     xPadding = 0,
     yPadding = 0,
     testId,
+    boxStyle,
   }: {
     item: { startBp: number; endBp: number; topPx: number; bottomPx: number }
     refName: string
-    className: string
+    className?: string
     key: string
     extraWidth?: number
     xPadding?: number
     yPadding?: number
     testId?: string
+    boxStyle?: CSSProperties
   }) => {
     for (const vr of visibleRegions) {
       if (vr.refName !== refName) {
@@ -444,7 +463,10 @@ export const HighlightLayer = observer(function HighlightLayer({
             key={`${key}-${vr.displayedRegionIndex}`}
             data-testid={testId}
             className={cx(classes.overlayBase, className)}
-            style={computeOverlayRect(rect, extraWidth, xPadding, yPadding)}
+            style={{
+              ...computeOverlayRect(rect, extraWidth, xPadding, yPadding),
+              ...boxStyle,
+            }}
           />,
         )
       }
@@ -474,7 +496,7 @@ export const HighlightLayer = observer(function HighlightLayer({
   // No-op when the id isn't currently rendered.
   const addFeatureBox = (
     featureId: string,
-    className: string,
+    boxStyle: CSSProperties,
     key: string,
     testId?: string,
   ) => {
@@ -483,7 +505,7 @@ export const HighlightLayer = observer(function HighlightLayer({
       addOverlay({
         item: entry.item,
         refName: entry.vr.refName,
-        className,
+        boxStyle,
         key,
         extraWidth: computeExtraWidth(entry),
         xPadding: 2,
@@ -505,7 +527,7 @@ export const HighlightLayer = observer(function HighlightLayer({
       addOverlay({
         item: hoverItem,
         refName: entry.vr.refName,
-        className: classes.hoverOverlay,
+        boxStyle: boxStyles.hover,
         key: 'hover',
         extraWidth: subfeatureHover ? 0 : computeExtraWidth(entry),
         xPadding: subfeatureHover ? 0 : HIT_PAD_PX,
@@ -520,7 +542,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     for (const featureId of soloFeatureIdSet) {
       addFeatureBox(
         featureId,
-        classes.soloBox,
+        boxStyles.solo,
         `solo-select-${featureId}`,
         'feature-solo-select',
       )
@@ -532,14 +554,14 @@ export const HighlightLayer = observer(function HighlightLayer({
   for (const featureId of highlightedFeatureIdSet) {
     addFeatureBox(
       featureId,
-      classes.searchHighlightBox,
+      boxStyles.searchHighlight,
       `search-highlight-${featureId}`,
       'feature-highlight',
     )
   }
 
   if (selectedFeatureId) {
-    addFeatureBox(selectedFeatureId, classes.selectedBox, 'selected')
+    addFeatureBox(selectedFeatureId, boxStyles.selected, 'selected')
   }
 
   // The absolute layer is emitted here rather than by the caller so an empty box

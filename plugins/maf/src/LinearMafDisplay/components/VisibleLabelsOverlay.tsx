@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { OverlayCanvas } from '@jbrowse/render-core'
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import { drawMafLabels } from '../../LinearMafRenderer/rendering/labels.ts'
@@ -22,8 +22,8 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   height,
   mismatchRendering,
 }: Props) {
-  const theme = useTheme()
-  const contrastForBase = useMemo(() => getContrastBaseMap(theme), [theme])
+  const palette = usePalette()
+  const contrastForBase = useMemo(() => getContrastBaseMap(palette), [palette])
 
   if (labels.length === 0) {
     return null

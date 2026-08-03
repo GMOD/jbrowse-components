@@ -9,6 +9,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   BaseLinearDisplayComponent,
@@ -133,6 +134,7 @@ function createTestEnvironment() {
         call: mockRpcCall,
       },
       theme: createJBrowseTheme(),
+      palette: resolvePalette(),
       assemblyManager: {
         get: (name: string) =>
           name === 'volvox'

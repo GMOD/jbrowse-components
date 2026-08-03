@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { OverlayCanvas } from '@jbrowse/render-core'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { drawAlignmentLabels } from './drawAlignmentLabels.ts'
@@ -19,7 +19,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   height,
   contrastMap,
 }: VisibleLabelsOverlayProps) {
-  const theme = useTheme()
+  const palette = usePalette()
   if (labels.length === 0) {
     return null
   }
@@ -28,7 +28,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
       width={width ?? 0}
       height={height}
       draw={ctx => {
-        drawAlignmentLabels(ctx, labels, contrastMap, theme)
+        drawAlignmentLabels(ctx, labels, contrastMap, palette)
       }}
     />
   )

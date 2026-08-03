@@ -91,6 +91,7 @@
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
+    "./ui/PaletteContext": "./src/ui/PaletteContext.tsx",
     "./ui/PluginStoreCard": "./src/ui/PluginStoreCard.tsx",
     "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
@@ -103,6 +104,7 @@
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
+    "./ui/palette": "./src/ui/palette.ts",
     "./ui/theme": "./src/ui/theme.ts",
     "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./util": "./src/util/index.ts",
@@ -505,6 +507,10 @@
         "types": "./esm/ui/Menu.d.ts",
         "import": "./esm/ui/Menu.js"
       },
+      "./ui/PaletteContext": {
+        "types": "./esm/ui/PaletteContext.d.ts",
+        "import": "./esm/ui/PaletteContext.js"
+      },
       "./ui/PluginStoreCard": {
         "types": "./esm/ui/PluginStoreCard.d.ts",
         "import": "./esm/ui/PluginStoreCard.js"
@@ -552,6 +558,10 @@
       "./ui/getGraphicsCapabilities": {
         "types": "./esm/ui/getGraphicsCapabilities.d.ts",
         "import": "./esm/ui/getGraphicsCapabilities.js"
+      },
+      "./ui/palette": {
+        "types": "./esm/ui/palette.d.ts",
+        "import": "./esm/ui/palette.js"
       },
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
@@ -1045,6 +1055,9 @@
         "ui/Menu": [
           "esm/ui/Menu.d.ts"
         ],
+        "ui/PaletteContext": [
+          "esm/ui/PaletteContext.d.ts"
+        ],
         "ui/PluginStoreCard": [
           "esm/ui/PluginStoreCard.d.ts"
         ],
@@ -1080,6 +1093,9 @@
         ],
         "ui/getGraphicsCapabilities": [
           "esm/ui/getGraphicsCapabilities.d.ts"
+        ],
+        "ui/palette": [
+          "esm/ui/palette.d.ts"
         ],
         "ui/theme": [
           "esm/ui/theme.d.ts"

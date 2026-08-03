@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
@@ -55,9 +55,9 @@ function SequenceSvgBody({
 
   // The export theme can differ from the session theme, so rebuild the
   // palette/text colors here and reuse the rest of the live renderState.
-  const theme = createJBrowseTheme(opts?.theme)
-  const palette = buildColorPalette(theme, view.colorByCDS)
-  const textColors = buildTextColors(palette, theme)
+  const exportPalette = resolvePalette({ configTheme: opts?.theme })
+  const palette = buildColorPalette(exportPalette, view.colorByCDS)
+  const textColors = buildTextColors(palette, exportPalette)
   const state: DrawSequenceState = {
     ...model.renderState,
     // canvasWidth is the block scissor bound, so it has to be the width this

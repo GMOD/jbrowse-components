@@ -71,7 +71,7 @@ import {
 } from './colorTagUtils.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import {
-  buildColorPaletteFromTheme,
+  buildColorPaletteFromPalette,
   makeBpToScreenX,
 } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
@@ -692,8 +692,7 @@ export default function stateModelFactory(
            * one. `undefined` when not hovering coverage.
            */
           hoverCoverageBand: undefined as
-            | { topOffset: number; coverageHeight: number }
-            | undefined,
+            { topOffset: number; coverageHeight: number } | undefined,
         }
       })
       // Named getters for frequently-tested conditions so the inline boolean
@@ -1199,7 +1198,7 @@ export default function stateModelFactory(
         // Derived from the session theme so it's always available — including
         // headless SVG export and RPC, where no component mounts to seed it.
         get colorPalette(): ColorPalette {
-          return buildColorPaletteFromTheme(getSession(self).theme)
+          return buildColorPaletteFromPalette(getSession(self).palette)
         },
 
         /**

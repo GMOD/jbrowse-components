@@ -1,3 +1,4 @@
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { Suspense } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
@@ -24,30 +25,32 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
   viewState: ViewModel
 }) {
   const { session } = viewState
-  const { view, theme } = session
+  const { view, theme, palette } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
   const { classes } = useStyles()
 
   return (
     <ThemeProvider theme={theme}>
-      <div className={classes.avoidParentStyle}>
-        <ScopedCssBaseline>
-          <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
-            <Suspense fallback={<LoadingEllipses />}>
-              <ReactComponent model={view} session={session} />
-            </Suspense>
-          </EmbeddedViewContainer>
-          <ModalWidget
-            session={session}
-            onClose={() => {
-              // the modal is this product's only widget surface, so closing it
-              // dismisses the widget rather than returning it to a drawer
-              session.hideAllWidgets()
-            }}
-          />
-        </ScopedCssBaseline>
-      </div>
+      <PaletteProvider palette={palette}>
+        <div className={classes.avoidParentStyle}>
+          <ScopedCssBaseline>
+            <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
+              <Suspense fallback={<LoadingEllipses />}>
+                <ReactComponent model={view} session={session} />
+              </Suspense>
+            </EmbeddedViewContainer>
+            <ModalWidget
+              session={session}
+              onClose={() => {
+                // the modal is this product's only widget surface, so closing it
+                // dismisses the widget rather than returning it to a drawer
+                session.hideAllWidgets()
+              }}
+            />
+          </ScopedCssBaseline>
+        </div>
+      </PaletteProvider>
     </ThemeProvider>
   )
 })

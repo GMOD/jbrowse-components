@@ -1,6 +1,6 @@
-import { alpha } from '@mui/material'
+import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * Theme-derived color set fed to the MAF cell-color resolver. Centralizing
@@ -21,8 +21,8 @@ export interface MafColorPalette {
   missingDataColor: string
 }
 
-export function getColorBaseMap(theme: Theme) {
-  const { bases } = theme.palette
+export function getColorBaseMap(palette: JBrowsePalette) {
+  const { bases } = palette
   return {
     a: bases.A.main,
     c: bases.C.main,
@@ -32,27 +32,29 @@ export function getColorBaseMap(theme: Theme) {
   }
 }
 
-export function getMafColorPalette(theme: Theme): MafColorPalette {
+export function getMafColorPalette(palette: JBrowsePalette): MafColorPalette {
   return {
-    colorForBase: getColorBaseMap(theme),
-    matchColor: theme.palette.action.disabledBackground,
-    gapColor: theme.palette.deletion,
-    mismatchOffColor: theme.palette.mutedSnpBase,
-    unknownBaseColor: theme.palette.text.primary,
-    insertionColor: theme.palette.insertion,
-    bridgeLineColor: theme.palette.text.secondary,
-    missingDataColor: theme.palette.missingData,
+    colorForBase: getColorBaseMap(palette),
+    matchColor: palette.action.disabledBackground,
+    gapColor: palette.deletion,
+    mismatchOffColor: palette.mutedSnpBase,
+    unknownBaseColor: palette.text.primary,
+    insertionColor: palette.insertion,
+    bridgeLineColor: palette.text.secondary,
+    missingDataColor: palette.missingData,
   }
 }
 
 /**
  * The theme's CDS reading-frame colors as plain CSS strings, indexed the same
- * as `theme.palette.framesCDS` (slot 0 unused; slots 1..3 are the `+`-strand
+ * as `palette.framesCDS` (slot 0 unused; slots 1..3 are the `+`-strand
  * frames, 4..6 the mirrored `−`-strand frames). The annotation overlay indexes
  * this with the `frameIndex` from `computeVisibleAnnotations` via `.at()`.
  */
-export function getFrameColors(theme: Theme): (string | undefined)[] {
-  return theme.palette.framesCDS.map(c => c?.main)
+export function getFrameColors(
+  palette: JBrowsePalette,
+): (string | undefined)[] {
+  return palette.framesCDS.map(c => c?.main)
 }
 
 /**
@@ -65,24 +67,24 @@ export function getFrameColors(theme: Theme): (string | undefined)[] {
  * track background, so the light-mode synonymous blue at 0.18 nearly vanishes
  * there — the per-mode alphas keep every change category legible on both.
  */
-export function getCodonColors(theme: Theme) {
-  const dark = theme.palette.mode === 'dark'
+export function getCodonColors(palette: JBrowsePalette) {
+  const dark = palette.mode === 'dark'
   return {
     fill: {
       same: undefined,
-      syn: alpha(theme.palette.codonSynonymous, dark ? 0.4 : 0.18),
-      nonsyn: alpha(theme.palette.codonNonsynonymous, dark ? 0.68 : 0.55),
-      stop: alpha(theme.palette.codonStop, dark ? 0.72 : 0.6),
+      syn: alpha(palette.codonSynonymous, dark ? 0.4 : 0.18),
+      nonsyn: alpha(palette.codonNonsynonymous, dark ? 0.68 : 0.55),
+      stop: alpha(palette.codonStop, dark ? 0.72 : 0.6),
     },
-    text: theme.palette.text.primary,
+    text: palette.text.primary,
   }
 }
 
-export function getContrastBaseMap(theme: Theme) {
+export function getContrastBaseMap(palette: JBrowsePalette) {
   return Object.fromEntries(
-    Object.entries(getColorBaseMap(theme)).map(([key, value]) => [
+    Object.entries(getColorBaseMap(palette)).map(([key, value]) => [
       key,
-      theme.palette.getContrastText(value),
+      getContrastText(value),
     ]),
   )
 }

@@ -6,7 +6,7 @@ import { readConfigValueSafe, resolveThemeColor } from '../renderConfig.ts'
 import { getBoxColor, getStrokeColor } from '../util.ts'
 
 import type { RenderContext } from './renderContext.ts'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
 // transl_except residues (selenocysteine, pyrrolysine, polyA-completed stops)
@@ -98,7 +98,7 @@ export function boxColor(feature: Feature, ctx: RenderContext) {
     feature,
     config: ctx.config,
     colorByCDS: ctx.colorByCDS,
-    theme: ctx.theme,
+    palette: ctx.palette,
     jexl: ctx.jexl,
   })
 }
@@ -107,7 +107,7 @@ export function strokeColor(feature: Feature, ctx: RenderContext) {
   return getStrokeColor({
     feature,
     config: ctx.config,
-    theme: ctx.theme,
+    palette: ctx.palette,
     jexl: ctx.jexl,
   })
 }
@@ -134,8 +134,11 @@ export function featureTooltip(feature: Feature, ctx: RenderContext) {
 // stores THEME_DERIVED_COLOR, resolved to text.primary at low alpha so the
 // outline stays visible on both light and dark tracks (a fixed black outline
 // vanishes on a dark background); in light mode this matches the old black-0.3.
-export function resolveOutlineColor(outlineColor: string, theme: Theme) {
-  const faint = colord(theme.palette.text.primary).alpha(0.3).toRgbString()
+export function resolveOutlineColor(
+  outlineColor: string,
+  palette: JBrowsePalette,
+) {
+  const faint = colord(palette.text.primary).alpha(0.3).toRgbString()
   const c = resolveThemeColor(outlineColor, faint)
   return c ? colorToUint32(c) : 0
 }

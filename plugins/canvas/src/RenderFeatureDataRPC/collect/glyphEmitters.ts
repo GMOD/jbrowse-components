@@ -685,7 +685,7 @@ export function processFeatureRecord(
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     name,
     description,
-    theme: ctx.theme,
+    palette: ctx.palette,
   })
 
   if (nameLabel || descriptionLabel) {

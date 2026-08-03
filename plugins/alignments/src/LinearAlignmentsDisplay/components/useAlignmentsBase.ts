@@ -1,7 +1,7 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { useMemo, useRef } from 'react'
 
 import { clamp, getContainingView } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import { getMismatchContrastMap } from '../../shared/util.ts'
 import {
@@ -53,7 +53,7 @@ function snpBaseFromCigar(cigarHit: CigarHitResult | undefined) {
   return cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
 }
 
-// Hit-test handlers + theme plumbing for the pileup canvas. Mouse coords come
+// Hit-test handlers + palette plumbing for the pileup canvas. Mouse coords come
 // straight off the native event (`offsetX`/`offsetY`, canvas-relative since the
 // canvas is a borderless leaf element), so no canvas ref or rect math is needed.
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
@@ -68,10 +68,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // Suppresses the trailing click that fires when a pan ends inside the canvas.
   const dragMovedRef = useRef(false)
 
-  const theme = useTheme()
+  const palette = usePalette()
   const contrastMap = useMemo(
-    () => getMismatchContrastMap(model.showModifications, theme),
-    [theme, model.showModifications],
+    () => getMismatchContrastMap(model.showModifications, palette),
+    [palette, model.showModifications],
   )
 
   const {

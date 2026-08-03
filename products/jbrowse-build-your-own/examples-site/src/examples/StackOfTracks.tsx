@@ -1,9 +1,9 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+import { setConf } from '@jbrowse/core/configuration'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
-import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 // Three different display types -- a wiggle canvas, a feature layout, and an
@@ -80,10 +80,11 @@ function makeView() {
   // see the Pan and zoom page: scroll-to-zoom is a session preference, and the
   // pileup below reads the same one to know the plain wheel is spoken for
   view.setScrollZoom(true)
-  return view
+  return { view, session: state.session }
 }
 
-type BrowserView = ReturnType<typeof makeView>
+type BrowserView = ReturnType<typeof makeView>['view']
+type BrowserSession = ReturnType<typeof makeView>['session']
 
 function useViewWidth(view: BrowserView) {
   const ref = useRef<HTMLDivElement>(null)
@@ -320,30 +321,75 @@ const TrackStack = observer(function TrackStack({
   )
 })
 
-// The one piece of Material UI you cannot currently drop, and it is worth being
-// precise about why.
-//
-// JBrowse's stock displays read theme tokens to colour their actual *content*:
-// the feature display reads `palette.highlight.main` for its highlight boxes,
-// the CDS renderer reads `palette.framesCDS` for reading frames. Those are
-// augmented entries that a default MUI theme does not have, so without this
-// wrapper a feature or alignments track throws
-// `Cannot read properties of undefined (reading 'main')`.
-//
-// A wiggle track happens not to need it and renders fine bare, which is why the
-// two pages before this one mount no ThemeProvider at all. The next page draws
-// the line precisely: the status overlays are swappable, the palette is not.
-//
-// Note this costs you a theme *object*, not a look: nothing here styles the
-// chrome, because there is no chrome.
-const theme = createJBrowseTheme()
+/**
+ * The page around this demo has a light/dark toggle. JBrowse needs to be told,
+ * because a display paints no background of its own: its labels are drawn
+ * straight onto whatever is behind them, so light-theme text on a dark page is
+ * near-black on near-black.
+ *
+ * The toggle writes an attribute on <html>, and the OS preference arrives as a
+ * media query. Either can move without the other, so watch both.
+ */
+function readSiteMode(): 'light' | 'dark' {
+  const chosen = document.documentElement.dataset.theme
+  if (chosen === 'light' || chosen === 'dark') {
+    return chosen
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+
+function useSiteMode() {
+  const [mode, setMode] = useState(readSiteMode)
+  useEffect(() => {
+    const update = () => {
+      setMode(readSiteMode())
+    }
+    const observer = new MutationObserver(update)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    })
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    media.addEventListener('change', update)
+    return () => {
+      observer.disconnect()
+      media.removeEventListener('change', update)
+    }
+  }, [])
+  return mode
+}
+
+/**
+ * Write the mode onto the session's config theme, and read the resolved colors
+ * back off the session.
+ *
+ * One write rather than two. The config theme is what the display ships to the
+ * renderer, so the feature labels baked there follow it, and `session.palette`
+ * is derived from the same slot, so what React draws follows it too. Setting
+ * only a React-side palette would leave the labels behind.
+ */
+function useSitePalette(session: BrowserSession) {
+  const mode = useSiteMode()
+  useEffect(() => {
+    setConf(session, 'theme', { palette: { mode } })
+  }, [session, mode])
+  return session.palette
+}
+
+// JBrowse's stock displays read a palette to colour their own *content*: the
+// feature display wants a highlight colour, the CDS renderer wants its reading
+// frames. That is a palette of colour strings, not a UI toolkit, so it arrives
+// through `PaletteProvider` and Material UI is not involved.
 
 const StackOfTracks = observer(function StackOfTracks() {
-  const view = useMemo(() => makeView(), [])
+  const { view, session } = useMemo(() => makeView(), [])
+  const palette = useSitePalette(session)
   return (
-    <ThemeProvider theme={theme}>
+    <PaletteProvider palette={palette}>
       <TrackStack view={view} />
-    </ThemeProvider>
+    </PaletteProvider>
   )
 })
 

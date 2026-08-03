@@ -27,17 +27,19 @@ CI re-checks the result.
 ## What this does not remove
 
 Swapping the overlays removes Material UI _components_. It does not remove the
-_palette_. JBrowse's stock displays read theme tokens to colour their own
-content: the feature display reads `palette.highlight.main` for highlight boxes,
-the CDS renderer reads `palette.framesCDS` for reading frames. Those are
-augmented entries a default MUI theme does not have, so a feature or alignments
-track without `createJBrowseTheme` throws
-`Cannot read properties of undefined (reading 'main')`.
+_palette_. JBrowse's stock displays read a palette to colour their own content:
+the feature display reads `highlight` for highlight boxes, the CDS renderer
+reads `framesCDS` for reading frames. Those are JBrowse's own entries, so a
+feature or alignments track has to be told about them.
 
-So the boundary today is: the status UI is yours, the palette is still
-JBrowse's, and you mount it with MUI's `ThemeProvider`, as the source below
-does. A wiggle track happens not to need it, which is why the first two pages of
-this site have no such wrapper.
+It is told through `PaletteProvider`, as the source below does, and what it
+carries is a plain object of colour strings from `resolvePalette` rather than a
+theme object. No Material UI is involved, and none is required. A wiggle track
+happens not to need even that, which is why the first two pages of this site
+supply no palette.
+
+So the boundary today is: the status UI is yours, the colours are still
+JBrowse's, and neither costs you a UI toolkit.
 
 If you are writing your own display component this does not apply, because you
 choose what your renderer reads.

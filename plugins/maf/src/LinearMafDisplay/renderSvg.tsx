@@ -7,6 +7,7 @@ import {
   legendEntries,
 } from '@jbrowse/core/ui'
 import { colorLongreadInv } from '@jbrowse/core/ui/theme'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
@@ -65,6 +66,8 @@ function MafSvgBody({
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const state = model.renderState
   const theme = createJBrowseTheme(opts?.theme)
+  // SVG export colors follow the export-chosen theme, not the live session one
+  const palette = resolvePalette({ configTheme: opts?.theme })
   const {
     hierarchy,
     showTree,
@@ -92,9 +95,9 @@ function MafSvgBody({
     ...state,
     canvasWidth: width,
     canvasHeight: rowsHeight,
-    palette: getMafColorPalette(theme),
+    palette: getMafColorPalette(palette),
   }
-  const contrast = getContrastBaseMap(theme)
+  const contrast = getContrastBaseMap(palette)
 
   return (
     <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
@@ -172,7 +175,11 @@ function MafSvgBody({
             }
             drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
             drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
-            drawMafAnnotations(ctx, model.visibleFrames, getFrameColors(theme))
+            drawMafAnnotations(
+              ctx,
+              model.visibleFrames,
+              getFrameColors(palette),
+            )
             // Insertion markers + deletion count labels render from the same
             // positioned markers the on-screen overlays use, so export matches
             // the screen. Insertions are base-level only (gated like the live
@@ -192,7 +199,7 @@ function MafSvgBody({
               contrast,
               state.mismatchRendering,
             )
-            drawMafCodons(ctx, model.visibleCodons, getCodonColors(theme))
+            drawMafCodons(ctx, model.visibleCodons, getCodonColors(palette))
             drawInversions(ctx, model.visibleInversions, colorLongreadInv)
           }}
         />

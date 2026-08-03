@@ -1,5 +1,7 @@
+import { getContrastText } from '@jbrowse/core/ui/palette'
+
 import type { Feature } from '@jbrowse/core/util'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 export const defaultFilterFlags = {
   flagInclude: 0,
@@ -101,8 +103,8 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   return { idToName, nameToId, readGroups }
 }
 
-function getColorBaseMap(theme: Theme) {
-  const { skip, deletion, insertion, hardclip, softclip, bases } = theme.palette
+function getColorBaseMap(palette: JBrowsePalette) {
+  const { skip, deletion, insertion, hardclip, softclip, bases } = palette
   return {
     A: bases.A.main,
     C: bases.C.main,
@@ -116,11 +118,11 @@ function getColorBaseMap(theme: Theme) {
   }
 }
 
-export function getContrastBaseMap(theme: Theme) {
+export function getContrastBaseMap(palette: JBrowsePalette) {
   return Object.fromEntries(
-    Object.entries(getColorBaseMap(theme)).map(([key, value]) => [
+    Object.entries(getColorBaseMap(palette)).map(([key, value]) => [
       key,
-      theme.palette.getContrastText(value),
+      getContrastText(value),
     ]),
   )
 }
@@ -133,9 +135,9 @@ export function getContrastBaseMap(theme: Theme) {
 // empty map makes drawAlignmentLabels fall back to it.
 export function getMismatchContrastMap(
   showModifications: boolean,
-  theme: Theme,
+  palette: JBrowsePalette,
 ): Record<string, string> {
-  return showModifications ? {} : getContrastBaseMap(theme)
+  return showModifications ? {} : getContrastBaseMap(palette)
 }
 
 function isTypedArray(

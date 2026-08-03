@@ -27,8 +27,9 @@ import {
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
-// Files scanned for `#color` tags.
-const COLOR_SOURCES = ['packages/core/src/ui/theme.ts']
+// Files scanned for `#color` tags. The colors themselves live in palette.ts,
+// which imports no toolkit; theme.ts only re-exports them for Material UI.
+const COLOR_SOURCES = ['packages/core/src/ui/palette.ts']
 
 interface Row {
   label: string

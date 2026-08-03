@@ -5,7 +5,7 @@ import {
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 const INTERBASE_TYPES = new Set<VisibleLabel['type']>([
   'insertion',
@@ -22,9 +22,8 @@ export function drawAlignmentLabels(
   ctx: Ctx2D,
   labels: VisibleLabel[],
   contrastMap: Record<string, string>,
-  theme: Theme,
+  palette: JBrowsePalette,
 ) {
-  const { palette } = theme
   const white = palette.common.white
   ctx.textBaseline = 'middle'
   // Canvas2D re-parses the font shorthand on every assignment, and in practice

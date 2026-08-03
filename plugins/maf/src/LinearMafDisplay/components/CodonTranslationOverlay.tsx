@@ -1,5 +1,5 @@
 import { OverlayCanvas } from '@jbrowse/render-core'
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import { drawMafCodons } from '../../LinearMafRenderer/rendering/codons.ts'
@@ -19,7 +19,7 @@ const CodonTranslationOverlay = observer(function CodonTranslationOverlay({
   width: number
   height: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   if (markers.length === 0) {
     return null
   }
@@ -28,7 +28,7 @@ const CodonTranslationOverlay = observer(function CodonTranslationOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        drawMafCodons(ctx, markers, getCodonColors(theme))
+        drawMafCodons(ctx, markers, getCodonColors(palette))
       }}
     />
   )

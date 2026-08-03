@@ -7,14 +7,14 @@ import type {
   SubfeatureInfo,
 } from '../rpcTypes.ts'
 import type { PeptideData } from '../types.ts'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Read-only inputs threaded through every emitter: the resolved config, theme,
 // colorByCDS flag, the per-feature translated peptides, and the worker jexl.
 export interface RenderContext {
   config: DisplayConfig
-  theme: Theme
+  palette: JBrowsePalette
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
   // worker pluginManager's jexl instance, so a custom `mouseover` slot can call

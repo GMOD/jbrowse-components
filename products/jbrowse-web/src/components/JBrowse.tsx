@@ -1,3 +1,4 @@
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useEffect, useState } from 'react'
 
 import { App } from '@jbrowse/app-core'
@@ -23,7 +24,7 @@ const JBrowse = observer(function JBrowse({
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel
-  const { id, theme } = session
+  const { id, theme, palette } = session
 
   useEffect(() => {
     setQueryParams({ session: `local-${id}` })
@@ -62,15 +63,17 @@ const JBrowse = observer(function JBrowse({
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <FileHandleRestoreBanner session={session} />
-      {/* key={id} forces React to remount App when session changes (e.g.
+      <PaletteProvider palette={palette}>
+        <CssBaseline />
+        <FileHandleRestoreBanner session={session} />
+        {/* key={id} forces React to remount App when session changes (e.g.
           duplicate session) preventing stale references to old session views */}
-      <App
-        key={id}
-        session={session}
-        HeaderButtons={<ShareButton session={session} />}
-      />
+        <App
+          key={id}
+          session={session}
+          HeaderButtons={<ShareButton session={session} />}
+        />
+      </PaletteProvider>
     </ThemeProvider>
   )
 })

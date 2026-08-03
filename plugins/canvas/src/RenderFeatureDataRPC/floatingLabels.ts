@@ -4,7 +4,7 @@ import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
 import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { LabelItem } from './rpcTypes.ts'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Single constructor for a LabelItem so textWidth is always the measured width
 // of `text` at LABEL_FONT_SIZE — the invariant the layout/hit-test reservations
@@ -22,11 +22,11 @@ function labelItem(text: string, color: string, relativeY = 0): LabelItem {
 export function createFeatureFloatingLabels({
   name: rawName,
   description: rawDescription,
-  theme,
+  palette,
 }: {
   name: string | undefined
   description: string | undefined
-  theme: Theme
+  palette: JBrowsePalette
 }) {
   const name = truncateLabel(rawName ?? '')
   const description = truncateToWidth(
@@ -42,10 +42,10 @@ export function createFeatureFloatingLabels({
   // which only the main thread knows, so relativeY stays 0 here and is set in
   // labelPositioning.resolveFeatureLabels.
   const nameLabel = shouldShowLabel
-    ? labelItem(name, theme.palette.text.primary)
+    ? labelItem(name, palette.text.primary)
     : undefined
   const descriptionLabel = shouldShowDescription
-    ? labelItem(description, theme.palette.featureDescription)
+    ? labelItem(description, palette.featureDescription)
     : undefined
 
   return { nameLabel, descriptionLabel }
@@ -56,13 +56,13 @@ export function createTranscriptFloatingLabel({
   featureHeight,
   subfeatureLabels,
   parentFeatureId,
-  theme,
+  palette,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   parentFeatureId: string
-  theme: Theme
+  palette: JBrowsePalette
 }) {
   const truncatedName = truncateLabel(displayLabel)
 
@@ -76,8 +76,8 @@ export function createTranscriptFloatingLabel({
       // overlay labels sit on a light backing rect, so keep them dark; inline
       // ones read against the track and follow the theme text color
       color: isOverlay
-        ? theme.palette.common.black
-        : theme.palette.text.primary,
+        ? palette.common.black
+        : palette.text.primary,
       textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
       isOverlay,
     },

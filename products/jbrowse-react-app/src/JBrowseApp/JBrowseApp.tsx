@@ -1,3 +1,4 @@
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
@@ -33,15 +34,17 @@ const JBrowseApp = observer(function JBrowseApp({
 
   return (
     <ThemeProvider theme={session.theme}>
-      <div className={classes.avoidParentStyle}>
-        <ScopedCssBaseline sx={{ height: '100%' }}>
-          <Suspense fallback={<LoadingEllipses />}>
-            {/* key forces React to remount App when session changes (e.g.
+      <PaletteProvider palette={session.palette}>
+        <div className={classes.avoidParentStyle}>
+          <ScopedCssBaseline sx={{ height: '100%' }}>
+            <Suspense fallback={<LoadingEllipses />}>
+              {/* key forces React to remount App when session changes (e.g.
                 duplicate session) preventing stale references to old session views */}
-            <App key={session.id} session={session} />
-          </Suspense>
-        </ScopedCssBaseline>
-      </div>
+              <App key={session.id} session={session} />
+            </Suspense>
+          </ScopedCssBaseline>
+        </div>
+      </PaletteProvider>
     </ThemeProvider>
   )
 })

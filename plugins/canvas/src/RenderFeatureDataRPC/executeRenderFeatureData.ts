@@ -1,5 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
@@ -51,11 +51,11 @@ export async function executeRenderFeatureData({
     statusCallback = () => {},
   } = args
 
-  // Build a full JBrowse theme worker-side from the structurally serializable
-  // args the display passes via rpcProps — the created theme carries functions
-  // and can't cross the worker boundary. When absent (e.g. a session without
-  // theming), this returns the default theme.
-  const theme = createJBrowseThemeFromArgs(themeOptions)
+  // Resolve the colors worker-side from the structurally serializable args the
+  // display passes via rpcProps. This is plain data in and plain data out, so
+  // no Material UI reaches the worker. When absent (e.g. a session without
+  // theming), this returns the default palette.
+  const palette = resolvePalette(themeOptions)
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -220,7 +220,7 @@ export async function executeRenderFeatureData({
         regionStart: region.start,
         regionEnd: region.end,
         config: displayConfig,
-        theme,
+        palette,
         colorByCDS: !!colorByCDS,
         peptideDataMap,
         jexl: pluginManager.jexl,

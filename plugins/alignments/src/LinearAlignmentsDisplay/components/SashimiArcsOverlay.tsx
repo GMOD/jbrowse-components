@@ -1,8 +1,8 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { getContainingView } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SashimiArcLabels from './SashimiArcLabels.tsx'
@@ -54,7 +54,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
   onSelect: (key: string | null) => void
 }) {
   const [hoveredArcKey, setHoveredArcKey] = useState<string | null>(null)
-  const theme = useTheme()
+  const palette = usePalette()
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const isDown = side === 'down'
   if (!arcs.length) {
@@ -83,10 +83,10 @@ const SashimiSubBand = observer(function SashimiSubBand({
           <path
             key={arcKey}
             d={arc.d}
-            // Selection recolors to the theme's primary text color, which
+            // Selection recolors to the palette's primary text color, which
             // inverts with the palette — the old hardcoded '#333' vanished
             // against the dark-mode track background.
-            stroke={isSelected ? theme.palette.text.primary : arc.stroke}
+            stroke={isSelected ? palette.text.primary : arc.stroke}
             strokeWidth={wide ? arc.strokeWidth + 2 : arc.strokeWidth}
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}

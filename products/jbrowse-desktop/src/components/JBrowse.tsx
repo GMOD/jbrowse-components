@@ -1,3 +1,4 @@
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useEffect } from 'react'
 
 import { App } from '@jbrowse/app-core'
@@ -31,10 +32,12 @@ const JBrowseNonNullRoot = observer(function JBrowseNonNullRoot({
 
   return session ? (
     <ThemeProvider theme={session.theme}>
-      <CssBaseline />
-      {/* key forces React to remount App when session changes (e.g.
+      <PaletteProvider palette={session.palette}>
+        <CssBaseline />
+        {/* key forces React to remount App when session changes (e.g.
           duplicate session) preventing stale references to old session views */}
-      <App key={session.id} session={session} />
+        <App key={session.id} session={session} />
+      </PaletteProvider>
     </ThemeProvider>
   ) : null
 })

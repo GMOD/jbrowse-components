@@ -3,7 +3,7 @@ import {
   formatHEX,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import { lighten } from '@mui/material'
+import { lighten } from '@jbrowse/core/ui/palette'
 
 import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
 import { hasVisibleText, isUTR } from '../util.ts'
@@ -236,7 +236,7 @@ export function emitSubfeatureLabel(
       featureHeight,
       subfeatureLabels: config.subfeatureLabels,
       parentFeatureId: args.parentFeatureId,
-      theme: ctx.theme,
+      palette: ctx.palette,
     })
     // Merge, don't replace: FeatureLabelData carries name/description and
     // subfeature labels together, so preserve any name/description entry already

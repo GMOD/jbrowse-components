@@ -7,6 +7,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -87,6 +88,7 @@ function createDisplay() {
       rpcManager: { call: jest.fn() },
       // `colorPalette` (and so `renderState`) derives from the session theme
       theme: createJBrowseTheme(),
+      palette: resolvePalette(),
       // the feature-details lookup asks for the region's sequence adapter, and
       // reports a failed lookup through notify
       assemblyManager: { get: () => undefined },

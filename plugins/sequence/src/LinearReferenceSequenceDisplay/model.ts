@@ -145,10 +145,10 @@ export function modelFactory(
        * no component mounts to seed them.
        */
       get colorState() {
-        const { theme } = getSession(self)
+        const { palette: sessionPalette } = getSession(self)
         const view = getContainingView(self) as LGV
-        const palette = buildColorPalette(theme, view.colorByCDS)
-        return { palette, textColors: buildTextColors(palette, theme) }
+        const palette = buildColorPalette(sessionPalette, view.colorByCDS)
+        return { palette, textColors: buildTextColors(palette, sessionPalette) }
       },
     }))
     .views(self => ({

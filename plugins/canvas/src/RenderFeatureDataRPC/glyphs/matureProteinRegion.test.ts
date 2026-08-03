@@ -1,4 +1,4 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from '../collectRenderData.ts'
@@ -239,7 +239,7 @@ describe('layoutMatureProteinRegion', () => {
 })
 
 describe('collectRenderData for mature protein regions', () => {
-  const theme = createJBrowseTheme()
+  const palette = resolvePalette()
 
   // every case walks one polyprotein layout with peptides off; only the config
   // and (once) the region end vary
@@ -253,7 +253,7 @@ describe('collectRenderData for mature protein regions', () => {
       regionStart: 0,
       regionEnd,
       config,
-      theme,
+      palette,
       colorByCDS: false,
       peptideDataMap: undefined,
       jexl,

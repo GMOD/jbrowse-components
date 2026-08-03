@@ -11,7 +11,7 @@ import { mockDisplayConfig } from './testUtils.ts'
 import { getBoxColor, isUTR, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
 function createMockFeature(opts: {
@@ -266,11 +266,11 @@ describe('truncateLabel', () => {
 })
 
 describe('getBoxColor (BED itemRgb)', () => {
-  const theme = { palette: { framesCDS: [] } } as unknown as Theme
+  const palette = { framesCDS: [] } as unknown as JBrowsePalette
   const jexl = createJexlInstance()
 
   function boxColor(feature: Feature, config = mockDisplayConfig()) {
-    return getBoxColor({ feature, config, colorByCDS: false, theme, jexl })
+    return getBoxColor({ feature, config, colorByCDS: false, palette, jexl })
   }
 
   it('inherits itemRgb from the parent for a drawn exon', () => {
@@ -320,7 +320,7 @@ describe('getBoxColor (BED itemRgb)', () => {
 })
 
 describe('getBoxColor (an explicit color always beats the file)', () => {
-  const theme = { palette: { framesCDS: [] } } as unknown as Theme
+  const palette = { framesCDS: [] } as unknown as JBrowsePalette
   const jexl = createJexlInstance()
   const itemRgbFeature = createMockFeature({
     type: 'block',
@@ -332,7 +332,7 @@ describe('getBoxColor (an explicit color always beats the file)', () => {
       feature: itemRgbFeature,
       config,
       colorByCDS: false,
-      theme,
+      palette,
       jexl,
     })
   }
@@ -353,7 +353,7 @@ describe('getBoxColor (an explicit color always beats the file)', () => {
       attrs: { itemRgb: '227,26,28' },
     })
     expect(
-      getBoxColor({ feature: utr, config, colorByCDS: false, theme, jexl }),
+      getBoxColor({ feature: utr, config, colorByCDS: false, palette, jexl }),
     ).toBe(UTR_DEFAULT_COLOR)
   })
 

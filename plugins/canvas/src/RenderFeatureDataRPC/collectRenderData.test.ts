@@ -1,4 +1,4 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
@@ -41,7 +41,7 @@ function boxLayout(feature: Feature): FeatureLayout {
   }
 }
 
-const theme = createJBrowseTheme()
+const palette = resolvePalette()
 const config = mockDisplayConfig({ color: '#cccc99' })
 
 // Every case here walks ONE layout over the same context; only the region end,
@@ -56,7 +56,7 @@ function collect(
     regionStart: 0,
     regionEnd: 1000,
     config,
-    theme,
+    palette,
     colorByCDS: false,
     peptideDataMap: undefined,
     jexl,

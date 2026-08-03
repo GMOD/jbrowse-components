@@ -17,7 +17,7 @@ import { toRgb } from '../shaders/colors.ts'
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type React from 'react'
 
 export function makeBpToScreenX(view: LinearGenomeViewModel) {
@@ -38,8 +38,9 @@ function lighten([r, g, b]: RGBColor, amt: number): RGBColor {
 // that context only; the on-read box/bar/text keep the saturated base color.
 const INDICATOR_DARK_LIGHTEN = 0.45
 
-export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
-  const { palette } = theme
+export function buildColorPaletteFromPalette(
+  palette: JBrowsePalette,
+): ColorPalette {
   // 0 in light mode leaves the indicator colors equal to the base colors
   const indicatorLighten = palette.mode === 'dark' ? INDICATOR_DARK_LIGHTEN : 0
   const colorInsertion = toRgb(palette.insertion)

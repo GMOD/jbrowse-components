@@ -5,7 +5,7 @@ import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
 import { readConfigValueSafe } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -117,13 +117,13 @@ export function getBoxColor({
   feature,
   config,
   colorByCDS,
-  theme,
+  palette,
   jexl,
 }: {
   feature: Feature
   config: DisplayConfig
   colorByCDS: boolean
-  theme: Theme
+  palette: JBrowsePalette
   jexl: JexlInstance
 }) {
   // An unset (`maybeColor` undefined) slot means nothing asked for a color here,
@@ -157,7 +157,7 @@ export function getBoxColor({
       featureStrand,
       featurePhase,
     )
-    const frameColor = theme.palette.framesCDS.at(frame)?.main
+    const frameColor = palette.framesCDS.at(frame)?.main
     if (frameColor) {
       fill = frameColor
     }
@@ -169,12 +169,12 @@ export function getBoxColor({
 export function getStrokeColor({
   feature,
   config,
-  theme,
+  palette,
   jexl,
 }: {
   feature: Feature
   config: DisplayConfig
-  theme: Theme
+  palette: JBrowsePalette
   jexl: JexlInstance
 }) {
   // text.secondary is translucent; keep its alpha so connector lines and strand
@@ -182,7 +182,7 @@ export function getStrokeColor({
   // (dark mode) or full-black (light mode) at forced opacity. An unset slot
   // takes it, and so does a throwing jexl — degrading to the subtle line rather
   // than crashing the render.
-  const themed = theme.palette.text.secondary
+  const themed = palette.text.secondary
   return config.connectorColor === undefined
     ? themed
     : readConfigValueSafe<string>(

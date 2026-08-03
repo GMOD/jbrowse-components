@@ -12,7 +12,7 @@ export const pages: ExamplePage[] = [
     slug: 'one-track',
     title: 'One track',
     description:
-      'The smallest thing that puts genomic data on screen: a measured div and one track. No header, no ruler, no track labels, no theme provider.',
+      'The smallest thing that puts genomic data on screen: a measured div and one track. No header, no ruler, no track labels, no palette to supply.',
     group: 'The atoms',
     sections: [{ slug: 'one-track', title: 'One track, no chrome' }],
   },

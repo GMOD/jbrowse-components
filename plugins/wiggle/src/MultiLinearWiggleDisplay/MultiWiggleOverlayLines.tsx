@@ -1,6 +1,7 @@
 import { getStrokeProps } from '@jbrowse/core/util'
 import { CrossHatchLines } from '@jbrowse/wiggle-core'
-import { alpha, useTheme } from '@mui/material'
+import { alpha } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
@@ -40,7 +41,7 @@ export default observer(function MultiWiggleOverlayLines({
     rowHeight,
     ticks,
   } = model
-  const theme = useTheme()
+  const palette = usePalette()
 
   // A subtle 1px hairline in the theme's divider color. Density rows are
   // edge-to-edge fill, so the line is dialed up there to stay visible over the
@@ -63,7 +64,7 @@ export default observer(function MultiWiggleOverlayLines({
               x2={width}
               y2={y}
               {...getStrokeProps(
-                alpha(theme.palette.divider, isDensityMode ? 0.3 : 0.15),
+                alpha(palette.divider, isDensityMode ? 0.3 : 0.15),
               )}
               strokeWidth={1}
             />

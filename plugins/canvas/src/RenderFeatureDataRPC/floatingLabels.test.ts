@@ -1,4 +1,4 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
 import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
@@ -7,7 +7,7 @@ import {
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
 
-const theme = createJBrowseTheme()
+const palette = resolvePalette()
 
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
@@ -15,7 +15,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
-        theme,
+        palette,
       })
       expect(result.nameLabel).toBeDefined()
       expect(result.nameLabel!.text).toBe('Gene1')
@@ -23,15 +23,15 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel!.text).toBe('A gene')
     })
 
-    it('colors labels from the theme so the SVG export matches the app', () => {
+    it('colors labels from the palette so the SVG export matches the app', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
-        theme,
+        palette,
       })
-      expect(result.nameLabel!.color).toBe(theme.palette.text.primary)
+      expect(result.nameLabel!.color).toBe(palette.text.primary)
       expect(result.descriptionLabel!.color).toBe(
-        theme.palette.featureDescription,
+        palette.featureDescription,
       )
     })
 
@@ -39,7 +39,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: ' '.repeat(3),
         description: ' '.repeat(3),
-        theme,
+        palette,
       })
       expect(result.nameLabel).toBeUndefined()
       expect(result.descriptionLabel).toBeUndefined()
@@ -49,7 +49,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
-        theme,
+        palette,
       })
       // The name→description gap is applied at render time from the display
       // mode's font size (labelPositioning.resolveFeatureLabels), so the worker
@@ -62,7 +62,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
-        theme,
+        palette,
       })
       expect(result.nameLabel!.textWidth).toBeGreaterThan(0)
       expect(result.descriptionLabel!.textWidth).toBeGreaterThan(0)
@@ -74,7 +74,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: longDescription,
-        theme,
+        palette,
       })
       const label = result.descriptionLabel!
       expect(label.text).toContain('…')
@@ -91,7 +91,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: '',
-        theme,
+        palette,
       })
       expect(result.nameLabel).toBeDefined()
       expect(result.descriptionLabel).toBeUndefined()
@@ -101,7 +101,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: '',
         description: 'A gene',
-        theme,
+        palette,
       })
       expect(result.nameLabel).toBeUndefined()
       expect(result.descriptionLabel).toBeDefined()
@@ -115,7 +115,7 @@ describe('floatingLabels', () => {
       featureHeight: 10,
       subfeatureLabels: 'below',
       parentFeatureId: 'parent-gene-123',
-      theme,
+      palette,
     }
 
     it('includes parentFeatureId in the result', () => {
@@ -130,7 +130,7 @@ describe('floatingLabels', () => {
       })
       expect(result.subfeatureLabel.isOverlay).toBe(false)
       expect(result.subfeatureLabel.relativeY).toBe(0)
-      expect(result.subfeatureLabel.color).toBe(theme.palette.text.primary)
+      expect(result.subfeatureLabel.color).toBe(palette.text.primary)
     })
 
     it('sets isOverlay to true for "overlay" mode', () => {
@@ -141,7 +141,7 @@ describe('floatingLabels', () => {
       })
       expect(result.subfeatureLabel.isOverlay).toBe(true)
       expect(result.subfeatureLabel.relativeY).toBe(-20)
-      expect(result.subfeatureLabel.color).toBe(theme.palette.common.black)
+      expect(result.subfeatureLabel.color).toBe(palette.common.black)
     })
 
     it('truncates long labels', () => {

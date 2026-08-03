@@ -23,10 +23,10 @@ export function collectRenderData(
     regionEnd: number
   },
 ) {
-  const { layouts, regionStart, regionEnd, config, theme } = args
+  const { layouts, regionStart, regionEnd, config, palette } = args
   const collector = createCollector()
 
-  const outlineColor = resolveOutlineColor(config.outlineColor, theme)
+  const outlineColor = resolveOutlineColor(config.outlineColor, palette)
 
   for (const layout of layouts) {
     processFeatureRecord(layout, args, collector)

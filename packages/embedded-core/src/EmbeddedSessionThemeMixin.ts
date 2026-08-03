@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { BaseSessionModel } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -30,9 +31,18 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
     },
     /**
      * #getter
+     * Every color JBrowse renders, resolved to plain strings and free of any UI
+     * toolkit. This is what rendering reads. See the canonical
+     * `ThemeManagerSessionMixin` getter of the same name.
+     */
+    get palette() {
+      return resolvePalette(this.themeOptions)
+    },
+    /**
+     * #getter
      * Resolved MUI theme, mirroring the product's ThemeProvider. Lets
      * headless/RPC consumers derive theme-dependent state without a mounted
-     * component.
+     * component. Shares its colors with `palette` by construction.
      */
     get theme() {
       return createJBrowseThemeFromArgs(this.themeOptions)

@@ -1021,7 +1021,7 @@ export default function stateModelFactory(
          * trigger a main-thread re-encode but never an RPC refetch.
          */
         get colorPalette(): MafColorPalette {
-          return getMafColorPalette(getSession(self).theme)
+          return getMafColorPalette(getSession(self).palette)
         },
         /**
          * #getter
@@ -1490,10 +1490,7 @@ export default function stateModelFactory(
          * disagree about what's on screen.
          */
         get activeRowRendering():
-          | 'bases'
-          | 'codon'
-          | 'sourceChrom'
-          | RowIdentityMode {
+          'bases' | 'codon' | 'sourceChrom' | RowIdentityMode {
           if (self.codonViewActive) {
             return 'codon'
           }
@@ -1728,7 +1725,7 @@ export default function stateModelFactory(
           }
           const rendering = self.activeRowRendering
           if (rendering === 'codon') {
-            const { palette } = getSession(self).theme
+            const { palette } = getSession(self)
             return [
               { label: 'Nonsynonymous', color: palette.codonNonsynonymous },
               { label: 'Synonymous', color: palette.codonSynonymous },

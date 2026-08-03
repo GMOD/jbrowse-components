@@ -17,7 +17,9 @@ import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { Theme } from '@mui/material'
+import { getContrastText } from '@jbrowse/core/ui/palette'
+
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 const BORDER_COLOR = 'rgb(85,85,85)'
 
@@ -33,17 +35,17 @@ function contrastColor({ rgb }: ColorEntry) {
 }
 
 export function buildTextColors(
-  palette: ColorPalette,
-  theme: Theme,
+  colors: ColorPalette,
+  palette: JBrowsePalette,
 ): TextColors {
   const baseContrast = new Map<string, string>()
-  for (const [base, color] of palette.bases) {
+  for (const [base, color] of colors.bases) {
     baseContrast.set(base, contrastColor(color))
   }
   return {
     baseContrast,
-    startContrast: theme.palette.getContrastText(theme.palette.startCodon),
-    stopContrast: theme.palette.getContrastText(theme.palette.stopCodon),
+    startContrast: getContrastText(palette.startCodon),
+    stopContrast: getContrastText(palette.stopCodon),
   }
 }
 

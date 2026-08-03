@@ -10,6 +10,7 @@ import type { BaseInternetAccountModel } from '../../pluggableElementTypes/model
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
 import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
+import type { JBrowsePalette } from '../../ui/palette.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type {
@@ -101,8 +102,7 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  | React.LazyExoticComponent<React.FC<any>>
-  | React.FC<any>
+  React.LazyExoticComponent<React.FC<any>> | React.FC<any>
 
 /**
  * the slice of a view that track-action menu items need: opening a track, and
@@ -135,6 +135,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
+  // `palette` is what rendering reads: plain color strings, no toolkit, and
+  // serializable. `theme` is the Material UI theme for the components that are
+  // Material UI. Both come from the same `resolvePalette` call, so they cannot
+  // disagree.
+  palette: JBrowsePalette
   theme: Theme
   themeOptions?: SerializableThemeArgs
   animationMode: AnimationMode
@@ -712,10 +717,7 @@ export function isAuthNeededException(
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation =
-  | LocalPathLocation
-  | UriLocation
-  | BlobLocation
-  | FileHandleLocation
+  LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

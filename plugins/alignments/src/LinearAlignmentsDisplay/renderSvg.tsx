@@ -17,7 +17,9 @@ import { getMismatchContrastMap } from '../shared/util.ts'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import TlenAxisLabel from './components/TlenAxisLabel.tsx'
-import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
+
+import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { sectionKey } from './components/sectionScreen.ts'
@@ -64,6 +66,9 @@ function AlignmentsSvgBody({
   opts,
 }: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
   const theme = createJBrowseTheme(opts?.theme)
+  // Export colors follow the export theme, not the live session theme, so the
+  // pileup matches the labels and contrast that already use it.
+  const palette = resolvePalette({ configTheme: opts?.theme })
   const baseState = model.renderState
   const displayHeight = height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
@@ -81,9 +86,7 @@ function AlignmentsSvgBody({
     scrollTop: 0,
     canvasWidth,
     canvasHeight: displayHeight,
-    // Export colors follow the export theme (opts.theme), not the live session
-    // theme, so the pileup matches the labels/contrast which already use it.
-    colors: buildColorPaletteFromTheme(theme),
+    colors: buildColorPaletteFromPalette(palette),
     sections: buildSectionRenders(model.sections, {
       scrollTop: 0,
       canvasHeight: displayHeight,
@@ -101,7 +104,7 @@ function AlignmentsSvgBody({
     showMismatches: model.showMismatches,
     scrollTop: 0,
   })
-  const contrastMap = getMismatchContrastMap(model.showModifications, theme)
+  const contrastMap = getMismatchContrastMap(model.showModifications, palette)
 
   // Sashimi and linked-read bezier arcs stay vector SVG by design (low arc
   // count + native hover in the on-screen overlay); these export components
@@ -126,7 +129,7 @@ function AlignmentsSvgBody({
               renderBlocks,
               state,
             )
-            drawAlignmentLabels(ctx, labels, contrastMap, theme)
+            drawAlignmentLabels(ctx, labels, contrastMap, palette)
           }}
         />
         <SashimiArcsSvg model={model} />

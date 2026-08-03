@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs, defaultThemes } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -54,6 +55,20 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * Every color JBrowse renders, resolved to plain strings. This is what
+         * rendering reads: it needs no React context, it crosses the RPC worker
+         * boundary as itself, and it costs no UI toolkit. Prefer it over
+         * `theme` anywhere the answer wanted is a color rather than a Material
+         * UI component style.
+         */
+        get palette() {
+          return resolvePalette(this.themeOptions)
+        },
+        /**
+         * #getter
+         * The Material UI theme, for the components that are Material UI. Its
+         * palette is spliced from the same `resolvePalette` call as `palette`
+         * above, so the two cannot disagree.
          */
         get theme() {
           return createJBrowseThemeFromArgs(this.themeOptions)

@@ -1,11 +1,11 @@
 import { createTheme } from '@mui/material'
-import { blue, brown, green, grey, orange, red } from '@mui/material/colors'
 import deepmerge from 'deepmerge'
+
+import { palettePresets, resolvePalette } from './palette.ts'
 
 import type {
   PaletteColor,
   PaletteColorOptions,
-  PaletteOptions,
   Theme,
   ThemeOptions,
 } from '@mui/material/styles'
@@ -94,281 +94,76 @@ declare module '@mui/material/styles' {
   }
 }
 
-const refTheme = createTheme()
+// The colors themselves live in `palette.ts`, which imports no toolkit. This
+// module's job is to hand what `resolvePalette` produces to MUI, so JBrowse's
+// Material UI chrome and JBrowse's renderers cannot disagree about a color.
+// Nothing here decides one.
+// Static domain colors and the theme presets are re-exported from palette.ts so
+// existing `@jbrowse/core/ui` imports are unaffected. Import them from
+// `@jbrowse/core/ui/palette` to get them without pulling in Material UI.
+export {
+  colorFwdDiffChr,
+  colorFwdMissingMate,
+  colorFwdStrand,
+  colorFwdStrandNotProper,
+  colorInterchrom,
+  colorLongInsert,
+  colorLongreadInv,
+  colorLongreadRevFwd,
+  colorNostrand,
+  colorPairLL,
+  colorPairLR,
+  colorPairLRDark,
+  colorPairRL,
+  colorPairRR,
+  colorRevDiffChr,
+  colorRevMissingMate,
+  colorRevStrand,
+  colorRevStrandNotProper,
+  colorShortInsert,
+  colorShortInsertArc,
+  colorSplitReadInversion,
+  colorSupplementary,
+  colorUnknown,
+  colorUnmappedMate,
+  methylated5hmC,
+  methylated5mC,
+  tagColorPalette,
+  unmethylated5mC,
+} from './palette.ts'
+export type { JBrowsePalette } from './palette.ts'
 
-// augment a color (a '#rrggbb' main shade or a full MUI color object) into a
-// PaletteColor with light/dark/contrastText variants
-function augment(color: PaletteColorOptions) {
-  return refTheme.palette.augmentColor({ color })
-}
-const hex = (main: string) => augment({ main })
-
-const midnight = hex('#0D233F')
-const grape = hex('#721E63')
-const forest = hex('#135560')
-const mandarin = hex('#FFB11D')
-const textHighlight = hex('#ffe066')
-const lightgrey = hex('#aaa')
-const bases = {
-  A: augment(green),
-  C: augment(blue),
-  G: augment(orange),
-  T: augment(red),
-  // N / ambiguous bases: muted brown — a distinct hue so it never blends into
-  // the grey coverage histogram the way mutedSnpBase (reserved for the
-  // show-modifications muting) does.
-  N: augment(brown),
-}
-const framesCDS: Frames = [
-  null,
-  hex('#FF8080'),
-  hex('#80FF80'),
-  hex('#8080FF'),
-  hex('#8080FF'),
-  hex('#80FF80'),
-  hex('#FF8080'),
-]
-const frames: Frames = [
-  null,
-  hex('#8f8f8f'),
-  hex('#adadad'),
-  hex('#d8d8d8'),
-  hex('#d8d8d8'),
-  hex('#adadad'),
-  hex('#8f8f8f'),
-]
-/** #color theme-colors | Stop codon | Stop codon in gene/CDS tracks */
-const stopCodon = '#e22'
-/** #color theme-colors | Start codon | Start codon in gene/CDS tracks */
-const startCodon = '#3e3'
-/** #color maf | Nonsynonymous codon | MAF codon view: the species' amino acid differs from the reference (nonsynonymous) */
-const codonNonsynonymous = '#e8930c'
-/** #color maf | Synonymous codon | MAF codon view: the codon differs from the reference but the amino acid is unchanged (silent) */
-const codonSynonymous = '#3a7bd5'
-/** #color maf | Codon stop | MAF codon view: a stop codon */
-const codonStop = '#cc2222'
-const coverage = grey[400]
-/** #color alignments-indicators | Insertion | Reads carry an insertion relative to the reference */
-const insertion = '#800080'
-/** #color theme-colors | Deletion | Deletion markers in alignments */
-const deletion = '#808080'
-/** #color alignments-indicators | Soft clip | Reads are soft-clipped (clipped bases retained in the read) */
-const softclip = '#00f'
-/** #color alignments-indicators | Hard clip | Reads are hard-clipped (clipped bases removed from the read) */
-const hardclip = '#f00'
-/** #color theme-colors | Skip (intron) | Skipped regions such as introns in RNA-seq reads */
-const skip = '#009a8a'
-/** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
-const modificationFwd = '#c8c8c8'
-/** #color theme-colors | Base modification (rev) | Base modifications on the reverse strand */
-const modificationRev = '#c8dcc8'
-/** #color theme-colors | Muted SNP base | SNP bases muted when show-modifications coloring is on */
-const mutedSnpBase = '#888'
-// MAF bridged-row fill where the species has no alignment (à la UCSC)
-const missingData = '#ffffcc'
-
-// vertical gridlines behind the genome. white-on-dark reads far stronger than
-// dark-on-white at the same alpha, so dark mode uses a gentler stroke
-const gridlineMinor = 'rgba(0,0,0,0.12)'
-const gridlineMajor = 'rgba(0,0,0,0.26)'
-const gridlineMinorDark = 'rgba(255,255,255,0.06)'
-const gridlineMajorDark = 'rgba(255,255,255,0.15)'
-
-// Hover shading over a feature. Same asymmetry as gridlines: darkening works on
-// a light track, but on a dark track it must lighten instead or it's invisible.
-const featureHover = 'rgba(0,0,0,0.15)'
-const featureHoverDark = 'rgba(255,255,255,0.25)'
-
-// Stronger hover shade for a group of features (e.g. a hovered linked-read
-// chain), so the whole group reads more prominently than a single-feature
-// hover. Same light/dark asymmetry as featureHover.
-const featureHoverStrong = 'rgba(0,0,0,0.4)'
-const featureHoverStrongDark = 'rgba(255,255,255,0.4)'
-
-// Border accent around the click-selected feature. The saturated blue reads on
-// a light track; on a dark track it's lightened to keep the outline distinct.
-const featureSelected = 'rgba(0,100,255,0.8)'
-const featureSelectedDark = 'rgba(120,180,255,0.9)'
-
-// Blue accent for feature description labels (e.g. gene descriptions). The
-// plain CSS 'blue' reads as near-black against a dark track background, so
-// dark mode uses a lighter blue instead.
-const featureDescription = 'blue'
-const featureDescriptionDark = blue[300]
-
-// Alignment read fill colors — exported as plain constants (not palette entries)
-// so they can be imported in RPC workers that have no MUI theme context.
-export const colorFwdStrandNotProper = '#ECC8C8'
-export const colorRevStrandNotProper = '#BEBED8'
-/** #color alignments-strand | Forward strand | Read maps to the forward strand */
-export const colorFwdStrand = '#EC8B8B'
-/** #color alignments-strand | Reverse strand | Read maps to the reverse strand */
-export const colorRevStrand = '#8F8FD8'
-export const colorFwdMissingMate = '#D11919'
-export const colorRevMissingMate = '#1919D1'
-export const colorFwdDiffChr = '#000'
-export const colorRevDiffChr = '#969696'
-/** #color alignments-pair-orientation | LR (→ ←, normal proper pair) | Concordant */
-export const colorPairLR = '#d3d3d3'
-// Dimmer grey for dark mode: the light #d3d3d3 reads as near-white glaring
-// blocks against a dark track background. Wired into darkPalette.alignmentFill.
-export const colorPairLRDark = '#8a8a8a'
-/** #color alignments-pair-orientation | RL (← →, mates point away from each other) | Abnormal orientation */
-export const colorPairRL = '#0099bb'
-/** #color alignments-pair-orientation | LL (→ →, both mates forward strand) | Abnormal orientation */
-export const colorPairLL = '#4d9a4d'
-/** #color alignments-pair-orientation | RR (← ←, both mates reverse strand) | Abnormal orientation */
-export const colorPairRR = '#5555bb'
-export const colorNostrand = '#c8c8c8'
 /**
- * #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation
- * #color alignments-insert-size | Mate on a different chromosome | Suggests an inter-chromosomal event
+ * The structurally-serializable inputs that fully describe a session's active
+ * theme. A created MUI `Theme` carries functions (e.g. `breakpoints.up`) and
+ * cannot cross the RPC worker boundary; these args can, and
+ * {@link createJBrowseThemeFromArgs} rebuilds the identical theme on the other
+ * side. A worker that only needs colors should call `resolvePalette` with these
+ * instead, which skips Material UI entirely.
  */
-export const colorInterchrom = '#6e4b3a'
-/** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
-export const colorLongInsert = '#ff0000'
-/** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
-export const colorShortInsert = '#ffc0cb'
-// Saturated short-insert variant for stroked marks (read-cloud / arc lines).
-// The pale #ffc0cb fill reads fine on filled pileup rectangles but, drawn as a
-// thin translucent line, blends into the white background and vanishes — so the
-// stroke-only arc palette uses a saturated pink instead (mirrors origin/main's
-// strokeColor.color_shortinsert vs its pale fill).
-export const colorShortInsertArc = '#ff3a8c'
-export const colorUnmappedMate = '#b05a20'
-export const colorUnknown = '#808080'
-export const colorLongreadRevFwd = '#6688ee'
-export const colorLongreadInv = '#7755bb'
-/** #color alignments-pair-orientation | Split-read inversion | A paired read's supplementary segment maps opposite-strand to its primary; the split crosses an inversion junction */
-export const colorSplitReadInversion = '#9b30b0'
-export const colorSupplementary = '#f0b878'
-
-// Qualitative palette for coloring reads by an arbitrary tag value (e.g. the HP
-// haplotype tag). Pale "tol_light" scheme:
-// https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
-export const tagColorPalette = [
-  '#BBCCEE',
-  'pink',
-  '#CCDDAA',
-  '#EEEEBB',
-  '#FFCCCC',
-  'lightblue',
-  'lightgreen',
-  'tan',
-  '#CCEEFF',
-  'lightsalmon',
-]
-
-/** #color theme-methylation | methylated5mC | 5-methylcytosine, methylated */
-export const methylated5mC = '#ff0000'
-/** #color theme-methylation | unmethylated5mC | 5-methylcytosine, unmethylated */
-export const unmethylated5mC = '#0000ff'
-/** #color theme-methylation | methylated5hmC | 5-hydroxymethylcytosine, methylated */
-export const methylated5hmC = '#ffc0cb'
-
-const alignmentFill = {
-  pairLR: colorPairLR,
-  pairRL: colorPairRL,
-  pairLL: colorPairLL,
-  pairRR: colorPairRR,
+export interface SerializableThemeArgs {
+  configTheme?: ThemeOptions
+  themeName?: string
+  extraThemes?: ThemeMap
 }
 
-// plain-string domain colors, layered in by `addMissingColors` so a new color
-// only needs adding here (plus JBrowseStringColors) — these can all be layered
-// as a deepmerge base since a user theme's string value cleanly overrides
-// rather than partially merging
-const stringColorDefaults: JBrowseStringColors = {
-  stopCodon,
-  startCodon,
-  codonNonsynonymous,
-  codonSynonymous,
-  codonStop,
-  coverage,
-  insertion,
-  deletion,
-  softclip,
-  hardclip,
-  skip,
-  modificationFwd,
-  modificationRev,
-  mutedSnpBase,
-  missingData,
-  gridlineMinor,
-  gridlineMajor,
-  featureHover,
-  featureHoverStrong,
-  featureSelected,
-  featureDescription,
-}
-
-// the JBrowse-branded palette colors. Deliberately does NOT carry the string
-// colors or alignmentFill: those have light and dark variants, and
-// addMissingColors picks the right set off `palette.mode`. Baking the light
-// ones in here would shadow the dark set for any theme built on top of this.
-const defaults = {
-  primary: midnight,
-  secondary: grape,
-  tertiary: forest,
-  quaternary: mandarin,
-  highlight: mandarin,
-  textHighlight,
-  bases,
-  frames,
-  framesCDS,
-}
-
-// string color defaults that differ in dark mode (gentler gridlines/hover,
-// darker coverage). Layered under any dark theme — built-in or config-defined —
-// by addMissingColors so a custom dark theme inherits the dark-tuned values.
-const darkStringColorDefaults: Partial<JBrowseStringColors> = {
-  coverage: grey[700],
-  gridlineMinor: gridlineMinorDark,
-  gridlineMajor: gridlineMajorDark,
-  featureHover: featureHoverDark,
-  featureHoverStrong: featureHoverStrongDark,
-  featureSelected: featureSelectedDark,
-  featureDescription: featureDescriptionDark,
-  // the deletion rect replaces the read on the dark track background, where the
-  // mid-grey #808080 reads as a muddy block; lighten it so the gap stands out
-  deletion: '#c8c8c8',
-}
-
-// spread the light alignmentFill so only pairLR changes (the light #d3d3d3 reads
-// as glaring near-white blocks on a dark track)
-const darkAlignmentFill = { ...alignmentFill, pairLR: colorPairLRDark }
-
-const stock = { palette: defaults }
-
+// The display names and MUI component overrides layered on top of each palette
+// preset. The colors come from palette.ts, so a preset's palette is stated once
+// and this map is the Material UI half of it.
 export const defaultThemes = {
-  default: { ...stock, name: 'Default (from config)' },
-  lightStock: { ...stock, name: 'Light (stock)' },
+  default: { palette: palettePresets.default, name: 'Default (from config)' },
+  lightStock: { palette: palettePresets.lightStock, name: 'Light (stock)' },
   lightMinimal: {
     name: 'Light (minimal)',
-    palette: {
-      ...defaults,
-      primary: { main: grey[900] },
-      secondary: { main: grey[800] },
-      tertiary: { main: grey[900] },
-    },
+    palette: palettePresets.lightMinimal,
   },
-  // the dark presets only declare `mode`; addMissingColors resolves the
-  // dark-tuned gridlines/hover/coverage/alignmentFill off it
   darkMinimal: {
     name: 'Dark (minimal)',
-    palette: {
-      ...defaults,
-      mode: 'dark' as const,
-      primary: { main: grey[700] },
-      secondary: { main: grey[800] },
-      tertiary: { main: grey[900] },
-    },
+    palette: palettePresets.darkMinimal,
   },
   darkStock: {
     name: 'Dark (stock)',
-    palette: {
-      ...defaults,
-      mode: 'dark' as const,
-    },
+    palette: palettePresets.darkStock,
     components: {
       // enableColorOnDark keeps the AppBar tinted with primary.main in dark
       // mode (default MUI behavior is to flatten it to the paper color)
@@ -610,23 +405,9 @@ export function createJBrowseBaseTheme(theme: ThemeOptions = {}): ThemeOptions {
 export type ThemeMap = Record<string, ThemeOptions & { name?: string }>
 
 /**
- * The structurally-serializable inputs that fully describe a session's active
- * theme. A created MUI `Theme` carries functions (e.g. `breakpoints.up`) and
- * can't cross the RPC worker boundary; these args can, and
- * {@link createJBrowseThemeFromArgs} rebuilds the identical theme on the other
- * side. `extraThemes` covers config-defined custom themes; `defaultThemes` is
- * already available wherever this runs, so it is not shipped.
- */
-export interface SerializableThemeArgs {
-  configTheme?: ThemeOptions
-  themeName?: string
-  extraThemes?: ThemeMap
-}
-
-/**
- * Rebuild a JBrowse theme from {@link SerializableThemeArgs} — the inverse of
+ * Rebuild a JBrowse theme from {@link SerializableThemeArgs}, the inverse of
  * passing those args across RPC. Mirrors a session's `theme` getter so the main
- * thread and worker resolve to the same colors.
+ * thread and a worker resolve to the same colors.
  */
 export function createJBrowseThemeFromArgs(args: SerializableThemeArgs = {}) {
   return createJBrowseTheme(
@@ -636,12 +417,8 @@ export function createJBrowseThemeFromArgs(args: SerializableThemeArgs = {}) {
   )
 }
 
-// Memoizes the built MUI theme across calls. This guards the RPC worker render
-// path (executeRenderFeatureData rebuilds the theme from serializable args on
-// every canvas render), where there is no MobX/React memoization — the
-// main-thread session `theme` getter is already an MST view. Bounded in
-// practice: the key space is (config theme × selected preset), a handful of
-// entries.
+// Memoizes the built MUI theme across calls. Bounded in practice: the key space
+// is (config theme x selected preset), a handful of entries.
 const themeCache = new Map<string, Theme>()
 
 function getThemeCacheKey(
@@ -659,12 +436,21 @@ function getThemeCacheKey(
       themeName,
     },
     // a plugin-supplied theme can carry style-override callbacks, which
-    // JSON.stringify drops — two such themes would otherwise share a key
+    // JSON.stringify drops, so two such themes would otherwise share a key
     (_key, value: unknown) =>
       typeof value === 'function' ? value.toString() : value,
   )
 }
 
+/**
+ * Build the Material UI theme for a set of theme inputs.
+ *
+ * The colors are `resolvePalette`'s, spliced in already resolved, so this and
+ * every renderer read the same values by construction rather than by keeping
+ * two lists in step. What this adds on top is the Material UI half: the
+ * component defaults and style overrides in `baseThemeOptions`, plus whatever
+ * non-palette options the selected theme or the config theme declares.
+ */
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes: ThemeMap = defaultThemes,
@@ -676,145 +462,23 @@ export function createJBrowseTheme(
     return cached
   }
 
-  const selected: ThemeOptions =
-    themes[themeName] ?? themes.default ?? defaultThemes.default
-  // only the 'default' theme draws from configTheme — the named themes are
-  // fixed presets and intentionally ignore config palette/spacing/etc. the
-  // config palette is augmented before merging so a bare `{main}` replaces the
-  // default's PaletteColor wholesale rather than splicing onto its light/dark
+  const selected = themes[themeName] ?? themes.default ?? defaultThemes.default
+  // only the 'default' theme draws from configTheme: the named themes are fixed
+  // presets and intentionally ignore config palette/spacing/components
   const merged =
     themeName === 'default'
-      ? deepmerge(selected, augmentThemeColors(configTheme), {
-          arrayMerge: overwriteArrayMerge,
-        })
+      ? deepmerge(selected, configTheme, { arrayMerge: overwriteArrayMerge })
       : selected
-  const theme = createTheme(createJBrowseBaseTheme(addMissingColors(merged)))
+
+  const theme = createTheme(
+    createJBrowseBaseTheme({
+      ...merged,
+      palette: resolvePalette({ configTheme, themeName, extraThemes: themes }),
+    }),
+  )
 
   themeCache.set(cacheKey, theme)
   return theme
-}
-
-// palette color entries that take a bare '#rrggbb' main and need augmenting into
-// full light/dark/contrastText PaletteColors
-const augmentableColorKeys = [
-  'primary',
-  'secondary',
-  'tertiary',
-  'quaternary',
-  'highlight',
-  'textHighlight',
-] as const
-
-const baseKeys = ['A', 'C', 'G', 'T', 'N'] as const
-
-// a theme's frame tuple replaces the default wholesale (deepmerge would splice
-// entry-by-entry onto stale shades), so slots it leaves out are filled from the
-// default here rather than left as holes — consumers index the tuple by frame
-// number and assume every slot resolves
-function augmentFrames(entry: FramesOptions, fallback: Frames): Frames {
-  const [, e1, e2, e3, e4, e5, e6] = entry
-  const [, d1, d2, d3, d4, d5, d6] = fallback
-  return [
-    null,
-    e1 ? augment(e1) : d1,
-    e2 ? augment(e2) : d2,
-    e3 ? augment(e3) : d3,
-    e4 ? augment(e4) : d4,
-    e5 ? augment(e5) : d5,
-    e6 ? augment(e6) : d6,
-  ]
-}
-
-// MUI by default allows strings like '#f00' for primary and secondary and
-// augments them to have light and dark variants but not for anything else, so
-// we augment them here. `bases` and the frame tuples are augmented per-entry
-// too, so a config theme that overrides only one entry's `main` still gets a
-// consistent contrastText rather than inheriting the shades it replaced (or
-// undefined).
-function augmentThemeColors(theme: ThemeOptions = {}) {
-  const overlay: PaletteOptions = {}
-  for (const key of augmentableColorKeys) {
-    const entry = theme.palette?.[key]
-    if (entry) {
-      overlay[key] = augment(entry)
-    }
-  }
-  const basesEntry = theme.palette?.bases
-  if (basesEntry) {
-    const resolvedBases: PaletteOptions['bases'] = {}
-    for (const key of baseKeys) {
-      const entry = basesEntry[key]
-      if (entry) {
-        resolvedBases[key] = augment(entry)
-      }
-    }
-    overlay.bases = resolvedBases
-  }
-  const framesEntry = theme.palette?.frames
-  const framesCDSEntry = theme.palette?.framesCDS
-  if (framesEntry) {
-    overlay.frames = augmentFrames(framesEntry, frames)
-  }
-  if (framesCDSEntry) {
-    overlay.framesCDS = augmentFrames(framesCDSEntry, framesCDS)
-  }
-  // overwrite (don't concatenate) the frame tuples, which are present on both
-  // sides whenever the theme declares them
-  return Object.keys(overlay).length > 0
-    ? deepmerge(
-        theme,
-        { palette: overlay },
-        { arrayMerge: overwriteArrayMerge },
-      )
-    : theme
-}
-
-// fills in JBrowse-specific colors a theme omits. Every theme goes through
-// here — built-in preset, config `extraThemes` entry, or the config `theme`
-// merged over the default — so the light/dark resolution below has one home.
-// string colors and arrays layer underneath via deepmerge (the theme cleanly
-// overrides them); PaletteColor entries (tertiary/quaternary/highlight/
-// textHighlight) and the per-key `bases`/`alignmentFill` maps are resolved
-// wholesale, since a deep merge would splice the theme's `main` onto stale
-// light/dark shades. primary/secondary are intentionally left to MUI.
-function addMissingColors(theme: ThemeOptions = {}) {
-  const { palette } = theme
-  // a theme opts into dark mode by declaring only `mode`; the dark-tuned
-  // gridlines/hover/coverage/alignmentFill follow from it
-  const isDark = palette?.mode === 'dark'
-  const resolved = deepmerge(
-    theme,
-    {
-      palette: {
-        quaternary: palette?.quaternary ?? lightgrey,
-        tertiary: palette?.tertiary ?? lightgrey,
-        highlight: palette?.highlight ?? mandarin,
-        textHighlight: palette?.textHighlight ?? textHighlight,
-        bases: { ...bases, ...palette?.bases },
-        alignmentFill: {
-          ...(isDark ? darkAlignmentFill : alignmentFill),
-          ...palette?.alignmentFill,
-        },
-      },
-    },
-    { arrayMerge: overwriteArrayMerge },
-  )
-  return augmentThemeColors(
-    // overwrite (don't concatenate) the frames/framesCDS arrays, matching the
-    // default-theme merge in createJBrowseTheme
-    deepmerge(
-      {
-        palette: {
-          ...stringColorDefaults,
-          ...(isDark ? darkStringColorDefaults : {}),
-          frames,
-          framesCDS,
-        },
-      },
-      resolved,
-      { arrayMerge: overwriteArrayMerge },
-    ),
-  )
 }
 
 // Alias for Theme; the `declare module` augmentation above adds the custom
