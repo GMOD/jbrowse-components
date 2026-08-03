@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
-import { useTheme } from '@mui/material'
 
 const Y_AXIS_WIDTH = 40
 const NUM_TICKS = 4
@@ -13,9 +13,9 @@ export default function RecombinationYScaleBar({
   maxValue: number
   exportSVG?: boolean
 }) {
-  const theme = useTheme()
-  const fg = theme.palette.text.primary
-  const bg = theme.palette.background.default
+  const palette = usePalette()
+  const fg = palette.text.primary
+  const bg = palette.background.default
   const plotHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
   const yTop = YSCALEBAR_LABEL_OFFSET + 0.5
   const yBottom = height - YSCALEBAR_LABEL_OFFSET + 0.5
