@@ -87,7 +87,12 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float sx = lerp(sx1, sx2, localX);
 
   float yTopPx = floor(inst.y - u.scrollY + 0.5);
-  float yBotPx = floor(yTopPx + inst.height + 0.5);
+  // snapBoxHeightPx, not a bare round: a thin box is drawn at an odd height so
+  // the 1px glyphs riding on it (intron line, chevrons, strand arrow) have a
+  // true center row to land on. The line/chevron/arrow shaders derive their y
+  // from the same helper via snapBoxCenterY, so box and glyph agree by
+  // construction.
+  float yBotPx = yTopPx + snapBoxHeightPx(inst.height);
   float syTop = yPxToClipY(yTopPx, u.canvasHeight);
   float syBot = yPxToClipY(yBotPx, u.canvasHeight);
   float sy = lerp(syBot, syTop, localY);

@@ -51,14 +51,28 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 type BpToScreen = (bp: number) => number
 
+// JS twin of hpmath.slang's snapBoxHeightPx: the pixel height a box is drawn at,
+// nudging a THIN box with an even height up to the next odd one so it has a true
+// center row for the 1px glyphs riding on it (intron lines, chevrons, strand
+// arrows, continuation markers) to sit on. Without it a 2px body — what fit mode
+// squeezes down to — puts its intron line on the box's bottom row, and the exons
+// read as floating above the line. See the shader for the full rationale.
+const THIN_BOX_PX = 4
+
+function boxHeightPx(heightPx: number) {
+  const hPx = Math.floor(heightPx + 0.5)
+  // A height that rounds to 0 stays 0 — it draws nothing, which is what a
+  // zero-height box asks for.
+  return hPx % 2 === 0 && hPx >= 2 && hPx <= THIN_BOX_PX ? hPx + 1 : hPx
+}
+
 // JS twin of hpmath.slang's snapBoxCenterY: the crisp (x.5) screen-y of the
 // drawn middle row of a box with real center `centerY` and height `heightPx`,
-// reproducing drawRects' edge snapping so the thin glyphs riding on a box
-// (intron lines, chevrons, strand arrows, continuation markers) land on its
-// center row instead of ~1px off in odd-height modes (superCompact).
+// reproducing drawRects' edge snapping so the thin glyphs riding on a box land
+// on its center row instead of ~1px off in the compact modes.
 function boxCenterY(centerY: number, heightPx: number, scrollY: number) {
   const topPx = Math.floor(centerY - heightPx / 2 - scrollY + 0.5)
-  const hPx = Math.floor(heightPx + 0.5)
+  const hPx = boxHeightPx(heightPx)
   return topPx + Math.floor(hPx / 2) + 0.5
 }
 
@@ -178,7 +192,7 @@ function drawRects(
     const x1 = toX(startBp)
     const x2 = toX(endBp)
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
-    const h = Math.floor(region.rectHeights[i]! + 0.5)
+    const h = boxHeightPx(region.rectHeights[i]!)
     // Pixel-snap the endpoints (matching the GPU shader's snapToPixelX) so a
     // min-width box is a crisp >=2px column instead of an anti-aliased sub-2px
     // blur. spanLeft then anchors the box on the feature's start edge the way

@@ -51,19 +51,41 @@ public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
 
+// Tallest box that gets the odd-height nudge below. Above this a half-pixel of
+// asymmetry is a small fraction of the box and invisible; at 2px it is half of
+// it, so the exons appear to float above their intron line.
+public static const float THIN_BOX_PX = 4.0;
+
+// The pixel height a box is drawn at: its rounded height, except that a THIN box
+// with an EVEN height is nudged up to the next odd one. A box spanning an even
+// number of rows has no middle ROW — its center falls on the seam between two —
+// so the 1px glyphs that ride on it (intron line, chevrons, strand arrow) can
+// only ever sit half a pixel off center, which at the 2px bodies fit mode
+// squeezes down to reads as the exons sitting above the intron line. An odd
+// height gives the box a true center row for them to land on. The extra pixel
+// can't reach the row below: the packer quantizes row tops to a pitch of at
+// least twice the body height at these sizes (see layout.ts pitchY).
+// A height that rounds to 0 is left at 0: it draws nothing, and nothing is what
+// a caller asking for a zero-height box wants.
+public float snapBoxHeightPx(float heightPx) {
+  float hPx = floor(heightPx + 0.5);
+  bool even = hPx - 2.0 * floor(hPx * 0.5) == 0.0;
+  return even && hPx >= 2.0 && hPx <= THIN_BOX_PX ? hPx + 1.0 : hPx;
+}
+
 // Center a thin glyph on the *drawn* middle row of the box it annotates, given
 // the box's real center `centerY` and height `heightPx`. The box is rasterized
 // with the rect shader's edge snapping (top = floor(top+0.5), height =
-// floor(h+0.5)); reproducing that here lands the line/chevron exactly on the
-// box's center row for odd pixel heights (superCompact) instead of the ~1px
-// bias a plain pixel-center snap (`floor(centerY - scrollY + 0.5) + 0.5`) gives,
-// and stays consistent (just below the seam) for even heights — where a 1px line
-// can't sit dead-center.
+// snapBoxHeightPx(h)); reproducing that here lands the line/chevron exactly on
+// the box's center row instead of the ~1px bias a plain pixel-center snap
+// (`floor(centerY - scrollY + 0.5) + 0.5`) gives. Thin boxes are drawn at an odd
+// height precisely so that center row exists; a taller even box still has none,
+// and stays consistent (just below the seam).
 public float snapBoxCenterY(
   float centerY, float heightPx, float scrollY, float canvasHeight
 ) {
   float topPx = floor(centerY - heightPx * 0.5 - scrollY + 0.5);
-  float hPx = floor(heightPx + 0.5);
+  float hPx = snapBoxHeightPx(heightPx);
   float yPx = topPx + floor(hPx * 0.5) + 0.5;
   return yPxToClipY(yPx, canvasHeight);
 }
