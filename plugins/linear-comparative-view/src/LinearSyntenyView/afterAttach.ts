@@ -3,6 +3,7 @@ import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   normalizeTrackInit,
+  partitionLaunchKeys,
   SearchResultsNotFoundError,
 } from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
@@ -47,11 +48,11 @@ async function buildViews(
       scalebarOnly:
         !!init.collapseEmptyRows && !init.views[idx]?.tracks?.length,
       displayedRegions: asm.regions,
-      // trackLabels is a plain persisted prop — set it on the snapshot directly
-      // rather than imperatively after attach
-      ...(init.views[idx]?.trackLabels
-        ? { trackLabels: init.views[idx].trackLabels }
-        : {}),
+      // Plain persisted LGV props (trackLabels, showAminoAcids, colorByCDS, …)
+      // go straight onto the row's snapshot, where MST restores them natively.
+      // Partitioned rather than listed, so a prop the LGV gains is a prop a
+      // synteny row can set, with no second list to keep in step.
+      ...partitionLaunchKeys(init.views[idx] ?? {}).viewProps,
     })),
   )
   // a row only initializes once it has been laid out, so this parks

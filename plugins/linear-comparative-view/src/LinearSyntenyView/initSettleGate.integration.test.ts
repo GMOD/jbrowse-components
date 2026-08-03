@@ -74,3 +74,26 @@ test('a level does not settle while init is still adding its tracks', async () =
   await when(() => view.init === undefined, { timeout: 15000 })
   expect(level.settled).toBe(true)
 })
+
+// A row is an LGV, so an authored row can set the LGV's own view props. They
+// used to be hand-forwarded one at a time (trackLabels only), which silently
+// dropped the rest: a spec asking a panel not to draw amino acids got them
+// anyway, with no warning to say why.
+test('a row spec sets the LGV view props on its own panel', async () => {
+  const session = setup()
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [
+        { assembly: 'volvox', showAminoAcids: false, trackLabels: 'offset' },
+        { assembly: 'volvox2' },
+      ],
+    },
+  }) as LinearSyntenyViewModel
+  view.setWidth(800)
+
+  await when(() => view.init === undefined, { timeout: 15000 })
+  expect(view.views[0]!.showAminoAcids).toBe(false)
+  expect(view.views[0]!.trackLabels).toBe('offset')
+  // the row that asked for nothing keeps the defaults
+  expect(view.views[1]!.showAminoAcids).toBe(true)
+})

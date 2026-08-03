@@ -150,6 +150,7 @@ export {
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
+export { partitionLaunchKeys } from './LinearGenomeView/initKeys.ts'
 export { MultiLevelRubberband } from './MultiLevelRubberband/index.ts'
 export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
@@ -158,6 +159,7 @@ export type {
   ExportSvgOptions,
   HighlightType,
   InitState,
+  LinearGenomeViewLaunchProps,
   NavLocation,
   TrackInit,
   TrackLabelMode,
