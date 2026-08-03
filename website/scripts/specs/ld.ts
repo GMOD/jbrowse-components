@@ -395,9 +395,11 @@ export const ldSpecs: ScreenshotSpec[] = [
         // proportional to panel size across the two, which is why the caption
         // names both counts.
         agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 297),
+        // "almost every mosquito", not "fixed": 5 of the 69 are heterozygous
+        // for the inverted arrangement, and they are visible two lanes down
         agLdTrack(
           'ag1000g_2l_gagam',
-          'Gabon, fixed for one arrangement (r²)',
+          'Gabon, one arrangement in almost every mosquito (r²)',
           'ag1000g_2L_GAgam.ld.gz',
         ),
         // 240, not the legend's own ~150: Gabon's five heterozygotes are the
@@ -459,12 +461,14 @@ export const ldSpecs: ScreenshotSpec[] = [
     // the adapter's business), so a bare name here resolves to nothing and
     // fails the spec outright.
     //
-    // NO GENETICS VOCABULARY IN THESE TWO LABELS (review: "'one arrangement
-    // fixed, nothing to link' is sort of genetic jargon"). Recombination is
-    // "shuffled", arrangement is "version", and the mechanism — a flipped copy
-    // and a normal copy cannot be shuffled together — is stated rather than
-    // implied, because it is the whole reason one panel is red and the other is
-    // not. "Fixed" is also gone on the facts: Gabon is not fixed, it is 64
+    // Plain words for everything except the mechanism itself: arrangement is
+    // "version", but recombination is named ("recombine"), which is the term
+    // the tutorial prose and every source on 2La uses and the one word a reader
+    // can look up (review: "the term 'shuffle' should use biological language
+    // e.g. 'recombine'"). The mechanism — a flipped copy and a normal copy
+    // cannot recombine — is stated rather than implied, because it is the whole
+    // reason one panel is red and the other is
+    // not. "Fixed" is gone on the facts: Gabon is not fixed, it is 64
     // standard homozygotes and 5 heterozygotes out of 69 (the counts
     // build_ag1000g_ld.sh prints, and the same sample TSV this figure colours
     // its rows from). Those five are visible in the lane below, so the label
@@ -480,7 +484,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        text: 'Both versions of this stretch are common here, and\na flipped copy cannot be shuffled with a normal one,\nso all 22 Mb is inherited as one piece.',
+        text: 'Both versions of this stretch are common here, and\na flipped copy cannot recombine with a normal one,\nso all 22 Mb is inherited as one piece.',
         // 16, not the 18 the one-line labels used: these say more, and at 18 a
         // ~50 character line runs past maxWidth 430, which is where the r²
         // legend sits in the top right corner of both panels.
@@ -495,8 +499,8 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        // "Far too rare to hold this stretch together", not the earlier "too few
-        // to stop the shuffling, so nothing stays linked": both LD panels are
+        // "Far too rare to hold this stretch together", not "nothing stays
+        // linked": both LD panels are
         // built at --maf 0.2 (build_ag1000g_ld.sh), and Gabon's flipped copy
         // sits at 5 of 138 haplotypes, so the variants that mark it are below
         // that floor and are not in this file at all. What the empty panel is
@@ -505,7 +509,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         // label reading "nothing stays linked" would have claimed more than
         // that: unfiltered, those five carriers' own rare tag SNPs would
         // correlate with each other.
-        text: 'Almost every mosquito here has the same version:\nonly 5 of 69 carry a flipped copy (blue rows below).\nFar too rare to hold this stretch together, so it is\nshuffled up and passed on in pieces.',
+        text: 'Almost every mosquito here has the same version:\nonly 5 of 69 carry a flipped copy (blue rows below).\nFar too rare to hold this stretch together, so it\nrecombines freely and is passed on in pieces.',
         fontSize: 16,
         maxWidth: 430,
       },
