@@ -32,5 +32,7 @@ Because each config is a plain JS object, it can be imported, generated, or
 templated by your own code. See
 [default session](../default-session/#default-session) for the session
 structure, [the config guide](https://jbrowse.org/jb2/docs/config_guide) for the
-track/assembly shapes, and [Nextstrain MSA + tree](../nextstrain-msa/) for the
-matching reconstructed alignments.
+track/assembly shapes, and the
+[Nextstrain pathogens example](https://gmod.org/JBrowseMSA/examples#nextstrain-pathogens)
+on [react-msaview](https://gmod.org/JBrowseMSA) for the matching reconstructed
+tree + alignment.

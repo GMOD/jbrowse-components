@@ -393,19 +393,6 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
-    slug: 'nextstrain-msa',
-    title: 'Nextstrain MSA',
-    description:
-      'The Nextstrain tree + reconstructed reference-coordinate MSA, embedded with react-msaview.',
-    group: 'Real-world demos',
-    sections: [
-      {
-        slug: 'nextstrain-msa',
-        title: 'Nextstrain MSA + tree',
-      },
-    ],
-  },
-  {
     slug: 'locus-zoom-ld',
     title: 'LocusZoom-style LD',
     description:
