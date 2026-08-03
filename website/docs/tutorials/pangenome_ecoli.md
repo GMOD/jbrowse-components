@@ -644,7 +644,7 @@ Rows want a narrower window than the sweep above. A row draws what a strain
 takes _instead of_ the reference, so it is read segment by segment, and at 17 bp
 per segment a kilobase leaves each one a few pixels wide.
 
-<Figure caption="460 bp of the same graph in Sample rows, at the ycbF/pyrD boundary, under the MAF lane in the same five rows and the same order. The graph's top row is the K12 backbone with each segment's length on it; below it each strain's marks are the segments it takes instead of the reference, tied by threads to where they attach. The MAF row above says the same thing base by base: CFT073 has columns only where its contig reaches." src="/img/pangenome/pggb_locus_sample_rows.png" />
+<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows, in the MAF's five rows and the same order: the top row is the K12 backbone with each segment's length on it, and below it each strain's marks are the segments it takes instead of the reference. The MAF row above says the same thing base by base — CFT073 has columns only where its contig reaches. Right, the same nodes force-directed, which is where the bubbles those rows flatten are visible as bubbles." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
 #### Where this stops, and what to do instead
 

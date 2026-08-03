@@ -259,9 +259,16 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // braid over the segment lane, both in the reference-position ramp. Framed
   // past the app chrome and the gene lane so the card is graph rather than
   // toolbar.
+  //
+  // `xband` to the left half: the source figure is a two-panel composite, and
+  // its halves are different heights, so the right half's extra height is
+  // padding under the left one. A full-width band over the rows pane frames
+  // that padding as half the card.
   pangenome_graph_view: {
     src: 'pangenome/pggb_locus_sample_rows.png',
-    band: [0.55, 1],
+    band: [0.37, 0.69],
+    xband: [0, 0.5],
+    position: 'left',
   },
   pangenome_hprc: {
     // The classic Bandage force-directed picture of the C4 subgraph, past the

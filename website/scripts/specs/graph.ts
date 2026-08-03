@@ -808,15 +808,24 @@ const PGGB_MAF_SESSION_TRACK = {
   },
 }
 
+// `mafLane` is stated rather than derived from `layoutMode`, because the two
+// halves of pangenome/pggb_locus_sample_rows differ ONLY in layoutMode: a lane
+// that appeared over one half and not the other would be a second difference
+// the pair does not mean, and the MAF rows are exactly what the force half has
+// to be read against.
 function pggbLocusSession(
   layoutMode: 'force' | 'samplerows',
-  { region, window }: { region: typeof PGGB_LOCUS; window: string },
+  {
+    region,
+    window,
+    mafLane = false,
+  }: { region: typeof PGGB_LOCUS; window: string; mafLane?: boolean },
 ) {
   return sessionSpec(CONFIG, {
     sessionTracks: [
       K12_GENES_SESSION_TRACK,
       PGGB_SEGMENTS_SESSION_TRACK,
-      ...(layoutMode === 'samplerows' ? [PGGB_MAF_SESSION_TRACK] : []),
+      ...(mafLane ? [PGGB_MAF_SESSION_TRACK] : []),
     ],
     views: [
       {
@@ -825,7 +834,7 @@ function pggbLocusSession(
         loc: window,
         tracks: [
           { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-          ...(layoutMode === 'samplerows'
+          ...(mafLane
             ? [
                 {
                   trackId: PGGB_MAF_TRACK,
@@ -1538,21 +1547,69 @@ export const graphSpecs: ScreenshotSpec[] = [
   // readable segment by segment. Here the five rows differ from each other in
   // ways a reader can name -- CFT073 absent from the left half of the window, the
   // 1 bp nodes taken by some strains and not others.
+  //
+  // Drawn twice, side by side, because the two layouts answer different
+  // questions about the same 460 bp and the tutorial asks both. Sample rows says
+  // WHICH strain carries a segment — it is the only figure that does, and the
+  // rows line up with the MAF lane above them row for row. The Bandage force
+  // drawing says what the locus is SHAPED like: the same nodes with nothing
+  // holding them to the reference axis, so the bubbles are visible as bubbles.
+  // Same window, same tracks, same colors, differing only in layoutMode, which
+  // is what makes the pair readable as one graph rather than two.
   {
     mode: 'url',
-    name: 'pangenome/pggb_locus_sample_rows',
+    name: 'pangenome/pggb_locus_sample_rows_rows',
     url: pggbLocusSession('samplerows', {
       region: PGGB_ROWS_LOCUS,
       window: PGGB_ROWS_WINDOW,
+      mafLane: true,
     }),
+    // Row labels, not just the toolbar: the layout runs after the graph loads,
+    // and the toolbar is up before there is a row to label.
     readySelector:
       'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
     readyTimeout: 120000,
     settleMs: 5000,
-    viewportWidth: 1000,
+    // half the composed width each
+    viewportWidth: 830,
     // the two lanes plus the graph's five rows, and nothing under them
     viewportHeight: 895,
     hideTooltip: true,
+  },
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_locus_sample_rows_force',
+    url: pggbLocusSession('force', {
+      region: PGGB_ROWS_LOCUS,
+      window: PGGB_ROWS_WINDOW,
+      mafLane: true,
+    }),
+    // No row labels to wait on here, and the FMMM engine is remote: the same
+    // allowUnsettled + long settle the other force half uses.
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 830,
+    // The force drawing fills a box rather than five rows, so this half is
+    // taller and its pane has to be tall enough for the whole drawing: at 1000
+    // the FMMM output ran out the bottom of the pane, and a graph figure cut
+    // off mid-edge reads as a broken layout rather than a tall one. `+append`
+    // pads the shorter half.
+    viewportHeight: 1230,
+    hideTooltip: true,
+  },
+  {
+    mode: 'compose',
+    name: 'pangenome/pggb_locus_sample_rows',
+    // Sample rows first: it is the half the surrounding prose is about, and the
+    // half whose rows pair with the MAF lane. The force half follows as the
+    // same graph with the axis let go.
+    parts: [
+      'pangenome/pggb_locus_sample_rows_rows',
+      'pangenome/pggb_locus_sample_rows_force',
+    ],
+    direction: 'horizontal',
   },
   // The pggb subgraph, over the linear view of the same locus, in the SAME colors
   // (reviewer: "it would be great if we could get coloring on the linear genome
