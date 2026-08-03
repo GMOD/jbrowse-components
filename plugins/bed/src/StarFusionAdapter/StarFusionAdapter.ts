@@ -22,6 +22,18 @@ function parseBreakpoint(str: string) {
   }
 }
 
+/**
+ * Which way the sequence a breakpoint keeps runs from it, as the paired-arc
+ * display's mate-direction tick (1 = right, -1 = left, 0 = unknown). A
+ * breakpoint's strand in STAR-Fusion is its gene's transcription strand, and the
+ * fusion transcript keeps the donor's sequence 5' of the junction and the
+ * acceptor's 3' of it: so on a + strand donor the retained side is at lower
+ * coordinates and on a + strand acceptor it is at higher ones.
+ */
+function tickDirection(strand: number | undefined, isDonor: boolean) {
+  return strand === undefined ? 0 : isDonor ? -strand : strand
+}
+
 export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusionAdapterConfig> {
   protected fileData?: Promise<{
     columnNames: string[]
@@ -101,12 +113,15 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
     const mateBp = parseBreakpoint(
       (flip ? row.LeftBreakpoint : row.RightBreakpoint)!,
     )
+    // the LeftBreakpoint is the donor, so this feature is the donor end of the
+    // junction whenever it is not flipped, and the mate is the other end
     return new SimpleFeature({
       uniqueId,
       refName: primaryBp.refName,
       start: primaryBp.start,
       end: primaryBp.end,
       strand: primaryBp.strand,
+      mateDirection: tickDirection(primaryBp.strand, !flip),
       name: row.FusionName,
       score: row.JunctionReadCount ? +row.JunctionReadCount : undefined,
       type: 'fusion',
@@ -115,6 +130,7 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
         start: mateBp.start,
         end: mateBp.end,
         strand: mateBp.strand,
+        mateDirection: tickDirection(mateBp.strand, flip),
       },
       ...row,
     })

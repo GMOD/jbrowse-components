@@ -13,6 +13,10 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
   const isSymbolic = alt
     ? SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))
     : false
+  // a paired adapter with no VCF ALT to parse (StarFusion, and any adapter that
+  // knows which side of its own breakpoint is retained) states the tick on the
+  // feature the way it states the mate's on `mate`
+  const own = feature.get('mateDirection')
 
   return {
     k1: {
@@ -20,7 +24,8 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
       start,
       // symbolic alleles: arc spans start→end, so collapse the local end to start+1
       end: parsed && isSymbolic ? start + 1 : feature.get('end'),
-      mateDirection: parsed?.joinDirection ?? 0,
+      mateDirection:
+        parsed?.joinDirection ?? (typeof own === 'number' ? own : 0),
     },
     k2: mate ?? {
       refName: parsed?.mateRefName ?? 'unknown',

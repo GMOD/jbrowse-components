@@ -234,7 +234,7 @@ The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified
 is the piece of chr9 that the two junctions cut out.
 
-<Figure caption="Copy number in three windows, with the STAR-Fusion calls as arcs across them: the amplified chr9q34 block in the middle carries both chr9 breakpoints, and the arcs run to its chr22 partners, XKR3 on the left and BCR on the right. DepMap's segmentation covers no interval over BCR." src="/img/cancer_sv/k562_cn_amplicon.png" />
+<Figure caption="Copy number in three windows, with the STAR-Fusion calls as arcs across them: the amplified chr9q34 block in the middle carries both chr9 breakpoints, and the arcs run to its chr22 partners, XKR3 on the left and BCR on the right. Each arc ends in a tick drawn over the sequence that junction keeps, so the two chr9 ticks point into the amplified block from either end of it. DepMap's segmentation covers no interval over BCR." src="/img/cancer_sv/k562_cn_amplicon.png" />
 
 This is the reasoning SplitThreader applied to the ERBB2 amplicon in SK-BR-3:
 copy-number steps and breakpoints that describe the same interval are evidence

@@ -57,11 +57,16 @@ test('primary feature has correct coords and mate', async () => {
   expect(feat.get('refName')).toBe('chr1')
   expect(feat.get('start')).toBe(1000)
   expect(feat.get('strand')).toBe(1)
+  // the donor of a + strand fusion keeps the sequence below its breakpoint, so
+  // the arc's tick points left; the acceptor here is on -, and keeps the
+  // sequence below its breakpoint too
+  expect(feat.get('mateDirection')).toBe(-1)
   expect(feat.get('mate')).toEqual({
     refName: 'chr2',
     start: 5000,
     end: 5001,
     strand: -1,
+    mateDirection: -1,
   })
 })
 
@@ -86,6 +91,10 @@ test('flipped mate feature has correct coords', async () => {
   expect(flipped.get('refName')).toBe('chr2')
   expect(flipped.get('start')).toBe(5000)
   expect(flipped.get('mate')).toMatchObject({ refName: 'chr1' })
+  // the same junction from the other end: the ticks are the same two, swapped
+  // with the endpoints rather than recomputed from the flipped feature's strand
+  expect(flipped.get('mateDirection')).toBe(-1)
+  expect(flipped.get('mate')).toMatchObject({ mateDirection: -1 })
 })
 
 test('returns empty array for unknown ref', async () => {

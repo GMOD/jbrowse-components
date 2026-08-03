@@ -418,6 +418,20 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // both of its endpoints resolve through `view.bpToPx`, so with chr9 by itself
   // the copy-number step has nothing pointing at it and the figure asserts the
   // link in its caption instead of showing it.
+  //
+  // The arcs carry mate-direction ticks, now that StarFusionAdapter states
+  // which side of each breakpoint the fusion keeps: the tick runs from the
+  // breakpoint out over the retained sequence, so the pair of them says which
+  // piece of chr9 the junctions cut out. Without them an arc says two positions
+  // are joined but not how, which is what review could not read here.
+  //
+  // NO RNA LANE, though review asked whether one would help, and this was
+  // measured rather than assumed. K562_isoseq over these three windows is a
+  // 6.22 Mb fetch against the default gate, so the lane renders as its
+  // too-much-data banner instead of coverage; and even force-loaded, 1.25 Mb of
+  // window across ~1500px puts an Iso-Seq exon under a pixel. The RNA reading of
+  // this junction is cancer_sv/k562_bcr_abl_split, one section up, at the zoom
+  // where a transcript is resolvable.
   {
     mode: 'url',
     name: 'cancer_sv/k562_cn_amplicon',
