@@ -19,6 +19,7 @@ import { waitFor } from '@testing-library/react'
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './stateModel.ts'
 
+import type { MafAlignedRow } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // A LinearMafGetAlignmentData result with no blocks; `samples` is what each test
@@ -28,13 +29,31 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 function makeMafResult(
   samples: { id: string; label: string }[],
   samplesCanonical = true,
+  // Sample ids to emit one aligned row for, in the worker's own order. Left
+  // empty except where a test is about placement — the worker names rows and
+  // never positions them, so the client's order is the only thing that decides
+  // where they land.
+  rowSampleIds: string[] = [],
 ) {
   return {
     samples,
     treeNewick: undefined,
     samplesCanonical,
     regionData: {
-      blocks: [],
+      blocks: rowSampleIds.length
+        ? [
+            {
+              startBp: 0,
+              endBp: 4,
+              refSeqBytes: new TextEncoder().encode('ACGT'),
+              rows: rowSampleIds.map(sampleId => ({
+                sampleId,
+                alignmentBytes: new TextEncoder().encode('ACGT'),
+              })),
+              empties: [],
+            },
+          ]
+        : [],
       coverage: {
         coverageDepths: new Float32Array(0),
         coverageStartPos: 0,
@@ -180,6 +199,9 @@ function createTestEnvironment() {
     regions = [
       { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
     ],
+    // extra display snapshot keys, for the states a session can arrive in
+    // rather than click into (a share link, a screenshot spec)
+    displaySnapshot: Record<string, unknown> = {},
   ) {
     const session = Session.create({ configuration: {} }, { pluginManager })
     const view = session.setView(
@@ -189,7 +211,7 @@ function createTestEnvironment() {
           {
             type: 'MafTrack',
             configuration: 'test_track',
-            displays: [{ type: 'LinearMafDisplay' }],
+            displays: [{ type: 'LinearMafDisplay', ...displaySnapshot }],
           },
         ],
       }),
@@ -225,6 +247,17 @@ async function settle(
   }
 }
 
+// Every placed row in the loaded regions as [sampleId, rowIndex], sorted by
+// sample so a test states the placement rather than the worker's emit order.
+function placedRows(display: {
+  rpcDataMap: Map<number, { blocks: { rows: MafAlignedRow[] }[] }>
+}) {
+  return [...display.rpcDataMap.values()]
+    .flatMap(d => d.blocks.flatMap(b => b.rows))
+    .map(r => [r.sampleId, r.rowIndex])
+    .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+}
+
 function alignmentCalls(mockRpcCall: jest.Mock) {
   return mockRpcCall.mock.calls.filter(
     c => c[1] === 'LinearMafGetAlignmentData',
@@ -255,14 +288,16 @@ describe('LinearMafDisplay alignment fetch count', () => {
     await settle(display)
 
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
-    // the row order still reaches the worker — only the *cache key* changed
-    expect(display.orderedSampleIds).toEqual(['hg38', 'mm10'])
+    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'hg38',
+      'mm10',
+    ])
   })
 
   // The other half of that trade: dropping the derived key also dropped an
-  // accidental repair. A sample-discovery track can report a different genome set
-  // per region, and rows already fetched carry `rowIndex`es assigned against the
-  // old set, so the change has to invalidate them explicitly.
+  // accidental repair. A sample-discovery track can report a different genome
+  // set per region, and the rows already fetched were narrowed against the old
+  // one, so the change has to invalidate them explicitly.
   it('refetches when the worker reports a changed sample set', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockImplementation(() =>
@@ -282,17 +317,20 @@ describe('LinearMafDisplay alignment fetch count', () => {
     await settle(display)
 
     expect(display.sampleSetGeneration).toBe(1)
-    expect(display.orderedSampleIds).toEqual(['hg38', 'mm10', 'rn6'])
+    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'hg38',
+      'mm10',
+      'rn6',
+    ])
     // the reload's fetch, plus the one the changed set invalidated it into
     expect(alignmentCalls(mockRpcCall)).toHaveLength(3)
   })
 
   // Regression: a sample-discovery track's regions can align different genomes.
-  // One region's set used to stand for the whole batch, and the worker drops
-  // samples missing from the client's order — so rn6, discovered only in the
-  // second region, rendered nothing. The union covers both regions, and since
-  // it's additive the set is right on the first pass: no `sampleSetGeneration`
-  // bump, no refetch.
+  // One region's set used to stand for the whole batch, so rn6, discovered only
+  // in the second region, had no row to be placed at and rendered nothing. The
+  // union covers both regions, and since it's additive the set is right on the
+  // first pass: no `sampleSetGeneration` bump, no refetch.
   it('unions genomes discovered in different regions', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockImplementation((_id, method, args) =>
@@ -318,8 +356,120 @@ describe('LinearMafDisplay alignment fetch count', () => {
     ])
     await settle(display, 2)
 
-    expect(display.orderedSampleIds).toEqual(['hg38', 'mm10', 'rn6'])
+    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'hg38',
+      'mm10',
+      'rn6',
+    ])
     expect(display.sampleSetGeneration).toBe(0)
     expect(alignmentCalls(mockRpcCall)).toHaveLength(2)
+  })
+})
+
+describe('LinearMafDisplay row placement', () => {
+  // A session that ARRIVES with a row arrangement (share link, screenshot spec)
+  // has a `layout` before it has any data, and labels its rows from it. The
+  // fetch that DISCOVERS the row set cannot state that set, so it used to send
+  // canonical order and the client drew every row under another row's name.
+  // Nothing about order is sent now: rows come back named, and the client
+  // places them against the list it draws.
+  it('sends no row order, whatever the arrangement', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation(() =>
+      Promise.resolve(makeMafResult(HG38_MM10)),
+    )
+    const { display } = createDisplay(undefined, {
+      layout: [{ name: 'mm10' }, { name: 'hg38' }],
+    })
+    await settle(display)
+
+    const calls = alignmentCalls(mockRpcCall)
+    expect(calls).toHaveLength(1)
+    expect(calls[0]![2]).not.toHaveProperty('orderedSampleIds')
+    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'mm10',
+      'hg38',
+    ])
+  })
+
+  // The payoff for taking row order out of the RPC: a reorder is a re-place of
+  // data already in hand. Under positional identity this refetched the heaviest
+  // payload in the plugin, because `layoutOrder` had to be part of the cache
+  // key for the worker to renumber the rows.
+  it('re-places cached rows on a reorder, without refetching', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation((_id, method) =>
+      Promise.resolve(
+        method === 'LinearMafGetAlignmentData'
+          ? makeMafResult(HG38_MM10, true, ['hg38', 'mm10'])
+          : makeMafResult([]),
+      ),
+    )
+    const { display } = createDisplay()
+    await settle(display)
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
+    expect(placedRows(display)).toEqual([
+      ['hg38', 0],
+      ['mm10', 1],
+    ])
+
+    display.setLayout([{ name: 'mm10' }, { name: 'hg38' }])
+    await settle(display)
+
+    expect(placedRows(display)).toEqual([
+      ['hg38', 1],
+      ['mm10', 0],
+    ])
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
+  })
+
+  // The bug this all comes from: a session ARRIVES with a saved layout naming a
+  // genome this region has no alignment for. The reply's rows used to be
+  // numbered against a list the display did not draw, so every row below the
+  // missing one drew under another row's name.
+  it('places correctly when the layout names a genome the reply lacks', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation((_id, method) =>
+      Promise.resolve(
+        method === 'LinearMafGetAlignmentData'
+          ? makeMafResult(HG38_MM10, true, ['hg38', 'mm10'])
+          : makeMafResult([]),
+      ),
+    )
+    const { display } = createDisplay(undefined, {
+      layout: [{ name: 'mm10' }, { name: 'rn6' }, { name: 'hg38' }],
+    })
+    await settle(display)
+
+    // rn6 is in the layout but not in the sample set, so it is not a drawn row;
+    // the two that are drawn keep their layout positions rather than sliding up
+    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'mm10',
+      'hg38',
+    ])
+    expect(placedRows(display)).toEqual([
+      ['hg38', 1],
+      ['mm10', 0],
+    ])
+  })
+
+  // The subtree filter still travels, as a row *set*: the worker ships only
+  // those genomes and scopes coverage to them.
+  it('sends the subtree filter as a set', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation(() =>
+      Promise.resolve(makeMafResult(HG38_MM10)),
+    )
+    const { display } = createDisplay(undefined, {
+      layout: [{ name: 'mm10' }, { name: 'hg38' }],
+      subtreeFilter: ['hg38'],
+    })
+    await settle(display)
+
+    const [first] = alignmentCalls(mockRpcCall)
+    expect(first![2].subtreeFilter).toEqual(['hg38'])
+    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'hg38',
+    ])
   })
 })

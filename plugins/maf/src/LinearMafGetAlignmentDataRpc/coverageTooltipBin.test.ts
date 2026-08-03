@@ -2,21 +2,21 @@ import { buildCoverageTooltipBin } from '@jbrowse/alignments-core'
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
 
-import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 const enc = new TextEncoder()
 
 function block(
   startBp: number,
   refSeq: string,
-  rows: { rowIndex: number; sample: string }[],
-): MafBlock {
+  rows: { sampleId: string; sample: string }[],
+): MafWireBlock {
   return {
     startBp,
     endBp: startBp + refSeq.replaceAll('-', '').length,
     refSeqBytes: enc.encode(refSeq),
     rows: rows.map(r => ({
-      rowIndex: r.rowIndex,
+      sampleId: r.sampleId,
       alignmentBytes: enc.encode(r.sample),
     })),
     empties: [],
@@ -29,7 +29,7 @@ function block(
  * the MismatchArrays shape, then call `buildCoverageTooltipBin`. Locks in the
  * (position → depth + per-base counts) contract end-to-end.
  */
-function makeBin(blocks: MafBlock[], regionStart: number, regionEnd: number) {
+function makeBin(blocks: MafWireBlock[], regionStart: number, regionEnd: number) {
   const mafCov = computeMafCoverage(blocks, regionStart, regionEnd)
   const { mismatchPositions, mismatchBases } = mafCov
   return (pos: number) =>
@@ -44,9 +44,9 @@ test('bin reports depth + per-base SNP counts for a mixed column', () => {
   const bin = makeBin(
     [
       block(10, 'ACGT', [
-        { rowIndex: 0, sample: 'ACGT' },
-        { rowIndex: 1, sample: 'ATGT' },
-        { rowIndex: 2, sample: 'AAGT' },
+        { sampleId: '0', sample: 'ACGT' },
+        { sampleId: '1', sample: 'ATGT' },
+        { sampleId: '2', sample: 'AAGT' },
       ]),
     ],
     10,
@@ -61,7 +61,7 @@ test('bin reports depth + per-base SNP counts for a mixed column', () => {
 
 test('bin is undefined when the position has zero depth', () => {
   const bin = makeBin(
-    [block(10, 'A', [{ rowIndex: 0, sample: '-' }])],
+    [block(10, 'A', [{ sampleId: '0', sample: '-' }])],
     10,
     11,
   )(10)
@@ -72,8 +72,8 @@ test('bin reports total samples but no snps when all match', () => {
   const bin = makeBin(
     [
       block(50, 'ACG', [
-        { rowIndex: 0, sample: 'ACG' },
-        { rowIndex: 1, sample: 'ACG' },
+        { sampleId: '0', sample: 'ACG' },
+        { sampleId: '1', sample: 'ACG' },
       ]),
     ],
     50,

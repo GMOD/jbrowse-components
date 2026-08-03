@@ -61,6 +61,7 @@ import { findRowSpan } from './components/findRowSpan.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
+import { placeMafRegionData } from './placeMafRows.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 
@@ -69,6 +70,7 @@ import type {
   MafGpuProps,
   MafRegionData,
   MafRenderingBackend,
+  MafWireRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
@@ -189,6 +191,16 @@ export default function stateModelFactory(
       .volatile(() => ({
         /**
          * #volatile
+         * Rows as the worker sent them: named by species, with no screen
+         * position. `rpcDataMap` is this placed against the current row order,
+         * and this is what a reorder re-places from instead of refetching.
+         */
+        wireDataMap: observable.map<number, MafWireRegionData>(),
+        /**
+         * #volatile
+         * `wireDataMap` with every row assigned its on-screen `rowIndex` (see
+         * `placeMafRegionData`). Everything that draws, hit-tests or measures
+         * rows reads this one.
          */
         rpcDataMap: observable.map<number, MafRegionData>(),
         /**
@@ -716,16 +728,6 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Display row order shipped to the worker so its block `rowIndex` matches
-         * the on-screen row. The alignment-fetch RPC argument only — deliberately
-         * NOT the cache key, which keys on the user-controlled inputs behind this
-         * instead (see `rpcProps`).
-         */
-        get orderedSampleIds(): string[] | undefined {
-          return self.sources?.map(s => s.name)
-        },
-        /**
-         * #getter
          * Maps a `src` (species) to its display row index. The single source for
          * the `src`→row projection used by the summary-bar and CDS-frame overlays
          * and the frame hover lookup, so they can't disagree on row placement.
@@ -1113,26 +1115,25 @@ export default function stateModelFactory(
          * Worker-fetch inputs that invalidate cached data when changed (tier-1,
          * via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
          *
-         * The fetch argument that actually decides row placement is
-         * `orderedSampleIds` (see `fetchMafAlignmentData`), but this keys on the
-         * three *inputs* that produce it instead of on the value: `layout` order
-         * and `subtreeFilter` are user-driven and already settled before the first
-         * fetch, while `sampleSetGeneration` carries the one thing only the worker
-         * can tell us — that the row set changed out from under already-fetched
-         * rows.
+         * Row *order* is deliberately absent: no fetch argument depends on it
+         * any more, since the worker names rows by species and the main thread
+         * places them (`placeMafRegionData`). A reorder therefore re-places the
+         * cached payload — the heaviest in the plugin — instead of refetching it.
          *
-         * Keying on `orderedSampleIds` itself is what this replaces: it is
-         * undefined until the first fetch lands and defined after, so the key
-         * flipped on every track load and `SettingsInvalidate` threw away the
-         * region that had just arrived — a measured 2 × `LinearMafGetAlignmentData`
-         * per region, on the heaviest payload in the plugin. Loop-safe but not
-         * free, which is exactly the case ARCHITECTURE.md's "rpcProps() must read
-         * only user-controlled settings" is about. Pinned by
+         * `subtreeFilter` stays because it is a fetch argument: the worker ships
+         * only the rows in it and scopes coverage/identity to them.
+         * `sampleSetGeneration` stays as the one signal only the worker can give
+         * — the discovered row set grew — though it is now conservative rather
+         * than load-bearing, since re-placement already fixes the rows that were
+         * fetched before the new genome was known.
+         *
+         * Nothing here may be fetch-derived. Keying on a value that is undefined
+         * until the first fetch lands and defined after flips the key on every
+         * track load, and `SettingsInvalidate` then throws away the region that
+         * just arrived — a measured 2 × `LinearMafGetAlignmentData` per region.
+         * Loop-safe but not free, which is exactly the case ARCHITECTURE.md's
+         * "rpcProps() must read only user-controlled settings" is about. Pinned by
          * `singleFetchPerRegion.test.ts`.
-         *
-         * Reorder and subtree-filter changes still refetch, deliberately: the
-         * worker assigns `rowIndex` from the order and scopes coverage/identity to
-         * the set, so both have to go back through it.
          */
         rpcProps() {
           // `annotationDataActive` is a cache key so toggling the CDS-frame strip
@@ -1140,10 +1141,8 @@ export default function stateModelFactory(
           // `framesDataMap` for the loaded regions (the frames piggyback on the
           // same fetch pass).
           return {
-            // Names only, so relabelling or recoloring a row doesn't refetch; both
-            // copied to plain arrays, since the key is a JSON string and an MST
+            // Copied to a plain array, since the key is a JSON string and an MST
             // node's serialization is not this module's to depend on.
-            layoutOrder: self.layout.map(row => row.name),
             subtreeFilter: self.subtreeFilter?.slice(),
             sampleSetGeneration: self.sampleSetGeneration,
             annotationDataActive: self.annotationDataActive,
@@ -1803,8 +1802,28 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
-        setRpcData(regionIndex: number, data: MafRegionData) {
-          self.rpcDataMap.set(regionIndex, data)
+        setRpcData(regionIndex: number, data: MafWireRegionData) {
+          self.wireDataMap.set(regionIndex, data)
+          self.rpcDataMap.set(
+            regionIndex,
+            placeMafRegionData(data, self.rowIndexBySrc),
+          )
+        },
+        /**
+         * #action
+         * Re-place every cached region against the row order now on screen.
+         * Driven by the autorun below, so a reorder repaints from data already
+         * in hand — the fetched rows name their species, so nothing about them
+         * is order-specific. Replacing the region objects is what re-runs the
+         * per-region encode.
+         */
+        placeFetchedRows(rowIndexBySrc: Map<string, number>) {
+          for (const [regionIndex, data] of self.wireDataMap) {
+            self.rpcDataMap.set(
+              regionIndex,
+              placeMafRegionData(data, rowIndexBySrc),
+            )
+          }
         },
         setSummaryData(regionIndex: number, records: MafSummaryRecord[]) {
           self.summaryDataMap.set(regionIndex, records)
@@ -1823,9 +1842,11 @@ export default function stateModelFactory(
         // current chromosome, since `clearDisplaySpecificData` empties it on
         // chromosome nav and on any settings invalidation.
         clearAlignmentData() {
+          self.wireDataMap.clear()
           self.rpcDataMap.clear()
         },
         clearDisplaySpecificData() {
+          self.wireDataMap.clear()
           self.rpcDataMap.clear()
           self.summaryDataMap.clear()
           self.framesDataMap.clear()
@@ -1888,6 +1909,24 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
+        afterAttach() {
+          // `rowIndexBySrc` is read out here rather than inside the action: an
+          // MST action's own reads are untracked, so the autorun would never
+          // see the row order change. Reading it here also hands the action the
+          // memoized Map instead of a freshly rebuilt one.
+          //
+          // This re-places on any change to `sources`, including a relabel or a
+          // recolor, which move no row. That costs one re-encode of the loaded
+          // regions — the same work a theme or color-setting change already
+          // does on this path — for a rare manual edit, which is cheaper than
+          // carrying a comparison to suppress it.
+          addDisposer(
+            self,
+            autorun(() => {
+              self.placeFetchedRows(self.rowIndexBySrc)
+            }),
+          )
+        },
         fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {

@@ -1,6 +1,6 @@
 import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../util/asciiBytes.ts'
 
-import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { InsertionEntry } from '@jbrowse/alignments-core'
 
 /**
@@ -91,16 +91,16 @@ export interface MafCoverageResult {
  * recorded so it renders as a grey segment; columns where the *reference* is
  * `N` are unclassifiable and emit no mismatch.
  *
- * `refRowIndex` is the display row of the reference assembly (resolved from
+ * `refSampleId` is the reference assembly's own sample id (resolved from
  * `region.assemblyName`), excluded from the identity numerator/denominator so
- * its trivial self-match doesn't inflate conservation. `-1` (no reference row
- * in the visible set) leaves identity over all rows.
+ * its trivial self-match doesn't inflate conservation. Undefined (the
+ * reference is not one of the rows) leaves identity over all rows.
  */
 export function computeMafCoverage(
-  blocks: MafBlock[],
+  blocks: MafWireBlock[],
   regionStart: number,
   regionEnd: number,
-  refRowIndex = -1,
+  refSampleId?: string,
 ): MafCoverageResult {
   const length = Math.max(0, regionEnd - regionStart)
   const depths = new Float32Array(length)
@@ -115,7 +115,7 @@ export function computeMafCoverage(
   // `insertions` when a non-gap ref column closes the insertion run (or at
   // block end). Tracks the actual run length so multi-column insertions are
   // emitted as a single entry, not N entries of length 1.
-  const pendingInsLen = new Map<number, number>()
+  const pendingInsLen = new Map<string, number>()
 
   const flushPending = (position: number) => {
     // Called at every reference column, and insertions are rare, so the empty
@@ -146,8 +146,8 @@ export function computeMafCoverage(
         for (const row of block.rows) {
           if (alignedBaseUpper(row.alignmentBytes, col) !== undefined) {
             pendingInsLen.set(
-              row.rowIndex,
-              (pendingInsLen.get(row.rowIndex) ?? 0) + 1,
+              row.sampleId,
+              (pendingInsLen.get(row.sampleId) ?? 0) + 1,
             )
           }
         }
@@ -168,7 +168,7 @@ export function computeMafCoverage(
                 mismatches.push(refPos, sampleUpper)
               }
               // Identity counts non-reference species at a known ref column.
-              if (refKnown && row.rowIndex !== refRowIndex) {
+              if (refKnown && row.sampleId !== refSampleId) {
                 classifiable[depthIdx]! += 1
                 if (sampleUpper === refUpper) {
                   matches[depthIdx]! += 1

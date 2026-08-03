@@ -8,8 +8,8 @@ import {
 import { computeMafCoverage } from './computeMafCoverage.ts'
 
 import type {
-  MafBlock,
   MafCoverageRegion,
+  MafWireBlock,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 /**
@@ -20,17 +20,17 @@ import type {
  * rows. Kept pure over its `blocks` argument so a subtree recompute would just
  * pass a filtered block list.
  *
- * `refRowIndex` (the reference assembly's display row) is forwarded to the
- * identity computation so the reference's self-match is excluded; `-1` when no
- * reference row is in the visible set.
+ * `refSampleId` (the reference assembly's own sample id) is forwarded to the
+ * identity computation so the reference's self-match is excluded; undefined
+ * when the reference is not one of the rows.
  */
 export function buildMafCoverageRegion(
-  blocks: MafBlock[],
+  blocks: MafWireBlock[],
   regionStart: number,
   regionEnd: number,
-  refRowIndex = -1,
+  refSampleId?: string,
 ): MafCoverageRegion {
-  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd, refRowIndex)
+  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd, refSampleId)
   const coverageForSnp = {
     depths: mafCov.depths,
     maxDepth: mafCov.maxDepth,

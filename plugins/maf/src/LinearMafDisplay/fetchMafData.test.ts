@@ -85,7 +85,6 @@ function makeSelf() {
     cleared,
     self: {
       adapterConfig: {},
-      orderedSampleIds: undefined,
       annotationDataActive: false,
       annotationAdapterConfig: undefined,
       fetchRegions: (_needed: unknown, work: (ctx: FetchContext) => unknown) =>

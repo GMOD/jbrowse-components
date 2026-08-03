@@ -1,4 +1,4 @@
-import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 function addFields(buffers: Set<ArrayBuffer>, obj: object) {
   for (const value of Object.values(obj)) {
@@ -11,7 +11,7 @@ function addFields(buffers: Set<ArrayBuffer>, obj: object) {
 }
 
 /**
- * Every ArrayBuffer in a `MafRegionData`, for the RPC's transfer list.
+ * Every ArrayBuffer in a `MafWireRegionData`, for the RPC's transfer list.
  *
  * Without this the reply is structured-cloned, so every species' sequence is
  * copied a second time on the way out of the worker — the peak that has to fit
@@ -28,7 +28,7 @@ function addFields(buffers: Set<ArrayBuffer>, obj: object) {
  * a reference past the reply. The Set dedupes in case any two views ever share
  * a buffer, which `postMessage` rejects outright.
  */
-export function collectMafTransferables(regionData: MafRegionData) {
+export function collectMafTransferables(regionData: MafWireRegionData) {
   const buffers = new Set<ArrayBuffer>()
   addFields(buffers, regionData.coverage)
   for (const block of regionData.blocks) {

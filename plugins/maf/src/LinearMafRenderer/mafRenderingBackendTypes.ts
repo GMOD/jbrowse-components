@@ -33,8 +33,14 @@ export interface MafGPURenderState {
 // One MAF "block" is a single ungapped alignment stanza emitted by the
 // adapter; one region may contain many disjoint blocks at different
 // genomic anchors. Heavy sequence data is Uint8Array for zero-copy transfer.
-export interface MafAlignedRow {
-  rowIndex: number
+//
+// The `Wire*` shapes are what the worker emits: rows name their species and
+// nothing else. Screen position is assigned on the main thread by
+// `placeMafRegionData`, against the row list the display is actually drawing —
+// so the worker never needs to know the display's order, and a reorder cannot
+// leave fetched rows pointing at another row's label.
+export interface MafWireRow {
+  sampleId: string
   alignmentBytes: Uint8Array
   // Per-row species coords + context, retained for hover tooltips only (the
   // per-base color encoder and coverage code ignore them). Optional because
@@ -49,8 +55,8 @@ export interface MafAlignedRow {
 // A bridged/empty row (MAF `e` line): the species has no aligned bases in this
 // block but its flanking blocks are chained. Drawn as a single/double line or
 // pale bar across the block's reference extent (see emptyLines.ts).
-export interface MafEmptyRow {
-  rowIndex: number
+export interface MafWireEmptyRow {
+  sampleId: string
   status: MafStatus
   chr: string
   start: number
@@ -59,12 +65,37 @@ export interface MafEmptyRow {
   srcSize: number
 }
 
-export interface MafBlock {
+export interface MafWireBlock {
   startBp: number
   // Absolute genomic end (startBp + count of non-dash reference bytes). Lets
   // the e-line overlay span the block without re-walking refSeqBytes.
   endBp: number
   refSeqBytes: Uint8Array
+  rows: MafWireRow[]
+  empties: MafWireEmptyRow[]
+}
+
+export interface MafWireRegionData {
+  blocks: MafWireBlock[]
+  coverage: MafCoverageRegion
+}
+
+// Placed counterparts: `rowIndex` is the on-screen row, valid only against the
+// `sources` list it was placed with. Everything that draws, hit-tests or
+// measures rows consumes these, and keys on `rowIndex` alone — `sampleId` rides
+// along as provenance, so it stays optional here rather than becoming a second
+// row identity the render path could disagree with.
+export interface MafAlignedRow extends Omit<MafWireRow, 'sampleId'> {
+  rowIndex: number
+  sampleId?: string
+}
+
+export interface MafEmptyRow extends Omit<MafWireEmptyRow, 'sampleId'> {
+  rowIndex: number
+  sampleId?: string
+}
+
+export interface MafBlock extends Omit<MafWireBlock, 'rows' | 'empties'> {
   rows: MafAlignedRow[]
   empties: MafEmptyRow[]
 }

@@ -7,8 +7,8 @@ import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { collectMafTransferables } from './collectTransferables.ts'
 
 import type {
-  MafBlock,
-  MafRegionData,
+  MafWireBlock,
+  MafWireRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type {
   AlignmentRecord,
@@ -20,18 +20,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
-  // Display row order (the client's layout, narrowed by any subtree filter). A
-  // block row is emitted at its index in this list, so the worker's `rowIndex`
-  // is the on-screen row (and coverage is scoped to the set). Undefined on the
-  // first fetch — falls back to canonical sample order. Mirrors variants.
-  orderedSampleIds?: string[]
-  // The display's subtree filter, for the one fetch that cannot send
-  // `orderedSampleIds`: the row set is discovered BY this fetch, so a session
-  // that arrives with a filter already set (a shared link, a screenshot spec)
-  // has no `sources` to narrow yet. Without it that fetch emits every genome
-  // and the client draws a 26-row payload against 25 labels, one row off, until
-  // something else invalidates the cache. Applied to the canonical set in its
-  // own order, which is the order `sources` filters into on the client.
+  // The display's subtree filter, as a SET. Rows outside it are neither emitted
+  // nor counted in coverage/identity, so a filtered subtree ships (and scores)
+  // only the genomes it draws. No order travels with it: rows name their
+  // species and the client places them (see `placeMafRegionData`).
   subtreeFilter?: string[]
 }
 
@@ -46,35 +38,13 @@ export interface LinearMafGetAlignmentDataResult {
    * has (see `setSamples`).
    */
   samplesCanonical: boolean
-  regionData: MafRegionData
-}
-
-/**
- * Which sample ids become rows, in row order.
- *
- * `orderedSampleIds` is the client's own display order and wins whenever it is
- * sent. It cannot be sent on the fetch that DISCOVERS the row set, though — the
- * display has no `sources` until this call returns — so a session that arrives
- * with a subtree filter already set (a shared link, a screenshot spec) would
- * otherwise get every genome back and draw an N-row payload against N-k labels,
- * every row one off. Filtering the canonical set here closes that, and in the
- * canonical order, which is the order the client's `sources` filters into.
- */
-export function resolveRowOrder(
-  samples: readonly Sample[],
-  orderedSampleIds: readonly string[] | undefined,
-  subtreeFilter: readonly string[] | undefined,
-): string[] {
-  if (orderedSampleIds?.length) {
-    return [...orderedSampleIds]
-  }
-  const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
-  return samples.filter(s => !filterSet || filterSet.has(s.id)).map(s => s.id)
+  regionData: MafWireRegionData
 }
 
 /**
  * Fetch MAF alignment features for a single region. Returns raw
- * `MafRegionData` (one or more blocks; each carries its own ref seq + rows —
+ * `MafWireRegionData` (one or more blocks; each carries its own ref seq + rows,
+ * named by species rather than placed at a screen row —
  * see `mafRenderingBackendTypes.ts`). The GPU instance buffer is built on the
  * main thread (in `startRenderingBackend`'s per-region encode) from this raw
  * data plus the current `gpuProps()` — that way color/style toggles never
@@ -90,8 +60,7 @@ export async function executeMafAlignmentData({
   pluginManager: PluginManager
   args: LinearMafGetAlignmentDataArgs
 }) {
-  const { regions, adapterConfig, sessionId, orderedSampleIds, subtreeFilter } =
-    args
+  const { regions, adapterConfig, sessionId, subtreeFilter } = args
   const region = regions[0]!
   const {
     adapter,
@@ -150,28 +119,24 @@ export async function executeMafAlignmentData({
   const samples: Sample[] = hasConfiguredSamples
     ? configSamples
     : [...discoveredOrder.keys()].map(id => ({ id, label: id }))
-  // Block rows are keyed/ordered by the client's display order; samples not in
-  // it are dropped. The returned `samples` stays the full canonical set so the
-  // sidebar tree + "clear filter" still see every genome.
-  const sampleToRow = new Map(
-    resolveRowOrder(samples, orderedSampleIds, subtreeFilter).map(
-      (id, i): [string, number] => [id, i],
-    ),
-  )
+  // Rows outside the active subtree are dropped here rather than shipped and
+  // hidden. The returned `samples` stays the full set so the sidebar tree +
+  // "clear filter" still see every genome.
+  const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
 
   // One MAF feature = one alignment block. A single fetched region can contain
   // many disjoint blocks at unrelated genomic anchors.
-  const blocks: MafBlock[] = rawBlocks.map(
+  const blocks: MafWireBlock[] = rawBlocks.map(
     ({ startBp, refSeqBytes, alignments, empties }) => {
       // for...in + push avoids the Object.entries+flatMap temp array
       // allocations on a per-block hot path.
-      const rows: MafBlock['rows'] = []
+      const rows: MafWireBlock['rows'] = []
       for (const sampleId in alignments) {
-        const rowIndex = sampleToRow.get(sampleId)
-        if (rowIndex !== undefined) {
+        if (isVisible(sampleId)) {
           const a = alignments[sampleId]!
           rows.push({
-            rowIndex,
+            sampleId,
             alignmentBytes: enc.encode(a.seq),
             chr: a.chr,
             start: a.start,
@@ -181,12 +146,11 @@ export async function executeMafAlignmentData({
           })
         }
       }
-      const emptyRows: MafBlock['empties'] = []
+      const emptyRows: MafWireBlock['empties'] = []
       for (const sampleId in empties) {
-        const rowIndex = sampleToRow.get(sampleId)
-        if (rowIndex !== undefined) {
+        if (isVisible(sampleId)) {
           const e = empties[sampleId]!
-          emptyRows.push({ rowIndex, ...e })
+          emptyRows.push({ sampleId, ...e })
         }
       }
       // Genomic extent of the block = non-dash reference columns.
@@ -206,29 +170,27 @@ export async function executeMafAlignmentData({
     },
   )
 
-  // `blocks` already contains exactly the display rows (narrowed by the subtree
-  // filter via `rowOrder`), so coverage over them is automatically scoped to
-  // the visible subtree — no separate row filtering needed.
+  // `blocks` already contains exactly the visible rows (narrowed by the subtree
+  // filter above), so coverage over them is automatically scoped to the visible
+  // subtree — no separate row filtering needed.
   //
-  // The reference assembly is normally listed as a sample (the top row), so it
-  // self-matches at every column. Identify its display row from the queried
-  // `region.assemblyName` (the same signal `selectReferenceSequenceString` uses
-  // as `query.assemblyName`) so the conservation metric can exclude it. `-1`
-  // when the reference isn't among the visible rows — identity then runs over
-  // all rows.
-  const refRowIndex = sampleToRow.get(region.assemblyName) ?? -1
+  // The reference assembly is normally listed as a sample, so it self-matches
+  // at every column. Identify it from the queried `region.assemblyName` (the
+  // same signal `selectReferenceSequenceString` uses as `query.assemblyName`)
+  // so the conservation metric can exclude it. Identity runs over all rows when
+  // the reference isn't among them.
   const coverage = buildMafCoverageRegion(
     blocks,
     region.start,
     region.end,
-    refRowIndex,
+    isVisible(region.assemblyName) ? region.assemblyName : undefined,
   )
 
   // rpcResult wraps value + transfer list; the RPC framework unwraps it before
   // returning to the caller, whose type is the RpcRegistry
   // `LinearMafGetAlignmentData.return` declaration. Hence no return annotation
   // on this function and no cast here.
-  const regionData: MafRegionData = { blocks, coverage }
+  const regionData: MafWireRegionData = { blocks, coverage }
   const result: LinearMafGetAlignmentDataResult = {
     samples,
     treeNewick,

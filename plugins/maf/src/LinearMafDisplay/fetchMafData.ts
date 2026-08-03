@@ -2,7 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { callEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
-import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
@@ -11,7 +11,6 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 interface MafFetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
-  orderedSampleIds?: string[]
   subtreeFilter?: readonly string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
@@ -20,7 +19,7 @@ interface MafFetchSelf extends IAnyStateTreeNode {
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
   makeRegionStatusCallback: (key: number) => (status: RpcStatus) => void
-  setRpcData: (regionIndex: number, data: MafRegionData) => void
+  setRpcData: (regionIndex: number, data: MafWireRegionData) => void
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
   clearAlignmentData: () => void
@@ -42,12 +41,11 @@ interface SampleSet {
  * A sample-discovery track (no configured `samples`) derives its rows from the
  * genomes present in each region's blocks, so two regions can name different
  * sets and a region with no alignment blocks names none. Picking one region's
- * set to stand for the batch dropped the others' rows: the worker keys block
- * `rowIndex` off the client's order and drops samples missing from it, so a
- * genome only region B aligns rendered nothing. Unioning keeps every discovered
- * row, and being order-stable and additive it settles in one round instead of
- * flip-flopping the set (and `sampleSetGeneration` with it) as regions land in
- * different batches.
+ * set to stand for the batch dropped the others' rows: a genome only region B
+ * aligns has no row to be placed at, so it rendered nothing. Unioning keeps
+ * every discovered row, and being order-stable and additive it settles in one
+ * round instead of flip-flopping the set (and `sampleSetGeneration` with it) as
+ * regions land in different batches.
  *
  * `treeNewick` and `samplesCanonical` are config-derived, hence identical across
  * a batch — read from the first result. Configured-samples tracks return that
@@ -171,10 +169,9 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
       rpcManager.call(sessionId, 'LinearMafGetAlignmentData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
-        // Display row order; the worker keys rowIndex off it (see rpcProps).
-        orderedSampleIds: self.orderedSampleIds,
-        // The first fetch has no `sources` yet, so it cannot send the order —
-        // this is how the filter still reaches that fetch.
+        // Row set, not row order: the worker ships only these genomes and
+        // scores coverage over them. Placement is the client's (see
+        // `placeMafRegionData`), so nothing order-dependent is sent.
         subtreeFilter: self.subtreeFilter?.slice(),
         stopToken: ctx.stopToken,
         statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
