@@ -99,46 +99,6 @@ const galleryPreview: GalleryCard[] = [
 
 <div class="outer-box">
   <!-- Gallery preview -->
-  <section class="section-box">
-    <h2 class="section-title">Explore the gallery</h2>
-    <p class="body-text">
-      Worked examples that open live in the browser, most with a tutorial.
-    </p>
-    <div class="gallery-grid">
-      {
-        galleryPreview.map(g => (
-          <a
-            class="gallery-card"
-            href={
-              g.guide
-                ? `${baseUrl}/docs/${g.guide}/`
-                : `${baseUrl}/gallery/#${g.anchor}`
-            }
-          >
-            <img
-              class="gallery-thumb"
-              src={`${baseUrl}/img/home-gallery/${g.img}.webp`}
-              loading="lazy"
-              decoding="async"
-              alt=""
-            />
-            <span class="gallery-card-label">{g.label}</span>
-          </a>
-        ))
-      }
-    </div>
-    <div class="btn-row">
-      <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/gallery/`}>
-        Browse the full gallery
-      </a>
-      <a
-        class:list={[btn.btn, btn.btnAccent]}
-        href={`${baseUrl}/docs/tutorials/`}
-      >
-        Follow a tutorial
-      </a>
-    </div>
-  </section>
 
   <!-- Genome Hubs -->
   <section class="section-box">
