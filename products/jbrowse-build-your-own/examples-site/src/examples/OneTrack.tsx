@@ -4,14 +4,13 @@ import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 // The smallest thing that puts genomic data on screen: measure a div, mount one
-// track's display in it. No header, no ruler, no track label, no MUI theme.
+// track's display in it. No header, no ruler, no track label, no MUI theme --
+// and none of the wheel/pointer wiring the Pan and zoom page adds, either.
 //
 // This file is complete. Everything it needs is either below or comes from a
 // published package, so you can copy the whole thing into an app and run it.
-// The later pages repeat these parts rather than importing them, for the same
+// The other pages repeat these parts rather than importing them, for the same
 // reason.
-//
-// It doesn't pan or zoom yet -- that is the next example.
 
 const volvox = {
   name: 'volvox',

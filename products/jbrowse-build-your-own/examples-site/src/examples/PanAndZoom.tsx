@@ -10,9 +10,9 @@ import { observer } from 'mobx-react'
 // limits, and `zoomTo` keeps a chosen pixel anchored, so the handlers below are
 // only translating events into calls.
 //
-// Self-contained, like every page here: the engine and the mounting parts from
-// the previous example are repeated rather than imported, so this file runs on
-// its own.
+// Self-contained, like every page here: nothing is imported from elsewhere in
+// this site, so this file runs on its own. The One track page repeats the
+// engine and mounting parts below with the interactivity stripped back out.
 
 const volvox = {
   name: 'volvox',

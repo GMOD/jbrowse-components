@@ -5,24 +5,26 @@ import type { ExamplePage } from './exampleModel.ts'
 export type { ExamplePage, ExampleSection } from './exampleModel.ts'
 export { section } from './exampleModel.ts'
 
-// Ordered as a build, not a catalogue: each page adds one thing to the page
-// before it, and the sidebar groups follow that arc.
+// Ordered as a build, not a catalogue: most pages add one thing to the page
+// before them, and the sidebar groups follow that arc. The first two run the
+// other way -- pan and zoom is the point of a genome browser, so it leads,
+// and One track follows to show the bare view it's built from.
 export const pages: ExamplePage[] = [
-  {
-    slug: 'one-track',
-    title: 'One track',
-    description:
-      'The smallest thing that puts genomic data on screen: a measured div and one track. No header, no ruler, no track labels, no palette to supply.',
-    group: 'The atoms',
-    sections: [{ slug: 'one-track', title: 'One track, no chrome' }],
-  },
   {
     slug: 'pan-and-zoom',
     title: 'Pan and zoom',
     description:
-      'The view already owns the coordinate maths and clamps to the ends of the assembly. Making it interactive is a matter of turning wheel and pointer events into calls.',
+      'A measured div, one track, and enough wheel/pointer wiring to move around it. The view already owns the coordinate maths and clamps to the ends of the assembly; this is what it takes to drive it.',
     group: 'The atoms',
     sections: [{ slug: 'pan-and-zoom', title: 'Wheel and drag' }],
+  },
+  {
+    slug: 'one-track',
+    title: 'One track, no interaction',
+    description:
+      'The same view with the pan/zoom wiring pulled back out: a measured div and one track, nothing else. No header, no ruler, no track labels, no palette to supply.',
+    group: 'The atoms',
+    sections: [{ slug: 'one-track', title: 'No pan, no zoom, no chrome' }],
   },
   {
     slug: 'a-stack-of-tracks',

@@ -18,4 +18,6 @@ That is the whole of the example below. The track is a BigWig, so what you are
 looking at is a real fetch through a real adapter, laid out by the same code
 that runs in the full product.
 
-It does not pan or zoom yet, which is the next page.
+The previous page, Pan and zoom, builds this same view and wires wheel and
+pointer events into it. This page leaves those out, to show the floor: a
+measured div and one track, nothing else.
