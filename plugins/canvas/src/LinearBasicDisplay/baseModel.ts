@@ -1024,6 +1024,67 @@ export default function baseStateModelFactory(
             self.rpcDataMap.size > 0
           )
         },
+        /**
+         * #getter
+         * The features fit mode measures its stack against: those whose bp span
+         * touches the viewport. The fetch deliberately buffers half a screen
+         * either side (`bufferedVisibleRegions`), and every one of those
+         * off-screen features claims a row — rows that add stack height but draw
+         * nothing in view. Measuring the whole packed stack therefore squeezed
+         * the boxes and stripped the labels to fit features the user cannot see:
+         * a viewport holding eight genes could land on the `bodies` rung at the
+         * minimum box size because twenty more sat just outside it.
+         *
+         * It narrows the MEASUREMENT only — the pack still places every buffered
+         * feature, so panning inside the buffer doesn't reshuffle rows and a
+         * feature half off screen keeps the row it will hold once it is fully on.
+         * That works because greedy first-fit gives a visible feature the topmost
+         * row its own x-span is free in, and an off-screen feature never contests
+         * that span, so the on-screen stack stays packed against the top.
+         *
+         * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's
+         * `coarseBpPerPx`, so a pan re-fits once it settles instead of breathing
+         * the whole stack every frame. Undefined when the fit isn't running or
+         * the view has no coarse blocks yet, which measures the whole stack (the
+         * behavior every non-fit consumer keeps).
+         */
+        get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
+          if (!self.fitHeightToDisplay || !self.layoutReady) {
+            return undefined
+          }
+          const view = getView(self)
+          const blocks = view.coarseDynamicBlocks
+          if (blocks.length === 0) {
+            return undefined
+          }
+          const rangesByKey = new Map<string, [number, number][]>()
+          for (const block of blocks) {
+            const key = `${block.assemblyName}:${block.refName}`
+            let ranges = rangesByKey.get(key)
+            if (!ranges) {
+              ranges = []
+              rangesByKey.set(key, ranges)
+            }
+            ranges.push([block.start, block.end])
+          }
+          const ids = new Set<string>()
+          for (const data of self.rpcDataMap.values()) {
+            const ranges = rangesByKey.get(data.regionKey)
+            if (!ranges) {
+              continue
+            }
+            for (const item of data.flatbushItems) {
+              if (
+                ranges.some(
+                  ([start, end]) => item.startBp < end && item.endBp > start,
+                )
+              ) {
+                ids.add(item.featureId)
+              }
+            }
+          }
+          return ids
+        },
       }))
       .views(self => ({
         /**
@@ -1085,6 +1146,7 @@ export default function baseStateModelFactory(
             self.rpcDataMap,
             self.decimatedBaseInputs,
             trackHeight,
+            self.fitMeasureFeatureIds,
           )
         },
       }))
@@ -1253,6 +1315,11 @@ export default function baseStateModelFactory(
          * `fitMinScale` and scrolled if even that overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled
          * candidate heights so it can't feed back on its own `scale`. The ladder
          * walk + scale math live in `resolveFitLadder`.
+         *
+         * Every rung is measured over `fitMeasureFeatureIds` — on screen in fit
+         * mode, everything otherwise — so the rung that survives and the squeeze
+         * it gets are decided by the stack in view, not by the half-viewport of
+         * buffered features packed on either side of it.
          */
         get fitStage(): FitStage {
           const base = self.baseLaidOutDataMap
@@ -1275,6 +1342,7 @@ export default function baseStateModelFactory(
             self.fitTargetHeight,
             fit ? self.fitMinScale : 1,
             fit ? self.fitMaxScale : 1,
+            self.fitMeasureFeatureIds,
           )
         },
       }))
@@ -1395,8 +1463,11 @@ export default function baseStateModelFactory(
         // The settled laid-out content height, ignoring any in-flight Y morph.
         // Content height without re-walking the scaled map: fitStage carries the
         // kept rung's unscaled height, and scaleLaidOutData multiplies every
-        // bottomPx by scale, so maxBottom(laidOutDataMap) is exactly
-        // keptRungHeight * scale. This is what `grow` mode sizes the track to —
+        // bottomPx by scale, so this is exactly `maxBottom(laidOutDataMap)` over
+        // the features the stage measured — every feature in grow/fixed mode, the
+        // on-screen ones in fit mode (`fitMeasureFeatureIds`), which is what makes
+        // a fitted track report the height of what it is showing rather than of
+        // the buffer around it. This is what `grow` mode sizes the track to —
         // it must NOT include the morph hold below, or the track would bounce to
         // the taller of old/new content for the morph's duration and then
         // collapse. Scroll-extent consumers read the morph-aware `maxY` instead.

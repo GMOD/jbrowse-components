@@ -35,10 +35,19 @@ export function solveLabelRoomFactor(
   rpcDataMap: Parameters<typeof createContentHeightProbe>[0],
   baseInputs: Omit<LayoutInputs, 'labelRoomFactor'>,
   trackHeight: number,
+  // Features the stack height is measured over — the on-screen ones (see
+  // `maxBottom`). The same set the ladder measures its rungs with, so the factor
+  // this solves for is the factor that rung is then kept or rejected on.
+  measureIds?: ReadonlySet<string>,
 ) {
   // One preparation shared by every probe below — the label widths and
   // neighbor-room measurements don't vary with the factor.
-  const heightAt = createContentHeightProbe(rpcDataMap, baseInputs)
+  const heightAt = createContentHeightProbe(
+    rpcDataMap,
+    baseInputs,
+    undefined,
+    measureIds,
+  )
   const fits = (labelRoomFactor: number) =>
     heightAt(labelRoomFactor) <= trackHeight
   if (fits(0)) {
@@ -142,6 +151,11 @@ export function resolveFitLadder(
   trackHeight: number,
   minScale: number,
   maxScale: number,
+  // Features every rung's height is measured over: fit mode passes the on-screen
+  // ones, so a stack the fetch buffer made tall off screen neither strips labels
+  // nor squeezes the boxes the user is actually looking at (see
+  // `fitMeasureFeatureIds` and `maxBottom`).
+  measureIds?: ReadonlySet<string>,
 ): FitStage {
   // LOAD-BEARING: every kept rung's height is measured HERE, off the stack it is
   // about to return. The `decimated` rung arrives from a bisection that assumes
@@ -159,7 +173,8 @@ export function resolveFitLadder(
   let lastHeight = 0
   for (const [i, rung] of rungs.entries()) {
     const layout = rung.layout()
-    const contentHeight = layout === lastLayout ? lastHeight : maxBottom(layout)
+    const contentHeight =
+      layout === lastLayout ? lastHeight : maxBottom(layout, measureIds)
     lastLayout = layout
     lastHeight = contentHeight
     if (contentHeight <= trackHeight || i === rungs.length - 1) {

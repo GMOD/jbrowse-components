@@ -30,11 +30,22 @@ const OFFSCREEN_Y = -1e6
 // but it also means a layout that hit the row limit reports a SHORT height while
 // silently holding fewer features than it was given. `countTruncatedFeatures` is
 // how a caller finds out.
-export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
+//
+// `measureIds`, when given, restricts the measurement to those features. Fit
+// mode passes the ones on screen: the fetch buffers half a viewport either side,
+// and those off-screen features pack into rows of their own that add height
+// while drawing nothing in view (see `fitMeasureFeatureIds`).
+export function maxBottom(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
   let max = 0
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      if (item.bottomPx > max) {
+      if (
+        item.bottomPx > max &&
+        (!measureIds || measureIds.has(item.featureId))
+      ) {
         max = item.bottomPx
       }
     }
@@ -352,13 +363,18 @@ export function computeLaidOutData(
 // Content height of a set of packed rows, matching `maxBottom` of the layout the
 // same pack would produce. OFFSCREEN_Y rows are excluded exactly as `maxBottom`
 // excludes them: their bottom lands far below 0, so its running max never sees
-// them either.
+// them either. `measureIds` restricts the measurement the same way it does
+// there, so a probe and the committed layout answer the same question.
 function packedRowsHeight(
   layoutMap: Map<string, number>,
   layoutHeights: Map<string, number>,
+  measureIds?: ReadonlySet<string>,
 ) {
   let max = 0
   for (const [id, top] of layoutMap) {
+    if (measureIds && !measureIds.has(id)) {
+      continue
+    }
     const bottom = top + (layoutHeights.get(id) ?? 0)
     if (top !== OFFSCREEN_Y && bottom > max) {
       max = bottom
@@ -388,6 +404,10 @@ export function createContentHeightProbe(
   rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
   inputs: LabelRoomFactorFreeInputs,
   prevYByFeatureId?: ReadonlyMap<string, number>,
+  // Features the height is measured over (see `maxBottom`). It narrows only the
+  // measurement, never the pack: every feature still claims its row, so the
+  // rows the solve's factors are chosen against are the rows that will render.
+  measureIds?: ReadonlySet<string>,
 ) {
   const metrics = displayModeMetrics(inputs.displayMode)
   const preps = [...groupRawByRef(rpcDataMap, inputs.regionKeys).values()].map(
@@ -402,7 +422,10 @@ export function createContentHeightProbe(
         metrics,
         prevYByFeatureId,
       )
-      max = Math.max(max, packedRowsHeight(layoutMap, layoutHeights))
+      max = Math.max(
+        max,
+        packedRowsHeight(layoutMap, layoutHeights, measureIds),
+      )
     }
     return max
   }

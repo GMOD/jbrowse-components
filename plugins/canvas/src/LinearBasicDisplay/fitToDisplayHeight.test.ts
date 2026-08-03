@@ -952,3 +952,181 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.truncatedFeatureCount).toBe(0)
   })
 })
+
+// Overlapping labeled genes spanning [start, end), each 1kb narrower than the
+// last so they stack into their own rows. Placed by bp so a set can be put
+// inside the viewport or out in the fetch buffer.
+function genesOver(prefix: string, start: number, end: number, n: number) {
+  const feats = Array.from({ length: n }, (_, i) => ({
+    featureId: `${prefix}${i}`,
+    startBp: start + i * 500,
+    endBp: end - i * 500,
+  }))
+  const floatingLabelsData: Record<string, FeatureLabelData> = {}
+  for (const f of feats) {
+    floatingLabelsData[f.featureId] = {
+      featureId: f.featureId,
+      minX: f.startBp,
+      maxX: f.endBp,
+      topY: 0,
+      featureHeight: 10,
+      nameLabel: {
+        text: f.featureId,
+        relativeY: 0,
+        color: '#000',
+        textWidth: 60,
+      },
+    }
+  }
+  return { feats, floatingLabelsData }
+}
+
+function geneRegionData(
+  groups: ReturnType<typeof genesOver>[],
+): FeatureDataResult {
+  const feats = groups.flatMap(g => g.feats)
+  return makeFeatureData({
+    flatbushItems: feats.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'mRNA',
+        startBp: f.startBp,
+        endBp: f.endBp,
+        bottomPx: 10,
+        featureHeightPx: 10,
+      }),
+    ),
+    rectPositions: new Uint32Array(feats.flatMap(f => [f.startBp, f.endBp])),
+    rectYs: new Float32Array(feats.length),
+    rectHeights: new Float32Array(feats.map(() => 10)),
+    rectColors: new Uint32Array(feats.length),
+    rectStrands: new Float32Array(feats.length),
+    rectDensityFade: new Uint32Array(feats.length),
+    rectFeatureIndices: new Uint32Array(feats.map((_, i) => i)),
+    floatingLabelsData: Object.assign(
+      {},
+      ...groups.map(g => g.floatingLabelsData),
+    ),
+  })
+}
+
+// The fetch deliberately loads half a viewport of extra features on each side
+// (`bufferedVisibleRegions`), and the packer gives every one of them a row. Those
+// rows add stack height while drawing nothing on screen, so measuring the whole
+// pack made the fit squeeze the boxes — and strip the labels — to fit features
+// the user cannot see. Fit measures `fitMeasureFeatureIds` instead: the on-screen
+// features, on the same pack.
+describe('canvas display fit measures the visible window', () => {
+  // 800px over 80kb (100kb..180kb visible), with the fetch region covering the
+  // buffered 60kb..220kb the display is really handed.
+  function fitOver(offscreenGenes: number) {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(100)
+    view.scrollTo(1000)
+    display.setRpcData(
+      0,
+      geneRegionData([
+        genesOver('vis', 120_000, 160_000, 8),
+        genesOver('left', 62_000, 98_000, offscreenGenes),
+        genesOver('right', 182_000, 218_000, offscreenGenes),
+      ]),
+      view.bpPerPx,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
+    )
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    display.setHeight(100)
+    display.setHeightMode('fit')
+    let onScreenBottom = 0
+    for (const data of display.laidOutDataMap.values()) {
+      for (const item of data.flatbushItems) {
+        if (
+          item.featureId.startsWith('vis') &&
+          item.bottomPx > onScreenBottom
+        ) {
+          onScreenBottom = item.bottomPx
+        }
+      }
+    }
+    return {
+      level: display.fitStage.level,
+      scale: display.fitScale,
+      contentHeight: display.fitStage.contentHeight,
+      onScreenBottom,
+    }
+  }
+
+  it('ignores buffered off-screen features when sizing the stack', () => {
+    const alone = fitOver(0)
+    const buffered = fitOver(10)
+    // The off-screen genes are packed (they hold rows of their own) but change
+    // nothing about how the on-screen stack is fitted.
+    expect(buffered.contentHeight).toBe(alone.contentHeight)
+    expect(buffered.scale).toBe(alone.scale)
+    expect(buffered.level).toBe(alone.level)
+    // ...and the visible stack still fills the track rather than being squeezed
+    // into a fraction of it.
+    expect(buffered.onScreenBottom).toBe(alone.onScreenBottom)
+    expect(buffered.onScreenBottom).toBeCloseTo(100, 5)
+  })
+
+  // The set is on-screen membership, so a feature entering the viewport starts
+  // counting and one leaving stops.
+  it('tracks the viewport as it moves', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(100)
+    view.scrollTo(1000)
+    display.setRpcData(
+      0,
+      geneRegionData([
+        genesOver('vis', 120_000, 160_000, 4),
+        genesOver('right', 182_000, 218_000, 12),
+      ]),
+      view.bpPerPx,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
+    )
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    display.setHeight(100)
+    display.setHeightMode('fit')
+    const before = display.fitStage.contentHeight
+
+    // Pan onto the taller off-screen group; the coarse blocks are what the
+    // measurement reads, so it re-fits when they are flushed.
+    view.scrollTo(182_000 / 100)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    expect(display.fitStage.contentHeight).toBeGreaterThan(before)
+  })
+
+  // Outside fit mode nothing is narrowed: grow sizes the track to every feature
+  // it holds, so panning inside the buffer doesn't resize the track.
+  it('measures the whole stack outside fit mode', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(100)
+    view.scrollTo(1000)
+    display.setRpcData(
+      0,
+      geneRegionData([
+        genesOver('vis', 120_000, 160_000, 4),
+        genesOver('right', 182_000, 218_000, 12),
+      ]),
+      view.bpPerPx,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
+    )
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    expect(display.fitMeasureFeatureIds).toBeUndefined()
+    expect(display.fitStage.contentHeight).toBe(
+      maxBottom(display.baseLaidOutDataMap),
+    )
+  })
+})
