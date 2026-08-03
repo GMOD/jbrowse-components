@@ -2685,3 +2685,46 @@ describe('coarse dynamic blocks', () => {
     dispose()
   })
 })
+
+describe('scalebar coordinate labels', () => {
+  function makeView(regions: { refName: string; end: number }[]) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(
+      regions.map(({ refName, end }) => ({
+        assemblyName: 'volvox',
+        refName,
+        start: 0,
+        end,
+      })),
+    )
+    model.showAllRegions()
+    return model
+  }
+
+  test('a region with room for a real ruler is numbered', () => {
+    const model = makeView([{ refName: 'ctgA', end: 100000 }])
+    expect(model.scalebarLabels.length).toBeGreaterThan(1)
+  })
+
+  // whole-genome case: the pitch comes from the whole region set, so a short
+  // chromosome catches one lone number that says nothing about scale and reads
+  // as the same value repeated down a multi-genome row
+  test('a region with room for only one label is left unnumbered', () => {
+    const model = makeView([
+      { refName: 'ctgA', end: 100000 },
+      { refName: 'ctgB', end: 2000 },
+    ])
+    const [wide, narrow] = model.staticBlocks.contentBlocks
+    expect(narrow!.widthPx).toBeLessThan(60)
+    // keys are `${run.offsetPx}-${base}`, so every label still belongs to the
+    // wide region and none to the narrow one
+    expect(model.scalebarLabels.length).toBeGreaterThan(1)
+    expect(
+      model.scalebarLabels.every(l => l.key.startsWith(`${wide!.offsetPx}-`)),
+    ).toBe(true)
+  })
+})

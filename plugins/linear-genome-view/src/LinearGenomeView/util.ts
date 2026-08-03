@@ -349,22 +349,24 @@ export function overviewRefNameLabelWidth(refName: string) {
 }
 
 /**
- * A block needs at least this many coordinate labels to be worth numbering. The
- * overview's tick pitch comes from the bpPerPx of the whole displayed-region set,
- * so a block much narrower than that pitch still catches a tick or two: in a
- * whole-genome overview every chromosome ends up with a single lone number
- * jammed against the next chromosome's refName. One coordinate conveys no scale
- * on its own — needing two means narrow blocks show just their refName, and only
- * blocks with room for a real ruler get numbers.
+ * A block needs at least this many coordinate labels to be worth numbering, in
+ * the main scalebar as well as the overview. Tick pitch comes from the bpPerPx
+ * of the whole displayed-region set, so a region much narrower than that pitch
+ * still catches a tick or two: with every chromosome displayed at once, each one
+ * ends up with a single lone number jammed against the next chromosome's
+ * refName, and a row of five-genome synteny reads as scattered repeats of the
+ * same "200M". One coordinate conveys no scale on its own — needing two means
+ * narrow regions show just their refName, and only regions with room for a real
+ * ruler get numbers.
  */
-const MIN_OVERVIEW_TICK_LABELS = 2
+export const MIN_TICK_LABELS_PER_BLOCK = 2
 
 /**
  * Coordinate labels drawn inside one overview-scalebar block: tick text plus its
  * x within the block. Labels that can't be drawn whole between the block's bold
  * refName label and its right edge are dropped by the same
  * tickLabelWidth/labelFitsInBlock test the main scalebar and SVG export use; if
- * fewer than MIN_OVERVIEW_TICK_LABELS survive, the block goes unnumbered.
+ * fewer than MIN_TICK_LABELS_PER_BLOCK survive, the block goes unnumbered.
  */
 export function makeOverviewTickLabels({
   block,
@@ -385,7 +387,7 @@ export function makeOverviewTickLabels({
       return fits ? [{ genomicCoord, offsetPx, label }] : []
     },
   )
-  return labels.length < MIN_OVERVIEW_TICK_LABELS ? [] : labels
+  return labels.length < MIN_TICK_LABELS_PER_BLOCK ? [] : labels
 }
 
 /**

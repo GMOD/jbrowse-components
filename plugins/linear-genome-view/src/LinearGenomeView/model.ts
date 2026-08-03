@@ -65,6 +65,7 @@ import {
   buildRubberbandClickMenuItems,
 } from './menuItems.ts'
 import {
+  MIN_TICK_LABELS_PER_BLOCK,
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
@@ -1796,6 +1797,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * chop a region into ~800px chunks; groupContiguousBlocks merges them
          * back per region so a label on an internal chunk boundary isn't clipped
          * away by both neighbors — only genuine region edges clip a label.
+         *
+         * A run that can hold fewer than MIN_TICK_LABELS_PER_BLOCK labels goes
+         * unnumbered, the same rule the overview scalebar applies: with a whole
+         * genome displayed each chromosome catches one lone coordinate, which
+         * conveys no scale by itself and reads as the same number repeated
+         * across the row.
          */
         get scalebarLabels() {
           const { bpPerPx } = self
@@ -1803,6 +1810,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const labels: { x: number; label: string; key: string }[] = []
           for (const run of groupContiguousBlocks(blocks)) {
             const runLeft = run.offsetPx - firstBlockOffset
+            const runLabels = []
             for (const { base, x } of makeBlockTicks(
               run,
               bpPerPx,
@@ -1812,12 +1820,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const w = tickLabelWidth(label)
               if (labelFitsInBlock(x - w / 2, w, run.widthPx)) {
-                labels.push({
+                runLabels.push({
                   x: runLeft + x,
                   label,
                   key: `${run.offsetPx}-${base}`,
                 })
               }
+            }
+            if (runLabels.length >= MIN_TICK_LABELS_PER_BLOCK) {
+              labels.push(...runLabels)
             }
           }
           return labels
