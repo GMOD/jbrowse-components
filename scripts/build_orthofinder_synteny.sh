@@ -36,6 +36,7 @@
 #
 # Requires: orthofinder + diamond, python3, bgzip/tabix (htslib), wget, and
 #           node (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
+#           The wheat set also needs the NCBI datasets CLI (see ALIASES below).
 # Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat] [outdir]
 #
 set -euo pipefail
@@ -53,6 +54,26 @@ OUTDIR="${2:-orthofinder_${SET}_build}"
 # Heredoc columns: short name (= the JBrowse assembly name, and the proteome
 # filename OrthoFinder names its column after), Ensembl species prefix,
 # assembly version. Row order is the row order of the stacked view.
+#
+# ALIASES lists, as "name<space>GenBank accession", the genomes whose Ensembl
+# GFF3 names sequences with INSDC accessions rather than chromosome names. Each
+# gets NCBI's sequence report for the same assembly as a refNameAliases source,
+# which is where the chromosome names live. A set that uses it needs the NCBI
+# datasets CLI (`datasets` and `dataformat`) as well.
+#
+# Annotation comes from Ensembl rather than `datasets download genome accession
+# <acc> --include gff3,protein`, which would fetch both files a set needs in one
+# call. Availability, checked 2026-08-03 against the exact assemblies below:
+# every vertebrates and grasses assembly has a RefSeq annotation on that same
+# assembly (GCF_000001405.40, GCF_016699485.2, GCF_000004195.4,
+# GCF_000242695.1, GCF_000002035.6; GCF_001433935.1, GCF_000003195.3,
+# GCF_902167145.1, GCF_000005505.3, GCF_000263155.2), so those two sets could
+# switch. Wheat cannot: NCBI holds four of its six assemblies under names other
+# than Ensembl's, and T. timopheevii (GCA_963921465.1) carries no NCBI
+# annotation at all. A switch is also not a swap of download lines — different
+# gene models mean a different OrthoFinder run and a re-upload of every demo
+# file.
+ALIASES=""
 case "$SET" in
 vertebrates)
   BASE=https://ftp.ensembl.org/pub/release-113
@@ -90,6 +111,8 @@ urartu      Triticum_urartu      IGDB
 timopheevii Triticum_timopheevii WRC_timopheevii_genome_with_organelles
 EOF
   )
+  # Ensembl's T. timopheevii GFF3 carries OY997261.1 ... rather than Chr1At ...
+  ALIASES="timopheevii GCA_963921465.1"
   ;;
 *)
   echo "unknown species set '$SET' (expected vertebrates, grasses, or wheat)" >&2
@@ -285,6 +308,47 @@ for name in $NAMES; do cp "$name.bed.gz" "$APP"/; done
 for name in $NAMES; do
   jb add-assembly "$name.chrom.sizes" --name "$name" --load copy --force --out "$APP"
 done
+
+# refNameAliases for the genomes listed in ALIASES, from NCBI's sequence report
+# for that accession: it gives each INSDC accession the submitter's chromosome
+# name (OY997261.1 = Chr1At), which is what the row is then labelled with.
+# `datasets` fetches the report by accession, so nothing about NCBI's file layout
+# is written down here, and `dataformat` writes the four columns
+# NcbiSequenceReportAliasAdapter reads (the report also carries GC content and
+# lengths this has no use for).
+if [ -n "$ALIASES" ]; then
+  echo "$ALIASES" | while read -r name accession; do
+    datasets download genome accession "$accession" --include seq-report \
+      --filename "$name.seq-report.zip"
+    dataformat tsv genome-seq --package "$name.seq-report.zip" \
+      --inputfile "$accession/sequence_report.jsonl" \
+      --fields genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name \
+      > "$name.sequence_report.tsv"
+    cp "$name.sequence_report.tsv" "$APP"/
+    python3 - "$APP/config.json" "$name" <<'PY'
+import json
+import sys
+
+config_path, name = sys.argv[1:]
+with open(config_path) as f:
+    config = json.load(f)
+for assembly in config['assemblies']:
+    if assembly['name'] == name:
+        assembly['refNameAliases'] = {
+            'adapter': {
+                'type': 'NcbiSequenceReportAliasAdapter',
+                'location': {
+                    'uri': f'{name}.sequence_report.tsv',
+                    'locationType': 'UriLocation',
+                },
+            }
+        }
+with open(config_path, 'w') as f:
+    json.dump(config, f, indent=2)
+    f.write('\n')
+PY
+  done
+fi
 
 # Per-genome gene tracks, so the ribbons can be read down to the gene. CSI, not
 # the default TBI: TBI can't address a region past ~537 Mb, and wheat-family

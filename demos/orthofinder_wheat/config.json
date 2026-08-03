@@ -82,6 +82,15 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "timopheevii.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
       }
     }
   ],
