@@ -11,19 +11,31 @@ import type { Page } from 'puppeteer'
 const CONFIG = 'extra_test_data/hic_integration_test.json'
 const CANVAS = '[data-testid="hic_canvas"]'
 
-// Ink per column: sum of darkness down the whole canvas. Summing ~hundreds of
+// Ink per column: sum of *chroma* down the whole canvas. Summing ~hundreds of
 // rows washes out the antialiased diamond edges (whose sub-pixel phase differs
 // between the two orientations) while keeping the left-right distribution the
 // mirror invariant is about.
-function inkProfile(buf: Uint8Array) {
+//
+// Chroma, not darkness: an element screenshot composites whatever shows through
+// the transparent parts of the canvas, and that includes the view's grey block
+// borders and gridlines. Those are the one thing a column sum *amplifies* rather
+// than averages away — a full-height 1px line outweighs a mean column of matrix
+// several times over — and their raster phase does not survive the mirror, so a
+// darkness metric measured the chrome instead of the contacts (with the matrix
+// mirroring exactly, `mirrorErr` still came out at 0.94 of `identityErr`). The
+// chrome is neutral grey, so max-minus-min channel scores it 0 and any colored
+// ramp above 0.
+function chromaProfile(buf: Uint8Array) {
   const png = PNG.sync.read(Buffer.from(buf))
   const out = new Float64Array(png.width)
   for (let x = 0; x < png.width; x++) {
     let ink = 0
     for (let y = 0; y < png.height; y++) {
       const i = (png.width * y + x) << 2
-      // hic paints red-on-white; 255-green tracks how saturated a pixel is
-      ink += 255 - png.data[i + 1]!
+      const r = png.data[i]!
+      const g = png.data[i + 1]!
+      const b = png.data[i + 2]!
+      ink += Math.max(r, g, b) - Math.min(r, g, b)
     }
     out[x] = ink
   }
@@ -50,7 +62,7 @@ async function capture(page: Page, loc: string) {
   })
   await waitForDataLoaded(page, 60000)
   const el = await page.waitForSelector(CANVAS, { timeout: 60000 })
-  return inkProfile(await el!.screenshot())
+  return chromaProfile(await el!.screenshot())
 }
 
 const meanAbs = (f: (i: number) => number, n: number) => {
