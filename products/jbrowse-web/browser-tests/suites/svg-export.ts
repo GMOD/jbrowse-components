@@ -64,7 +64,60 @@ async function triggerSvgExport(page: Page) {
   await submitBtn?.click()
 }
 
+// Every MST view/display gets a fresh `ElementId` (a 10-char nanoid) per
+// session, and the SVG bakes it into clip-path and gradient ids
+// (`ruler-clip-<id>`, `sequence-clip-<id>`, `reflabel-<id>-<key>`, …). Written
+// raw, every golden differs from the last run in exactly those tokens, so the
+// files show up modified after any run and a real change is invisible under
+// the noise.
+//
+// The ids are read off the live session rather than pattern-matched out of the
+// markup: nanoid's alphabet includes '-', so an id containing one is
+// indistinguishable from the '-' joining it to its prefix, and roughly half the
+// goldens stayed volatile when this guessed at token shapes.
+async function collectElementIds(page: Page) {
+  return page.evaluate(() => {
+    const ids: string[] = []
+    const seen = new Set<unknown>()
+    // Walk the session's views/tracks/displays rather than assuming a depth:
+    // a synteny export nests views, and each level carries its own id.
+    const walk = (node: unknown) => {
+      if (!node || typeof node !== 'object' || seen.has(node)) {
+        return
+      }
+      seen.add(node)
+      if (Array.isArray(node)) {
+        for (const v of node) {
+          walk(v)
+        }
+        return
+      }
+      const rec = node as Record<string, unknown>
+      if (typeof rec.id === 'string') {
+        ids.push(rec.id)
+      }
+      for (const key of ['views', 'tracks', 'displays', 'level', 'levels']) {
+        walk(rec[key])
+      }
+    }
+    walk((window as { JBrowseSession?: unknown }).JBrowseSession)
+    return ids
+  })
+}
+
+function stripVolatileIds(svg: string, elementIds: string[]) {
+  let out = svg
+  // Longest first so one id that is a prefix of another can't half-replace it.
+  const sorted = [...new Set(elementIds)].sort((a, b) => b.length - a.length)
+  sorted.forEach((id, i) => {
+    out = out.replaceAll(id, `elementid${i}`)
+  })
+  return out
+}
+
 async function exportSvgAndSave(page: Page, downloadDir: string, name: string) {
+  // Before the export dialog replaces the DOM, while the session is live.
+  const elementIds = await collectElementIds(page)
   await triggerSvgExport(page)
   const svg = await waitForDownload(downloadDir, 'jbrowse.svg')
   if (!svg.includes('<svg')) {
@@ -79,7 +132,10 @@ async function exportSvgAndSave(page: Page, downloadDir: string, name: string) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })
     }
-    fs.writeFileSync(path.join(dir, `${name}.svg`), svg)
+    fs.writeFileSync(
+      path.join(dir, `${name}.svg`),
+      stripVolatileIds(svg, elementIds),
+    )
     console.log(
       `    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`,
     )
