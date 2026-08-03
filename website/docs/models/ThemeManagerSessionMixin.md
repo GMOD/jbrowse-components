@@ -23,7 +23,8 @@ JBrowse core.
 | --- | --- |
 | <span id="getter-themename">**themeName**</span><br><code>string</code> |  |
 | <span id="getter-themeoptions">**themeOptions**</span><br><code>SerializableThemeArgs</code> |  |
-| <span id="getter-theme">**theme**</span><br><code>Theme</code> |  |
+| <span id="getter-palette">**palette**</span><br><code>JBrowsePalette</code> | Every color JBrowse renders, resolved to plain strings. This is what rendering reads: it needs no React context, it crosses the RPC worker boundary as itself, and it costs no UI toolkit. Prefer it over `theme` anywhere the answer wanted is a color rather than a Material UI component style. |
+| <span id="getter-theme">**theme**</span><br><code>Theme</code> | The Material UI theme, for the components that are Material UI. Its palette is spliced from the same `resolvePalette` call as `palette` above, so the two cannot disagree. |
 
 ## Methods
 

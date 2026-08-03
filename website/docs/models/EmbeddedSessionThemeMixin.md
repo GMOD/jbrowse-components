@@ -46,7 +46,8 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-themeoptions">**themeOptions**</span><br><code>SerializableThemeArgs</code> | Serializable theme description (the canonical `themeOptions` contract shared with the app-core/web sessions). This is what crosses the RPC worker boundary — e.g. the canvas display reads `getSession(self).themeOptions` in its rpcProps so worker-baked colors (CDS frames, stroke fallback) honor the config `theme` slot. | EmbeddedSessionThemeMixin |
-| <span id="getter-theme">**theme**</span><br><code>Theme</code> | Resolved MUI theme, mirroring the product's ThemeProvider. Lets headless/RPC consumers derive theme-dependent state without a mounted component. | EmbeddedSessionThemeMixin |
+| <span id="getter-palette">**palette**</span><br><code>JBrowsePalette</code> | Every color JBrowse renders, resolved to plain strings and free of any UI toolkit. This is what rendering reads. See the canonical `ThemeManagerSessionMixin` getter of the same name. | EmbeddedSessionThemeMixin |
+| <span id="getter-theme">**theme**</span><br><code>Theme</code> | Resolved MUI theme, mirroring the product's ThemeProvider. Lets headless/RPC consumers derive theme-dependent state without a mounted component. Shares its colors with `palette` by construction. | EmbeddedSessionThemeMixin |
 | <span id="getter-root">**root**</span><br><code>TypeOrStateTreeNodeToStateTreeNode&lt;ROOT_MODEL_TYPE&gt;</code> |  | [BaseSessionModel](../basesessionmodel#getter-root) |
 | <span id="getter-jbrowse">**jbrowse**</span><br><code>any</code> |  | [BaseSessionModel](../basesessionmodel#getter-jbrowse) |
 | <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  | [BaseSessionModel](../basesessionmodel#getter-rpcmanager) |
