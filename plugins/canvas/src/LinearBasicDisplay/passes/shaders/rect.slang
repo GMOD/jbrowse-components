@@ -60,10 +60,30 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float cx1 = bpToClipX(inst.startEnd.x, u);
   float cx2 = bpToClipX(inst.startEnd.y, u);
 
-  float sx1 = snapToPixelX(cx1, u.canvasWidth);
-  float sx2 = snapToPixelX(cx2, u.canvasWidth);
-
-  sx2 = extendToMinWidthX(sx1, sx2, MIN_RECT_WIDTH_PX, u.canvasWidth);
+  float sx1;
+  float sx2;
+  if (inst.startEnd.x == inst.startEnd.y) {
+    // A degenerate span is an interbase POINT, not a box: a CRISPR or
+    // restriction cut sits BETWEEN two bases, which is what a zero-length
+    // interval means in the interbase coordinates the adapters emit. So the
+    // min-width mark straddles the coordinate instead of growing off one side of
+    // it — zoomed in far enough to read bases, a one-sided tick sits inside the
+    // following base's cell and reads as "cuts this base".
+    //
+    // Keyed on the genomic coords, never on sx2 - sx1 == 0: pixel snapping
+    // collapses plenty of real sub-pixel spans onto one pixel, and centering
+    // those would slide every one of them half a mark off its start edge.
+    // Centering is also orientation-free, so unlike extendToMinWidthX it needs
+    // no reversed-block special case.
+    float halfMin = pxToClipW(MIN_RECT_WIDTH_PX * 0.5, u);
+    sx1 = snapToPixelX(cx1 - halfMin, u.canvasWidth);
+    sx2 = snapToPixelX(cx1 + halfMin, u.canvasWidth);
+  } else {
+    sx1 = snapToPixelX(cx1, u.canvasWidth);
+    sx2 = extendToMinWidthX(
+      sx1, snapToPixelX(cx2, u.canvasWidth), MIN_RECT_WIDTH_PX, u.canvasWidth
+    );
+  }
   float sx = lerp(sx1, sx2, localX);
 
   float yTopPx = floor(inst.y - u.scrollY + 0.5);

@@ -183,8 +183,14 @@ function drawRects(
     // min-width box is a crisp >=2px column instead of an anti-aliased sub-2px
     // blur. spanLeft then anchors the box on the feature's start edge the way
     // rect.slang's extendToMinWidthX does — reversed, that's its right edge.
-    const sx1 = Math.round(x1)
-    const sx2 = Math.round(x2)
+    //
+    // Except for a degenerate span, which is an interbase point (a cut site)
+    // rather than a box, and straddles its coordinate instead. Mirrors
+    // rect.slang, including keying on the genomic coords rather than on the
+    // snapped pixels — see the note there.
+    const isPoint = startBp === endBp
+    const sx1 = Math.round(isPoint ? x1 - MIN_RECT_WIDTH_PX / 2 : x1)
+    const sx2 = Math.round(isPoint ? x1 + MIN_RECT_WIDTH_PX / 2 : x2)
     const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
     const xLeft = spanLeft(sx1, sx2, w)
 
