@@ -9,10 +9,7 @@ export default function HumanExomeExample() {
         uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
         aliases: ['hg38'],
         refNameAliases: {
-          adapter: {
-            type: 'RefNameAliasAdapter',
-            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-          },
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
       }}
       tracks={[

@@ -28,10 +28,7 @@ export default function WithExternalPlugin() {
             aliases: ['GRCh37'],
             uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
             refNameAliases: {
-              adapter: {
-                type: 'RefNameAliasAdapter',
-                uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
-              },
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
             },
           },
           plugins: plugins.map(p => p.plugin),

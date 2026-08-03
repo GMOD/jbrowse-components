@@ -52,17 +52,9 @@ prints:
 
       const assembly = {
         name: 'hg38',
-        sequence: {
-          adapter: {
-            type: 'BgzipFastaAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-        },
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         refNameAliases: {
-          adapter: {
-            type: 'RefNameAliasAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
       }
 
@@ -156,23 +148,12 @@ search index, all on the same hg38 assembly used above:
 ```js
 const assembly = {
   name: 'hg38',
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-    },
-  },
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
   refNameAliases: {
-    adapter: {
-      type: 'RefNameAliasAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
   },
   cytobands: {
-    adapter: {
-      type: 'CytobandAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
   },
 }
 

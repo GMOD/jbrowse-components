@@ -16,25 +16,12 @@ export const embeddedSpecs: ScreenshotSpec[] = [
     viewState: {
       assembly: {
         name: 'hg38',
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          trackId: 'GRCh38-ReferenceSequenceTrack',
-          adapter: {
-            type: 'BgzipFastaAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-        },
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         refNameAliases: {
-          adapter: {
-            type: 'RefNameAliasAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
         cytobands: {
-          adapter: {
-            type: 'CytobandAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
         },
       },
       tracks: [
@@ -104,7 +91,7 @@ export const embeddedSpecs: ScreenshotSpec[] = [
             assembly: 'hg38',
             loc: '10:29,838,565..29,838,850',
             tracks: [
-              'GRCh38-ReferenceSequenceTrack',
+              'hg38-ReferenceSequenceTrack',
               'ncbi_genes',
               'NA12878_exome',
               'phyloP100way',

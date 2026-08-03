@@ -2,19 +2,9 @@ const config = {
   assemblies: [
     {
       name: 'hg38',
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'GRCh38-ReferenceSequenceTrack',
-        adapter: {
-          type: 'BgzipFastaAdapter',
-          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-        },
-      },
+      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
       refNameAliases: {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
     },
   ],
@@ -109,7 +99,7 @@ const config = {
           loc: '10:29,838,565..29,838,850',
           assembly: 'hg38',
           tracks: [
-            'GRCh38-ReferenceSequenceTrack',
+            'hg38-ReferenceSequenceTrack',
             'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
             'hg38.100way.phyloP100way',
             'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
