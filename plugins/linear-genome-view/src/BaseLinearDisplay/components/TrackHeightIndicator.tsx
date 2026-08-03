@@ -82,6 +82,10 @@ export default function TrackHeightIndicator({
         label: option.label,
         type: 'radio' as const,
         checked: heightMode === option.value,
+        // Picking a sizing mode is a one-shot choice, not a setting worth
+        // dwelling on like the track menu's checkboxes — dismiss like an
+        // action instead of the radio default.
+        keepMenuOpen: false,
         onClick: () => {
           onSetHeightMode(option.value)
         },

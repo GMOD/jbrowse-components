@@ -78,6 +78,9 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
     label: option.label,
     type: 'radio' as const,
     checked: geneGlyphMode === option.value,
+    // One-shot pick from this ambient button, not a settings row to linger
+    // on like the track menu's radio group — dismiss like TrackHeightIndicator.
+    keepMenuOpen: false,
     onClick: () => {
       onSetGeneGlyphMode(option.value)
     },
