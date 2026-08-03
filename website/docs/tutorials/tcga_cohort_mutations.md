@@ -176,7 +176,7 @@ result.
 Three things in that figure travel to any gene-scale matrix:
 
 - Right-clicking the gene and choosing **Collapse introns** reshapes the view to
-  its exons (see [](/docs/user_guides/linear_genome_view)). With the introns in
+  its exons (see [](/docs/user_guides/gene_track)). With the introns in
   frame, every private intronic call takes a column of the matrix, and the
   coding mutations are spread out among them; collapsed, every column is an
   exonic change.

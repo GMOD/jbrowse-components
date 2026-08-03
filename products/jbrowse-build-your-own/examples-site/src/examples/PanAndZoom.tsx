@@ -206,7 +206,7 @@ function usePanZoom(
 ) {
   // `x` is the last position the pan was applied from; `panning` is whether the
   // press has travelled far enough to be a drag at all
-  const dragging = useRef<{ x: number; panning: boolean } | undefined>(
+  const draggingRef = useRef<{ x: number; panning: boolean } | undefined>(
     undefined,
   )
   const [hint, setHint] = useState(false)
@@ -265,11 +265,11 @@ function usePanZoom(
         // primary button only, so a right-click or a context menu doesn't pan.
         // Note what this does *not* do: capture the pointer. See below.
         if (event.button === 0) {
-          dragging.current = { x: event.clientX, panning: false }
+          draggingRef.current = { x: event.clientX, panning: false }
         }
       },
       onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const drag = dragging.current
+        const drag = draggingRef.current
         if (!drag) {
           return
         }
@@ -296,7 +296,7 @@ function usePanZoom(
       // pointercancel as well as pointerup: a touch drag interrupted by the
       // browser never fires `up`, and the drag would stay latched
       onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-        dragging.current = undefined
+        draggingRef.current = undefined
         // release only what the move handler took -- a press that stayed under
         // the threshold never captured anything
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -304,7 +304,7 @@ function usePanZoom(
         }
       },
       onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
-        dragging.current = undefined
+        draggingRef.current = undefined
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId)
         }

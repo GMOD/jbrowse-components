@@ -186,7 +186,7 @@ function usePanZoom(
   view: BrowserView,
   ref: React.RefObject<HTMLDivElement | null>,
 ) {
-  const dragging = useRef<{ x: number; panning: boolean } | undefined>(
+  const draggingRef = useRef<{ x: number; panning: boolean } | undefined>(
     undefined,
   )
   const [hint, setHint] = useState(false)
@@ -230,11 +230,11 @@ function usePanZoom(
           return
         }
         if (event.button === 0) {
-          dragging.current = { x: event.clientX, panning: false }
+          draggingRef.current = { x: event.clientX, panning: false }
         }
       },
       onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const drag = dragging.current
+        const drag = draggingRef.current
         if (!drag) {
           return
         }
@@ -249,13 +249,13 @@ function usePanZoom(
         drag.x = event.clientX
       },
       onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-        dragging.current = undefined
+        draggingRef.current = undefined
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId)
         }
       },
       onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
-        dragging.current = undefined
+        draggingRef.current = undefined
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId)
         }
