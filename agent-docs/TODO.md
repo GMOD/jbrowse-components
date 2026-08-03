@@ -246,17 +246,3 @@ logged in ARCHITECTURAL_LIMITS.md.
 
 
 
-Done. Changes:
-
-1. packages/wiggle-core/src/YScaleBar.tsx — swapped useTheme() (MUI) for usePalette() (@jbrowse/core/ui/PaletteContext), the toolkit-free seam that StackOfTracks.tsx already feeds via <PaletteProvider>.
-2. plugins/wiggle/src/shared/ScoreLegend.tsx (the density-mode legend, plus the black-text bug found earlier) — same swap, using stripAlpha() + explicit fillOpacity/strokeOpacity in place of MUI's alpha().
-
-Neither file imports @mui/material anymore. Lint, full-repo typecheck, and pnpm test plugins/wiggle packages/wiggle-core (343 tests) all pass.
-
-This should now show up live on /storybook/byo/a-stack-of-tracks/ without any change to the example page itself — the dev server should hot-reload. Toggle the page's dark-mode switch and the wiggle track's y-axis and density legend should follow it via the palette it already sets with setConf(session, 'theme', ...).
-
-One related loose end I noticed but didn't touch: plugins/variants/src/shared/components/RecombinationYScaleBar.tsx has the same useTheme()-instead-of-usePalette() pattern. Same bug, different plugin — let me know if you want that fixed too.
-
-Make byo first example pan and zoom capable, make non-pan-and-zoom a non-default page
-
-Track height radios should not keepOpen

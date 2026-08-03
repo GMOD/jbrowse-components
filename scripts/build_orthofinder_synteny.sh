@@ -210,6 +210,64 @@ BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS"
 gzip -kf "$REFERENCE.blocks"
 for name in $NAMES; do gzip -kf "$name.bed"; done
 
+# ── How one-to-one is each adjacent pair? ────────────────────────────────────
+# Read this before deciding a stacked band renders badly. Every band draws one
+# line per ortholog, so a band is only going to resolve into clean wedges where
+# a chromosome's orthologs mostly land on ONE chromosome of the row below it.
+# For each adjacent pair this prints that share: per chromosome, the fraction of
+# its links going to its single best partner, averaged over chromosomes weighted
+# by link count.
+#
+# Near 100% is a one-to-one map and diagonalizing it produces a diagonal. Near a
+# third means the typical chromosome's orthologs are spread over three or more
+# partners, so no left-to-right ordering of either row can make that band
+# diagonal and a dense band is the correct answer rather than a rendering
+# problem. Chromosomes under 100 links (unplaced scaffolds) are left out.
+python3 - "$BLOCK_ASSEMBLIES" $NAMES <<'PY'
+import collections
+import sys
+
+cols = sys.argv[1].split(',')
+names = sys.argv[2:]
+beds = {}
+for n in names:
+    d = {}
+    for line in open(f'{n}.bed'):
+        p = line.split('\t')
+        d[p[3].strip()] = p[0]
+    beds[n] = d
+rows = [l.rstrip('\n').split('\t') for l in open(f'{names[0]}.blocks')]
+
+
+def share(a, b):
+    ia, ib = cols.index(a), cols.index(b)
+    pair = collections.Counter()
+    tot = collections.Counter()
+    for p in rows:
+        ga, gb = p[ia], p[ib]
+        if ga == '.' or gb == '.':
+            continue
+        ca, cb = beds[a].get(ga), beds[b].get(gb)
+        if ca and cb:
+            pair[(ca, cb)] += 1
+            tot[ca] += 1
+    kept = {c: n for c, n in tot.items() if n >= 100}
+    if not kept:
+        return None
+    num = sum(max(v for (x, _), v in pair.items() if x == c) for c in kept)
+    return num / sum(kept.values()), len(kept)
+
+
+print()
+print('chromosome-level correspondence, each row against the next:')
+for a, b in zip(names, names[1:]):
+    r = share(a, b)
+    if r:
+        print(f'  {a:12s} -> {b:12s} best partner holds '
+              f'{r[0] * 100:3.0f}% of a chromosome\'s links '
+              f'({r[1]} chromosomes)')
+PY
+
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }

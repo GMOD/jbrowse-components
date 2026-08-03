@@ -391,16 +391,22 @@ export const ldSpecs: ScreenshotSpec[] = [
         // takes its row count as its height, so a row is a pixel. The Gabon lane
         // cannot: its floating legend is clipped to the display's own bounds and
         // 69px cut that legend in half, so it takes the legend's height and its
-        // 69 rows auto-fit to ~2px each. The cost is that lane height is no
-        // longer proportional to panel size across the two, which is why the
-        // caption names both counts.
+        // 69 rows auto-fit. The cost is that lane height is no longer
+        // proportional to panel size across the two, which is why the caption
+        // names both counts.
         agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 297),
         agLdTrack(
           'ag1000g_2l_gagam',
           'Gabon, fixed for one arrangement (r²)',
           'ag1000g_2L_GAgam.ld.gz',
         ),
-        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 150),
+        // 240, not the legend's own ~150: Gabon's five heterozygotes are the
+        // last five of its 69 rows (the lane is grouped in dosage order), so at
+        // 150px they were an 11px sliver sitting on the frame's bottom edge —
+        // the one thing in the figure a reader has to be able to find, drawn as
+        // close to invisible as it gets. 240 makes their band ~17px and puts
+        // clear lane under it.
+        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 240),
       ],
       views: [
         {
@@ -438,11 +444,11 @@ export const ldSpecs: ScreenshotSpec[] = [
     // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches
     // often enough to blow through 120s on a bad day.
     readyTimeout: 180000,
-    // two LD tracks (300 each) + 297 + 69 of karyotype rows + 4 headers +
+    // two LD tracks (300 each) + the 297 and 240 karyotype lanes + 4 headers +
     // ruler/overview. Undersize this and the rows past the fold are cropped away
     // silently: first paint still fires, so the capture succeeds with the
     // informative rows missing.
-    viewportHeight: 1382,
+    viewportHeight: 1472,
     settleMs: 8000,
     // One callout per lane, saying what each lane shows rather than only naming
     // the span (review: "a red text annotation on both cameroon and gabon
@@ -452,6 +458,19 @@ export const ldSpecs: ScreenshotSpec[] = [
     // resolved against the assembly's canonical names (the .ld.gz's own 2L is
     // the adapter's business), so a bare name here resolves to nothing and
     // fails the spec outright.
+    //
+    // NO GENETICS VOCABULARY IN THESE TWO LABELS (review: "'one arrangement
+    // fixed, nothing to link' is sort of genetic jargon"). Recombination is
+    // "shuffled", arrangement is "version", and the mechanism — a flipped copy
+    // and a normal copy cannot be shuffled together — is stated rather than
+    // implied, because it is the whole reason one panel is red and the other is
+    // not. "Fixed" is also gone on the facts: Gabon is not fixed, it is 64
+    // standard homozygotes and 5 heterozygotes out of 69 (the counts
+    // build_ag1000g_ld.sh prints, and the same sample TSV this figure colours
+    // its rows from). Those five are visible in the lane below, so the label
+    // sends the reader to them instead of denying they exist (review: "there
+    // are inversions in the gabon population, so unclear if that is considered
+    // here").
     annotations: [
       {
         type: 'text',
@@ -461,8 +480,11 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        text: '2La inversion, both arrangements present:\nthe whole span is one block',
-        fontSize: 18,
+        text: 'Both versions of this stretch are common here, and\na flipped copy cannot be shuffled with a normal one,\nso all 22 Mb is inherited as one piece.',
+        // 16, not the 18 the one-line labels used: these say more, and at 18 a
+        // ~50 character line runs past maxWidth 430, which is where the r²
+        // legend sits in the top right corner of both panels.
+        fontSize: 16,
         maxWidth: 430,
       },
       {
@@ -473,8 +495,18 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        text: 'Same span, one arrangement fixed:\nnothing to link',
-        fontSize: 18,
+        // "Far too rare to hold this stretch together", not the earlier "too few
+        // to stop the shuffling, so nothing stays linked": both LD panels are
+        // built at --maf 0.2 (build_ag1000g_ld.sh), and Gabon's flipped copy
+        // sits at 5 of 138 haplotypes, so the variants that mark it are below
+        // that floor and are not in this file at all. What the empty panel is
+        // evidence about is therefore the COMMON variation, which recombines
+        // freely because 64 of the 69 mosquitoes are standard homozygotes. A
+        // label reading "nothing stays linked" would have claimed more than
+        // that: unfiltered, those five carriers' own rare tag SNPs would
+        // correlate with each other.
+        text: 'Almost every mosquito here has the same version:\nonly 5 of 69 carry a flipped copy (blue rows below).\nFar too rare to hold this stretch together, so it is\nshuffled up and passed on in pieces.',
+        fontSize: 16,
         maxWidth: 430,
       },
     ],

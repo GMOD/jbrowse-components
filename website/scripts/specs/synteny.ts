@@ -630,7 +630,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['vertebrates_orthogroups'],
             ],
             colorBy: 'reference',
+            // On, and it runs on every level including the last (review: "the
+            // last comparison with zebrafish is particularly scrambled, unclear
+            // if autodiagonalization is working there"). Checked against a
+            // rendered autoDiagonalize:false control: without it the rows sit in
+            // their natural order (chicken 1..Z, zebrafish 1..25) and the upper
+            // bands lose the vertical bundling they have here, so it is running
+            // and it is helping.
+            //
+            // The bottom band stays dense because the map it is drawing is not
+            // one-to-one, which is measurable from the demo's own files rather
+            // than a matter of opinion. Weighting each chromosome by its link
+            // count, a chromosome's single best partner accounts for 79% of its
+            // links chicken to frog, 50% human to chicken, and 33% gar to
+            // zebrafish: past the teleost genome duplication, two thirds of
+            // every gar linkage group's orthologs land somewhere other than its
+            // best zebrafish partner. No left-to-right ordering can make that
+            // diagonal, and no filter rescues it either (dropping every
+            // multi-copy expansion would still leave ~13k of the band's ~17.8k
+            // links). The band is dense because the answer is.
             autoDiagonalize: true,
+            // see the grasses spec below for why these four settings; the three
+            // OrthoFinder figures are the same picture on different genomes
+            collapseEmptyRows: true,
+            levelHeights: [180, 180, 180, 180],
+            alpha: 0.06,
+            drawCurves: false,
           },
         ],
       },
@@ -638,7 +663,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 860,
+    viewportHeight: 1000,
   },
 
   // orthofinder_synteny.md: rice/sorghum/maize/brachypodium/foxtail millet.
@@ -673,6 +698,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             colorBy: 'reference',
             autoDiagonalize: true,
+            // No row carries a track, so every row was spending ~90px on a "No
+            // tracks active / Open track selector" block: five of them, down the
+            // middle of the frame, over half the height the ribbons had.
+            collapseEmptyRows: true,
+            // and the reclaimed height goes to the bands. A ribbon here is one
+            // gene pair, so a band's legibility is entirely how far apart its
+            // crossings are drawn.
+            levelHeights: [180, 180, 180, 180],
+            // 0.06, well under the 0.2 default. That default is tuned for
+            // alignment ribbons with area; an orthogroup link is a hairline at
+            // whole-genome zoom, and tens of thousands of them at 0.2 saturate
+            // into one wash where a dense chromosome-to-chromosome bundle and a
+            // lone scattered ortholog paint the same. At 0.06 only overlap
+            // accumulates color, so the bundles are the visible thing and the
+            // singletons stay background. 0.12 was rendered too and still
+            // filled its bands.
+            alpha: 0.06,
+            // Straight chords, though this is the one case the drawCurves
+            // docstring recommends itself for. Rendered both: the bezier version
+            // is by far the prettier picture and the worse figure, because a
+            // curve leaves its chromosome vertically and only bends toward its
+            // partner in the middle of the band, so the bundles braid together
+            // where they cross and stop pointing at anything. Which chromosome
+            // maps to which is the whole content here, and a straight chord is
+            // the line that says it.
+            drawCurves: false,
           },
         ],
       },
@@ -680,7 +731,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 860,
+    // five collapsed scalebar rows and four 180px bands
+    viewportHeight: 1000,
   },
 
   // orthofinder_synteny.md: wheat's own polyploidy/domestication history, not
@@ -720,6 +772,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             colorBy: 'reference',
             autoDiagonalize: true,
+            // see the grasses spec above for why these four settings; the three
+            // OrthoFinder figures are the same picture on different genomes
+            collapseEmptyRows: true,
+            levelHeights: [170, 170, 170, 170, 170],
+            alpha: 0.06,
+            drawCurves: false,
           },
         ],
       },
@@ -727,7 +785,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 950,
+    // six collapsed scalebar rows and five 170px bands. 1120 cut the bottom
+    // row's scalebar in half, which is the row that names timopheevii's
+    // sequences; 1165 cleared it but left a dead strip under the frame.
+    viewportHeight: 1140,
   },
   {
     mode: 'url',

@@ -597,12 +597,12 @@ const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
 const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
 
-const AMY_WINDOW = 'chr1:103,600,000-103,745,000'
+const AMY_WINDOW = 'chr1:103,500,000-103,850,000'
 const AMY_REGION = {
   refName: 'chr1',
   assemblyName: 'hg38',
-  start: 103600000,
-  end: 103745000,
+  start: 103500000,
+  end: 103850000,
 }
 
 const C4_WINDOW = 'chr6:31,980,000-32,050,000'
@@ -916,6 +916,17 @@ function pggbLocusSession(
 // The hop reaches five other segments too, which is why the right half still has
 // loose ends: one step out lands on a new frontier (s2092, s2387, s2633), and two
 // of the five are rank 0 reference either side of the window (s499, s508).
+//
+// THE WINDOW DOES NOT WIDEN, and that was measured rather than argued (review:
+// "zooming out and showing more graph context could help particularly if this is
+// just a localized bubble"). It is what the sibling HPRC figure wanted, but the
+// two figures are about different things: amylase is about where the complexity
+// sits, so its flanks are the finding, while this one is about one bubble being
+// open or closed. Rendered at 60 kb the cut is 28 and 35 nodes, the backbone
+// draws as a long chain across the pane, and the two boxed nodes land next to
+// each other on it as specks, so the closed bubble the right half exists to show
+// stops being visible. 29.5 kb is also already the smallest window that holds
+// both boxes: s2093 and s2095 anchor at the two ends of the 21.8 kb island.
 function graphContextPartSpecs(): ScreenshotSpec[] {
   const DETOUR_ENTRY = 's2093+'
   const DETOUR_EXIT = 's2095+'
@@ -994,7 +1005,16 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           // length, so the ratio across this cut goes from ~500:1 to ~2:1 and
           // the boxed bubble is the largest thing in the drawing rather than the
           // backbone it hangs off.
-          bubbleSpread: 'open',
+          // Bandage's own drawn-length power law, which replaced the 'open'
+          // floor here for the same reason pangenome/graph_resolution took it
+          // (review, on all three graph figures: "frankly pretty chaotic
+          // screenshot"). A floor is per-node, so it lifted the backbone's
+          // non-branching chain nodes along with the two the figure boxes, and
+          // the drawing spread out until zoom-to-fit was in the 80s; compressed,
+          // the same cut fits at ~200%, the 21.8 kb island is an ordinary arc
+          // rather than a ring, and the 43 bp detour entrance is a legible lens
+          // in the 1 hop half.
+          bubbleSpread: 'compress',
           // FMMM's iteration budget: 1 is 15 fixed + 10 fine-tuning, 4 is
           // 120 + 60. Same review round as the sibling graph figures ("are you
           // sure you can't iterate it more times for better layout?"), and it is
@@ -1182,41 +1202,36 @@ const RESOLUTION_REGION = {
   start: 2120000,
   end: 2120300,
 }
-// What the LINEAR half shows, which is not the cut (review: "i see there is an
-// answer but i dont get it. we may want to zoom out more"). The one-hop cut
-// reaches s692 and s694, the backbone segments either side of the 4.4 kb s693
-// the window sits inside, and s694 runs to 2,139,486 — so on an LGV of the cut
-// itself the biggest node in the minigraph pane was a segment the reader could
-// not see anywhere else in the frame, and a label saying so is not the same as
-// showing it. This span is the minigraph cut's own extent, so every node in that
-// pane is a block in the lane above it at the same colour, and the window is
-// banded on the ruler.
+// EACH HALF CUTS WHAT ITS OWN GRAPH CAN DRAW, which is the figure's claim and
+// was the figure's remaining problem (review: "the teal node just doesnt connect
+// to anything which is bad. users will not understand this if this is just a
+// jbrowse limitation of our data fetching ... we may want to zoom out even
+// more"). On the 300 bp cut the minigraph pane held s693 plus the one-hop
+// neighbours either side of it, and the larger of those, the 16.4 kb s694, ran
+// off into the pane with a junction at one end and the cut edge at the other. No
+// wording fixes that: it is the biggest thing in the drawing and half of it is
+// missing. The minigraph half now cuts the three backbone segments whole
+// (s692-s694), so s694 is an interior node of a chain with a vertex at each end,
+// and the frontier falls on 2-121 bp stubs that read as what they are.
 //
-// The two halves are read off this lane differently, and that is the figure
-// rather than a flaw in it. The minigraph pane's seven segments spread across
-// the whole 20.8 kb, one hue each. The pggb pane's fifty-three all sit inside the
-// banded 300 bp, so they come out one hue: the whole pane is that sliver of the
-// lane, which is the resolution claim stated in colour. It also lets the alleles
-// carry the pane, since a segment with no reference coordinate of its own draws
-// grey and those are now the only nodes that differ from their neighbours.
-const RESOLUTION_LANE_DOMAIN = { start: 2118646, end: 2139486 }
-const RESOLUTION_LANE_WINDOW = 'chr:2,118,646-2,139,486'
-
-// The one node in the minigraph half that is not what it looks like, and the
-// review it drew: "unclear where that pink node in the minigraph rgfa is
-// connected to?". It is s694, K12 chr:2,123,069-2,139,486 (rank 0 in
-// `ecoli_minigraph.segs.bed.gz`) — the reference backbone segment immediately
-// downstream, brought in by the one-hop cut off the 4.4 kb s693 the window sits
-// inside, and painted at the magenta end of the reference-position ramp because
-// it starts past the loaded 3 kb. So it reads as a giant off-reference allele
-// while being neither off-reference nor inside the window. It joins s693 at the
-// window's right edge and its far end is loose because its other neighbour,
-// s695, is outside the cut.
-//
-// The cut reaches the backbone on both sides — s692 is the 33 bp red node at
-// the ramp's other end — but only this one is big enough to dominate the pane,
-// so only this one is labelled. The caption names the pair.
-const RESOLUTION_BACKBONE_NODE = 's694'
+// The pggb half stays at 300 bp because 300 bp is what it can draw (above). Two
+// cut sizes in one figure IS the finding — the prose under it says browse the
+// rGFA whole-genome and open the pggb graph where you want every base — so each
+// pane's own cut is banded on the shared lane and the sizes are read off the
+// same ruler.
+const RESOLUTION_MINIGRAPH_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 2118646,
+  end: 2139486,
+}
+// The lane both halves show: one segment past each end of the wider of the two
+// cuts (s689 through s698 in `ecoli_minigraph.segs.bed.gz`), so every node drawn
+// in either pane — including the ones the one-hop expansion reaches past the
+// band — is a block in the lane above it at the same colour, and no node
+// saturates at an end of the ramp for want of coordinates in frame.
+const RESOLUTION_LANE_DOMAIN = { start: 2118405, end: 2146600 }
+const RESOLUTION_LANE_WINDOW = 'chr:2,118,405-2,146,600'
 
 function graphResolutionPartSpecs(): ScreenshotSpec[] {
   const part = ({
@@ -1234,6 +1249,8 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     // GraphGenomeView props below for what changed.
     bubbleSpread = 'compress',
     layoutQuality = 1,
+    region = RESOLUTION_REGION,
+    bandCut = true,
   }: {
     name: string
     trackId: string
@@ -1243,6 +1260,8 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     extraAnnotations?: Annotation[]
     bubbleSpread?: 'auto' | 'open' | 'wide' | 'compress'
     layoutQuality?: number
+    region?: typeof RESOLUTION_REGION
+    bandCut?: boolean
   }): ScreenshotSpec => ({
     mode: 'url',
     name,
@@ -1253,9 +1272,13 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: RESOLUTION_LANE_WINDOW,
-          // the 3 kb that was actually cut, banded on the ruler so the lane
-          // says which slice of itself the pane below it is
-          highlight: [{ ...RESOLUTION_REGION, refName: 'chr' }],
+          // The pggb half's 300 bp cut, banded on the ruler so the lane says
+          // which sliver of itself that pane is. Not on the minigraph half: its
+          // cut is nearly the whole window, and a band over three quarters of a
+          // panel reads as a background tint rather than as a mark. The lane is
+          // the same span in both halves either way, so the two cuts are still
+          // measured against one ruler.
+          highlight: bandCut ? [region] : [],
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
             {
@@ -1280,7 +1303,7 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
         {
           type: 'GraphGenomeView',
           loadedTrackId: trackId,
-          loadedRegion: RESOLUTION_REGION,
+          loadedRegion: region,
           // The ramp runs over the LANE's span, not the cut's, so a node and
           // its block are one colour. On the cut's own span every node reaching
           // past it saturates at an end of the ramp, which is what painted the
@@ -1347,40 +1370,14 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
   return [
     part({
       name: 'pangenome/graph_resolution_minigraph',
+      // the three backbone segments whole, which is what takes the s694 callout
+      // out of this half: see RESOLUTION_MINIGRAPH_REGION
+      region: RESOLUTION_MINIGRAPH_REGION,
+      bandCut: false,
       trackId: ECOLI_SEGMENTS_TRACK,
       sessionTrack: ECOLI_SEGMENTS_SESSION_TRACK,
       label: 'minigraph rGFA\nstructural variation only',
       labelOffset: { dx: -340, dy: -260 },
-      // What RESOLUTION_BACKBONE_NODE is, anchored by segment id through the
-      // view's own nodePositions so FMMM can put it wherever it likes.
-      //
-      // The arrow onto s693 that used to be here is gone with the proportional
-      // drawn length that made it necessary: at that scale s694 arced right
-      // across the pane and its junction was in a corner, so the junction had to
-      // be pointed at. Compressed, the two are collinear and meet at a visible
-      // vertex, which an arrow drawn between their midpoints would run straight
-      // down the top of.
-      extraAnnotations: [
-        {
-          type: 'text',
-          // Names the node and answers its one loose end in the same pill
-          // (review: "the teal node just doesnt connect to anything ... users
-          // will not understand this if this is just a jbrowse limitation of our
-          // data fetching"). It is not a fetch that stopped short: s694 joins
-          // s693 at the visible vertex below, and its other end is where the
-          // loaded subgraph stops, which every cut of a graph has somewhere.
-          text: 'reference backbone (s694),\nthe cyan block above;\nits far end is the cut edge',
-          anchor: { view: 1, graphNode: RESOLUTION_BACKBONE_NODE },
-          // right off the node, into the open ground beside it: at the midpoint
-          // itself the pill sits on the node it is naming, and to the left it
-          // runs off the pane, since compressing the drawn lengths moved s694
-          // from the middle of the drawing to its lower left corner
-          dx: 150,
-          dy: -10,
-          maxWidth: 240,
-          fontSize: 16,
-        },
-      ],
     }),
     part({
       name: 'pangenome/graph_resolution_pggb',
@@ -2431,7 +2428,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   },
   // The amylase locus on chr1, which is the figure for "this scales to a whole
   // chromosome". chr1 is 248 Mb and the graph holds 464 haplotypes of it; the
-  // view fetches this 145 kb window out of two tabix indexes and draws 101
+  // view fetches this 350 kb window out of two tabix indexes and draws 126
   // nodes, so nothing about the chromosome's size reaches the drawing. It is
   // also the locus where the graph's own bubble index disagrees with the
   // tutorial's prose: `hprc-v2.0-mc-grch38.bubbles.bed.gz` reports the bubble at
@@ -2448,6 +2445,21 @@ export const graphSpecs: ScreenshotSpec[] = [
   // release itself is not silent on it -- the .gbz carries a walk per haplotype,
   // which IS a copy count -- but that is a vg job, and the wave VCF is no
   // shortcut either since release 2 strips INFO/AT from it.
+  //
+  // 350 kb, not the 145 kb of the bubble itself (review: "frankly pretty chaotic
+  // ... zooming out and showing more graph context could help particularly if
+  // this is just a localized complex region"). It is, and the wider cut is what
+  // shows it: the flanks are one chain of backbone segments running the width of
+  // the pane, and every crossing in the drawing is inside the AMY bubble at the
+  // end of it. On the 145 kb cut that chain was off-frame, so the tangle filled
+  // the pane and had nothing to be localized against.
+  //
+  // Measured rather than picked: 550 kb (145 nodes) draws the same shape at
+  // 20% zoom-to-fit against 27%, so the knot is smaller for one more backbone
+  // segment either side; `bubbleSpread: 'open'` on top of either window floors
+  // every node's drawn length and inflates the whole drawing, which puts
+  // zoom-to-fit at 11% and closes the bubbles it was meant to open. Both
+  // rendered.
   {
     mode: 'url',
     name: 'pangenome/hprc_amylase_graph',
@@ -2481,11 +2493,12 @@ export const graphSpecs: ScreenshotSpec[] = [
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: AMY_REGION,
           layoutMode: 'force',
+          // FMMM's iteration budget at its top setting (120 + 60 against the
+          // model default's 15 + 10), which is what untangles the backbone into
+          // the single chain the figure now turns on. Milliseconds at this size,
+          // stated by the header's own layout timing.
+          layoutQuality: 4,
           colorScheme: 'reference-position',
-          // 'open', not 'wide': at 63 nodes the wider floor grows the whole
-          // drawing faster than it separates the bubbles, so zoom-to-fit takes
-          // it to 8% and the lenses close again. 'wide' is for a window of a
-          // dozen.
         },
       ],
     }),
@@ -2493,6 +2506,13 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     allowUnsettled: true,
     settleMs: 8000,
+    // The zoom-to-fit repaint, which the toolbar gate does not cover and which
+    // this cut is big enough to lose: the labels are DOM and move with the new
+    // transform immediately, the canvas repaints a frame later, so a capture in
+    // between is a pane of labels with the strokes still drawn at the old scale
+    // in one corner. Reproduced in 3 of the 4 renders here before this wait,
+    // and in none of the 3 after it.
+    actions: [{ type: 'delay', ms: 4000 }],
     viewportWidth: 1000,
     viewportHeight: 1090,
     hideTooltip: true,
@@ -2877,6 +2897,17 @@ export const graphSpecs: ScreenshotSpec[] = [
     // band's 32,529,438. Read out of `probe-graph-nodes.ts`, which also says the
     // band covers a run of eleven backbone nodes (s101135+ to s101145+) — this
     // is the one worth ringing, the other ten being a few hundred bp each.
+    //
+    // The band and the ring are joined by an ARROW rather than by a sentence
+    // (review: "just draw arrow from highlight to circle, no text annotation or
+    // more minimal text annotation on RIGHT side of screen"). Its tail is the
+    // bottom of the highlighted span in the callset, so it leaves the band at
+    // the band's own x, and its head stops short of the ring by the ring's own
+    // radius — an anchored head resolves to the node's CENTRE, which would put
+    // the triangle inside the circle.
+    //
+    // The one remaining label is on the RIGHT: the left half of the graph pane
+    // holds the 38.9/19.9 kb arcs, and the previous pill sat on top of them.
     annotations: [
       {
         type: 'circle',
@@ -2885,14 +2916,31 @@ export const graphSpecs: ScreenshotSpec[] = [
         strokeWidth: 3,
       },
       {
+        type: 'arrow',
+        fromAnchor: {
+          view: 0,
+          track: 'hprc2_wave_grch38',
+          locus: MHC_MARKED_DELETION,
+          fracY: 1,
+          dy: -8,
+        },
+        anchor: { view: 1, graphNode: 's101145+', dx: -30, dy: -30 },
+        strokeWidth: 3,
+      },
+      {
         type: 'text',
         // no length in the words: the 12.3 kb allele sits beside this node and
         // labels itself, so "12 kb" in a callout would read as that one
-        text: 'The banded deletion, in the graph:\nthe ringed node is the reference it removes',
-        anchor: { selector: '[data-testid="graph-genome-canvas"]' },
-        dx: -470,
-        dy: -270,
-        maxWidth: 300,
+        text: 'the same deletion, in the graph',
+        anchor: {
+          selector: '[data-testid="graph-genome-canvas"]',
+          alignX: 'right',
+          alignY: 'top',
+        },
+        dx: -20,
+        dy: 40,
+        textAlign: 'end',
+        maxWidth: 340,
         fontSize: 20,
       },
     ],

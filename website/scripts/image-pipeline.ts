@@ -211,26 +211,43 @@ export function commitScreenshot(
 // regen. Without dithering, near-identical input maps to the same palette colors,
 // so an unchanged spec re-renders byte-for-byte. Bonus: it also shrinks the files
 // (~40% on chrome-heavy captures) since the dither noise was pure entropy.
+//
+// TWO PASSES, because the strict one silently gives up on exactly the figures
+// that need it most. pngquant fails (leaving the PNG untouched) when it cannot
+// hit the quality floor in 256 colors, and the images that defeat it are the
+// dense ones: a whole-genome ribbon stack drawn at a low per-feature alpha
+// blends tens of thousands of hairlines into a huge palette of near-white
+// tints, which is both incompressible and unquantizable at 90. Those shipped
+// unoptimized at 6-8 MB while every flat UI capture around them was under 1 MB
+// — the site serves static/img directly, with no resizing layer, so that is
+// what a reader downloads. The 70 floor is only ever reached by an image the 90
+// floor refused, so nothing that quantizes cleanly today changes; on the
+// figures that need it, it is 8.5 MB -> 3.0 MB at RMSE 1.6%, with no banding
+// visible in the ribbons.
 export function optimizePng(file: string) {
-  try {
-    execFileSync(
-      'pngquant',
-      [
-        '--nofs',
-        '--quality=90-100',
-        '--skip-if-larger',
-        '--force',
-        '--ext',
-        '.png',
-        file,
-      ],
-      { stdio: 'ignore' },
-    )
-  } catch (e) {
-    // pngquant exits non-zero when it skips (e.g. --skip-if-larger), which is
-    // fine; only surface a hint if the binary is genuinely missing
-    if ((e as { code?: string }).code === 'ENOENT') {
-      console.error('    pngquant not found; skipping image optimization')
+  for (const quality of ['90-100', '70-100']) {
+    try {
+      execFileSync(
+        'pngquant',
+        [
+          '--nofs',
+          `--quality=${quality}`,
+          '--skip-if-larger',
+          '--force',
+          '--ext',
+          '.png',
+          file,
+        ],
+        { stdio: 'ignore' },
+      )
+      return
+    } catch (e) {
+      // pngquant exits non-zero when it skips (e.g. --skip-if-larger), which is
+      // fine; only surface a hint if the binary is genuinely missing
+      if ((e as { code?: string }).code === 'ENOENT') {
+        console.error('    pngquant not found; skipping image optimization')
+        return
+      }
     }
   }
 }

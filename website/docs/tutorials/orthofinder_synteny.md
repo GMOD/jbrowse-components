@@ -66,7 +66,16 @@ still fall into chromosome-scale blocks. The teleost genome duplication shows up
 as a matter of counting: a human chromosome answers to one or two chicken
 chromosomes, and to more zebrafish ones.
 
-<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes, and Color by → Reference anchors every band on the row above it." src="/img/orthofinder_synteny/vertebrates.png" />
+<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes, and Color by → Reference anchors every band on the row above it. The bands get denser downward: chicken against frog is close to one chromosome to one chromosome, gar against zebrafish is not." src="/img/orthofinder_synteny/vertebrates.png" />
+
+Every band draws one line per ortholog, so a band resolves into wedges only
+where a chromosome's orthologs mostly land on one chromosome of the row below.
+The build script prints that share for each adjacent pair, and it is what
+decides how a band can look: where it is high the row order alone produces a
+diagonal, and where it is near a third the typical chromosome answers to three
+or more partners, so no ordering of either row can make that band diagonal. The
+gar to zebrafish band is the low one, on the far side of the teleost genome
+duplication. Its density is the measurement, not a rendering problem.
 
 `grasses` stacks rice, sorghum, maize, brachypodium and foxtail millet. Maize
 carries a whole-genome duplication the others do not, so a rice gene commonly
@@ -81,6 +90,15 @@ duplication: Aegilops tauschii (the diploid D-genome donor), bread wheat
 and T. timopheevii (a second, independent tetraploid that also traces to the
 A-genome donor). Stacked in that order, each adjacent pair is a real
 evolutionary step rather than an arbitrary one.
+
+Diagonalizing this stack lands on the layout wheat figures are conventionally
+drawn in: it brings each homoeologous group's chromosomes together, so the
+hexaploid row reads as groups rather than as subgenomes, without being told
+which chromosomes are homoeologs. The wedge shapes come from the row widths.
+Every row spans its whole genome across the same pixel width, so a chromosome of
+the diploid donor is three times the width of its counterpart in the hexaploid,
+and a one-to-one correspondence between them draws as a triangle rather than a
+parallelogram.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. Each band is a real step (D-donor to hexaploid, hexaploid to durum, durum to its wild ancestor, wild ancestor to the A-genome donor, A-genome donor to the independent timopheevii tetraploid) rather than an arbitrary pairing, and the A/B/D subgenome suffixes in wheat's and durum's own chromosome names carry through the ribbons." src="/img/orthofinder_synteny/wheat.png" />
 

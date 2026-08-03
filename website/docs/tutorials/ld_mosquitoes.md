@@ -30,17 +30,27 @@ in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, far past what
 can be computed live from a VCF, so this LD is precomputed with PLINK and read
 through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Each population's r² heatmap sits above its own karyotype lane: 297 Cameroon mosquitoes, 69 from Gabon, one row each. r² fills the published 2La extent in the Cameroon panel, where the lane below it shows both arrangements segregating, and there is nothing in the Gabon panel, whose lane is almost all standard arrangement. Both panels carry a separate block at the low-coordinate end of the arm."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Each population's r² heatmap sits above its own karyotype lane: 297 Cameroon mosquitoes, 69 from Gabon, one row each. r² fills the published 2La extent in the Cameroon panel, where the lane below it shows both arrangements segregating. There is nothing over that span in the Gabon panel, whose lane is 64 standard homozygotes and 5 heterozygotes. Both panels carry a separate block at the low-coordinate end of the arm."/>
 
 The heatmap's block comes out at the published breakpoint coordinates, so its
 edges can be checked against them by eye — and against the karyotype lane below
 it, whose cells are drawn at those same coordinates from a different file.
 
-The Gabon panel is a control, not a second example: that population is
-effectively fixed for one arrangement, so it has nothing to correlate there. It
+The Gabon panel is a control, not a second example. That population is not
+inversion-free: 5 of its 69 mosquitoes are heterozygous, and they are the blue
+rows at the bottom of its karyotype lane. What it lacks is enough of them for
+the arrangement to hold the segment together, since the other 64 recombine
+across it freely, so there is nothing to correlate over the 2La span. The panel
 still carries a block at the low-coordinate end of the arm, near the
-voltage-gated sodium channel, which says the display works and the banded region
-is genuinely uncorrelated rather than unread.
+voltage-gated sodium channel, which says the display works and the 2La span is
+genuinely uncorrelated rather than unread.
+
+Read that panel as a statement about common variation, which is what it is made
+of. Both files were built with a minor allele frequency floor, and in Gabon the
+inverted arrangement sits far below it, so the variants tagging those five
+carriers are not in the file. The claim the empty panel supports is that the
+arrangement is too rare there to structure the common variants around it, not
+that no correlated carrier haplotype exists.
 
 ## The rearrangement itself, per mosquito
 
