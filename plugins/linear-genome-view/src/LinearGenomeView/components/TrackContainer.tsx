@@ -16,6 +16,11 @@ import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
+// height of the in-flow drag handle at the bottom of the Paper. The overlay
+// node subtracts it so its box ends at the track content's bottom edge, which
+// is what bottom-anchored portaled chrome (status chips) measures against.
+const RESIZE_HANDLE_HEIGHT = 4
+
 const useStyles = makeStyles()({
   // No `overflow`: paint containment already clips to the padding box, and an
   // overflow would only add a scroll container — the spurious second scrollbar
@@ -35,7 +40,7 @@ const useStyles = makeStyles()({
   },
   resizeHandle: {
     position: 'relative',
-    height: 4,
+    height: RESIZE_HANDLE_HEIGHT,
   },
   // in-flow, so the label pushes the track body down by its own height. The
   // margin is that push plus a gap: without it the body starts on the label's
@@ -51,15 +56,17 @@ const useStyles = makeStyles()({
     position: 'absolute',
   },
   // Portal target for display-provided floating chrome (e.g. the multi-wiggle
-  // legend). Rendered after PaddingBlocks so it paints above the inter-region
-  // masks; shares their box so a `top:0` overlay lands at the same origin. Below
-  // TrackLabel (zIndex 200); pointer-events pass through to the canvas.
+  // legend, the bottom-right status chips). Rendered after PaddingBlocks so it
+  // paints above the inter-region masks; shares their origin so a `top:0`
+  // overlay lands at the same place, and stops short of the resize handle so a
+  // `bottom:0` one sits on the track content's bottom edge. Below TrackLabel
+  // (zIndex 200); pointer-events pass through to the canvas.
   trackOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    right: 0,
+    bottom: RESIZE_HANDLE_HEIGHT,
     pointerEvents: 'none',
     zIndex: 100,
   },

@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
 
 import { OVERFLOW_INDICATOR_Z_INDEX } from './sharedRendererConstants.ts'
 
@@ -26,6 +27,11 @@ const useStyles = makeStyles()(() => ({
 // renders null when inactive); an all-null flex container has no size, so
 // there's no need to also track "is anything visible" here — callers just
 // render every indicator unconditionally.
+//
+// Portaled above the inter-region padding masks: a display's tree is sealed in
+// a `contain:strict` stacking context that the masks paint over, so in
+// collapsed-introns / multi-region views the region separators would stripe
+// straight across these chips no matter what z-index they carry.
 function BottomRightIndicators({
   hasOverflow,
   children,
@@ -35,21 +41,23 @@ function BottomRightIndicators({
 }) {
   const { classes } = useStyles()
   return (
-    <div
-      className={classes.root}
-      style={{ right: hasOverflow ? SCROLLBAR_WIDTH + 2 : 2 }}
-      // Claim the press, the same way VerticalScrollbar does. An embedder that
-      // pans the view with its own pointer handler sits above this row; if it
-      // captures the pointer on pointerdown, the click that opens these menus
-      // is retargeted at the embedder's element and never arrives. JBrowse's
-      // own pan skips `button` targets, so this is for everyone else's.
-      data-gesture-owner="true"
-      onPointerDown={event => {
-        event.stopPropagation()
-      }}
-    >
-      {children}
-    </div>
+    <TrackOverlayPortal>
+      <div
+        className={classes.root}
+        style={{ right: hasOverflow ? SCROLLBAR_WIDTH + 2 : 2 }}
+        // Claim the press, the same way VerticalScrollbar does. An embedder that
+        // pans the view with its own pointer handler sits above this row; if it
+        // captures the pointer on pointerdown, the click that opens these menus
+        // is retargeted at the embedder's element and never arrives. JBrowse's
+        // own pan skips `button` targets, so this is for everyone else's.
+        data-gesture-owner="true"
+        onPointerDown={event => {
+          event.stopPropagation()
+        }}
+      >
+        {children}
+      </div>
+    </TrackOverlayPortal>
   )
 }
 
