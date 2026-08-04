@@ -131,16 +131,10 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
 
       // only records lacking an MD tag need the reference, so defer loading the
       // sequence adapter (and the fetch) until we know at least one does.
-      //
-      // One base of slack on the right: a soft/hard clip sits at its read's end
-      // position and consumes no reference, but the mismatch walk's right bound
-      // is exclusive and comes from what the reference string covers — so
-      // without the slack the rightmost read's trailing clip is dropped, which
-      // for a converted PSL hit is the unaligned end of the query.
-      const recordSpan = seqFetchSpan(records, start, end)
-      const span = recordSpan
-        ? { start: recordSpan.start, end: Math.min(recordSpan.end + 1, end) }
-        : null
+      // `seqFetchSpan` owns the one-base right slack that keeps the rightmost
+      // read's trailing clip (for a converted PSL hit, the unaligned end of the
+      // query) inside the walk's exclusive right bound.
+      const span = seqFetchSpan(records, start, end)
       const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
         sequenceAdapter && span

@@ -17,11 +17,6 @@ export default class BamSlightlyLazyFeature
   implements MismatchFeature
 {
   public adapter!: BamAdapter
-  // shared region-wide packed reference (covers many reads); refOffset locates
-  // this read's start within it, so no per-read slice is allocated.
-  // Bind these with `withRegionRef`, never by assignment — see below.
-  public ref?: PackedReference
-  public refOffset = 0
 
   /**
    * A per-fetch view of this record bound to one region's reference slice.
@@ -36,6 +31,13 @@ export default class BamSlightlyLazyFeature
    * against another's sequence. (It usually got away with it: different query
    * ranges normally produce different chunk keys, so the cache misses and each
    * fetch decodes its own copy. That is an accident of the key, not a guarantee.)
+   *
+   * `@gmod/bam` states the hazard from its own side — "this hands the SAME
+   * record objects to every query that hits the key, which is what makes
+   * callers' per-query writes onto a record leak across queries" (its ADR 0006)
+   * — so this class deliberately carries NO `ref`/`refOffset` fields to write.
+   * The binding lives only on the view below, where it is `readonly`, which is
+   * what makes the rule structural rather than a comment to obey.
    */
   withRegionRef(ref: PackedReference, refOffset: number): MismatchFeature {
     return new RegionBoundBamFeature(this, ref, refOffset)
@@ -52,35 +54,34 @@ export default class BamSlightlyLazyFeature
     return collectMismatches(this)
   }
 
+  // The UNBOUND walk: no reference, so it resolves mismatches from MD alone.
+  // That is the only shape this class is ever asked for — `BamAdapter` emits the
+  // raw record only for reads carrying MD (or when no reference could be
+  // fetched), and hands every other read to `withRegionRef`, whose
+  // RegionBoundBamFeature owns the reference-resolving twin of this method. So
+  // there is deliberately no `ref` field here to bind: a record that needs one
+  // is never this object.
+  //
   // windowStart/windowEnd are genomic reference coords of the viewport; the
   // walk skips CIGAR ops outside them so a chromosome-spanning contig only
   // processes its visible slice. Converted to read-relative roffset here.
-  //
-  // With no window, the walk still can't run past what `ref` covers: the shared
-  // region reference spans only [-refOffset, ref.length - refOffset) in this
-  // read's reference-relative space, and a read overhanging the fetched region
-  // has no reference bases for its overhang — comparing against an out-of-range
-  // index would report every one of those bases as a mismatch. Reads carrying
-  // MD need no reference and walk in full.
   forEachMismatch(
     callback: MismatchCallback,
     windowStart?: number,
     windowEnd?: number,
   ) {
-    const { ref, refOffset, start } = this
-    const refLo = ref === undefined ? undefined : -refOffset
-    const refHi = ref === undefined ? undefined : ref.length - refOffset
+    const { start } = this
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
       this.seq_length,
       this.NUMERIC_MD,
       this.qual,
-      ref,
+      undefined,
       callback,
-      refOffset,
-      windowStart === undefined ? refLo : windowStart - start,
-      windowEnd === undefined ? refHi : windowEnd - start,
+      0,
+      windowStart === undefined ? undefined : windowStart - start,
+      windowEnd === undefined ? undefined : windowEnd - start,
     )
   }
 
