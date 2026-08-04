@@ -369,11 +369,12 @@ export default function MultiRegionDisplayMixin() {
          * ClearHoverOnRegionTooLarge)
          */
         afterAttach() {
-          // Clear loaded data whenever the displayed-regions list
-          // changes. `displayedRegions` is a frozen array on the LGV
-          // model, so any mutation replaces the reference and the
-          // autorun re-fires on the bare read below. Fires once at
-          // mount as a harmless no-op (nothing loaded yet).
+          // Clear loaded data whenever the displayed-regions list changes,
+          // through the same `onDisplayedRegionsChange` helper the two displays
+          // outside this family (LD, arc) use — one spelling of the trigger, so
+          // this family's clear can't come to mean something different from
+          // theirs. Fires once at mount as a harmless no-op (nothing loaded
+          // yet).
           //
           // The cached byte estimate goes with it — and only here.
           // displayedRegionIndex is reused across chromosomes, so a stale
@@ -383,14 +384,13 @@ export default function MultiRegionDisplayMixin() {
           // it. clearAllRpcData deliberately leaves it alone (no banner flicker
           // on an ordinary viewport-change clear), which is why the drop lives
           // in this autorun rather than in that action.
-          autorunOnReadyView(
+          onDisplayedRegionsChange(
             self,
-            view => {
-              void view.displayedRegions
+            () => {
               self.clearAllRpcData()
               self.clearByteEstimate()
             },
-            { name: 'DisplayedRegionsChange' },
+            'DisplayedRegionsChange',
           )
 
           // Autorun: fetch data when the visible viewport isn't covered

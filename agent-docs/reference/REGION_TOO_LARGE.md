@@ -237,15 +237,24 @@ region *set* in one adapter call and has no per-region number to keep.
 `commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
 multi-region view where each region individually fits should never be blanked
-just because the regions add up. An adapter with no index estimate contributes
-no count at all, and the published `bytes` stays `undefined` rather than
-collapsing to `0` — "unmeasurable" keeps the byte axis out of the verdict, where
-a zero would read as a measured value. An all-stale batch commits nothing, so a
-superseded fetch can't wipe a good estimate. It publishes `bytes` and the span
-they cover, and nothing else — the budget they are compared against is the
-main-thread `gateByteLimit`, the same getter that produced the worker's
-`resolvedByteLimit()`, so the two agree by construction rather than by echoing a
-limit back across the boundary.
+just because the regions add up. **A batch that measured no bytes at all writes
+nothing** — not `bytes: undefined`. Two ways that happens and they mean the same
+thing: the adapter offers no index estimate, or the fetch carried no `byteLimit`
+because `gateActive` was false when it was issued (under the force-load floor,
+or force-loaded). Neither is a measurement, so neither may overwrite the last
+real one or re-anchor it to a new span. Publishing an empty estimate used to
+cost a wasted round trip on every re-activation: zooming in past the floor wiped
+a perfectly good estimate, so zooming back out had no verdict left to raise the
+banner from and had to re-derive it from a fresh worker rejection. The
+pre-flight path never had the bug — `byteGateBlocksFetch` skips the RPC outright
+when nothing could gate, and so writes nothing either. Pinned by "keeps a good
+estimate when a batch measured no bytes" in
+`LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`. An all-stale batch
+likewise commits nothing, so a superseded fetch can't wipe a good estimate. What
+it does publish is `bytes` and the span they cover, and nothing else — the budget
+they are compared against is the main-thread `gateByteLimit`, the same getter
+that produced the worker's `resolvedByteLimit()`, so the two agree by
+construction rather than by echoing a limit back across the boundary.
 
 A measurement is handed over as `{ displayedRegionIndex, region, result }` — the
 shape a fetch already holds — so neither canvas display does span arithmetic of

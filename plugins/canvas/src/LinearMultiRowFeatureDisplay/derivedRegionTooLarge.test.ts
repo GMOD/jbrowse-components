@@ -148,6 +148,43 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  // A fetch issued while the gate is inactive (under the force-load floor, or
+  // force-loaded) hands the worker no byte budget, so the worker measures
+  // nothing and every result comes back with `bytes: undefined`. That is "not
+  // measured", not "measured as unmeasurable" — committing it would wipe a good
+  // estimate, and the next zoom back out would have no verdict to raise the
+  // banner from until a fresh worker rejection came back. The pre-flight path
+  // never had this: `byteGateBlocksFetch` skips the RPC and writes nothing.
+  it('keeps a good estimate when a batch measured no bytes', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    const measuredSpanBp = view.visibleBp
+    display.setByteEstimate({ bytes: 8_000_000, measuredSpanBp })
+    expect(display.regionTooLarge).toBe(true)
+
+    // zoom under AUTO_FORCE_LOAD_BP: nothing gates, so the fetch carries no
+    // budget and the worker reports no bytes
+    view.zoomTo(1)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.resolvedByteLimit()).toBeUndefined()
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000 },
+          result: { featureCount: 12 },
+        },
+      ],
+      view.visibleBp,
+    )
+    expect(display.byteEstimate).toEqual({ bytes: 8_000_000, measuredSpanBp })
+
+    // so zooming back out raises the banner straight off the kept estimate,
+    // with no round trip
+    view.zoomTo(100)
+    expect(display.regionTooLarge).toBe(true)
+  })
+
   it('keeps force-load across region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)

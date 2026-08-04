@@ -10,7 +10,7 @@ import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 export type { FetchContext } from './FetchMixin.ts'
@@ -120,7 +120,11 @@ export type GlobalDataDisplayMixinType = ReturnType<
   typeof GlobalDataDisplayMixin
 >
 
-interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
+// `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves through
+// `STNValue<any, …>` to `any`, so extending it silently turns off checking for
+// every member below, and a host missing one of them would compile. See the note
+// on `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
+interface GlobalFetchAutorunHost extends IStateTreeNode {
   isMinimized: boolean
   reloadCounter: number
   rpcProps?: () => unknown

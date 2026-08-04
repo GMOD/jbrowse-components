@@ -19,6 +19,11 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
   resolve only through `resolveConf`, never `getConf`.
 - In React, `autorun` inside `useEffect` to track observables (prefer over
   `reaction`).
+- A duck-typed `interface XSelf` extends **`IStateTreeNode`**, never
+  `IAnyStateTreeNode` — the latter resolves through `STNValue<any, …>` to `any`,
+  so extending it silently turns off checking for every member you just
+  declared. `IStateTreeNode` carries the same node-ness (still assignable to
+  every `getSession`/`addDisposer`-style helper) and keeps the shape checked.
 
 ## React Compiler × MobX
 

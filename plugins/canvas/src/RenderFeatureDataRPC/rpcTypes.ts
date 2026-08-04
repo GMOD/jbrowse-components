@@ -196,9 +196,15 @@ export type RegionRenderData = Pick<
 
 export interface RegionTooLargeResult {
   regionTooLarge: true
-  // density short-circuit reports the feature count it counted; the byte
-  // short-circuit reports the index byte estimate. Exactly one is set,
-  // depending on which gate tripped.
+  // Which gate tripped, plus everything measured on the way there — NOT one or
+  // the other. The byte stage runs first, so a density rejection still carries
+  // the index estimate it cleared (`tooManyFeaturesResult` takes it as an
+  // argument for exactly this reason), and `commitGateMeasurements` records both
+  // axes off one result. A byte short-circuit returns before any features are
+  // counted, so that one carries `bytes` alone.
+  //
+  // `bytes` is absent when the adapter offers no index estimate, or when the
+  // fetch carried no `byteLimit` and so measured nothing.
   featureCount?: number
   bytes?: number
 }

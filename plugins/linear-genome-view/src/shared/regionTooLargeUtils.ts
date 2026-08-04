@@ -62,6 +62,20 @@ export function bytesTooLargeReason(bytes: number) {
   return `Requested too much data (${getDisplayStr(bytes)})`
 }
 
+// What the banner actually says: which axis tripped (empty when the display
+// gates without a reason), then the two ways out. Both chrome sets — the MUI
+// `TooLargeMessage` and the dependency-free `PlainTooLarge` — render this, so
+// the wording can't drift between them, and the screenshot harness that keys
+// off the literal keeps matching whichever set is mounted.
+export function tooLargeBannerText(regionTooLargeReason: string) {
+  return [
+    regionTooLargeReason,
+    'Zoom in to see features, or force load this track for the rest of the session (may be slow)',
+  ]
+    .filter(f => !!f)
+    .join('. ')
+}
+
 /**
  * Resolve the effective byte budget: the adapter's self-reported limit, else the
  * display's configured default. A non-positive adapter limit means "no opinion"

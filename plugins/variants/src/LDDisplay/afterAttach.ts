@@ -3,9 +3,12 @@ import {
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface LDModel extends IAnyStateTreeNode {
+// `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
+// silently turns off checking for every member below. See the note on
+// `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
+interface LDModel extends IStateTreeNode {
   showLDTriangle: boolean
   regionTooLarge: boolean
   isMinimized: boolean

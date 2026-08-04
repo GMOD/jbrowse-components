@@ -218,13 +218,25 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        host(self).setByteEstimate({
-          // An adapter with no index estimate reports none for any region, so an
-          // empty list is "unmeasurable", not "zero bytes" — keep it undefined so
-          // the byte axis stays out of the verdict entirely.
-          bytes: byteCounts.length > 0 ? Math.max(...byteCounts) : undefined,
-          measuredSpanBp,
-        })
+        // No byte count in the batch — either the adapter has no index estimate,
+        // or the worker was handed no budget to measure against because the gate
+        // was inactive for this fetch (under the force-load floor, force-loaded).
+        // Either way this fetch measured nothing, so leave the previous estimate
+        // and the span it was anchored to untouched rather than overwriting them
+        // with an unmeasurable one. Overwriting used to cost a wasted round trip
+        // every time the gate re-activated: zooming in past the floor wiped a
+        // perfectly good estimate, so zooming back out had no verdict to release
+        // the banner from and had to re-derive it from a fresh worker rejection.
+        // The pre-flight path never had the problem — `byteGateBlocksFetch`
+        // skips the RPC outright when nothing could gate, and so writes nothing.
+        if (byteCounts.length > 0) {
+          host(self).setByteEstimate({
+            // Per-region max, not sum: each region is gated against the same
+            // per-region budget.
+            bytes: Math.max(...byteCounts),
+            measuredSpanBp,
+          })
+        }
       },
     }))
     .actions(self => ({

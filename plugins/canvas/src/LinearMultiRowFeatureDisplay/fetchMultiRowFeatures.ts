@@ -6,7 +6,7 @@ import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   FetchContext,
   LinearGenomeViewModel,
@@ -14,9 +14,17 @@ import type {
 
 type Needed = { region: Region; displayedRegionIndex: number }[]
 
-interface FetchSelf extends IAnyStateTreeNode {
+// `IStateTreeNode`, never `IAnyStateTreeNode`: the latter resolves through
+// `STNValue<any, …>` to `any`, so extending it silently turns off checking for
+// every member below — a duck-typed contract that catches nothing is worse than
+// no contract, since it reads as if it does. `IStateTreeNode` carries the same
+// node-ness (it is what `IAnyStateTreeNode` is a wrapper for, and stays
+// assignable to every `getSession`/`addDisposer`-style helper) while keeping the
+// shape checked. Applies to every `interface …Self` in the repo.
+interface FetchSelf extends IStateTreeNode {
   adapterConfig: AnyConfigurationModel
   partitionField: string
+  lengthField: string
   colorConfig: string | undefined
   resolvedByteLimit: () => number | undefined
   fetchRegions: (

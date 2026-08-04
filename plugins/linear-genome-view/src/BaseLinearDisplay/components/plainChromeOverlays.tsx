@@ -1,9 +1,12 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   isGpuRenderingDisabled,
   setGpuOverride,
 } from '@jbrowse/render-core/gpuDevice'
 import { isGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
+
+import { tooLargeBannerText } from '../../shared/regionTooLargeUtils.ts'
 
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
@@ -145,18 +148,18 @@ const PlainTooLarge = observer(function PlainTooLarge({
   return (
     <div style={banner()} role="status">
       <span style={{ wordBreak: 'break-word' }}>
-        {[
-          model.regionTooLargeReason,
-          'Zoom in to see features, or force load this track for the rest of the session (may be slow)',
-        ]
-          .filter(f => !!f)
-          .join('. ')}
+        {tooLargeBannerText(model.regionTooLargeReason)}
       </span>
       <button
         type="button"
         style={button}
         onClick={() => {
-          model.forceLoad()
+          // same isAlive guard the MUI set uses: the banner unmounts the canvas,
+          // so a click landing after the track was closed would otherwise call
+          // an action on a dead node
+          if (isAlive(model)) {
+            model.forceLoad()
+          }
         }}
       >
         Force load

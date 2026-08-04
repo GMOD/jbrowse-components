@@ -3,6 +3,7 @@ import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
+import { tooLargeBannerText } from './regionTooLargeUtils.ts'
 
 export interface TooLargeMessageModel {
   regionTooLargeReason: string
@@ -29,12 +30,7 @@ const TooLargeMessage = observer(function TooLargeMessage({
           Force load
         </Button>
       }
-      message={[
-        regionTooLargeReason,
-        'Zoom in to see features, or force load this track for the rest of the session (may be slow)',
-      ]
-        .filter(f => !!f)
-        .join('. ')}
+      message={tooLargeBannerText(regionTooLargeReason)}
     />
   )
 })
