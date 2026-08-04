@@ -1,11 +1,12 @@
 import {
   getSession,
-  isSessionModelWithWidgets,
   isSessionWithAddTracks,
   isUriLocation,
 } from '@jbrowse/core/util'
 import { stripFileExtension } from '@jbrowse/core/util/tracks'
+import { transaction } from 'mobx'
 
+import { finishAddTrack } from '../AddTrackWidget/components/util.ts'
 import {
   isBlockedHttpUrl,
   isFtpUrl,
@@ -126,22 +127,26 @@ export function submitBulkTracks({
   if (isSessionWithAddTracks(session)) {
     const { trackContainer } = model
     const showInView = trackContainer?.assemblyNames?.includes(assembly)
-    for (const { row, name } of named) {
-      const conf = { ...row.conf, name }
-      session.addTrackConf(conf)
-      if (showInView) {
-        trackContainer?.showTrack(conf.trackId)
+    // adding a batch one track at a time otherwise re-renders the track
+    // selector once per file, which is the whole point of this workflow
+    transaction(() => {
+      for (const { row, name } of named) {
+        const conf = { ...row.conf, name }
+        // addTrackConf returns undefined for an invalid config, having already
+        // surfaced its own error; showing it would only add a second, vaguer
+        // "could not resolve identifier" snackbar on top (see
+        // doPasteConfigSubmit, which makes the same check)
+        if (session.addTrackConf(conf) && showInView) {
+          trackContainer?.showTrack(conf.trackId)
+        }
       }
-    }
+      finishAddTrack(model)
+    })
     if (!showInView) {
       session.notify(
         `Tracks added but not shown: the current view is not on assembly "${assembly}"`,
         'warning',
       )
-    }
-    model.clearData()
-    if (isSessionModelWithWidgets(session)) {
-      session.hideWidget(model)
     }
   }
 }
