@@ -38,6 +38,7 @@ const MUI_BUDGET = {
   'add-the-chrome-you-want': 0,
   'drive-it-from-your-app': 0,
   'your-own-feature-details': 0,
+  'run-it-in-a-worker': 0,
 }
 
 // Count the outermost MUI-classed elements (an icon button and the svg inside it
@@ -201,8 +202,11 @@ const failures = await smokeExamplesSite({
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
   slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
-  // no workerSlug: every demo here runs main-thread RPC, so there is no worker
-  // spawn to guard
+  // The one page that passes `makeWorkerInstance`. Every other demo here runs
+  // main-thread RPC, so this slug is the site's only guard on the Rollup
+  // circular-dependency TDZ that webpack tolerates and Vite does not — and the
+  // page's own claim is that a worker spawns, which loading it cannot show.
+  workerSlug: 'run-it-in-a-worker',
   //
   // The census runs before the click: opening one of those bottom-right menus
   // mounts a Material popover, which would land in the count. It runs twice,

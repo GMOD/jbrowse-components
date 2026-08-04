@@ -11,7 +11,8 @@ export { section } from './exampleModel.ts'
 // and One track follows to show the bare view it's built from. The last two
 // turn around: everything up to them is about getting data onto the screen,
 // then one is about driving it from outside and the last about getting a click
-// back off it.
+// back off it. The worker page sits outside that arc, on the end: it changes
+// nothing you can see, and every page before it defers to it in a comment.
 export const pages: ExamplePage[] = [
   {
     slug: 'pan-and-zoom',
@@ -82,6 +83,14 @@ export const pages: ExamplePage[] = [
       'The other direction: getting data back out. Click a gene and the display writes it to the session selection — read that one field and the panel is yours to draw.',
     group: 'Making it yours',
     sections: [{ slug: 'your-own-feature-details', title: 'Click a gene' }],
+  },
+  {
+    slug: 'run-it-in-a-worker',
+    title: 'Run it in a worker',
+    description:
+      'Every other page here parses its data on the main thread, which is fine for a demo and not for your app. Moving the whole engine off it is one option to `createViewState`, and nothing else in the page changes.',
+    group: 'In production',
+    sections: [{ slug: 'run-it-in-a-worker', title: 'One option, one worker' }],
   },
 ]
 

@@ -88,10 +88,26 @@ solution. The fix, if it is ever worth it, is a theme-free `makeStyles` (or a
 to use — which would also close the census gap above. `pnpm measure-chrome-bundle`
 measures what the reach half costs today.
 
+**The examples site cannot demonstrate this half, and it was assessed rather
+than assumed.** `DisplayChromeBase` takes `model: ChromeModel &
+RenderLifecycleModel<B>` plus a backend `factory` — so a page showing it needs a
+display *model*, which means a config schema, a display type and a plugin to
+register them, on top of the ~300 lines of view boilerplate every page here
+repeats. Most of the resulting file would be about how to write a display, not
+about the seam, and the site's "one page adds one thing" arc has nowhere to put
+it. So the weight half stays prose (`src/docs/bring-your-own-overlays.md`, "Two
+seams") with `plainChromeOverlays.test.tsx` as its only executable check. If it
+ever gets a demo, it belongs outside the arc, and the honest scope is a
+custom-display page that happens to use `DisplayChromeBase` — not a
+`DisplayChromeBase` page.
+
 ## Verifying, cheaply
 
 The examples site is the harness. `pnpm build && pnpm smoke` in
-`products/jbrowse-build-your-own/examples-site` runs every page headless. For
+`products/jbrowse-build-your-own/examples-site` runs every page headless. One of
+them (`run-it-in-a-worker`) is the site's only worker embed, and it is the
+`workerSlug` the smoke check asserts a worker actually spawns on — A/B'd by
+pointing `workerSlug` at `one-track`, which fails with `workers: []`. For
 anything the smoke check can't see, a throwaway puppeteer probe against the
 built `dist/` is the pattern that found everything above — serve `dist/`, strip
 the Astro base, `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a
@@ -120,11 +136,17 @@ Two traps that cost time here:
   a plain rendering, which they now have.
 - **Don't factor the shared helpers out of the examples site.** See its
   `CLAUDE.md`: every page must be one complete copy-pasteable file, and the site
-  was built the other way once and rewritten. That said, the duplication is now
-  ~250 identical lines across seven ~480-line files, and one pan-handler fix in
-  one session had to land in five of them. If that becomes untenable the answer
-  is a different *rule* (a full page plus delta-only successors), argued in that
-  `CLAUDE.md` — not a quiet `src/browser/` module.
+  was built the other way once and rewritten. The duplication is real — ~1950 of
+  ~3500 example lines are verbatim repeats, and one pan-handler fix in one
+  session had to land in five files — so the rule now has a guard rather than
+  only a warning: `scripts/check-duplication.mjs` (run by `pnpm check-links`)
+  fails when two same-named top-level blocks differ once comments are stripped,
+  with a short `DIVERGES` allowlist for the per-page ones. A/B'd by perturbing
+  `DRAG_THRESHOLD_PX` and a `horizontalScroll` call in one file; both were named
+  with the odd file out and the exact line. If the allowlist starts growing, that
+  is the signal the shared surface has outgrown copy-paste, and the answer is
+  still a different *rule* argued in that `CLAUDE.md` — not a `src/browser/`
+  module.
 - **Don't add a corner control by importing MUI directly.** Describe it as
   `TrackControlProps` and render `TrackControl`; the icon is a *name*, never an
   element, or the display re-imports an icon package.
