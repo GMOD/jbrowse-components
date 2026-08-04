@@ -2028,7 +2028,15 @@ export const uiSpecs: ScreenshotSpec[] = [
     // identity, and it is the same column boundary in every one of them.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      loc: 'chr7:27,100,000-27,280,000',
+      // 500 kb rather than the cluster's own 180 kb. Inside the cluster every
+      // row is fine structure and the picture has no background to read it
+      // against, which is what made 127 rows of it look like noise. Out here
+      // the two boxes are saturated rectangles standing in ~300 kb of the
+      // pseudogene desert either side (RPL7AP38, HMGB3P20, NHP2P2, TPM3P4 to
+      // the left; RPL35P4 past EVX1 to the right), which is quiescent and pale
+      // in every row — so the domain has an edge. Wider than this and the
+      // clustering starts separating the rows on the flanks instead.
+      loc: 'chr7:26,950,000-27,450,000',
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
@@ -2045,7 +2053,10 @@ export const uiSpecs: ScreenshotSpec[] = [
           // the display puts them. Unclustered the same window is 127 rows of
           // scattered red with no block in it.
           runClustering: true,
-          height: 700,
+          // 480, not the config's 700: 127 rows fill whatever height they are
+          // given, so the extra 220px bought no detail, only more area of the
+          // same painting to take in at once.
+          height: 480,
         },
       ],
     }),
@@ -2089,7 +2100,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ChromHMM',
     readyTimeout: 120000,
     settleMs: 6000,
-    viewportHeight: 1060,
+    viewportHeight: 840,
   },
 
   // The nine-cell-type Broad ENCODE track at the HOXA cluster, which is the
@@ -2108,7 +2119,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   // identity and leaves the rest under Polycomb; the break falls between HOXA7
   // and HOXA9 in every row that has one, which is what makes it a column in the
   // painting rather than nine unrelated patterns. Boxing the two domains says
-  // where to look; the caption says what the split means.
+  // where to look; the caption says what the split means. The three row labels
+  // below name the rows that are the exceptions to it.
   //
   // Both are anchored to the track and a locus, so they stay on the genes when
   // the window, the track height or the viewport width moves.
@@ -2179,6 +2191,55 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
         dy: 20,
       },
+      // Three row labels, because the reviewer's question was what the NINE
+      // CELL TYPES mean and the boxes above only say where to look. Each sits
+      // at its own row's centre (row i of 9 -> (i+0.5)/9) so it reads as a label
+      // ON that row, and each is pushed into the flank beside the box it is
+      // about rather than over the painting.
+      //
+      // Measured off the file itself, per cell type over each box's span:
+      //   anterior  H1-hESC 55% Repressed + 30% Poised_Promoter, K562 73%
+      //             Repressed, GM12878 58% Heterochrom; the five differentiated
+      //             lines run 69-92% enhancer/promoter/transcription
+      //   posterior everything is Repressed EXCEPT HUVEC (37% Strong_Enhancer,
+      //             20% Active_Promoter) and HSMM (50% Active_Promoter)
+      //
+      // H1-hESC: the pluripotent line is the one that is neither on nor off.
+      // Its magenta is 3_Poised_Promoter over both halves, which is what a
+      // bivalent HOX cluster looks like before a lineage has an address. Left of
+      // the anterior box, because it is about the whole row.
+      {
+        type: 'text',
+        text: 'H1-hESC: poised, not shut',
+        fontSize: 16,
+        textAlign: 'end',
+        anchor: {
+          track: 'broad_chromhmm_multirow_hg19',
+          locus: 'chr7:27,132,613',
+          alignX: 'left',
+          fracY: 1.5 / 9,
+        },
+        dx: -6,
+      },
+      // HUVEC and HSMM: endothelium and skeletal muscle, the two mesoderm lines
+      // and the only two that open the posterior half as well. RIGHT of the
+      // posterior box — in the left flank the same label sat next to the
+      // anterior one and read as pointing at it. The right flank is uniform
+      // 12_Repressed grey in all nine rows, so nothing is hidden by covering it.
+      ...([4, 6] as const).map(row => ({
+        type: 'text' as const,
+        text: 'posterior half open',
+        fontSize: 16,
+        textAlign: 'start' as const,
+        color: '#1565c0',
+        anchor: {
+          track: 'broad_chromhmm_multirow_hg19',
+          locus: 'chr7:27,246,878',
+          alignX: 'right' as const,
+          fracY: (row + 0.5) / 9,
+        },
+        dx: 6,
+      })),
     ],
     readyText: 'ChromHMM',
     readyTimeout: 60000,

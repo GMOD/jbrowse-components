@@ -34,7 +34,7 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, one row per cell type, with hg19 RefSeq genes above. Boxed: the anterior genes HOXA1 to HOXA7, and the posterior genes HOXA9 to HOXA13. The lines that open the cluster open the anterior box and hold the posterior box repressed, and they break at the same place; H1-hESC, K562 and GM12878 hold both boxes in poised and repressed states throughout."/>
+<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, one row per cell type, with hg19 RefSeq genes above. Boxed: the anterior genes HOXA1 to HOXA7, and the posterior genes HOXA9 to HOXA13. Every row except the two blood lines (GM12878, K562) and the embryonic stem line opens the anterior box in promoter red, enhancer orange and transcription green, and stops at the box's right edge. Labeled: the two rows that carry on into the posterior box, HUVEC and HSMM, and H1-hESC, which holds both halves in the magenta poised state rather than shutting them."/>
 
 HOXA is the window the build script opens on because the painting there has a
 structure to find rather than just a lot of color. The genes are transcribed in
@@ -43,6 +43,15 @@ position along the body axis and holds the rest under Polycomb. Most of the rows
 that open the cluster at all stop between HOXA7 and HOXA9, which is what makes
 the change read as a column across the rows rather than as nine unrelated
 patterns.
+
+Which rows those are is the point of picking nine cell types rather than one.
+The posterior genes carry a trunk-and-limb address, and the two rows that open
+them here are the endothelial and skeletal-muscle lines — HUVEC and HSMM, the
+mesodermal pair. The keratinocyte, lung-fibroblast and mammary lines stop at
+HOXA7. GM12878 and K562 are blood, and hold the whole cluster shut. H1-hESC is
+pluripotent and has no address yet, so its rows are neither: the magenta is
+`3_Poised_Promoter`, an active promoter mark sitting on a repressed cluster,
+which is the bivalent state HOX clusters are held in before a lineage commits.
 
 ## What the merged file holds
 
@@ -175,7 +184,12 @@ The same recipe scales to the
 a longer `rowOrder`. Because the multi-row display fetches and lays out one
 file, 127 epigenomes is still one track, one adapter, one fetch, not 127 tracks.
 
-<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over the same HOXA window and the same two boxes, with the rows ordered by Cluster rows by similarity rather than by config and the dendrogram in the sidebar. Each row is one epigenome, thin enough that the painting reads as a heatmap of state rather than as blocks. The two top-level clades separate the epigenomes carrying active promoter, enhancer and transcription across the anterior box from those holding both boxes in Polycomb-repressed and bivalent states."/>
+This track also fills in the `legend` slot, because the Roadmap file's state
+names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`) and the auto-derived key would
+show them as they are. Fifteen `{label, color}` entries spell them out and fix
+their order at 1 to 15 rather than by how much of each is on screen.
+
+<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over the same two boxes with 500 kb of flank, and with the rows ordered by Cluster rows by similarity rather than by config so the dendrogram is in the sidebar. Each row is one epigenome, thin enough that the painting reads as a heatmap of state rather than as blocks. The clustering splits the rows into an upper block that opens the cluster — red active TSS, yellow enhancer, green transcription — and a lower block holding both boxes in grey Polycomb, speckled olive where the same bases are bivalent. Either side of the boxes is quiescent in every row, which is the edge of the domain."/>
 
 At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**

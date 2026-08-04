@@ -16,7 +16,7 @@ rather than one track per sample.
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 **Display types → Multi-row feature display (painting)**.
 
-<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM across 127 epigenomes as one multi-row track, with NCBI RefSeq genes above. Each row is one epigenome and each block takes the state color the file already carries; the state key on the right is derived from the data." />
+<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM across 127 epigenomes as one multi-row track, with NCBI RefSeq genes above. Each row is one epigenome and each block takes the state color the file already carries; the state key on the right is the display's legend slot, spelling out the mnemonics the file names its states with. Boxed: the anterior and posterior halves of the HOXA cluster." />
 
 ## Turning a feature track into rows
 

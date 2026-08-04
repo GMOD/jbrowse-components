@@ -488,6 +488,26 @@
             "iPS DF 6.9 Cells",
             "iPS DF 19.11 Cells"
           ],
+          "legend": [
+            { "label": "1 Active TSS", "color": "rgb(255,0,0)" },
+            { "label": "2 Flanking active TSS", "color": "rgb(255,69,0)" },
+            { "label": "3 Transcribed 5'/3' flank", "color": "rgb(50,205,50)" },
+            { "label": "4 Strong transcription", "color": "rgb(0,128,0)" },
+            { "label": "5 Weak transcription", "color": "rgb(0,100,0)" },
+            { "label": "6 Genic enhancer", "color": "rgb(194,225,5)" },
+            { "label": "7 Enhancer", "color": "rgb(255,255,0)" },
+            { "label": "8 ZNF genes / repeats", "color": "rgb(102,205,170)" },
+            { "label": "9 Heterochromatin", "color": "rgb(138,145,208)" },
+            { "label": "10 Bivalent TSS", "color": "rgb(205,92,92)" },
+            { "label": "11 Flanking bivalent", "color": "rgb(233,150,122)" },
+            { "label": "12 Bivalent enhancer", "color": "rgb(189,183,107)" },
+            { "label": "13 Repressed Polycomb", "color": "rgb(128,128,128)" },
+            {
+              "label": "14 Weak repressed Polycomb",
+              "color": "rgb(192,192,192)"
+            },
+            { "label": "15 Quiescent / low", "color": "rgb(255,255,255)" }
+          ],
           "height": 700
         }
       ]
