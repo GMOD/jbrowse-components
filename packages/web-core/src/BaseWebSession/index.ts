@@ -43,7 +43,7 @@ import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTy
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
-import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseWebSessionModel
@@ -190,7 +190,12 @@ export function BaseWebSessionModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+      // the snapshot is typed the way the root that consumes it types it, not
+      // as `SnapshotIn<typeof self>`: the latter is this whole composed model's
+      // snapshot, and naming it here makes the emitted .d.ts inline the entire
+      // session shape into this one signature — past the length tsc will
+      // serialize (TS7056), which fails the packed build for every consumer.
+      setSession(sessionSnapshot: Record<string, unknown>) {
         self.root.setSession(sessionSnapshot)
       },
     }))
