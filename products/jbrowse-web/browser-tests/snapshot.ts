@@ -266,6 +266,40 @@ async function waitForCaptureSettled(page: Page) {
     .catch(() => [] as string[])
 }
 
+// What the canvas itself holds, read in-page, for a capture that came back
+// blank. `toDataURL` reads the canvas backing store directly and never goes
+// through the compositor, so the two answers separate the causes:
+//
+//   canvas has content, screenshot blank -> the CAPTURE path (compositing)
+//   canvas also blank                    -> the RENDER (or, on WebGL with the
+//                                           default preserveDrawingBuffer:false,
+//                                           a buffer already cleared — those two
+//                                           stay indistinguishable from here)
+//
+// Comparing against a same-size blank canvas is exact, rather than guessing a
+// byte-length threshold.
+async function canvasSelfReport(page: Page, selector: string) {
+  return page
+    .evaluate(sel => {
+      const el = document.querySelector(sel)
+      const canvas =
+        el instanceof HTMLCanvasElement ? el : (el?.querySelector('canvas') ?? null)
+      if (!canvas) {
+        return ' [self-report: no canvas element found]'
+      }
+      const blank = document.createElement('canvas')
+      blank.width = canvas.width
+      blank.height = canvas.height
+      const url = canvas.toDataURL()
+      const size = `${canvas.width}x${canvas.height}`
+      return url === blank.toDataURL()
+        ? ` [self-report: canvas ${size} is ALSO blank -> render side]`
+        : ` [self-report: canvas ${size} HAS content (${url.length}b) while the ` +
+            `screenshot is blank -> capture/compositing side]`
+    }, selector)
+    .catch(() => ' [self-report: unavailable]')
+}
+
 // Suffix for a failure message: what was still unsettled when we gave up waiting.
 const unsettledNote = (unsettled: string[]) =>
   unsettled.length === 0
@@ -353,9 +387,23 @@ export async function canvasSnapshot(
 
   const screenshot = await el.screenshot({ type: 'png' })
   if (assertContent) {
+    const analysis = analyzeCanvasPng(screenshot)
+    // Ask the canvas what IT holds, at the moment the screenshot came back
+    // blank. This is the one question that separates the two candidate causes
+    // without needing the failure to be reproducible: `el.screenshot()` serves
+    // *composited* layers, so a canvas that self-reports content while its
+    // screenshot is blank puts the fault in the capture path, and both coming
+    // back blank puts it in the render. One occurrence settles it; the A/Bs
+    // that tried to settle it statistically could not, because the suite's
+    // run-to-run variance is larger than either effect.
+    // Same predicate assertNonBlank applies, so the report is gathered exactly
+    // when it is about to throw (and costs nothing on the passing path).
+    const wouldFail =
+      analysis.distinctColors < 3 || analysis.nonBgFraction < 0.0005
+    const selfReport = wouldFail ? await canvasSelfReport(page, selector) : ''
     assertNonBlank(
-      analyzeCanvasPng(screenshot),
-      `${name} (${selector})${unsettledNote(unsettled)}`,
+      analysis,
+      `${name} (${selector})${unsettledNote(unsettled)}${selfReport}`,
     )
   }
   const result = compareImages(name, screenshot, targetedThreshold(threshold))
