@@ -1,6 +1,7 @@
 import { BLACK_ABGR, NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 import {
+  genotypeCarriesAlt,
   getPhasedColor,
   isNoCall,
   isPhasedOrHaploid,
@@ -23,6 +24,12 @@ export interface VariantCellStyle {
 // Only alt-carrying cells take a per-variant override color; ref and no-call
 // keep their own, so a missing call is never painted as though it carried the
 // variant.
+//
+// Reading `isRef`/`isAlt` back off the color is sound **only for
+// `getPhasedColor`**, which returns the `REFERENCE_COLOR` / `NO_CALL_COLOR`
+// constants themselves. It is not a general rule — see `genotypeCarriesAlt`,
+// and `buildAlleleCountStyle` below, whose color function blends and returns a
+// hex.
 function styleFromColor(
   color: string,
   overrideColor: string | undefined,
@@ -51,6 +58,16 @@ function styleFromColor(
  * and the allele counting out of the per-cell loop. `getAlleleColor` carried a
  * memo of its own for that job, keyed on a template literal; at this
  * granularity there is nothing left for it to save.
+ *
+ * `getAlleleColor` has already applied `overrideColor`, including to the
+ * secondary-alt case, so nothing re-applies it here.
+ *
+ * `isAlt` comes from the genotype, not from the color: this mode's dosage
+ * shades, its no-call blend and any override are all colord output, so none of
+ * them is string-equal to a `NO_CALL_COLOR` / `REFERENCE_COLOR` constant.
+ * `isRef` can stay on the color because "was this painted with the reference
+ * fill" is exactly what decides the paint-order bucket, and `getAlleleColor`
+ * returns that constant by identity for an all-reference call.
  */
 export function buildAlleleCountStyle(
   genotype: string,
@@ -58,13 +75,16 @@ export function buildAlleleCountStyle(
   drawRef: boolean,
   overrideColor: string | undefined,
 ): VariantCellStyle | null {
-  return styleFromColor(
-    getAlleleColor(genotype, mostFrequentAlt, drawRef, overrideColor),
-    // getAlleleColor already applied the override, and applied it to the
-    // secondary-alt case too — re-applying here would be a no-op but would also
-    // claim a no-call blend is an alt cell.
-    undefined,
-  )
+  const color = getAlleleColor(genotype, mostFrequentAlt, drawRef, overrideColor)
+  if (!color) {
+    return null
+  }
+  const isRef = color === REFERENCE_COLOR
+  return {
+    abgr: getCachedABGR(color),
+    isRef,
+    isAlt: !isRef && genotypeCarriesAlt(genotype),
+  }
 }
 
 /**

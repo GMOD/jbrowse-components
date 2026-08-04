@@ -62,6 +62,30 @@ export function isNoCall(genotype: string) {
   return true
 }
 
+// Whether a genotype carries a called non-reference allele — the fact the
+// insertion-glyph pass and the cell buckets key off ("does this haplotype
+// actually have the extra sequence"). The mirror of `isNoCall`'s scan: allele
+// indices carry no leading zeros, so a digit 1-9 anywhere means some allele in
+// the call is non-reference. Allocation-free, for the per-genotype hot path.
+//
+// **This has to be answered from the genotype, never from the resolved cell
+// color.** The tempting `color !== NO_CALL_COLOR` test holds only for the
+// functions in this file, which return the `NO_CALL_COLOR`/`REFERENCE_COLOR`
+// constants by identity. `getAlleleColor` does not: it blends its no-call shade
+// through colord and returns a hex, so `.` came back `#bfaa40` — never
+// string-equal to the `hsl(...)` literal — and every no-call cell in
+// allele-count mode was flagged alt-carrying. That is how `pangenome/maf`
+// painted an insertion marker on a row the VCF calls `.` for.
+export function genotypeCarriesAlt(genotype: string) {
+  for (let i = 0; i < genotype.length; i++) {
+    const c = genotype.charCodeAt(i)
+    if (c >= 49 && c <= 57) {
+      return true
+    }
+  }
+  return false
+}
+
 // '' means "draw no cell here" — the same sentinel getAlleleColor returns, so
 // the two cell-color functions can share one `if (c)` at every call site. (It
 // can't be `undefined` there: getAlleleColor's memo uses `undefined` as its

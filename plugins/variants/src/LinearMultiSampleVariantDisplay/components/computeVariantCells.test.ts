@@ -731,3 +731,114 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
     })
   })
 })
+
+describe('computeVariantCells cellCarriesAlt', () => {
+  // `cellCarriesAlt` is what gates the insertion-glyph overlay, so a cell whose
+  // sample has no call at the site must be 0 or the figure claims that haplotype
+  // carries the inserted sequence. It cannot be read back off the resolved cell
+  // color: allele-count mode blends its no-call shade through colord and hands
+  // back a hex (`#bfaa40`), which is never string-equal to the `hsl(...)`
+  // NO_CALL_COLOR literal the test used to be. That mis-flagged every no-call as
+  // alt-carrying, and it is how `pangenome/maf` painted an insertion marker on
+  // NCTC86's row at a site where the VCF calls `.` for it.
+  const sources: ProcessedSource[] = [
+    { name: 'S1', sampleName: 'S1', HP: 0 },
+    { name: 'S2', sampleName: 'S2', HP: 0 },
+    { name: 'S3', sampleName: 'S3', HP: 0 },
+    { name: 'S4', sampleName: 'S4', HP: 0 },
+    { name: 'S5', sampleName: 'S5', HP: 0 },
+  ]
+  // S1/S2 haploid, as a pangenome callset (pggb / `vg deconstruct`) writes them;
+  // S3-S5 diploid.
+  const feature = makeFeature({
+    genotypes: { S1: '1', S2: '.', S3: './.', S4: '0/1', S5: '0/0' },
+    ALT: ['ACGTACGTACGT'],
+    REF: 'A',
+    name: 'ins1',
+    description: '',
+    type: 'insertion',
+    start: 100,
+    end: 101,
+  })
+
+  function carriesAltByRow(
+    f: Feature,
+    srcs: ProcessedSource[],
+    renderingMode: string,
+  ) {
+    const result = computeVariantCells({
+      filteredVariants: [{ feature: f, mostFrequentAlt: '1' }],
+      sources: srcs,
+      renderingMode,
+      referenceDrawingMode: 'draw',
+      featureGenotypes: genotypeLookup([f]),
+    })
+    const byRow = new Map<number, number>()
+    for (let i = 0; i < result.numCells; i++) {
+      byRow.set(result.cellRowIndices[i]!, result.cellCarriesAlt[i]!)
+    }
+    return byRow
+  }
+
+  test('a no-call cell does not carry the alt (allele-count mode)', () => {
+    const byRow = carriesAltByRow(feature, sources, 'alleleCount')
+    expect(byRow.get(0)).toBe(1) // S1 `1`   — haploid alt
+    expect(byRow.get(1)).toBe(0) // S2 `.`   — haploid no-call
+    expect(byRow.get(2)).toBe(0) // S3 `./.` — diploid no-call
+    expect(byRow.get(3)).toBe(1) // S4 `0/1`
+    expect(byRow.get(4)).toBe(0) // S5 `0/0` — reference
+  })
+
+  // Phased mode was already right — getPhasedColor returns the NO_CALL_COLOR
+  // constant itself — but it is the half that decides the pangenome figure, so
+  // it is pinned rather than assumed. Per haplotype row here, not per sample.
+  test('a no-call cell does not carry the alt (phased mode)', () => {
+    const phased = makeFeature({
+      genotypes: { S1: '1', S2: '.', S3: '.|.', S4: '0|1' },
+      ALT: ['ACGTACGTACGT'],
+      REF: 'A',
+      start: 100,
+      end: 101,
+    })
+    const byRow = carriesAltByRow(
+      phased,
+      [
+        { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+        { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+        { name: 'S3 HP0', sampleName: 'S3', HP: 0 },
+        { name: 'S3 HP1', sampleName: 'S3', HP: 1 },
+        { name: 'S4 HP0', sampleName: 'S4', HP: 0 },
+        { name: 'S4 HP1', sampleName: 'S4', HP: 1 },
+      ],
+      'phased',
+    )
+    expect(byRow.get(0)).toBe(1) // S1 `1`   — haploid alt
+    expect(byRow.get(1)).toBe(0) // S2 `.`   — haploid no-call
+    expect(byRow.get(2)).toBe(0) // S3 `.|.`
+    expect(byRow.get(3)).toBe(0) // S3 `.|.`
+    expect(byRow.get(4)).toBe(0) // S4 `0|1` HP0 — reference haplotype
+    expect(byRow.get(5)).toBe(1) // S4 `0|1` HP1
+  })
+
+  // A half-called genotype does carry the sequence on the allele that was
+  // called, so it widens; only the all-`.` cells above must not.
+  test('a partly-called genotype still carries the alt', () => {
+    const partial = makeFeature({
+      genotypes: { S1: './1', S2: './0' },
+      ALT: ['ACGTACGTACGT'],
+      REF: 'A',
+      start: 100,
+      end: 101,
+    })
+    const byRow = carriesAltByRow(
+      partial,
+      [
+        { name: 'S1', sampleName: 'S1', HP: 0 },
+        { name: 'S2', sampleName: 'S2', HP: 0 },
+      ],
+      'alleleCount',
+    )
+    expect(byRow.get(0)).toBe(1) // `./1`
+    expect(byRow.get(1)).toBe(0) // `./0`
+  })
+})
