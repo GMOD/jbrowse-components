@@ -1,4 +1,4 @@
-import { kgUrl } from '../screenshot-spec-helpers.ts'
+import { kgUrl, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -13,6 +13,11 @@ const HG38_MAIN_CHROMS = [
   ...Array.from({ length: 22 }, (_, i) => String(i + 1)),
   'X',
 ]
+
+// The binned reading of the same cohort loads through its own config, because
+// the Zarr adapter arrives in a plugin and a plugin can only be declared by a
+// config — `sessionTracks` cannot carry one.
+const TCGA_CNV_CONFIG = 'test_data/tcga_cnv/config.json'
 
 // One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
 // raw Segment_Mean on a diverging blue/red log2 scale. Built by
@@ -666,6 +671,56 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         labelDx: -420,
       }),
     ],
+  },
+
+  // The same window as cohort_cnv_erbb2 above, and the same 1104 tumors, but
+  // read out of the binned Zarr store instead of the segment BED and drawn as a
+  // quantitative heatmap rather than a five-step jexl scale. Side by side the
+  // two say the same thing about the cohort, which is the point: it is the same
+  // calls, and the store is a second way of holding them.
+  //
+  // A locus rather than the whole genome, for two reasons. It is the row of the
+  // tutorial's byte table where the store is furthest ahead (411 KB to 14 KB,
+  // because 2.6 Mb segments make tabix scan back over the chromosome). And
+  // clustering is scoped to the blocks in view, so at whole-genome zoom the RPC
+  // did not settle inside a 15 minute budget here — a locus clusters in seconds
+  // and is what the sibling figure above does too.
+  //
+  // Gated on the dendrogram rather than the display's own `data-clustered`,
+  // because the tree only mounts once the cluster RPC has returned a tree.
+  {
+    mode: 'url',
+    name: 'tcga/cohort_cnv_zarr_erbb2',
+    url: lgvSession(TCGA_CNV_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr17:39,000,000-40,500,000',
+      // same band over ERBB2 as the BED figure, so the amplified column is tied
+      // to the gene rather than left to be located against the ruler
+      highlight: ['chr17:39,688,094-39,728,658'],
+      trackLabels: 'offset',
+      tracks: [
+        {
+          // MANE is one transcript per gene, so the lane names ERBB2 and its
+          // neighbors in a single row. Without it the highlight band over the
+          // gene is an unlabeled stripe.
+          trackId: 'MANE.GRCh38.v1.4.refseq',
+          type: 'LinearBasicDisplay',
+          height: 84,
+        },
+        {
+          trackId: 'tcga_brca_cnv_zarr',
+          type: 'MultiLinearWiggleDisplay',
+          height: 700,
+          runClustering: true,
+          showTree: true,
+        },
+      ],
+    }),
+    readySelector: CLUSTERED,
+    readyTimeout: 900000,
+    viewportWidth: 1900,
+    viewportHeight: 1015,
+    settleMs: 15000,
   },
 
   // CDH1 grouped by histology. E-cadherin loss is the defining lesion of lobular

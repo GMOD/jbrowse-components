@@ -319,8 +319,8 @@ hosted, so it loads from any config today (see
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
         "bicolorPivot": 0,
-        "minScore": -1.5,
-        "maxScore": 1.5,
+        "minScore": -2,
+        "maxScore": 2,
         "posColor": "#b2182b",
         "negColor": "#2166ac"
       }
@@ -328,6 +328,8 @@ hosted, so it loads from any config today (see
   ]
 }
 ```
+
+<Figure caption="The same 1104 tumors over ERBB2 as the figure earlier on this page, clustered on this window, but read from the binned Zarr store instead of the segment BED. The amplified, gained, lost and balanced bands land in the same places because these are the same calls; the heatmap ramps continuously where the stack steps through five colors." src="/img/tcga/cohort_cnv_zarr_erbb2.png" />
 
 The adapter config is the store's location and nothing else: the sample list,
 the bin size and the resolution levels are attributes of the store. Each tumor's
@@ -337,8 +339,13 @@ recurrence split uses, so the clustering sidebar groups the rows the same way.
 Color works differently here than on the stack. There is no jexl expression
 binning `segmean` into five steps; a quantitative track ramps continuously
 between `negColor` and `posColor` about `bicolorPivot`, which sits at 0 because
-these are log2 ratios. `minScore` and `maxScore` clamp the ramp, and at ±1.5
-they saturate at roughly the stack's amplification and deep-loss cutoffs.
+these are log2 ratios. `minScore` and `maxScore` clamp the ramp, one step
+outside the stack's own ±1 amplification and deep-loss cutoffs. Pick round
+numbers: the scale is `nice()`-rounded, so ±1.5 would quietly become the ±2 the
+color bar draws anyway.
+
+Clustering is scoped to the blocks in view either way, so the row order above is
+this window's, not the cohort's genome-wide relatedness.
 
 Binning is also the one thing this representation loses. A focal amplification
 narrower than the base 10kb bin is averaged with its neighbours rather than
