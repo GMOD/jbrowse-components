@@ -31,9 +31,9 @@ genotypes across all 3,202 individuals.
 Its FILTER column is `ManualLQ` and its INFO carries `IMPRECISE`, and a complex
 (CPX) call sits on its left breakpoint, which is what makes it worth following:
 a call like this is a claim to be checked against the reads, not a result to
-read off. Its own frequency fields say so too. `AC=1527` of `AN=6404` is a
-common allele, and every one of those copies is in a heterozygote, with
-`N_HOMALT=0` across all 3,202 samples.
+read off. `AC=1527` of `AN=6404` makes it a common allele, and every carrier is
+called heterozygous, so a pileup at either breakpoint is a mixture of the two
+arrangements rather than a clean inverted haplotype.
 
 The tracks are added with the usual `jbrowse add-track` workflow. The callset is
 bgzip-compressed and tabix-indexed, and the alignment tracks stream the
