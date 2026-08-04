@@ -68,24 +68,22 @@ Render input → the subclass `renderState` getter.
   `bpPerPx === loadedBpPerPx`). Don't extend that or the visible-only fetch to
   regular mode.
 
-## `layout` is the row set here, unlike the other row displays
+## `layout` orders rows; `subtreeFilter` narrows them
 
-maf, multi-row features and multi-wiggle discover their rows from the data as
-regions load, so their `layout` is an _ordering hint_ and tree-sidebar's
-`reconcileLayout` appends a discovered row it omits. Here the sample set arrives
-once from the VCF header, and `getSources` iterates `layout` alone: a sample it
-omits gets no row. That is load-bearing —
+Same split as maf, multi-row features and multi-wiggle. A `layout` is an
+ordering/override hint, so `getSources` appends a sample it omits rather than
+dropping it — tree-sidebar's `reconcileLayout` rule, spelled here only because
+the phased case has to key "already covered" on `sampleName` (layout rows are
+haplotypes, which match no sample name). Narrowing the rows is `subtreeFilter`,
+which is also the half that reaches the fetch via `sampleFilter`.
 
-- `sampleFilter`, the rows' one fetch input, is derived from it, so narrowing
-  the layout narrows what the worker computes;
-- `editableSources` skips the subtree filter for exactly this reason, since
-  submitting a narrowed list out of the dialog would drop rows from `layout`;
-- `rowPlacement.test.ts` pins both halves, including the `HIDDEN_ROW` sentinel
-  for a shipped row the display isn't drawing.
+`getSources` used to iterate `layout` alone, so a layout that omitted a sample
+hid it. Nothing could produce one — every layout the app writes covers all rows
+(`arrangeSources`, `buildClusteredLayout`, `sortSourcesAroundVariant`, the
+arrangement dialog) — so it was reachable only by hand-editing a session, and
+two tests used it as a shortcut to states `setSubtreeFilter` reaches properly.
 
-Don't "unify" it with `reconcileLayout`.
-
-Row-arrangement actions do share the rest: they persist through the mixin's
+Row-arrangement actions share the rest too: they persist through the mixin's
 `setLayout` (never a direct `self.layout =`) so a stale dendrogram is dropped,
 and `applyArrangement` re-arranges the rows already on screen rather than
 re-deriving from adapter order — re-deriving made "Color by…" discard a

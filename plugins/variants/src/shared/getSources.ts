@@ -103,20 +103,28 @@ export function buildCanonicalRows({
 }
 
 /**
- * Note the membership rule, which is **deliberately not** tree-sidebar's
- * `reconcileLayout` (what maf, multi-row features and multi-wiggle use). There a
- * `layout` is an ordering hint and a discovered row it omits is appended; here
- * `layout` *is* the row set, and a sample it omits is a sample that gets no row.
+ * `layout` is an ordering/override hint, never the row set — the same membership
+ * rule tree-sidebar's `reconcileLayout` gives maf, multi-row features and
+ * multi-wiggle: a sample it omits belongs at the end, not dropped. Narrowing the
+ * rows is `subtreeFilter`'s job in all four, and it is the one that reaches the
+ * fetch (`sampleFilter`).
  *
- * That is load-bearing rather than an oversight: `sampleFilter` — the one fetch
- * input the rows have — is derived from this, so narrowing the layout narrows
- * what the worker computes, and `editableSources` is documented as skipping the
- * subtree filter precisely because submitting a narrowed list would drop rows.
- * The other three displays discover their rows from the data as regions load, so
- * an ordering-hint layout is the only rule that can work for them; the sample
- * set here comes once from the VCF header. `rowPlacement.test.ts` pins both
- * halves.
+ * "Covered" is keyed by **sampleName**, not `name`: after a phased clustering run
+ * the layout rows are haplotypes ("HG001 HP0"), which match no sample name, so a
+ * `name` key would read the layout as covering nothing and re-append every sample
+ * on top of its own haplotypes.
+ *
+ * Returns `layout` itself when it already covers everything — the case every
+ * layout the app can produce is in, since each of them (`arrangeSources`,
+ * `buildClusteredLayout`, `sortSourcesAroundVariant`, the arrangement dialog)
+ * covers all rows.
  */
+function appendUncoveredSamples(sources: Source[], layout: Source[]): Source[] {
+  const covered = new Set(layout.map(resolveSampleName))
+  const uncovered = sources.filter(s => !covered.has(s.name))
+  return uncovered.length ? [...layout, ...uncovered] : layout
+}
+
 export function getSources({
   sources,
   layout = sources,
@@ -130,7 +138,7 @@ export function getSources({
 }): ProcessedSource[] {
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
 
-  return layout.flatMap(row => {
+  return appendUncoveredSamples(sources, layout).flatMap(row => {
     const sampleName = resolveSampleName(row)
     const baseSource = sourceMap[sampleName]
 

@@ -89,6 +89,10 @@ describe('expandSourcesToHaplotypes', () => {
 
 describe('getSources', () => {
   const baseSources = [{ name: 'HG001' }, { name: 'HG002' }, { name: 'HG003' }]
+  // For the cases about ordering/expansion rather than membership: `layout` is
+  // an ordering hint, so a source it omits is appended (see the membership
+  // tests below), which would otherwise add rows those cases aren't about.
+  const twoSources = [{ name: 'HG001' }, { name: 'HG002' }]
 
   const sampleInfo = {
     HG001: { isPhased: true, maxPloidy: 2 },
@@ -136,7 +140,7 @@ describe('getSources', () => {
     ]
 
     const result = getSources({
-      sources: baseSources,
+      sources: twoSources,
       layout: haplotypeLayout,
       renderingMode: 'phased',
       sampleInfo,
@@ -153,7 +157,7 @@ describe('getSources', () => {
     const sampleLayout = [{ name: 'HG002' }, { name: 'HG001' }]
 
     const result = getSources({
-      sources: baseSources,
+      sources: twoSources,
       layout: sampleLayout,
       renderingMode: 'phased',
       sampleInfo,
@@ -166,7 +170,10 @@ describe('getSources', () => {
     expect(result[3]).toMatchObject({ name: 'HG001 HP1', sampleName: 'HG001' })
   })
 
-  test('filters out samples not in sources', () => {
+  // Both halves of the membership rule in one call: a layout row the sources
+  // don't have is dropped, and a source the layout doesn't have is appended.
+  // Narrowing the rows is `subtreeFilter`'s job, not the layout's.
+  test('drops layout rows with no source, appends sources with no layout row', () => {
     const layout = [{ name: 'HG001' }, { name: 'UNKNOWN' }, { name: 'HG002' }]
 
     const result = getSources({
@@ -176,16 +183,37 @@ describe('getSources', () => {
       sampleInfo,
     })
 
-    expect(result).toHaveLength(2)
-    expect(result[0]).toMatchObject({ name: 'HG001' })
-    expect(result[1]).toMatchObject({ name: 'HG002' })
+    expect(result.map(r => r.name)).toEqual(['HG001', 'HG002', 'HG003'])
+  })
+
+  // A phased layout's rows are haplotypes, which match no sample name — keying
+  // "already covered" on `name` would re-append every sample on top of its own
+  // haplotype rows.
+  test('a phased layout covers its samples, so nothing is re-appended', () => {
+    const result = getSources({
+      sources: twoSources,
+      layout: [
+        { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+        { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+        { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
+        { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
+      ],
+      renderingMode: 'alleleCount',
+    })
+
+    expect(result.map(r => r.name)).toEqual([
+      'HG001 HP0',
+      'HG001 HP1',
+      'HG002 HP0',
+      'HG002 HP1',
+    ])
   })
 
   test('haplotype entries use sampleName for source lookup', () => {
     const haplotypeLayout = [{ name: 'HG001 HP0', sampleName: 'HG001', HP: 0 }]
 
     const result = getSources({
-      sources: baseSources,
+      sources: [{ name: 'HG001' }],
       layout: haplotypeLayout,
       renderingMode: 'phased',
       sampleInfo,
@@ -226,7 +254,7 @@ describe('getSources', () => {
     const layout = [{ name: 'displayLabel', sampleName: 'HG001' }]
 
     const result = getSources({
-      sources: baseSources,
+      sources: [{ name: 'HG001' }],
       layout,
       renderingMode: 'phased',
       sampleInfo,
@@ -309,7 +337,7 @@ describe('getSources', () => {
     ]
 
     const result = getSources({
-      sources: baseSources,
+      sources: twoSources,
       layout: haplotypeLayout,
       renderingMode: 'phased',
       sampleInfo,

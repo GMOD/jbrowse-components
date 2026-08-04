@@ -959,8 +959,10 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Layout-merged, phased-expanded view for the Edit Color/Arrangement
          * dialog. Does NOT apply the subtree filter — submitting the dialog
-         * persists every row back to `layout`, so filtered samples must be
-         * present or they would be wiped from layout on submit.
+         * persists every row it was shown back to `layout`, so a filtered list
+         * would submit the focused clade as the whole order and leave every
+         * other sample appended after it. Same reason the other row displays'
+         * `editableSources` sit upstream of `filterRowsBySubtree`.
          */
         get editableSources() {
           if (!self.sourcesVolatile) {

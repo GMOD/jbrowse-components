@@ -121,11 +121,17 @@ describe('multi-sample variant row placement', () => {
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
     display.setLayout([{ name: 'S2' }, { name: 'S1' }, { name: 'S0' }])
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
+    // a layout is an ordering hint, not the row set: one that omits a sample
+    // still fetches it (the omitted row is appended), same rule the other row
+    // displays get from `reconcileLayout`
+    display.setLayout([{ name: 'S2' }, { name: 'S0' }])
+    expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
 
     // membership genuinely changing does invalidate: fewer rows is less to
-    // compute, so it stays a fetch input (same call maf makes for subtreeFilter)
+    // compute, so it stays a fetch input. Narrowing is the subtree filter's
+    // job — the same call maf makes.
     const key = display.rpcPropsCacheKey
-    display.setLayout([{ name: 'S2' }, { name: 'S0' }])
+    display.setSubtreeFilter(['S0', 'S2'])
     expect(display.sampleFilter).toEqual(['S0', 'S2'])
     expect(display.rpcPropsCacheKey).not.toBe(key)
   })
@@ -137,7 +143,7 @@ describe('multi-sample variant row placement', () => {
     // carries a row the display has no place for. Doing it the other way round
     // clears the cells outright — a membership change IS a fetch input, as the
     // test above pins — so this is the order the case actually occurs in.
-    display.setLayout([{ name: 'S0' }, { name: 'S2' }])
+    display.setSubtreeFilter(['S0', 'S2'])
     display.setCellData(regularCellData(['S2', 'S1', 'S0']))
 
     // S1 has no screen row; placing it at 0 would paint it under S0's label
