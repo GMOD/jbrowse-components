@@ -1,3 +1,8 @@
+---
+name: cancer-sv-tutorial
+description: State of the cancer_sv tutorial and scripts/sv_multihop.py — what shipped, the multi-hop rearrangement it teaches and how its figures are built, and what is left open. Read before touching the cancer_sv figures or the derivative-allele reconstruction.
+---
+
 # Cancer SV tutorial and sv_multihop: handoff
 
 2026-08-02. Shipped in five commits on `main`, `6c8a7b4708`..`8f15a3be06`.

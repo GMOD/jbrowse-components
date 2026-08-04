@@ -1,3 +1,8 @@
+---
+name: graph-deletion-arcs
+description: State of drawing a deletion as an arc in the graph genome view — what the pangenome/hprc_cfhr_deletion review asked for, what the deploy cost, and which layouts still cannot show one. Read before touching deletion drawing in jbrowse-plugin-graphgenomeview.
+---
+
 # Graph deletion arcs: the deploy, and what it cost
 
 Written 2026-07-31, from the `pangenome/hprc_cfhr_deletion` review; the deploy

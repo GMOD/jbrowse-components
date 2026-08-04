@@ -1,3 +1,8 @@
+---
+name: tutorial-focus
+description: State of the tutorial-focus pass — the one-dataset rule it applies, which pages were refocused or moved, and which are still tours wearing a tutorial's clothes. Read before adding or restructuring a website tutorial.
+---
+
 # Tutorial focus pass: state and next steps
 
 The rule this pass applies, from the user: **a tutorial follows one dataset step

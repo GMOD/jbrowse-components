@@ -1,3 +1,8 @@
+---
+name: pangenome-figure-pass
+description: State of an HPRC/pangenome screenshot pass — what each figure claims, what was measured for it, and the items left open. Read before picking the pangenome figure backlog back up.
+---
+
 # Pangenome figure pass, 2026-07-28 (handoff)
 
 State of an HPRC/pangenome screenshot pass. Everything below is **uncommitted**
@@ -121,7 +126,7 @@ pre-change image. Worth one look before committing.
 edges visible in `rgfa_subgraph_launch` and `rgfa_sample_rows` are the known
 `computeEdgeCurves` reverse-complement endpoint bug in
 `jbrowse-plugin-graphgenomeview` (see that repo's `layout/bubbleCrossing.test.ts`
-and `PANGENOME_GRAPH_NEXT.md`), not a spec problem.
+and `pangenome-graph-next.md`), not a spec problem.
 
 ## Regenerating
 

@@ -1,3 +1,8 @@
+---
+name: pangenome-graph-next
+description: The graph genome view's work queue, in the order to take it: what shipped and why, the level-of-detail route, the axis change, and the demo opportunities. Read with reference/PANGENOME_GRAPHS.md before touching jbrowse-plugin-graphgenomeview or its figures.
+---
+
 # Pangenome graph view: what to do next
 
 A work queue, in the order I would take it. What already shipped and the facts
@@ -148,6 +153,78 @@ since the bubbles are precomputed upstream:
   hanging at 15+ GB. That is the cost this route avoids by consuming
   `gfatools bubble` output the graph already ships with.
 
+### 5b. The same coarsening for a graph loaded as a FILE — designed, not built
+
+Screenshot review of `pangenome/pggb_haplotype_paths`, 2026-08-04: "there is a
+lot of space spent to e.g. 1bp entries. is there any 'coarsening' procedure we
+can take similar to ~/src/PangyPlot". Answered as a design because building it is
+a plugin change plus a publish.
+
+**The complaint is arithmetic, not taste.** `ecoli_pggb_is5.gfa` is 20 segments /
+26 links / 5 paths over 1,414 bp, and twelve of the twenty segments are 1 bp. The
+figure runs `bubbleSpread: 'open'`, whose floor is `2.5 * MEAN_NODE_LENGTH` = 100
+FMMM units, and `bandageAutoScale` puts this graph at 0.566 units/bp — so
+everything under 177 bp clamps, which is nineteen of the twenty nodes. Drawn
+length: 19 x 100 + 678 for the 1,199 bp IS5 arm = 2,578 units, of which the
+twelve 1 bp alleles hold **47% while carrying 0.8% of the sequence**, and the arm
+the figure is about holds 26% while carrying 85%.
+
+**The shipped levers cannot fix it** — this is why the ask is a new mechanism and
+not a spec edit. `auto` draws the alleles proportionally, as specks with no
+length for a path lane to run along, which is what the floor was added for;
+`compress` pulls the arm towards the mean and piles its five ribbons into the
+colour confetti `drawPaths` is prone to. Both were rendered and rejected before
+(see BUBBLE_SPREADS).
+
+**Which of PangyPlot's two mechanisms applies.** Its viewer coarsens twice:
+BubbleGun bubble detection collapsing each bubble to one poppable node
+(`/pop` expands), and, for whole-chromosome zoom-outs, merging degree-2 runs into
+polylines and grid-snapping the coordinates. The second does not apply here and
+its own numbers say why: on chrY hprc.clip, 39.4% of segments are junctions and
+the mean linear run is 2.8 segments, so RDP tops out at 59.5% reduction and only
+grid snapping (which merges *nearby junctions*) reaches 99%. That is the same
+finding as adr-014's `vg mod -u` at 0.95% on HPRC chr20, from the other side. It
+is a layout-space simplification for an overview, not something that makes one
+20-node window legible.
+
+**So: collapse the bubble, and that is what lets the floor come off.** The two
+are one change, and the reason is the point of the design — the floor exists only
+to give a bubble's ARMS room to separate, and a collapsed bubble has no arms. Run
+the numbers with both: 13 nodes, `bandageAutoScale` at 0.368 units/bp, the IS5
+arm at 441 units against 79 for everything else, i.e. the arm becomes 85% of the
+drawn length, which is its share of the sequence.
+
+What it takes, in the order I would build it:
+
+- **a pure pass over `Graph`, after parse and before layout.** Not a renderer
+  change: §5 already established that a collapsed bubble satisfies the segs
+  contract. `collapseTrivialBubbles(graph, { maxAlleleBp })` returning a new
+  graph plus the map from collapsed id to the nodes behind it.
+- **detection without BubbleGun.** The singleton-arm case is the one that
+  matters and is a local test: a source with k > 1 out-links to distinct nodes,
+  each with exactly one in and one out, all converging on one sink, every arm
+  under `maxAlleleBp`. In this file that catches four of the six bubbles
+  (2/3, 12/13, 15/16, 18/19). The fifth, 6→(7,8,9,10)→11, is a nested
+  superbubble and needs the real algorithm; the sixth is the IS5 event itself
+  and must NOT collapse, which `maxAlleleBp` handles on its own.
+- **the floor becomes conditional on there being arms.** A `bubbleSpread` floor
+  applied to a collapsed node is the bug this is fixing, one level down.
+- **path lanes are the open question, and they are why this figure is the test
+  case.** Every path traverses a collapsed unit, so lanes drawn the current way
+  say "all five carry it" — the exact opposite of the carriage claim the figure
+  exists for. The answer worth building is to colour the collapsed node's lanes
+  by WHICH allele each path took, which is strictly more than the picture says
+  today; the fallback is to suppress collapsing while `drawPaths` is on, which
+  would leave this figure exactly as it is and buy nothing.
+- **expand on click**, as §5's `/pop`. For a file-loaded graph the arms are
+  already in memory, so it is view state rather than a fetch — cheaper here than
+  on the tier route.
+
+Why the tier route above does not reach this: the tier is a hosted segs/links
+pair, and this figure loads a GFA through `gfaLocation` because the tabix cut has
+no P lines and `drawPaths` would have nothing to draw. A file has no tier to
+switch to, so its coarsening has to happen in the view.
+
 ## 6. The axis: y in pixels, x from the linear view
 
 **The highest-value change in this file, and it is one number becoming two.**
@@ -209,7 +286,7 @@ following turns out to fight the user.
   tests assert on; put the text behind the settings menu.
 - **The hover tooltip is pinned bottom-left**, where it covers a row label
   (already noted as an unverified observation in
-  [PANGENOME_FIGURE_PASS_HANDOFF.md](PANGENOME_FIGURE_PASS_HANDOFF.md) item 4 —
+  [pangenome-figure-pass.md](pangenome-figure-pass.md) item 4 —
   it is real, and it is this).
 - **Sample rows are sorted alphabetically** (`contributingSamples`), so a row's
   neighbours mean nothing. Sorting by the allele length or leftmost position a

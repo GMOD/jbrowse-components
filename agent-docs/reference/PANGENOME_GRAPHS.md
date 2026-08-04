@@ -456,7 +456,7 @@ what `segs.bed.gz` does with tabix.
 ## Open
 
 Each of these is written up with its files, its evidence and a definition of
-done in [guides/PANGENOME_GRAPH_NEXT.md](../guides/PANGENOME_GRAPH_NEXT.md).
+done in [handoffs/pangenome-graph-next.md](../handoffs/pangenome-graph-next.md).
 
 - ~~**The `samples` column is emitted but not read.**~~ Done 2026-08-02, as the
   general tag column above: `SM:Z:` reaches `GraphNode.tags.SM`. What is still
