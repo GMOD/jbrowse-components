@@ -64,9 +64,11 @@ export function getAltColorForDosage(dosage: number) {
 }
 
 // How far toward white a zero-dosage insertion marker would be mixed. Kept well
-// under 1 because the marker's bp-count label is drawn in white on top of it: at
-// this ceiling a het bar is still dark enough to read that label against, which
-// a straight lightness ramp to the cells' 80% would not be.
+// under 1 because the marker's bp-count label is drawn in white on top of it, so
+// paling the bar eats that label's contrast. At this ceiling the default
+// #800080 gives a het bar of rgb(156,57,156), which is 6.0:1 against white —
+// still clear of WCAG AA's 4.5:1, where a straight lightness ramp to the cells'
+// own 80% would be under 2:1 and illegible.
 const INSERTION_PALE_MIX = 0.45
 
 /**
