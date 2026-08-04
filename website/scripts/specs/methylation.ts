@@ -290,12 +290,16 @@ export const methylationSpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
-  // The same reads as the combined figure below, before Group by HP: the state
-  // the tutorial describes as carrying the answer without showing it. Methylated
-  // and unmethylated reads interleave down the pileup, so both alleles are on
-  // screen and neither is legible. Same locus, tracks and coloring as the
-  // combined figure, so the only difference between the two pictures is the
-  // grouping.
+  // The two halves of Group by HP, composed into one before/after (reviewer:
+  // "ungrouped and grouped would benefit from being in a two part screenshot").
+  // Same locus, same tracks, same coloring in both, so the grouping is the only
+  // difference between them and the reader is not asked to hold the first
+  // picture in mind across a section break. Built from these two url specs
+  // rather than by hand: each half is a real capture, and the compose below is
+  // what the tutorial embeds.
+  //
+  // The reads lane is shorter here than in the combined figure below, because
+  // this one pays for it twice.
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_ungrouped',
@@ -318,7 +322,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
         {
           trackId: 'HG002_snrpn_5mC_reads',
           type: 'LinearAlignmentsDisplay',
-          height: 460,
+          height: 320,
           forceLoad: true,
           colorBy: {
             type: 'modifications',
@@ -330,8 +334,58 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 15000,
-    // cpg(40) + gene(90) + reads(460) + chrome
-    viewportHeight: 870,
+    // cpg(40) + gene(90) + reads(320) + chrome
+    viewportHeight: 730,
+  },
+
+  // The other half: identical to the spec above but for `groupBy` on the HP tag,
+  // which is the whole claim the section makes.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_grouped',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr15:24,948,000-24,962,000',
+      tracks: [
+        {
+          trackId: 'cpgisland_ucsc_hg38',
+          type: 'LinearBasicDisplay',
+          height: 40,
+        },
+        {
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+          displayMode: 'compact',
+          height: 90,
+        },
+        {
+          trackId: 'HG002_snrpn_5mC_reads',
+          type: 'LinearAlignmentsDisplay',
+          height: 320,
+          forceLoad: true,
+          groupBy: { type: 'tag', tag: 'HP' },
+          colorBy: {
+            type: 'modifications',
+            modifications: { fillUnmarked: true },
+          },
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    settleMs: 15000,
+    // cpg(40) + gene(90) + reads(320) + chrome
+    viewportHeight: 730,
+  },
+
+  {
+    mode: 'compose',
+    name: 'methylation/hg002_snrpn_group_by_hp',
+    parts: [
+      'methylation/hg002_snrpn_ungrouped',
+      'methylation/hg002_snrpn_grouped',
+    ],
   },
 
   // Allele-specific methylation at the SNRPN / PWS-IC imprinting center

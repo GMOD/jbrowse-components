@@ -61,9 +61,8 @@ covers both modes, the probability threshold, and the cytosine-context submenu.
 
 At this point the reads carry the answer but do not show it: the pileup over the
 CpG island is an interleaved mix of methylated and unmethylated reads, and
-nothing in that mix says whether it is one allele or two.
-
-<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs filled in blue, stacked in file order. Red-dominant and blue-dominant reads alternate down the pileup, so both alleles are on screen and neither is legible. Same locus, tracks and coloring as the figure below, which differs only in the grouping." src="/img/methylation/hg002_snrpn_ungrouped.png" />
+nothing in that mix says whether it is one allele or two. Splitting them apart
+is one setting, two sections below.
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -112,6 +111,8 @@ allele. **Group by** the `HP` tag from the track menu, leave coloring on
 modifications, and the pileup stacks into one band per haplotype, computed in
 the browser with no external tool. The interleaved mix from the first section
 resolves: one band is methylated over the island, the other is not.
+
+<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order, where methylated and unmethylated reads alternate down the pileup. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
 Loading the two per-haplotype bedMethyl files above the reads puts the summary
 and its source in the same view, on one x scale.
