@@ -210,7 +210,43 @@ against 2 webgl.** Canvas2D has no drawing buffer to clear, so a blank there
 cannot have a WebGL cause, and the two backends failing together points at one
 mechanism rather than two.
 
-### Next hypothesis: it is the capture, not the render
+### Compositor double-rAF — tested, INCONCLUSIVE. Also not in the tree.
+
+Same interleaved design, C/R/C/R, one build:
+
+| Arm | rAF wait | load | tests failed | webgl / canvas2d | blank captures |
+| --- | --- | --- | --- | --- | --- |
+| C1 | off | 2.5 | 13 | 2 / 11 | 5 |
+| R1 | **on** | 12.9 | 1 | 1 / 0 | 1 |
+| C2 | off | 12.9 | 4 | 4 / 0 | 0 |
+| R2 | **on** | 16.8 | 7 | 6 / 1 | 3 |
+
+Total failures look better (8 vs 17) but **blanks — the thing the hypothesis is
+about — went 5 to 4**, and the within-arm spread (R1 = 1, R2 = 7) is as large as
+the between-arm difference. The treatment was verified active first, the same way
+`preserveDrawingBuffer` was: a double rAF resolves in **58 ms** under swiftshader
+and **1670 ms** in plain headless, so it delays real time and is not a no-op —
+1.67 s × ~160 captures is also why it was reverted rather than kept "just in
+case".
+
+**The methodological finding is the durable one: a whole-suite A/B cannot
+resolve an effect of this size.** Failure counts today ranged 0–20 per run under
+nominally identical conditions. Two runs per arm is nowhere near enough, and
+there is no tight reproducer to substitute — the blanks are spread thinly across
+many different captures rather than concentrated in one. **Stop running
+whole-suite A/Bs against this.**
+
+### There are (at least) two failure modes, not one
+
+Counting them together is part of why the numbers were so noisy:
+
+- **Timeout** — a display never reports `-done` within 60 s.
+- **Blank-with-waits-settled** — a display reports done over an empty canvas.
+
+A single run produced 4 of the first and 1 of the second. **All five were
+canvas2d**, which is one more nail in every WebGL-specific framing.
+
+### Next: it is the capture, not the render — and the diagnostic is now in place
 
 Everything now points away from the app and at the screenshot. `el.screenshot()`
 goes through Chrome's capture path, which serves composited layers — so if the
@@ -220,12 +256,28 @@ backend-agnostic (explains canvas2d), load-sensitive (explains the frequency),
 and immune to waiting on app state (explains 34/34), which no other candidate so
 far manages at once.
 
-It predicts a cheap fix: wait for a **compositor** signal rather than an app one
-— a double `requestAnimationFrame` (or `page.evaluate` on one) after
-`waitForCaptureSettled` and before the capture. Test that next, the same
-interleaved way. Note this also reframes the earlier
-`fullPage`/viewport-resize fix as the same family of bug, which is mild
-supporting evidence.
+Rather than test that statistically — which the variance above rules out — the
+question is now asked **directly, on the failing path**. `el.screenshot()` serves
+composited layers; `canvas.toDataURL()` reads the backing store and never touches
+the compositor. So when a capture comes back blank, both `canvasSnapshot` and
+`assertCanvasHasContent` now ask the canvas itself and put the answer in the
+failure message:
+
+```
+[self-report: canvas 1280x400 HAS content (…b) while the screenshot is blank
+              -> capture/compositing side]
+[self-report: canvas 1280x400 is ALSO blank -> render side]
+```
+
+**One occurrence settles it. No A/B, no quiet machine, no reproducer needed.**
+The run that added it happened to produce no blank through those paths (its five
+failures were four timeouts and one blank through the then-uninstrumented
+`assertCanvasHasContent`, now covered), so **the verdict is still outstanding —
+read it off the next run that blanks.**
+
+Caveat noted inline: on a WebGL canvas whose drawing buffer was already cleared,
+`toDataURL` also reads blank, so a "render side" verdict on webgl is not
+conclusive. On canvas2d it is.
 
 **A stable drift percentage does not mean a stable failure.**
 `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
@@ -236,12 +288,15 @@ determinism from a repeated number; check whether the pair was compared at all.
 
 ## Next, in order
 
-1. **Fix the blank captures — this is the gating item, and it is not about
-   machine load.** Next candidate is the compositor-timing one above: a double
-   `requestAnimationFrame` before the capture, A/B'd interleaved. Do **not**
-   spend another round chasing quiet machines (34/34 says waiting on app state is
-   not the lever) and do **not** retry `preserveDrawingBuffer` (tested, refuted,
-   table above).
+1. **Read the self-report verdict off the next run that blanks.** It is already
+   wired on both paths and costs nothing until something fails; no experiment
+   needs designing. Then fix whichever side it names.
+
+   Do **not** spend another round chasing quiet machines (34/34 says waiting on
+   app state is not the lever), do **not** retry `preserveDrawingBuffer` (tested,
+   refuted), do **not** re-run a whole-suite A/B for this (variance 0–20 failures
+   per run swamps it), and count the timeout mode separately from the
+   blank-with-waits-settled mode.
 2. **Only then, consecutive clean runs**, and in the CI configuration
    (`--swiftshader` headless, per `pnpm test:browser:gate`) rather than the real
    GPU used here. Note the `load=` column is start-of-run, which is why run 1's
