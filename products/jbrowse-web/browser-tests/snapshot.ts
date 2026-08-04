@@ -2,6 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import {
+  waitForDisplayPhases,
+  waitForDisplaysDone,
+} from '@jbrowse/browser-test-utils'
+
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { recordCapture } from './crossBackendGate.ts'
 import { comparePngBuffers } from './pngDiff.ts'
@@ -203,12 +208,38 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
   }
 }
 
+// Everything a capture has to wait on, in the order the signals actually settle.
+// Three waits, because each is blind to what the next one sees:
+//
+//   1. the loading overlay is down          — the view has data to draw
+//   2. no display is in its `loading` phase — every display's fetch is finished
+//   3. every display has reported canvasDrawn — and has painted that data
+//   4. morphFromTops is clear               — the row animation has landed
+//
+// (2) and (3) are the pair that was missing, and their order is the point.
+// `waitForDisplaysDone` keys on canvasDrawn, which is FIRST paint and flips on a
+// partially-filled canvas while later blocks are still fetching; `waitForDisplayPhases`
+// reads DisplayChrome's own `data-display-phase`, so "nothing is loading" is a
+// direct read rather than an inference. Capturing on (3) alone is how a
+// cross-backend pair ends up with one backend at full width and the other
+// painted only part-way across — the exact shape of the 2026-08-04
+// targeted_alignments-bam gate failure.
+//
+// All four are best-effort: a timeout proceeds to the capture, because the
+// pixel comparison (and `assertNonBlank`) is the real assertion and a loud
+// wrong image beats an opaque wait error.
+async function waitForCaptureSettled(page: Page) {
+  await waitForLoadingOverlayGone(page, 30000)
+  await waitForDisplayPhases(page, 30000)
+  await waitForDisplaysDone(page, 30000)
+  await waitForMorphIdle(page)
+}
+
 export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   // Every full-page golden is prefixed `fullpage_`; a redundant `-fullpage`
   // suffix on older names is dropped so callers don't have to be updated.
   const base = name.replace(/^fullpage_/, '').replace(/-fullpage$/, '')
-  await waitForLoadingOverlayGone(page, 30000)
-  await waitForMorphIdle(page)
+  await waitForCaptureSettled(page)
 
   const screenshot = await page.screenshot()
   const result = compareImages(`fullpage_${base}`, screenshot, threshold)
@@ -280,7 +311,7 @@ export async function canvasSnapshot(
   if (!el) {
     throw new Error(`Canvas element not found: ${selector}`)
   }
-  await waitForMorphIdle(page)
+  await waitForCaptureSettled(page)
 
   const screenshot = await el.screenshot({ type: 'png' })
   if (assertContent) {

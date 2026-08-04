@@ -543,14 +543,16 @@ async function main() {
       console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
     }
     if (allFailures.length > 0) {
-      // In gate-only mode the cross-backend gate is the pass/fail authority, so
-      // per-test failures (mostly UI-interaction timeouts, which produce no
-      // snapshot for the gate to compare) are surfaced for triage but don't fail
-      // the run — otherwise unrelated interaction brittleness would keep the CI
-      // gate permanently red.
-      console.log(
-        gateOnly ? `\n  Failed tests (informational):` : `\n  Failed tests:`,
-      )
+      // These used to be informational under --gate-only, on the reasoning that
+      // the gate was the pass/fail authority and interaction brittleness would
+      // otherwise keep CI red. The parenthetical in that comment — "which
+      // produce no snapshot for the gate to compare" — is why the conclusion is
+      // backwards: a test that produces no snapshot doesn't leave the verdict
+      // intact, it removes a pair from it, and the gate skips (never fails) a
+      // snapshot only one backend captured. Brittleness that quietly shrinks
+      // the comparison is worse for a blocking gate than brittleness that
+      // fails it, because only one of the two is visible.
+      console.log(`\n  Failed tests:`)
       for (const f of allFailures) {
         const prefix = backends.length > 1 ? `[${f.backend}] ` : ''
         console.log(`    ✗ ${prefix}${f.suite} > ${f.test}`)
@@ -566,8 +568,15 @@ async function main() {
     // `pnpm test:browser:compare` for local visual review).
     let crossBackendFailed = false
     if (backends.length > 1) {
-      const { failures, drifts, compared, skipped, excluded, diffDir } =
-        runCrossBackendGate()
+      const {
+        failures,
+        drifts,
+        compared,
+        skipped,
+        skippedNames,
+        excluded,
+        diffDir,
+      } = runCrossBackendGate()
       console.log(
         `Cross-backend gate: ${compared} pair(s) compared, ${failures.length} over threshold${
           skipped > 0 ? `, ${skipped} single-backend (uncompared)` : ''
@@ -578,6 +587,12 @@ async function main() {
       // has under the thresholds.
       for (const f of failures) {
         console.log(`    ✗ ${f.name} [${f.pair}]: ${f.detail}`)
+      }
+      // Name what went uncompared. This is the gate's coverage loss, and it is
+      // the number to read alongside "0 over threshold" — a clean verdict over
+      // a shrunken comparison is not the same result.
+      for (const n of skippedNames) {
+        console.log(`    ? uncompared: ${n}`)
       }
       const topPassing = drifts
         .filter(d => d.pct <= d.threshold * 100)
@@ -594,9 +609,21 @@ async function main() {
       console.log(`${'─'.repeat(50)}\n`)
     }
 
-    const failRun = gateOnly
-      ? crossBackendFailed
-      : totalFailed > 0 || crossBackendFailed
+    // `--gate-only` suppresses the GOLDEN comparison, not the test run. That
+    // distinction decides this line: compareImages calls recordCapture before
+    // its gate-only early return, so a stale golden costs the gate nothing,
+    // and every failure still standing in gate-only mode is one that happened
+    // BEFORE the screenshot — a selector timeout, a failed navigation, a blank
+    // canvas. Each of those silently removes that snapshot from the pairing,
+    // and a single-backend snapshot is skipped rather than failed.
+    //
+    // So a failing test degrades the gate's coverage instead of its verdict,
+    // and ignoring totalFailed here let a run report "0 over threshold" having
+    // compared fewer pairs than the run before it (measured 2026-08-04:
+    // 148/130/149 pairs over three runs, the 130 reporting clean). A gate that
+    // passes by checking less is the one failure mode a blocking gate cannot
+    // have — see agent-docs/handoffs/cross-backend-gate-ci.md.
+    const failRun = totalFailed > 0 || crossBackendFailed
     process.exit(failRun ? 1 : 0)
   } catch (e) {
     console.error('Fatal error:', e)

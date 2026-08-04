@@ -53,8 +53,23 @@ fewer pairs than run 3 — it passed by checking less.
 For a hand-run tool that is fine. For a blocking gate it is the wrong failure
 mode, and it interacts badly with the suite's own flakiness (11–18 test failures
 per run here, mostly `pileup-display-done` never appearing inside the 60s
-selector timeout). **Assert a minimum compared-pair count before wiring CI**, so
-a degraded run fails loudly instead of reporting clean.
+selector timeout).
+
+**Fixed, and not with a minimum-pair threshold** — that was the first idea and it
+would have needed tuning against a floor of legitimately single-backend
+snapshots (`gpu-quirks`' context-loss case is WebGL-only). The precise fact makes
+it unnecessary: `compareImages` calls `recordCapture` **before** its `gate-only`
+early return, so a stale golden costs the gate nothing, and in gate-only mode
+every failure still standing is one that happened *before* the screenshot — a
+selector timeout, a failed navigation, a blank-canvas assertion. Each of those,
+and only those, removes a pair.
+
+So `--gate-only` no longer ignores `totalFailed`. The old comment on that branch
+already contained the refutation — it excused per-test failures as
+"mostly UI-interaction timeouts, which produce no snapshot for the gate to
+compare" — which is the reason to fail, not to pass. `runCrossBackendGate` also
+returns `skippedNames` now and the runner prints them, because a bare count
+cannot distinguish a structural skip from one that timed out this run.
 
 ## Blocker 2: `waitForMorphIdle` is vacuous for alignments
 
@@ -74,17 +89,26 @@ The diff image agrees with the structural argument: `targeted_alignments-bam`
 showed one backend rendered full width and the other painted only the left ~47%
 — a capture taken mid-paint, not a shader divergence.
 
-### The fix probably already exists
+### Fixed by composing the waits that already existed
 
-`packages/browser-test-utils/src/waits.ts` has `waitForDisplaysDone`, which
-handles all three test-id shapes — `display-<id>`, `<name>-display` (this is the
-one that matches `pileup-display`), and `synteny_canvas` — and keys on the
-*absence* of pending wrappers so it waits for the last display rather than the
-first. `PileupComponent.tsx` already flips `pileup-display` → `pileup-display-done`
-off `canvasDrawn`.
+`packages/browser-test-utils/src/waits.ts` had both halves and `snapshot.ts`
+called neither. They **compose** — the first instinct, to swap the morph wait for
+`waitForDisplaysDone`, is wrong twice over:
 
-`browser-tests/snapshot.ts` does not use it. It uses the vacuous morph wait
-instead. Wiring the existing helper in is the obvious first thing to try.
+- The morph wait is real for `LinearBasicDisplay`; it is only *insufficient*,
+  and it is the last signal to settle. Keep it.
+- `waitForDisplaysDone` alone would not have fixed this. It keys on
+  `canvasDrawn`, which is **first paint** and flips on a partially-filled canvas
+  while later blocks are still fetching — exactly the half-painted
+  `targeted_alignments-bam` capture. `waitForDisplayPhases` is the direct read
+  ("no display is in its `loading` phase", off DisplayChrome's own
+  `data-display-phase`) and is the one that covers the outstanding fetch.
+
+`snapshot.ts` now has one `waitForCaptureSettled` used by both `pageSnapshot`
+and `canvasSnapshot`, running overlay-gone → phases → displays-done → morph-idle,
+in that order because each is blind to what the next one sees. All four stay
+best-effort: a timeout proceeds to the capture, since a loud wrong image beats an
+opaque wait error, and `assertNonBlank` is still the backstop.
 
 ## Do not re-derive
 
@@ -104,13 +128,43 @@ instead. Wiring the existing helper in is the obvious first thing to try.
 - Port 8123 `serve` leftovers on this machine are unrelated — the runner uses
   3333.
 
+## After both fixes (same day, same build)
+
+| Run | load at start | tests | pairs compared | over threshold | uncompared | exit |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 11.5 | 292 / 20 | 131 | 1 | 32 | 1 |
+| 2 | 21.0 | 310 / 2 | 159 | 0 | 4 | 1 |
+| 3 | 7.5 | **312 / 0** | **163** | **0** | **0** | **0** |
+
+Run 3 is the first fully clean run: every test passed, every snapshot compared by
+both backends, nothing drifted. Note 163 > the pre-fix best of 149 — the wait fix
+does not merely stop the gate lying about coverage, it *raises* coverage, because
+fewer tests now fail before their screenshot.
+
+The three rows track machine load rather than anything in the code, and the
+residual failure mode is `assertNonBlank` on **webgl** captures (17 of run 1's 20
+failures) — the headed real-GPU browser returning blank frames under contention.
+That is an environment property, not a gate defect, and it is the reason the
+README says *idle*.
+
+**A stable drift percentage does not mean a stable failure.**
+`fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
+apart, which reads like a deterministic divergence — and is not one: run 2
+compared it and it passed under 3%. A blank-vs-rendered capture is a *fixed*
+diff, so the magnitude reproduces while the occurrence stays racy. Don't infer
+determinism from a repeated number; check whether the pair was compared at all.
+
 ## Next, in order
 
-1. Assert a minimum compared-pair count so coverage loss fails loudly.
-2. Replace `waitForMorphIdle` in `snapshot.ts` with `waitForDisplaysDone`.
-3. Re-run 3× on an idle machine. If the only failures remain alignments views,
-   scope the CI job to the deterministic suites — that subset was clean 3/3 even
-   under load — and restore `f3cb3b962b`'s job without `continue-on-error`.
+1. **Consecutive clean runs on a genuinely idle machine.** One clean run is not
+   the README's bar. Load must be low for the whole run, not just at its start.
+2. **Measure in the CI configuration, which is not this one.** These runs used
+   webgl on the real GPU (headed). GitHub runners have none, so CI uses
+   `--swiftshader` — that is what `pnpm test:browser:gate` passes, and it removes
+   real-GPU contention as a variable while adding software-raster slowness and
+   the ~29 MB/context leak (ADR-024).
+3. Then restore `f3cb3b962b`'s job without `continue-on-error`, scoped by
+   `--filter` to the deterministic suites.
 
 The removed job is recoverable verbatim from `f3cb3b962b`; it needs `tabix`,
 `./.github/actions/setup` and `./.github/actions/build-jbrowse-web`, and runs

@@ -156,8 +156,14 @@ interface Drift {
 export function runCrossBackendGate() {
   const failures: GateFailure[] = []
   const drifts: Drift[] = []
+  // Named, not just counted. A snapshot only one backend captured is skipped
+  // rather than failed, so the skip list IS the gate's coverage loss — and a
+  // bare count leaves you unable to tell a structurally single-backend test
+  // (gpu-quirks' WebGL-only context-loss case) from one that timed out on one
+  // side this run. The count moved 15/33/14 across three runs on 2026-08-04
+  // and there was no way to see what had gone missing.
+  const skippedNames: string[] = []
   let compared = 0
-  let skipped = 0
   let excluded = 0
 
   for (const [name, byBackend] of [...captures].sort((a, b) =>
@@ -169,7 +175,7 @@ export function runCrossBackendGate() {
     }
     const backends = [...byBackend.keys()].sort()
     if (backends.length < 2) {
-      skipped++
+      skippedNames.push(`${name} (only ${backends.join('/') || 'none'})`)
       continue
     }
     const threshold = thresholdFor(name)
@@ -201,5 +207,14 @@ export function runCrossBackendGate() {
   }
 
   drifts.sort((x, y) => y.pct - x.pct)
-  return { failures, drifts, compared, skipped, excluded, diffDir }
+  skippedNames.sort()
+  return {
+    failures,
+    drifts,
+    compared,
+    skipped: skippedNames.length,
+    skippedNames,
+    excluded,
+    diffDir,
+  }
 }
