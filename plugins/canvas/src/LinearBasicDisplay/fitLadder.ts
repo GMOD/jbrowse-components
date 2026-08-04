@@ -1,7 +1,6 @@
-import { createContentHeightProbe, maxBottom } from './layout.ts'
+import { maxBottom } from './layout.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { LayoutInputs } from './layout.ts'
 
 // Fit-mode name-decimation solve (see `solveLabelRoomFactor`). The whitespace
 // factor keepFeatureLabel demands is searched in [0, MAX], where 0 keeps every
@@ -11,6 +10,38 @@ import type { LayoutInputs } from './layout.ts'
 // row of the track height without an over-long probe loop.
 const FIT_MAX_ROOM_FACTOR = 8
 const FIT_SOLVE_ITERS = 8
+
+/**
+ * The smallest x in `(lo, hi]` with `fits(x)`, by bisection.
+ *
+ * Two preconditions, and they are the whole reason this is its own function
+ * rather than four lines inline: `fits` must be monotone (false below some
+ * threshold, true at and above it), and the caller must have ALREADY measured
+ * `fits(hi) === true` and `fits(lo) === false`. Given those, the loop only ever
+ * narrows a bracket whose ends are both known, so returning `hi` returns a value
+ * something actually measured — where a loop handed an unmeasured `hi` returns a
+ * bound that may not fit at all. Spelling the contract here is what stops the
+ * next caller from "simplifying" the two probes above it away, which is exactly
+ * the bug that once hid every label on a track a fitting decimation existed for.
+ *
+ * `iterations` bisections give `(hi - lo) / 2^iterations` resolution.
+ */
+export function bisectSmallestFitting(
+  fits: (x: number) => boolean,
+  lo: number,
+  hi: number,
+  iterations: number,
+) {
+  for (let i = 0; i < iterations; i++) {
+    const mid = (lo + hi) / 2
+    if (fits(mid)) {
+      hi = mid
+    } else {
+      lo = mid
+    }
+  }
+  return hi
+}
 
 /**
  * The smallest `labelRoomFactor` whose packed stack fits `trackHeight`, or
@@ -33,26 +64,16 @@ const FIT_SOLVE_ITERS = 8
  * interval are known rather than assumed, and the whole bisection is skipped when
  * nothing fits.
  *
- * `baseInputs` is typed without `labelRoomFactor` so the preparation the probe
- * shares across trials provably can't depend on it.
+ * Takes the probe rather than building one (see `createContentHeightProbe`): its
+ * preparation — label widths, neighbor-room sorts — depends on the data and the
+ * layout inputs but NOT on the track height, so a caller that re-solves as the
+ * height moves (a drag-resize frame) can hold one probe across every solve. The
+ * type also says the only thing this searches over is the factor.
  */
 export function solveLabelRoomFactor(
-  rpcDataMap: Parameters<typeof createContentHeightProbe>[0],
-  baseInputs: Omit<LayoutInputs, 'labelRoomFactor'>,
+  heightAt: (labelRoomFactor: number) => number,
   trackHeight: number,
-  // Features the stack height is measured over — the on-screen ones (see
-  // `maxBottom`). The same set the ladder measures its rungs with, so the factor
-  // this solves for is the factor that rung is then kept or rejected on.
-  measureIds?: ReadonlySet<string>,
 ) {
-  // One preparation shared by every probe below — the label widths and
-  // neighbor-room measurements don't vary with the factor.
-  const heightAt = createContentHeightProbe(
-    rpcDataMap,
-    baseInputs,
-    undefined,
-    measureIds,
-  )
   const fits = (labelRoomFactor: number) =>
     heightAt(labelRoomFactor) <= trackHeight
   if (fits(0)) {
@@ -71,19 +92,9 @@ export function solveLabelRoomFactor(
   if (!fits(FIT_MAX_ROOM_FACTOR)) {
     return undefined
   }
-  // Bisect (0, FIT_MAX_ROOM_FACTOR]: `lo` is known to overflow, `hi` is the
-  // smallest factor measured to fit so far.
-  let lo = 0
-  let hi = FIT_MAX_ROOM_FACTOR
-  for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
-    const mid = (lo + hi) / 2
-    if (fits(mid)) {
-      hi = mid
-    } else {
-      lo = mid
-    }
-  }
-  return hi
+  // Both ends are now measured — 0 overflows, the cap fits — which is exactly
+  // `bisectSmallestFitting`'s precondition.
+  return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
 }
 
 // The fit-to-height escalation ladder's reservation levels, least to most
@@ -131,6 +142,27 @@ export function fitScaleToFill(
   return Math.max(minScale, Math.min(maxScale, trackHeight / contentHeight))
 }
 
+// Floor for the fit squeeze, as a scale in (0, 1]: the deepest reduction that
+// still leaves the shortest body in the stack `minBoxPx` tall. Below that the
+// squeeze stops and the surplus scrolls rather than shrinking boxes to
+// invisibility.
+//
+// The two degenerate inputs both answer 1 — "no squeeze available" — through the
+// same comparison rather than through separate guards: a stack whose shortest
+// body is already at or under the minimum has nothing left to give, and a stack
+// with no body at all (`shortestBodyPx` 0, an empty layout) has nothing to
+// measure. That is what lets the caller pass a raw `minBodyHeight` straight in,
+// with no zero check and no `Math.min(1, …)` clamp of its own — the two places
+// the old spelling could have disagreed with each other.
+export function squeezeFloorScale(shortestBodyPx: number, minBoxPx: number) {
+  return shortestBodyPx > minBoxPx ? minBoxPx / shortestBodyPx : 1
+}
+
+// A fitted stack lands within this many px of the track height and still counts
+// as fitting exactly. See snapFittedContentHeight — it is a float-epsilon
+// allowance, not a layout tolerance, so it is well under one row.
+const FIT_SNAP_EPSILON_PX = 1
+
 // The content height fit mode should report, snapping away a float-epsilon
 // overflow. Scaling a rung by `height / contentHeight` (squeezing down or growing
 // up to fill) should land `rawContentHeight` exactly on `trackHeight`, but the
@@ -147,9 +179,52 @@ export function snapFittedContentHeight(
   trackHeight: number,
   scaling: boolean,
 ) {
-  return scaling && rawContentHeight - trackHeight < 1
+  return scaling && rawContentHeight - trackHeight < FIT_SNAP_EPSILON_PX
     ? Math.min(rawContentHeight, trackHeight)
     : rawContentHeight
+}
+
+// Measures a rung's stack height, reusing the previous answer when handed the
+// very same map object again.
+//
+// That happens constantly and is not an optimization detail: a rung whose
+// reduction is already in effect returns the PREVIOUS rung's map by reference
+// (names off makes `labels`, `decimated` and `bodies` literally one stack), so
+// without this the ladder walks the same map up to four times. The reuse is sound
+// for the narrowest possible reason — reference equality, same object, therefore
+// same height — and specifically NOT because a rung told us its height.
+//
+// That distinction is the whole point of measuring here. The `decimated` rung
+// arrives from a bisection that assumes stack height is monotone in its whitespace
+// factor, and greedy first-fit plus pitchY quantization do not actually guarantee
+// that. Measuring every kept rung off the stack it is about to return is what
+// makes a non-monotone solve self-correcting: an overflowing `decimated` stack
+// simply descends to `bodies`. A rung-reported height would forfeit that, which is
+// why this takes layouts and not numbers.
+function rungHeightMeasurer(measureIds?: ReadonlySet<string>) {
+  let lastLayout: Map<number, FeatureDataResult> | undefined
+  let lastHeight = 0
+  return (layout: Map<number, FeatureDataResult>) => {
+    if (layout !== lastLayout) {
+      lastLayout = layout
+      lastHeight = maxBottom(layout, measureIds)
+    }
+    return lastHeight
+  }
+}
+
+// The scale that fills the track with a kept rung. Split out so the empty-stack
+// case is answered once, in the place that knows why: a stack of height 0 has
+// nothing to fill the track with, so it stays at 1 instead of dividing by zero.
+function keptRungScale(
+  contentHeight: number,
+  trackHeight: number,
+  minScale: number,
+  maxScale: number,
+) {
+  return contentHeight > 0
+    ? fitScaleToFill(contentHeight, trackHeight, minScale, maxScale)
+    : 1
 }
 
 // Resolve the escalation ladder: keep the least-reduced rung whose unscaled stack
@@ -173,37 +248,17 @@ export function resolveFitLadder(
   // `fitMeasureFeatureIds` and `maxBottom`).
   measureIds?: ReadonlySet<string>,
 ): FitStage {
-  // LOAD-BEARING: every kept rung's height is measured HERE, off the stack it is
-  // about to return. The `decimated` rung arrives from a bisection that assumes
-  // stack height is monotone in its whitespace factor, which greedy first-fit and
-  // pitchY quantization do not actually guarantee. This re-measure is what makes a
-  // non-monotone solve self-correcting — an overflowing `decimated` stack simply
-  // descends to `bodies`. Do not replace it with a height the rung reports about
-  // itself.
-  //
-  // Rungs coincide often — a rung whose reduction is already in effect hands back
-  // the previous rung's map by reference (names off makes `labels`, `decimated`
-  // and `bodies` all the same stack). Reusing the height for a reference-identical
-  // map is safe (same stack, same height) and keeps the guarantee above.
-  let lastLayout: Map<number, FeatureDataResult> | undefined
-  let lastHeight = 0
+  const heightOf = rungHeightMeasurer(measureIds)
   for (const [i, rung] of rungs.entries()) {
     const layout = rung.layout()
-    const contentHeight =
-      layout === lastLayout ? lastHeight : maxBottom(layout, measureIds)
-    lastLayout = layout
-    lastHeight = contentHeight
-    if (contentHeight <= trackHeight || i === rungs.length - 1) {
+    const contentHeight = heightOf(layout)
+    const isLastRung = i === rungs.length - 1
+    if (contentHeight <= trackHeight || isLastRung) {
       return {
         level: rung.level,
         layout,
         contentHeight,
-        // An empty stack has nothing to fill the track with, so it stays at 1
-        // rather than dividing by zero.
-        scale:
-          contentHeight > 0
-            ? fitScaleToFill(contentHeight, trackHeight, minScale, maxScale)
-            : 1,
+        scale: keptRungScale(contentHeight, trackHeight, minScale, maxScale),
       }
     }
   }

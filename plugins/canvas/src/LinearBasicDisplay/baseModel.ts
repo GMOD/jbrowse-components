@@ -63,12 +63,14 @@ import {
   resolveFitLadder,
   snapFittedContentHeight,
   solveLabelRoomFactor,
+  squeezeFloorScale,
 } from './fitLadder.ts'
 import {
-  computeLaidOutData,
   countTruncatedFeatures,
+  createContentHeightProbe,
   createIncrementalLayout,
   maxBottom,
+  minBodyHeight,
   scaleLaidOutData,
 } from './layout.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
@@ -242,14 +244,19 @@ const MIN_FIT_HEIGHT = 50
 // shrinking boxes to invisibility. See `fitMinScale`.
 const MIN_FIT_BOX_PX = 2
 
-// The vertical scale that resizes a laid-out feature body of `bodyPx` to exactly
-// `targetPx` — the basis for the fit squeeze floor (target the absolute
-// MIN_FIT_BOX_PX). 1 when there is no body to size, so a bound built on it
-// collapses to a no-op scale. (The grow ceiling doesn't use this: its target is
-// the normal featureHeight, so the ratio reduces to 1 / display-mode multiplier
-// with featureHeight cancelling out — see fitMaxScale.)
-function bodyScaleTo(bodyPx: number, targetPx: number) {
-  return bodyPx > 0 ? targetPx / bodyPx : 1
+// Do two half-open bp spans touch? Each must start strictly before the other
+// ends, so a feature that merely abuts the viewport edge — ending exactly where
+// the block starts, drawing nothing inside it — does not count as on screen. One
+// named test because `fitMeasureFeatureIds` asks it per feature per visible block,
+// and an off-by-one here silently widens or narrows what fit mode measures itself
+// against.
+function spansOverlap(
+  aStart: number,
+  aEnd: number,
+  bStart: number,
+  bEnd: number,
+) {
+  return aStart < bEnd && aEnd > bStart
 }
 
 /**
@@ -406,6 +413,20 @@ export default function baseStateModelFactory(
          * #volatile
          */
         incrementalLayoutBodiesOnly: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        // The `decimated` rung's memo. Unlike its three siblings this one packs
+        // WITHOUT prior-row seeding (`seedPriorRows: false`), because the rung's
+        // whitespace factor is chosen by measuring unseeded candidate packs and
+        // the commit has to match what was measured — see `fitDecimatedSolved`.
+        // Its job here is purely to hand back the same stack by reference when
+        // the solve lands on the factor it already committed, which is the common
+        // case: every pan settle and every drag-resize frame re-solves, and most
+        // of those re-solve to the same factor over the same data.
+        incrementalLayoutDecimated: createIncrementalLayout({
+          seedPriorRows: false,
+        }),
         /**
          * #volatile
          */
@@ -1075,8 +1096,8 @@ export default function baseStateModelFactory(
             }
             for (const item of data.flatbushItems) {
               if (
-                ranges.some(
-                  ([start, end]) => item.startBp < end && item.endBp > start,
+                ranges.some(([start, end]) =>
+                  spansOverlap(item.startBp, item.endBp, start, end),
                 )
               ) {
                 ids.add(item.featureId)
@@ -1134,20 +1155,38 @@ export default function baseStateModelFactory(
       }))
       .views(self => ({
         /**
+         * #getter
+         * Measures the `decimated` rung's stack height at any whitespace factor,
+         * against the features the ladder measures its rungs with — so the factor
+         * the solve picks is judged on the same stack the rung is then kept or
+         * rejected on.
+         *
+         * A getter, not a call inside the solve, because the preparation it holds
+         * (per-kind label widths, the two neighbor-room sorts — about a fifth of
+         * a layout) depends on the data and the layout inputs but NOT on the track
+         * height. Dragging the resize handle re-solves every frame; caching it
+         * here keeps those frames to the bisection's packs alone.
+         */
+        get decimatedHeightProbe(): (labelRoomFactor: number) => number {
+          return createContentHeightProbe(
+            self.rpcDataMap,
+            self.decimatedBaseInputs,
+            undefined,
+            self.fitMeasureFeatureIds,
+          )
+        },
+      }))
+      .views(self => ({
+        /**
          * #method
          * The whitespace factor the `decimated` rung commits at: the smallest one
          * whose packed stack fits `trackHeight` (smallest = most names kept), or
          * undefined when even the most aggressive decimation overflows. The
-         * bisection and its probe live in `solveLabelRoomFactor` (fitLadder.ts),
-         * next to the ladder walk they serve.
+         * bisection lives in `solveLabelRoomFactor` (fitLadder.ts), next to the
+         * ladder walk it serves.
          */
         solveLabelRoomFactor(trackHeight: number) {
-          return solveLabelRoomFactor(
-            self.rpcDataMap,
-            self.decimatedBaseInputs,
-            trackHeight,
-            self.fitMeasureFeatureIds,
-          )
+          return solveLabelRoomFactor(self.decimatedHeightProbe, trackHeight)
         },
       }))
       .views(self => ({
@@ -1199,25 +1238,26 @@ export default function baseStateModelFactory(
          * hoists the factor-invariant preparation out of the probe loop (about half
          * of what remains). Only the winning factor is laid out for real. Probe and
          * commit therefore agree on the height by construction — identical packing
-         * over identical inputs — which is what lets the ladder trust that the stack
-         * it measured is the stack it renders.
+         * over identical inputs, both unseeded — which is what lets the ladder trust
+         * that the stack it measured is the stack it renders.
          *
-         * It deliberately does NOT use the incremental memo — the memo seeds each
-         * re-pack with the previous layout's rows (`captureFeatureTops`), and
-         * seeding a new factor's (different) label set from the old factor's rows
-         * packs the stack taller than the fresh probe, pushing the committed stack
-         * over `trackHeight` and making the ladder wrongly fall through to `bodies`
-         * (every label vanishing as the track grows).
+         * The commit goes through a memo of its own (`incrementalLayoutDecimated`,
+         * built with `seedPriorRows: false` so it stays unseeded) purely for
+         * reference stability: every pan settle and every drag-resize frame
+         * re-solves, and a solve that lands on the factor already committed hands
+         * the same stack back rather than re-packing it into new objects the GPU
+         * then has to re-upload.
          *
-         * Known cost of that choice: this is the one rung without prior-row
-         * seeding, so while the display sits here a zoom re-pack does not preserve
-         * top features' rows the way the other three rungs do. The pack is still
-         * deterministic for given inputs (insertion order falls back to
-         * layoutStartBp), so it is a lost stability guarantee, not churn. Seeding
-         * probes AND commit from the previous committed layout would restore it and
-         * keep the heights agreeing, but it puts a stateful seed underneath a
-         * control loop that picks the factor from measured heights — which can
-         * oscillate the factor, and flickering labels are worse than shifting rows.
+         * Known cost of staying unseeded: this is the one rung whose re-pack does
+         * not preserve top features' rows across a zoom the way the other three do.
+         * Measured, that cost is smaller than it sounds — over a 4-step zoom sweep
+         * of 80 crowded features this rung moved 24 rows where the self-seeded
+         * `labels` rung moved 203 — and seeding it from the `labels` rung (the one
+         * seed that is factor-independent, so probe and commit would still agree)
+         * was tried and moved exactly zero additional rows, because that seed's
+         * order and the `layoutStartBp` tiebreak it would replace already coincide.
+         * So the seeding is not what is missing here; don't re-add it without a
+         * measurement that says otherwise.
          *
          * When even the solve's most aggressive factor overflows (see
          * `FIT_MAX_ROOM_FACTOR` in fitLadder.ts), the `labels` stack is returned
@@ -1238,7 +1278,7 @@ export default function baseStateModelFactory(
           const factor = self.solveLabelRoomFactor(self.fitTargetHeight)
           return factor === undefined
             ? this.fitLabelsOnlyLayout
-            : computeLaidOutData(
+            : self.incrementalLayoutDecimated(
                 self.rpcDataMap,
                 self.decimatedLayoutInputs(factor),
               )
@@ -1257,40 +1297,59 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The unscaled feature-body height (px): configured `featureHeight` times
-         * the display-mode multiplier (what the layout already applied). Basis for
-         * the fit squeeze/grow scale floors.
+         * The unscaled height (px) of the SHORTEST feature body on screen — the
+         * one a uniform squeeze drives below the minimum first, and so the basis
+         * for the squeeze floor below. 0 when nothing is laid out, which makes
+         * that floor a no-op.
+         *
+         * Measured off the laid-out stack (`minBodyHeight`), not off the
+         * `featureHeight` config slot. The slot is a per-feature jexl callback
+         * slot (`contextVariable: ['feature']`), so reading it here — with no
+         * feature in scope — evaluates the callback against nothing and throws,
+         * taking the whole fit layout down with it. And even where it holds a
+         * plain number it describes the plain-rect glyph: a display whose worker
+         * sizes features some other way (a taller gene glyph, a per-feature
+         * height expression) has bodies the slot never mentions, and a floor that
+         * misses the shortest of them is not a floor. The layout already carries
+         * every body's packed height with the display-mode multiplier applied
+         * (see applyHeightScale), so it is both the safe read and the true one.
+         *
+         * Reads the `full` rung specifically because it is the stack the ladder
+         * always materializes; body heights don't vary across rungs (only the
+         * label reservation does), so any rung would give the same answer and
+         * this one costs nothing extra.
          */
         get fitBodyPx() {
-          return (
-            getConf(self, 'featureHeight') *
-            HEIGHT_MULTIPLIERS[self.displayMode]
-          )
+          return minBodyHeight(this.baseLaidOutDataMap)
         },
         /**
          * #getter
-         * Floor on the fit squeeze: the smallest vertical scale that still leaves a
-         * feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack
+         * Floor on the fit squeeze: the smallest vertical scale that still leaves
+         * every feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack
          * tighter than this the squeeze stops here and the surplus scrolls instead
-         * of vanishing.
+         * of vanishing. `squeezeFloorScale` answers both degenerate cases (nothing
+         * laid out, or bodies already at the minimum) as 1 — no squeeze available —
+         * so there is nothing to clamp or zero-check here.
          */
         get fitMinScale() {
-          return Math.min(1, bodyScaleTo(this.fitBodyPx, MIN_FIT_BOX_PX))
+          return squeezeFloorScale(this.fitBodyPx, MIN_FIT_BOX_PX)
         },
         /**
          * #getter
          * Ceiling on the fit grow: the largest vertical scale before a feature body
-         * exceeds the configured (normal-mode) `featureHeight`. A sparse stack
-         * grows to fill the track only until its bodies reach their normal height,
-         * so fit never makes a feature taller than it would be outside fit mode. In
-         * normal display mode fitBodyPx already is the normal height, pinning the
-         * scale at 1 (no grow, surplus stays whitespace); a compact mode (fitBodyPx
-         * below normal) may grow back up to — but not past — the normal height.
+         * exceeds the height it would have outside fit mode. A sparse stack grows
+         * to fill the track only until its bodies reach that height, so fit never
+         * makes a feature taller than the display normally draws it. In normal
+         * display mode the laid-out body already is that height, pinning the scale
+         * at 1 (no grow, surplus stays whitespace); a compact mode may grow back up
+         * to — but not past — it.
          *
-         * This is exactly `1 / multiplier`: the grow target is the normal
-         * `featureHeight` and the laid-out body is `featureHeight * multiplier`, so
-         * `featureHeight` cancels and the ceiling is purely the display mode's
-         * compact ratio (1 in normal mode → no grow).
+         * That works out to exactly `1 / multiplier`, with no body height read at
+         * all: the grow target is the unmultiplied height and the laid-out body is
+         * that height times the mode's multiplier, so it cancels whatever it was
+         * per feature and the ceiling is purely the display mode's compact ratio (1
+         * in normal mode → no grow). Unlike the squeeze floor, which has to know
+         * the shortest actual body (see `fitBodyPx`), this bound is uniform.
          */
         get fitMaxScale() {
           return Math.max(1, 1 / HEIGHT_MULTIPLIERS[self.displayMode])

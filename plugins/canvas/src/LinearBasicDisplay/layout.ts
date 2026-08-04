@@ -49,6 +49,31 @@ export function maxBottom(
   return max
 }
 
+// Shortest feature body in a layout, i.e. the one a uniform vertical squeeze
+// shrinks below a minimum first. `featureHeightPx` is the packed body height —
+// the raw worker height with the display mode's multiplier already applied (see
+// applyHeightScale) — so this is the number the squeeze floor has to be built on
+// (see `fitBodyPx`). Unplaced features are excluded for the same reason
+// `maxBottom` excludes them: they don't render, so nothing about them is visible
+// to squeeze. 0 when there is no placed body, which callers read as "no body to
+// size" and turn into a no-op bound.
+//
+// Deliberately measured off the layout rather than read off the `featureHeight`
+// config slot: that slot is a per-feature jexl callback slot, so it has no single
+// value to read here, and even as a plain number it describes the plain-rect
+// glyph rather than whatever height the worker actually gave each feature.
+export function minBodyHeight(map: ReadonlyMap<number, FeatureDataResult>) {
+  let min = Number.POSITIVE_INFINITY
+  for (const data of map.values()) {
+    for (const item of data.flatbushItems) {
+      if (isPlacedRow(item.topPx) && item.featureHeightPx < min) {
+        min = item.featureHeightPx
+      }
+    }
+  }
+  return min === Number.POSITIVE_INFINITY ? 0 : min
+}
+
 // Features the packer could not place because the stack passed
 // GranularRectLayout's row limit, and so pushed to OFFSCREEN_Y where nothing
 // draws or hit-tests them. Counted off the laid-out map (a feature appearing in
@@ -526,10 +551,27 @@ function groupUnchanged(
 // per-group reuse makes it O(N). Hold one instance per display (the cache is
 // stateful) and call it from the `laidOutDataMap` getter.
 // The memoizing layout function `createIncrementalLayout` returns. Named so the
-// display can pass one around (it holds three — one per fit reservation config).
+// display can pass one around (it holds four — one per fit reservation config).
 export type IncrementalLayout = ReturnType<typeof createIncrementalLayout>
 
-export function createIncrementalLayout() {
+export function createIncrementalLayout({
+  // Whether a re-packed group is seeded with its previous layout's rows, so a
+  // feature near the top keeps that row across a zoom (see packRef's sort).
+  //
+  // Off for the fit ladder's `decimated` rung, whose whitespace factor is chosen
+  // by MEASURING candidate packs: a self-seeded pack makes the committed height a
+  // function of what this memo last returned, so it stops matching the unseeded
+  // probe that chose the factor — the committed stack overflows the height the
+  // solve fit, the ladder falls through to `bodies`, and every name vanishes on
+  // exactly the tallest tracks. Any "measure a candidate, then commit it" caller
+  // must pack the commit the same way it packed the probe; the memo still spares
+  // that rung the re-pack entirely when nothing changed, which is what it is here
+  // for. (Seeding that rung from a factor-independent stack instead — the
+  // `labels` rung — keeps probe and commit agreeing and was tried: it moved no
+  // rows at all, because the seed's order and the layoutStartBp tiebreak it
+  // replaces already coincide.)
+  seedPriorRows = true,
+}: { seedPriorRows?: boolean } = {}) {
   let cache = new Map<string, GroupCache>()
 
   return function computeLaidOutDataIncremental(
@@ -563,11 +605,12 @@ export function createIncrementalLayout() {
         // group; passing the full `regionKeys`/`reversedRegions` is fine since
         // it only reads the keys of regions present in `members`.
         // Order this group's re-pack by each feature's row in the prior output
-        // so top features keep their rows across a zoom (see packRef).
+        // so top features keep their rows across a zoom (see packRef), unless
+        // this instance packs measured candidates (see seedPriorRows).
         const output = computeLaidOutData(
           members,
           inputs,
-          prev && captureFeatureTops(prev.output),
+          seedPriorRows && prev ? captureFeatureTops(prev.output) : undefined,
         )
         const reversed = new Set<number>()
         for (const idx of members.keys()) {

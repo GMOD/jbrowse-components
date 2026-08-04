@@ -3,9 +3,11 @@ import {
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
+  bisectSmallestFitting,
   fitScaleToFill,
   resolveFitLadder,
   snapFittedContentHeight,
+  squeezeFloorScale,
 } from './fitLadder.ts'
 
 import type { FitRung } from './fitLadder.ts'
@@ -73,6 +75,66 @@ describe('fitScaleToFill', () => {
         expect(s).toBeLessThanOrEqual(3)
       }
     }
+  })
+})
+
+describe('squeezeFloorScale', () => {
+  it('allows the squeeze that lands the shortest body exactly on the minimum', () => {
+    expect(squeezeFloorScale(10, 2)).toBe(0.2)
+  })
+
+  it('offers no squeeze once the shortest body is at or under the minimum', () => {
+    // A stack already at the floor has nothing left to give — 1, not a scale that
+    // would take it below.
+    expect(squeezeFloorScale(2, 2)).toBe(1)
+    expect(squeezeFloorScale(1, 2)).toBe(1)
+  })
+
+  it('offers no squeeze for an empty stack rather than dividing by zero', () => {
+    expect(squeezeFloorScale(0, 2)).toBe(1)
+  })
+
+  it('is always a usable scale in (0, 1]', () => {
+    for (const body of [0, 0.5, 1, 2, 3, 10, 137, 4000]) {
+      const s = squeezeFloorScale(body, 2)
+      expect(s).toBeGreaterThan(0)
+      expect(s).toBeLessThanOrEqual(1)
+      // and it really is a floor: the deepest squeeze it allows never takes a
+      // body below the minimum — or, for a body ALREADY under the minimum, below
+      // where it started (the floor stops further shrinking; it can't grow one).
+      expect(body * s).toBeGreaterThanOrEqual(Math.min(body, 2) - 1e-9)
+    }
+  })
+})
+
+describe('bisectSmallestFitting', () => {
+  // The precondition the two probes in solveLabelRoomFactor exist to establish.
+  const fitsAbove = (threshold: number) => (x: number) => x >= threshold
+
+  it('converges on the threshold from above', () => {
+    const found = bisectSmallestFitting(fitsAbove(3), 0, 8, 20)
+    expect(found).toBeCloseTo(3, 4)
+    expect(fitsAbove(3)(found)).toBe(true)
+  })
+
+  it('only ever returns a value that fits', () => {
+    for (const threshold of [0.1, 1, 2.5, 6, 7.99]) {
+      const found = bisectSmallestFitting(fitsAbove(threshold), 0, 8, 8)
+      expect(fitsAbove(threshold)(found)).toBe(true)
+    }
+  })
+
+  it('returns hi untouched when no iterations are allowed', () => {
+    // hi is the caller's measured-to-fit bound, so zero iterations is still a
+    // correct (just imprecise) answer — never an unmeasured one.
+    expect(bisectSmallestFitting(fitsAbove(3), 0, 8, 0)).toBe(8)
+  })
+
+  it('narrows by half per iteration', () => {
+    const width = (iters: number) =>
+      bisectSmallestFitting(fitsAbove(3), 0, 8, iters) - 3
+    expect(width(4)).toBeLessThanOrEqual(8 / 2 ** 4)
+    expect(width(8)).toBeLessThanOrEqual(8 / 2 ** 8)
   })
 })
 
@@ -175,6 +237,36 @@ describe('resolveFitLadder', () => {
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('bodies')
     expect(stage.scale).toBe(0.2)
+  })
+
+  // Rungs coincide constantly — with names off, `labels`, `decimated` and
+  // `bodies` are one stack handed back by reference. The ladder must treat that
+  // as one height (it is one object), descend through them, and keep the last.
+  it('treats reference-identical rungs as one stack', () => {
+    const shared = layoutOfHeight(200)
+    let measured = 0
+    const sharedRung = (level: FitRung['level']): FitRung => ({
+      level,
+      layout: () => {
+        measured++
+        return shared
+      },
+    })
+    const stage = resolveFitLadder(
+      [
+        { level: 'full', layout: () => layoutOfHeight(400) },
+        sharedRung('labels'),
+        sharedRung('decimated'),
+        sharedRung('bodies'),
+      ],
+      100,
+      0.2,
+      3,
+    )
+    expect(measured).toBe(3)
+    expect(stage.level).toBe('bodies')
+    expect(stage.contentHeight).toBe(200)
+    expect(stage.scale).toBeCloseTo(0.5)
   })
 
   it('never lays out a rung tighter than the one it keeps', () => {

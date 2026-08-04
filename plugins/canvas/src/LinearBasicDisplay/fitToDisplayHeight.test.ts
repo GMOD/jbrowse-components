@@ -1,5 +1,6 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { GROW_MAX_HEIGHT } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
 
 import {
   makeFeatureData,
@@ -136,6 +137,37 @@ function mixedWidthRegionData(count: number) {
     rectDensityFade: new Uint32Array(features.length),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
     floatingLabelsData,
+  })
+}
+
+// An overlapping stack whose bodies are DIFFERENT heights, so "the shortest body"
+// and "the configured featureHeight" are distinguishable numbers — the fixture
+// the squeeze floor's basis is pinned against.
+function mixedHeightRegionData(heights: number[]) {
+  const features = heights.map((height, i) => ({
+    featureId: `h${i}`,
+    startBp: 100,
+    endBp: 900,
+    height,
+  }))
+  return makeFeatureData({
+    flatbushItems: features.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'feature',
+        startBp: f.startBp,
+        endBp: f.endBp,
+        bottomPx: f.height,
+        featureHeightPx: f.height,
+      }),
+    ),
+    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
+    rectYs: new Float32Array(features.length),
+    rectHeights: new Float32Array(features.map(f => f.height)),
+    rectColors: new Uint32Array(features.length),
+    rectStrands: new Float32Array(features.length),
+    rectDensityFade: new Uint32Array(features.length),
+    rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
   })
 }
 
@@ -583,8 +615,9 @@ describe('canvas display fit escalation ladder', () => {
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     display.setHeightMode('fit')
-    // Config-derived, stable across the sweep: the scale bounds the fill may reach
-    // before it bottoms out and scrolls (min) or stops growing (max).
+    // Stable across the sweep (the bodies don't change size, only the labels
+    // reserved around them): the scale bounds the fill may reach before it
+    // bottoms out and scrolls (min) or stops growing (max).
     const minScale = display.fitMinScale
     const maxScale = display.fitMaxScale
 
@@ -750,6 +783,58 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.scrollableHeight).toBeGreaterThan(0)
   })
 
+  // The floor's promise is that NO body squeezes below MIN_FIT_BOX_PX, so it has
+  // to be built on the shortest body in the stack. Reading the `featureHeight`
+  // config slot instead described the plain-rect glyph and missed anything the
+  // worker sized differently — here a 2px feature among 20px ones, which the
+  // slot's 10px basis would have let squeeze to a fifth of a pixel.
+  it('floors the squeeze on the shortest body, not the configured height', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(
+      0,
+      mixedHeightRegionData([20, 20, 2, 20]),
+      view.bpPerPx,
+      ctgA,
+    )
+    display.setHeightMode('fit')
+    expect(readConfObject(display.configuration, 'featureHeight')).toBe(10)
+    expect(display.fitBodyPx).toBe(2)
+    // The shortest body is already at the minimum, so there is no squeeze left.
+    expect(display.fitMinScale).toBe(1)
+
+    // Same stack without the short feature: the floor relaxes to what a 20px body
+    // can give up, so this isn't vacuously pinned at 1.
+    const { display: tall } = createDisplay()
+    tall.setRpcData(0, mixedHeightRegionData([20, 20, 20]), view.bpPerPx, ctgA)
+    tall.setHeightMode('fit')
+    expect(tall.fitBodyPx).toBe(20)
+    expect(tall.fitMinScale).toBeCloseTo(0.1)
+  })
+
+  // `featureHeight` is a per-feature jexl callback slot (contextVariable:
+  // ['feature']), so reading it off the display — with no feature in scope —
+  // evaluates the callback against nothing and throws. That used to happen inside
+  // the squeeze floor, i.e. inside the fit layout every consumer reads, so a track
+  // configured this way went blank the moment it was switched to fit.
+  it('lays out under fit mode with a per-feature featureHeight callback', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(
+      0,
+      mixedHeightRegionData([20, 20, 20]),
+      view.bpPerPx,
+      ctgA,
+    )
+    setConf(display, 'featureHeight', "jexl:get(feature,'score') > 5 ? 20 : 8")
+    display.setHeightMode('fit')
+    display.setHeight(30)
+    expect(display.fitStage.level).toBe('bodies')
+    expect(display.laidOutDataMap.size).toBeGreaterThan(0)
+    expect(Number.isFinite(display.fitScale)).toBe(true)
+    expect(Number.isFinite(display.maxY)).toBe(true)
+  })
+
   // Descriptions off (or density-hidden) collapses the full and labels stages
   // onto one name-only reservation, so the ladder has no distinct descriptions
   // step and drops straight from names to bodies. Exercises the labels-only
@@ -843,6 +928,55 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.fitStage.contentHeight).toBe(
       packedContentHeight(display.rpcDataMap, inputs),
     )
+  })
+
+  // Every drag-resize frame and every pan settle re-solves the factor, and most
+  // of those land on the factor already committed. Re-packing that same stack
+  // into fresh objects would hand the GPU upload diff a whole new layout to push
+  // for a stack that did not move — the exact churn the incremental memo exists
+  // to prevent on the other three rungs, and the reason this rung has one too.
+  it('reuses the committed decimated stack when the factor is unchanged', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, ctgA)
+    display.setHeightMode('fit')
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    const h = Math.round((labelsH + bodiesH) / 2)
+    display.setHeight(h)
+    expect(display.fitStage.level).toBe('decimated')
+
+    const before = display.laidOutDataMap.get(0)
+    const factorBefore = display.solveLabelRoomFactor(display.fitTargetHeight)
+    // A sub-pixel nudge: one frame of a resize drag, far too small to move the
+    // solve off the factor it just committed.
+    display.setHeight(h + 0.01)
+    expect(display.solveLabelRoomFactor(display.fitTargetHeight)).toBe(
+      factorBefore,
+    )
+    expect(display.laidOutDataMap.get(0)).toBe(before)
+  })
+
+  // The probe's preparation (label widths, the neighbor-room sorts) is a function
+  // of the data and the layout inputs, NOT of the track height — which is what
+  // lets a drag-resize re-solve pay for the bisection's packs alone. Pinned by
+  // reference so a stray height read inside it can't quietly reintroduce the cost.
+  it('holds one height probe across a track-height change', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, ctgA)
+    display.setHeightMode('fit')
+    display.setHeight(120)
+    // Observed by a reaction, so MobX keeps the computed alive between reads —
+    // the state the app is in, and the only one where caching is observable.
+    const seen: unknown[] = []
+    const dispose = autorun(() => {
+      seen.push(display.decimatedHeightProbe)
+    })
+    display.setHeight(240)
+    display.setHeight(240.5)
+    dispose()
+    expect(seen).toHaveLength(1)
   })
 
   // Factor 0 keeps every name, so when it fits there is nothing to decimate and
