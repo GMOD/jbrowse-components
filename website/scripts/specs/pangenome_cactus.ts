@@ -206,6 +206,22 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: 'chr:3,935,000-3,955,000',
+          // the operon named on the figure, not in the caption alone
+          // (reviewer: "unclear why pggb depth is higher, need reasoning in
+          // caption and even in-figure annotations"). Same span as the pggb
+          // tutorial's untangle figure, so the collapse is the same object in
+          // both. A band, not an overlay arrow: it is a genomic interval, and
+          // it lands on the two depth rows as well as on the genes.
+          highlight: [
+            {
+              refName: 'chr',
+              start: 3941447,
+              end: 3946786,
+              assemblyName: 'K12',
+              label: 'rrnC operon: the copies pggb collapses',
+            },
+          ],
+          showHighlightChips: true,
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
