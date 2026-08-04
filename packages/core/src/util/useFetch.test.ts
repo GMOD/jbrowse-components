@@ -67,6 +67,52 @@ test('does not fetch on a null key, or an array key with a missing piece', () =>
   expect(fetcher).not.toHaveBeenCalled()
 })
 
+// A null fetcher is the second "don't fetch" signal, and it resolves
+// independently of the key — a caller can hold a stable key while the thing it
+// fetches with (an adapter, a config, a lazily-created client) arrives later.
+// The fetch effect reads the fetcher off a ref, so gating it on the key alone
+// left that case permanently stuck: nothing re-ran the effect when the fetcher
+// appeared.
+test('fetches once a null fetcher resolves under an unchanged key', async () => {
+  const fetcher = jest.fn(async () => 'done')
+  const { result, rerender } = renderHook(
+    ({ ready }: { ready: boolean }) =>
+      useFetch(['stable'] as const, ready ? fetcher : null),
+    { initialProps: { ready: false } },
+  )
+
+  expect(fetcher).not.toHaveBeenCalled()
+  expect(result.current.isLoading).toBe(false)
+
+  rerender({ ready: true })
+
+  await waitFor(() => {
+    expect(result.current.data).toBe('done')
+  })
+  expect(fetcher).toHaveBeenCalledTimes(1)
+})
+
+// The inverse: a fetcher going away is a real "stop fetching", so the prior
+// result must clear rather than linger as if it were still current.
+test('clears data when the fetcher goes null under an unchanged key', async () => {
+  const { result, rerender } = renderHook(
+    ({ ready }: { ready: boolean }) =>
+      useFetch(['stable'] as const, ready ? async () => 'done' : null),
+    { initialProps: { ready: true } },
+  )
+
+  await waitFor(() => {
+    expect(result.current.data).toBe('done')
+  })
+
+  rerender({ ready: false })
+
+  await waitFor(() => {
+    expect(result.current.data).toBeUndefined()
+  })
+  expect(result.current.isLoading).toBe(false)
+})
+
 // What the token is for: a fetcher forwarding it to an RPC stops the worker
 // when the dialog closes or the key moves on, instead of leaving it computing
 // an answer nobody is waiting for.

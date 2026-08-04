@@ -91,13 +91,21 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
   options: UseFetchOptions<Data> = {},
 ): UseFetchResponse<Data> {
   const serialized = serializeKey(key)
+  // A null fetcher is the second way to say "don't fetch", so its nullness is a
+  // fetch input exactly like the key is — the effect below has to re-run when it
+  // flips. Only the boolean can go in the dependency list: the fetcher itself is
+  // usually an inline closure, so depending on its identity would refetch every
+  // render. Tracked separately from the key because the two are independent —
+  // gating on the key alone leaves a `fetcher` that resolves from null to a real
+  // function (an adapter/config arriving late) permanently stuck not fetching.
+  const hasFetcher = fetcher !== null
   const [state, setState] = useState<FetchState<Data>>(() => ({
     data: undefined,
     error: undefined,
     // seeded from the key rather than starting false: the effect below runs
     // after the first paint, so a false seed showed the resolved-and-empty state
     // for a frame before the spinner (an empty attribute table, an empty list)
-    isLoading: serialized !== null && fetcher !== null,
+    isLoading: serialized !== null && hasFetcher,
   }))
   // bumped to force a refetch (local mutate() or a cross-component mutate(key))
   const [nonce, setNonce] = useState(0)
@@ -152,7 +160,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
         stopStopToken(stopToken)
       }
     }
-  }, [serialized, nonce])
+  }, [serialized, hasFetcher, nonce])
 
   // register this instance so a cross-component mutate(key) can refetch it
   useEffect(() => {
