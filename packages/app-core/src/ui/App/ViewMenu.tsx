@@ -56,6 +56,33 @@ const ViewMenu = observer(function ViewMenu({
     }
   }
 
+  // Give this view a home of its own: its own tab beside the rest, or its own
+  // split to their right. With a workspace already up that's an api call on the
+  // live panels; from the classic stack there are no panels yet, so describe
+  // the arrangement as an `init` and let the controller build it on the way in.
+  const moveViewOut = (direction: 'tabs' | 'horizontal') => {
+    if (usePanel) {
+      if (direction === 'tabs') {
+        moveViewToNewTab(model.id)
+      } else {
+        moveViewToSplitRight(model.id)
+      }
+    } else {
+      const others = session.views.flatMap(v =>
+        v.id === model.id ? [] : [v.id],
+      )
+      session.setInit(
+        others.length > 0
+          ? {
+              direction,
+              children: [{ viewIds: others }, { viewIds: [model.id] }],
+            }
+          : { viewIds: [model.id] },
+      )
+    }
+    session.setUseWorkspaces(true)
+  }
+
   // 'top'/'bottom' only mean something with a view above *and* below
   const moveItems = (
     [
@@ -105,27 +132,14 @@ const ViewMenu = observer(function ViewMenu({
               label: 'Move to new tab',
               icon: OpenInNewIcon,
               onClick: () => {
-                if (usePanel) {
-                  moveViewToNewTab(model.id)
-                } else {
-                  session.setPendingMove({ type: 'newTab', viewId: model.id })
-                }
-                session.setUseWorkspaces(true)
+                moveViewOut('tabs')
               },
             },
             {
               label: 'Move to split view (right side of screen)',
               icon: VerticalSplitIcon,
               onClick: () => {
-                if (usePanel) {
-                  moveViewToSplitRight(model.id)
-                } else {
-                  session.setPendingMove({
-                    type: 'splitRight',
-                    viewId: model.id,
-                  })
-                }
-                session.setUseWorkspaces(true)
+                moveViewOut('horizontal')
               },
             },
             ...moveItems,

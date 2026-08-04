@@ -820,8 +820,8 @@ into a tiled workspace layout. The `layout` parameter uses a nested structure
 where each node is either:
 
 - A panel (has `views` array) displays views stacked vertically
-- A container (has `children` array) arranges children horizontally or
-  vertically
+- A container (has `children` array) arranges children horizontally, vertically,
+  or as tabs
 
 #### Horizontal split example
 
@@ -960,9 +960,11 @@ This creates:
 The `layout` parameter:
 
 - Automatically enables workspaces mode
-- `direction` can be `"horizontal"` (left-right) or `"vertical"` (top-bottom)
+- `direction` can be `"horizontal"` (left-right), `"vertical"` (top-bottom), or
+  `"tabs"` (one tab group, one panel visible at a time)
 - `views` is an array of view indices (referencing the `views` array)
-- `size` is an optional number specifying the proportional size of a panel
+- `size` is an optional number specifying the proportional size of a panel, and
+  is ignored under `"tabs"`, where the panels share one group's space
 - Views within the same panel are stacked vertically
 - Layouts can be nested arbitrarily deep
 

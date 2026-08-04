@@ -48,9 +48,10 @@ export interface ViewSpec {
 export interface LayoutNode {
   // Panel node - contains views stacked vertically
   views?: number[]
-  // Container node - arranges children in a direction
-  direction?: 'horizontal' | 'vertical'
+  // Container node - arranges children in a direction. 'tabs' stacks them into
+  // one tab group rather than splitting the space between them.
+  direction?: 'horizontal' | 'vertical' | 'tabs'
   children?: LayoutNode[]
-  // Size as percentage (0-100) of the parent container
+  // Size as percentage (0-100) of the parent container; ignored under 'tabs'
   size?: number
 }

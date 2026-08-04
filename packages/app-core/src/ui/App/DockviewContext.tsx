@@ -18,9 +18,9 @@ export interface DockviewContextValue {
 }
 
 // Defaults are no-ops: before the dockview container mounts there are no panels
-// to move into, so ViewMenu queues the move on the session via setPendingMove
-// instead (see TiledViewsContainer's onReady). ViewMenu reads this default in
-// classic (non-workspace) mode, where there is no provider.
+// to move into, so ViewMenu describes the arrangement it wants as a session
+// `init` instead and lets useDockviewController build it. ViewMenu reads this
+// default in classic (non-workspace) mode, where there is no provider.
 export const DockviewContext = createContext<DockviewContextValue>({
   api: null,
   session: undefined,

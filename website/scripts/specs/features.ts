@@ -595,7 +595,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // structure URL, resolves the transcript feature from the hg38-ncbiRefSeq track
   // at `loc`, and translates its CDS to the protein sequence it aligns to the
   // structure. PROTEIN3D_CONFIG loads protein3d against the local build, whose
-  // session has the setPendingMove split API the side-by-side launch needs.
+  // session has the `init` split API the side-by-side launch needs.
   //
   // That config pins the plugin to jbrowse.org/plugins/…/0.8.0/, not `latest/`:
   // the figure is a picture of a specific plugin's UI, so a release of it

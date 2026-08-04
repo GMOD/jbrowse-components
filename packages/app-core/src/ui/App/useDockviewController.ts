@@ -11,7 +11,10 @@ import {
   reconcilePanelAssignments,
 } from './dockviewUtils.ts'
 
-import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+import type {
+  DockviewLayoutNode,
+  SessionWithDockviewLayout,
+} from '../../DockviewLayout/index.ts'
 import type { DockviewContextValue } from './DockviewContext.tsx'
 import type { DockviewSessionType } from './types.ts'
 import type {
@@ -115,76 +118,57 @@ export function useDockviewController(session: DockviewSession) {
     [api, session, rearrangePanels, addEmptyTab, moveViewToPanel],
   )
 
-  const createInitialPanels = useCallback((dockviewApi: DockviewApi) => {
-    const session = sessionRef.current
-    const pendingAction = session.pendingMove
-
-    // Handle layout from URL params
-    const { init: initLayout } = session
-
-    // Clear any stale panel assignments from a previous mount. Every branch
-    // below mints fresh panel ids, so an assignment left over from the last
-    // mount either strands its view (no panel renders it) or — since
-    // assignViewToPanel doesn't unassign — double-renders it in two panels at
-    // once. Hoisted above the `init` branch, which used to skip it.
+  // Wipe panel assignments before building panels from scratch. Fresh panel ids
+  // are about to be minted, so an assignment naming an old one either strands
+  // its view (no panel renders it) or — since assignViewToPanel doesn't
+  // unassign — double-renders it in two panels at once.
+  const clearPanelAssignments = useCallback((session: DockviewSession) => {
     for (const panelId of [...session.panelViewAssignments.keys()]) {
       session.removePanel(panelId)
     }
+  }, [])
 
-    if (initLayout) {
+  // Build the panels session.init asks for, replacing whatever dockview shows,
+  // and consume the request. Called both at mount and afterwards: a session
+  // spec's `layout` lands well after the first view does (views launch one
+  // awaited handler at a time), so for a visitor whose workspaces preference is
+  // already on the container has long since mounted by then. Reading init only
+  // in onReady dropped exactly those layouts on the floor.
+  const applyInit = useCallback(
+    (dockviewApi: DockviewApi, initLayout: DockviewLayoutNode) => {
+      const session = sessionRef.current
+      clearPanelAssignments(session)
+      // no-op at mount; on a later init it retires the panels being replaced
+      withSuppressedPanelRemoval(() => {
+        dockviewApi.clear()
+      })
+
       const firstPanelId = applyInitLayout(dockviewApi, session, initLayout)
-
       session.setInit(undefined)
       if (firstPanelId) {
         session.setActivePanelId(firstPanelId)
         dockviewApi.getPanel(firstPanelId)?.api.setActive()
       }
       session.setDockviewLayout(dockviewApi.toJSON())
-      return
-    }
+    },
+    [clearPanelAssignments, withSuppressedPanelRemoval],
+  )
 
-    const pendingViewExists =
-      pendingAction && session.views.some(v => v.id === pendingAction.viewId)
+  const createInitialPanels = useCallback(
+    (dockviewApi: DockviewApi) => {
+      const session = sessionRef.current
+      clearPanelAssignments(session)
 
-    if (pendingViewExists) {
-      const { type, viewId: pendingViewId } = pendingAction
-      const otherViewIds = session.views.flatMap(v =>
-        v.id === pendingViewId ? [] : [v.id],
-      )
-
-      let firstGroup: DockviewGroupPanel | undefined
-      if (otherViewIds.length > 0) {
-        const firstPanelId = createPanelId()
-        dockviewApi.addPanel(createPanelConfig(firstPanelId))
-        firstGroup = dockviewApi.getPanel(firstPanelId)?.group
-        for (const viewId of otherViewIds) {
-          session.assignViewToPanel(firstPanelId, viewId)
-        }
-      }
-
-      const pendingPanelId = createPanelId()
-      const direction = type === 'splitRight' ? 'right' : undefined
-      dockviewApi.addPanel({
-        ...createPanelConfig(pendingPanelId),
-        position: getPanelPosition(firstGroup, direction),
-      })
-      session.assignViewToPanel(pendingPanelId, pendingViewId)
-      session.setActivePanelId(pendingPanelId)
-
-      // Save layout synchronously so React Strict Mode's second onReady sees it.
-      // dockview's onDidLayoutChange fires asynchronously, so without this the
-      // second mount would find dockviewLayout still undefined and fall back to
-      // creating a single panel instead of restoring the split.
-      session.setDockviewLayout(dockviewApi.toJSON())
-
-      session.setPendingMove(undefined)
-    } else {
       const panelId = createPanelId()
       dockviewApi.addPanel(createPanelConfig(panelId))
       session.setActivePanelId(panelId)
+      // Saved synchronously so React Strict Mode's second onReady sees it:
+      // onDidLayoutChange lands on a microtask, so without this the second
+      // mount would find dockviewLayout still undefined and start over.
       session.setDockviewLayout(dockviewApi.toJSON())
-    }
-  }, [])
+    },
+    [clearPanelAssignments],
+  )
 
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
@@ -223,13 +207,19 @@ export function useDockviewController(session: DockviewSession) {
         }
       })
 
-      const hasPendingAction = sessionRef.current.pendingMove !== undefined
-      const savedLayout = !hasPendingAction && sessionRef.current.dockviewLayout
+      const { init: initLayout, dockviewLayout } = sessionRef.current
 
-      if (savedLayout) {
+      // A pending `init` outranks the saved layout — it is the newer request —
+      // and building it is the sync autorun's job, at mount and after alike, so
+      // there is nothing to do here but stay out of its way.
+      if (initLayout) {
+        return
+      }
+
+      if (dockviewLayout) {
         withSuppressedPanelRemoval(() => {
           try {
-            event.api.fromJSON(savedLayout)
+            event.api.fromJSON(dockviewLayout)
             if (event.api.panels.length === 0) {
               throw new Error('No panels after fromJSON restore')
             }
@@ -246,20 +236,27 @@ export function useDockviewController(session: DockviewSession) {
   )
 
   // Keep dockview in step with the session, in this order:
-  //   1. re-apply the persisted layout when it changes out from under dockview
-  //      (undo/redo rewinds session.dockviewLayout through applySnapshot)
-  //   2. reconcile panel<->view assignments against the panels that leaves
-  // One autorun rather than two, because step 2 reads the panel set step 1
-  // installs. As separate reactions an undo runs them in the wrong order:
-  // reconcile fires first, judges the restored assignments against the panels
-  // undo is about to replace, and prunes every one of them as dead.
+  //   1. build the panels a pending `init` asks for (a spec layout, or "move
+  //      this view to a tab/split" arriving from the classic stack)
+  //   2. otherwise re-apply the persisted layout when it changes out from
+  //      under dockview (undo/redo rewinds it through applySnapshot)
+  //   3. reconcile panel<->view assignments against the panels that leaves
+  // One autorun rather than three, because each step reads the panel set the
+  // one before it installs. As separate reactions an undo runs 2 and 3 in the
+  // wrong order: reconcile fires first, judges the restored assignments against
+  // the panels undo is about to replace, and prunes every one of them as dead.
   useEffect(() => {
     if (!api) {
       return undefined
     }
     return autorun(() => {
-      const { dockviewLayout } = session
-      if (dockviewLayout && !layoutsEqual(api.toJSON(), dockviewLayout)) {
+      const { init: initLayout, dockviewLayout } = session
+      if (initLayout) {
+        applyInit(api, initLayout)
+      } else if (
+        dockviewLayout &&
+        !layoutsEqual(api.toJSON(), dockviewLayout)
+      ) {
         withSuppressedPanelRemoval(() => {
           try {
             api.fromJSON(dockviewLayout)
@@ -270,7 +267,7 @@ export function useDockviewController(session: DockviewSession) {
       }
       reconcilePanelAssignments(api, session)
     })
-  }, [session, api, withSuppressedPanelRemoval])
+  }, [session, api, applyInit, withSuppressedPanelRemoval])
 
   return { contextValue, onReady }
 }

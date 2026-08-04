@@ -153,8 +153,14 @@ export function applyInitLayout(
       return group
     }
     if (node.children && node.children.length > 0) {
+      // no direction is how dockview says "same group, another tab": the panel
+      // is positioned against the reference group without splitting it
       const dockviewDirection =
-        node.direction === 'horizontal' ? 'right' : 'below'
+        node.direction === 'tabs'
+          ? undefined
+          : node.direction === 'horizontal'
+            ? 'right'
+            : 'below'
       let currentGroup = referenceGroup
       for (let i = 0; i < node.children.length; i++) {
         const childDirection = i === 0 ? direction : dockviewDirection
@@ -171,12 +177,15 @@ export function applyInitLayout(
 
   processNode(initLayout, undefined, undefined)
 
+  // 'tabs' children share one group's space, so there is nothing to distribute
+  const splitDirection =
+    initLayout.direction === 'tabs' ? undefined : initLayout.direction
   if (
     groupSizes.length >= 2 &&
-    initLayout.direction &&
+    splitDirection &&
     groupSizes.length === initLayout.children?.length
   ) {
-    const dimension = initLayout.direction === 'horizontal' ? 'width' : 'height'
+    const dimension = splitDirection === 'horizontal' ? 'width' : 'height'
     requestAnimationFrame(() => {
       const totalSize = groupSizes.reduce((sum, g) => sum + g.size, 0)
       const containerSize = dimension === 'width' ? api.width : api.height

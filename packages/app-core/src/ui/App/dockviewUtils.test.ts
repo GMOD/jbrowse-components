@@ -77,6 +77,9 @@ function createFakeApi({ width = 1000, height = 800 } = {}) {
     removePanel(p: { id: string }) {
       panels.delete(p.id)
     },
+    clear() {
+      panels.clear()
+    },
     get panels() {
       return [...panels.values()].map(p => ({
         id: p.id,
@@ -189,6 +192,28 @@ describe('applyInitLayout', () => {
     ])
   })
 
+  // 'tabs' means "same group, another tab": dockview expresses that as a
+  // position with a reference group but no split direction
+  it('puts tabs children in one group and distributes no size', () => {
+    const session = createSession()
+    const { api, addPanelCalls, setSizeCalls } = createFakeApi()
+
+    applyInitLayout(api, session as unknown as SessionArg, {
+      direction: 'tabs',
+      children: [
+        { viewIds: ['v1'], size: 30 },
+        { viewIds: ['v2'], size: 70 },
+      ],
+    })
+
+    expect(addPanelCalls).toHaveLength(2)
+    expect(addPanelCalls[0]!.position).toBeUndefined()
+    expect(addPanelCalls[1]!.position).toEqual({
+      referenceGroup: api.getPanel(addPanelCalls[0]!.id)!.group,
+    })
+    expect(setSizeCalls).toHaveLength(0)
+  })
+
   it('skips size distribution when a child lacks a size', () => {
     const session = createSession()
     const { api, setSizeCalls } = createFakeApi()
@@ -199,6 +224,41 @@ describe('applyInitLayout', () => {
     })
 
     expect(setSizeCalls).toHaveLength(0)
+  })
+})
+
+// The controller's applyInit does clear-assignments -> api.clear() -> build.
+// A spec's `layout` lands after the first view does, so for a visitor already
+// in workspaces mode this runs over panels that are already up — the old
+// assignments have to go, or their views render in two panels at once.
+describe('applyInitLayout over an existing workspace', () => {
+  it('replaces the panels and assignments already in place', () => {
+    const session = createSession(['v1', 'v2'])
+    const { api } = createFakeApi()
+    api.addPanel(createPanelConfig('panel-stale'))
+    session.assignViewToPanel('panel-stale', 'v1')
+    session.assignViewToPanel('panel-stale', 'v2')
+
+    for (const panelId of [...session.panelViewAssignments.keys()]) {
+      session.removePanel(panelId)
+    }
+    api.clear()
+    applyInitLayout(api, session as unknown as SessionArg, {
+      direction: 'horizontal',
+      children: [{ viewIds: ['v1'] }, { viewIds: ['v2'] }],
+    })
+
+    expect(session.panelViewAssignments.has('panel-stale')).toBe(false)
+    expect(api.panels).toHaveLength(2)
+    expect(session.getPanelContainingView('v1')?.panelId).not.toBe(
+      session.getPanelContainingView('v2')?.panelId,
+    )
+    // and nothing renders a view twice
+    expect(
+      [...session.panelViewAssignments.values()]
+        .flat()
+        .filter(id => id === 'v1').length,
+    ).toBe(1)
   })
 })
 
