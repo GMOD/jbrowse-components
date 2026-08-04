@@ -206,6 +206,7 @@ export {
   labelOffset,
   totalHeight,
   trackBoxHeight,
+  trackBoxOffsets,
   trackLabelLeftOffset,
 } from './LinearGenomeView/svgcomponents/util.ts'
 export type { SvgDisplayResult } from './LinearGenomeView/svgcomponents/util.ts'

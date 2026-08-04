@@ -1,24 +1,30 @@
-import { trackBoxHeight } from '@jbrowse/plugin-linear-genome-view'
+import { trackBoxOffsets } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type Track = LinearGenomeViewModel['tracks'][number]
 
-// Takes an already-minimized-filtered track list so the overlay offsets stay in
-// sync with the rendered track bodies.
+// Top of each of a view's rendered track *bodies*, keyed by trackId, for
+// anchoring the overlay ribbons. Takes an already-minimized-filtered track
+// list, and shares trackBoxOffsets with SVGTracks (which lays the boxes out
+// with it) so the anchors can't drift from the rendered tracks.
+//
+// `textOffset` is added on top of the box offset for the same reason SVGTracks
+// translates the body down by it: in 'offset' label mode the box starts with
+// the label band and the features begin below it.
 export function getTrackOffsets(
   tracks: Track[],
   textOffset: number,
   baseY = 0,
 ) {
-  const offsets: Record<string, number> = {}
-  let curr = textOffset
-  for (const track of tracks) {
-    offsets[track.configuration.trackId] = curr + baseY
-    // trackBoxHeight (height + textOffset + trackSpacing) must match
-    // SVGTracks.getOffsets, or overlay connections drift from the rendered
-    // track positions by trackSpacing per track
-    curr += trackBoxHeight(track, textOffset)
-  }
-  return offsets
+  const offsets = trackBoxOffsets(tracks, textOffset)
+  return Object.fromEntries(
+    tracks.map(
+      (track, i) =>
+        [
+          track.configuration.trackId,
+          baseY + textOffset + offsets[i]!,
+        ] as const,
+    ),
+  )
 }

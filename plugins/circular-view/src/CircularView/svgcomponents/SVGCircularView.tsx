@@ -1,8 +1,8 @@
 import { Fragment } from 'react'
 
+import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, radToDeg } from '@jbrowse/core/util'
-import { when } from 'mobx'
 
 import { Rulers } from '../components/Ruler.tsx'
 
@@ -12,7 +12,7 @@ export async function renderToSvg(
   model: CircularViewModel,
   opts: ExportSvgOptions,
 ) {
-  await when(() => model.initialized)
+  await awaitViewInitialized(model)
   const { themeName = 'default', fontFamily, Wrapper } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)

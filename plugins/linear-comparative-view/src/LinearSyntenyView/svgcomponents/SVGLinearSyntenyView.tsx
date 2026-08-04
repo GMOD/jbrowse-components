@@ -3,6 +3,7 @@ import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
+  SVGView,
   defaultTextHeight,
   totalHeight,
   trackLabelLeftOffset,
@@ -10,7 +11,6 @@ import {
 import { SVGColorByLegend } from '@jbrowse/synteny-core'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
-import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
@@ -45,9 +45,6 @@ export async function renderToSvg(
   // doesn't export as a full-height panel.
   const headerHeight = fontSize + rulerHeight
   const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
-  const tracksHeights = visibleTracksByView.map(tracks =>
-    totalHeight(tracks, textHeight, trackLabels),
-  )
 
   // each display's renderSvg owns its own readiness wait (LGV track displays
   // await their byte estimate internally, renderSyntenyDisplaySvg awaits
@@ -56,18 +53,17 @@ export async function renderToSvg(
   // concurrently rather than blocking one behind the other.
   const [displayResults, renderings] = await Promise.all([
     Promise.all(
-      views.map(async (view, i) => ({
-        view,
-        data: await Promise.all(
-          visibleTracksByView[i]!.map(async track => {
-            const d = track.displays[0]
+      visibleTracksByView.map(tracks =>
+        Promise.all(
+          tracks.map(async track => {
+            const d = track.displays[0]!
             return {
               track,
               result: await d.renderSvg({ ...opts, theme: themeVar }),
             }
           }),
         ),
-      })),
+      ),
     ),
     Promise.all(
       // `levels` is declared with an explicit IAnyModelType to break a type
@@ -93,6 +89,16 @@ export async function renderToSvg(
     ),
   ])
 
+  // Reserved *after* those awaits, not before: a display whose height follows
+  // its data (grow mode — the alignments stack, the multi-row feature display)
+  // only reaches its final height once renderSvg's readiness wait resolves, and
+  // SVGTracks re-reads `displays[0].height` later still. Measuring up front
+  // sized each row for the pre-fetch height and let the taller bodies run into
+  // the ribbon band below them. Same rule as the standalone LGV export.
+  const tracksHeights = visibleTracksByView.map(tracks =>
+    totalHeight(tracks, textHeight, trackLabels),
+  )
+
   const trackLabelOffset = trackLabelLeftOffset({
     tracks: visibleTracksByView.flat(),
     trackLabels,
@@ -109,17 +115,23 @@ export async function renderToSvg(
     const viewRow = {
       key: view.id,
       height: headerHeight + tracksHeights[i]!,
+      // the assembly label floats in the `fontSize` band above the ruler (see
+      // SVGView), which is why the group starts that far down
       node: (
-        <SVGLinearGenomeView
-          rulerHeight={rulerHeight}
-          trackLabelOffset={trackLabelOffset}
-          textHeight={textHeight}
-          trackLabels={trackLabels}
-          displayResults={displayResults[i]!}
-          fontSize={fontSize}
-          showGridlines={showGridlines}
-          tracksHeight={tracksHeights[i]!}
-        />
+        <g transform={`translate(${exportMargin} ${fontSize})`}>
+          <SVGView
+            view={view}
+            displayResults={displayResults[i]!}
+            fontSize={fontSize}
+            textHeight={textHeight}
+            trackLabels={trackLabels}
+            trackLabelOffset={trackLabelOffset}
+            contentTop={rulerHeight}
+            tracksHeight={tracksHeights[i]!}
+            showGridlines={showGridlines}
+            leftBuffer={exportMargin}
+          />
+        </g>
       ),
     }
     const level = levels[i]

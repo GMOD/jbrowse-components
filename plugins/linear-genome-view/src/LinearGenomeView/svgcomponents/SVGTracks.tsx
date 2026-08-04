@@ -2,23 +2,13 @@ import { getSession } from '@jbrowse/core/util'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, svgTrackName, trackBoxHeight } from './util.ts'
+import { labelOffset, svgTrackName, trackBoxOffsets } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
 import type { SvgDisplayResult } from './util.ts'
 
 type LGV = LinearGenomeViewModel
-
-function getOffsets(displayResults: SvgDisplayResult[], textOffset: number) {
-  const offsets: number[] = []
-  let total = 0
-  for (const { track } of displayResults) {
-    offsets.push(total)
-    total += trackBoxHeight(track, textOffset)
-  }
-  return offsets
-}
 
 export default function SVGTracks({
   displayResults,
@@ -42,7 +32,10 @@ export default function SVGTracks({
   const session = getSession(model)
   const textOffset = labelOffset(trackLabels, textHeight)
   const x = Math.max(-model.offsetPx, 0)
-  const offsets = getOffsets(displayResults, textOffset)
+  const offsets = trackBoxOffsets(
+    displayResults.map(r => r.track),
+    textOffset,
+  )
   return (
     <>
       {displayResults.map(({ track, result }, i) => {

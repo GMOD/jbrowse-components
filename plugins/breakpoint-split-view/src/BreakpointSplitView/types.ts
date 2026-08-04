@@ -1,22 +1,17 @@
 import type { Feature } from '@jbrowse/core/util'
 import type {
+  ExportSvgOptions as LgvExportSvgOptions,
   TrackInit,
-  TrackLabelMode,
 } from '@jbrowse/plugin-linear-genome-view'
 
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  format?: 'svg' | 'png'
-  filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
+// The LGV export's options plus the one this view adds, rather than a parallel
+// copy: everything here is forwarded verbatim to each sub-view's display
+// `renderSvg`, so an option added there (createCanvas, for the headless raster
+// path) has to be spellable here too.
+export interface ExportSvgOptions extends LgvExportSvgOptions {
+  // Band reserved above each stacked view's ruler: the assembly label floats in
+  // it, and it separates the view from the one above.
   headerHeight?: number
-  trackLabels?: TrackLabelMode
-  themeName?: string
-  fontFamily?: string
-  showGridlines?: boolean
 }
 
 export interface BreakpointSplitViewInitView {

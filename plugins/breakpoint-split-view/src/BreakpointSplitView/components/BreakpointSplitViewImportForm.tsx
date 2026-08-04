@@ -39,8 +39,12 @@ const BreakpointSplitViewImportForm = observer(
     const { rows, addRow, updateRow, removeRow, moveRow } =
       useImportFormRows(defaultAssembly)
     const [trackId, setTrackId] = useState('')
-    const [error, setError] = useState<unknown>()
+    const [launchError, setLaunchError] = useState<unknown>()
     const canLaunch = rows.every(r => r.assembly)
+    // the launch throw first, then whatever left the opened views unusable (a
+    // failed assembly, which is why the form is back up at all). The model's is
+    // derived from the current views, so a re-submit clears it on its own.
+    const error = launchError ?? model.error
 
     // A track is only launchable if it covers every selected assembly, so
     // clamp the selection to the currently shared tracks: editing a row's
@@ -115,11 +119,11 @@ const BreakpointSplitViewImportForm = observer(
             disabled={!canLaunch}
             onClick={() => {
               try {
-                setError(undefined)
+                setLaunchError(undefined)
                 model.setViews(rowsToViewInits(rows, validTrackId))
               } catch (e) {
                 console.error(e)
-                setError(e)
+                setLaunchError(e)
               }
             }}
           >

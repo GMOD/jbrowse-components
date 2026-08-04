@@ -208,9 +208,23 @@ export function trackLabelLeftOffset({
 }
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and
-// SVGTracks.getOffsets (prefix-sum) so the two can't drift.
+// trackBoxOffsets (prefix-sum) so the two can't drift.
 export function trackBoxHeight(track: TrackHeights, textOffset: number) {
   return track.displays[0]!.height + textOffset + trackSpacing
+}
+
+// Top y of each track's box within a stack of them. SVGTracks lays the bodies
+// out with it and the breakpoint-split export anchors its overlay ribbons with
+// it, so one implementation rather than two prefix-sums that must agree —
+// they drifted by trackSpacing per track when they didn't.
+export function trackBoxOffsets(tracks: TrackHeights[], textOffset: number) {
+  const offsets: number[] = []
+  let total = 0
+  for (const track of tracks) {
+    offsets.push(total)
+    total += trackBoxHeight(track, textOffset)
+  }
+  return offsets
 }
 
 export function totalHeight(

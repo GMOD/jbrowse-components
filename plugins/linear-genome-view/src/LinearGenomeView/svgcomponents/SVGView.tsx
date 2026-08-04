@@ -2,6 +2,7 @@ import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import SVGGridlines from './SVGGridlines.tsx'
+import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
 import SVGRuler from './SVGRuler.tsx'
 import SVGTracks from './SVGTracks.tsx'
 
@@ -10,10 +11,9 @@ import type { TrackLabelMode } from '../types.ts'
 import type { SvgDisplayResult } from './util.ts'
 
 // One LGV's worth of exported SVG: assembly label + ruler on top, then optional
-// gridlines and the track bodies. Shared verbatim by the linear-synteny and
-// breakpoint-split exports so their per-view layout can't drift; `contentTop` is
-// where the tracks start below the ruler (the two callers reserve different
-// header heights).
+// gridlines, the track bodies, and the highlight layer over them. Shared
+// verbatim by the linear-synteny and breakpoint-split exports so their per-view
+// layout can't drift.
 export default function SVGView({
   view,
   displayResults,
@@ -22,7 +22,6 @@ export default function SVGView({
   trackLabels,
   trackLabelOffset,
   contentTop,
-  rulerHeight = contentTop,
   tracksHeight,
   showGridlines,
   leftBuffer = 0,
@@ -33,11 +32,12 @@ export default function SVGView({
   textHeight: number
   trackLabels: TrackLabelMode
   trackLabelOffset: number
+  // Where the track bodies start, i.e. the ruler's height: the ruler hangs its
+  // ticks off the bottom of this budget so they meet the tracks. Callers that
+  // want more space above a view put it above this component's origin (where
+  // the assembly label floats), not in here — a gap inside would detach the
+  // ruler from the tracks it labels.
   contentTop: number
-  // The ruler's own content budget, when it's smaller than the full
-  // contentTop gap (e.g. breakpoint-split reserves extra header padding
-  // above contentTop that the ruler doesn't use). Defaults to contentTop.
-  rulerHeight?: number
   tracksHeight: number
   showGridlines: boolean
   // Left gutter the per-track clip should extend into, so left-of-zero content
@@ -65,7 +65,7 @@ export default function SVGView({
         >
           {view.assemblyNames.join(', ')}
         </text>
-        <SVGRuler model={view} fontSize={fontSize} rulerHeight={rulerHeight} />
+        <SVGRuler model={view} fontSize={fontSize} rulerHeight={contentTop} />
       </g>
       {showGridlines ? (
         <g transform={`translate(${trackLabelOffset} ${contentTop})`}>
@@ -82,6 +82,15 @@ export default function SVGView({
           trackLabelOffset={trackLabelOffset}
           leftBuffer={leftBuffer}
         />
+      </g>
+      {/*
+        over the track bodies, as on screen and in the standalone LGV export.
+        It lives here rather than in each caller because it is part of "one
+        view's worth of export" — the breakpoint-split export dropped the
+        user's highlights entirely for as long as it was the caller's job.
+      */}
+      <g transform={`translate(${trackLabelOffset} ${contentTop})`}>
+        <SVGHighlightsOverlay model={view} tracksHeight={tracksHeight} />
       </g>
     </>
   )

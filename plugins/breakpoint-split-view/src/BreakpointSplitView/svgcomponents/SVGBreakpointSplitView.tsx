@@ -1,6 +1,8 @@
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
-import { getSession, sum } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import {
   SVGView,
   defaultTextHeight,
@@ -8,7 +10,6 @@ import {
   totalHeight,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
-import { when } from 'mobx'
 
 import Overlay from '../components/Overlay.tsx'
 import { getTrackOffsets } from './util.ts'
@@ -20,7 +21,7 @@ type BSV = BreakpointViewModel
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
-  await when(() => model.initialized)
+  await awaitViewInitialized(model)
   const {
     fontSize = 13,
     // destructured after fontSize so the label band can scale with it
@@ -37,31 +38,36 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
   const { width, views } = model
+  // each view is a header band (which the assembly label floats in, and which
+  // separates the view from the one above) plus a ruler, stacked above its
+  // track bodies. `offset` is where those bodies start within the view.
   const offset = headerHeight + rulerHeight
   // Minimized tracks are dropped (as the standalone LGV export does) so reserved
   // height, rendered bodies, label width, and overlay offsets stay in sync and a
   // collapsed track doesn't export as a full-height panel.
   const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
+  const displayResults = await Promise.all(
+    visibleTracksByView.map(tracks =>
+      Promise.all(
+        tracks.map(async track => {
+          const d = track.displays[0]!
+          return { track, result: await d.renderSvg({ ...opts, theme }) }
+        }),
+      ),
+    ),
+  )
+
+  // Reserved *after* those awaits, not before: a display whose height follows
+  // its data (grow mode — the alignments stack, the multi-row feature display)
+  // only reaches its final height once renderSvg's readiness wait resolves, and
+  // both SVGTracks and getTrackOffsets re-read `displays[0].height` later still.
+  // Measuring up front sized each view for the pre-fetch height, so the taller
+  // bodies overlapped the view below and ran off the bottom of the canvas —
+  // while the overlay anchors, resolved after, tracked the real ones.
   const tracksHeights = visibleTracksByView.map(tracks =>
     totalHeight(tracks, textHeight, trackLabels),
   )
   const heights = tracksHeights.map(h => h + offset)
-  const totalHeightSvg = sum(heights) + exportMargin
-  const displayResults = await Promise.all(
-    views.map(
-      async (view, idx) =>
-        ({
-          view,
-
-          data: await Promise.all(
-            visibleTracksByView[idx]!.map(async track => {
-              const d = track.displays[0]
-              return { track, result: await d.renderSvg({ ...opts, theme }) }
-            }),
-          ),
-        }) as const,
-    ),
-  )
 
   const trackLabelOffset = trackLabelLeftOffset({
     tracks: visibleTracksByView.flat(),
@@ -70,16 +76,29 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     session,
   })
   const textOffset = labelOffset(trackLabels, textHeight)
-  // top y of each view's group (its assembly label floats in the fontSize band
-  // above); the track bodies within start a further `offset` down. Shared by the
-  // view groups and the overlay anchors so the two can't drift.
-  const viewTops = heights.map(
-    (_, idx) => fontSize + sum(heights.slice(0, idx)),
-  )
-  const trackOffsets = visibleTracksByView.map((tracks, idx) =>
-    getTrackOffsets(tracks, textOffset, viewTops[idx]! + offset),
-  )
   const w = width + trackLabelOffset
+
+  // stack the views top to bottom: one running top offset positions each group,
+  // anchors that view's overlay ribbons, and ends as the total content height,
+  // so the canvas size, the rendered bodies and the ribbons share one source of
+  // truth.
+  let y = 0
+  const rows = views.map((view, idx) => {
+    const top = y
+    y += heights[idx]!
+    return {
+      view,
+      top,
+      // The tracks of this view, keyed by trackId, in the coordinate space of
+      // the overlay group below — which is why they carry the view's own top.
+      trackOffsets: getTrackOffsets(
+        visibleTracksByView[idx]!,
+        textOffset,
+        top + offset,
+      ),
+    }
+  })
+  const totalHeightSvg = y + exportMargin
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
@@ -90,63 +109,55 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     Wrapper,
     children: (
       <>
-        {displayResults.map(({ view, data }, idx) => {
-          const yOffset = viewTops[idx]!
-          return (
-            <g
-              key={view.id}
-              transform={`translate(${exportMargin} ${yOffset})`}
-            >
-              <SVGView
-                view={view}
-                displayResults={data}
-                fontSize={fontSize}
-                textHeight={textHeight}
-                trackLabels={trackLabels}
-                trackLabelOffset={trackLabelOffset}
-                contentTop={offset}
-                rulerHeight={rulerHeight}
-                tracksHeight={tracksHeights[idx]!}
-                showGridlines={showGridlines}
-                leftBuffer={exportMargin}
-              />
-            </g>
-          )
-        })}
-
-        <defs>
-          <clipPath id={`clip-bsv-${model.id}`}>
-            <rect
-              x={trackLabelOffset + exportMargin}
-              y={0}
-              width={width}
-              height={totalHeightSvg}
+        {rows.map(({ view, top }, idx) => (
+          <g
+            key={view.id}
+            // the assembly label floats in the header band above the ruler (see
+            // SVGView), which is why the group starts that far down
+            transform={`translate(${exportMargin} ${top + headerHeight})`}
+          >
+            <SVGView
+              view={view}
+              displayResults={displayResults[idx]!}
+              fontSize={fontSize}
+              textHeight={textHeight}
+              trackLabels={trackLabels}
+              trackLabelOffset={trackLabelOffset}
+              contentTop={rulerHeight}
+              tracksHeight={tracksHeights[idx]!}
+              showGridlines={showGridlines}
+              leftBuffer={exportMargin}
             />
-          </clipPath>
-        </defs>
-        <g
-          transform={`translate(${trackLabelOffset + exportMargin})`}
-          clipPath={`url(#clip-bsv-${model.id})`}
-        >
-          {model.matchedTracks
-            .filter(track =>
-              // skip tracks minimized in any view: they have no rendered body
-              // to anchor a ribbon to (getTrackOffsets omits them)
-              trackOffsets.every(
-                o => o[track.configuration.trackId] !== undefined,
-              ),
-            )
-            .map(track => {
-              const id = track.configuration.trackId
-              return (
-                <Overlay
-                  key={id}
-                  model={model}
-                  trackId={id}
-                  yOffsetsOverride={trackOffsets.map(o => o[id]!)}
-                />
+          </g>
+        ))}
+
+        <g transform={`translate(${trackLabelOffset + exportMargin})`}>
+          <SvgClipRect
+            id={`clip-bsv-${model.id}`}
+            width={width}
+            height={totalHeightSvg}
+          >
+            {model.matchedTracks
+              .filter(track =>
+                // skip tracks minimized in any view: they have no rendered body
+                // to anchor a ribbon to (getTrackOffsets omits them)
+                rows.every(
+                  r =>
+                    r.trackOffsets[track.configuration.trackId] !== undefined,
+                ),
               )
-            })}
+              .map(track => {
+                const id = track.configuration.trackId
+                return (
+                  <Overlay
+                    key={id}
+                    model={model}
+                    trackId={id}
+                    yOffsetsOverride={rows.map(r => r.trackOffsets[id]!)}
+                  />
+                )
+              })}
+          </SvgClipRect>
         </g>
       </>
     ),

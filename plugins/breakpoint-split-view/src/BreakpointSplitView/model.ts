@@ -158,19 +158,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Resolved, like LGV's and linear-comparative's: it folds in the
+       * sub-views, whose assemblies are what `initialized` waits on. Without
+       * them a failed assembly leaves `initialized` false forever with nothing
+       * to report, and an SVG export waiting on it hangs behind the dialog's
+       * spinner instead of raising the error (see `awaitViewInitialized`).
+       */
+      get error(): unknown {
+        return self.views.find(v => v.error)?.error
+      },
+
+      /**
+       * #getter
        * Spinner instead of content, i.e. sub-views exist but haven't loaded their
        * assemblies yet. Named to match LGV/dotplot/synteny/circular, which is what
        * ViewContainer reads to publish `data-view-phase`.
        */
       get showLoading() {
-        return this.hasSomethingToShow && !this.initialized
+        return this.hasSomethingToShow && !this.initialized && !this.error
       },
 
       /**
        * #getter
+       * A failed assembly counts: the views it left behind never initialize, so
+       * there is nothing to show and no second attempt coming in this session.
+       * The form — which reports `error` in its banner — is then the only way
+       * forward, matching LGV/synteny/dotplot/circular rather than spinning on a
+       * `showLoading` that can never resolve.
        */
       get showImportForm() {
-        return !this.hasSomethingToShow
+        return !this.hasSomethingToShow || !!this.error
       },
 
       /**
