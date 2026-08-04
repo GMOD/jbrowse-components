@@ -11,9 +11,9 @@ import LocationInput from './LocationInput.tsx'
 import PreviewMessages from './PreviewMessages.tsx'
 import SubmitTracksButton from './SubmitTracksButton.tsx'
 import TrackPreviewTable from './TrackPreviewTable.tsx'
-import { locationId } from './pairLocations.ts'
 import { summarizeBulkInput } from './preview.ts'
 import { useBulkLocations } from './useBulkLocations.ts'
+import { useCustomNames } from './useCustomNames.ts'
 import { resolveTrackNames } from './util.ts'
 
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
@@ -43,12 +43,12 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   // single-track flow): it resolves to the view's assembly until the user picks
   // one, and setAssembly is reactive via observer.
   const assembly = model.assembly ?? ''
-  const [customNames, setCustomNames] = useState<Record<string, string>>({})
+  const { customNames, renameRow, forgetRow } = useCustomNames()
   const [stripExtensions, setStripExtensions] = useState(false)
-  const [timestamp] = useState(() => Date.now())
 
-  const { pairs, rows, skippedCount, orphanIndexCount, warnings } =
-    summarizeBulkInput({ locations, model, assembly, timestamp })
+  const { rows, skippedCount, orphanIndexCount, warnings } = summarizeBulkInput(
+    { locations, model, assembly },
+  )
 
   // Resolved once over every row, then filtered: collisions must be counted
   // across the whole list or the preview and the added names could disagree.
@@ -56,19 +56,13 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const okNamed = named.filter(({ row }) => row.status === 'ok')
 
   function removeRow(rowId: string) {
-    const pair = pairs.find(p => locationId(p.file) === rowId)
     const dropped = new Set([rowId])
-    if (pair?.index) {
-      dropped.add(locationId(pair.index))
+    const indexId = rows.find(row => row.id === rowId)?.indexId
+    if (indexId) {
+      dropped.add(indexId)
     }
     input.removeLocations(dropped)
-    // Drop any edited name so a later re-add of the same URL starts fresh
-    // rather than resurrecting the removed row's custom name.
-    setCustomNames(prev => {
-      const next = { ...prev }
-      delete next[rowId]
-      return next
-    })
+    forgetRow(rowId)
   }
 
   return (
@@ -114,7 +108,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           />
           <TrackPreviewTable
             named={named}
-            setCustomNames={setCustomNames}
+            onRename={renameRow}
             onRemove={removeRow}
           />
         </>

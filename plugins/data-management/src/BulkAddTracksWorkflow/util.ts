@@ -2,11 +2,15 @@ import {
   getSession,
   isSessionWithAddTracks,
   isUriLocation,
+  makeTrackId,
 } from '@jbrowse/core/util'
 import { stripFileExtension } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
 
-import { finishAddTrack } from '../AddTrackWidget/components/util.ts'
+import {
+  containerDisplaysAssembly,
+  finishAddTrack,
+} from '../AddTrackWidget/components/util.ts'
 import {
   isBlockedHttpUrl,
   isFtpUrl,
@@ -17,11 +21,12 @@ import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 import type { TrackConfRow } from './buildConfigs.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-export type InputMode = 'remote' | 'local'
-
 export interface NamedRow {
   row: TrackConfRow
+  /** the name the row is added under: the user's edit if there is one */
   name: string
+  /** the name with no user edit — what an emptied name cell falls back to */
+  autoName: string
 }
 
 /**
@@ -56,12 +61,48 @@ export function resolveTrackNames({
   for (const { stripped } of entries) {
     counts.set(stripped, (counts.get(stripped) ?? 0) + 1)
   }
-  return entries.map(({ row, stripped }) => ({
-    row,
-    name:
-      customNames[row.id] ??
-      (stripExtensions && counts.get(stripped) === 1 ? stripped : row.name),
-  }))
+  return entries.map(({ row, stripped }) => {
+    const autoName =
+      stripExtensions && counts.get(stripped) === 1 ? stripped : row.name
+    return {
+      row,
+      autoName,
+      name: customNames[row.id] ?? autoName,
+    }
+  })
+}
+
+/**
+ * The custom-name map after a name cell is committed. A commit that leaves the
+ * name at (or clears it back to) the automatic one records nothing: the grid
+ * fires `processRowUpdate` on every commit, including one where nothing was
+ * typed, and storing that as a rename would silently opt the row out of the
+ * strip-extensions toggle. Returns the map unchanged when there is nothing to
+ * record, so an inert commit doesn't re-render.
+ */
+export function withEditedName({
+  customNames,
+  id,
+  name,
+  autoName,
+}: {
+  customNames: Record<string, string>
+  id: string
+  name: string
+  autoName: string
+}): Record<string, string> {
+  const trimmed = name.trim()
+  if (!trimmed || trimmed === autoName) {
+    if (!(id in customNames)) {
+      return customNames
+    }
+    const next = { ...customNames }
+    delete next[id]
+    return next
+  }
+  return customNames[id] === trimmed
+    ? customNames
+    : { ...customNames, [id]: trimmed }
 }
 
 /** Pick the singular or plural wording for a count (1 is singular). */
@@ -110,7 +151,7 @@ export function locationWarnings(locations: FileLocation[]): string[] {
 }
 
 /**
- * Add each preview row as a session track, applying any user-edited name, then
+ * Add each preview row as a session track under the name it resolved to, then
  * show the new tracks if the open view is on the chosen assembly and close the
  * widget.
  */
@@ -124,29 +165,46 @@ export function submitBulkTracks({
   assembly: string
 }) {
   const session = getSession(model)
-  if (isSessionWithAddTracks(session)) {
-    const { trackContainer } = model
-    const showInView = trackContainer?.assemblyNames?.includes(assembly)
-    // adding a batch one track at a time otherwise re-renders the track
-    // selector once per file, which is the whole point of this workflow
-    transaction(() => {
-      for (const { row, name } of named) {
-        const conf = { ...row.conf, name }
-        // addTrackConf returns undefined for an invalid config, having already
-        // surfaced its own error; showing it would only add a second, vaguer
-        // "could not resolve identifier" snackbar on top (see
-        // doPasteConfigSubmit, which makes the same check)
-        if (session.addTrackConf(conf) && showInView) {
+  if (!isSessionWithAddTracks(session)) {
+    // the other two submit paths (doSubmit, doPasteConfigSubmit) throw the same
+    // way; the button catches it and shows an error rather than no-oping
+    throw new Error("Can't add tracks to this session")
+  }
+  const { trackContainer } = model
+  const showInView = containerDisplaysAssembly(trackContainer, [assembly])
+  // Ids are minted here rather than with the preview rows: the preview is
+  // rebuilt on every keystroke, but a timestamp held in component state is
+  // pinned for the life of the mounted widget, so a second submit (after one
+  // that failed partway, say) would re-mint the ids of the tracks already
+  // added and addTrackConf would silently hand back those instead.
+  const timestamp = Date.now()
+  let added = 0
+  // adding a batch one track at a time otherwise re-renders the track
+  // selector once per file, which is the whole point of this workflow
+  transaction(() => {
+    for (const [index, { row, name }] of named.entries()) {
+      const conf = {
+        ...row.conf,
+        name,
+        trackId: makeTrackId({ name, timestamp, index }),
+      }
+      // addTrackConf returns undefined for an invalid config, having already
+      // surfaced its own error; showing it would only add a second, vaguer
+      // "could not resolve identifier" snackbar on top (see
+      // doPasteConfigSubmit, which makes the same check)
+      if (session.addTrackConf(conf)) {
+        added++
+        if (showInView) {
           trackContainer?.showTrack(conf.trackId)
         }
       }
-      finishAddTrack(model)
-    })
-    if (!showInView) {
-      session.notify(
-        `Tracks added but not shown: the current view is not on assembly "${assembly}"`,
-        'warning',
-      )
     }
+    finishAddTrack(model)
+  })
+  if (added > 0 && !showInView) {
+    session.notify(
+      `Added ${added} ${plural(added, 'track', 'tracks')} to the session that ${plural(added, 'was', 'were')} not displayed because assembly "${assembly}" is not open in this view`,
+      'warning',
+    )
   }
 }

@@ -10,17 +10,16 @@ function summarize(locations: FileLocation[]) {
     locations,
     model: makeModel(),
     assembly: 'volvox',
-    timestamp: 123,
   })
 }
 
 test('pairs a data file with its index: one addable track, no orphans', () => {
-  const { rows, okRows, orphanIndexCount, skippedCount } = summarize([
+  const { rows, orphanIndexCount, skippedCount } = summarize([
     uri('/a.bam'),
     uri('/a.bam.bai'),
   ])
   expect(rows).toHaveLength(1)
-  expect(okRows).toHaveLength(1)
+  expect(rows[0]!.status).toBe('ok')
   expect(orphanIndexCount).toBe(0)
   expect(skippedCount).toBe(0)
 })
@@ -32,9 +31,9 @@ test('an index with no matching data file is counted as an orphan', () => {
 })
 
 test('an unrecognized extension is a skipped row, not addable', () => {
-  const { rows, okRows, skippedCount } = summarize([uri('/mystery.qqq')])
+  const { rows, skippedCount } = summarize([uri('/mystery.qqq')])
   expect(rows).toHaveLength(1)
-  expect(okRows).toHaveLength(0)
+  expect(rows[0]!.status).toBe('unknown')
   expect(skippedCount).toBe(1)
 })
 

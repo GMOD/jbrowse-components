@@ -141,6 +141,14 @@ test('bam and cram sharing a stem each take their own short-form index', () => {
   ])
 })
 
+// every format guesser accepts \.b?gz$, so a .bgz file is as ordinary a tabix
+// target as a .gz one
+test('a short-form tabix index pairs with a .bgz data file', () => {
+  expect(
+    names(pairLocations([uri('/x/s.vcf.bgz'), uri('/x/s.vcf.tbi')])),
+  ).toEqual([{ file: '/x/s.vcf.bgz', index: '/x/s.vcf.tbi' }])
+})
+
 test('a csi indexes either a bam or a bgzipped file', () => {
   expect(names(pairLocations([uri('/x/s.bam'), uri('/x/s.csi')]))).toEqual([
     { file: '/x/s.bam', index: '/x/s.csi' },

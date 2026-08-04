@@ -9,7 +9,6 @@ function build(locations: FileLocation[]) {
     pairs: pairLocations(locations),
     model: makeModel(),
     assembly: 'volvox',
-    timestamp: 123,
   })
 }
 
@@ -21,6 +20,12 @@ test('detects bam alignments track and pairs its index', () => {
   expect(rows[0]!.indexName).toBe('a.bam.bai')
   expect(rows[0]!.status).toBe('ok')
   expect(rows[0]!.conf.assemblyNames).toEqual(['volvox'])
+})
+
+test('carries the index location id so removing a row can drop it too', () => {
+  const rows = build([uri('/a.bam'), uri('/a.bam.bai')])
+  expect(rows[0]!.indexId).toBe('/a.bam.bai')
+  expect(build([uri('/cov.bw')])[0]!.indexId).toBeUndefined()
 })
 
 test('detects bgzipped vcf variant track', () => {

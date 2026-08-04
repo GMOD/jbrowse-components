@@ -64,14 +64,16 @@ function indexSuffixOf(name: string) {
 // long form (`s.bam.bai`) names its data file outright and is taken at its
 // word, as is any suffix absent from this table (`.idx`, which sits beside
 // several formats).
+// `.bgz` is listed everywhere `.gz` is: every format guesser accepts
+// `\.b?gz$`, so `s.vcf.bgz` is as ordinary a tabix target as `s.vcf.gz`.
 const indexedExtensions: Record<string, string[]> = {
   '.bai': ['bam'],
   '.crai': ['cram'],
   // csi indexes bam as well as anything bgzipped
-  '.csi': ['bam', 'gz'],
-  '.tbi': ['gz'],
-  '.fai': ['fa', 'fasta', 'fna', 'fas'],
-  '.gzi': ['gz'],
+  '.csi': ['bam', 'gz', 'bgz'],
+  '.tbi': ['gz', 'bgz'],
+  '.fai': ['fa', 'fasta', 'fna', 'fas', 'mfa'],
+  '.gzi': ['gz', 'bgz'],
 }
 
 // the data file's own last extension, lowercased and without the dot

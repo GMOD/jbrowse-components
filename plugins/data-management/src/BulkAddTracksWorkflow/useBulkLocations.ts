@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { locationId } from './pairLocations.ts'
 import { parseUrlList } from './util.ts'
 
-import type { InputMode } from './util.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
+
+export type InputMode = 'remote' | 'local'
 
 /**
  * Owns the bulk-input state (mode plus remote-URL text or dropped local files)

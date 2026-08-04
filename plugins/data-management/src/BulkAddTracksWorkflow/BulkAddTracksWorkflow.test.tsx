@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import BulkAddTracksWorkflow from './BulkAddTracksWorkflow.tsx'
 
@@ -193,6 +193,72 @@ test('stripping backs off for rows whose names would collide', () => {
   // both would strip to "a", so both keep the extension that tells them apart
   expect(getByText('a.bam')).toBeTruthy()
   expect(getByText('a.vcf.gz')).toBeTruthy()
+})
+
+test('opening a name cell without typing does not opt the row out of stripping', async () => {
+  const { model } = getSession()
+  const {
+    getByDisplayValue,
+    getByLabelText,
+    getByRole,
+    getByText,
+    queryByDisplayValue,
+  } = render(<BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />)
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+
+  // the grid commits a row update even when nothing was typed, which used to
+  // be recorded as a rename and pin the name against the checkbox
+  fireEvent.doubleClick(getByText('a.bam'))
+  fireEvent.keyDown(getByDisplayValue('a.bam'), { key: 'Enter' })
+  // the grid leaves edit mode a microtask after processRowUpdate resolves
+  await waitFor(() => {
+    expect(queryByDisplayValue('a.bam')).toBeNull()
+  })
+  fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
+
+  expect(getByText('a')).toBeTruthy()
+})
+
+test('a removed row does not resurrect its edited name when re-added', async () => {
+  const { model } = getSession()
+  const {
+    getAllByLabelText,
+    getByDisplayValue,
+    getByLabelText,
+    getByText,
+    queryByDisplayValue,
+  } = render(<BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />)
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+
+  fireEvent.doubleClick(getByText('a.bam'))
+  fireEvent.change(getByDisplayValue('a.bam'), { target: { value: 'renamed' } })
+  fireEvent.keyDown(getByDisplayValue('renamed'), { key: 'Enter' })
+  await waitFor(() => {
+    expect(queryByDisplayValue('renamed')).toBeNull()
+  })
+  expect(getByText('renamed')).toBeTruthy()
+
+  fireEvent.click(getAllByLabelText('Remove track')[0]!)
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+
+  expect(getByText('a.bam')).toBeTruthy()
+})
+
+test('submitting twice from the same widget adds two distinct tracks', () => {
+  const { session, model } = getSession()
+  const { getByLabelText, getByRole } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+
+  // trackIds are minted per submit, not per mount: a second click must not
+  // re-mint the first click's ids, which addTrackConf would silently collapse
+  fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+  fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+
+  expect(session.sessionTracks.length).toBe(2)
+  const [a, b] = session.sessionTracks.map(t => readConfObject(t, 'trackId'))
+  expect(a).not.toBe(b)
 })
 
 test('a collision against an unaddable row still un-strips what gets added', () => {

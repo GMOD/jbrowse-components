@@ -1,4 +1,9 @@
-import { locationWarnings, parseUrlList, resolveTrackNames } from './util.ts'
+import {
+  locationWarnings,
+  parseUrlList,
+  resolveTrackNames,
+  withEditedName,
+} from './util.ts'
 
 import type { TrackConfRow } from './buildConfigs.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -118,5 +123,68 @@ describe('resolveTrackNames', () => {
         stripExtensions: false,
       }),
     ).toEqual(['a.bam', 'a.vcf.gz'])
+  })
+
+  test('autoName is the name with no user edit applied', () => {
+    expect(
+      resolveTrackNames({
+        rows: [rowOf('r1', 'volvox.vcf.gz')],
+        customNames: { r1: 'My variants' },
+        stripExtensions: true,
+      }),
+    ).toEqual([
+      expect.objectContaining({ name: 'My variants', autoName: 'volvox' }),
+    ])
+  })
+})
+
+describe('withEditedName', () => {
+  const args = { id: 'r1', autoName: 'a.bam' }
+
+  test('records a name the user typed', () => {
+    expect(withEditedName({ ...args, customNames: {}, name: 'mine' })).toEqual({
+      r1: 'mine',
+    })
+  })
+
+  test('trims what it records', () => {
+    expect(
+      withEditedName({ ...args, customNames: {}, name: '  mine  ' }),
+    ).toEqual({ r1: 'mine' })
+  })
+
+  // the grid fires processRowUpdate on every commit, including one where the
+  // user opened the cell and typed nothing; recording that would silently opt
+  // the row out of the strip-extensions toggle
+  test('a commit that leaves the automatic name records nothing', () => {
+    const customNames = {}
+    expect(withEditedName({ ...args, customNames, name: 'a.bam' })).toBe(
+      customNames,
+    )
+  })
+
+  test('retyping the automatic name drops an existing rename', () => {
+    expect(
+      withEditedName({ ...args, customNames: { r1: 'mine' }, name: 'a.bam' }),
+    ).toEqual({})
+  })
+
+  test('clearing the cell drops the rename rather than adding an empty name', () => {
+    expect(
+      withEditedName({ ...args, customNames: { r1: 'mine' }, name: '   ' }),
+    ).toEqual({})
+  })
+
+  test('leaves other rows alone', () => {
+    expect(
+      withEditedName({ ...args, customNames: { r2: 'other' }, name: 'mine' }),
+    ).toEqual({ r1: 'mine', r2: 'other' })
+  })
+
+  test('an unchanged rename returns the same map', () => {
+    const customNames = { r1: 'mine' }
+    expect(withEditedName({ ...args, customNames, name: 'mine' })).toBe(
+      customNames,
+    )
   })
 })

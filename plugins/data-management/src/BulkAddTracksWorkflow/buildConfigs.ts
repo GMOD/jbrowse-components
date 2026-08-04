@@ -1,4 +1,3 @@
-import { makeTrackId } from '@jbrowse/core/util'
 import {
   UNKNOWN,
   getFileName,
@@ -15,8 +14,11 @@ export type TrackStatus = 'ok' | 'unknown'
 
 export interface TrackConfRow {
   id: string
+  /**
+   * The config minus its trackId, which is minted at submit time from the name
+   * the row is actually added under (see `submitBulkTracks`).
+   */
   conf: {
-    trackId: string
     type: string
     name: string
     assemblyNames: string[]
@@ -25,7 +27,10 @@ export interface TrackConfRow {
   name: string
   trackType: string
   adapterType: string
+  /** display name of the paired index, if any */
   indexName?: string
+  /** location id of the paired index, so removing a row also removes its index */
+  indexId?: string
   status: TrackStatus
 }
 
@@ -42,23 +47,19 @@ export function buildTrackConfigs({
   pairs,
   model,
   assembly,
-  timestamp,
 }: {
   pairs: LocationPair[]
   model: IAnyStateTreeNode
   assembly: string
-  timestamp: number
 }): TrackConfRow[] {
-  return pairs.map((pair, idx) => {
+  return pairs.map(pair => {
     const adapter = guessAdapter(pair.file, pair.index, '', model)
     const adapterType = adapter.type
     const trackType = guessTrackType(adapterType, model, pair.file)
     const name = getFileName(pair.file)
-    const trackId = makeTrackId({ name, timestamp, index: idx })
     return {
       id: locationId(pair.file),
       conf: {
-        trackId,
         type: trackType,
         name,
         assemblyNames: [assembly],
@@ -68,6 +69,7 @@ export function buildTrackConfigs({
       trackType,
       adapterType,
       indexName: pair.index ? getFileName(pair.index) : undefined,
+      indexId: pair.index ? locationId(pair.index) : undefined,
       status: statusOf(adapterType),
     }
   })

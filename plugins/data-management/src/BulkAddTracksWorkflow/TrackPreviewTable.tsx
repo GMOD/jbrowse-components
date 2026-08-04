@@ -5,9 +5,9 @@ import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { TrackConfRow, TrackStatus } from './buildConfigs.ts'
+import type { CustomNamesState } from './useCustomNames.ts'
 import type { NamedRow } from './util.ts'
 import type { GridColDef } from '@mui/x-data-grid'
-import type { Dispatch, SetStateAction } from 'react'
 
 const ROW_HEIGHT = 30
 const HEADER_HEIGHT = 35
@@ -22,6 +22,7 @@ const useStyles = makeStyles()(theme => ({
 interface PreviewGridRow {
   id: string
   name: string
+  autoName: string
   type: string
   index: string
   status: TrackStatus
@@ -37,17 +38,18 @@ function detectedTypeLabel(row: TrackConfRow) {
 
 const TrackPreviewTable = observer(function TrackPreviewTable({
   named,
-  setCustomNames,
+  onRename,
   onRemove,
 }: {
   named: NamedRow[]
-  setCustomNames: Dispatch<SetStateAction<Record<string, string>>>
+  onRename: CustomNamesState['renameRow']
   onRemove: (id: string) => void
 }) {
   const { classes } = useStyles()
-  const gridRows: PreviewGridRow[] = named.map(({ row, name }) => ({
+  const gridRows: PreviewGridRow[] = named.map(({ row, name, autoName }) => ({
     id: row.id,
     name,
+    autoName,
     type: detectedTypeLabel(row),
     index: row.indexName ?? 'auto',
     status: row.status,
@@ -112,8 +114,11 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
         hideFooter
         disableRowSelectionOnClick
         processRowUpdate={newRow => {
-          setCustomNames(prev => ({ ...prev, [newRow.id]: newRow.name }))
-          return newRow
+          const { id, name, autoName } = newRow
+          onRename({ id, name, autoName })
+          // an emptied cell falls back to the automatic name, which is what
+          // onRename just recorded (i.e. nothing) — show the same thing
+          return { ...newRow, name: name.trim() || autoName }
         }}
       />
     </div>
