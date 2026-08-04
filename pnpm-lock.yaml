@@ -708,8 +708,8 @@ importers:
         specifier: ^7.8.1
         version: 7.8.1
       '@gmod/cram':
-        specifier: ^10.3.0
-        version: 10.3.0
+        specifier: ^10.4.0
+        version: 10.4.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -4272,8 +4272,8 @@ packages:
   '@gmod/bgzf-filehandle@6.3.2':
     resolution: {integrity: sha512-ZgVK7PGUMOByRQn5inARjcz2fSOH1hyIidPj1TBmPZVwVrIXeigHW6rAIs/U8UkxV0c8Xez2D14HGnF3uiq4UQ==}
 
-  '@gmod/cram@10.3.0':
-    resolution: {integrity: sha512-O38P5vIum8LmmzMuWYW4tzbfttdMsybORyLHLagQ7DwGNA997buzdfdg/1Y5E4INJiAF2T6z1HP/Jfs8m0eUvA==}
+  '@gmod/cram@10.4.0':
+    resolution: {integrity: sha512-CvFzcPwjanBzDxeEeZxWWCPqIT/hR1h5TvfuNAnOfEvaa5N/5qyFVx1Uu03VwAWTk4qIyi0zZh/gZphBDdLfTw==}
 
   '@gmod/faidx@3.0.0':
     resolution: {integrity: sha512-3fgxkx8y87Fn4IBgRfovSzCn/kcs4Z0G1bEIzNN2gIDUVW0c1ISH2AvBa3jXlH5NGG26vpKRvLRguB6AsSrS6Q==}
@@ -12208,7 +12208,7 @@ snapshots:
       generic-filehandle2: 2.2.1
       pako-esm2: 2.0.2
 
-  '@gmod/cram@10.3.0':
+  '@gmod/cram@10.4.0':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2

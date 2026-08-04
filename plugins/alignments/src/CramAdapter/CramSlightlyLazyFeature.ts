@@ -1,4 +1,3 @@
-import { CIGAR_HARD_CLIP, CIGAR_SOFT_CLIP } from '@gmod/cram'
 import { numericCigarToString } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
@@ -124,39 +123,27 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     return this.numericCigar
   }
 
-  // Start-clip length, walked straight off the record rather than read out of
+  // Start-clip length, read straight off the record rather than out of
   // NUMERIC_CIGAR.
   //
   // This is the one CIGAR value the render path actually wants, and it is a
   // single operation: the first, or the last on the reverse strand. Reading it
   // out of the packed array meant manufacturing the whole array — ~7,000
   // operations for a long ONT read — to look at one of them, and then retaining
-  // it. The walk allocates nothing and the memo below is a number rather than an
-  // array, so the LRU still pays off across a pan at 8 bytes instead of ~2 MB
-  // per ONT slice.
+  // it. @gmod/cram answers both ends in O(1) off the features at that end, so
+  // nothing is built or walked, and the memo below is a number rather than an
+  // array — the LRU still pays off across a pan, at 8 bytes instead of ~2 MB per
+  // ONT slice.
   //
-  // Semantics must match clipLengthAtStartOfReadNumeric exactly, including that
-  // it inspects only that one operation: a read whose CIGAR is `5H4S…` clips 5,
-  // not 9.
+  // Semantics match clipLengthAtStartOfReadNumeric, including that it inspects
+  // only that one operation: a read whose CIGAR is `5H4S…` clips 5, not 9.
   get clipLengthAtStartOfRead() {
-    if (this.clipStart === undefined) {
-      if (this.strand === -1) {
-        // the last operation, which needs the read bases every earlier one
-        // consumed — see the note next to getLeadingClipLength in @gmod/cram
-        // for why that cannot be answered from the end of the record alone.
-        // Still allocates nothing.
-        let lastOp = -1
-        let lastLen = 0
-        this.record.forEachCigarOp((op, length) => {
-          lastOp = op
-          lastLen = length
-        })
-        this.clipStart =
-          lastOp === CIGAR_SOFT_CLIP || lastOp === CIGAR_HARD_CLIP ? lastLen : 0
-      } else {
-        this.clipStart = this.record.getLeadingClipLength()
-      }
-    }
+    // a reverse-strand read is stored reverse-complemented, so the clip at the
+    // start of the read as sequenced is the one at the end of its alignment
+    this.clipStart ??=
+      this.strand === -1
+        ? this.record.getTrailingClipLength()
+        : this.record.getLeadingClipLength()
     return this.clipStart
   }
 
