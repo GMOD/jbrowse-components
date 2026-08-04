@@ -37,6 +37,18 @@ machinery these single-RPC fetches don't use, and the two getters worth hoisting
 read `self.error`, which that mixin cannot see without a third declaration of
 `BaseDisplay`'s five status members — the trap ADR-041 records.
 
+**Retry is a button, never automatic.** A failed comparative fetch stays failed
+until the user asks again — no backoff, no re-arming on error. This is a
+deliberate constraint, not an unfinished half: the displays sit on RPCs that can
+be minutes long against remote indexes, so a display that re-fires on its own
+hammers a failing server and burns the user's bandwidth with nothing on screen
+to say why. Build the manual path only.
+
+The LGV families already encode that split and are the shape to copy:
+`cancelFetch` (internal, bumps `fetchGeneration`, deliberately *does* retrigger)
+versus `cancelFetchByUser` (durable, deliberately does **not**) exist for exactly
+this reason — see the comments on both in `FetchMixin`.
+
 **None of that blocks the feature**, which was the only user-visible thing the
 fold was buying:
 
@@ -51,6 +63,15 @@ fold was buying:
   `LinearSyntenyRendering.tsx` passes none of them. Dotplot's
   `DisplayStatusOverlays.tsx` renders a bare `LoadingProgress` and needs the
   overlay proper, or its own buttons.
+
+**The loop to not write.** `prepare` must never read `self.error`. The skeleton
+already `setError(undefined)`s at the start of every fetch and `setError(e)`s on
+failure, so an `error` read in the tracked half turns a single failure into an
+unbounded retry loop — fetch, fail, error changes, autorun refires — paced only
+by the debounce, against the server that just failed. Nothing catches this today
+because `prepare` happens not to read it; the same hazard is why
+`installGlobalFetchAutorun` documents that `rpcProps()` must never return
+fetch-derived state.
 
 ## Alignments / canvas
 
