@@ -15,6 +15,11 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
  * `order` is indices into the matrix's key insertion order, which is what
  * `buildClusteredLayout` maps back through — so a caller must build `data` in
  * its own row order.
+ *
+ * Leaf names arrive here as arbitrary strings from somebody's data file, so
+ * they have to be escaped before they go into a newick string. `toNewick` owns
+ * that from @gmod/hclust 4.0.3 — we quoted here until it did, and quoting on
+ * both sides would be worse than quoting on neither.
  */
 export async function clusterMatrix({
   data,

@@ -615,8 +615,8 @@ importers:
   packages/tree-sidebar:
     dependencies:
       '@gmod/hclust':
-        specifier: 4.0.1
-        version: 4.0.1
+        specifier: 4.0.3
+        version: 4.0.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -4278,8 +4278,8 @@ packages:
   '@gmod/faidx@3.0.0':
     resolution: {integrity: sha512-3fgxkx8y87Fn4IBgRfovSzCn/kcs4Z0G1bEIzNN2gIDUVW0c1ISH2AvBa3jXlH5NGG26vpKRvLRguB6AsSrS6Q==}
 
-  '@gmod/hclust@4.0.1':
-    resolution: {integrity: sha512-k0FPYhD9967HHfJJ9UO66BZDDJpqyu+gteiDEjEcfvsdV8/+cQWgtnS52psTLAD1/RgzLwMIdVs97DBDQGwthg==}
+  '@gmod/hclust@4.0.3':
+    resolution: {integrity: sha512-rBbmRGRrSeu6s59Xi1+73Miv8zPomZg+9F3RgEGPPtXkUXHZSsbsbhTCd3Iz67mXbBQn8bhXditNgNQASSbaMw==}
 
   '@gmod/indexedfasta@5.0.9':
     resolution: {integrity: sha512-VQfHmZQ/K2nJKKQPLzAQFYV/BaXpXVlMhayi4UMlVRMdtsuQdlbMsz0sXZiWy+kE0Liqu7i44L/SvhI+gDZBdw==}
@@ -12219,7 +12219,7 @@ snapshots:
 
   '@gmod/faidx@3.0.0': {}
 
-  '@gmod/hclust@4.0.1': {}
+  '@gmod/hclust@4.0.3': {}
 
   '@gmod/indexedfasta@5.0.9':
     dependencies:

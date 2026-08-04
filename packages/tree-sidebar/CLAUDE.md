@@ -86,9 +86,39 @@ tree.
 
 Newick's `length` is an absolute merge height in hclust's `(A,B)1.5` form and an
 incremental branch length in phylo's `(A:0.1,B:0.2)` form, needing opposite
-layouts. A post-paren numeric is a length only when the string has no `:` at all
-— in a phylo tree that number is a bootstrap value, and reading it as a length
-dwarfs the real branch lengths.
+layouts. A post-paren numeric is a length only when the string carries no `:`
+**delimiter** — in a phylo tree that number is a bootstrap value, and reading it
+as a length dwarfs the real branch lengths. Asked of the tokens and not of the
+raw string, because a quoted label may hold a colon of its own.
+
+## Escaping row names is hclust's job, and `parseNewick` is the other half
+
+A row name is an arbitrary string from somebody's data file. Three of the
+Roadmap 127-epigenome names carry parentheses
+(`... peripheral blood (BLD.CD4.NPC)`), and written into a newick string bare
+that is grammar rather than a label: the leaf parsed back as an internal node
+wrapping a leaf named `BLD.CD4.NPC`, `treeDescribesRows` saw leaves that weren't
+the rows, and the dendrogram silently vanished behind `StaleTreeHint`. A comma
+is worse — it splits one leaf into two, so the tree is the wrong _shape_ and
+`clusterLayout` labels every row below it with its neighbour's name.
+
+`@gmod/hclust`'s `toNewick` quotes from 4.0.3 (we quoted in `clusterMatrix`
+until it did). **Don't escape here as well** — quoting on both sides is worse
+than on neither, since `''BLD.CD4.NPC''` matches no row either.
+`clusterMatrix.test.ts` asserts the dependency's half rather than trusting it,
+so an hclust that stopped quoting would fail there instead of losing the
+dendrogram quietly.
+
+`parseNewick` is the reading half and has to agree exactly. It stays ours
+regardless: maf's supplied `.nh` guide trees are hand-written files that may
+quote. Quoting also carries meaning the bare form can't — a **quoted**
+post-paren token is a name whatever it looks like, the only way to call a node
+`1.5`.
+
+Whitespace is deliberately outside the quoted set on both sides. The tokenizer
+reads a bare space as part of the label (variants' phased `NA18536 HP0` rows
+depend on it), so quoting it would rewrite the serialized form of nearly every
+clustered track to fix nothing.
 
 ## `TreeDrawingModel` takes `effectiveRowHeight`, never a raw `rowHeight`
 
