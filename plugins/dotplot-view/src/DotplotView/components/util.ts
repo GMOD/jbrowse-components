@@ -6,18 +6,31 @@ import {
 } from '@jbrowse/core/util'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
-import type { Dotplot1DViewModel } from '../model.ts'
+import type { Dotplot1DViewModel } from '../1dview.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 export interface Tick {
   type: 'major' | 'minor'
   base: number
   refName: string
+  // Which displayed region this tick belongs to. Load-bearing, not decoration:
+  // an axis may show the same refName in more than one displayed region (a
+  // read-vs-ref dotplot's h axis is built from gatherOverlaps, so a read
+  // aligned twice to one chromosome yields two regions on it), and refName
+  // alone then collides — bpToPx would place the second region's ticks on the
+  // first, the seam dedupe would drop them, and React would see duplicate keys.
+  displayedRegionIndex?: number
 }
 
 export interface PositionedTick {
   tick: Tick
   alongPx: number
+}
+
+// Identity of a tick within an axis: the region it belongs to plus its base.
+// Shared by the seam dedupe and both axes' React keys so they agree.
+export function tickKey(tick: Tick) {
+  return `${tick.displayedRegionIndex}-${tick.refName}-${tick.base}`
 }
 
 export function locstr(px: number, view: Dotplot1DViewModel) {
@@ -91,7 +104,11 @@ export function computeTickPositions(
 ): PositionedTick[] {
   const { offsetPx } = view
   return ticks.flatMap(tick => {
-    const px = view.bpToPx({ refName: tick.refName, coord: tick.base })
+    const px = view.bpToPx({
+      refName: tick.refName,
+      coord: tick.base,
+      displayedRegionIndex: tick.displayedRegionIndex,
+    })
     return px === undefined ? [] : [{ tick, alongPx: px - offsetPx }]
   })
 }
@@ -169,26 +186,30 @@ export function makeTicks(regions: ContentBlock[], bpPerPx: number) {
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   for (const block of regions) {
-    const { start, end, refName } = block
+    const { start, end, refName, displayedRegionIndex } = block
     const labelBase = block.reversed ? end : start
     for (
       let base = Math.floor(start / iterPitch) * iterPitch;
       base < Math.ceil(end / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
-      const key = `${refName}-${base}`
+      const tick: Tick = {
+        type: base % gridPitch.majorPitch === 0 ? 'major' : 'minor',
+        base: base - 1,
+        refName,
+        displayedRegionIndex,
+      }
+      // keyed on the region too, so the dedupe only ever collapses the shared
+      // seam between two static blocks OF THE SAME region — not two regions
+      // that happen to be on the same refName
+      const key = tickKey(tick)
       if (!seen.has(key)) {
         seen.add(key)
-        const major = base % gridPitch.majorPitch === 0
         const underLabel =
           !!block.isLeftEndOfDisplayedRegion &&
           Math.abs(base - labelBase) <= gridPitch.minorPitch
-        if (!major || !underLabel) {
-          ticks.push({
-            type: major ? 'major' : 'minor',
-            base: base - 1,
-            refName,
-          })
+        if (tick.type === 'minor' || !underLabel) {
+          ticks.push(tick)
         }
       }
     }

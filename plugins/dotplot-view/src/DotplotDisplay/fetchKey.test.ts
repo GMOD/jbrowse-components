@@ -1,3 +1,5 @@
+import { regionSignature } from '@jbrowse/synteny-core'
+
 import { dotplotFetchKey } from './fetchKey.ts'
 
 import type { Region } from '@jbrowse/core/util'
@@ -6,8 +8,14 @@ function region(refName: string, reversed = false): Region {
   return { assemblyName: 'a', refName, start: 0, end: 100, reversed }
 }
 
-const h = { bpPerPx: 1, displayedRegions: [region('chr1'), region('chr2')] }
-const v = { bpPerPx: 1, displayedRegions: [region('q1'), region('q2')] }
+// the view hands each axis' region signature in precomputed; build it the same
+// way here so a reorder/flip is still exercised end to end
+function axis(bpPerPx: number, regions: Region[]) {
+  return { bpPerPx, regionSignature: regionSignature(regions) }
+}
+
+const h = axis(1, [region('chr1'), region('chr2')])
+const v = axis(1, [region('q1'), region('q2')])
 const win = [region('chr1')]
 
 test('identical inputs produce an identical key', () => {
@@ -17,20 +25,14 @@ test('identical inputs produce an identical key', () => {
 })
 
 test('reordering an axis changes the key (the diagonalize case)', () => {
-  const vReordered = {
-    bpPerPx: 1,
-    displayedRegions: [region('q2'), region('q1')],
-  }
+  const vReordered = axis(1, [region('q2'), region('q1')])
   expect(dotplotFetchKey('fine', h, v, win)).not.toBe(
     dotplotFetchKey('fine', h, vReordered, win),
   )
 })
 
 test('flipping a region orientation changes the key (diagonalize reversal)', () => {
-  const vFlipped = {
-    bpPerPx: 1,
-    displayedRegions: [region('q1', true), region('q2')],
-  }
+  const vFlipped = axis(1, [region('q1', true), region('q2')])
   expect(dotplotFetchKey('fine', h, v, win)).not.toBe(
     dotplotFetchKey('fine', h, vFlipped, win),
   )

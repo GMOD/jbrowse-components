@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { transaction } from 'mobx'
 
@@ -83,6 +83,14 @@ export function useDotplotInteraction(
   const [curr, setCurr] = useState<PointerSample>()
   const [up, setUp] = useState<PointerSample>()
   const [hovering, setHovering] = useState(false)
+
+  // The previous pointer sample, for the pan delta. Kept in a ref as well as in
+  // `curr` because a pan does not need to re-render: the scroll it produces is a
+  // MobX write the axes and canvas already observe, while `setCurr` re-renders
+  // this whole subtree — both axes, every block and tick — once per pointermove.
+  // Nothing reads `curr` during a pan either: the tooltip and the drag rect are
+  // behind `validSelect`, which a pan has false by definition.
+  const lastRef = useRef<PointerSample>(undefined)
 
   // ctrl inverts the cursor mode: it turns pan into select and select into pan.
   // Once a drag starts the modifier is whatever it was at pointerdown, so
@@ -182,16 +190,22 @@ export function useDotplotInteraction(
           const s = sample(event)
           setDown(s)
           setCurr(s)
+          lastRef.current = s
           setUp(undefined)
         }
       },
       onPointerMove: event => {
         const s = sample(event)
-        setCurr(s)
+        const last = lastRef.current
+        lastRef.current = s
         const panning = !!down && !up && !validSelect
-        if (panning && curr) {
-          hview.scroll(curr.clientX - s.clientX)
-          vview.scroll(s.clientY - curr.clientY)
+        if (panning) {
+          if (last) {
+            hview.scroll(last.clientX - s.clientX)
+            vview.scroll(s.clientY - last.clientY)
+          }
+        } else {
+          setCurr(s)
         }
       },
       onPointerUp: event => {

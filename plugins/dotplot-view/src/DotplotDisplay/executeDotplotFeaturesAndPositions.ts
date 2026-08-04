@@ -21,8 +21,11 @@ export interface DotplotFeaturesAndPositionsResult {
   p21: Float64Array
   p22: Float64Array
   strands: Int8Array
-  starts: Uint32Array
-  ends: Uint32Array
+  // Reference-span length per feature, which is all the main thread needs (the
+  // minAlignmentLength filter in buildLineSegments). Shipping start+end and
+  // subtracting there sent two arrays for one derived number; same field and
+  // same name LinearSyntenyDisplay's geometry already uses.
+  alignmentLengths: Uint32Array
   identities: Float32Array
   meanIdentities: Float32Array
   mappingQuals: Float32Array
@@ -135,8 +138,7 @@ export async function executeDotplotFeaturesAndPositions({
   const p21 = new Float64Array(count)
   const p22 = new Float64Array(count)
   const strands = new Int8Array(count)
-  const starts = new Uint32Array(count)
-  const ends = new Uint32Array(count)
+  const alignmentLengths = new Uint32Array(count)
   const identities = new Float32Array(count)
   const meanIdentities = new Float32Array(count)
   const mappingQuals = new Float32Array(count)
@@ -211,8 +213,7 @@ export async function executeDotplotFeaturesAndPositions({
     p21[n] = c21
     p22[n] = c22
     strands[n] = strand
-    starts[n] = start
-    ends[n] = end
+    alignmentLengths[n] = Math.abs(end - start)
     identities[n] = (f.get('identity') as number | undefined) ?? -1
     meanIdentities[n] = (f.get('meanIdentity') as number | undefined) ?? -1
     mappingQuals[n] = (f.get('mappingQual') as number | undefined) ?? -1
@@ -256,8 +257,7 @@ export async function executeDotplotFeaturesAndPositions({
     p21: p21.subarray(0, n),
     p22: p22.subarray(0, n),
     strands: strands.subarray(0, n),
-    starts: starts.subarray(0, n),
-    ends: ends.subarray(0, n),
+    alignmentLengths: alignmentLengths.subarray(0, n),
     identities: identities.subarray(0, n),
     meanIdentities: meanIdentities.subarray(0, n),
     mappingQuals: mappingQuals.subarray(0, n),
@@ -277,8 +277,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.p21.buffer,
     result.p22.buffer,
     result.strands.buffer,
-    result.starts.buffer,
-    result.ends.buffer,
+    result.alignmentLengths.buffer,
     result.identities.buffer,
     result.meanIdentities.buffer,
     result.mappingQuals.buffer,

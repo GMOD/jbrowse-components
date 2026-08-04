@@ -73,6 +73,43 @@ test('an alpha change recolors without rebuilding geometry', async () => {
   expect(colorsBefore[0]! >>> 24).toBe(255)
 }, 45000)
 
+// alpha and minAlignmentLength are stored on the view, not per display. They
+// used to be per display while every control was view-level and fanned its
+// setter out over the displays that existed at the time — so a track shown after
+// the slider moved rendered at the default while the slider said otherwise.
+test('a track shown after a settings change inherits them', async () => {
+  const { view } = await loadedDotplotDisplay()
+  // both moved off their defaults BEFORE the second track exists, which is
+  // exactly what a fan-out setter cannot reach
+  view.setAlpha(0.5)
+  view.setMinAlignmentLength(1e9)
+
+  view.showTrack('peach_grape_small')
+  await waitFor(
+    () => {
+      expect(view.tracks.length).toBe(2)
+    },
+    { timeout: 30000 },
+  )
+  const added = view.dotplotDisplays[1]
+  await waitFor(
+    () => {
+      expect(added.geometry).toBeDefined()
+    },
+    { timeout: 30000 },
+  )
+
+  // the length filter was in force for this display's very first geometry build
+  expect(added.alpha).toBe(0.5)
+  expect(added.geometry.instanceCount).toBe(0)
+
+  // and the inherited alpha is what it actually paints with, not just what it
+  // reports: 0.5 -> 128 in the high byte of the packed ABGR color
+  view.setMinAlignmentLength(0)
+  expect(added.geometry.instanceCount).toBeGreaterThan(0)
+  expect(added.geometry.colors[0]! >>> 24).toBe(128)
+}, 45000)
+
 // Two alignment files drawn into one plot used to be indistinguishable — same
 // mode, same black points. colorBy:'track' is what tells them apart, and the
 // palette is assigned by the view so a color pinned on one shifts what the

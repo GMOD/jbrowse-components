@@ -50,6 +50,15 @@ export function drawDotplotInstances(
   // serializes every one into the <path> behind the clipPath — the dominant
   // term in export size. Padded by lineWidth so a round cap can't be clipped
   // out while its dot is still visible.
+  // One CSS string per distinct color instead of one per color *change*. The
+  // batching above only pays off when consecutive segments share a color, which
+  // the chromosome-painting modes give and the ramp modes (identity,
+  // meanQueryIdentity, mappingQuality) do not — there, neighbouring features
+  // land on different LUT entries and every segment used to allocate its own
+  // `rgba(...)`. A ramp is a 256-entry LUT, so this cache holds a few hundred
+  // strings at most; per call rather than module-level, since alpha is packed
+  // into the color and a slider drag would otherwise accumulate a set per stop.
+  const cssByAbgr = new Map<number, string>()
   let currentAbgr: number | undefined
   for (let i = 0; i < instanceCount; i++) {
     const sx1 = (x1[i]! - viewBpH) * bpPerPxHInv
@@ -68,7 +77,12 @@ export function drawDotplotInstances(
           ctx.stroke()
         }
         currentAbgr = abgr
-        ctx.strokeStyle = abgrToCssRgba(abgr)
+        let css = cssByAbgr.get(abgr)
+        if (css === undefined) {
+          css = abgrToCssRgba(abgr)
+          cssByAbgr.set(abgr, css)
+        }
+        ctx.strokeStyle = css
         ctx.beginPath()
       }
       ctx.moveTo(sx1, sy1)

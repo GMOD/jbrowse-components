@@ -1,7 +1,17 @@
-import { regionSignature } from '@jbrowse/synteny-core'
-
 import type { Region } from '@jbrowse/core/util'
-import type { BpIndexViewSnap, LodTier } from '@jbrowse/synteny-core'
+import type { LodTier } from '@jbrowse/synteny-core'
+
+// One axis' contribution: its zoom, and a signature of its displayed regions'
+// order and orientation. The signature arrives precomputed rather than being
+// derived here from the axis' regions, because this key also depends on zoom —
+// built in one place it rebuilt a string over every displayed region, for every
+// display, on every wheel step. The view computes each axis' signature once
+// (`hRegionSignature`/`vRegionSignature`), where it recomputes only when the
+// regions actually change.
+interface AxisFetchInputs {
+  bpPerPx: number
+  regionSignature: string
+}
 
 // Signature of the inputs a dotplot feature fetch depends on: the LOD tier, each
 // axis's zoom and displayed-region order/orientation, and the snapped h-axis
@@ -20,12 +30,11 @@ import type { BpIndexViewSnap, LodTier } from '@jbrowse/synteny-core'
 export function dotplotFetchKey(
   // the resolved tier, never the 'auto' preference — see resolveLodTier
   lodTier: LodTier,
-  hAxis: BpIndexViewSnap,
-  vAxis: BpIndexViewSnap,
+  hAxis: AxisFetchInputs,
+  vAxis: AxisFetchInputs,
   fetchRegions: Region[],
 ) {
-  const axis = (a: BpIndexViewSnap) =>
-    `${a.bpPerPx}#${regionSignature(a.displayedRegions)}`
+  const axis = (a: AxisFetchInputs) => `${a.bpPerPx}#${a.regionSignature}`
   const window = fetchRegions
     .map(r => `${r.refName}:${r.start}-${r.end}`)
     .join(',')

@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { AXIS_LABEL_FONT, tickLabel, truncateRefName } from './util.ts'
+import { AXIS_LABEL_FONT, tickKey, tickLabel, truncateRefName } from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { Tick } from './util.ts'
@@ -97,7 +97,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
           )
         })}
       {ticks.map(({ tick, alongPx: x }) => (
-        <Fragment key={`${tick.refName}-${tick.base}`}>
+        <Fragment key={tickKey(tick)}>
           <line
             x1={x}
             x2={x}
@@ -189,7 +189,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
       {ticks.map(({ tick, alongPx }) => {
         const y = viewHeight - alongPx
         return (
-          <Fragment key={`${tick.refName}-${tick.base}`}>
+          <Fragment key={tickKey(tick)}>
             <line
               y1={y}
               y2={y}

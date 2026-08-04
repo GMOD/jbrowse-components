@@ -26,7 +26,12 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxBpPerPx() {
-        return self.totalBp / (self.width * 0.9)
+        // Floor the divisor. This axis' width is the view's viewWidth/viewHeight,
+        // which bottom out at 0 when the container is narrower than the axis
+        // borders (they have their own MIN_BORDER floor) — and totalBp/0 is
+        // Infinity, which showAllRegions would then zoomTo. Core's own
+        // Base1DViewModel.showAllRegions guards its divisor the same way.
+        return self.totalBp / Math.max(self.width * 0.9, 1)
       },
 
       /**

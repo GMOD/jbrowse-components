@@ -6,7 +6,7 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // self-vs-self layout: both axes show ctgA at bpPerPx=1, offsetPx=0. borderY is
 // now derived from the axis labels, so tests read model.viewHeight rather than
 // assuming a fixed border.
-function setup() {
+function setup({ vviewReversed = false } = {}) {
   const session = createTestSession({
     sessionSnapshot: {
       views: [
@@ -25,7 +25,13 @@ function setup() {
             bpPerPx: 1,
             offsetPx: 0,
             displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 0,
+                end: 1000,
+                reversed: vviewReversed,
+              },
             ],
           },
         },
@@ -87,6 +93,28 @@ test('addHighlightFromMouseCoords clamps a drag past the region edges', () => {
     { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
     { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
   ])
+})
+
+// auto-diagonalize reverses query regions, so the vertical axis routinely has
+// them. bp then decreases with screen position, and taking the drag's ends in
+// gesture order emitted start > end — a backwards region that gets persisted.
+test('addHighlightFromMouseCoords orders the band on a reversed region', () => {
+  const model = setup({ vviewReversed: true })
+  const { viewHeight } = model
+  model.addHighlightFromMouseCoords(
+    [100, viewHeight - 200],
+    [300, viewHeight - 400],
+  )
+  for (const h of model.highlight) {
+    expect(h.start).toBeLessThan(h.end)
+  }
+  // the reversed axis maps px 200..400 to bp 600..800 (1000 - px)
+  expect(model.highlight[1]).toEqual({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 600,
+    end: 800,
+  })
 })
 
 test('a drag under the 3px threshold adds no highlight', () => {

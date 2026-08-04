@@ -181,11 +181,11 @@ export function doAfterAttach(
         // colorBy/alpha are deliberately absent: colors are a separate
         // main-thread pass over instanceFeatureIdx (the `computedColors`
         // getter), so a palette change never re-walks the CIGARs here.
-        const { rpcData, minAlignmentLength } = self
+        const { rpcData } = self
         if (!rpcData) {
           return
         }
-        const { drawCigar, hview, vview } = view
+        const { drawCigar, hview, vview, minAlignmentLength } = view
         // GPU precision anchor: the viewport-start cumBp per axis at build time.
         // Read offsetPx untracked so panning alone doesn't rebuild geometry
         // (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,

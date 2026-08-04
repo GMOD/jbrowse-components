@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import { getHighlightColor, highlightKey } from './highlightUtils.ts'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
 
 const useStyles = makeStyles()({
   // absolute so chips sit at band anchors; auto pointer-events so clicks land

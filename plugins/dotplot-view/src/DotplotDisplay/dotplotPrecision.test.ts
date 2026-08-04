@@ -14,8 +14,7 @@ function makeRpcData(
     p21: new Float64Array([p21]),
     p22: new Float64Array([p22]),
     strands: new Int8Array([1]),
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([100]),
+    alignmentLengths: new Uint32Array([100]),
     identities: new Float32Array([-1]),
     meanIdentities: new Float32Array([-1]),
     mappingQuals: new Float32Array([-1]),
@@ -74,8 +73,7 @@ describe('buildLineSegments cumBp precision', () => {
       p21: new Float64Array([5_000]),
       p22: new Float64Array([4_800]),
       strands: new Int8Array([1]),
-      starts: new Uint32Array([0]),
-      ends: new Uint32Array([250]),
+      alignmentLengths: new Uint32Array([250]),
       identities: new Float32Array([-1]),
       meanIdentities: new Float32Array([-1]),
       mappingQuals: new Float32Array([-1]),
@@ -96,6 +94,31 @@ describe('buildLineSegments cumBp precision', () => {
       expect(segs.y1[i]!).toBeLessThanOrEqual(5_000)
       expect(segs.y2[i]!).toBeLessThanOrEqual(5_000)
     }
+  })
+
+  // The buffers are allocated for the worst case — a segment per feature plus
+  // one per shipped CIGAR op — and `subarray` would pin that whole allocation
+  // for as long as the display holds the geometry. At whole-genome zoom the
+  // worker ships CIGARs within 8x zoom headroom that the geometry builder is
+  // then too zoomed out to walk, so the unused slack dwarfs the data.
+  test('a mostly-unused geometry allocation is not retained', () => {
+    const M = (len: number) => (len << 4) | 0 // CIGAR_M
+    const cigarData = new Uint32Array(Array.from({ length: 64 }, () => M(1)))
+    const data: DotplotRpcData = {
+      ...makeRpcData(0, 64, 0, 64),
+      cigarData,
+      cigarOffsets: new Uint32Array([0, cigarData.length]),
+    }
+    // at bpPerPx 1000 the 64bp feature is 0.064px, far under
+    // MIN_CIGAR_PX_WIDTH, so all 64 ops collapse into one segment
+    const segs = buildLineSegments(data, true, 0, 1_000, 1_000, 0, 0)
+    expect(segs.instanceCount).toBe(1)
+    expect(segs.x1[0]).toBe(0)
+    expect(segs.x2[0]).toBe(64)
+    expect(segs.x1.buffer.byteLength).toBe(Float64Array.BYTES_PER_ELEMENT)
+    expect(segs.instanceFeatureIdx.buffer.byteLength).toBe(
+      Uint32Array.BYTES_PER_ELEMENT,
+    )
   })
 
   test('window-relative Float32 upload is sub-pixel vs absolute Float64', () => {

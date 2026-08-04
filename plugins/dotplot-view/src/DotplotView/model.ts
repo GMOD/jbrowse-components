@@ -25,6 +25,7 @@ import {
   TrackColorsMixin,
   displaysSettled,
   lodMenuItems,
+  regionSignature,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -64,8 +65,13 @@ const ReturnToImportFormDialog = lazy(
 )
 type CursorMode = 'crosshair' | 'move'
 
-// Hide axis tick labels when more than this many blocks are visible — the
-// labels would overlap at high chromosome counts.
+// Drop an axis' ticks entirely — lines as well as labels — once more than this
+// many blocks are visible. The reason is the labels, which overlap illegibly at
+// high chromosome counts; the tick lines go with them only because they share
+// this one list. Whether the lines should survive on their own (without them the
+// region-boundary grid is the only structure a whole-genome plot has left) is an
+// open UX question, not a settled decision — note that block *labels* get a real
+// greedy overlap-hider for the same problem, `getBlockLabelKeysToHide`.
 const MAX_TICK_BLOCKS = 5
 
 function axisTicks(view: Dotplot1DViewModel) {
@@ -100,12 +106,23 @@ function canonicalRegion(
 // or end past a region's edge, or run into the next region entirely, so both
 // ends are clamped into the region the drag started in rather than producing a
 // band that spans refNames.
+//
+// minmax, not "a then b": on a reversed displayed region (auto-diagonalize flips
+// query regions, so the vertical axis routinely has them) bp decreases with
+// screen position, and taking the ends in drag order emitted start > end. The
+// bands still drew — getLayoutHighlightCoords is order-agnostic — but the
+// backwards region is what gets persisted to the session and read back by
+// everything downstream of it.
 function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
+  const [start, end] = minmax(
+    clamp(a.coord0, a.start, a.end),
+    a.refName === b.refName ? clamp(b.coord0, a.start, a.end) : a.end,
+  )
   return {
     assemblyName: a.assemblyName,
     refName: a.refName,
-    start: clamp(a.coord0, a.start, a.end),
-    end: a.refName === b.refName ? clamp(b.coord0, a.start, a.end) : a.end,
+    start,
+    end,
   }
 }
 
@@ -211,6 +228,21 @@ export default function stateModelFactory(pm: PluginManager) {
            * displays with one uniform.
            */
           lineWidth: types.stripDefault(types.number, defaultLineWidth),
+          /**
+           * #property
+           * Plot-wide alpha applied to every point. View-level for the same
+           * reason lineWidth is: the only control is view-level, so storing it
+           * per display meant a track shown after the slider moved rendered at
+           * the default while the slider said otherwise.
+           */
+          alpha: types.stripDefault(types.number, 1),
+          /**
+           * #property
+           * Hide alignments shorter than this many bp. Enforced per feature in
+           * buildLineSegments. Cuts whole-genome hairball noise. View-level, see
+           * alpha.
+           */
+          minAlignmentLength: types.stripDefault(types.number, 0),
           /**
            * #property
            */
@@ -447,6 +479,27 @@ export default function stateModelFactory(pm: PluginManager) {
         get views() {
           return [self.hview, self.vview]
         },
+        /**
+         * #getter
+         * Signature of the horizontal axis' displayed-region order and
+         * orientation, which a diagonalize reorder/flip changes and a zoom or
+         * pan does not. Computed here, once for the view, because every
+         * display's `currentFetchKey` needs it alongside the zoom: derived
+         * inside that key it was rebuilt — a template literal per displayed
+         * region, so thousands on a fragmented assembly — per display on every
+         * wheel step. As its own primitive-valued computed it notifies only when
+         * the regions really change.
+         */
+        get hRegionSignature() {
+          return regionSignature(self.hview.displayedRegions)
+        },
+        /**
+         * #getter
+         * The vertical axis' displayed-region signature. See hRegionSignature.
+         */
+        get vRegionSignature() {
+          return regionSignature(self.vview.displayedRegions)
+        },
 
         /**
          * #getter
@@ -456,7 +509,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return self.tracks.map(t => t.displays[0] as DotplotDisplayModel)
         },
         /**
-         * #getter
+         * #method
          * Every track that can take a palette slot, in paint order, paired with
          * whatever color the user pinned on it.
          */
@@ -465,21 +518,6 @@ export default function stateModelFactory(pm: PluginManager) {
             const { trackId, name } = t.configuration
             return { trackId, name }
           })
-        },
-        /**
-         * #getter
-         * Plot-wide alpha. See colorBy: resolved here so the no-display case is
-         * answered once. Matches the display schema's own default.
-         */
-        get alpha() {
-          return this.dotplotDisplays[0]?.alpha ?? 1
-        },
-        /**
-         * #getter
-         * Plot-wide minimum alignment length filter, in bp. See colorBy.
-         */
-        get minAlignmentLength() {
-          return this.dotplotDisplays[0]?.minAlignmentLength ?? 0
         },
         /**
          * #getter
@@ -644,17 +682,13 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         setAlpha(value: number) {
-          for (const d of self.dotplotDisplays) {
-            d.setAlpha(value)
-          }
+          self.alpha = value
         },
         /**
          * #action
          */
         setMinAlignmentLength(value: number) {
-          for (const d of self.dotplotDisplays) {
-            d.setMinAlignmentLength(value)
-          }
+          self.minAlignmentLength = value
         },
         /**
          * #action
@@ -665,6 +699,10 @@ export default function stateModelFactory(pm: PluginManager) {
           self.vview.setDisplayedRegions([])
           self.assemblyNames = cast([])
           self.tracks.clear()
+          // An init that never finished applying still counts towards
+          // hasSomethingToShow, so leaving it here means "return to import form"
+          // doesn't. Dropping the request is what returning to the form means.
+          self.init = undefined
         },
         /**
          * #action

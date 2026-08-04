@@ -49,14 +49,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * #property
            */
           configuration: ConfigurationReference(configSchema),
-          /**
-           * #property
-           */
-          alpha: types.optional(types.number, 1),
-          /**
-           * #property
-           */
-          minAlignmentLength: types.optional(types.number, 0),
         })
         .volatile(() => ({
           /**
@@ -101,16 +93,30 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * alone, without re-walking a single CIGAR.
        */
       get computedColors() {
-        const { instanceData, rpcData, alpha } = self
+        const { instanceData, rpcData } = self
         return instanceData && rpcData
           ? computeDotplotColors({
               instanceData,
               rpcData,
               colorBy: this.colorBy,
-              alpha,
+              alpha: this.alpha,
               trackColor: this.trackColor,
             })
           : undefined
+      },
+      /**
+       * #getter
+       * Plot-wide opacity, owned by the view (see `DotplotView.alpha`). Read
+       * through here rather than reaching for the view inside `computedColors`:
+       * the annotated primitive keeps `DotplotViewModel` out of this model's own
+       * inferred type, which a bare `view.alpha` in a getter body puts there —
+       * and that cycle collapses the whole display model to `any` (same reason
+       * renderSvg.tsx types its view structurally). `minAlignmentLength` needs
+       * no such hop; its only reader is the geometry autorun, which is outside
+       * the inference path and already holds the view.
+       */
+      get alpha(): number {
+        return (getContainingView(self) as DotplotViewModel).alpha
       },
       /**
        * #getter
@@ -208,8 +214,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const view = getContainingView(self) as DotplotViewModel
         return dotplotFetchKey(
           this.lodTier,
-          view.hview,
-          view.vview,
+          {
+            bpPerPx: view.hview.bpPerPx,
+            regionSignature: view.hRegionSignature,
+          },
+          {
+            bpPerPx: view.vview.bpPerPx,
+            regionSignature: view.vRegionSignature,
+          },
           this.fetchRegions,
         )
       },
@@ -320,18 +332,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.fetching = false
         self.statusMessage = undefined
         self.statusProgress = undefined
-      },
-      /**
-       * #action
-       */
-      setAlpha(value: number) {
-        self.alpha = value
-      },
-      /**
-       * #action
-       */
-      setMinAlignmentLength(value: number) {
-        self.minAlignmentLength = value
       },
     }))
     .actions(self => ({

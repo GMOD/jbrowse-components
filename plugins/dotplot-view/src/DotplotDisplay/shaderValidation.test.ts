@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { dotplotShader } from './dotplotShaders.ts'
+import { WGSL_SOURCE } from './shaders/dotplot.generated.ts'
 
 let tmpDir: string
 
@@ -26,7 +26,7 @@ function validateWgsl(name: string, code: string) {
   }
 }
 
-const wgslShaders: [string, string][] = [['dotplot', dotplotShader]]
+const wgslShaders: [string, string][] = [['dotplot', WGSL_SOURCE]]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip
 

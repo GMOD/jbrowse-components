@@ -36,18 +36,31 @@ function writeSegment(
   b.instanceFeatureIdx[n] = featureIdx
 }
 
+// `subarray` is a view, so it pins the WHOLE allocation for as long as the
+// display holds this geometry — and the allocation is a worst case (a segment
+// per feature plus one per shipped CIGAR op) that the emitted count routinely
+// falls far short of: at whole-genome zoom nearly every feature arrives with a
+// CIGAR (the worker ships within 8x zoom headroom) and then collapses to a
+// single segment because it is under MIN_CIGAR_PX_WIDTH, so the slack can be
+// orders of magnitude larger than the data. Copy out once the slack exceeds the
+// data, which both bounds retention at 2x and only spends a memcpy that recovers
+// at least as much memory as it moves. Below that the view is kept: allocating a
+// second copy of nearly-full buffers would cost more than it frees.
 function trimToCount(
   b: GeometryBuffers,
   n: number,
   baseH: number,
   baseV: number,
 ): DotplotInstanceData {
+  // `slice` copies, `subarray` views; identical signatures, so the choice is a
+  // method name rather than a wrapper that would need a cast to stay generic
+  const trim = n * 2 < b.instanceFeatureIdx.length ? 'slice' : 'subarray'
   return {
-    x1: b.x1.subarray(0, n),
-    y1: b.y1.subarray(0, n),
-    x2: b.x2.subarray(0, n),
-    y2: b.y2.subarray(0, n),
-    instanceFeatureIdx: b.instanceFeatureIdx.subarray(0, n),
+    x1: b.x1[trim](0, n),
+    y1: b.y1[trim](0, n),
+    x2: b.x2[trim](0, n),
+    y2: b.y2[trim](0, n),
+    instanceFeatureIdx: b.instanceFeatureIdx[trim](0, n),
     instanceCount: n,
     baseH,
     baseV,
@@ -63,7 +76,7 @@ export function buildLineSegments(
   baseH: number,
   baseV: number,
 ): DotplotInstanceData {
-  const { p11, p12, p21, p22, starts, ends, cigarData, cigarOffsets } = data
+  const { p11, p12, p21, p22, alignmentLengths, cigarData, cigarOffsets } = data
   const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
@@ -76,10 +89,7 @@ export function buildLineSegments(
   let n = 0
 
   for (let i = 0; i < count; i++) {
-    if (
-      minAlignmentLength > 0 &&
-      Math.abs(ends[i]! - starts[i]!) < minAlignmentLength
-    ) {
+    if (minAlignmentLength > 0 && alignmentLengths[i]! < minAlignmentLength) {
       continue
     }
     const x1 = p11[i]!

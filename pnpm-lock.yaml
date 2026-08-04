@@ -1112,9 +1112,6 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core

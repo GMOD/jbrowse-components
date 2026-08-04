@@ -2,6 +2,7 @@ import {
   axisBorderPx,
   getBlockLabelKeysToHide,
   makeTicks,
+  tickKey,
   truncateRefName,
 } from './util.ts'
 
@@ -16,10 +17,11 @@ function staticBlock(
   start: number,
   end: number,
   isLeftEndOfDisplayedRegion = false,
+  displayedRegionIndex = 0,
 ): ContentBlock {
   return {
     type: 'ContentBlock',
-    key: `ctgA:${start}-${end}`,
+    key: `ctgA:${start}-${end}:${displayedRegionIndex}`,
     offsetPx: start,
     widthPx: end - start,
     assemblyName: 'volvox',
@@ -27,6 +29,7 @@ function staticBlock(
     start,
     end,
     isLeftEndOfDisplayedRegion,
+    displayedRegionIndex,
   }
 }
 
@@ -122,6 +125,37 @@ describe('makeTicks', () => {
     expect(interior).toContain(-1)
     expect(leftEnd).not.toContain(-1)
     expect(leftEnd).toHaveLength(interior.length - 1)
+  })
+
+  // An axis can show the same refName in more than one displayed region — a
+  // read-vs-ref dotplot's h axis comes from gatherOverlaps, so a read aligned
+  // twice to one chromosome yields two regions on it. Keyed on refName alone,
+  // the second region's ticks were deduped away as if they were the first
+  // region's, positioned against the first region by bpToPx, and handed React a
+  // duplicate key.
+  test('the same refName in two displayed regions keeps both sets of ticks', () => {
+    const one = makeTicks([staticBlock(0, 10_000, false, 0)], 20)
+    const two = makeTicks(
+      [staticBlock(0, 10_000, false, 0), staticBlock(0, 10_000, false, 1)],
+      20,
+    )
+    expect(two).toHaveLength(one.length * 2)
+    expect(new Set(two.map(tickKey)).size).toBe(two.length)
+    expect(two.filter(t => t.displayedRegionIndex === 1)).toHaveLength(
+      one.length,
+    )
+  })
+
+  test('the seam between two static blocks of one region still dedupes', () => {
+    const bases = makeTicks(
+      [
+        staticBlock(12_000, 22_345, false, 3),
+        staticBlock(22_345, 32_345, false, 3),
+      ],
+      20,
+    ).map(t => t.base)
+    const steps = new Set(bases.slice(1).map((base, i) => base - bases[i]!))
+    expect([...steps]).toHaveLength(1)
   })
 })
 
