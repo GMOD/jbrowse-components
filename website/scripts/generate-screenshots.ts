@@ -215,6 +215,12 @@ const repoRoot = path.resolve(__dirname, '..', '..')
 const buildPath = path.resolve(repoRoot, 'products', 'jbrowse-web', 'build')
 const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const outDir = path.resolve(__dirname, '..', 'static', 'img')
+// Failure dumps go OUTSIDE static/, not next to the figure they failed on.
+// astro.config sets `publicDir: './static'`, and Astro copies that directory
+// verbatim without consulting .gitignore — so a debug dump under static/img is
+// kept out of git and then published anyway, which `deploy_staging.sh` (it
+// builds from the working tree) uploads. One stray dump was 3.2 MB.
+const debugDir = path.resolve(__dirname, '..', 'debug-screenshots')
 // jb2export (the @jbrowse/img CLI) renders the products/jbrowse-img/README
 // example images straight to PNG via React SSR — no browser involved, so
 // CliSpecs bypass the puppeteer pipeline entirely and land here instead of
@@ -597,7 +603,8 @@ async function debugDump(page: Page, name: string) {
   console.error(
     `    [${name}] debug text: ${bodyText.replaceAll(/\s+/g, ' ').trim()}`,
   )
-  const debugPath = path.join(outDir, `debug_${name.replaceAll('/', '_')}.png`)
+  fs.mkdirSync(debugDir, { recursive: true })
+  const debugPath = path.join(debugDir, `${name.replaceAll('/', '_')}.png`)
   await page
     .screenshot()
     .then(png => {
