@@ -2553,10 +2553,10 @@
   },
   "hic/faint_contacts": {
     "name": "hic/faint_contacts",
-    "status": "bad",
-    "note": "this just isnt a very 'interesting' screenshot.  consider deleting",
-    "reviewedAt": "2026-08-04T17:29:44.127Z",
-    "hash": "9da85a24ec961ad64508ee89b9f5a9bb4f07798b"
+    "status": "good",
+    "note": "Kept, and rebuilt -- deleting it would leave the guide's whole 'Adjusting the color scale' section asserting a difference with nothing to look at, for a setting that is ON BY DEFAULT and therefore the state every other Hi-C figure on the site is shot in. What was wrong was the framing, three things. WINDOW 11 Mb -> 4.2 Mb (chr8:52,000,000-56,200,000, the span two_regions works in): the setting is about CONTRAST, and at 11 Mb the losing half was a blank frame with a red line across the top, which reads as a broken capture rather than as a washed-out scale. At 4.2 Mb the TADs are several hundred px wide, so both halves have blocks in them and the difference is that one has edges and corner dots. LABELS: each half now carries its own 'Show faint contacts OFF' / 'ON (the default)' pill. A compose has no annotation layer -- the parts are captured separately and appended -- but each PART is an ordinary spec with its own annotations, which is where these live, anchored to the bottom-left of the hic track band (the corner of the triangle's bounding box with no data in it at any zoom). HEIGHT: display 330, viewport 460 -> 532. The label was invisible on the first attempt because the track ran 72px past the bottom of the capture, so the band it anchors to was off-frame; a bottom-anchored callout needs the whole display inside the shot. Caption rewritten to name what each half shows.",
+    "reviewedAt": "2026-08-04T22:41:28.441Z",
+    "hash": "1d7a132ee060d660e63a5f9211b8489266ea7083"
   },
   "ld/anopheles_r2_vs_dprime": {
     "name": "ld/anopheles_r2_vs_dprime",
@@ -2658,9 +2658,9 @@
   },
   "hic/two_regions": {
     "name": "hic/two_regions",
-    "status": "bad",
-    "note": "we may want a whole genome overview also",
-    "reviewedAt": "2026-08-04T20:18:33.354Z",
+    "status": "good",
+    "note": "Added, as hic/whole_genome, and it took two findings to make it a figure rather than an empty frame. displayedRegionNames is the declarative way to a whole-genome view (whole chromosomes in the order given, no menu to drive); it names chr1-chrY so the unplaced and alt contigs don't take a third of the width for slivers. FIRST RENDER WAS A 1PX PINK SMEAR along the diagonal: at 2.4 Mb/px contact frequency has decayed over nearly every bin on screen, so the linear ramp puts all 24 triangles under the noise floor. useLogScale makes them solid, and the centromere then shows as the notch out of each one -- so log scale is what makes this figure exist, and the guide says that rather than leaving it as an unexplained setting. SECOND: the blocks BETWEEN the chromosomes are empty, and that had to be checked before publishing rather than blamed on the binsize. Parsed the file's master index (footer at the header's masterIndexPos, v8): 26 entries, every one a self-pair 0_0 through 25_25. intra_nofrag_30.hic holds no inter-chromosomal matrices at all, which the caption says, so the figure cannot be read as 'JBrowse does not draw translocations'. Display height 100 and viewport 302: a triangle is half as tall as its region is wide and chr1 is ~113px of the 1450px genome, so the default left ~190px of white under the drawing. two_regions itself is unchanged -- it is the same machinery finding real cross-region signal inside chr8, which is the pair the whole-genome frame cannot show.",
+    "reviewedAt": "2026-08-04T22:41:16.555Z",
     "hash": "180a3202af64b33e771bdb5690152cf0efe68306"
   },
   "pangenome/graph_resolution": {

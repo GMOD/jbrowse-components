@@ -536,6 +536,50 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 
+  // The same region-pair machinery taken to the whole genome: every chromosome
+  // displayed at once, so the fetch is every chromosome against every other one
+  // and the picture is the block diagonal. `displayedRegionNames` is the
+  // declarative way in — whole chromosomes in the order given, no menu to drive
+  // — and it names the 24 main ones so the unplaced and alt contigs don't take a
+  // third of the width for slivers too narrow to draw a triangle in.
+  //
+  // useLogScale is not decoration here, it is what makes the figure exist. At
+  // 2.4 Mb/px contact frequency has decayed over almost every bin on screen, so
+  // on the linear ramp all 24 triangles render as a 1px pink smear along the
+  // diagonal (rendered it that way first). On log they are solid, and the
+  // centromeres show as the notch out of each one.
+  //
+  // The off-diagonal blocks are empty because the FILE has nothing to put there,
+  // not because the fetch or the binsize failed: intra_nofrag_30.hic's master
+  // index (footer at the header's masterIndexPos) holds 26 entries and every one
+  // is a self-pair, `0_0` through `25_25`. Worth knowing before reading this as
+  // "JBrowse doesn't draw translocations" — hic/two_regions is the same
+  // machinery finding real cross-region signal within chr8.
+  {
+    mode: 'url',
+    name: 'hic/whole_genome',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      displayedRegionNames: [
+        ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
+        'chrX',
+        'chrY',
+      ],
+      trackLabels: 'offset',
+      // 100, against a default that leaves ~190px of white under the drawing: a
+      // triangle is half as tall as its region is wide, and the widest region
+      // here is chr1 at ~113px of the 1450px genome, so 57px is the tallest
+      // thing the display has to hold
+      tracks: [{ trackId: 'hic', useLogScale: true, height: 100 }],
+    }),
+    viewportHeight: 302,
+    readySelector: '[data-testid="hic-display-done"]',
+    // 24 regions is 300 region pairs to fetch, so both waits are well past what
+    // a single-region figure needs
+    readyTimeout: 180000,
+    settleMs: 20000,
+  },
+
   // The two halves of the faint-contacts comparison. Same region, same ramp;
   // the only difference is where the color scale saturates. With
   // useColorPercentile off the diagonal owns the scale (maxScore/20) and the
@@ -543,34 +587,54 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // percentile and off-diagonal structure separates from background. Kept as
   // two declarative specs composed below, so each state stays an openable live
   // link and neither can drift from a menu-driving capture.
-  {
-    mode: 'url',
-    name: 'hic/percentile_off',
+  //
+  // 4.2 Mb, not the 11 Mb the rest of this section is shot on. The setting is
+  // about CONTRAST, and at 11 Mb the off half was a blank frame with a red line
+  // across the top of it — a comparison whose losing side shows nothing reads as
+  // a broken capture rather than as a washed-out scale. Here the TADs are
+  // several hundred px wide, so both halves have blocks in them and the
+  // difference is that one has edges.
+  //
+  // Each half carries its own label, because a compose has no annotation layer
+  // of its own — the parts are captured separately and appended — and without
+  // one the stack needs the caption to say which frame is which.
+  ...(
+    [
+      ['hic/percentile_off', false, 'Show faint contacts OFF'],
+      ['hic/percentile_on', true, 'Show faint contacts ON (the default)'],
+    ] as const
+  ).map(([name, useColorPercentile, label]) => ({
+    mode: 'url' as const,
+    name,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      loc: 'chr8:50,366,343-61,321,733',
+      loc: 'chr8:52,000,000-56,200,000',
       trackLabels: 'offset',
-      tracks: [{ trackId: 'hic', useColorPercentile: false }],
+      tracks: [{ trackId: 'hic', useColorPercentile, height: 330 }],
     }),
-    viewportHeight: 530,
+    // the whole 330px display has to be inside the capture, or the label
+    // anchored to the bottom of the track band is drawn off the frame
+    viewportHeight: 532,
     readySelector: '[data-testid="hic-display-done"]',
     readyTimeout: 60000,
     settleMs: 10000,
-  },
-  {
-    mode: 'url',
-    name: 'hic/percentile_on',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr8:50,366,343-61,321,733',
-      trackLabels: 'offset',
-      tracks: [{ trackId: 'hic', useColorPercentile: true }],
-    }),
-    viewportHeight: 530,
-    readySelector: '[data-testid="hic-display-done"]',
-    readyTimeout: 60000,
-    settleMs: 10000,
-  },
+    annotations: [
+      {
+        type: 'text' as const,
+        text: label,
+        fontSize: 20,
+        // bottom-left of the display, which is the corner of the triangle's
+        // bounding box that has no data in it at any zoom
+        anchor: {
+          track: 'hic',
+          alignX: 'left' as const,
+          alignY: 'bottom' as const,
+        },
+        dx: 150,
+        dy: -26,
+      },
+    ],
+  })),
   {
     mode: 'compose',
     name: 'hic/faint_contacts',

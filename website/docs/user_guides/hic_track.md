@@ -54,7 +54,7 @@ Off, the diagonal owns the scale and everything below it washes out; on (the
 default) the scale saturates at the 95th percentile of counts and TAD structure
 separates from background.
 
-<Figure caption="The same region with Show faint contacts off (top) and on (bottom). Only the saturation point of the color scale differs; the contact data is identical." src="/img/hic/faint_contacts.png" links="Show faint contacts off=hic/percentile_off,Show faint contacts on=hic/percentile_on" />
+<Figure caption="4.2 Mb of hg19 chr8 with Show faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical. Off, the diagonal takes the whole ramp and the TADs under it are barely above white; on, each TAD is a block with an edge and the corner dots between them are visible." src="/img/hic/faint_contacts.png" links="Show faint contacts off=hic/percentile_off,Show faint contacts on=hic/percentile_on" />
 
 **Show → Log scale** maps counts to color on a log2 scale, compressing the
 diagonal further still.
@@ -87,6 +87,17 @@ Inter-chromosomal matrices are commonly only stored at coarse binsizes. When the
 auto-picked resolution is finer than anything the file holds for that pair, the
 cross-block is absent while the intra-chromosomal triangles still draw. Step
 **Coarser** until it appears.
+
+The same thing scales to the whole genome. **View → Show all regions in
+assembly** puts every chromosome in the view at once, which makes the fetch every
+chromosome against every other one and the drawing a block diagonal.
+
+<Figure caption="hg19 chr1 to chrY in one view, log scale. Each chromosome is its own triangle and the notch out of each one is its centromere. The blocks between them are empty because this file stores intra-chromosomal contacts only." src="/img/hic/whole_genome.png" />
+
+Log scale is what makes that figure readable rather than optional decoration. At
+whole-genome zoom one pixel is megabases, contact frequency has decayed over
+almost every bin on screen, and on the linear ramp the twenty-four triangles
+render as a thin smear along the diagonal.
 
 ## Fitting the triangle to the track height
 
