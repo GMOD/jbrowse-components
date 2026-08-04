@@ -56,6 +56,30 @@ const SLOT_ROW =
 
 // the `maybe` flavours are the promotable variants of the same kind
 const ENUM_KINDS = new Set(['stringEnum', 'maybeStringEnum', 'enum'])
+
+// Config vocabulary that is not a `#slot` row, so it never appears in the
+// generated tables, but is routinely backticked in the same breath as a slot's
+// values ("`showLabels` … goes in `displayDefaults`"). Without these the prose
+// rule reads them as bad values.
+const STRUCTURAL_KEYS = [
+  'displayDefaults',
+  'displays',
+  'adapter',
+  'uri',
+  'type',
+  'trackId',
+  'displayId',
+  'assemblyNames',
+  'tracks',
+  'assemblies',
+  'sequence',
+  'metadata',
+  'category',
+  'jexl',
+  'configuration',
+  'defaultSession',
+  'plugins',
+]
 // kinds that cannot hold an arbitrary string, so a string literal against one of
 // them is not an escape hatch for rule 1
 const NON_STRING_KINDS = new Set([
@@ -75,6 +99,16 @@ function buildInventory() {
   const declsBySlot = new Map<string, Decl[]>()
   // slot names defined by at least one Display schema
   const displaySlots = new Set<string>()
+  // "<page id>#<slot anchor>" -> that ONE schema's enum values. Prose links name
+  // the exact type (`/docs/config/linearhicdisplay/#slot-colorscheme`), so a
+  // value can be resolved against the schema the reader is being sent to rather
+  // than against the union — which matters because a slot is not one type
+  // everywhere: `displayMode` is (normal, compact, superCompact, collapsed) on
+  // the canvas displays and (arcs, semicircles) on LinearArcDisplay.
+  const enumByAnchor = new Map<string, Set<string>>()
+  // every slot name and schema name, lowercased — a backticked token matching
+  // one of these is prose naming a sibling setting, not a bad value
+  const knownNames = new Set<string>(STRUCTURAL_KEYS.map(k => k.toLowerCase()))
   let schemaCount = 0
 
   for (const file of walkFiles(join(docsDir, 'config'), n =>
@@ -86,7 +120,13 @@ function buildInventory() {
     }
     schemaCount += 1
     const isDisplay = /^sidebar_label:\s*Display ->/m.test(text)
+    const pageId = /^id:\s*(\S+)/m.exec(text)?.[1]
+    const typeName = /^title:\s*(\S+)/m.exec(text)?.[1]
+    if (typeName) {
+      knownNames.add(typeName.toLowerCase())
+    }
     for (const line of text.split('\n')) {
+      const anchor = /id="(slot-[a-z0-9.]+)"/.exec(line)?.[1]
       const m = SLOT_ROW.exec(line)
       if (!m) {
         continue
@@ -95,7 +135,11 @@ function buildInventory() {
       const decl: Decl = { kind: kind! }
       if (ENUM_KINDS.has(kind!) && values) {
         decl.enumValues = new Set(values.split(',').map(v => v.trim()))
+        if (pageId && anchor) {
+          enumByAnchor.set(`${pageId}#${anchor}`, decl.enumValues)
+        }
       }
+      knownNames.add(name!.toLowerCase())
       const list = declsBySlot.get(name!) ?? []
       list.push(decl)
       declsBySlot.set(name!, list)
@@ -110,7 +154,60 @@ function buildInventory() {
     }
   }
   assertInventoryParsed(declsBySlot, displaySlots)
-  return { declsBySlot, displaySlots, schemaCount }
+  return { declsBySlot, displaySlots, enumByAnchor, knownNames, schemaCount }
+}
+
+// Rule 3, the prose one. Most of the risk lives here rather than in JSON blocks:
+// a sweep counted 40 enum-slot mentions in prose against 30 inside fences, and
+// two of the four stale values found by hand (the autoscale list, the
+// `?renderer=` values) were prose.
+//
+// A doc that links a slot and then enumerates its values is the shape that goes
+// stale. The link is what makes this checkable at all: it names the exact page,
+// so the values resolve against that ONE schema instead of the union.
+//
+// Precision comes from only judging a paragraph that is clearly enumerating —
+// it must already name at least two legal values — and from only flagging a
+// backticked token that is not any known slot or schema name, so prose that
+// mentions a sibling setting beside the values is left alone.
+//
+// It deliberately does not flag an INCOMPLETE list: abbreviating 14 rendering
+// types down to the four worth naming is normal and correct, and there is no
+// way to tell that from an omission.
+function checkProse(
+  text: string,
+  inv: Inventory,
+  report: (line: number, msg: string) => void,
+) {
+  const withoutFences = text.replace(/```[\s\S]*?```/g, m =>
+    m.replace(/[^\n]/g, ' '),
+  )
+  for (const para of withoutFences.split(/\n\s*\n/)) {
+    const link = /\/docs\/config\/([a-z0-9]+)\/?#(slot-[a-z0-9.]+)/.exec(para)
+    if (!link) {
+      continue
+    }
+    const legal = inv.enumByAnchor.get(`${link[1]}#${link[2]}`)
+    if (!legal) {
+      continue
+    }
+    const ticked = [...para.matchAll(/`([A-Za-z][A-Za-z0-9_]*)`/g)].map(
+      m => m[1]!,
+    )
+    if (ticked.filter(t => legal.has(t)).length < 2) {
+      continue // not enumerating this slot's values
+    }
+    for (const token of new Set(ticked)) {
+      if (legal.has(token) || inv.knownNames.has(token.toLowerCase())) {
+        continue
+      }
+      report(
+        text.slice(0, text.indexOf(para)).split('\n').length,
+        `prose lists values for \`${link[2].replace('slot-', '')}\` but ` +
+          `\`${token}\` is not one of them (${[...legal].sort().join(', ')})`,
+      )
+    }
+  }
 }
 
 // A regex over generated markdown degrades SILENTLY: if the table format shifts,
@@ -239,6 +336,9 @@ function main() {
       continue
     }
     const text = readFileSync(file, 'utf8')
+    checkProse(text, inv, (line, message) => {
+      problems.push({ file: rel, line, message })
+    })
     const fence = /```json[^\n]*\n([\s\S]*?)```/g
     let m: RegExpExecArray | null
     while ((m = fence.exec(text))) {
