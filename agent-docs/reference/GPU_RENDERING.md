@@ -342,8 +342,8 @@ touching either path, preserve whichever of these the display uses:
   [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
   covers why this stops at scalars and why a vertex/fragment stage is never
   transpiled;
-  [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md) is the
-  working state and the remaining hand-sync sites.
+  [guides/SHADER_JS_CODEGEN.md](../guides/SHADER_JS_CODEGEN.md) is how to add an
+  export and retire its twin.
 - **One draw helper, both consumers.** Marker/glyph geometry and color math that
   both paths (or the on-screen overlay + SVG export) need lives in one function:
   `drawMafInsertionMarker`, `appendPointMarker` (wiggle scatter + Manhattan),
@@ -365,8 +365,12 @@ touching either path, preserve whichever of these the display uses:
   two implementations must preserve while staying different (a numeric oracle
   test, as `syntenyShaderParity.test.ts` does for the bezier). Also grep the
   counterpart before trusting an existing tag — five named shader branches that
-  had been deleted. The 11 remaining are classified in
-  [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).
+  had been deleted. Count the survivors with
+  `grep -rn 'SYNC:' --include='*.ts' packages plugins products` rather than
+  restating a number; each falls in a class ADR-051 §"Deliberately not exported"
+  classifies, and
+  [guides/SHADER_JS_CODEGEN.md](../guides/SHADER_JS_CODEGEN.md) §"The two sweeps"
+  says how to re-run the survey.
 
 **Intentional divergences — do NOT "fix" these into parity.** The two backends
 legitimately differ where GPU rasterization is watertight but Canvas2D

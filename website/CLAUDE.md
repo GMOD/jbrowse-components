@@ -30,6 +30,10 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
   acceptable miss.
 - **No spec sets `diffThreshold`.** Treat a request for one as a bug in whatever
   is producing the nondeterminism.
+- **Size a figure from the run's own two reports, not from the PNG.** `CONTENT
+  CLIPPED BELOW THE FOLD` gives the exact css px to raise `viewportHeight` by and
+  `blank below the last content` the px to lower it. Both beat measuring off an
+  image, and the clipped one cannot be recovered from the image at all.
 - **Downscale before reading a PNG** — captures are ~3000px and Read rejects
   them: `convert static/img/<n>.png -resize 1400x /tmp/shot.png`.
 - **Never hand-measure a callout position** — every annotation `anchor`s. Prefer

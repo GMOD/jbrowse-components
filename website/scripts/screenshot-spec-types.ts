@@ -249,6 +249,11 @@ export interface EmbeddedSpec extends CommonSpecFields {
 // `<Figure links=...>`), so the review UI folds parts into their parent's card
 // rather than listing them as figures of their own, and the generator recomposes
 // the parent whenever a --filter selects one of its parts.
+// Note there is no `annotations` here, and that is not an oversight: the parts
+// are separate captures `+append`ed afterwards, so nothing can be drawn across
+// the seam. An arrow from one half to the other is not available — number the
+// two halves' anchors instead (`pangenome/hprc_mhc_anchored` uses `circle`
+// badges for this).
 export interface ComposeSpec extends BaseSpecFields {
   mode: 'compose'
   parts: string[] // spec names whose static/img PNGs are stacked, top to bottom

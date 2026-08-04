@@ -284,10 +284,10 @@ following turns out to fight the user.
 - **The perf readout is published.** `fetch 12371ms · layout 4ms · geom 9ms` sits
   in the toolbar of every graph figure. Keep the `data-*` attributes browser
   tests assert on; put the text behind the settings menu.
-- **The hover tooltip is pinned bottom-left**, where it covers a row label
-  (already noted as an unverified observation in
-  [pangenome-figure-pass.md](pangenome-figure-pass.md) item 4 —
-  it is real, and it is this).
+- **The hover tooltip is pinned bottom-left**, where it covers a row label. It
+  first turned up as an unverified observation on `rgfa_hover_sync`, whose
+  tooltip overlapped the `Sakai` row label in both frames; it is real, it is not
+  the colour change that figure was regenerated for, and it is this.
 - **Sample rows are sorted alphabetically** (`contributingSamples`), so a row's
   neighbours mean nothing. Sorting by the allele length or leftmost position a
   row carries reads the way a sorted pileup does.

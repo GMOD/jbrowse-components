@@ -314,7 +314,8 @@ GPU, so CI must use swiftshader (which leaks ~29 MB per WebGL context, ADR-024)
 ## Related
 
 - [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
-  and [shader-js-codegen](shader-js-codegen.md) — the *other* parity mechanism.
+  and [guides/SHADER_JS_CODEGEN.md](../guides/SHADER_JS_CODEGEN.md) — the *other*
+  parity mechanism.
   Codegen makes sub-visual drift impossible; this gate catches visible drift.
   Neither subsumes the other, and a 3% pixel threshold cannot see a constant
   moving from 0.4 to 0.45.

@@ -274,10 +274,12 @@ and the two implementations have to be *meant* to agree:
   something: **31 functions** (17 shaders carry `js-export`) and **86
   constants**. **19 of those names land in a different package than the shader**
   — 4 functions and 15 constants, via `js-export-out` / `consts-out`.
-  `SYNC:`-tagged sites went **27 → 8**, and six of the ones removed were
-  **stale** — they named `read.slang` branches deleted when read classification
-  moved to the CPU. Everything left is classified in
-  [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).
+  `SYNC:`-tagged sites dropped by roughly two thirds, and six of the ones
+  removed were **stale** — they named `read.slang` branches deleted when read
+  classification moved to the CPU. Everything left falls under "Deliberately not
+  exported" below; count the survivors with
+  `grep -rn 'SYNC:' --include='*.ts' packages plugins products` rather than
+  carrying a number here, for the same reason as the counts above.
 
   These are counts of what the directives currently emit, deliberately replacing
   a running "drift sites retired" tally that had been incremented by hand each
