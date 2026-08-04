@@ -1,7 +1,7 @@
 import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { LoadingOverlay, Menu } from '@jbrowse/core/ui'
+import { ContextMenu, LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -42,39 +42,6 @@ const useStyles = makeStyles()(theme => ({
 // maxHeight is in pixels; this is far above the Uint16 row ceiling so the
 // `maxRows` getter clamps to the real limit and every stacked read shows.
 const SHOW_ALL_MAX_HEIGHT = 1_000_000
-
-// Its own observer so `contextMenuItems()` re-runs only when the menu's own state
-// changes. Built inline in the display body, the per-mousemove coordinate state
-// there re-ran the whole menu build — with fresh item identities — on every move
-// while a menu was open. Same split the canvas display uses.
-const AlignmentsContextMenu = observer(function AlignmentsContextMenu({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  const { contextMenuCoord } = model
-  const items = contextMenuCoord ? model.contextMenuItems() : []
-  return contextMenuCoord && items.length > 0 ? (
-    <Menu
-      open
-      onMenuItemClick={callback => {
-        callback()
-      }}
-      onClose={() => {
-        model.closeContextMenu()
-      }}
-      anchorReference="anchorPosition"
-      anchorPosition={{
-        top: contextMenuCoord[1],
-        // nudge right of the click so the menu doesn't cover the mismatch column
-        // that was right-clicked (mirrors the rubberband menu's menuOffsetX
-        // convention)
-        left: contextMenuCoord[0] + 12,
-      }}
-      menuItems={items}
-    />
-  ) : null
-})
 
 const AlignmentsDisplayComponent = observer(
   function AlignmentsDisplayComponent({
@@ -159,7 +126,13 @@ const AlignmentsDisplayComponent = observer(
                 clientMouseCoord={mouseCoord.client}
               />
             </Suspense>
-            <AlignmentsContextMenu model={model} />
+            <ContextMenu
+              anchor={model.contextMenuAnchor}
+              menuItems={() => model.contextMenuItems()}
+              onClose={() => {
+                model.closeContextMenu()
+              }}
+            />
           </>
         )}
       </DisplayChrome>

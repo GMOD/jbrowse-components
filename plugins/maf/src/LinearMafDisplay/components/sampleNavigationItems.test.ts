@@ -54,7 +54,7 @@ const coord = {
   endX: 25,
   startY: 0,
   endY: 20,
-  coord: [0, 0] as [number, number],
+  anchor: { clientX: 0, clientY: 0 },
 }
 
 function target(sampleLabel: string, start: number) {

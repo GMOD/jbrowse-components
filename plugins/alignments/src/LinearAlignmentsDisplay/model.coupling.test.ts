@@ -396,10 +396,10 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('sets coord and hit fields together', () => {
     const display = createDisplay()
     display.openContextMenu({
-      coord: [10, 20],
+      anchor: { clientX: 10, clientY: 20 },
       cigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
     })
-    expect(display.contextMenuCoord).toEqual([10, 20])
+    expect(display.contextMenuAnchor).toEqual({ clientX: 10, clientY: 20 })
     expect(display.contextMenuCigarHit).toEqual({
       type: 'mismatch',
       index: 0,
@@ -423,7 +423,7 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     expect(display.contextMenuFeature).toBeDefined()
 
     display.openContextMenu({
-      coord: [1, 2],
+      anchor: { clientX: 1, clientY: 2 },
       indicatorHit: {
         type: 'indicator',
         position: 5,
@@ -444,7 +444,10 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   // menu.
   test('the read id lands synchronously, unlike the feature', () => {
     const display = createDisplay()
-    display.openContextMenu({ coord: [1, 2], featureId: 'read1' })
+    display.openContextMenu({
+      anchor: { clientX: 1, clientY: 2 },
+      featureId: 'read1',
+    })
     expect(display.contextMenuFeatureId).toBe('read1')
     expect(display.contextMenuFeature).toBeUndefined()
   })
@@ -452,17 +455,33 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('closeContextMenu wipes all context-menu state', () => {
     const display = createDisplay()
     display.openContextMenu({
-      coord: [3, 4],
+      anchor: { clientX: 3, clientY: 4 },
       cigarHit: { type: 'mismatch', index: 1, position: 9, length: 1 },
       featureId: 'read1',
     })
     display.closeContextMenu()
-    expect(display.contextMenuCoord).toBeUndefined()
+    expect(display.contextMenuAnchor).toBeUndefined()
     expect(display.contextMenuCigarHit).toBeUndefined()
     expect(display.contextMenuIndicatorHit).toBeUndefined()
     expect(display.contextMenuFeature).toBeUndefined()
     expect(display.contextMenuFeatureId).toBeUndefined()
     expect(display.contextMenuBlock).toBeUndefined()
+  })
+
+  // The pin the menu takes on the hovered read has to come off with the menu.
+  // Nothing else drops it: the canvas mouseleave holds it while the menu is up,
+  // and after a click that opened a drawer widget the cursor may never return
+  // to the pileup to clear it on a move.
+  test('closing releases the hover box pinned to the menu target', () => {
+    const display = createDisplay()
+    display.openContextMenu({
+      anchor: { clientX: 3, clientY: 4 },
+      featureId: 'read1',
+    })
+    expect(display.featureIdUnderMouse).toBe('read1')
+
+    display.closeContextMenu()
+    expect(display.featureIdUnderMouse).toBeUndefined()
   })
 })
 

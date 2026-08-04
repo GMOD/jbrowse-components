@@ -229,7 +229,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
-    event.preventDefault()
     const coords = canvasCoords(event)
     if (!coords) {
       return
@@ -241,6 +240,10 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const display = hitDisplay(hit)
     const feat = display?.getFeature(hit.featureIndex)
     if (display && feat) {
+      // preventDefault only when a menu actually opens, so a right-click on
+      // empty canvas between the ribbons falls through to the browser instead
+      // of being a dead zone — same rule every other display's handler follows.
+      event.preventDefault()
       // clear the hover tooltip so it doesn't stay stuck behind the menu
       model.setHoveredFeature(undefined)
       display.openContextMenu({

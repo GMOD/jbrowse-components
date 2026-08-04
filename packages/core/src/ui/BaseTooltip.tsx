@@ -10,6 +10,7 @@ import { Portal, useTheme } from '@mui/material'
 
 import { usePalette } from './PaletteContext.tsx'
 import { alpha, grey } from './palette.ts'
+import { TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
 // The hover tooltip every display shares.
 //
@@ -87,7 +88,7 @@ export default function BaseTooltip({
           color: palette.common.white,
           // after the base style, so the strategy's `position: fixed` wins
           ...floatingStyles,
-          zIndex: 100000,
+          zIndex: TOOLTIP_Z_INDEX,
           // workaround for tooltips flashing at top left corner of screen
           // when first appearing
           visibility:

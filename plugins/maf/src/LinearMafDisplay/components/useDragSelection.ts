@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+
 const MIN_DRAG_DISTANCE = 3
 
 function movedFarEnough(d: DragRect) {
@@ -14,7 +16,8 @@ export interface DragRect {
 }
 
 export interface ContextCoord extends DragRect {
-  coord: [number, number]
+  /** viewport point the subsequence menu opens at */
+  anchor: ContextMenuAnchor
 }
 
 /** The cursor in both coordinate systems the display needs it in. */
@@ -111,7 +114,7 @@ export function useDragSelection(
     if (draggedFar) {
       const { x, y } = relativeXY(ref, e)
       setContextCoord({
-        coord: [e.clientX, e.clientY],
+        anchor: { clientX: e.clientX, clientY: e.clientY },
         startX: drag.startX,
         startY: drag.startY,
         endX: x,

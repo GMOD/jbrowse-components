@@ -58,6 +58,7 @@ interface FloatingLabelsModel {
     subfeatureInfo: SubfeatureInfo | undefined,
     displayedRegionIndex: number,
   ) => void
+  toggleSoloFeature: (featureId: string) => void
 }
 
 interface HighlightBoxesModel {
@@ -248,6 +249,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     renderDataMap,
     openContextMenu,
     selectFeatureById,
+    toggleSoloFeature,
   } = model
   const viewInitialized = view.initialized
   const width = viewInitialized ? view.trackWidthPx : undefined
@@ -367,7 +369,21 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       onClick={e => {
         const t = resolveTarget(e)
         if (t) {
-          selectFeatureById(t.item.featureId, undefined, t.displayedRegionIndex)
+          // Same two gestures the canvas offers (see FeatureComponent's
+          // handleClick): ctrl/cmd+click collects into the show-only list,
+          // plain click opens the details. A label sits ON its feature, so a
+          // ctrl+click that landed on the name rather than the glyph has to
+          // mean the same thing — otherwise collecting a run of features
+          // silently opened a widget whenever the cursor caught a label.
+          if (e.ctrlKey || e.metaKey) {
+            toggleSoloFeature(t.item.featureId)
+          } else {
+            selectFeatureById(
+              t.item.featureId,
+              undefined,
+              t.displayedRegionIndex,
+            )
+          }
         }
       }}
       onContextMenu={e => {

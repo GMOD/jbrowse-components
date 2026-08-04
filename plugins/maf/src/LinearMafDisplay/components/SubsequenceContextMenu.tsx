@@ -1,8 +1,7 @@
 import React from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
@@ -28,7 +27,6 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
-  const theme = useTheme()
   const { samples } = model
   const openRows = (rows: typeof samples) => {
     if (contextCoord && rows) {
@@ -41,32 +39,13 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
         rows,
       )
     }
-    setContextCoord(undefined)
   }
   return (
-    <Menu
-      open={Boolean(contextCoord)}
-      onMenuItemClick={callback => {
-        callback()
-        setContextCoord(undefined)
-      }}
+    <ContextMenu
+      anchor={contextCoord?.anchor}
       onClose={() => {
         setContextCoord(undefined)
       }}
-      slotProps={{
-        transition: {
-          onExit: () => {
-            setContextCoord(undefined)
-          },
-        },
-      }}
-      anchorReference="anchorPosition"
-      anchorPosition={
-        contextCoord
-          ? { top: contextCoord.coord[1], left: contextCoord.coord[0] }
-          : undefined
-      }
-      style={{ zIndex: theme.zIndex.tooltip }}
       menuItems={[
         {
           label: 'View subsequences (all rows)',

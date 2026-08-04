@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { useWiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
@@ -19,6 +19,14 @@ import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
+import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+
+// The right-clicked point and the SNP it resolved to, held together so the menu
+// can't be anchored without a hit to build it from.
+interface ManhattanContextMenu {
+  anchor: ContextMenuAnchor
+  hit: ManhattanHit
+}
 
 const LinearManhattanDisplayComponent = observer(
   function LinearManhattanDisplayComponent({
@@ -28,10 +36,7 @@ const LinearManhattanDisplayComponent = observer(
   }) {
     const { view, height } = model
     const width = view.trackWidthPx
-    const [contextMenu, setContextMenu] = useState<{
-      coord: [number, number]
-      hit: ManhattanHit
-    }>()
+    const [contextMenu, setContextMenu] = useState<ManhattanContextMenu>()
 
     // renderState is always defined; an empty rpcDataMap/flatbush set simply
     // yields no hit, so no separate loading guard is needed. The offsetY passed
@@ -71,7 +76,10 @@ const LinearManhattanDisplayComponent = observer(
           event.preventDefault()
           // clear the hover tooltip so it doesn't stay stuck behind the menu
           model.setFeatureUnderMouse(undefined)
-          setContextMenu({ coord: [event.clientX, event.clientY], hit })
+          setContextMenu({
+            anchor: { clientX: event.clientX, clientY: event.clientY },
+            hit,
+          })
         }
       }
     }
@@ -120,8 +128,8 @@ const ManhattanBody = observer(function ManhattanBody({
   width: number
   height: number
   clientMouseCoord: [number, number]
-  contextMenu?: { coord: [number, number]; hit: ManhattanHit }
-  setContextMenu: (v?: { coord: [number, number]; hit: ManhattanHit }) => void
+  contextMenu?: ManhattanContextMenu
+  setContextMenu: (v?: ManhattanContextMenu) => void
 }) {
   const { ticks, featureUnderMouse, showCrossHatches, ldColoringActive } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
@@ -165,24 +173,15 @@ const ManhattanBody = observer(function ManhattanBody({
         />
       ) : null}
       <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
-      {contextMenu ? (
-        <Menu
-          open
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            top: contextMenu.coord[1],
-            left: contextMenu.coord[0],
-          }}
-          onMenuItemClick={callback => {
-            callback()
-            setContextMenu(undefined)
-          }}
-          onClose={() => {
-            setContextMenu(undefined)
-          }}
-          menuItems={model.contextMenuItems(contextMenu.hit)}
-        />
-      ) : null}
+      <ContextMenu
+        anchor={contextMenu?.anchor}
+        menuItems={() =>
+          contextMenu ? model.contextMenuItems(contextMenu.hit) : []
+        }
+        onClose={() => {
+          setContextMenu(undefined)
+        }}
+      />
     </>
   )
 })

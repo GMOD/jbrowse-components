@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { Menu, useMouseTracking } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseTracking } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
@@ -91,23 +91,13 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         </FloatingSvgOverlay>
       ) : null}
       <TreeSidebar model={model} />
-      {model.contextMenuInfo ? (
-        <Menu
-          open
-          onMenuItemClick={callback => {
-            callback()
-          }}
-          onClose={() => {
-            model.closeContextMenu()
-          }}
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            top: model.contextMenuInfo.clientY,
-            left: model.contextMenuInfo.clientX,
-          }}
-          menuItems={model.contextMenuItems()}
-        />
-      ) : null}
+      <ContextMenu
+        anchor={model.contextMenuInfo}
+        menuItems={() => model.contextMenuItems()}
+        onClose={() => {
+          model.closeContextMenu()
+        }}
+      />
     </>
   )
 })

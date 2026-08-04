@@ -25,7 +25,7 @@ import type { HighlightTarget } from './featureHighlight.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const FeatureSequenceDialog = lazy(
@@ -63,7 +63,7 @@ export interface FeatureContextMenuInfo {
 // wasn't — the model is passed in at the call site, so a renamed field is a
 // compile error there, not a silent runtime undefined. Same idiom as
 // LinearMultiRowFeatureDisplay/trackMenuItems.ts.
-export interface FeatureMenuSelf extends IAnyStateTreeNode {
+export interface FeatureMenuSelf extends IStateTreeNode {
   contextMenuInfo: FeatureContextMenuInfo | undefined
   // what this track holds, singular and lowercase — see the canvas base's
   // featureNoun getter. Every label below that names the clicked thing

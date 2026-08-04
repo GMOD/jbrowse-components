@@ -147,7 +147,7 @@ import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -572,8 +572,10 @@ export default function stateModelFactory(
           contextMenuFeatureId: undefined as string | undefined,
           /**
            * #volatile
+           * Viewport point the right-click menu opens at, and the single
+           * "is the menu open" flag. Undefined = closed.
            */
-          contextMenuCoord: undefined as [number, number] | undefined,
+          contextMenuAnchor: undefined as ContextMenuAnchor | undefined,
           /**
            * #volatile
            */
@@ -3197,9 +3199,16 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Close the right-click menu and release the hover it pinned.
+           * `openContextMenu` boxes the read the menu acts on and
+           * `handleMouseLeave` holds that box while the menu is up, so this is
+           * the only place the pin comes off — without it the box outlives the
+           * menu until the cursor next crosses the pileup, which it need not do
+           * at all when the item clicked opened a drawer widget. Mirrors canvas
+           * LinearBasicDisplay.closeContextMenu.
            */
           closeContextMenu() {
-            self.contextMenuCoord = undefined
+            self.contextMenuAnchor = undefined
             self.contextMenuFeature = undefined
             self.contextMenuFeatureId = undefined
             self.contextMenuCigarHit = undefined
@@ -3207,6 +3216,7 @@ export default function stateModelFactory(
             self.contextMenuModHit = undefined
             self.contextMenuBlock = undefined
             self.contextMenuGenomicPos = undefined
+            clearMouseoverState()
           },
 
           /**
@@ -3310,7 +3320,7 @@ export default function stateModelFactory(
           },
           /**
            * #action
-           * Open the right-click menu over a hit. Coord, block, and the two hit
+           * Open the right-click menu over a hit. Anchor, block, and the two hit
            * kinds always travel as a unit — set atomically so a consumer can
            * never read a block without its hit (the split-state class of bug
            * that silently no-op'd position sorts). The read feature is reset now
@@ -3319,7 +3329,7 @@ export default function stateModelFactory(
            * repositioned menu can't inherit the prior read's items.
            */
           openContextMenu(args: {
-            coord: [number, number]
+            anchor: ContextMenuAnchor
             block?: ResolvedBlock
             genomicPos?: number
             cigarHit?: CigarHitResult
@@ -3327,7 +3337,7 @@ export default function stateModelFactory(
             modHit?: ModificationHitResult
             featureId?: string
           }) {
-            self.contextMenuCoord = args.coord
+            self.contextMenuAnchor = args.anchor
             self.contextMenuBlock = args.block
             self.contextMenuGenomicPos = args.genomicPos
             self.contextMenuCigarHit = args.cigarHit

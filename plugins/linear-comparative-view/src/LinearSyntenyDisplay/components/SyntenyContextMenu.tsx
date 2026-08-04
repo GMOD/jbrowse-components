@@ -1,4 +1,4 @@
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { ClickCoord } from './util.ts'
@@ -15,17 +15,11 @@ export default function SyntenyContextMenu({
   const { view } = model
   const { clientX, clientY, feature } = anchorEl
   return (
-    <Menu
-      onMenuItemClick={callback => {
-        callback()
-        onClose()
-      }}
-      anchorReference="anchorPosition"
-      anchorPosition={{ top: clientY, left: clientX }}
+    <ContextMenu
+      anchor={{ clientX, clientY }}
       onClose={() => {
         onClose()
       }}
-      open
       menuItems={[
         {
           label: 'Center on feature',

@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { MouseEvent } from 'react'
 
@@ -39,8 +39,8 @@ export function useVariantCanvasInteraction<H>(opts: {
   onHoverChange?: (hit: H | undefined) => void
 }) {
   const { model, getHit, getKey, getTooltip, enrich, onHoverChange } = opts
-  const [contextMenuCoord, setContextMenuCoord] = useState<
-    [number, number] | undefined
+  const [contextMenuAnchor, setContextMenuAnchor] = useState<
+    ContextMenuAnchor | undefined
   >()
   const lastHoveredRef = useRef<string | undefined>(undefined)
 
@@ -92,27 +92,20 @@ export function useVariantCanvasInteraction<H>(opts: {
       // clear the hover tooltip so it doesn't stay stuck behind the menu
       clearHover()
       model.setContextMenuFeature(enriched)
-      setContextMenuCoord([e.clientX, e.clientY])
+      setContextMenuAnchor({ clientX: e.clientX, clientY: e.clientY })
     }
   }
 
-  const contextMenuNode = contextMenuCoord ? (
-    <Menu
-      open
-      onMenuItemClick={callback => {
-        callback()
-        setContextMenuCoord(undefined)
-        model.setContextMenuFeature(undefined)
-      }}
+  const contextMenuNode = (
+    <ContextMenu
+      anchor={contextMenuAnchor}
+      menuItems={() => model.contextMenuItems()}
       onClose={() => {
-        setContextMenuCoord(undefined)
+        setContextMenuAnchor(undefined)
         model.setContextMenuFeature(undefined)
       }}
-      anchorReference="anchorPosition"
-      anchorPosition={{ top: contextMenuCoord[1], left: contextMenuCoord[0] }}
-      menuItems={model.contextMenuItems()}
     />
-  ) : null
+  )
 
   return {
     canvasHandlers: { onMouseMove, onMouseLeave, onClick, onContextMenu },

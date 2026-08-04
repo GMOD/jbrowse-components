@@ -1,4 +1,4 @@
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -14,7 +14,8 @@ export default function SelectionContextMenu({
 }) {
   const { committed, anchor, pointer, clear, setHovering } = interaction
   // unhover prevents the tooltip from sticking after the menu closes; the
-  // selection itself is cleared by clear() via onMenuItemClick/onClose.
+  // selection itself is cleared by clear() from onClose, which ContextMenu
+  // fires ahead of the item's own callback.
   const act = (fn: (down: Coord, up: Coord) => void) => () => {
     if (anchor && pointer) {
       fn([anchor.x, anchor.y], [pointer.x, pointer.y])
@@ -22,22 +23,16 @@ export default function SelectionContextMenu({
     setHovering(false)
   }
   return (
-    <Menu
-      open={committed}
-      onMenuItemClick={callback => {
-        callback()
-        clear()
-      }}
+    <ContextMenu
+      // committed AND a live pointer, so the anchor is the one value that says
+      // both "the menu is open" and "here"
+      anchor={committed && pointer ? pointer : undefined}
+      // clear of the selection rect's corner, not just off the click: the rect
+      // stays drawn behind the menu and a 12px nudge would sit on its edge
+      offset={{ x: 50, y: 50 }}
       onClose={() => {
         clear()
       }}
-      anchorReference="anchorPosition"
-      anchorPosition={
-        pointer
-          ? { top: pointer.clientY + 50, left: pointer.clientX + 50 }
-          : undefined
-      }
-      style={{ zIndex: 11000 }}
       menuItems={[
         {
           label: 'Zoom in',

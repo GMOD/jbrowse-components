@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
-import { Menu, VerticalScrollbar } from '@jbrowse/core/ui'
+import { ContextMenu, VerticalScrollbar } from '@jbrowse/core/ui'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
@@ -67,33 +67,6 @@ const useStyles = makeStyles()({
     top: 0,
     left: 0,
   },
-})
-
-const ContextMenu = observer(function ContextMenu({
-  model,
-}: {
-  model: LinearCanvasBaseDisplayModel
-}) {
-  const info = model.contextMenuInfo
-  const items = info ? model.contextMenuItems() : []
-  // Mount only while open (no `?? 0` anchor fallback, never fades out an empty
-  // Paper), and let closeContextMenu unmount it — same shape as
-  // LinearAlignmentsDisplay. closeAfterItemClick (Menu default) already closes
-  // before the item callback, so onMenuItemClick just runs it.
-  return info && items.length > 0 ? (
-    <Menu
-      open
-      onMenuItemClick={callback => {
-        callback()
-      }}
-      onClose={() => {
-        model.closeContextMenu()
-      }}
-      anchorReference="anchorPosition"
-      anchorPosition={{ top: info.clientY, left: info.clientX }}
-      menuItems={items}
-    />
-  ) : null
 })
 
 // The isoform-collapse chip, driven by the `geneGlyphNotice` hook. Its own
@@ -442,7 +415,13 @@ const FeatureBody = observer(function FeatureBody({
         info={model.mouseoverExtraInformation}
         clientMouseCoord={clientXY}
       />
-      <ContextMenu model={model} />
+      <ContextMenu
+        anchor={model.contextMenuInfo}
+        menuItems={() => model.contextMenuItems()}
+        onClose={() => {
+          model.closeContextMenu()
+        }}
+      />
     </>
   )
 })

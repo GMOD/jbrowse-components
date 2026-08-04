@@ -445,7 +445,6 @@ interface CascadingMenuProps {
   transformOrigin?: PopoverOrigin
   anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
   anchorPosition?: { top: number; left: number }
-  slotProps?: { transition?: { onExit?: () => void } }
   style?: React.CSSProperties
 }
 
@@ -460,7 +459,6 @@ const CascadingMenu = observer(function CascadingMenu({
   transformOrigin,
   anchorReference,
   anchorPosition,
-  slotProps,
   style,
 }: CascadingMenuProps) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
@@ -474,7 +472,6 @@ const CascadingMenu = observer(function CascadingMenu({
       transformOrigin={transformOrigin}
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
-      slotProps={slotProps}
       style={style}
     >
       <CascadingMenuList

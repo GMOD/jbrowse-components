@@ -183,7 +183,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleMouseLeave() {
-    if (!model.contextMenuCoord) {
+    if (!model.contextMenuAnchor) {
       model.clearMouseoverState()
     }
   }
@@ -204,7 +204,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // One atomic call: coord + block + hits, plus the async read fetch when
       // the hit carries one. A repositioned menu can't inherit the prior read.
       model.openContextMenu({
-        coord: [e.clientX, e.clientY],
+        anchor: { clientX: e.clientX, clientY: e.clientY },
         block: resolved,
         genomicPos,
         cigarHit,

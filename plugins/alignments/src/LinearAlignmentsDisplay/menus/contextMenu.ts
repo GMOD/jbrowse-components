@@ -35,7 +35,7 @@ import type {
 import type { FilterBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
@@ -46,7 +46,7 @@ type LGV = LinearGenomeViewModel
 // the read-level surface below because LGVSyntenyDisplay reuses only these — a
 // PAF block has no mate, tags, name or sequence, so making it satisfy the read
 // half to reach `getHitMenuItems` was a type it had to fake rather than have.
-interface HitMenuModel extends IAnyStateTreeNode {
+interface HitMenuModel extends IStateTreeNode {
   contextMenuCigarHit: CigarHitResult | undefined
   contextMenuIndicatorHit: IndicatorHitResult | undefined
   contextMenuModHit: ModificationHitResult | undefined
@@ -67,7 +67,7 @@ interface HitMenuModel extends IAnyStateTreeNode {
 // Just enough to resolve the read the menu was opened over — what
 // `withContextMenuFeature` and `copyFeatureInfo` take, so an extension point
 // that only wants those two doesn't declare a hit-test surface it never reads.
-interface FeatureLookupModel extends IAnyStateTreeNode {
+interface FeatureLookupModel extends IStateTreeNode {
   withFeatureById: (
     featureId: string,
     onFeat: (feat: Feature) => void,
@@ -136,7 +136,7 @@ function setTagFilter(self: FilterModel, tag: string, value: string) {
 // copy, shared with the displays that offer it as a top-level item rather than
 // inside a Copy submenu (LGVSyntenyDisplay, whose PAF block has no read name or
 // sequence to copy beside it).
-export function copyFeatureInfo(self: IAnyStateTreeNode, feat: Feature) {
+export function copyFeatureInfo(self: IStateTreeNode, feat: Feature) {
   const { uniqueId: _uniqueId, ...rest } = feat.toJSON()
   void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
 }
@@ -254,7 +254,7 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
 
 // Copy read name / 1-based location / raw sequence / full feature JSON, each
 // present only when the underlying field exists (feature info always is).
-function getCopySubMenu(self: IAnyStateTreeNode, feat: Feature): MenuItem[] {
+function getCopySubMenu(self: IStateTreeNode, feat: Feature): MenuItem[] {
   const readName = feat.get('name')
   const refName = feat.get('refName')
   const seq = feat.get('seq')

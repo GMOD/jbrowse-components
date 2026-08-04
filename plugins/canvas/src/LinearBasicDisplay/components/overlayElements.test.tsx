@@ -49,6 +49,7 @@ const MODEL = {
   renderDataMap: new Map([[0, DATA]]),
   openContextMenu: () => {},
   selectFeatureById: () => {},
+  toggleSoloFeature: () => {},
 }
 
 // Only the geometry the layer reads; the layer takes the real LGV type, and the
@@ -105,6 +106,30 @@ test('label layer clears hover when the cursor leaves a label', () => {
   // is not.
   fireEvent.mouseOut(label, { relatedTarget: document.body })
   expect(onLabelMouseLeave).toHaveBeenCalledTimes(1)
+})
+
+// A label sits on top of its own glyph, so the two entry points must read the
+// same gesture the same way — collecting a run of features with ctrl+click used
+// to open a details widget the moment the cursor caught a name.
+test.each([
+  ['plain', {}, 'select'],
+  ['ctrl', { ctrlKey: true }, 'solo'],
+  ['meta', { metaKey: true }, 'solo'],
+])('%s click on a label routes to %s', (_name, modifier, expected) => {
+  const selectFeatureById = jest.fn()
+  const toggleSoloFeature = jest.fn()
+  const { getByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <FloatingLabelsLayer
+        model={{ ...MODEL, selectFeatureById, toggleSoloFeature }}
+        view={VIEW}
+      />
+    </ThemeProvider>,
+  )
+
+  fireEvent.click(getByTestId('feature-name-NAME'), modifier)
+  expect(selectFeatureById.mock.calls.length ? 'select' : 'solo').toBe(expected)
+  expect(toggleSoloFeature.mock.calls.length > 0).toBe(expected === 'solo')
 })
 
 // A box is drawn once per visible region on the feature's own reference
