@@ -563,7 +563,7 @@ export default function stateModelFactory(
     .actions(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as MultiLinearWiggleDisplayModel, opts)
+        return renderSvg(self, opts)
       },
     }))
 }

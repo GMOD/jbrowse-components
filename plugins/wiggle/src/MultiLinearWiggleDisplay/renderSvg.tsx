@@ -18,15 +18,71 @@ import { legendRightEdgePx } from '../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 
-import type { MultiLinearWiggleDisplayModel } from './model.ts'
+import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
+import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
+import type { WiggleDataResult } from '../util.ts'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
+  LgvSvgExportable,
 } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ClusterHierarchyNode,
+  ClusterProvenance,
+} from '@jbrowse/tree-sidebar'
+import type { WiggleGPURenderState, YScaleTicks } from '@jbrowse/wiggle-core'
 import type React from 'react'
 
+/**
+ * What the export reads off the display — spelled out rather than taking the
+ * concrete model, which is the convention `renderDisplaySvg` documents and what
+ * keeps this path testable without standing up MST and a fetch lifecycle. It is
+ * deliberately not the component contract (`MultiWiggleDisplayModel`): that one
+ * also carries the canvas refs and hover setters an export has no use for.
+ */
+export interface RenderSvgModel extends LgvSvgExportable {
+  id: string
+  rpcDataMap: ReadonlyMap<number, WiggleDataResult>
+  renderState: WiggleGPURenderState
+  gpuProps: () => WiggleGpuProps
+
+  // the dendrogram and its caption
+  showTree: boolean
+  treeAreaWidth: number
+  hierarchy?: ClusterHierarchyNode
+  clusterProvenance?: ClusterProvenance
+
+  // read by MultiWiggleSvgScales (row labels, per-row axes, score legend)
+  sources: {
+    name: string
+    label?: string
+    color?: string
+    labelColor?: string
+    group?: string
+  }[]
+  isOverlay: boolean
+  isDensityMode: boolean
+  effectiveRowHeight: number
+  domain: [number, number] | undefined
+  scaleType: string
+  ticks?: YScaleTicks
+  rowHeightTooSmallForScalebar: boolean
+  numSources: number
+  numRows: number
+  scoreRamp: ScoreRamp | undefined
+
+  // read by MultiWiggleOverlayLines
+  showRowSeparators: boolean
+  showCrossHatches: boolean
+
+  // the overlay color key, which reads `hasOverlayLegend` so a dismissed legend
+  // stays out of the export too
+  hasOverlayLegend: boolean
+  posColor: string
+}
+
 export async function renderSvg(
-  model: MultiLinearWiggleDisplayModel,
+  model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   return renderDisplaySvg(model, opts, MultiWiggleSvgBody)
@@ -38,7 +94,7 @@ function MultiWiggleSvgBody({
   height,
   canvasWidth,
   opts,
-}: LgvSvgBodyProps<MultiLinearWiggleDisplayModel>) {
+}: LgvSvgBodyProps<RenderSvgModel>) {
   // anchors scale bars to left edge of content; non-zero only when scrolled
   // before genome start. Left-oriented, so the labels grow into the export
   // margin rather than over the plot (the on-screen axis instead indents by

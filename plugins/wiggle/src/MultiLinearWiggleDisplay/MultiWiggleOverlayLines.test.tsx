@@ -1,0 +1,128 @@
+import { renderToString } from 'react-dom/server'
+
+import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
+
+// Two tick levels, so a per-row hatch set is two lines and the per-row offset is
+// visible in the output.
+const ticks = {
+  values: [0, 100],
+  yTop: 0,
+  yBottom: 30,
+  items: [
+    { value: 0, y: 30, label: '0' },
+    { value: 100, y: 0, label: '100' },
+  ],
+}
+
+function makeModel(overrides: Partial<Parameters<typeof render>[0]> = {}) {
+  return {
+    isOverlay: false,
+    isDensityMode: false,
+    showRowSeparators: true,
+    showCrossHatches: false,
+    numRows: 3,
+    effectiveRowHeight: 30,
+    ticks: undefined,
+    ...overrides,
+  }
+}
+
+function render(model: {
+  isOverlay: boolean
+  isDensityMode: boolean
+  showRowSeparators: boolean
+  showCrossHatches: boolean
+  numRows: number
+  effectiveRowHeight: number
+  ticks?: typeof ticks
+}) {
+  return renderToString(
+    <svg>
+      <MultiWiggleOverlayLines model={model} width={800} />
+    </svg>,
+  )
+}
+
+// The separator hairline follows the theme's divider color through
+// getStrokeProps, which splits the alpha onto its own attribute; the hatches are
+// wiggle-core's fixed grey. Counting by that is what tells the two apart in one
+// flat list of <line>s.
+function separatorYs(svg: string) {
+  return [...svg.matchAll(/<line x1="0" y1="([\d.]+)"/g)].map(m => Number(m[1]))
+}
+function strokeOpacity(svg: string) {
+  return Number(/stroke-opacity="([\d.]+)"/.exec(svg)?.[1])
+}
+function hatchYs(svg: string) {
+  return [
+    ...svg.matchAll(/y1="([\d.]+)" y2="[\d.]+" stroke="rgb\(200,200,200\)"/g),
+  ].map(m => Number(m[1]))
+}
+
+describe('row separators', () => {
+  // One line per row boundary, so three rows get two. The +0.5 lands the 1px
+  // stroke on a device-pixel boundary instead of straddling two rows.
+  it('draws one hairline per boundary, offset half a pixel', () => {
+    const svg = render(makeModel())
+    expect(separatorYs(svg)).toEqual([30.5, 60.5])
+    expect(svg).toContain('x2="800"')
+  })
+
+  // Overlay collapses every source onto one plot, so there is no boundary to
+  // draw even with the setting on.
+  it('draws none in an overlay rendering', () => {
+    expect(separatorYs(render(makeModel({ isOverlay: true })))).toEqual([])
+  })
+
+  it('draws none for a single row', () => {
+    expect(separatorYs(render(makeModel({ numRows: 1 })))).toEqual([])
+  })
+
+  it('draws none when the setting is off', () => {
+    expect(
+      separatorYs(render(makeModel({ showRowSeparators: false }))),
+    ).toEqual([])
+  })
+
+  // Density rows are edge-to-edge saturated fill, so the line is dialed up to
+  // stay visible over them; xyplot rows sit on paper and can take a fainter one.
+  it('is stronger over density fill than over an xyplot', () => {
+    // The alpha round-trips through an 8-bit channel, so compare the two rather
+    // than pinning either float. It being on its own attribute at all is the
+    // other half of the contract: renderToStaticMarkup strips rgba() alpha, so
+    // an inline one would survive on screen and vanish from the export.
+    expect(
+      strokeOpacity(render(makeModel({ isDensityMode: true }))),
+    ).toBeGreaterThan(strokeOpacity(render(makeModel())))
+  })
+})
+
+describe('cross hatches', () => {
+  // One set per row, each offset to its row's top — the same numRows the
+  // separators count boundaries from, so the two can't disagree about where a
+  // row starts.
+  it('repeats the tick levels once per row', () => {
+    const svg = render(makeModel({ showCrossHatches: true, numRows: 2, ticks }))
+    expect(hatchYs(svg)).toEqual([30, 0, 60, 30])
+  })
+
+  // Overlay is one row over the full height, so its hatches draw once.
+  it('draws one set in an overlay rendering', () => {
+    const svg = render(
+      makeModel({
+        showCrossHatches: true,
+        isOverlay: true,
+        numRows: 1,
+        ticks,
+      }),
+    )
+    expect(hatchYs(svg)).toEqual([30, 0])
+  })
+
+  it('draws none without ticks or with the setting off', () => {
+    expect(hatchYs(render(makeModel({ showCrossHatches: true })))).toEqual([])
+    expect(
+      hatchYs(render(makeModel({ showCrossHatches: false, ticks }))),
+    ).toEqual([])
+  })
+})
