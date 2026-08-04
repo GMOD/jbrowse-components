@@ -28,6 +28,13 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 | <span id="getter-assemblies">**assemblies**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, d…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;)[]</code></pre></dialog></span> | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> | names of the assemblies returned by the `assemblies` getter |
 
+## Methods
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="method-findassemblyconf">**findAssemblyConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(name: unknown) =&gt; (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTre…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(name: unknown) =&gt; (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></dialog></span> | The assembly config already carrying `name`, from any of the three arrays the assemblyManager draws on, or undefined.<br><br>One namespace, because `name` is the assembly config's MST identifier: a second config carrying a name one of the others already has doesn't fail at the add, it makes every `assembly.configuration` safeReference in the manager ambiguous, and MST then throws on every read of one — inside the manager's own autorun and inside `assemblyNameMap`, which takes the session down. So each add path checks all three, not just the array it pushes to. |
+
 ## Actions
 
 <!-- prettier-ignore -->

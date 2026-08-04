@@ -37,6 +37,31 @@ export function AssembliesMixin(
         [],
       ),
     })
+    .views(s => {
+      const self = asSession(s)
+      return {
+        /**
+         * #method
+         * The assembly config already carrying `name`, from any of the three
+         * arrays the assemblyManager draws on, or undefined.
+         *
+         * One namespace, because `name` is the assembly config's MST
+         * identifier: a second config carrying a name one of the others
+         * already has doesn't fail at the add, it makes every
+         * `assembly.configuration` safeReference in the manager ambiguous, and
+         * MST then throws on every read of one — inside the manager's own
+         * autorun and inside `assemblyNameMap`, which takes the session down.
+         * So each add path checks all three, not just the array it pushes to.
+         */
+        findAssemblyConf(name: unknown): BaseAssemblyConfigModel | undefined {
+          return [
+            ...self.jbrowse.assemblies,
+            ...self.sessionAssemblies,
+            ...self.temporaryAssemblies,
+          ].find(f => f.name === name)
+        },
+      }
+    })
     .actions(s => {
       const self = asSession(s)
       return {
@@ -44,7 +69,7 @@ export function AssembliesMixin(
          * #action
          */
         addSessionAssembly(conf: AnyConfiguration) {
-          const asm = self.sessionAssemblies.find(f => f.name === conf.name)
+          const asm = self.findAssemblyConf(conf.name)
           if (asm) {
             console.warn(`Assembly ${conf.name} already exists`)
             return asm
@@ -57,6 +82,14 @@ export function AssembliesMixin(
          * #action
          */
         addAssembly(conf: AnyConfiguration) {
+          // checked here rather than left to jbrowse.addAssemblyConf, which
+          // sees only its own array: in admin mode the name still has to clear
+          // the session-scoped arrays as well
+          const asm = self.findAssemblyConf(conf.name)
+          if (asm) {
+            console.warn(`Assembly ${conf.name} already exists`)
+            return
+          }
           if (self.adminMode) {
             self.jbrowse.addAssemblyConf(conf)
           } else {
@@ -90,7 +123,7 @@ export function AssembliesMixin(
          * used for read vs ref type assemblies.
          */
         addTemporaryAssembly(conf: AnyConfiguration) {
-          const asm = self.temporaryAssemblies.find(f => f.name === conf.name)
+          const asm = self.findAssemblyConf(conf.name)
           if (asm) {
             console.warn(`Assembly ${conf.name} already exists`)
             return asm

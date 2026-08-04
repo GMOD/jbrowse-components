@@ -16,6 +16,13 @@ JBrowse core.
 | --- | --- |
 | <span id="property-assemblies">**assemblies**</span><br><code>assemblies: types.array(assemblyFactory(conf, pm))</code> | this is automatically managed by an autorun which looks in the parent session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies |
 
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-unrecognizedreports">**unrecognizedReports**</span><br><code>unrecognizedReports: new UnrecognizedAssemblyReports()</code> | rate limiter for `get`'s `Core-handleUnrecognizedAssembly` reports, so each unknown name reaches the extension point once per session |
+
 ## Getters
 
 <!-- prettier-ignore -->
@@ -33,7 +40,7 @@ JBrowse core.
 | --- | --- |
 | <span id="method-getcanonicalassemblyname">**getCanonicalAssemblyName**</span><br><code>(asmName: string) =&gt; string</code> |  |
 | <span id="method-getdisplayname">**getDisplayName**</span><br><code>(asmName: string) =&gt; string</code> |  |
-| <span id="method-get">**get**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(asmName: string) =&gt; (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(asmName: string) =&gt; (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></dialog></span> | The assembly `asmName` names, or undefined. Reports a name it doesn't know to `Core-handleUnrecognizedAssembly` so a plugin can go supply it, which is a side effect: a caller only asking *whether* the session has the assembly wants has instead. |
+| <span id="method-get">**get**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(asmName: string) =&gt; (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(asmName: string) =&gt; (ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></dialog></span> | The assembly `asmName` names, or undefined. Reports a name it doesn't know to `Core-handleUnrecognizedAssembly` so a plugin can go supply it, which is a side effect: a caller only asking *whether* the session has the assembly wants has instead. Each name is reported at most once per session, since a handler resolves it out of band and the assembly turning up is itself the reactive signal. |
 | <span id="method-has">**has**</span><br><code>(asmName: string) =&gt; boolean</code> | Whether the session knows this assembly. Use this, not `get`, to ask only whether the assembly is present: `!has(name)` is exactly the condition under which `get` reports `name` to `Core-handleUnrecognizedAssembly`, so probing with `get` tells every installed plugin to go resolve a name that a caller supplying the assembly itself (a hub connection, MAF row navigation) is about to create. |
 | <span id="method-waitforassembly">**waitForAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string) =&gt; Promise&lt;(ModelInstanceTypeProps&lt;{ con…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string) =&gt; Promise&lt;(ModelInstanceTypeProps&lt;{ configuration: IMaybe&lt;IReferenceType&lt;IAnyType&gt;&gt;; }&gt; &amp; { ...; } &amp; ... 12 more ... &amp; IStateTreeNode&lt;...&gt;) &#124; undefined&gt;</code></pre></dialog></span> | use this method instead of assemblyManager.get(assemblyName) to get an assembly with regions loaded |
 | <span id="method-getrefnamemapforadapter">**getRefNameMapForAdapter**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(adapterConf: AdapterConf, assemblyName: string &#124; undefined, op…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(adapterConf: AdapterConf, assemblyName: string &#124; undefined, opts: AssemblyBaseOpts) =&gt; Promise&lt;RefNameAliases&gt;</code></pre></dialog></span> |  |

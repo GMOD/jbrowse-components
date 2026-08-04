@@ -213,29 +213,37 @@ export default function assemblyFactory(
         }
         const assemblyName = self.name
 
-        const regions = await getAssemblyRegions({
-          config: conf.sequence.adapter,
-          pluginManager,
-        })
+        // The four sources are independent files (sequence index, chromAlias,
+        // cytoband, genetic-code sidecar), so they are fetched together rather
+        // than in series: an assembly resolved on demand over a CDN paid four
+        // sequential round trips for what is one. buildRefNameMaps still needs
+        // both regions and aliases, it just doesn't need them to arrive in
+        // order. Promise.all rejects with the first failure, which is what a
+        // serial chain did too — any one of them failing fails the load.
+        const [regions, refNameAliasCollection, cytobands, geneticCodes] =
+          await Promise.all([
+            getAssemblyRegions({
+              config: conf.sequence.adapter,
+              pluginManager,
+            }),
+            getRefNameAliases({
+              config: conf.refNameAliases?.adapter,
+              pluginManager,
+            }),
+            getCytobands({
+              config: conf.cytobands?.adapter,
+              pluginManager,
+            }),
+            getGeneticCodesFromFile({
+              location: self.getConf('geneticCodesLocation'),
+              pluginManager,
+            }),
+          ])
+
         for (const r of regions) {
           checkRefName(r.refName)
         }
-
-        const refNameAliasCollection = await getRefNameAliases({
-          config: conf.refNameAliases?.adapter,
-          pluginManager,
-        })
         const maps = buildRefNameMaps(regions, refNameAliasCollection)
-
-        const cytobands = await getCytobands({
-          config: conf.cytobands?.adapter,
-          pluginManager,
-        })
-
-        const geneticCodes = await getGeneticCodesFromFile({
-          location: self.getConf('geneticCodesLocation'),
-          pluginManager,
-        })
 
         this.setLoaded({
           ...maps,

@@ -33,6 +33,46 @@ export interface AssemblyBaseOpts {
 }
 
 /**
+ * Which assembly names have already been reported to
+ * `Core-handleUnrecognizedAssembly`, so each is reported once per session.
+ *
+ * Handlers resolve a name asynchronously and out of band — the hubs plugin
+ * probes a url and adds a connection — and the assembly turning up is itself
+ * the reactive signal, so there is nothing for a second report to accomplish.
+ * `get` is called from render paths and computeds, so without this every
+ * re-render re-reported, and a handler that answers by fetching re-fetched:
+ * for exactly the names nothing can supply (a session naming a genome this
+ * host has never heard of) that is an unbounded stream of requests.
+ *
+ * Keyed on the session node so replacing the session (`setSession`) starts
+ * over: the connections and session assemblies a handler created for the old
+ * session went with it, so a name it already answered for has to be
+ * answerable again.
+ *
+ * A class instance rather than volatile fields because `get` records into it
+ * from inside a derivation: MST leaves a class instance in volatile state
+ * un-enhanced, while writing an observable volatile there is a state change
+ * inside a computed.
+ */
+class UnrecognizedAssemblyReports {
+  session: unknown = undefined
+  names = new Set<string>()
+
+  /** true the first time `name` comes up under `session`, false afterwards */
+  shouldReport(session: unknown, name: string) {
+    if (this.session !== session) {
+      this.session = session
+      this.names.clear()
+    }
+    if (this.names.has(name)) {
+      return false
+    }
+    this.names.add(name)
+    return true
+  }
+}
+
+/**
  * #stateModel AssemblyManager
  */
 function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
@@ -47,6 +87,14 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       assemblies: types.array(assemblyFactory(conf, pm)),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       * rate limiter for `get`'s `Core-handleUnrecognizedAssembly` reports, so
+       * each unknown name reaches the extension point once per session
+       */
+      unrecognizedReports: new UnrecognizedAssemblyReports(),
+    }))
     .views(self => ({
       /**
        * #getter
@@ -79,28 +127,36 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * The assembly `asmName` names, or undefined. Reports a name it doesn't
        * know to `Core-handleUnrecognizedAssembly` so a plugin can go supply it,
        * which is a side effect: a caller only asking *whether* the session has
-       * the assembly wants {@link has} instead.
+       * the assembly wants {@link has} instead. Each name is reported at most
+       * once per session, since a handler resolves it out of band and the
+       * assembly turning up is itself the reactive signal.
        */
       get(asmName: string) {
         if (asmName) {
           const assembly = self.assemblyNameMap[asmName]
           if (assembly) {
             return assembly
-          } else if (!this.has(asmName)) {
+          }
+          const { session } = getParent<AssemblyManagerParent>(self)
+          if (
+            !this.has(asmName) &&
+            self.unrecognizedReports.shouldReport(session, asmName)
+          ) {
             // Extension point for loading unrecognized assemblies. Allows
             // plugins to provide custom logic for assembly resolution
             //
             // Note: this does not return any particular value. however, it can
             // trigger things like like adding connections, that will
             // eventually trigger assemblies to be loaded and new evaluations
-            // via observable behavior
+            // via observable behavior. Which is also why each name is reported
+            // only once per session — see UnrecognizedAssemblyReports.
             pm.evaluateExtensionPoint(
               /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown */
               'Core-handleUnrecognizedAssembly',
               undefined,
               {
                 assemblyName: asmName,
-                session: getParent<AssemblyManagerParent>(self).session,
+                session,
               },
             )
           }
@@ -120,6 +176,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * create.
        */
       // `get` calls this to decide whether to report, so the two can't drift.
+      // (`get` also reports each name at most once per session; the dedupe is a
+      // rate limit on top of this condition, not a second answer to it.)
       //
       // Both lookups are load-bearing and they miss in opposite directions, so
       // neither alone is a correct probe: assemblyNameMap is keyed by

@@ -66,7 +66,10 @@ launching view says what the mouse panel should show, so that one opens empty,
 and its tracks come from its own track selector, whose button in the view header
 lists one per panel. On genomes.jbrowse.org the mouse panel offers the same
 **NCBI RefSeq - RefSeq Curated** and **RepeatMasker** as the human one, because
-naming mm39 also brought in the mm39 hub's tracks.
+naming mm39 also brought in the mm39 hub's gene, repeat and gap tracks. The rest
+of that hub is not loaded with them; open it from **File** &rarr; **Open
+connection** as a JBrowse 2 hub at `https://jbrowse.org/ucsc/mm39/config.json`
+when you want its conservation or expression tracks too.
 
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.

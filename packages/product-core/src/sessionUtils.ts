@@ -336,6 +336,24 @@ function concatTracksByTrackId(...lists: unknown[][]): unknown[] {
   return [...out, ...byId.values()]
 }
 
+// Same idea as concatTracksByTrackId for assemblies, whose identifier is their
+// `name`. A duplicate is worse here than for tracks: it doesn't fail at load,
+// it makes every assembly's `configuration` safeReference ambiguous, so the
+// assemblyManager throws on the next read of one and the session is dead.
+function concatAssembliesByName(...lists: unknown[][]): unknown[] {
+  const byName = new Map<string, unknown>()
+  const out: unknown[] = []
+  for (const a of lists.flat()) {
+    const name = isRecord(a) && typeof a.name === 'string' ? a.name : undefined
+    if (name === undefined) {
+      out.push(a)
+    } else {
+      byName.set(name, a)
+    }
+  }
+  return [...out, ...byName.values()]
+}
+
 // The user tracks (not an assembly's own structural sequence/alias files) that
 // reference a local file: their trackIds, to drop from the export, and display
 // names, to report to the user. Assembly-owned files can't be dropped by
@@ -469,7 +487,10 @@ export function planWebExport(
     strategy: 'selfContained',
     session: {
       ...defaultSession,
-      sessionAssemblies: [...priorSessionAssemblies, ...assemblies],
+      sessionAssemblies: concatAssembliesByName(
+        priorSessionAssemblies,
+        assemblies,
+      ),
       sessionTracks: concatTracksByTrackId(priorSessionTracks, tracks),
     },
     report,
