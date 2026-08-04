@@ -1,6 +1,6 @@
-const { ipcRenderer } = window.require('electron')
+import { invokeIpc } from '../ipc.ts'
 
 export default async function factoryReset() {
-  await ipcRenderer.invoke('reset')
+  await invokeIpc('reset')
   window.location.reload()
 }

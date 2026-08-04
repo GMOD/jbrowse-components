@@ -6,10 +6,10 @@ import Star from '@mui/icons-material/Star'
 import StarBorder from '@mui/icons-material/StarBorder'
 import TextFieldsIcon from '@mui/icons-material/TextFields'
 
+import { invokeIpc } from '../../../ipc.ts'
+
 import type { RecentSessionData } from '../types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-const { ipcRenderer } = window.require('electron')
 
 // Shared action menu for a recent session, used by both the card (grid) and the
 // row (list) views so they can't drift. `includeLaunch` adds an explicit Launch
@@ -81,9 +81,7 @@ export function sessionMenuItems({
       label: 'Show in folder',
       icon: FolderOpenIcon,
       onClick: () => {
-        ipcRenderer
-          .invoke('showItemInFolder', session.path)
-          .catch(console.error)
+        invokeIpc('showItemInFolder', session.path).catch(console.error)
       },
     },
   ]

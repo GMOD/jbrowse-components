@@ -2,9 +2,8 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText } from '@mui/material'
 
+import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
-
-const { ipcRenderer } = window.require('electron')
 
 export default function DeleteSessionDialog({
   sessionsToDelete,
@@ -16,7 +15,7 @@ export default function DeleteSessionDialog({
   const count = sessionsToDelete.length
   const { error, pending, onSubmit } = useIpcAction(
     () =>
-      ipcRenderer.invoke(
+      invokeIpc(
         'deleteSessions',
         sessionsToDelete.map(s => s.path),
       ),

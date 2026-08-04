@@ -1,0 +1,27 @@
+import type { IpcChannels } from '../electron/ipc/channelTypes.ts'
+
+// `import type` only: channelTypes.ts is erased at build time, so nothing from
+// the main process's tree is bundled into the renderer.
+
+// Node's require, available because the window runs with nodeIntegration (see
+// electron/window.ts and src/declare.d.ts). Destructured once here rather than
+// at the top of every module that talks to the main process.
+const { ipcRenderer } = window.require('electron')
+
+/**
+ * Call a main-process handler, checked against the same {@link IpcChannels}
+ * contract the handlers are registered under.
+ *
+ * `ipcRenderer.invoke` is `(channel: string, ...args: any[]) => Promise<any>`,
+ * so calling it directly means the channel name, the arguments and the result
+ * are all unchecked: a renamed channel, a dropped argument, or a wrong
+ * assumption about what comes back are runtime surprises, and each call site
+ * has to assert the return type for itself. Going through here makes all three
+ * a compile error instead, and is the one place the `any` stops.
+ */
+export function invokeIpc<K extends keyof IpcChannels>(
+  channel: K,
+  ...args: IpcChannels[K]['args']
+): Promise<IpcChannels[K]['return']> {
+  return ipcRenderer.invoke(channel, ...args)
+}

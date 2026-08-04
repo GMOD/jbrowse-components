@@ -14,7 +14,7 @@ import { registerSessionHandlers } from './sessionHandlers.ts'
 import { captureHandlers, makeTestPaths } from './testUtil.ts'
 
 import type { AppPaths } from '../paths.ts'
-import type { SessionSnap } from './channels.ts'
+import type { SessionSnap } from './channelTypes.ts'
 
 jest.mock('electron', () => ({
   ipcMain: { handle: jest.fn() },

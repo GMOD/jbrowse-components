@@ -15,7 +15,7 @@ import { writeGlobalPlugins } from './globalPluginHandlers.ts'
 import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
 
 import type { AppPaths } from '../paths.ts'
-import type { RecentSession, SessionSnap } from './channels.ts'
+import type { RecentSession, SessionSnap } from './channelTypes.ts'
 
 const { unlink, readFile, writeFile, rename } = fs.promises
 const THUMBNAIL_WIDTH = 500

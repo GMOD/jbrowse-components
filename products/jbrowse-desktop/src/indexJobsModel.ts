@@ -11,6 +11,8 @@ import {
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
+import { invokeIpc } from './ipc.ts'
+
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -19,8 +21,6 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
 import type { Track, indexType } from '@jbrowse/text-indexing'
-
-const { ipcRenderer } = window.require('electron')
 
 // The jobs manager lives at rootModel.jobsManager, so its MST parent is the root
 // model; this is the slice it reaches for. One typed contract in place of the
@@ -278,7 +278,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             self.tracks,
             trackIds,
           ).map(c => toJS(c))
-          const userData = await ipcRenderer.invoke('userData')
+          const userData = await invokeIpc('userData')
           const outLocation = path.join(
             userData,
             'nameIndices',

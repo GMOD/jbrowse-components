@@ -14,14 +14,13 @@ import {
   Typography,
 } from '@mui/material'
 
+import { invokeIpc } from '../../../ipc.ts'
 import StarIcon from '../StarIcon.tsx'
 import { defaultSessionScreenshot } from './defaultSessionScreenshot.ts'
 import { formatLastModified } from './formatLastModified.ts'
 import { sessionMenuItems } from './sessionMenuItems.ts'
 
 import type { RecentSessionData } from '../types.ts'
-
-const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
   card: {
@@ -68,9 +67,7 @@ function RecentSessionCard({
   const { data: screenshot } = useFetch(
     ['loadThumbnail', path],
     async () =>
-      ((await ipcRenderer.invoke('loadThumbnail', path)) as
-        | string
-        | undefined) ?? defaultSessionScreenshot,
+      (await invokeIpc('loadThumbnail', path)) ?? defaultSessionScreenshot,
     {
       onError: e => {
         console.error(e)

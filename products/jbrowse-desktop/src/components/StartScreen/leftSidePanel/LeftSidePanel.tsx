@@ -5,18 +5,17 @@ import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 
+import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
-import { newSessionName } from '../sessionName.ts'
+import { resolveSessionName } from '../sessionName.ts'
 import { fetchConfig, loadPluginManager } from '../util.tsx'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
 
-import type { Fav, JBrowseConfig } from '../types.ts'
+import type { Fav, JBrowseConfig, JBrowseConfigInput } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
   form: {
@@ -28,9 +27,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 async function getQuickstarts(sel: string[]) {
-  return Promise.all(
-    sel.map(entry => ipcRenderer.invoke('getQuickstart', entry)),
-  )
+  return Promise.all(sel.map(entry => invokeIpc('getQuickstart', entry)))
 }
 
 export default function LeftSidePanel({
@@ -47,7 +44,9 @@ export default function LeftSidePanel({
     defaultFavs,
   )
 
-  async function launchSession(getEntries: () => Promise<JBrowseConfig[]>) {
+  async function launchSession(
+    getEntries: () => Promise<JBrowseConfigInput[]>,
+  ) {
     try {
       setLoading('Loading session')
       const entries = await getEntries()
@@ -59,10 +58,15 @@ export default function LeftSidePanel({
       }
       setPluginManager(
         await loadPluginManager(
-          await ipcRenderer.invoke('createInitialAutosaveFile', {
+          await invokeIpc('createInitialAutosaveFile', {
             ...merged,
-            defaultSession: entries[0]?.defaultSession ?? {
-              name: newSessionName(),
+            defaultSession: {
+              ...entries[0]?.defaultSession,
+              // The recent-sessions entry is written from this snapshot, before
+              // createPluginManager resolves the session's own name. Defaulting
+              // only when defaultSession is absent entirely left a hub config
+              // that ships an unnamed one with a nameless start-screen row.
+              name: resolveSessionName(entries[0]?.defaultSession ?? {}),
             },
           }),
         ),

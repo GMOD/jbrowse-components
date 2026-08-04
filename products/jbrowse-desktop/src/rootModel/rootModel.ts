@@ -33,9 +33,11 @@ import { autorun } from 'mobx'
 import packageJSON from '../../package.json' with { type: 'json' }
 import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
 import jobsModelFactory from '../indexJobsModel.ts'
+import { invokeIpc } from '../ipc.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 
+import type { SessionSnap } from '../../electron/ipc/channelTypes.ts'
 import type { AppRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -52,9 +54,7 @@ const ExportToWebDialog = lazy(
 )
 const OpenLinkDialog = lazy(() => import('../components/OpenLinkDialog.tsx'))
 
-const { ipcRenderer } = window.require('electron')
-
-function getSaveSession(model: BaseRootModel) {
+function getSaveSession(model: BaseRootModel): SessionSnap {
   const snap = getSnapshot(model.jbrowse)
   return {
     ...(snap as Record<string, unknown>),
@@ -166,9 +166,9 @@ export default function rootModelFactory({
         /**
          * #action
          */
-        async saveSession(val: unknown) {
+        async saveSession(val: SessionSnap) {
           if (self.sessionPath) {
-            await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+            await invokeIpc('saveSession', self.sessionPath, val)
           }
         },
       }))
@@ -286,8 +286,7 @@ export default function rootModelFactory({
                         icon: OpenIcon,
                         onClick: async () => {
                           try {
-                            const path =
-                              await ipcRenderer.invoke('promptOpenFile')
+                            const path = await invokeIpc('promptOpenFile')
                             if (path) {
                               await self.openNewSessionCallback(path)
                             }
@@ -321,7 +320,7 @@ export default function rootModelFactory({
                         icon: SaveAsIcon,
                         onClick: async () => {
                           try {
-                            const filePath = await ipcRenderer.invoke(
+                            const filePath = await invokeIpc(
                               'promptSessionSaveAs',
                             )
                             if (filePath) {
@@ -380,7 +379,7 @@ export default function rootModelFactory({
                       // autosave would never run: flush first, exactly as
                       // returning to the start screen above does
                       await self.flushSession()
-                      await ipcRenderer.invoke('quit')
+                      await invokeIpc('quit')
                     },
                   },
                 ],

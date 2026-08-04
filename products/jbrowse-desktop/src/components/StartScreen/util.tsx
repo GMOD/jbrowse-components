@@ -14,6 +14,7 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 
 import corePlugins from '../../corePlugins.ts'
+import { invokeIpc } from '../../ipc.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
@@ -27,7 +28,7 @@ import { launchFromLink } from './launchFromLink.ts'
 import { newSessionName, resolveSessionName } from './sessionName.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
-import type { JBrowseConfig } from './types.ts'
+import type { JBrowseConfigInput } from './types.ts'
 import type {
   PluginLoadFailure,
   PluginRecord,
@@ -37,8 +38,6 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
-
-const { ipcRenderer } = window.require('electron')
 
 function makePluginLoader(definitions: PluginDefinition[]) {
   return new PluginLoader(dropVendoredPlugins(definitions, DESKTOP_VENDORED), {
@@ -100,7 +99,7 @@ export async function createStartScreenPluginManager(): Promise<StartScreenPlugi
 }
 
 export async function loadPluginManager(configPath: string) {
-  const snap = await ipcRenderer.invoke('loadSession', configPath)
+  const snap = await invokeIpc('loadSession', configPath)
   const pm = await createPluginManager(snap)
   ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(configPath)
   return pm
@@ -116,7 +115,7 @@ export async function openSpecLink(link: string) {
     fetchConfig,
     createPluginManager: async config =>
       loadPluginManager(
-        await ipcRenderer.invoke('createInitialAutosaveFile', {
+        await invokeIpc('createInitialAutosaveFile', {
           ...config,
           // a placeholder: loadSessionSpec replaces this session with the one
           // the spec describes (and names it)
@@ -139,7 +138,7 @@ export function destroyPluginManager(pluginManager: PluginManager) {
 }
 
 export async function createPluginManager(
-  configSnapshot: JBrowseConfig,
+  configSnapshot: JBrowseConfigInput,
   initialTimestamp = Date.now(),
 ) {
   // Global plugins load in every session, so they join the config's own list
@@ -176,6 +175,9 @@ export async function createPluginManager(
     sessionModelFactory,
   })
 
+  // this merge is what turns a JBrowseConfigInput into a complete config: the
+  // three list fields the input need not carry are supplied here, so the
+  // dedupes below have something to walk
   const jbrowse = deepmerge(configSnapshot, {
     internetAccounts: [
       {
@@ -196,7 +198,7 @@ export async function createPluginManager(
     ],
     assemblies: [],
     tracks: [],
-  }) as JBrowseConfig
+  })
 
   jbrowse.assemblies = dedupe(jbrowse.assemblies, asm => asm.name)
   jbrowse.tracks = dedupe(jbrowse.tracks, acct => acct.trackId)

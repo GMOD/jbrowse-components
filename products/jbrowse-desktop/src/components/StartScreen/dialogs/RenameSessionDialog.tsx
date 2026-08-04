@@ -4,9 +4,8 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText, TextField } from '@mui/material'
 
+import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
-
-const { ipcRenderer } = window.require('electron')
 
 export default function RenameSessionDialog({
   sessionToRename,
@@ -20,7 +19,7 @@ export default function RenameSessionDialog({
     if (!newName.trim()) {
       throw new Error('Session name cannot be empty')
     }
-    await ipcRenderer.invoke('renameSession', sessionToRename.path, newName)
+    await invokeIpc('renameSession', sessionToRename.path, newName)
   }, onClose)
   return (
     <ConfirmDialog

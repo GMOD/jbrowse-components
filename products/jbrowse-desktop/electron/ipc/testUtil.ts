@@ -5,7 +5,7 @@ import path from 'node:path'
 import { ipcMain } from 'electron'
 
 import type { AppPaths } from '../paths.ts'
-import type { IpcChannels } from './channels.ts'
+import type { IpcChannels } from './channelTypes.ts'
 import type { IpcMainInvokeEvent } from 'electron'
 
 // Test-only helpers for the IPC handler modules. A handler is only reachable

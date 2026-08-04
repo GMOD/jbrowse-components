@@ -7,6 +7,7 @@ import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { invokeIpc } from '../ipc.ts'
 import { useQueryParam } from '../useQueryParam.ts'
 import JBrowse from './JBrowse.tsx'
 import { NotificationProvider } from './Notifications.tsx'
@@ -21,8 +22,6 @@ import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-const { ipcRenderer } = window.require('electron')
 
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 
@@ -74,9 +73,7 @@ const LoaderContents = observer(function LoaderContents() {
         ? {
             label: 'Remove from recent sessions',
             onClick: () => {
-              ipcRenderer
-                .invoke('removeRecentSession', config)
-                .catch(console.error)
+              invokeIpc('removeRecentSession', config).catch(console.error)
             },
           }
         : undefined,

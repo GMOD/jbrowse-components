@@ -6,10 +6,11 @@ import { ENCODING, getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
+import type { SessionSnap } from './channelTypes.ts'
 
 const { readFile, copyFile, readdir, rename, unlink, writeFile } = fs.promises
 
-async function readQuickstart(quickstartPath: string): Promise<unknown> {
+async function readQuickstart(quickstartPath: string): Promise<SessionSnap> {
   try {
     return JSON.parse(await readFile(quickstartPath, ENCODING))
   } catch (e) {

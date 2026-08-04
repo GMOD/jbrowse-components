@@ -3,7 +3,7 @@
 // this list is bundled into the preload, which runs in the renderer process.
 // The `import type` below is erased at build time, so it costs nothing here.
 
-import type { IpcChannels } from './channels.ts'
+import type { IpcChannels } from './channelTypes.ts'
 
 export const INVOKABLE_CHANNELS = [
   'quit',

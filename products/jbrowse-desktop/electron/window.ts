@@ -8,18 +8,13 @@ import { isAppUrl, isSafeExternalUrl } from './navigationGuard.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
+import type { AuthWindowParams } from './ipc/channelTypes.ts'
 import type { LaunchTarget } from './launchTarget.ts'
 import type { AppUpdater } from 'electron-updater'
 
 const DEFAULT_WINDOW_WIDTH = 1400
 const DEFAULT_WINDOW_HEIGHT = 800
 const DEFAULT_DEV_SERVER_URL = 'http://localhost:3000'
-
-export interface AuthWindowParams {
-  internetAccountId: string
-  data: { redirect_uri: string }
-  url: string
-}
 
 // The renderer is told what to open through its own query string: `config` for
 // a local session/config file, `specLink` for a JBrowse Web link that arrived

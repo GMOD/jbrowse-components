@@ -2,9 +2,8 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText } from '@mui/material'
 
+import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
-
-const { ipcRenderer } = window.require('electron')
 
 export default function DeleteQuickstartDialog({
   quickstartToDelete,
@@ -14,7 +13,7 @@ export default function DeleteQuickstartDialog({
   onClose: () => void
 }) {
   const { error, pending, onSubmit } = useIpcAction(
-    () => ipcRenderer.invoke('deleteQuickstart', quickstartToDelete),
+    () => invokeIpc('deleteQuickstart', quickstartToDelete),
     onClose,
   )
   return (

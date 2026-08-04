@@ -28,6 +28,7 @@ import {
   Typography,
 } from '@mui/material'
 
+import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
 import OpenLinkDialog from '../../OpenLinkDialog.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
@@ -39,8 +40,6 @@ import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'
-
-const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
   flex: {
@@ -128,9 +127,16 @@ export default function RecentSessionPanel({
     data: sessions = [],
     error: listSessionsError,
     mutate: mutateSessions,
-  } = useFetch(
-    ['listSessions'],
-    () => ipcRenderer.invoke('listSessions') as Promise<RecentSessionData[]>,
+  } = useFetch(['listSessions'], async () =>
+    (await invokeIpc('listSessions')).map(s => ({
+      ...s,
+      // An entry is written from the config's own defaultSession, which need
+      // not carry a name (a hub config's usually doesn't); the session model
+      // resolves one for itself but the recent-sessions row keeps the gap until
+      // the first autosave rewrites it. Rendering that gap put the literal
+      // string "undefined" in the card and the grid.
+      name: s.name ?? 'Untitled session',
+    })),
   )
 
   const launch = async (path: string) => {
@@ -141,8 +147,7 @@ export default function RecentSessionPanel({
       notifyError(e, {
         label: 'Remove from recent sessions',
         onClick: () => {
-          ipcRenderer
-            .invoke('removeRecentSession', path)
+          invokeIpc('removeRecentSession', path)
             .then(refreshSessions)
             .catch(console.error)
         },
@@ -157,9 +162,7 @@ export default function RecentSessionPanel({
   // the native picker is the same one File -> Open uses, so the start screen and
   // the in-session menu share its filters and default directory
   const promptOpenFile = async () => {
-    const path = (await ipcRenderer.invoke('promptOpenFile')) as
-      | string
-      | undefined
+    const path = await invokeIpc('promptOpenFile')
     if (path) {
       await launch(path)
     }
@@ -168,7 +171,7 @@ export default function RecentSessionPanel({
   async function addToQuickstartList(arg: RecentSessionData[]) {
     try {
       await Promise.all(
-        arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
+        arg.map(s => invokeIpc('addToQuickstartList', s.path, s.name)),
       )
       // Revalidate the QuickstartPanel now that the list has changed on disk
       mutate('listQuickstarts')
@@ -187,9 +190,7 @@ export default function RecentSessionPanel({
       setFavorites([...favorites, sessionPath])
     }
   }
-  const sortedSessions = sessions.toSorted(
-    (a, b) => (b.updated ?? 0) - (a.updated ?? 0),
-  )
+  const sortedSessions = sessions.toSorted((a, b) => b.updated - a.updated)
   const filteredSessions = sortedSessions.filter(
     f =>
       (showAutosaves || !f.isAutosave) &&
@@ -197,7 +198,7 @@ export default function RecentSessionPanel({
   )
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
   const oldAutosaves = sessions.filter(
-    f => f.isAutosave && now - (f.updated ?? 0) > thirtyDaysMs,
+    f => f.isAutosave && now - f.updated > thirtyDaysMs,
   )
   // The grid doesn't re-emit its selection when a filter toggle hides rows, so
   // selectedSessions can outlive the visible list. Intersect before acting so

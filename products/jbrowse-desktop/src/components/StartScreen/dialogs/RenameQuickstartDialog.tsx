@@ -3,9 +3,8 @@ import { useState } from 'react'
 import { ConfirmDialog, ErrorMessage } from '@jbrowse/core/ui'
 import { DialogContentText, TextField } from '@mui/material'
 
+import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
-
-const { ipcRenderer } = window.require('electron')
 
 export default function RenameQuickstartDialog({
   quickstartNames,
@@ -26,7 +25,7 @@ export default function RenameQuickstartDialog({
     if (nameConflict) {
       throw new Error('A quickstart with this name already exists')
     }
-    await ipcRenderer.invoke('renameQuickstart', quickstartToRename, newName)
+    await invokeIpc('renameQuickstart', quickstartToRename, newName)
   }, onClose)
 
   return (

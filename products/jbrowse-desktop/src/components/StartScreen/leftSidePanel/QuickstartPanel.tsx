@@ -3,13 +3,12 @@ import { useState } from 'react'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
+import { invokeIpc } from '../../../ipc.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
 import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
 import { useInnerDims } from '../useInnerDims.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
-
-const { ipcRenderer } = window.require('electron')
 
 export default function QuickstartPanel({
   launch,
@@ -27,10 +26,7 @@ export default function QuickstartPanel({
     data: quickstarts,
     error: listError,
     mutate: refetchQuickstarts,
-  } = useFetch(
-    'listQuickstarts',
-    () => ipcRenderer.invoke('listQuickstarts') as Promise<string[]>,
-  )
+  } = useFetch('listQuickstarts', () => invokeIpc('listQuickstarts'))
 
   return (
     <CollapsibleSection

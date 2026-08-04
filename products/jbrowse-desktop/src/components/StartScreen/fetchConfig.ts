@@ -2,6 +2,7 @@ import { checkPlugins } from '@jbrowse/core/checkPlugins'
 import { fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 
+import { invokeIpc } from '../../ipc.ts'
 import { assertPluginsTrusted } from './assertPluginsTrusted.ts'
 
 import type { JBrowseConfig } from './types.ts'
@@ -9,8 +10,6 @@ import type { JBrowseConfig } from './types.ts'
 // Kept out of util.tsx so it does not drag in the root model: this is a leaf
 // that fetches and vets, and the security gate below is easier to trust — and
 // to test — when its module graph is small.
-
-const { ipcRenderer } = window.require('electron')
 
 /**
  * Fetch one remote config and make it loadable here: rebase its relative uris on
@@ -35,7 +34,7 @@ export async function fetchConfig(url: string) {
   }
   await assertPluginsTrusted(cfg.plugins, {
     checkPlugins,
-    confirm: plugins => ipcRenderer.invoke('confirmUntrustedPlugins', plugins),
+    confirm: plugins => invokeIpc('confirmUntrustedPlugins', plugins),
   })
   return cfg
 }

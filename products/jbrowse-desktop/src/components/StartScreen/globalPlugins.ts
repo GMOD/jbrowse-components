@@ -1,10 +1,9 @@
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 
+import { invokeIpc } from '../../ipc.ts'
 import { setQueryParams } from '../../useQueryParam.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-
-const { ipcRenderer } = window.require('electron')
 
 const SAFE_MODE_PARAM = 'safeMode'
 
@@ -45,7 +44,7 @@ export function globalPluginSafeMode() {
  * like an empty list to something about to write the list back.
  */
 export async function readGlobalPlugins() {
-  return (await ipcRenderer.invoke('getGlobalPlugins')) as PluginDefinition[]
+  return (await invokeIpc('getGlobalPlugins')) as PluginDefinition[]
 }
 
 /**
@@ -67,7 +66,7 @@ export async function getGlobalPlugins() {
 }
 
 export async function setGlobalPlugins(plugins: PluginDefinition[]) {
-  await ipcRenderer.invoke('setGlobalPlugins', plugins)
+  await invokeIpc('setGlobalPlugins', plugins)
 }
 
 /**

@@ -13,6 +13,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { invokeIpc } from '../ipc.ts'
 import StagedAssemblies from './StagedAssemblies.tsx'
 
 import type {
@@ -20,8 +21,6 @@ import type {
   AssemblyConf,
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import type { FileLocation } from '@jbrowse/core/util/types'
-
-const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
   message: {
@@ -48,8 +47,19 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   async function indexFasta(
     fastaLocation: FileLocation,
   ): Promise<AssemblyAdapter> {
+    // Narrowing, not a case that happens: core hands desktop a localPath (a
+    // uri if the user typed a url) because both producers branch on isElectron
+    // — LocalFileChooser's picker and fileToLocation's drag-and-drop — so the
+    // blob and file-handle members of FileLocation are unreachable here. The
+    // union still includes them and the main process can index neither, so say
+    // so out loud rather than send it a location it would read as `undefined`.
+    if (!('localPath' in fastaLocation) && !('uri' in fastaLocation)) {
+      throw new Error(
+        `Cannot index a FASTA at this location type: ${fastaLocation.locationType}`,
+      )
+    }
     setLoading('Creating .fai file for FASTA')
-    const faiPath = await ipcRenderer.invoke('indexFasta', fastaLocation)
+    const faiPath = await invokeIpc('indexFasta', fastaLocation)
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation,
