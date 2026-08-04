@@ -145,7 +145,9 @@ function parseName(body: unknown): string | undefined {
 
 function parseVerdictBody(
   raw: string,
-): { name: string; status: 'good' | 'bad'; note: string } | undefined {
+):
+  | { name: string; status: 'good' | 'bad' | 'answered'; note: string }
+  | undefined {
   const body: unknown = JSON.parse(raw)
   const name = parseName(body)
   if (
@@ -153,7 +155,9 @@ function parseVerdictBody(
     typeof body !== 'object' ||
     body === null ||
     !('status' in body) ||
-    (body.status !== 'good' && body.status !== 'bad')
+    (body.status !== 'good' &&
+      body.status !== 'bad' &&
+      body.status !== 'answered')
   ) {
     return undefined
   }
@@ -279,6 +283,9 @@ const PAGE = /* html */ `<!doctype html>
   .pill.good { background: #d6f5dd; color: #14532d; }
   .pill.bad { background: #fbd9d9; color: #7f1d1d; }
   .pill.none { background: #eee; color: #666; }
+  /* answered reads as "in flight", so blue rather than the red of an open
+     denial or the green of an approval — it is neither yet. */
+  .pill.answered { background: #dbeafe; color: #1e3a8a; }
   .pill.auto { background: #dbeafe; color: #1e40af; }
   .pill.manual { background: #f3e8ff; color: #6b21a8; }
   .pill.new { background: #cffafe; color: #155e63; }
@@ -290,6 +297,7 @@ const PAGE = /* html */ `<!doctype html>
   .card.good { border-left: 5px solid #22c55e; }
   .card.bad { border-left: 5px solid #ef4444; }
   .card.stale { border-left: 5px solid #f59e0b; }
+  .card.answered { border-left: 5px solid #3b82f6; }
   .card-images {
     display: flex; gap: 0;
   }
@@ -349,6 +357,7 @@ const PAGE = /* html */ `<!doctype html>
   <div class="tabs">
     <button class="tab" data-status="needs">Needs review<span class="tabcount" data-count="needs"></span></button>
     <button class="tab" data-status="good">Approved</button>
+    <button class="tab" data-status="answered">Answered<span class="tabcount" data-count="answered"></span></button>
     <button class="tab" data-status="bad">Denied</button>
     <button class="tab" data-status="all">All</button>
   </div>
@@ -414,9 +423,12 @@ const isNew = s => s.exists && !s.existsOnMain
 const isChanged = s => s.changed || s.parts.some(p => p.changed || isNew(p))
 // parts moved but the published stack didn't: the figure on the site is stale
 const partsAhead = s => !s.changed && !isNew(s) && isChanged(s)
-// needs review when unreviewed, or its verdict went stale because the reviewed
-// image changed since (server-computed stale flag)
-const needsReview = s => !s.verdict || s.stale
+// needs review when unreviewed, when its verdict went stale because the
+// reviewed image changed since (server-computed stale flag), or when a denial
+// has been answered and is waiting on your call. The third case is the one
+// staleness cannot see: an answer that changed no pixels leaves the hash
+// matching, so it is only 'answered' that puts it back in the queue.
+const needsReview = s => !s.verdict || s.stale || s.verdict.status === 'answered'
 
 function changeFilter(key, value) {
   filters[key] = value
@@ -511,6 +523,7 @@ function card(spec) {
     '</div>' +
     '<div class="meta">' +
       '<h2>' + esc(spec.name) + ' ' + kindPill(spec) +
+        (status === 'answered' ? ' ' + pill('answered', 'answered — reply in the note') : '') +
         (spec.stale ? ' ' + pill('stale', 'image changed since ' + status) : '') +
         (isNew(spec) ? ' ' + pill('new', 'new') : '') +
         (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') + '</h2>' +
@@ -594,12 +607,16 @@ function renderCounts() {
   $('[data-count="changed"]').textContent =
     data.filter(s => isNew(s) || isChanged(s)).length
 
+  const answered = data.filter(s => s.verdict?.status === 'answered' && !s.stale).length
+  $('[data-count="answered"]').textContent = answered
+
   const good = data.filter(s => s.verdict?.status === 'good' && !s.stale).length
   const bad = data.filter(s => s.verdict?.status === 'bad' && !s.stale).length
   const stale = data.filter(s => s.stale).length
   $('#counts').innerHTML =
     pill('good', good + ' approved') +
     pill('bad', bad + ' denied') +
+    (answered ? pill('answered', answered + ' answered, awaiting you') : '') +
     (stale ? pill('stale', stale + ' changed since review') : '') +
     pill('none', data.filter(s => !s.verdict).length + ' unreviewed')
 }
@@ -615,7 +632,8 @@ function matchesFilters(s, q) {
     filters.status === 'all' ||
     (filters.status === 'needs' && needsReview(s)) ||
     (filters.status === 'good' && s.verdict?.status === 'good' && !s.stale) ||
-    (filters.status === 'bad' && s.verdict?.status === 'bad' && !s.stale)
+    (filters.status === 'bad' && s.verdict?.status === 'bad' && !s.stale) ||
+    (filters.status === 'answered' && s.verdict?.status === 'answered' && !s.stale)
   const matchesChanged = !filters.changedOnly || isNew(s) || isChanged(s)
   return matchesQuery && matchesGroup && matchesKind && (justActed.has(s.name) || (matchesStatus && matchesChanged))
 }

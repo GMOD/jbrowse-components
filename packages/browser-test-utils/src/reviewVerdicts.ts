@@ -6,7 +6,17 @@ import fs from 'node:fs'
 // and persisted to a per-tool JSON report.
 export interface Verdict {
   name: string
-  status: 'good' | 'bad'
+  // 'good'/'bad' are the reviewer's call. 'answered' is the state between them:
+  // a denial someone has since replied to in the note, with the ball back in the
+  // reviewer's court. It exists because the staleness rule below only resurfaces
+  // a verdict when the IMAGE moved, and the most common reply moves no pixels —
+  // "no defect found", "nothing further to render", "here is why it is drawn
+  // this way". Those answers used to sit under 'bad' at their original hash,
+  // indistinguishable from open defects, and the only way to tell was to read
+  // every note. Written by the review tooling (website's flip-review.mjs) rather
+  // than by a reviewer clicking; the jbrowse-web browser-test review shares this
+  // type but has no producer for it.
+  status: 'good' | 'bad' | 'answered'
   note: string
   reviewedAt: string
   // sha1 of the reviewed image at the moment the verdict was recorded. A
