@@ -82,14 +82,28 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
 }
 
 export async function hideLingeringTooltip(page: Page) {
-  // BaseTooltip renders into a portal with inline z-index:100000 (MUI menus
-  // use 1300), so this targets the lingering hover tooltip without touching
-  // the context menu we want to keep.
+  // Two kinds, and a spec asking for neither has to say so once.
+  //
+  // BaseTooltip (the feature/hover tooltip) renders into a portal with inline
+  // z-index:100000 (MUI menus use 1300), so matching on that targets it without
+  // touching the context menu a figure may want to keep.
+  //
+  // MUI's own `title` tooltips are the other kind, and they used to sail
+  // through: any action ending on a toolbar button leaves the cursor over it,
+  // and the tooltip fades in during the settle before the shot. That is how a
+  // "View options" bubble got into read_vs_ref_insertion. They portal to
+  // `.MuiTooltip-popper`, whose z-index is theme-dependent, so match the class
+  // rather than another number.
   await page.evaluate(() => {
     for (const el of document.querySelectorAll<HTMLElement>('div')) {
       if (el.style.zIndex === '100000') {
         el.style.display = 'none'
       }
+    }
+    for (const el of document.querySelectorAll<HTMLElement>(
+      '.MuiTooltip-popper',
+    )) {
+      el.style.display = 'none'
     }
   })
 }

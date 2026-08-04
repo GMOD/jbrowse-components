@@ -742,8 +742,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     hideTooltip: true,
     // the synteny read-vs-ref panel below the pileup gets clipped at the default
-    // 800px viewport, so give it extra room
-    viewportHeight: 950,
+    // 800px viewport, so give it extra room. Sized to the content: 950 left
+    // ~136px of page background under the launched view.
+    viewportHeight: 820,
     actions: [
       { type: 'rightclick', from: { x: 622, y: 249 } },
       { type: 'waitForText', text: 'Open feature details' },
