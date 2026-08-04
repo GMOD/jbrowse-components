@@ -73,8 +73,8 @@ view.setInit({
     <p>
       From there every page in the sidebar adds exactly one thing. By the last
       one you have a browser with pan, zoom, three kinds of track, your own
-      status overlays, your own ruler, and clicks coming back out into a panel
-      you wrote.
+      status overlays, your own ruler, your app driving it from outside, and
+      clicks coming back out into a panel you wrote.
     </p>
 
     <h2>What you actually save</h2>
@@ -100,7 +100,8 @@ view.setInit({
       with both plain sets installed, JBrowse's own unforked wiggle, feature and
       alignments displays render <strong>no Material UI at all</strong>. That is
       checked rather than asserted — <code>pnpm smoke</code> in this site counts what
-      each page renders and fails if the number moves.
+      each page renders, at rest and with the pointer over a track, and fails if the
+      number moves.
     </p>
 
     <h2>What you do not get rid of</h2>

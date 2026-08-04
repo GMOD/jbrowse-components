@@ -1,0 +1,16 @@
+---
+import DriveItFromYourApp from '../examples/DriveItFromYourApp.tsx'
+import DriveItFromYourAppCode from '../examples/DriveItFromYourApp.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('drive-it-from-your-app')
+const sec = section(page, 'drive-it-from-your-app')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={DriveItFromYourAppCode}>
+    <DriveItFromYourApp client:only="react" />
+  </Section>
+</Layout>

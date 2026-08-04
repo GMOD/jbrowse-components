@@ -8,9 +8,10 @@ export { section } from './exampleModel.ts'
 // Ordered as a build, not a catalogue: most pages add one thing to the page
 // before them, and the sidebar groups follow that arc. The first two run the
 // other way -- pan and zoom is the point of a genome browser, so it leads,
-// and One track follows to show the bare view it's built from. The last one
-// turns around: every page up to it is about getting data onto the screen, and
-// that one is about getting a click back off it.
+// and One track follows to show the bare view it's built from. The last two
+// turn around: everything up to them is about getting data onto the screen,
+// then one is about driving it from outside and the last about getting a click
+// back off it.
 export const pages: ExamplePage[] = [
   {
     slug: 'pan-and-zoom',
@@ -59,6 +60,19 @@ export const pages: ExamplePage[] = [
     group: 'Making it yours',
     sections: [
       { slug: 'add-the-chrome-you-want', title: 'A ruler and some labels' },
+    ],
+  },
+  {
+    slug: 'drive-it-from-your-app',
+    title: 'Drive it from your app',
+    description:
+      "A location box, zoom buttons and a track list, written against the view model. Navigating and showing tracks is a normal API, so your app's own header drives the browser as well as a header inside it would.",
+    group: 'Making it yours',
+    sections: [
+      {
+        slug: 'drive-it-from-your-app',
+        title: 'A location box and a track list',
+      },
     ],
   },
   {
