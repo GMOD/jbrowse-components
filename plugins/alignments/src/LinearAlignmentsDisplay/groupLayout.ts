@@ -50,13 +50,6 @@ export interface GroupLayoutContext {
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
   showLinkedReadLines: boolean
-  colorBy: ColorBy | undefined
-  colorTagMap: Record<string, string>
-  // Inputs to the per-read color classification baked in
-  // `overlayReadColorCategories`. Here rather than in `renderState` so the GPU,
-  // the Canvas2D fallback, and the legend all read one classification.
-  colorScheme: number
-  readColorOpts: ReadColorOpts
   // Draw each group as a single row, overlap depth carried by the tint layer
   // instead of by stacking (`collapsedLayout.ts`). A group the user has sized
   // explicitly opts back out, which is what makes the label chip's expand
@@ -64,10 +57,9 @@ export interface GroupLayoutContext {
   collapseGroupRows: boolean
 }
 
-// Lay out one group's reads (Y arrays filled + linked-read lines + tag colors
-// + color categories)
-// at a given row cap. Extracted so the fit reclaim pass can re-lay-out just the
-// groups whose cap changed instead of rebuilding every group.
+// Lay out one group's reads (Y arrays filled + linked-read lines) at a given row
+// cap. Extracted so the fit reclaim pass can re-lay-out just the groups whose
+// cap changed instead of rebuilding every group.
 function layoutOneGroup(
   ctx: GroupLayoutContext,
   key: string,
@@ -76,7 +68,7 @@ function layoutOneGroup(
 ): Map<number, PileupDataResult> {
   const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
   if (collapse) {
-    return withReadColors(ctx, buildCollapsedPileupMap(dataMap))
+    return buildCollapsedPileupMap(dataMap)
   }
   const base = ctx.isChainMode
     ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, maxRows: cap })
@@ -88,22 +80,51 @@ function layoutOneGroup(
         maxRows: cap,
         largeFeaturesFirst: ctx.largeFeaturesFirst,
       })
-  const withLines = ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
-  return withReadColors(ctx, withLines)
+  return ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
 }
 
-// Tag colors first: the `noTagValue` category is decided from the baked
-// `readTagColors`, so classifying before that buckets every tag-colored read
-// wrong. One place so the two passes can't be reordered by accident.
-function withReadColors(
-  ctx: GroupLayoutContext,
-  map: Map<number, PileupDataResult>,
-) {
-  return overlayReadColorCategories(
-    overlayReadTagColors(map, ctx.colorBy, ctx.colorTagMap),
-    ctx.colorScheme,
-    ctx.readColorOpts,
-  )
+// Per-read color inputs. A separate bundle from `GroupLayoutContext` because
+// they invalidate a different tier: none of them can move a read's row, so
+// recoloring must not re-run the placement pass, the per-feature Y remap, or the
+// modification Flatbush that `cloneWithLayout` builds. Kept out of `renderState`
+// too, so the GPU, the Canvas2D fallback and the legend all read one
+// classification.
+export interface ReadColorContext {
+  colorBy: ColorBy | undefined
+  colorTagMap: Record<string, string>
+  colorScheme: number
+  readColorOpts: ReadColorOpts
+}
+
+/**
+ * Bake the two per-read color arrays over an already laid-out map.
+ *
+ * Runs downstream of layout, and spreads each region's laid-out result rather
+ * than rebuilding it, so every other array — `readYs` above all — stays
+ * reference-identical. That identity is load-bearing twice over: it is what the
+ * GPU renderer's upload memo reads to recognize a recolor and rewrite only the
+ * read pass, and it is what keeps a color flip off the layout path entirely.
+ *
+ * Tag colors first: the `noTagValue` category is decided from the baked
+ * `readTagColors`, so classifying before that buckets every tag-colored read
+ * wrong. One place so the two passes can't be reordered by accident.
+ */
+export function applyReadColorsByGroup(
+  byGroup: LaidOutByGroup,
+  ctx: ReadColorContext,
+): LaidOutByGroup {
+  const out: LaidOutByGroup = new Map()
+  for (const [key, map] of byGroup) {
+    out.set(
+      key,
+      overlayReadColorCategories(
+        overlayReadTagColors(map, ctx.colorBy, ctx.colorTagMap),
+        ctx.colorScheme,
+        ctx.readColorOpts,
+      ),
+    )
+  }
+  return out
 }
 
 // Lay out each group independently so one dense group can't starve the rest:
@@ -192,7 +213,14 @@ export interface FitViewportInput {
   rowHeight: number
   height: number
   maxHeight: number
-  overhead: number
+  // Per-group band overhead (coverage + arc + sashimi strips) in px, as a thunk
+  // rather than a value because only the grouped branch spends it. Read eagerly,
+  // it puts every band height in the layout computed's dependency set, so an
+  // ungrouped display re-placed every row — and its renderer repacked every GPU
+  // buffer — on each frame of a coverage/arc band resize drag, to draw the rows
+  // it already had. Grouping does divide the viewport by band overhead, so there
+  // the dependency is real and the thunk is called.
+  overhead: () => number
   // Groups drawing coverage only — they cost overhead but no pileup rows.
   collapsedKeys: ReadonlySet<string>
   // Per-group pileup-height overrides in px (drag / "show all"); opt out of the
@@ -223,7 +251,7 @@ export function layoutGroupsToViewport(
         groupCount: ctx.order.length,
         visibleGroupCount,
         rowHeight,
-        overhead: fit.overhead,
+        overhead: fit.overhead(),
         maxRows: maxHeightRows,
       })
     : maxHeightRows

@@ -161,6 +161,55 @@ test('endUpload keeps buffers rewritten in either upload loop', () => {
   expect(reg.get(0, 'arc')?.id).toBe(4)
 })
 
+test('retainRegion exempts a skipped region from the sweep', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  reg.set(0, 'mismatch', makeBuf(2))
+  reg.set(1, 'reads', makeBuf(3))
+
+  // Region 0's data is unchanged, so the renderer uploads nothing for it and
+  // retains instead; region 1 re-uploads normally (uploadBuffer's delete+set).
+  reg.beginUpload()
+  reg.retainRegion(0)
+  reg.deleteBuffer(1, 'reads')
+  reg.set(1, 'reads', makeBuf(4))
+  reg.endUpload()
+
+  expect(destroyed).toEqual([3])
+  expect(reg.get(0, 'reads')?.id).toBe(1)
+  expect(reg.get(0, 'mismatch')?.id).toBe(2)
+  expect(reg.get(1, 'reads')?.id).toBe(4)
+})
+
+test('retainRegion followed by a rewrite of one pass keeps both', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  reg.set(0, 'mismatch', makeBuf(2))
+
+  // The recolor path: retain the whole region, then rewrite only the pass whose
+  // bytes actually changed.
+  reg.beginUpload()
+  reg.retainRegion(0)
+  reg.deleteBuffer(0, 'reads')
+  reg.set(0, 'reads', makeBuf(3))
+  reg.endUpload()
+
+  expect(destroyed).toEqual([1])
+  expect(reg.get(0, 'reads')?.id).toBe(3)
+  expect(reg.get(0, 'mismatch')?.id).toBe(2)
+})
+
+test('retainRegion is a no-op outside a transaction and on unknown regions', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  // No open transaction: nothing to record, and nothing swept later either.
+  reg.retainRegion(0)
+  reg.beginUpload()
+  reg.retainRegion(99)
+  reg.endUpload()
+  expect(destroyed).toEqual([1])
+})
+
 test('endUpload without beginUpload is a no-op', () => {
   const { reg, destroyed } = makeRegistry()
   reg.set(0, 'reads', makeBuf(1))

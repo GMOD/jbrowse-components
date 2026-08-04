@@ -836,3 +836,93 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
 
   dispose()
 })
+
+// The upload autorun reads `sourceSections`, and `sync` packs ~9 GPU passes per
+// region from what it finds there. Which tier a setting lands in therefore
+// decides whether flipping it repacks every buffer on the track. Two tiers are
+// load-bearing for that and neither is visible from the renderer, so they are
+// pinned here:
+//
+//  - band geometry must not reach the laid-out payloads at all (a resize drag
+//    fires the upload autorun on every pointer move),
+//  - a recolor must reach them WITHOUT re-running layout, and must leave
+//    `readYs` — the token `GpuAlignmentsRenderer` keys its upload memo on —
+//    reference-identical.
+describe('upload tiers: what a settings change does to the laid-out payloads', () => {
+  function displayWithOneRead() {
+    const display = createDisplay()
+    // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
+    // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
+    display.setColorScheme({ type: 'tag', tag: 'HP' })
+    display.setRpcData(0, {
+      groups: [
+        {
+          key: '',
+          label: '',
+          data: {
+            ...makeEmptyPileupData(),
+            readIds: ['r1'],
+            readNames: ['r1'],
+            readPositions: new Uint32Array([100, 200]),
+            readYs: new Uint16Array(1),
+            readFlags: new Uint16Array(1),
+            readMapqs: new Uint8Array(1),
+            readInsertSizes: new Float32Array(1),
+            readPairOrientations: new Uint8Array(1),
+            readStrands: new Int8Array([1]),
+            readInterchrom: new Uint8Array(1),
+            readTagValues: ['1'],
+            segmentPositions: new Uint32Array([100, 200]),
+            segmentReadIndices: new Uint32Array([0]),
+            segmentEdgeFlags: new Uint8Array([3]),
+            numSegments: 1,
+          },
+        },
+      ],
+    })
+    expect(display.rpcDataMap.size).toBe(1)
+    return display
+  }
+
+  const region0 = (display: ReturnType<typeof displayWithOneRead>) =>
+    display.sourceSections[0]!.laidOutPileupMap.get(0)!
+
+  test('a band resize leaves every laid-out payload identical', () => {
+    const display = displayWithOneRead()
+    const before = region0(display)
+
+    display.setCoverageHeight(display.coverageHeight + 25)
+
+    // The upload autorun re-fires (sourceSections is a fresh array), but the
+    // payload it would pack is the same object, so the renderer skips it.
+    expect(region0(display)).toBe(before)
+  })
+
+  test('a recolor rebakes the colors without re-running layout', () => {
+    const display = displayWithOneRead()
+    const beforeLayout = display.laidOutByGroupUncolored
+    const before = region0(display)
+
+    display.updateColorTagMap(['1'])
+
+    const after = region0(display)
+    // Layout memoized across the recolor…
+    expect(display.laidOutByGroupUncolored).toBe(beforeLayout)
+    // …so the payload is a fresh object over the SAME layout arrays, which is
+    // what lets the renderer rewrite the read pass alone.
+    expect(after).not.toBe(before)
+    expect(after.readYs).toBe(before.readYs)
+    expect(after.mismatchYs).toBe(before.mismatchYs)
+    expect(after.readTagColors).not.toBe(before.readTagColors)
+  })
+
+  test('a relayout replaces the layout arrays', () => {
+    const display = displayWithOneRead()
+    const before = region0(display)
+
+    // Read height is a genuine layout input — it sets how many rows fit.
+    display.setFeatureHeight(display.configuredFeatureHeight + 3)
+
+    expect(region0(display).readYs).not.toBe(before.readYs)
+  })
+})

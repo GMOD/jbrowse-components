@@ -44,6 +44,30 @@ export class RegionRegistry<Buf> {
     this.written = new Set()
   }
 
+  // Exempt a region's existing buffers from the open transaction's sweep. The
+  // caller is asserting "this region's data is unchanged, so I am rewriting
+  // nothing" — without it, skipping a region's uploads inside a
+  // beginUpload/endUpload bracket destroys the buffers it just decided were
+  // still good.
+  //
+  // Region-granular on purpose: a per-pass list of what to retain would have to
+  // enumerate every pass its owner writes, and a pass added without joining that
+  // list silently loses its buffer on the first skipped sync. The whole region is
+  // the unit a caller can assert about without an enumeration — so a caller that
+  // finds any part of a region changed must rebuild ALL of it (which is what
+  // makes the sweep's "a pass whose data went empty leaves no stale buffer"
+  // guarantee survive the skip).
+  //
+  // No-op outside a transaction, and for a region with no buffers.
+  retainRegion(regionKey: number): void {
+    const region = this.regions.get(regionKey)
+    if (region && this.written) {
+      for (const passId of region.keys()) {
+        this.written.add(passKey(regionKey, passId))
+      }
+    }
+  }
+
   // Close the transaction opened by beginUpload(), destroying every buffer not
   // written since. No-op (and leaves recording off) if no transaction is open.
   endUpload(): void {

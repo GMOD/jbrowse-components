@@ -7,9 +7,19 @@ take a declarative default). Plain MST props / volatiles are for transient state
 only — hover, selection, scroll.
 
 Which getter reads a setting decides what it invalidates: `rpcProps()`
-refetches, `laidOutPileupMap` relayouts, `arcsByGroup` rebuilds arcs,
-`renderState` repaints. Tiers 2-4 are auto-wired by MobX; **tier 1 is manual**,
-because the worker boundary defeats MobX tracking.
+refetches, `groupLayoutContext` relayouts, `readColorContext` rebakes read
+colors, `arcsByGroup` rebuilds arcs, `renderState` repaints. Tiers 2-5 are
+auto-wired by MobX; **tier 1 is manual**, because the worker boundary defeats
+MobX tracking.
+
+The layout/color split is not cosmetic. A relayout re-places every row, remaps
+every per-feature Y array and rebuilds the modification Flatbush, then makes the
+renderer repack every GPU pass; a recolor touches two per-read arrays and one
+pass. So a color input in `groupLayoutContext` costs the full relayout to change
+a color — and, because layout allocates a fresh `readYs` that the renderer keys
+its upload memo on, it also loses the recolor fast path. Same trap for a value
+the layout only _sometimes_ spends: the band overhead is a thunk so an ungrouped
+display doesn't relayout on every frame of a coverage-band resize drag.
 
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
   `colorTagMap` is the canonical trap: the worker reports raw tag values and the
@@ -70,9 +80,14 @@ a silent no-op, and a tag sort additionally refetches for `sortTagValues`
 nothing reads.
 
 Layout is main-thread because a read spanning a region boundary must share one
-row, and each worker sees one region. **Don't reintroduce a levels /
-right-edge-only array** in `placeRect` — features arrive out of start order in
-both layouts, so it would fragment layout.
+row, and each worker sees one region — plus three other properties that depend
+on it, enumerated in
+[ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md).
+Read it before proposing the move; it is re-proposed roughly every time the
+main-thread pack shows up in a trace, and it names the separable half that is
+actually worth attacking. **Don't reintroduce a levels / right-edge-only array**
+in `placeRect` — features arrive out of start order in both layouts, so it would
+fragment layout.
 
 On-screen and SVG export share `drawAlignmentBlocks`; don't reintroduce SVG-only
 draw functions. Sashimi and linked-read bezier arcs are interactive SVG overlays

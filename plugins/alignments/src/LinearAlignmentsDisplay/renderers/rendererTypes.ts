@@ -175,19 +175,6 @@ export interface AlignmentsRenderingBackend {
 
 export type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-export function ensureRegion<T>(
-  regions: Map<number, T>,
-  idx: number,
-  factory: () => T,
-): T {
-  let r = regions.get(idx)
-  if (!r) {
-    r = factory()
-    regions.set(idx, r)
-  }
-  return r
-}
-
 // Vertical placement of the read-connections arc band, computed once so the
 // GPU, Canvas2D, and SVG paths can't drift. Arcs anchor at insert-size 0: the
 // band bottom in up mode (`down: false`), the band top in down mode.

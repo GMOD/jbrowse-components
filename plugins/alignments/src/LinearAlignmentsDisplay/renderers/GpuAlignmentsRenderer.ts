@@ -99,12 +99,13 @@ import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
-  ensureRegion,
   lazyReadIdToIndex,
   sectionRegionKey,
   sectionRenderState,
 } from './rendererTypes.ts'
 
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -348,8 +349,8 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES }
 
-// Pure LocalRegion constructor — empty placeholders for typed arrays the
-// read/coverage uploads later overwrite.
+// Pure LocalRegion constructor — the shape a region with no pileup feed gets
+// (arcs whose mate is off-screen bring their own region key).
 function emptyRegion(): LocalRegion {
   return {
     readIdToIndex: lazyReadIdToIndex([]),
@@ -359,6 +360,43 @@ function emptyRegion(): LocalRegion {
     binSize: 1,
     interbaseMaxCount: 0,
   }
+}
+
+// Pure: the per-region metadata `renderBlocks` reads each frame, derived from
+// the same payload the uploads pack. Deliberately separate from the uploads, so
+// a region whose data is unchanged can rebuild this (a handful of field reads)
+// while skipping the pack — see `syncRegion`. The two conditionals mirror the
+// uploads' own guards: a region with no coverage bars / no interbase counts
+// keeps `emptyRegion`'s neutral scaling values rather than a stale peak.
+function regionMeta(data: ReadUploadData & CoverageUploadData): LocalRegion {
+  const hasCoverage = data.coverageGpuBinCount > 0
+  return {
+    readIdToIndex: lazyReadIdToIndex(data.readIds),
+    readPositions: data.readPositions,
+    readYs: data.readYs,
+    insertSizeStats: data.insertSizeStats,
+    maxDepth: hasCoverage ? data.coverageMaxDepth : 0,
+    binSize: hasCoverage ? data.coverageBinSize : 1,
+    interbaseMaxCount:
+      data.interbaseCovPositions.length > 0 ? data.interbaseMaxCount : 0,
+  }
+}
+
+// What a region's GPU buffers were last packed from. Only the identities are
+// held, never the payload itself — a region evicted from `rpcDataMap` must not
+// stay alive through the renderer's upload bookkeeping.
+interface UploadedRegion {
+  // Main-thread layout allocates a fresh `readYs` per run (`cloneWithLayout`),
+  // and the color overlay spreads over the laid-out result without touching it,
+  // so an identical `readYs` means "same layout run" — i.e. every array feeding
+  // every pass but the read pass is the same object the GPU already holds.
+  // `undefined` for an arcs-only region.
+  layout: Uint16Array | undefined
+  // The two per-read arrays the color tier rebakes (`overlayReadTagColors` /
+  // `overlayReadColorCategories`). Only the read pass carries them.
+  tagColors: Uint32Array | undefined
+  colorCategories: Uint8Array | undefined
+  arcs: ArcsUploadData | undefined
 }
 
 // Per-block inputs collected before each writeUniforms call. Keeping them
@@ -584,6 +622,12 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   // the UBO. Pre-allocated to avoid per-overlay-block allocations during hover.
   private uScratch = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private regions = new Map<number, LocalRegion>()
+  // Upload memo, written only by `sync`. Lives on the renderer rather than in a
+  // model-side `createRegionUploadSync` because this backend is whole-map synced
+  // (one `sync(sources)` call owns every section), and because the renderer is
+  // rebuilt with its HAL on a context loss — so the memo drops exactly when the
+  // GPU buffers do, which is the part a hand-rolled model-side memo forgets.
+  private uploaded = new Map<number, UploadedRegion>()
 
   constructor(hal: GpuHal) {
     this.hal = hal
@@ -601,91 +645,138 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   }
 
   sync(sources: AlignmentsSources) {
-    // Full rebuild each sync, mirroring Canvas2DAlignmentsRenderer.sync. The HAL
-    // side is bracketed by beginUpload/endUpload: endUpload destroys any pass
-    // buffer not rewritten below, so a pass whose data went empty (and was
-    // skipped by its `if (n > 0)` guard) can't leave a stale buffer. The
-    // renderer-side metadata map is rebuilt the same way — cleared up front and
-    // repopulated only for regions present this sync, so it can never hold a
-    // stale entry. No manual prune, no `active` bookkeeping to drift out of sync
-    // with the HAL. Each (section, region) pair is namespaced via
-    // sectionRegionKey; section 0 keys equal the raw region index, so the
+    // The HAL side is bracketed by beginUpload/endUpload: endUpload destroys any
+    // pass buffer not rewritten (or retained) below, so a pass whose data went
+    // empty — and was skipped by its `if (n > 0)` guard — can't leave a stale
+    // buffer. The renderer-side metadata map is rebuilt unconditionally: cleared
+    // up front and repopulated only for regions present this sync, so it can
+    // never hold a stale entry. No manual prune, no `active` bookkeeping to
+    // drift out of sync with the HAL. Each (section, region) pair is namespaced
+    // via sectionRegionKey; section 0 keys equal the raw region index, so the
     // ungrouped path is byte-identical to pre-grouping.
     this.hal.beginUpload()
     this.regions.clear()
+    const seen = new Set<number>()
     sources.sections.forEach((section, s) => {
       for (const [regionIdx, data] of section.laidOutPileupMap) {
         const idx = sectionRegionKey(s, regionIdx)
-        this.uploadReads(idx, data)
-        uploadGaps(this.hal, idx, data)
-        uploadMismatches(this.hal, idx, data)
-        uploadInsertions(this.hal, idx, data)
-        uploadClips(this.hal, idx, data)
-        uploadSoftclipBases(this.hal, idx, data)
-        uploadModifications(this.hal, idx, data)
-        uploadPerBaseQuality(this.hal, idx, data)
-        uploadPerBaseLetter(this.hal, idx, data)
-        this.uploadCoverage(idx, data)
-        uploadModCoverage(
-          this.hal,
-          idx,
-          data.modCovPackedBuffer,
-          data.modCovPositions.length,
-        )
-        // uploadReads above already populated this.regions[idx], so the
-        // connecting-line and linked-read uploads don't need their own
-        // ensureRegion call. (The arcs-only loop below does — arcs can arrive
-        // for a region with no pileup data.)
-        if (data.connectingLinePositions.length > 0) {
-          uploadConnectingLines(this.hal, idx, data)
-        }
-        if (data.numLinkedReadLines > 0) {
-          uploadLinkedReadLines(this.hal, idx, data)
-        }
-        if (data.overlapPositions.length > 0) {
-          uploadOverlaps(this.hal, idx, data)
-        }
+        seen.add(idx)
+        this.syncRegion(idx, data, section.arcsRpcDataMap.get(regionIdx))
       }
       // Each section draws its own arcs. A region with arcs but no pileup (mate
-      // off-screen) still needs an empty metadata entry so renderBlocks can find
-      // it; the pileup loop above already populated every region it touched.
-      for (const [regionIdx, data] of section.arcsRpcDataMap) {
-        const idx = sectionRegionKey(s, regionIdx)
+      // off-screen) gets its own pass here; the loop above already handled every
+      // region that has both.
+      for (const [regionIdx, arcs] of section.arcsRpcDataMap) {
         if (!section.laidOutPileupMap.has(regionIdx)) {
-          ensureRegion(this.regions, idx, emptyRegion)
+          const idx = sectionRegionKey(s, regionIdx)
+          seen.add(idx)
+          this.syncRegion(idx, undefined, arcs)
         }
-        uploadArcs(this.hal, idx, data)
       }
     })
     this.hal.endUpload()
+    // Forget keys that went away, so a region that later returns with a
+    // reference-identical payload re-uploads instead of trusting buffers
+    // endUpload has since swept.
+    for (const key of this.uploaded.keys()) {
+      if (!seen.has(key)) {
+        this.uploaded.delete(key)
+      }
+    }
   }
 
-  uploadReads(displayedRegionIndex: number, data: ReadUploadData) {
-    const r = emptyRegion()
-    r.insertSizeStats = data.insertSizeStats
-    r.readPositions = data.readPositions
-    r.readYs = data.readYs
-    r.readIdToIndex = lazyReadIdToIndex(data.readIds)
-    this.regions.set(displayedRegionIndex, r)
-    uploadReadSegments(this.hal, displayedRegionIndex, data)
-  }
+  /**
+   * Upload one (section, region) key, skipping the pack when the GPU already
+   * holds these bytes.
+   *
+   * The upload autorun re-fires on far more than new data: `sourceSections` is
+   * derived through `sections`, so every band-resize drag frame, arc-mode flip
+   * and group-collapse rebuilds the array and lands here with the same laid-out
+   * payloads. Repacking ~9 passes per region for those cost more than the draw
+   * they were preparing for.
+   *
+   * The gate is whole-region on purpose. `retainRegion` is what keeps the
+   * skipped buffers out of endUpload's sweep, and it can only make a
+   * region-granular assertion — so any change to any part of a region rebuilds
+   * all of it, which is what preserves "a pass whose data went empty leaves no
+   * stale buffer".
+   *
+   * The recolor path is the one exception, and it is safe for a narrower reason:
+   * an unchanged `readYs` means the payload is the *same layout run* with only
+   * the two per-read color arrays rebaked (the color tier spreads over it —
+   * `overlayReadTagColors` / `overlayReadColorCategories`), so no other pass's
+   * data can have gone empty and only the read pass needs rewriting. Same shape
+   * as `GpuSyntenyRenderer.getInterleaved`'s geometry/color split.
+   */
+  private syncRegion(
+    idx: number,
+    data: PileupDataResult | undefined,
+    arcs: ArcsUploadData | undefined,
+  ) {
+    this.regions.set(idx, data ? regionMeta(data) : emptyRegion())
+    const prev = this.uploaded.get(idx)
+    this.uploaded.set(idx, {
+      layout: data?.readYs,
+      tagColors: data?.readTagColors,
+      colorCategories: data?.readColorCategories,
+      arcs,
+    })
 
-  uploadCoverage(displayedRegionIndex: number, data: CoverageUploadData) {
-    const r = this.regions.get(displayedRegionIndex)
-    if (!r) {
+    if (prev && prev.layout === data?.readYs && prev.arcs === arcs) {
+      this.hal.retainRegion(idx)
+      if (
+        data &&
+        (prev.tagColors !== data.readTagColors ||
+          prev.colorCategories !== data.readColorCategories)
+      ) {
+        uploadReadSegments(this.hal, idx, data)
+      }
       return
     }
 
-    const numCoverageBins = data.coverageGpuBinCount
-    if (numCoverageBins > 0) {
+    if (data) {
+      uploadReadSegments(this.hal, idx, data)
+      uploadGaps(this.hal, idx, data)
+      uploadMismatches(this.hal, idx, data)
+      uploadInsertions(this.hal, idx, data)
+      uploadClips(this.hal, idx, data)
+      uploadSoftclipBases(this.hal, idx, data)
+      uploadModifications(this.hal, idx, data)
+      uploadPerBaseQuality(this.hal, idx, data)
+      uploadPerBaseLetter(this.hal, idx, data)
+      this.uploadCoverage(idx, data)
+      uploadModCoverage(
+        this.hal,
+        idx,
+        data.modCovPackedBuffer,
+        data.modCovPositions.length,
+      )
+      if (data.connectingLinePositions.length > 0) {
+        uploadConnectingLines(this.hal, idx, data)
+      }
+      if (data.numLinkedReadLines > 0) {
+        uploadLinkedReadLines(this.hal, idx, data)
+      }
+      if (data.overlapPositions.length > 0) {
+        uploadOverlaps(this.hal, idx, data)
+      }
+    }
+    if (arcs) {
+      uploadArcs(this.hal, idx, arcs)
+    }
+  }
+
+  private uploadCoverage(
+    displayedRegionIndex: number,
+    data: CoverageUploadData,
+  ) {
+    if (data.coverageGpuBinCount > 0) {
       uploadCoverageBins(
         this.hal,
         displayedRegionIndex,
         data.coveragePackedBuffer,
-        numCoverageBins,
+        data.coverageGpuBinCount,
       )
-      r.maxDepth = data.coverageMaxDepth
-      r.binSize = data.coverageBinSize
     }
 
     uploadSnpCoverage(
@@ -701,9 +792,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       data.interbasePackedBuffer,
       data.interbaseCovPositions.length,
     )
-    if (data.interbaseCovPositions.length > 0) {
-      r.interbaseMaxCount = data.interbaseMaxCount
-    }
 
     uploadIndicators(
       this.hal,
@@ -958,6 +1046,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.hal.deleteRegion(key)
     }
     this.regions.clear()
+    this.uploaded.clear()
     this.hal.dispose()
   }
 }

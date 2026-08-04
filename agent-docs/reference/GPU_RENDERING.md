@@ -436,6 +436,43 @@ Whole-map synced (alignments, multi-LGV synteny) and monolithic (HiC, LD,
 multi-variant-matrix, dotplot) plugins define their own backend interfaces
 because their upload shapes differ — see "Three upload patterns."
 
+#### Whole-map synced: skipping a region inside the rebuild transaction
+
+`sync(sources)` is a full rebuild by contract, and `beginUpload`/`endUpload` is
+what makes that safe: the sweep destroys any buffer not rewritten, so a pass
+whose data went empty can't leave stale bytes. The cost is that the upload
+autorun fires on far more than new data — alignments' `sourceSections` is
+derived through `sections`, so every band-resize drag frame and arc-mode flip
+repacked ~9 passes per region to write the same bytes back.
+
+`hal.retainRegion(key)` is the exemption: it marks a region's existing buffers as
+written, so a renderer can diff its input by reference and skip the pack without
+the sweep then deleting what it skipped. Two rules come with it:
+
+- **The assertion is whole-region.** Retaining only *some* passes would need each
+  caller to enumerate the passes it writes, and a pass added without joining that
+  list loses its buffer on the first skipped sync. So a region with any change
+  rebuilds all of it — which is what preserves the emptied-pass guarantee.
+- **Forget a key when it leaves**, or a region that returns with a
+  reference-identical payload skips an upload whose buffers `endUpload` swept.
+
+The memo lives on the renderer (`GpuAlignmentsRenderer.uploaded`), not in a
+model-side `createRegionUploadSync`: this pattern's upload is one `sync` call
+owning every section, and the renderer is rebuilt with its HAL on a context loss,
+so the memo drops exactly when the buffers do — the part a hand-rolled model-side
+memo forgets. It stores array identities only, never the payload, so an evicted
+region isn't held alive by upload bookkeeping.
+
+The one sub-region exception is the **recolor**, and it rides on a narrower fact:
+`readYs` identity means "same layout run", because layout allocates it fresh
+(`cloneWithLayout`) and the color tier spreads over the result without touching
+it. Same bytes everywhere but the two per-read color arrays ⇒ retain the region
+and rewrite the read pass alone. Same split as
+`GpuSyntenyRenderer.getInterleaved`'s geometry/color token (ARCHITECTURE.md,
+"the color-lane patch"). It requires the model to keep the color bake in its own
+computed downstream of layout — see `laidOutByGroup` /
+`laidOutByGroupUncolored`.
+
 Synteny additionally has a level-of-detail axis upstream of all this: which PIF
 tier the fetch reads from. That's a fetch/adapter concern, not a backend one —
 [SYNTENY_LOD.md](SYNTENY_LOD.md).
@@ -588,7 +625,10 @@ on any `rpcDataMap` change; per-key autoruns can't help, because reading
 coupling is load-bearing (collapsed-intron views split one chromosome into many
 displayed regions, and a long gene must hold the same Y row in each) and is why
 layout runs on the main thread — row assignment needs the union of all visible
-regions' features.
+regions' features. For alignments that placement is settled by
+[ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md),
+which also says what to attack instead when the main-thread pack shows up in a
+trace.
 
 The whole-map form still gets an incremental upload from
 `createRegionUploadSync` (`@jbrowse/render-core/regionUploadSync`): it diffs the
@@ -666,7 +706,9 @@ createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
 - *Draw* — `drawPass(passId, regionKey, bufferPassId?)`, `setScissor` /
   `clearScissor`, `setViewport` / `clearViewport`.
 - *Lifecycle* — `deleteBuffer(regionKey, passId)`, `deleteRegion(key)`,
-  `pruneRegions(active)`, `resize(width, height)`, `setErrorHandler(handler)`,
+  `pruneRegions(active)`, `retainRegion(key)` (exempt a region from the
+  `beginUpload`/`endUpload` sweep — see "skipping a region inside the rebuild
+  transaction"), `resize(width, height)`, `setErrorHandler(handler)`,
   `dispose()`.
 
 `drawPass` short-circuits when the region has no buffer for that pass (or count is

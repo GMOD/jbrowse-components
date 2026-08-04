@@ -62,4 +62,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [050](adr-050-track-containers-are-not-view-types.md) | Accepted | A track list that is not a view is addressed by id through its view (`trackContainerFor`), not registered as a hidden view type |
 | [051](adr-051-shader-js-codegen-is-scalar-only.md) | Accepted | Generate the Canvas2D twin of a shader's scalar decision functions from slangc's WGSL; never transpile the vertex or fragment stage |
 | [052](adr-052-slot-name-safety-is-a-write-guard.md) | Accepted | Slot-name safety is a runtime guard on the single write funnel, not codegen extending a compile-time guard that structurally cannot cover the surface |
+| [053](adr-053-alignments-layout-stays-on-the-main-thread.md) | Accepted | Pileup/chain row layout stays on the main thread; the packing cost it is blamed for is separable and is the thing to attack |
 <!-- END GENERATED ADR INDEX -->

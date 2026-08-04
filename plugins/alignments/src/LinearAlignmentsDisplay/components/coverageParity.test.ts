@@ -16,8 +16,10 @@ import {
 } from '../renderers/GpuAlignmentsRenderer.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type {
   AlignmentsRenderingBackend,
+  AlignmentsSources,
   ColorPalette,
   CoverageUploadData,
   ReadUploadData,
@@ -178,6 +180,22 @@ function makeMinimalPileupResult(cov: CoverageUploadData) {
   } as unknown as PileupDataResult
 }
 
+// The single-section, single-region `sync` input both backends take.
+function oneRegion(
+  data: PileupDataResult,
+  arcs?: ArcsUploadData,
+): AlignmentsSources {
+  return {
+    sections: [
+      {
+        groupKey: '',
+        laidOutPileupMap: new Map([[0, data]]),
+        arcsRpcDataMap: arcs ? new Map([[0, arcs]]) : new Map(),
+      },
+    ],
+  }
+}
+
 function recordingCtx() {
   const rects: { x: number; y: number; w: number; h: number; fill: string }[] =
     []
@@ -246,8 +264,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const covData = makeCoverageData()
 
     // GPU path: upload to HAL
-    gpu.uploadReads(0, makeMinimalReadData())
-    gpu.uploadCoverage(0, covData)
+    gpu.sync(oneRegion(makeMinimalPileupResult(covData)))
 
     const gpuCovBuf = hal.getBuffer(0, 'coverage')
     expect(gpuCovBuf).toBeDefined()
@@ -286,8 +303,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const covData = makeCoverageData()
 
-    gpu.uploadReads(0, makeMinimalReadData())
-    gpu.uploadCoverage(0, covData)
+    gpu.sync(oneRegion(makeMinimalPileupResult(covData)))
 
     const gpuSnpBuf = hal.getBuffer(0, 'snpCov')
     expect(gpuSnpBuf).toBeDefined()
@@ -465,29 +481,13 @@ describe('GPU sync rebuild transaction', () => {
       overlapYs: new Uint16Array([0]),
     } as unknown as PileupDataResult
 
-    gpu.sync({
-      sections: [
-        {
-          groupKey: '',
-          laidOutPileupMap: new Map([[0, withOverlap]]),
-          arcsRpcDataMap: new Map(),
-        },
-      ],
-    })
+    gpu.sync(oneRegion(withOverlap))
     expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
 
     // Same region still active, but the overlap data is gone. The overlap
     // upload's `if (n > 0)` guard skips it, so only the begin/endUpload sweep
     // can clear the now-stale buffer.
-    gpu.sync({
-      sections: [
-        {
-          groupKey: '',
-          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
-          arcsRpcDataMap: new Map(),
-        },
-      ],
-    })
+    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'overlap')).toBe(0)
   })
 
@@ -496,19 +496,108 @@ describe('GPU sync rebuild transaction', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const cov = makeCoverageData()
 
-    gpu.sync({
-      sections: [
-        {
-          groupKey: '',
-          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
-          arcsRpcDataMap: new Map(),
-        },
-      ],
-    })
+    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
 
     gpu.sync({ sections: [] })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
+  })
+})
+
+// The upload autorun re-fires on everything `sourceSections` reads, including
+// band geometry that changes no packed byte (a coverage-height drag re-derives
+// `sections` on every pointer move). `sync` skips the pack for a region whose
+// laid-out payload is reference-identical, and `retainRegion` is what keeps the
+// skipped buffers out of endUpload's sweep.
+describe('GPU sync skips regions whose data is unchanged', () => {
+  const uploadsFor = (hal: MockHal) => hal.callsOf('uploadBuffer').length
+
+  it('re-syncing the same payload uploads nothing and keeps every buffer', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const data = makeMinimalPileupResult(makeCoverageData())
+
+    gpu.sync(oneRegion(data))
+    const first = uploadsFor(hal)
+    expect(first).toBeGreaterThan(0)
+
+    gpu.sync(oneRegion(data))
+    expect(uploadsFor(hal)).toBe(first)
+    expect(hal.callsOf('retainRegion')).toHaveLength(1)
+    // The retained buffers survived the second transaction's sweep.
+    expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
+    expect(hal.getBufferCount(0, 'snpCov')).toBeGreaterThan(0)
+  })
+
+  it('a recolor rewrites only the read pass', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const cov = makeCoverageData()
+    // One read, so the read pass has an instance to rewrite.
+    const laidOut = {
+      ...makeMinimalPileupResult(cov),
+      readIds: ['r1'],
+      readPositions: new Uint32Array([REGION_START, REGION_START + 10]),
+      readYs: new Uint16Array([0]),
+      readFlags: new Uint16Array([0]),
+      readMapqs: new Uint8Array([60]),
+      readInsertSizes: new Float32Array([0]),
+      readStrands: new Int8Array([1]),
+      readInterchrom: new Uint8Array([0]),
+      readTagColors: new Uint32Array([0]),
+      readColorCategories: new Uint8Array([0]),
+      segmentPositions: new Uint32Array([REGION_START, REGION_START + 10]),
+      segmentReadIndices: new Uint32Array([0]),
+      segmentEdgeFlags: new Uint8Array([3]),
+      numSegments: 1,
+    } as unknown as PileupDataResult
+
+    gpu.sync(oneRegion(laidOut))
+    const before = uploadsFor(hal)
+
+    // What the color tier produces: the same layout run (same `readYs` and every
+    // other array) with the two per-read color arrays rebaked.
+    gpu.sync(
+      oneRegion({
+        ...laidOut,
+        readTagColors: new Uint32Array([0xff00ff00]),
+        readColorCategories: new Uint8Array([3]),
+      }),
+    )
+
+    const added = hal.callsOf('uploadBuffer').slice(before)
+    expect(added.map(c => c.args[1])).toEqual(['read'])
+    expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
+  })
+
+  it('a relayout re-uploads everything', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const cov = makeCoverageData()
+
+    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
+    const first = uploadsFor(hal)
+
+    // A fresh layout run allocates a fresh `readYs`, which is the token.
+    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
+    expect(uploadsFor(hal)).toBe(first * 2)
+  })
+
+  it('a region that leaves and returns with the same payload re-uploads', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const data = makeMinimalPileupResult(makeCoverageData())
+
+    gpu.sync(oneRegion(data))
+    const first = uploadsFor(hal)
+
+    // Scrolled out: endUpload swept its buffers, so the memo must forget it.
+    gpu.sync({ sections: [] })
+    expect(hal.getBufferCount(0, 'coverage')).toBe(0)
+
+    gpu.sync(oneRegion(data))
+    expect(uploadsFor(hal)).toBe(first * 2)
+    expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
   })
 })
 

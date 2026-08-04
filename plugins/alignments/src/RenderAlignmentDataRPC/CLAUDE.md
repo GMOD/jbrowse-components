@@ -6,11 +6,17 @@ One RPC serves pileup and chain, branching on `args.linkedReads`.
 
 Row-instanced features (read, gap, mismatch, clips, modification, per-base)
 carry `*Ys` and are packed on the **main thread** at upload, because a read's
-row isn't known until all visible regions are laid out together.
-Position-aggregate features (coverage, snpCoverage, interbase, indicator) are
-row-independent, so the worker packs them once and the main thread uploads the
-bytes verbatim. `uploadReads` runs first — it creates the region entry the
-others read back.
+row isn't known until all visible regions are laid out together
+([ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)
+— don't move layout here to make them worker-packable; the pack is separable
+from the layout and the ADR says how). Position-aggregate features (coverage,
+snpCoverage, interbase, indicator) are row-independent, so the worker packs them
+once and the main thread uploads the bytes verbatim.
+
+The renderer's per-region metadata (`regionMeta`) is derived separately from the
+uploads rather than as a side effect of one of them, because a region whose
+payload is unchanged still needs the metadata while skipping every pack — see
+GPU_RENDERING.md, "skipping a region inside the rebuild transaction".
 
 ## Group-by
 

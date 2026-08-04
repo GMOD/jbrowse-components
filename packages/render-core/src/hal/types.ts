@@ -80,6 +80,13 @@ export interface GpuHal {
   // unaffected.
   beginUpload(): void
   endUpload(): void
+  // Declare a region's existing buffers still current, exempting them from
+  // endUpload()'s sweep. This is what lets a renderer whose sync re-runs every
+  // upload skip a region whose data is reference-identical, instead of paying
+  // the pack + upload only to write the same bytes back. The assertion is
+  // whole-region: a caller that rewrites any of a region's passes must rewrite
+  // all of them, so an emptied pass still leaves no stale buffer behind.
+  retainRegion(regionKey: number): void
 
   uploadTexture(
     passId: string,

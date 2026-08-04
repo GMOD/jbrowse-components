@@ -87,6 +87,7 @@ import { ColorScheme } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
   anyRegionTruncated,
+  applyReadColorsByGroup,
   groupMaxY,
   layoutGroupRowCounts,
   layoutGroupsToViewport,
@@ -1373,10 +1374,11 @@ export default function stateModelFactory(
          * can't starve the rest. When grouped, the default cap fits all sections
          * into the viewport (`fitGroupMaxRows`) so the stack doesn't tower and
          * need scrolling; a per-group height drag / expand still overrides it.
-         * Tag colors are baked here (not in the worker) so colorTagMap stays a
-         * main-thread tier-2 setting — see readTagColors.
+         *
+         * Rows only — the per-read color arrays are baked one computed later, in
+         * `laidOutByGroup`.
          */
-        get laidOutByGroup() {
+        get laidOutByGroupUncolored() {
           return layoutGroupsToViewport(this.groupLayoutContext, {
             rowHeight: this.rowHeight,
             // Grow fits rows to the grow ceiling (content grows the track up to
@@ -1385,8 +1387,11 @@ export default function stateModelFactory(
             // `height`→grownHeight→layout chain can't cycle.
             height: self.autoHeight ? self.growMaxHeight : self.fitTargetHeight,
             maxHeight: this.maxHeight,
-            overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
-              .bottom,
+            // A thunk, so the band heights only enter this computed's
+            // dependencies when grouping actually spends them — see
+            // `FitViewportInput.overhead`.
+            overhead: () =>
+              belowCoverageBandsGeometry(this.belowCoverageBandsInput).bottom,
             collapsedKeys: self.collapsedGroups,
             heightOverridesPx: self.groupMaxHeightOverrides,
           })
@@ -1394,10 +1399,35 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The layout mechanics (grouping, sort, soft-clip, colors) shared by the
-         * viewport fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`,
-         * which lays every group out uncapped to count rows. Kept apart from the
-         * fit policy (row caps), which varies per call.
+         * Per-group laid-out data with the per-read color arrays baked on. Every
+         * consumer reads this one; `laidOutByGroupUncolored` exists only to be
+         * its layout half.
+         *
+         * The split is what keeps recoloring off the layout path. Nothing in
+         * `readColorContext` can move a read's row, so folding those settings
+         * into the layout computed made a color-scheme flip re-run the placement
+         * pass, every per-feature Y remap and the modification Flatbush to change
+         * two per-read arrays. Now the layout computed stays memoized across a
+         * recolor, and because the overlay spreads its input, `readYs` survives
+         * with it — which is the token the GPU renderer's upload memo reads to
+         * rewrite only the read pass. Tag colors are baked here rather than in
+         * the worker so `colorTagMap` stays a main-thread tier-2 setting (see
+         * readTagColors).
+         */
+        get laidOutByGroup() {
+          return applyReadColorsByGroup(
+            this.laidOutByGroupUncolored,
+            this.readColorContext,
+          )
+        },
+
+        /**
+         * #getter
+         * The layout mechanics (grouping, sort, soft-clip) shared by the viewport
+         * fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays
+         * every group out uncapped to count rows. Kept apart from the fit policy
+         * (row caps), which varies per call, and from the color inputs, which
+         * invalidate a later tier.
          */
         get groupLayoutContext() {
           return {
@@ -1409,11 +1439,21 @@ export default function stateModelFactory(
             largeFeaturesFirst: this.largeFeaturesFirst,
             regions: self.loadedRegions,
             showLinkedReadLines: self.showLinkedReadLines,
+            collapseGroupRows: this.collapseGroupRows,
+          }
+        },
+
+        /**
+         * #getter
+         * The per-read color bake's inputs — see `laidOutByGroup` for why they
+         * are not part of `groupLayoutContext`.
+         */
+        get readColorContext() {
+          return {
             colorBy: this.colorBy,
             colorTagMap: self.colorTagMap,
             colorScheme: colorSchemeIndexFor(this.colorBy.type),
             readColorOpts: this.readColorOpts,
-            collapseGroupRows: this.collapseGroupRows,
           }
         },
 

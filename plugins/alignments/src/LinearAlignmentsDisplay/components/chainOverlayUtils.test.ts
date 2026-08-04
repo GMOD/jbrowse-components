@@ -1,7 +1,6 @@
 import {
   buildReadIdToIndex,
   computeArcBand,
-  ensureRegion,
   interbaseRangeEnds,
   lazyReadIdToIndex,
 } from '../renderers/rendererTypes.ts'
@@ -154,27 +153,6 @@ describe('getChainBounds', () => {
     const bounds = getChainBounds(['r1', 'missing', 'r2'], region)
     expect(bounds?.startBp).toBe(100)
     expect(bounds?.endBp).toBe(400)
-  })
-})
-
-describe('ensureRegion', () => {
-  it('creates and inserts a new entry when absent', () => {
-    const m = new Map<number, { v: number }>()
-    const r = ensureRegion(m, 1, () => ({ v: 42 }))
-    expect(r.v).toBe(42)
-    expect(m.get(1)).toBe(r)
-  })
-
-  it('returns existing entry without calling factory', () => {
-    const existing = { v: 99 }
-    const m = new Map([[1, existing]])
-    let called = false
-    const r = ensureRegion(m, 1, () => {
-      called = true
-      return { v: 0 }
-    })
-    expect(r).toBe(existing)
-    expect(called).toBe(false)
   })
 })
 

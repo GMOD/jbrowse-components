@@ -56,6 +56,8 @@ strand case.
   Create them _outside_ the `attachRenderingBackend` call and keep every input
   read unconditional.
 - **Multi-pass renderers bracket `sync()` with `beginUpload`/`endUpload`**, so a
-  pass whose data went empty can't leave a stale buffer.
+  pass whose data went empty can't leave a stale buffer. To skip a region inside
+  that bracket, `retainRegion` it — the sweep destroys anything not rewritten,
+  and the exemption is whole-region so the emptied-pass guarantee survives.
 - A new shared `.slang` **shape** module needs two real consumers and
   non-obvious math — ADR-040 rejected the generic quad skeleton on that test.

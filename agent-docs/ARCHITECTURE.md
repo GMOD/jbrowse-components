@@ -792,6 +792,21 @@ single-section consumers.) Raw `rpcDataMap` is never mutated. Use derived maps
 when settings change the shape/contents of per-region data; use `gpuProps()` for
 scalars fed to an encoder.
 
+**A derived map is a tier, so keep its cheap half out of its expensive half.**
+Alignments splits the one above in two: `laidOutByGroupUncolored` does row
+placement, and `laidOutByGroup` bakes the per-read color arrays over it. Nothing
+in the color half can move a read's row, so folding the color settings into the
+layout computed — which is what `groupLayoutContext` used to do — made a recolor
+re-run placement, every per-feature Y remap and the modification Flatbush to
+change two arrays. Split, the layout computed stays memoized across a recolor,
+and because the overlay *spreads* its input rather than rebuilding it, `readYs`
+survives with it: the GPU renderer reads that identity as "same layout run" and
+rewrites the read pass alone (GPU_RENDERING.md, "skipping a region inside the
+rebuild transaction"). The same reasoning applies to any value a derived map
+reads but only *sometimes* spends — the band-overhead input to the grouped fit
+budget is a thunk for exactly that reason, so band geometry stays out of the
+layout computed's dependency set on the ungrouped path.
+
 ### Theme-derived render inputs are session getters, not pushed volatiles
 
 Color palettes are a pure function of the active theme, so derive them in a model
