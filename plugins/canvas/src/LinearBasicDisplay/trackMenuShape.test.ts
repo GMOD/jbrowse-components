@@ -192,3 +192,46 @@ describe('canvas track menu shape', () => {
     )
   })
 })
+
+// `color` and `utrColor` are per-feature jexl callback slots
+// (contextVariable: ['feature']), so reading one off the display — with no
+// feature in scope — evaluates the expression against nothing and throws. These
+// two getters feed the "Set color" dialog's swatches, so that throw took the
+// dialog down on exactly the tracks whose colors are most worth inspecting. A
+// jexl string is not a CSS color anyway, so both fall back to the default swatch,
+// the same as an unset slot.
+describe('color swatches under a per-feature jexl slot', () => {
+  const jexlColor = "jexl:get(feature,'type')=='CDS'?'red':'blue'"
+
+  it('shows the default swatch instead of throwing', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const plainFeature = display.featureColor
+    const plainUtr = display.utrColor
+    expect(typeof plainFeature).toBe('string')
+    expect(typeof plainUtr).toBe('string')
+
+    display.setFeatureColor(jexlColor)
+    display.setUtrColor(jexlColor)
+    expect(display.featureColor).toBe(plainFeature)
+    expect(display.utrColor).toBe(plainUtr)
+  })
+
+  it('still reports the jexl as the active color-by mode', () => {
+    // The fallback is a swatch concern only — it must not make the menu read the
+    // track as solid-colored when a per-feature expression is driving it.
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureColor(jexlColor)
+    expect(display.colorByMode).toBe('attribute')
+  })
+
+  it('keeps a concrete color as the swatch', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureColor('#ff0000')
+    display.setUtrColor('#00ff00')
+    expect(display.featureColor).toBe('#ff0000')
+    expect(display.utrColor).toBe('#00ff00')
+  })
+})

@@ -608,8 +608,15 @@ export default function baseStateModelFactory(
         // undefined. Unset means the render falls back to a feature's own BED
         // color when it has one, which no single swatch can show, so the swatch
         // shows what an itemRgb-less feature actually gets.
+        //
+        // Reads the raw slot value, not getConf — the same jexl-without-a-feature
+        // hazard as `featureColor` above, and for the same reason: `utrColor` is a
+        // per-feature callback slot, so getConf evaluates the expression against
+        // no feature and throws out of the dialog this feeds. A jexl string is not
+        // a CSS color anyway, so it shows the default swatch like unset does.
         get utrColor(): string {
-          return getConf(self, 'utrColor') ?? UTR_DEFAULT_COLOR
+          const raw = self.conf.utrColor
+          return raw !== undefined && !isJexl(raw) ? raw : UTR_DEFAULT_COLOR
         },
 
         /**
