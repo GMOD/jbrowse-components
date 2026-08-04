@@ -42,12 +42,16 @@ const RegionGrid = observer(function RegionGrid({
   const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
   const stroke = theme.palette.divider
 
-  // Clamp the rect to the viewport with Math.max/min: very large offscreen
-  // SVG rects can sometimes fail to draw
+  // Clamp both of the rect's edges to the viewport and take the span between
+  // them — very large offscreen SVG rects can sometimes fail to draw. Sizing it
+  // from the unclamped span instead (`htop - hbottom`) let the backdrop run past
+  // the far end of the genome by however much the near end was offscreen: only
+  // ever reachable if `dynamicBlocks` stopped being viewport-clipped, but it is
+  // the rule the vertical axis already follows and one fewer thing to hold true.
   const rx = Math.max(hbottom, 0)
   const ry = Math.max(viewHeight - vtop, 0)
-  const w = Math.min(htop - hbottom, viewWidth)
-  const h = Math.min(viewHeight - vbottom - ry, viewHeight)
+  const w = Math.max(Math.min(htop, viewWidth) - rx, 0)
+  const h = Math.max(Math.min(viewHeight - vbottom, viewHeight) - ry, 0)
 
   const hlines = gridLines(hblocks, b => b.offsetPx - hview.offsetPx)
   const vlines = gridLines(

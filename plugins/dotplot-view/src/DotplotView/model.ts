@@ -313,8 +313,11 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #getter
          */
+        // Unmeasured is `undefined`, which is also what `initialized` tests —
+        // a falsy test additionally threw on a measured 0, so a view that
+        // reported initialized failed here instead
         get width(): number {
-          if (!self.volatileWidth) {
+          if (self.volatileWidth === undefined) {
             throw new Error('width not initialized')
           }
           return self.volatileWidth
