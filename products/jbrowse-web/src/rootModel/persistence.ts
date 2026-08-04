@@ -85,11 +85,59 @@ export async function setupSessionDB(self: WebRootModel) {
   }
 }
 
+// The one place the session snapshot is written. Takes the snapshot rather than
+// the session so each caller does its own getSnapshot — which is what keeps the
+// autorun below tracking it (see the MST notes in CLAUDE.md).
+function writeSessionSnapshot(sessionSnap: unknown) {
+  sessionStorage.setItem(
+    'current',
+    JSON.stringify({
+      session: sessionSnap,
+      createdAt: new Date(),
+    }),
+  )
+}
+
+// The autorun below is debounced, so the snapshot on disk trails the session by
+// up to that delay and a tab closed inside the window loses the difference.
+// Writing once more on the way out means the delay only trades write frequency
+// against staleness-while-running, never against what a reload restores — so it
+// can be tuned for cost alone.
+//
+// Safe to do synchronously here, which is why this is worth doing at all:
+// sessionStorage.setItem is synchronous, so unlike an async save there is nothing
+// to await and no way to wedge the unload. Errors are swallowed rather than
+// reported — the page is going away, and a quota failure has already been
+// surfaced by the autorun.
+function setupUnloadFlush(self: WebRootModel) {
+  const flush = () => {
+    const session = self.session as AbstractSessionModel | undefined
+    // isAlive because reading a destroyed node's props throws, and throwing out
+    // of an unload handler is a bad way to find out
+    if (session && isAlive(self)) {
+      try {
+        writeSessionSnapshot(getSnapshot(session))
+      } catch {
+        // nothing useful left to do with it
+      }
+    }
+  }
+  window.addEventListener('beforeunload', flush)
+  // Every reloadPluginManager builds a replacement root model, so a listener left
+  // behind accumulates one per reload for the life of the tab. It is the leak this
+  // prevents, not a bad write — the isAlive check above already covers that, and
+  // the two are deliberately redundant.
+  addDisposer(self, () => {
+    window.removeEventListener('beforeunload', flush)
+  })
+}
+
 // Mirrors the current session into sessionStorage on every change so a tab
 // reload restores it. Also triggers reloadPluginManager when pluginsUpdated
 // flips — the snapshot must be written FIRST so the new plugin manager can
 // restore it.
 export function setupSessionStorageAutosave(self: WebRootModel) {
+  setupUnloadFlush(self)
   let savingFailed = false
   // pluginsUpdated latches true and this rootModel lives on until the
   // replacement one mounts, so without this any session edit landing in that
@@ -105,13 +153,7 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
           const s = self.session as AbstractSessionModel
           const sessionSnap = getSnapshot(s)
           try {
-            sessionStorage.setItem(
-              'current',
-              JSON.stringify({
-                session: sessionSnap,
-                createdAt: new Date(),
-              }),
-            )
+            writeSessionSnapshot(sessionSnap)
             if (savingFailed) {
               savingFailed = false
               s.notify('Auto-saving restored', 'info')
