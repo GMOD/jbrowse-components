@@ -16,6 +16,14 @@ auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`) and
 override the `height` getter to fall back to their computed content height when
 unset.
 
+It also owns the **internal vertical scroll** every canvas display that scrolls
+its own content shares: the `scrollTop` volatile, a `setScrollTop` clamped
+against the overridable `scrollableHeight` hook, and the autorun that re-clamps
+when the content shrinks. Four displays (alignments, canvas, MAF, multi-sample
+variants) each carried their own copy of the last two, with four copies of the
+same "a virtual-scrolled canvas has no overflow container to self-correct"
+paragraph; a display now opts into all of it by overriding one getter.
+
 ## Volatiles
 
 <!-- prettier-ignore -->
@@ -30,13 +38,14 @@ unset.
 | Member | Description |
 | --- | --- |
 | <span id="getter-height">**height**</span><br><code>number</code> |  |
+| <span id="getter-scrollableheight">**scrollableHeight**</span><br><code>number</code> | Overridable hook: how far this display's content can scroll past its viewport, in px. `Infinity` (the default) means "this display doesn't scroll internally" — `setScrollTop` then never clamps and the re-clamp autorun below is inert, so a non-scrolling display pays nothing and, crucially, never evaluates a getter that would read view geometry.<br><br>A display that scrolls a canvas overrides this with `max(0, contentHeight - viewportHeight)`, and gets the clamped setter plus the shrink autorun for free. It is the single "does it scroll, and by how much" answer: the wheel handler (`useVirtualScrollWheel`) and `VerticalScrollbar` read the same getter. |
 
 ## Actions
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setscrolltop">**setScrollTop**</span><br><code>(scrollTop: number) =&gt; void</code> |  |
+| <span id="action-setscrolltop">**setScrollTop**</span><br><code>(scrollTop: number) =&gt; void</code> | Clamped into `[0, scrollableHeight]`, so no caller has to remember the bound. Unbounded for a display that leaves `scrollableHeight` at its `Infinity` default. |
 | <span id="action-setresizing">**setResizing**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setheight">**setHeight**</span><br><code>(displayHeight: number) =&gt; number</code> |  |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  |
