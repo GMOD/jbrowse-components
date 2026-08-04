@@ -4,6 +4,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
   doesIntersect2,
+  downloadStatus,
   max,
   min,
   updateStatus,
@@ -160,10 +161,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     const aggregateField = this.getConf('aggregateField')
     const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
     const { parser, bigbed } = await this.configure(opts)
+    // downloadStatus, not updateStatus: bbi knows the total block bytes up front
+    // (they come from the R-tree index) so this reports a determinate fraction
+    // rather than an indeterminate spinner. Matters most here — BigBed is a
+    // full-feature download, which is why getRegionByteSize gates it above.
     const feats = await withStopTokenSignal(opts.stopToken, signal =>
-      updateStatus('Downloading features', statusCallback, () =>
+      downloadStatus('Downloading features', statusCallback, onProgress =>
         bigbed.getFeatures(query.refName, query.start, query.end, {
           basesPerSpan: query.end - query.start,
+          onProgress,
           signal,
         }),
       ),
@@ -215,8 +221,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
             query: {
               ...query,
               // extend query to catch gene subfeatures outside the current view;
-              // 500 kbp heuristic covers most genes/transcripts
-              start: minAggStart - 500_000,
+              // 500 kbp heuristic covers most genes/transcripts. Clamped at 0 so
+              // a gene near the start of a contig doesn't produce a negative
+              // region start.
+              start: Math.max(0, minAggStart - 500_000),
               end: maxAggEnd + 500_000,
             },
             opts,
