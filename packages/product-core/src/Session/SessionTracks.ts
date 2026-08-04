@@ -284,11 +284,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // place, so an open view re-renders to the default. applySnapshot keeps
       // the node identity (existing observers just update); no-op in admin mode
       // or for a track that was never edited (no working copy).
+      //
+      // Through toPlainConfig like every other read of a base in this file, not
+      // the raw entry: in product-core's embedded sessions a base IS a live MST
+      // config node, and applySnapshot wants a snapshot — handing it a node
+      // reads nested nodes back out where plain objects belong. (For a frozen
+      // base the two agree, since applySnapshot re-runs the same
+      // preProcessSnapshot that toPlainConfig hydrates through, so this only
+      // makes that reliance explicit.)
       function revertEditableTrackConfig(trackId: string) {
         const node = self.editableTrackConfigs.get(trackId)
         const base = baseTracks(self).find(t => t.trackId === trackId)
         if (node && base) {
-          applySnapshot(node, base)
+          applySnapshot(node, toPlainConfig(base))
         }
       }
       // Single writer for trackConfigDeltas (pass undefined to clear).
