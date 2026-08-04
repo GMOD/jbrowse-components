@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
+import {
+  ErrorMessage,
+  LabeledCheckbox,
+  ReplaceCurrentViewButton,
+  SubmitDialog,
+} from '@jbrowse/core/ui'
 import {
   assembleLocString,
   getBpDisplayStr,
@@ -29,7 +34,6 @@ import {
   CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
-  ReplaceCurrentViewButton,
   WindowSizeField,
 } from './launchOptionFields.tsx'
 import {

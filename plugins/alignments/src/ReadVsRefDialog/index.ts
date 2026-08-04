@@ -2,7 +2,11 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 
-import type { AbstractTrackModel, Feature } from '@jbrowse/core/util'
+import type {
+  AbstractTrackModel,
+  AbstractViewModel,
+  Feature,
+} from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const ReadVsRefDialog = lazy(() => import('./ReadVsRefDialog.tsx'))
@@ -14,6 +18,11 @@ export interface ReadVsRefLaunchArgs {
   primaryFeature: Feature
   windowSize: number
   track: AbstractTrackModel
+  // The view the read was clicked in, set when the dialog's "Replace current
+  // view" was used rather than "Open in new view". Pass it straight to
+  // addOrReplaceView, which falls back to appending on a session that can't
+  // replace a view.
+  replacing?: AbstractViewModel
 }
 
 /**

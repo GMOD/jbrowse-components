@@ -1,4 +1,4 @@
-import { isSessionWithViewReplacement } from '@jbrowse/core/util'
+import { addOrReplaceView } from '@jbrowse/core/util'
 
 import type { AbstractSessionModel, AbstractViewModel } from '@jbrowse/core/util'
 
@@ -30,8 +30,10 @@ export function launchSyntenyView<T extends { views: unknown[] }>({
   if (init.views.length < 2) {
     throw new Error(`${viewType} requires at least 2 views to be specified`)
   }
-  const initialState = { id, init }
-  return replacing && isSessionWithViewReplacement(session)
-    ? session.replaceView(replacing, viewType, initialState)
-    : session.addView(viewType, initialState)
+  return addOrReplaceView({
+    session,
+    typeName: viewType,
+    initialState: { id, init },
+    replacing,
+  })
 }

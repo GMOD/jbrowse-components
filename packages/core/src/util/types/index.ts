@@ -305,6 +305,30 @@ export function isSessionWithViewReplacement(
   return isSessionModel(t) && 'replaceView' in t
 }
 
+/**
+ * Open a launched view, either in the slot `replacing` occupies or appended.
+ *
+ * The branch every launcher that offers "Replace current view" would otherwise
+ * write for itself, kept in one place with the guard it depends on. A session
+ * that can't replace a view falls back to appending, so a caller passes the
+ * source view unconditionally and never has to ask twice.
+ */
+export function addOrReplaceView({
+  session,
+  typeName,
+  initialState,
+  replacing,
+}: {
+  session: AbstractSessionModel
+  typeName: string
+  initialState?: Record<string, unknown>
+  replacing?: AbstractViewModel
+}) {
+  return replacing && isSessionWithViewReplacement(session)
+    ? session.replaceView(replacing, typeName, initialState)
+    : session.addView(typeName, initialState)
+}
+
 /** abstract interface for a session allows adding tracks */
 export interface SessionWithAddTracks extends AbstractSessionModel {
   // returns the added config, or undefined if it was invalid (surfaced as a

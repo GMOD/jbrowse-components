@@ -1,5 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  addOrReplaceView,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
@@ -12,6 +16,7 @@ export async function launchLinearReadVsRef({
   primaryFeature,
   windowSize,
   track,
+  replacing,
 }: ReadVsRefLaunchArgs) {
   const session = getSession(track)
   const view = getContainingView(track) as { width: number }
@@ -39,5 +44,10 @@ export async function launchLinearReadVsRef({
   })
 
   session.addTemporaryAssembly?.(temporaryAssembly)
-  session.addView('LinearSyntenyView', viewSpec)
+  addOrReplaceView({
+    session,
+    typeName: 'LinearSyntenyView',
+    initialState: viewSpec,
+    replacing,
+  })
 }

@@ -76,6 +76,7 @@ export {
   type UriLocation,
   type Widget,
   type WidgetMap,
+  addOrReplaceView,
   isAbstractMenuManager,
   isAppRootModel,
   isAuthNeededException,

@@ -2,7 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { onSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { MultipleViewsSessionMixin } from './MultipleViews.ts'
 
@@ -104,4 +104,21 @@ test('replacing a view that is no longer in the session appends', () => {
     'FakeLinearView',
     'FakeSyntenyView',
   ])
+})
+
+// Replacing destroys a view, so getting it back has to be one ctrl-Z rather
+// than two (or, worse, a remove the redo stack has already been truncated past).
+// The TimeTraveller pushes one undo state per snapshot, so what this asserts is
+// that the swap is a single MST transaction: the splice and the removal are
+// both inside the action, and MST emits the snapshot once, at its end.
+test('replaceView is one undoable step', () => {
+  const session = sessionWithThreeViews()
+  const snapshots: unknown[] = []
+  onSnapshot(session, snap => {
+    snapshots.push(snap)
+  })
+
+  session.replaceView(session.views[1], 'FakeSyntenyView')
+
+  expect(snapshots).toHaveLength(1)
 })

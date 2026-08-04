@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
+import { ReplaceCurrentViewButton, SubmitDialog } from '@jbrowse/core/ui'
 import { isSessionWithViewReplacement } from '@jbrowse/core/util'
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
@@ -9,7 +9,6 @@ import {
   CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
-  ReplaceCurrentViewButton,
   WindowSizeField,
 } from './launchOptionFields.tsx'
 

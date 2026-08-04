@@ -6,6 +6,7 @@ import {
   expectCanvasMatch,
   findCanvasIn,
   hts,
+  mockConsoleWarn,
   setup,
 } from './util.tsx'
 
@@ -33,7 +34,7 @@ test('launch read vs ref panel', async () => {
 
   fireEvent.click(await findByText(/Launch/, {}, delay))
   fireEvent.click(await findByText('Linear read vs ref', {}, delay))
-  const elt = await findByText('Submit', {}, delay)
+  const elt = await findByText('Open in new view', {}, delay)
 
   await waitFor(() => {
     expect(elt.getAttribute('disabled')).toBe(null)
@@ -63,8 +64,8 @@ test('launch read vs ref dotplot', async () => {
   // Both launchers share one dialog: it resolves the clicked segment to its
   // primary alignment (so the read axis is the read's own orientation, not the
   // clicked segment's) and asks for a window size. The view is added by its
-  // onSubmit, so nothing happens until Submit is enabled and clicked.
-  const elt = await findByText('Submit', {}, delay)
+  // onSubmit, so nothing happens until the button is enabled and clicked.
+  const elt = await findByText('Open in new view', {}, delay)
   await waitFor(() => {
     expect(elt.getAttribute('disabled')).toBe(null)
   }, delay)
@@ -81,4 +82,40 @@ test('launch read vs ref dotplot', async () => {
   await waitFor(() => {
     expect(dotplotView.initialized).toBe(true)
   }, delay)
+}, 40000)
+
+// The dialog's other way out. Same launcher, same spec: the only difference is
+// that the dotplot lands in the pileup view's slot rather than below it, which
+// is what session.views says and the canvas cannot.
+test('replace the launching view with the read vs ref dotplot', async () => {
+  // mocked because replacing destroys the pileup view's subtree while its
+  // observers are still mounted (React unmounts a commit later), so MobX
+  // re-evaluates their reads across the dead nodes and MST's livelinessChecking
+  // warns. Nothing throws and the render never commits.
+  await mockConsoleWarn(async () => {
+    const { view, session, findByTestId, findByText } = await createView()
+    view.setNewView(5, 100)
+    fireEvent.click(
+      await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
+    )
+
+    const display = await findByTestId('pileup-display-done', {}, delay)
+    const canvas = findCanvasIn(display)
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
+    fireEvent.click(canvas, { clientX: 200, clientY: 80 })
+    fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
+
+    fireEvent.click(await findByText(/Launch/, {}, delay))
+    fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
+
+    const elt = await findByText('Replace current view', {}, delay)
+    await waitFor(() => {
+      expect(elt.getAttribute('disabled')).toBe(null)
+    }, delay)
+    fireEvent.click(elt)
+
+    await waitFor(() => {
+      expect(session.views.map(v => v.type)).toEqual(['DotplotView'])
+    }, delay)
+  })
 }, 40000)

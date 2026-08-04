@@ -1,7 +1,17 @@
 import { useState } from 'react'
 
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
-import { ErrorMessage, NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import {
+  ErrorMessage,
+  NumberTextField,
+  ReplaceCurrentViewButton,
+  SubmitDialog,
+} from '@jbrowse/core/ui'
+import {
+  getContainingView,
+  getSession,
+  isSessionWithViewReplacement,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { CircularProgress, Typography } from '@mui/material'
@@ -9,7 +19,11 @@ import { CircularProgress, Typography } from '@mui/material'
 import { fetchPrimaryAlignment } from './fetchPrimaryAlignment.ts'
 
 import type { ReadVsRefLaunchArgs } from './index.ts'
-import type { AbstractTrackModel, Feature } from '@jbrowse/core/util'
+import type {
+  AbstractTrackModel,
+  AbstractViewModel,
+  Feature,
+} from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   root: {
@@ -39,6 +53,11 @@ export default function ReadVsRefDialog({
 
   const [windowSize, setWindowSize] = useState<number | undefined>(0)
   const [submitError, setSubmitError] = useState<unknown>()
+  // Read off the track rather than passed in: both launchers already resolve
+  // the same two from it, and a dialog that took them as props would let a
+  // caller hand over a view the read was not clicked in.
+  const sourceView = getContainingView(track)
+  const canReplace = isSessionWithViewReplacement(getSession(track))
 
   const { data: primaryFeature, error: fetchError } = useFetch(
     ['primaryAlignment', preFeature.id()],
@@ -46,12 +65,14 @@ export default function ReadVsRefDialog({
   )
   const error = submitError ?? fetchError
 
-  async function onSubmit() {
+  const disabled = !primaryFeature || windowSize === undefined
+
+  async function onSubmit(replacing?: AbstractViewModel) {
     try {
       if (!primaryFeature || windowSize === undefined) {
         return
       }
-      await launch({ primaryFeature, windowSize, track })
+      await launch({ primaryFeature, windowSize, track, replacing })
       handleClose()
     } catch (e) {
       console.error(e)
@@ -63,7 +84,23 @@ export default function ReadVsRefDialog({
     <SubmitDialog
       open
       title="Set window size"
-      submitDisabled={!primaryFeature || windowSize === undefined}
+      submitDisabled={disabled}
+      // The read-vs-ref view is anchored on the read the launching view is
+      // already showing, so replacing that view is as reasonable an outcome as
+      // appending below it — the same choice the synteny launches offer, in the
+      // same words. Named only when both are on offer; otherwise Submit is the
+      // only button and "Submit" is what it has always said.
+      submitText={canReplace ? 'Open in new view' : undefined}
+      actions={
+        canReplace ? (
+          <ReplaceCurrentViewButton
+            disabled={disabled}
+            onClick={() => {
+              void onSubmit(sourceView)
+            }}
+          />
+        ) : null
+      }
       onCancel={() => {
         handleClose()
       }}

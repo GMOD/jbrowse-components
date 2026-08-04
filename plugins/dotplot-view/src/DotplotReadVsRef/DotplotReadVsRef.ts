@@ -1,5 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  addOrReplaceView,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 
 import { MIN_BORDER } from '../DotplotView/components/util.ts'
 import { defaultHeight } from '../DotplotView/model.ts'
@@ -14,6 +18,7 @@ export async function launchDotplotReadVsRef({
   primaryFeature,
   windowSize,
   track,
+  replacing,
 }: ReadVsRefLaunchArgs) {
   const session = getSession(track)
   const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
@@ -41,5 +46,10 @@ export async function launchDotplotReadVsRef({
   })
 
   session.addTemporaryAssembly?.(temporaryAssembly)
-  session.addView('DotplotView', viewSpec)
+  addOrReplaceView({
+    session,
+    typeName: 'DotplotView',
+    initialState: viewSpec,
+    replacing,
+  })
 }
