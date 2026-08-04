@@ -3946,6 +3946,20 @@ export const graphSpecs: ScreenshotSpec[] = [
         // click launch nothing at all, the same floor rgfa_launch_out_menu
         // measured at ~430. Treat it as measured rather than tidy.
         viewportHeight: 820,
+        // Which nodes the menu row below is about (review: "it is unclear what
+        // the path the lineargenomeview takes through this graph"). The colors
+        // already say it -- `stable-rank` puts K12's rank-0 backbone in one hue
+        // and CFT073's rank-2 segments in another -- but nothing on the drawing
+        // said which was which, so the reader had a two-color graph and a menu
+        // row and no way to connect them. Both labels are anchored by node NAME
+        // through the view's nodePositions (probe-graph-nodes.ts prints the ids
+        // with their ranks and lengths), so they follow the FMMM layout instead
+        // of being measured off a PNG.
+        //
+        // s2132 is CFT073#1#chr:2,258,597 +58,610 bp, which is 58.6 kb of the
+        // 64.7 kb window the launched view's header shows in the frame below --
+        // so the arm IS very nearly the path, and the rest of it is backbone
+        // CFT073 shares with K12.
         actions: [
           {
             type: 'click',
@@ -3970,6 +3984,31 @@ export const graphSpecs: ScreenshotSpec[] = [
           { type: 'box', anchor: { text: 'Launch view' } },
           { type: 'box', anchor: { text: 'Linear genome view' } },
           { type: 'box', anchor: { text: 'CFT073 chr:' } },
+          // ...and which nodes that last row is about. s2132 is
+          // CFT073#1#chr:2,258,597 +58,610 bp -- 58.6 kb of the 64.7 kb window
+          // the launched view's header shows in the frame below, so the arm IS
+          // very nearly the path and the rest of it is backbone CFT073 shares
+          // with K12. Both anchored by node NAME through the view's
+          // nodePositions (probe-graph-nodes.ts prints the ids with their ranks
+          // and lengths), so they follow the FMMM layout rather than a pixel
+          // measured off a PNG.
+          {
+            type: 'text',
+            text: 'CFT073 only: 58.6 kb of the 64.7 kb the launch opens',
+            fontSize: 17,
+            anchor: { view: 0, graphNode: 's2132' },
+            dy: -70,
+          },
+          {
+            type: 'text',
+            // short, and right-aligned to the node: the pill grows leftwards
+            // from s659 and the full sentence ran off the pane's own left edge
+            text: 'blue = shared with K12',
+            fontSize: 17,
+            textAlign: 'end',
+            anchor: { view: 0, graphNode: 's659' },
+            dx: -20,
+          },
         ],
       },
       {

@@ -353,7 +353,7 @@ window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
 where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
-<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
+<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. The colors are Stable rank, so the labeled orange arm is the segment only CFT073 carries and the blue is backbone it shares with K12 — between them they are the window the menu row names. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
 
 ## Building the rGFA these figures use
 
