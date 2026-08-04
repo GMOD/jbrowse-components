@@ -39,11 +39,11 @@ export function interleaveInstances(data: DotplotGeometryData) {
 }
 
 // Overwrite only the per-instance color lane of an already-interleaved buffer.
-// A colorBy change or an alpha-slider drag produces new `colors` over unchanged
-// geometry — alpha is packed into the color byte, so a drag re-fires this every
-// frame — and patching the single 4-byte lane skips re-packing the four
-// coordinate lanes. The GPU re-upload still happens (the HAL has no
-// partial-buffer update), but the dominant CPU interleave is avoided.
+// A colorBy or track-color change produces new `colors` over unchanged geometry,
+// and patching the single 4-byte lane skips re-packing the four coordinate
+// lanes. The GPU re-upload still happens (the HAL has no partial-buffer update),
+// but the dominant CPU interleave is avoided. An alpha-slider drag does NOT
+// reach here at all — opacity is the `alpha` uniform, not a packed byte.
 // SYNC: the color write mirrors interleaveInstances exactly.
 export function patchInstanceColors(buf: ArrayBuffer, colors: Uint32Array) {
   const u32 = new Uint32Array(buf)

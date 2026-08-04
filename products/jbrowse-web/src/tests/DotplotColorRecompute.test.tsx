@@ -60,7 +60,12 @@ test('a colorBy change recolors without rebuilding geometry', async () => {
   expect(display.geometry.colors.length).toBe(colorsBefore.length)
 }, 45000)
 
-test('an alpha change recolors without rebuilding geometry', async () => {
+// Alpha is the one setting that recolors *nothing*. It rides the shader's
+// `alpha` uniform (and `DotplotDrawParams.alpha` on the Canvas2D/SVG side), so a
+// slider drag is a single scalar write rather than the three O(n) passes baking
+// it into the packed byte used to cost: recompute colors, re-pack every
+// instance, re-upload the buffer.
+test('an alpha change rebuilds neither geometry nor colors', async () => {
   const { view, display } = await loadedDotplotDisplay()
   const positions = display.instanceData
   const colorsBefore = Uint32Array.from(display.geometry.colors)
@@ -68,9 +73,11 @@ test('an alpha change recolors without rebuilding geometry', async () => {
   view.setAlpha(0.5)
 
   expect(display.instanceData).toBe(positions)
-  // alpha lives in the high byte of the packed ABGR color
-  expect(display.geometry.colors[0]! >>> 24).toBe(128)
-  expect(colorsBefore[0]! >>> 24).toBe(255)
+  expect(display.geometry.colors).toStrictEqual(colorsBefore)
+  // the alpha byte stays saturated: opacity is never packed into these bytes
+  expect(display.geometry.colors[0]! >>> 24).toBe(255)
+  // ...and it reaches the draw path as a render-state scalar instead
+  expect(view.dotplotRenderState.alpha).toBe(0.5)
 }, 45000)
 
 // alpha and minAlignmentLength are stored on the view, not per display. They
@@ -100,14 +107,20 @@ test('a track shown after a settings change inherits them', async () => {
   )
 
   // the length filter was in force for this display's very first geometry build
-  expect(added.alpha).toBe(0.5)
+  expect(view.minAlignmentLength).toBe(1e9)
   expect(added.geometry.instanceCount).toBe(0)
 
-  // and the inherited alpha is what it actually paints with, not just what it
-  // reports: 0.5 -> 128 in the high byte of the packed ABGR color
   view.setMinAlignmentLength(0)
   expect(added.geometry.instanceCount).toBeGreaterThan(0)
-  expect(added.geometry.colors[0]! >>> 24).toBe(128)
+
+  // alpha reaches the newcomer without any per-display state to inherit: one
+  // uniform covers every display the frame draws, this one included. Asserting
+  // the key is present is what makes that more than a re-read of `view.alpha`.
+  expect(view.alpha).toBe(0.5)
+  expect(view.dotplotRenderState.alpha).toBe(0.5)
+  expect(view.dotplotRenderState.displayKeys).toContain(added.displayKey)
+  // and it is a uniform, not a byte, on this display too
+  expect(added.geometry.colors[0]! >>> 24).toBe(255)
 }, 45000)
 
 // Two alignment files drawn into one plot used to be indistinguishable — same
