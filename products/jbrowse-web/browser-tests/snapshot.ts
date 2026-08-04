@@ -12,6 +12,7 @@ import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { recordCapture } from './crossBackendGate.ts'
 import { comparePngBuffers } from './pngDiff.ts'
 
+import type { CanvasContentStats } from './canvasContent.ts'
 import type { Buffer } from 'node:buffer'
 import type { Page } from 'puppeteer'
 
@@ -266,6 +267,56 @@ async function waitForCaptureSettled(page: Page) {
     .catch(() => [] as string[])
 }
 
+// How many times a blank capture is re-taken before it is believed.
+//
+// This does NOT weaken assertNonBlank, whose job is catching a shader that
+// compiles and draws nothing: that bug is blank on every attempt, so it still
+// fails. What recovers on a re-take is a *transient* capture, which is the
+// failure mode that has been shrinking the cross-backend gate's comparison.
+//
+// The retry doubles as the experiment. Re-taking a screenshot of the SAME page,
+// with no reload and no re-navigation, isolates the capture from the render: a
+// second attempt that comes back with content proves the pixels were there all
+// along and only the capture missed them. Which is why the count below is
+// reported rather than swallowed — a silent retry is how a real regression
+// hides, and the rate is the thing worth watching.
+const BLANK_RECAPTURE_ATTEMPTS = 3
+const RECAPTURE_DELAY_MS = 250
+
+export const blankRecaptures: {
+  name: string
+  attempts: number
+  recovered: boolean
+}[] = []
+
+export async function captureUntilNonBlank(
+  page: Page,
+  name: string,
+  grab: () => Promise<Uint8Array>,
+  isBlank: (stats: CanvasContentStats) => boolean,
+) {
+  let shot = await grab()
+  let stats = analyzeCanvasPng(shot)
+  let attempts = 1
+  while (isBlank(stats) && attempts < BLANK_RECAPTURE_ATTEMPTS) {
+    attempts++
+    // A short delay and a re-take, deliberately NOT another waitForCaptureSettled.
+    // Re-running the page-wide waits here was the first attempt and it was
+    // actively harmful: measured 18 passed / 0 failed at baseline against
+    // 10 / 8 with it, same filter and machine minutes apart. Two reasons — it
+    // can add ~100s per retry, and `assertCanvasHasContent` is called mid-test
+    // by callers who have NOT finished loading everything, so page-wide waits
+    // change what that helper means. A transient capture miss needs neither.
+    await new Promise(resolve => setTimeout(resolve, RECAPTURE_DELAY_MS))
+    shot = await grab()
+    stats = analyzeCanvasPng(shot)
+  }
+  if (attempts > 1) {
+    blankRecaptures.push({ name, attempts, recovered: !isBlank(stats) })
+  }
+  return { shot, stats }
+}
+
 // What the canvas itself holds, read in-page, for a capture that came back
 // blank. `toDataURL` reads the canvas backing store directly and never goes
 // through the compositor, so the two answers separate the causes:
@@ -385,9 +436,17 @@ export async function canvasSnapshot(
   }
   const unsettled = await waitForCaptureSettled(page)
 
-  const screenshot = await el.screenshot({ type: 'png' })
-  if (assertContent) {
-    const analysis = analyzeCanvasPng(screenshot)
+  const isBlank = (s: CanvasContentStats) =>
+    s.distinctColors < 3 || s.nonBgFraction < 0.0005
+  const { shot: screenshot, stats: analysis } = assertContent
+    ? await captureUntilNonBlank(
+        page,
+        name,
+        () => el.screenshot({ type: 'png' }),
+        isBlank,
+      )
+    : { shot: await el.screenshot({ type: 'png' }), stats: undefined }
+  if (assertContent && analysis) {
     // Ask the canvas what IT holds, at the moment the screenshot came back
     // blank. This is the one question that separates the two candidate causes
     // without needing the failure to be reproducible: `el.screenshot()` serves
@@ -396,11 +455,11 @@ export async function canvasSnapshot(
     // back blank puts it in the render. One occurrence settles it; the A/Bs
     // that tried to settle it statistically could not, because the suite's
     // run-to-run variance is larger than either effect.
-    // Same predicate assertNonBlank applies, so the report is gathered exactly
-    // when it is about to throw (and costs nothing on the passing path).
-    const wouldFail =
-      analysis.distinctColors < 3 || analysis.nonBgFraction < 0.0005
-    const selfReport = wouldFail ? await canvasSelfReport(page, selector) : ''
+    // Gathered only once every re-take has failed too, so it describes a
+    // genuinely stuck canvas rather than the transient case the retry absorbs.
+    const selfReport = isBlank(analysis)
+      ? await canvasSelfReport(page, selector)
+      : ''
     assertNonBlank(
       analysis,
       `${name} (${selector})${unsettledNote(unsettled)}${selfReport}`,

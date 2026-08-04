@@ -18,7 +18,11 @@ import {
 import { BASICAUTH_PORT, OAUTH_PORT, PORT, setPort } from './helpers.ts'
 import { buildPath, startServerOnFreePort } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
-import { snapshotConfig, snapshotUpdates } from './snapshot.ts'
+import {
+  blankRecaptures,
+  snapshotConfig,
+  snapshotUpdates,
+} from './snapshot.ts'
 
 import type { TestCase, TestSuite } from './types.ts'
 import type { Server } from 'node:http'
@@ -539,6 +543,22 @@ async function main() {
       }
     }
     console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
+    // Re-taken blank captures, reported rather than swallowed. A recovered one
+    // is a transient capture (the render was fine — the screenshot missed it);
+    // the rate is the signal, and a rise means the underlying problem is
+    // getting worse even while the suite stays green.
+    if (blankRecaptures.length > 0) {
+      const recovered = blankRecaptures.filter(r => r.recovered).length
+      console.log(
+        `  Blank re-captures: ${blankRecaptures.length} ` +
+          `(${recovered} recovered, ${blankRecaptures.length - recovered} still blank)`,
+      )
+      for (const r of blankRecaptures) {
+        console.log(
+          `    ${r.recovered ? '↻' : '✗'} ${r.name} (${r.attempts} attempts)`,
+        )
+      }
+    }
     if (backends.length > 1) {
       console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
     }
