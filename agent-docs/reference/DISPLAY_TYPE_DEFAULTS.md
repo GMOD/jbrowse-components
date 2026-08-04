@@ -73,6 +73,7 @@ accidental.
 | Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
+| About "Copy config" flatten (`getTrackConfigWithPromotables`) | `packages/core/src/configuration/promotableDefaults.ts`, consumed in `packages/product-core/src/ui/{AboutDialogContents,HeaderButtons}.tsx` |
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
@@ -317,6 +318,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots?)` | clears the named promoted defaults for this display's type (every promotable slot when `slots` is omitted) | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
+| `getTrackConfigWithPromotables(session, trackConfig)` | a whole track's config snapshot with every display's promotable slots resolved, plus the `<displayType>.<slot>` list of what came from a session default. Takes a config, not a display — no open track required | the About dialog's "Copy config" (see [Serialization boundaries](#serialization-boundaries-getcomputedstyle)) |
 
 `DisplayTypeDefaultControl` is `{ active: boolean; toggle: () => void }`.
 `active` = this value is the current default (filled pin); `toggle` sets or
@@ -411,6 +413,7 @@ boundary means *calling* one — not writing bespoke resolution:
 | Worker RPC payload | `getConfigSnapshotWithPromotables(display)` | worker has no session/`preferencesOverrides` to resolve against |
 | Session share / "Export session" → `session.json` (web, react-app) | `getShareableSessionSnapshot(session)` | recipient lacks the sender's local defaults |
 | desktop→web export | `bakePromotedDefaultsIntoSnapshot(session, plan.session)` | same, but bakes a snapshot `planWebExport` already transformed |
+| About dialog → "Copy config" | `getTrackConfigWithPromotables(session, trackConfig)` | the output is pasted into a `config.json`, which has no cascade at all |
 
 **Local persistence is deliberately *not* on that list** — web autosave
 (`SessionLoader`), HMR restore, and desktop's native `.jbrowse` file
@@ -508,9 +511,23 @@ Canary for the accepted behavior: the two paired tests in
 `ShareablePromotedDefaults.test.ts` — a sender at base picks up the recipient's
 default, and a baked value cannot be overridden by one.
 
-Note the About-track dialog needs **no** flattening: every promotable slot is
-display-level and the dialog intentionally hides the `displays` array, so there
-is no track-level fidelity gap to close there.
+The About-track dialog splits the two halves: its *attributes table* hides the
+`displays` array outright, so there is no fidelity gap to close there, but
+**"Copy config" copies the whole track config, displays included**, and that
+output is pasted into a `config.json` — a context with no cascade at all. So it
+flattens through `getTrackConfigWithPromotables`, and it is the one boundary that
+writes **every** promotable slot rather than only the inherited ones (the
+function's own doc comment has the argument, and says not to "align" it with the
+share bake). `fromDisplayTypeDefaults` is what lets `HeaderButtons` say out loud
+that a session-wide preference was folded in.
+
+That resolution runs off the display **config** nodes, not open display state —
+a track the user never opened still has an answer, by the same code path. It
+briefly looked up the open display first; that was left over from
+`ignorePromotedDefaults`, which lived on the display node. With the flag gone the
+lookup produced an identical context every time (same config node via the
+hydration cache, same `type`, same session) and was deleted. Don't reintroduce
+it.
 
 ## UI surface
 

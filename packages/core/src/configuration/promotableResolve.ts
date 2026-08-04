@@ -58,10 +58,11 @@ export interface PromotedDefaultStore {
 /**
  * The cascade's inputs, stated directly rather than read off a display state
  * node. `ResolvableDisplay` is the usual way to supply them (see
- * `cascadeContextFor`), but a display config can also be resolved with **no
- * state node at all** — a track that isn't open has none, and "Copy config" in
- * the About dialog still has to show what it would render as. That path passes
- * the display's config plus the session directly.
+ * `cascadeContextFor`), but nothing here *needs* a state node: the About
+ * dialog's "Copy config" resolves a track's display configs directly, which is
+ * what lets it answer "what would this render as" for a track that was never
+ * opened. Reaching for the open display instead buys nothing — its
+ * `configuration` is the same node, and its `type` is that config's own.
  */
 export interface CascadeContext {
   config: AnyConfigurationModel

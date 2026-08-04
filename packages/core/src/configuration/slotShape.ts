@@ -44,6 +44,11 @@ const SHAPE_CHECKS: Record<
  * session store / saved snapshot against garbage; not a full validation
  * (`validate` layers semantics on top).
  *
+ * Module-private on purpose: `isUsableValue` is the gate, and this is only one
+ * of its four checks. A caller reaching for the shape test alone would skip the
+ * `jexl:` refusal and the slot's `validate` hook — the two checks that exist
+ * precisely because a shape-valid value can still be unusable.
+ *
  * Keyed off `promotedBase` because that is the only concrete specimen of the
  * slot's value space a promotable slot declares — `defaultValue` is always the
  * inherit sentinel, so keying off it would demand `typeof value === 'undefined'`.
@@ -55,10 +60,7 @@ const SHAPE_CHECKS: Record<
  * where this guard matters — `types.number.is(NaN)` and
  * `types.frozen().is('any-string')` are both `true`.
  */
-export function matchesSlotShape(
-  def: ConfigSlotDefinition,
-  value: unknown,
-): boolean {
+function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
   const { promotedBase } = def
   const check = SHAPE_CHECKS[def.type]
   return check

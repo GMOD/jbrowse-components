@@ -73,7 +73,7 @@ export function getConfigSnapshotWithPromotables(
  * written into `snap` in place, returning the slots whose value came from a
  * promoted default rather than from the config. Both serialization boundaries
  * are this function over a different context — a display state node for the
- * worker payload, a bare display config for a track that isn't open.
+ * worker payload, a bare display config for the About dialog's copy.
  */
 function resolvePromotablesInto(
   ctx: CascadeContext,
@@ -104,9 +104,14 @@ function resolvePromotablesInto(
  * boundary, and `fromDisplayTypeDefaults` is what lets the UI say so rather than
  * silently materializing a session preference into a track config.
  *
- * Resolves through the open display when the track is open, and from the display
- * config alone when it isn't — an unopened track has no display state, but "what
- * would this render as" still has an answer.
+ * Resolves from the display *config* alone, whether or not the track is open.
+ * Everything the cascade takes is on the config node: it is the same node an
+ * open display's `configuration` points at (the hydration cache makes it
+ * stable), its `type` is the display type the session-wide tier is keyed on
+ * (every display schema is `explicitlyTyped` under the display type's own name),
+ * and the session is passed in. So an unopened track — which has no display
+ * state at all — still has an answer to "what would this render as", by the same
+ * code path.
  *
  * **Writes every promotable slot, including the ones sitting at `promotedBase`,
  * and that is the decision — don't "align" it with the share bake.** The bake
@@ -123,20 +128,6 @@ export interface TrackConfigWithPromotables {
   config: Record<string, unknown>
   /** `<displayType>.<slot>`, one per value inherited from a promoted default */
   fromDisplayTypeDefaults: string[]
-}
-
-function cascadeContextForDisplayConfig(
-  displayConfig: AnyConfigurationModel,
-  displayType: string,
-  session: AbstractSessionModel,
-  openDisplays: ResolvableDisplay[],
-): CascadeContext {
-  // identity, not displayId: the hydration cache makes a track's config node
-  // stable, so an open display's `configuration` IS this node
-  const open = openDisplays.find(d => d.configuration === displayConfig)
-  return open
-    ? cascadeContextFor(open)
-    : { config: displayConfig, displayType, defaults: session }
 }
 
 /**
@@ -156,7 +147,6 @@ export function getTrackConfigWithPromotables(
   // a config with no `displays` (an assembly, a plain customized About config)
   // has no promotable slot to resolve — every one of them is display-level
   if (Array.isArray(displayConfigs) && Array.isArray(displaySnaps)) {
-    const openDisplays = openPromotableDisplays(session)
     for (const [i, displayConfig] of displayConfigs.entries()) {
       const snap: unknown = displaySnaps[i]
       const displayType = isObject(snap) ? snap.type : undefined
@@ -165,12 +155,7 @@ export function getTrackConfigWithPromotables(
         isObject(snap) &&
         typeof displayType === 'string'
       ) {
-        const ctx = cascadeContextForDisplayConfig(
-          displayConfig,
-          displayType,
-          session,
-          openDisplays,
-        )
+        const ctx = { config: displayConfig, displayType, defaults: session }
         for (const slot of resolvePromotablesInto(ctx, snap)) {
           fromDisplayTypeDefaults.push(`${displayType}.${slot}`)
         }
