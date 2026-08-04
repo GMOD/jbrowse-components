@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Badge } from '@mui/material'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -52,9 +53,13 @@ const ShoppingCart = observer(function ShoppingCart({
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  for (const track of selection) {
-                    session.deleteTrackConf(track)
-                  }
+                  // one pass, not one re-render per track; the selection prunes
+                  // the deleted configs itself (see the model's `selection`)
+                  transaction(() => {
+                    for (const track of selection) {
+                      session.deleteTrackConf(track)
+                    }
+                  })
                 },
               },
             ]

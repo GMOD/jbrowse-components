@@ -7,7 +7,7 @@ import {
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 import { autorun, observable } from 'mobx'
 
@@ -206,8 +206,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       recentlyUsed: [] as string[],
       /**
        * #volatile
+       * backing store for `selection`; read that instead, it drops entries
+       * whose track has since been deleted
        */
-      selection: [] as AnyConfigurationModel[],
+      selectionRaw: [] as AnyConfigurationModel[],
       /**
        * #volatile
        */
@@ -266,9 +268,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * The selected track configs. Deleting a track destroys its config but
+       * leaves this list holding it, so entries are dropped on read: one gate
+       * for every delete path (the cart's own "Delete tracks", a single track's
+       * menu) rather than a cleanup call at each of them. Reading a slot off a
+       * destroyed node is also what MST warns about.
+       */
+      get selection(): AnyConfigurationModel[] {
+        return self.selectionRaw.filter(elt => isAlive(elt))
+      },
+      /**
+       * #getter
        */
       get selectionSet() {
-        return new Set(self.selection)
+        return new Set(this.selection)
       },
       /**
        * #getter
@@ -306,26 +319,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       setSelection(elt: AnyConfigurationModel[]) {
-        self.selection = elt
+        self.selectionRaw = elt
       },
       /**
        * #action
        */
       addToSelection(elt: AnyConfigurationModel[]) {
-        self.selection = dedupe([...self.selection, ...elt], e => e.trackId)
+        self.selectionRaw = dedupe([...self.selection, ...elt], e => e.trackId)
       },
       /**
        * #action
        */
       removeFromSelection(elt: AnyConfigurationModel[]) {
         const s = new Set(elt)
-        self.selection = self.selection.filter(f => !s.has(f))
+        self.selectionRaw = self.selection.filter(f => !s.has(f))
       },
       /**
        * #action
        */
       clearSelection() {
-        self.selection = []
+        self.selectionRaw = []
       },
 
       /**

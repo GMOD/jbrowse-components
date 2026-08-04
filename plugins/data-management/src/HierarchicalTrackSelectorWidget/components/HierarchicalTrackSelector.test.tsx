@@ -719,6 +719,28 @@ test('model selection methods', () => {
   expect(model.selection.length).toBe(0)
 })
 
+// deleting a track destroys its config; the selection holds plain references to
+// those configs, so without pruning the shopping cart keeps counting a track
+// that no longer exists (and reads slots off a dead MST node)
+test('deleting a selected track drops it from the selection', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const track = session.tracks.find(t => t.trackId === 'fooC')!
+  model.setSelection([track])
+  expect(model.selection.length).toBe(1)
+
+  session.deleteTrackConf(track)
+  expect(model.selection.length).toBe(0)
+  expect(model.selectionSet.size).toBe(0)
+})
+
 test('category collapse and expand', async () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
