@@ -186,11 +186,12 @@ export async function readTabixHeaderLines(
   if (skipLines <= 0) {
     return []
   }
-  // @gmod/tabix grew getSkippedLines() for exactly this (tabix-js 25fab04); it
-  // sizes the read from the index rather than assuming one block, so once a
-  // release carrying it lands, this branch becomes `file.getSkippedLines()` and
-  // the bgzf import below goes away. Kept local until then because the adapters
-  // resolve against the published version.
+  // TODO(@gmod/tabix ^3.5.3): this whole branch is `file.getSkippedLines()`.
+  // That shipped in 3.5.3 and sizes its read from the index instead of assuming
+  // one block, so it also drops the 65536 guess below and lets callers stop
+  // passing a filehandle purely to get here. Needs the five package.json ranges
+  // bumped off ^3.5.2 and a lockfile update, so it is a change to make when the
+  // lockfile is otherwise quiet.
   //
   // dynamic, like fetchAndMaybeUnzip: only a file that actually has a
   // skip-line header should pull bgzf + pako in
