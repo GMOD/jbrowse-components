@@ -169,6 +169,34 @@ function rectFillStyle(
   return style
 }
 
+// The horizontal extent a rect actually paints: its left edge and width, both in
+// whole pixels.
+//
+// Two rules, and the split between them keys on the GENOMIC coords, never on the
+// snapped pixel width — pixel snapping collapses plenty of real sub-pixel spans
+// onto one pixel, and treating those as points would slide every one of them off
+// its start edge (see pointRectCentering.test.ts):
+//
+//   - A degenerate span is an interbase POINT (a CRISPR cut site, a motif cut
+//     tick), so it straddles its coordinate, half the min width either side.
+//   - A real span is pixel-snapped at both ends (matching the GPU shader's
+//     snapToPixelX, so a min-width box is a crisp >=2px column rather than an
+//     anti-aliased blur) and then anchored on the feature's START edge, the way
+//     rect.slang's extendToMinWidthX does — which, reversed, is its right edge.
+//     That is what `spanLeft` owns.
+function paintedRectSpan(
+  startBp: number,
+  endBp: number,
+  toX: BpToScreen,
+): [xLeft: number, width: number] {
+  const x1 = toX(startBp)
+  const isPoint = startBp === endBp
+  const sx1 = Math.round(isPoint ? x1 - MIN_RECT_WIDTH_PX / 2 : x1)
+  const sx2 = Math.round(isPoint ? x1 + MIN_RECT_WIDTH_PX / 2 : toX(endBp))
+  const width = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
+  return [spanLeft(sx1, sx2, width), width]
+}
+
 function drawRects(
   ctx: Ctx2D,
   region: RegionRenderData,
@@ -187,26 +215,13 @@ function drawRects(
     ctx.lineWidth = 1
   }
   for (let i = 0; i < region.rectYs.length; i++) {
-    const startBp = region.rectPositions[i * 2]!
-    const endBp = region.rectPositions[i * 2 + 1]!
-    const x1 = toX(startBp)
-    const x2 = toX(endBp)
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
     const h = boxHeightPx(region.rectHeights[i]!)
-    // Pixel-snap the endpoints (matching the GPU shader's snapToPixelX) so a
-    // min-width box is a crisp >=2px column instead of an anti-aliased sub-2px
-    // blur. spanLeft then anchors the box on the feature's start edge the way
-    // rect.slang's extendToMinWidthX does — reversed, that's its right edge.
-    //
-    // Except for a degenerate span, which is an interbase point (a cut site)
-    // rather than a box, and straddles its coordinate instead. Mirrors
-    // rect.slang, including keying on the genomic coords rather than on the
-    // snapped pixels — see the note there.
-    const isPoint = startBp === endBp
-    const sx1 = Math.round(isPoint ? x1 - MIN_RECT_WIDTH_PX / 2 : x1)
-    const sx2 = Math.round(isPoint ? x1 + MIN_RECT_WIDTH_PX / 2 : x2)
-    const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
-    const xLeft = spanLeft(sx1, sx2, w)
+    const [xLeft, w] = paintedRectSpan(
+      region.rectPositions[i * 2]!,
+      region.rectPositions[i * 2 + 1]!,
+      toX,
+    )
 
     const style = rectFillStyle(
       styles,
@@ -287,6 +302,39 @@ function strokeChevron(
   ctx.stroke()
 }
 
+// The "»"/"«" pinned just inside ONE canvas edge for a rect that runs past it.
+//
+// `edgeSide` (+1 = right edge, -1 = left) is the only thing that differs between
+// the two edges: every direction below is expressed as `edgeSide × …`, so the
+// pair is one piece of arithmetic instead of two hand-mirrored copies whose signs
+// have to be kept in agreement by eye. Mirrors continuation.slang's edgeSide.
+function drawEdgeMarker(
+  ctx: Ctx2D,
+  args: {
+    // scissor edge the markers are pinned inside
+    edgeX: number
+    edgeSide: 1 | -1
+    // screen-axis strand of the rect (already flipped for a reversed block)
+    strand: number
+    cy: number
+    halfH: number
+  },
+) {
+  const { edgeX, edgeSide, strand, cy, halfH } = args
+  // A strand-less feature has no direction of its own, so it points out of
+  // whichever edge it ran past — the marker still reads as "keeps going that way".
+  const dir = strand === 0 ? edgeSide : strand
+  // A chevron pointing OUT of this edge sits with its apex on the anchor. One
+  // pointing back inward is shifted a triangle-width inward, so its apex rather
+  // than its base lands there and the whole glyph stays inside the scissor.
+  const apexInset = dir === edgeSide ? 0 : CONT_TRI_W_PX
+  for (let p = 0; p < 2; p++) {
+    const anchorX =
+      edgeX - edgeSide * (CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p)
+    strokeChevron(ctx, anchorX - edgeSide * apexInset, dir, cy, halfH)
+  }
+}
+
 // "Feature keeps going" double-chevron (»/«) pinned at a screen edge for any rect
 // that runs past the visible block region. Mirrors continuation.slang.
 function drawContinuation(
@@ -349,24 +397,22 @@ function drawContinuation(
       const rawStrand = region.rectStrands[i]!
       const strand = block.reversed ? -rawStrand : rawStrand
       if (offRight) {
-        const effectiveStrand = strand === 0 ? 1 : strand
-        const strandMatchesEdge = Math.max(0, effectiveStrand) // edgeSide=1
-        for (let p = 0; p < 2; p++) {
-          const anchorX =
-            scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p
-          const apexX = anchorX - CONT_TRI_W_PX * (1 - strandMatchesEdge)
-          strokeChevron(ctx, apexX, effectiveStrand, cy, halfH)
-        }
+        drawEdgeMarker(ctx, {
+          edgeX: scissorRight,
+          edgeSide: 1,
+          strand,
+          cy,
+          halfH,
+        })
       }
       if (offLeft) {
-        const effectiveStrand = strand === 0 ? -1 : strand
-        const strandMatchesEdge = Math.max(0, effectiveStrand * -1) // edgeSide=-1
-        for (let p = 0; p < 2; p++) {
-          const anchorX =
-            scissorLeft + CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p
-          const apexX = anchorX + CONT_TRI_W_PX * (1 - strandMatchesEdge)
-          strokeChevron(ctx, apexX, effectiveStrand, cy, halfH)
-        }
+        drawEdgeMarker(ctx, {
+          edgeX: scissorLeft,
+          edgeSide: -1,
+          strand,
+          cy,
+          halfH,
+        })
       }
     }
   }

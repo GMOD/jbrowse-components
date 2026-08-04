@@ -29,6 +29,20 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 const DELETION_LINE_COLOR = '#333'
 const DELETION_LINE_H = 2
 const FONT = '10px sans-serif'
+// A deletion label needs this much block to sit inside without spilling past it.
+const DELETION_LABEL_MIN_PX = 30
+
+// The region's data if it carries a delta per feature, else undefined (nothing to
+// annotate, so the block is skipped entirely). Named because the test it performs
+// is not the obvious one: `featureDeltas` is EMPTY, not zero-filled, when the
+// `lengthField` slot is unset — see `featureDeltas` in the RPC result type — so
+// "has deltas" is a length agreement with `featureStarts`, and the per-feature
+// `featureDeltas[i]!` reads below are only sound once it holds.
+function regionWithDeltas(data: MultiRowRegionData | undefined) {
+  return data && data.featureDeltas.length === data.featureStarts.length
+    ? data
+    : undefined
+}
 
 /**
  * Alignment-style indel glyphs over the multi-row blocks, from the signed bp
@@ -74,14 +88,7 @@ export function drawMultiRowIndelGlyphs(
     renderBlocks,
     canvasWidth,
     canvasHeight,
-    block => {
-      const data = regions.get(block.displayedRegionIndex)
-      // Length 0 is the slot-unset signal, not an empty region — see
-      // `featureDeltas` in the RPC result type.
-      return data?.featureDeltas.length === data?.featureStarts.length
-        ? data
-        : undefined
-    },
+    block => regionWithDeltas(regions.get(block.displayedRegionIndex)),
     (regionData, renderBlock) => {
       const bpToPx = makeBpMapper(renderBlock)
       const {
@@ -151,7 +158,7 @@ export function drawMultiRowIndelGlyphs(
               width,
               DELETION_LINE_H,
             )
-            if (labelFits && width >= 30) {
+            if (labelFits && width >= DELETION_LABEL_MIN_PX) {
               ctx.textAlign = 'center'
               // The MAGNITUDE, not the signed delta. `delta` is negative here by
               // definition, and a bare "-9048" beside a graph reads as a

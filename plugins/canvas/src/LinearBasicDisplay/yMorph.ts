@@ -1,3 +1,5 @@
+import { isPlacedRow } from './rowPlacement.ts'
+
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // Duration of the feature-Y transition played when the layout re-packs rows
@@ -19,16 +21,16 @@ export function easeInOutCubic(t: number) {
 
 // How far a feature should ease during a morph: its old row top minus its new
 // one. `undefined` when the feature has no previous row (newly appeared — leave
-// it at its destination) or when it overflows off-screen in the target
-// (topPx = OFFSCREEN_Y < 0 — don't sweep it toward ~-1e6). The single guard both
-// morph directions and the displayed-top capture share, so they can't drift.
+// it at its destination) or when the packer left it unplaced in the target
+// (`isPlacedRow` — don't sweep it toward the ~-1e6 sentinel). The single guard
+// both morph directions and the displayed-top capture share, so they can't drift.
 function morphDelta(
   fromTops: FeatureTops,
   featureId: string,
   targetTop: number,
 ) {
   const prevTop = fromTops.get(featureId)
-  return prevTop !== undefined && targetTop >= 0
+  return prevTop !== undefined && isPlacedRow(targetTop)
     ? prevTop - targetTop
     : undefined
 }
@@ -53,17 +55,17 @@ export function rowGeometrySignature(g: {
 
 // Snapshot each on-screen feature's row top by id. Used both as the start of a
 // later morph and to seed the next re-pack's insertion order (layout.ts).
-// Features that overflowed maxHeight (topPx = OFFSCREEN_Y, a large negative;
-// see layout.ts) are skipped so a feature that was overflowed in the old layout
-// and lands on-screen in the new one isn't animated flying in from ~-1e6, nor
-// sorted ahead of genuinely on-screen features when seeding.
+// Features the packer left unplaced (overflowed maxHeight — see `isPlacedRow`)
+// are skipped so a feature that was overflowed in the old layout and lands
+// on-screen in the new one isn't animated flying in from ~-1e6, nor sorted ahead
+// of genuinely on-screen features when seeding.
 export function captureFeatureTops(
   map: ReadonlyMap<number, FeatureDataResult>,
 ): FeatureTops {
   const out: FeatureTops = new Map()
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      if (item.topPx >= 0) {
+      if (isPlacedRow(item.topPx)) {
         out.set(item.featureId, item.topPx)
       }
     }
@@ -77,7 +79,7 @@ export function captureFeatureTops(
 // or region flip, neither debounced like zoom): starting the new morph from
 // these live positions instead of `target`'s settled rows avoids a visible snap.
 // Mirrors interpolateYData's per-feature Y math (rem = 1 - t) so a retarget is
-// seamless, and skips off-screen features the same way captureFeatureTops does.
+// seamless, and skips unplaced features the same way captureFeatureTops does.
 export function captureDisplayedTops(
   target: ReadonlyMap<number, FeatureDataResult>,
   fromTops: FeatureTops,
@@ -87,7 +89,7 @@ export function captureDisplayedTops(
   const out: FeatureTops = new Map()
   for (const data of target.values()) {
     for (const item of data.flatbushItems) {
-      if (item.topPx >= 0) {
+      if (isPlacedRow(item.topPx)) {
         const delta = morphDelta(fromTops, item.featureId, item.topPx) ?? 0
         out.set(item.featureId, item.topPx + delta * rem)
       }

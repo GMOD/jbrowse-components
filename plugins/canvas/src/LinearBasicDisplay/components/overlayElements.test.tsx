@@ -6,7 +6,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
-import { FloatingLabelsLayer } from './overlayElements.tsx'
+import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -105,4 +105,43 @@ test('label layer clears hover when the cursor leaves a label', () => {
   // is not.
   fireEvent.mouseOut(label, { relatedTarget: document.body })
   expect(onLabelMouseLeave).toHaveBeenCalledTimes(1)
+})
+
+// A box is drawn once per visible region on the feature's own reference
+// sequence, which is how a feature spanning a displayed-region boundary gets
+// boxed piecewise. "Same sequence" is assembly + refName (the layout's own
+// `regionKey`), so a same-named region of a different assembly is not it.
+//
+// Pins the rule rather than a reachable symptom: JBrowse doesn't display two
+// assemblies on one LGV row today. Here so the overlay's region matching can't
+// quietly drift back to refName alone.
+test('highlight boxes are scoped to the reference sequence, not the refName', () => {
+  const otherAssembly: VisibleRegion = {
+    ...VR,
+    assemblyName: 'volvox2',
+    displayedRegionIndex: 1,
+  }
+  const model = {
+    renderedShowLabels: true,
+    renderedShowDescriptions: false,
+    labelFontSize: 11,
+    selectedFeatureId: undefined,
+    hoveredFeature: null,
+    hoveredSubfeature: null,
+    featureItemMap: MODEL.featureItemMap,
+    highlightedFeatureIdSet: new Set(['f1']),
+    soloFeatureIdSet: new Set<string>(),
+    soloApplied: false,
+  }
+  const view = {
+    initialized: true,
+    trackWidthPx: 1000,
+    bpPerPx: 1,
+    visibleRegions: [VR, otherAssembly],
+  } as unknown as LinearGenomeViewModel
+
+  const { getAllByTestId } = render(
+    <HighlightLayer model={model} view={view} />,
+  )
+  expect(getAllByTestId('feature-highlight')).toHaveLength(1)
 })

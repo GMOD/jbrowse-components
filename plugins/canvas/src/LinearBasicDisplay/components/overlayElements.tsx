@@ -92,6 +92,23 @@ type _ModelSatisfiesHighlightBoxes = AssignableTo<
   HighlightBoxesModel
 >
 
+// Whether two regions are the same reference sequence — assembly AND refName.
+// The pair, not refName alone, is what names a sequence here: it is the key the
+// layout groups rows by (`regionKey` in baseModel) and the one AGENTS.md
+// requires layouts to stay independent across. The overlay resolves region
+// identity the same way rather than by a looser rule of its own.
+//
+// This is only observable in a view whose displayedRegions span assemblies,
+// which is not something JBrowse does in practice. It keeps the overlay's notion
+// of "same sequence" from being the odd one out; it is not fixing a symptom you
+// can reach today.
+function sameRefSeq(
+  a: { assemblyName: string; refName: string },
+  b: { assemblyName: string; refName: string },
+) {
+  return a.assemblyName === b.assemblyName && a.refName === b.refName
+}
+
 // Shared gate for both layers: nothing to position until the view is sized and
 // at least one region is on screen.
 function overlaysReady(
@@ -433,7 +450,7 @@ export const HighlightLayer = observer(function HighlightLayer({
 
   const addOverlay = ({
     item,
-    refName,
+    source,
     className,
     key,
     extraWidth = 0,
@@ -443,7 +460,10 @@ export const HighlightLayer = observer(function HighlightLayer({
     boxStyle,
   }: {
     item: { startBp: number; endBp: number; topPx: number; bottomPx: number }
-    refName: string
+    // the region the item was laid out in; a feature spanning a displayed-region
+    // boundary is boxed piecewise across every region on that same reference
+    // sequence, so this identifies the sequence, not the one region
+    source: { assemblyName: string; refName: string }
     className?: string
     key: string
     extraWidth?: number
@@ -453,7 +473,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     boxStyle?: CSSProperties
   }) => {
     for (const vr of visibleRegions) {
-      if (vr.refName !== refName) {
+      if (!sameRefSeq(vr, source)) {
         continue
       }
       const rect = overlayItemRect(item, vr)
@@ -504,7 +524,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     if (entry) {
       addOverlay({
         item: entry.item,
-        refName: entry.vr.refName,
+        source: entry.vr,
         boxStyle,
         key,
         extraWidth: computeExtraWidth(entry),
@@ -526,7 +546,7 @@ export const HighlightLayer = observer(function HighlightLayer({
       const subfeatureHover = !!hoveredSubfeature
       addOverlay({
         item: hoverItem,
-        refName: entry.vr.refName,
+        source: entry.vr,
         boxStyle: boxStyles.hover,
         key: 'hover',
         extraWidth: subfeatureHover ? 0 : computeExtraWidth(entry),

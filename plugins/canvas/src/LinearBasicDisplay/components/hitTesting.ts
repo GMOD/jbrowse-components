@@ -233,17 +233,28 @@ export function buildSubfeatureFlatbushIndex(
   return index
 }
 
+// "Whatever is drawn on top of the cursor wins", the one rule both picks below
+// resolve by.
+//
 // Flatbush returns overlap matches in tree (Hilbert) order, unrelated to
-// insertion order. When several subfeatures overlap the cursor on one row —
-// the repeat_region case, where LTRs/TSDs are painted over the internal
-// retrotransposon body (see processRepeatRegionLayout) — the one painted last
-// is on top. subfeatureInfos is populated in paint order and the Flatbush index
-// preserves that order, so the largest matching index is the topmost subfeature.
-// Pick it so the hover/tooltip matches what's actually drawn under the cursor.
-function topmostMatch(indices: number[]) {
+// insertion order. Both `flatbushItems` and `subfeatureInfos` are populated in
+// PAINT order and the index preserves it, so the largest matching index is the
+// one painted last, i.e. the one on top. Overlaps are routine on both axes: the
+// repeat_region case paints LTRs/TSDs over the internal retrotransposon body
+// (see processRepeatRegionLayout), and collapsed display mode packs every
+// feature onto row 0 (see packPreparedRef's singleRow).
+//
+// `eligible` narrows the candidates BEFORE the topmost is chosen, never after —
+// picking first and filtering second answers "is the top one eligible?", which
+// is a different (and wrong) question: the top match is regularly a neighbour's,
+// and rejecting it there discards an eligible match sitting just under it.
+function topmostMatch(
+  indices: number[],
+  eligible: (index: number) => boolean = () => true,
+) {
   let top: number | undefined
   for (const i of indices) {
-    if (top === undefined || i > top) {
+    if ((top === undefined || i > top) && eligible(i)) {
       top = i
     }
   }
@@ -284,7 +295,9 @@ function findPeptideAt(
 
 // The topmost subfeature under the cursor that belongs to `feature`. Gating on
 // parentFeatureId (the top-level feature id, see glyphEmitters) prevents a
-// subfeature of an overlapping neighbor from being paired with `feature`.
+// subfeature of an overlapping neighbor from being paired with `feature` — it
+// rides in as topmostMatch's eligibility test, so the gate applies to every
+// candidate rather than only to the one that happened to be on top.
 function resolveSubfeature(
   data: FeatureDataResult,
   indexes: FlatbushRegionIndexes,
@@ -292,18 +305,14 @@ function resolveSubfeature(
   yPos: number,
   feature: FlatbushItem,
 ): SubfeatureInfo | null {
-  if (indexes.subfeature) {
-    const idx = topmostMatch(
-      indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
-    )
-    if (idx !== undefined) {
-      const candidate = data.subfeatureInfos[idx]!
-      if (candidate.parentFeatureId === feature.featureId) {
-        return candidate
-      }
-    }
+  if (!indexes.subfeature) {
+    return null
   }
-  return null
+  const idx = topmostMatch(
+    indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
+    i => data.subfeatureInfos[i]!.parentFeatureId === feature.featureId,
+  )
+  return idx === undefined ? null : data.subfeatureInfos[idx]!
 }
 
 // The region a pixel belongs to, or undefined off the end of the last one. The
@@ -341,13 +350,11 @@ export function performMultiRegionHitDetection(
         const feature = data.flatbushItems[idx]!
         return {
           feature,
-          // Resolve the topmost subfeature the same way, but only keep it when
-          // it belongs to the chosen feature. The two indexes search
-          // independently and the feature boxes are widened by pad/label
-          // overhang while the subfeature index is not, so in the overlap of
-          // two same-row features an ungated subfeature could pair with the
-          // other feature — showing its isoform tooltip while select acts on
-          // this one.
+          // The topmost subfeature by the same rule, restricted to ones this
+          // feature owns. The two indexes search independently and the feature
+          // boxes are widened by pad/label overhang while the subfeature index
+          // is not, so an ungated subfeature could pair with the neighbouring
+          // feature — showing its isoform tooltip while select acts on this one.
           subfeature: resolveSubfeature(data, indexes, bpPos, yPos, feature),
           peptide: findPeptideAt(data, bpPos, yPos, idx),
           bpPos,

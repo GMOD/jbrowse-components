@@ -51,43 +51,38 @@ export function locateOnTranscript(
   const pos = toAxis(coords, bpPos)
   const exonCount = axis.length
 
-  let found: ExonicPosition | undefined
   let transcribedBefore = 0
   for (const [i, exon] of axis.entries()) {
-    if (found === undefined) {
-      const length = exon.last - exon.first + 1
-      if (pos >= exon.first && pos <= exon.last) {
-        found = {
-          index: transcribedBefore + (pos - exon.first),
-          offset: 0,
-          exonNumber: i + 1,
-          exonCount,
-        }
-      } else {
-        const next = axis[i + 1]
-        if (next && pos > exon.last && pos < next.first) {
-          const fromPrev = pos - exon.last
-          const toNext = next.first - pos
-          found =
-            fromPrev <= toNext
-              ? {
-                  index: transcribedBefore + length - 1,
-                  offset: fromPrev,
-                  exonNumber: i + 1,
-                  exonCount,
-                }
-              : {
-                  index: transcribedBefore + length,
-                  offset: -toNext,
-                  exonNumber: i + 2,
-                  exonCount,
-                }
-        }
-        transcribedBefore += length
+    const length = exon.last - exon.first + 1
+    if (pos >= exon.first && pos <= exon.last) {
+      return {
+        index: transcribedBefore + (pos - exon.first),
+        offset: 0,
+        exonNumber: i + 1,
+        exonCount,
       }
     }
+    const next = axis[i + 1]
+    if (next && pos > exon.last && pos < next.first) {
+      const fromPrev = pos - exon.last
+      const toNext = next.first - pos
+      return fromPrev <= toNext
+        ? {
+            index: transcribedBefore + length - 1,
+            offset: fromPrev,
+            exonNumber: i + 1,
+            exonCount,
+          }
+        : {
+            index: transcribedBefore + length,
+            offset: -toNext,
+            exonNumber: i + 2,
+            exonCount,
+          }
+    }
+    transcribedBefore += length
   }
-  return found
+  return undefined
 }
 
 // The transcribed-base indices of the first and last coding bases. On the -

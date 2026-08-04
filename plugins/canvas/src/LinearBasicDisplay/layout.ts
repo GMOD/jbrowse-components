@@ -11,6 +11,7 @@ import {
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
+import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -19,17 +20,11 @@ import type {
   FeatureLabelData,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-// Y offset applied to features that overflow GranularRectLayout's maxHeight.
-// Pushes them far above the visible area so the renderer/hit-test drops them
-// instead of stacking them at y=0. Float32 handles this magnitude losslessly.
-const OFFSCREEN_Y = -1e6
-
-// Tallest row bottom across a layout, i.e. its content height. Features pushed
-// to OFFSCREEN_Y are excluded: their bottom is far below 0, so `max` never sees
-// them. That is deliberate — they don't render, so they contribute no height —
-// but it also means a layout that hit the row limit reports a SHORT height while
-// silently holding fewer features than it was given. `countTruncatedFeatures` is
-// how a caller finds out.
+// Tallest row bottom across a layout, i.e. its content height. Unplaced features
+// are excluded — they don't render, so they contribute no height — which also
+// means a layout that hit the row limit reports a SHORT height while silently
+// holding fewer features than it was given. `countTruncatedFeatures` is how a
+// caller finds out.
 //
 // `measureIds`, when given, restricts the measurement to those features. Fit
 // mode passes the ones on screen: the fetch buffers half a viewport either side,
@@ -43,6 +38,7 @@ export function maxBottom(
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
       if (
+        isPlacedRow(item.topPx) &&
         item.bottomPx > max &&
         (!measureIds || measureIds.has(item.featureId))
       ) {
@@ -66,9 +62,7 @@ export function countTruncatedFeatures(
   let n = 0
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      // A placed row is always >= 0; only the OFFSCREEN_Y sentinel is negative
-      // (still negative after a fit scale, which only ever multiplies by > 0).
-      if (item.topPx < 0) {
+      if (!isPlacedRow(item.topPx)) {
         n++
       }
     }
@@ -361,10 +355,10 @@ export function computeLaidOutData(
 }
 
 // Content height of a set of packed rows, matching `maxBottom` of the layout the
-// same pack would produce. OFFSCREEN_Y rows are excluded exactly as `maxBottom`
-// excludes them: their bottom lands far below 0, so its running max never sees
-// them either. `measureIds` restricts the measurement the same way it does
-// there, so a probe and the committed layout answer the same question.
+// same pack would produce. Unplaced rows are excluded through the same
+// `isPlacedRow` test `maxBottom` uses, and `measureIds` restricts the measurement
+// the same way it does there, so a probe and the committed layout answer the same
+// question.
 function packedRowsHeight(
   layoutMap: Map<string, number>,
   layoutHeights: Map<string, number>,
@@ -376,7 +370,7 @@ function packedRowsHeight(
       continue
     }
     const bottom = top + (layoutHeights.get(id) ?? 0)
-    if (top !== OFFSCREEN_Y && bottom > max) {
+    if (isPlacedRow(top) && bottom > max) {
       max = bottom
     }
   }
@@ -997,14 +991,19 @@ function decideLabelReservations(
           geom.hasReversed ? overhangRoom.leftRoom.get(id)! : Infinity,
         )
       : Infinity
+    // Does this feature have a name that the current flags would draw at all?
+    // Both the keep decision and the dropped-name record hang off this one term,
+    // so "dropped" can only ever mean "had a name and lost it" — spelling the
+    // condition out twice let the two disagree about which features were even
+    // candidates.
+    const hasDrawableName = showLabels && !!labelInfo?.hasName
     // Keep this feature's name unless decimation drops it (no room to host it,
     // and not pinned/highlighted). Measured against the NAME's own width, not the
     // feature's widest label — a description or subfeature label being long says
     // nothing about whether the name fits. A dropped name is recorded so it is
     // removed after layout.
     const keepName =
-      showLabels &&
-      !!labelInfo?.hasName &&
+      hasDrawableName &&
       keepFeatureLabel(
         labelDecimation,
         availableRoomPx,
@@ -1012,7 +1011,7 @@ function decideLabelReservations(
         pinnedFeatureIds.has(id),
         labelRoomFactor,
       )
-    if (showLabels && !!labelInfo?.hasName && !keepName) {
+    if (hasDrawableName && !keepName) {
       droppedLabelIds.add(id)
     }
     // A dropped name removes only the name (applyLayoutToRegion), so a
@@ -1052,6 +1051,19 @@ function decideLabelReservations(
     packed.set(id, ext)
   }
   return { packed, droppedLabelIds }
+}
+
+// The prior row of a feature that wasn't in the previous layout. Sorts after
+// every real row by construction, so a newly-arrived feature fills gaps rather
+// than displacing one that already held a top row.
+const PRIOR_ROW_NONE = Number.POSITIVE_INFINITY
+
+// One rank of a lexicographic sort: 0 when equal, so the caller's `||` chain
+// falls through to the next rank. Subtraction would do the same for finite
+// values but yields NaN for PRIOR_ROW_NONE - PRIOR_ROW_NONE, silently
+// randomizing the relative order of every feature new to the layout.
+function compareRank(a: number, b: number) {
+  return a === b ? 0 : a < b ? -1 : 1
 }
 
 // Pack a prepared ref-group into rows at one `labelRoomFactor`.
@@ -1103,25 +1115,19 @@ function packPreparedRef(
   // would pack on its own. Ties fall back to layoutStartBp for determinism.
   // Pinned features sort ahead of all others (before the prior-y ordering) so
   // they claim the lowest rows in their bp range across every re-pack.
-  const sorted = [...packed.entries()].sort(([idA, a], [idB, b]) => {
-    const pinA = pinnedFeatureIds.has(idA)
-    const pinB = pinnedFeatureIds.has(idB)
-    if (pinA !== pinB) {
-      return pinA ? -1 : 1
-    }
-    const ya = prevYByFeatureId?.get(idA)
-    const yb = prevYByFeatureId?.get(idB)
-    if (ya !== undefined && yb !== undefined && ya !== yb) {
-      return ya - yb
-    }
-    if (ya !== undefined && yb === undefined) {
-      return -1
-    }
-    if (ya === undefined && yb !== undefined) {
-      return 1
-    }
-    return a.layoutStartBp - b.layoutStartBp
-  })
+  //
+  // Read the comparator as the three ranks it is: pinned, then prior row, then
+  // bp. "New to this layout" is PRIOR_ROW_NONE rather than a special case, which
+  // is what makes "new features sort after every returning one" fall out of the
+  // ordering instead of needing branches of its own.
+  const pinRank = (id: string) => (pinnedFeatureIds.has(id) ? 0 : 1)
+  const priorRow = (id: string) => prevYByFeatureId?.get(id) ?? PRIOR_ROW_NONE
+  const sorted = [...packed.entries()].sort(
+    ([idA, a], [idB, b]) =>
+      compareRank(pinRank(idA), pinRank(idB)) ||
+      compareRank(priorRow(idA), priorRow(idB)) ||
+      compareRank(a.layoutStartBp, b.layoutStartBp),
+  )
 
   for (const [id, ext] of sorted) {
     const geom = features.get(id)!
@@ -1252,7 +1258,7 @@ function applyLayoutToRegion(
   for (const [key, labelData] of Object.entries(data.floatingLabelsData)) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
-    if (offset === undefined || offset === OFFSCREEN_Y) {
+    if (offset === undefined || !isPlacedRow(offset)) {
       delete data.floatingLabelsData[key]
       continue
     }

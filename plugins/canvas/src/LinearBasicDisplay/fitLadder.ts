@@ -28,6 +28,11 @@ const FIT_SOLVE_ITERS = 8
  * from an assumption into a measurement — and when it fits, the solve returns
  * immediately with every name intact.
  *
+ * The cap is then probed for the mirror-image reason: it is what makes the
+ * bisection's upper bound a measurement too, so both ends of the searched
+ * interval are known rather than assumed, and the whole bisection is skipped when
+ * nothing fits.
+ *
  * `baseInputs` is typed without `labelRoomFactor` so the preparation the probe
  * shares across trials provably can't depend on it.
  */
@@ -53,21 +58,32 @@ export function solveLabelRoomFactor(
   if (fits(0)) {
     return 0
   }
+  // The cap is the most aggressive decimation on offer, so if even it overflows,
+  // no factor below it can fit — say so after one probe instead of bisecting
+  // eight times toward a bound nothing measured. That is also the common case:
+  // the ladder only reaches this rung because `labels` overflowed, and a track
+  // dense enough for that often overflows at every factor.
+  //
+  // Probing it is what makes `hi` below a factor MEASURED to fit, so the loop can
+  // return it directly. Left unmeasured, the search was really over the OPEN
+  // interval (0, MAX) and a stack that fits only at the cap fell through to
+  // `bodies` — every name hidden — with a fitting decimation available.
+  if (!fits(FIT_MAX_ROOM_FACTOR)) {
+    return undefined
+  }
   // Bisect (0, FIT_MAX_ROOM_FACTOR]: `lo` is known to overflow, `hi` is the
-  // smallest factor measured to fit so far (undefined until one does).
+  // smallest factor measured to fit so far.
   let lo = 0
   let hi = FIT_MAX_ROOM_FACTOR
-  let fitting: number | undefined
   for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
     const mid = (lo + hi) / 2
     if (fits(mid)) {
       hi = mid
-      fitting = mid
     } else {
       lo = mid
     }
   }
-  return fitting
+  return hi
 }
 
 // The fit-to-height escalation ladder's reservation levels, least to most

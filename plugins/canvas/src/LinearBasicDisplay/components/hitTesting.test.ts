@@ -235,6 +235,28 @@ test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
   expect(result.subfeature!.featureId).toBe('ltr')
 })
 
+test('overlapping features: the hit feature keeps its own topmost subfeature', () => {
+  // Collapsed display mode packs every feature onto row 0, so two genes'
+  // transcripts share the same pixels. The feature index resolves to gene1
+  // (last painted of the two), while the subfeature index's topmost match at
+  // that point is gene2's transcript. gene1's own transcript is under the
+  // cursor and must be the one reported — not dropped because a neighbour's
+  // sat above it.
+  const gene2 = makeItem('gene2', 1500, 6000, 0, 20)
+  const gene1 = makeItem('gene1', 1000, 5000, 0, 20)
+  const mrna1 = makeSub('mRNA1', 'gene1', 1000, 5000, 0, 20)
+  const mrna2 = makeSub('mRNA2', 'gene2', 1500, 6000, 0, 20)
+  const data = makeData([gene2, gene1], [mrna1, mrna2])
+  const result = hit(
+    new Map([[0, data]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    160, // ≈2000bp, inside both genes and both transcripts
+    10,
+  )
+  expect(result.feature!.featureId).toBe('gene1')
+  expect(result.subfeature!.featureId).toBe('mRNA1')
+})
+
 test('returns null subfeature when outside subfeature but inside feature', () => {
   const parent = makeItem('gene1', 1000, 5000, 0, 30)
   const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)

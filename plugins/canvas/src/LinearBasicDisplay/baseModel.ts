@@ -1637,6 +1637,26 @@ export default function baseStateModelFactory(
         // Drives overlay rendering (hover/selection highlights) — keyed on
         // laidOutDataMap + view.visibleRegions, so it recomputes on layout
         // change, pan, or zoom. Feature wins over subfeature on id collision.
+        //
+        // That collision rule is why the feature `set` below is unconditional
+        // rather than guarded like the subfeature one: a guard would let a
+        // subfeature inserted by an earlier region block a feature from a later
+        // one. The side effect is that a feature spanning several regions
+        // resolves to the LAST region's copy here, while `indexById`
+        // (featureIdIndex/subfeatureIdIndex) documents and keeps the FIRST — so
+        // the two tables hand back different entries for the same id, and
+        // HighlightLayer's hover box reads geometry from one and refName/label
+        // width from the other.
+        //
+        // Harmless as things stand, and deliberately left alone rather than
+        // "fixed" into agreement: bp/px extents are absolute and a spanning
+        // feature shares one row across its whole ref-group, and both regions
+        // carry the same floatingLabelsData entry (the drop/decimate decisions
+        // are made once per ref-group), so the copies are interchangeable. If a
+        // per-region difference ever appears in the fields overlays read, make
+        // this first-wins via `map.get(id)?.kind !== 'feature'` — which keeps
+        // the feature-over-subfeature rule intact, as a bare `!map.has` would
+        // not.
         get featureItemMap(): Map<string, FeatureItemEntry> {
           const map = new Map<string, FeatureItemEntry>()
           const visibleRegions = getView(self).visibleRegions as VisibleRegion[]
