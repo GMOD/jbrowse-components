@@ -31,10 +31,15 @@ function makeSelf() {
     committed,
     self: {
       adapterConfig: {},
-      partitionField: 'name',
-      colorConfig: undefined,
+      // the whole settings payload, exactly as the model hands it over — the
+      // fetch spreads this rather than re-reading the slots, so the bytes sent
+      // and the cache key they are stored under stay one expression
+      rpcProps: () => ({
+        partitionField: 'name',
+        lengthField: '',
+        colorConfig: undefined,
+      }),
       resolvedByteLimit: () => 1000,
-      maxFeatureDensity: undefined,
       // stand-in for MultiRegionDisplayMixin's wrapper; staleness/stop-token
       // rotation is covered by that mixin's own tests
       fetchRegions: (_needed: unknown, work: (ctx: unknown) => unknown) =>
@@ -75,6 +80,21 @@ describe('fetchMultiRowFeatures', () => {
     // keyed by displayedRegionIndex so concurrent per-region fetches aggregate
     // into one bar rather than clobbering each other
     expect(statusKeys).toEqual([0, 3])
+  })
+
+  // The payload's user settings come from `rpcProps()` — the same expression
+  // `SettingsInvalidate` serializes into the cache key. Re-reading the slots
+  // here instead let the two drift: a field added to only one side either never
+  // invalidates or refetches for nothing. ARCHITECTURE.md, "the cache key is
+  // the return value, not the reads".
+  test('sends the rpcProps payload rather than re-reading the slots', async () => {
+    const { self } = makeSelf()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
+    await fetchMultiRowFeatures(self as any, NEEDED)
+
+    for (const call of mockRpcCall.mock.calls) {
+      expect(call[2]).toMatchObject(self.rpcProps())
+    }
   })
 
   test('commits each region measurement against its own span', async () => {

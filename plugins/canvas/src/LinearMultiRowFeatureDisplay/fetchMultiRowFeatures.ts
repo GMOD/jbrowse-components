@@ -2,6 +2,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
+import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -23,9 +24,20 @@ type Needed = { region: Region; displayedRegionIndex: number }[]
 // shape checked. Applies to every `interface …Self` in the repo.
 interface FetchSelf extends IStateTreeNode {
   adapterConfig: AnyConfigurationModel
-  partitionField: string
-  lengthField: string
-  colorConfig: string | undefined
+  // The whole user-settings payload, never the individual slots: spreading it
+  // is what keeps the bytes sent and the cache key they are stored under one
+  // expression. Re-listing the fields here let the two drift — a field added to
+  // only one side either never invalidates or refetches for nothing.
+  //
+  // Typed as the RPC's own fields rather than a loose bag, because the strict
+  // arg type is load-bearing here: rpcTypes.ts deliberately omits
+  // `maxFeatureDensity` so re-enabling that axis fails at the call site instead
+  // of passing an argument the worker ignores. A `Record<string, unknown>`
+  // spread would satisfy the call site and throw that away.
+  rpcProps: () => Pick<
+    MultiRowGetFeaturesArgs,
+    'partitionField' | 'lengthField' | 'colorConfig'
+  >
   resolvedByteLimit: () => number | undefined
   fetchRegions: (
     needed: Needed,
@@ -64,9 +76,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
         adapterConfig: self.adapterConfig,
         region,
         byteLimit,
-        partitionField: self.partitionField,
-        lengthField: self.lengthField,
-        colorConfig: self.colorConfig,
+        ...self.rpcProps(),
         stopToken: ctx.stopToken,
         // keyed by region so the parallel per-region fetches aggregate into one
         // progress bar instead of clobbering each other
