@@ -39,9 +39,9 @@ Nothing about the display changed between those two lanes.
 
 The blue curve above each triangle is the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
-− r² between adjacent variants. On the single-panel lane it sits near zero across
-the block and spikes at its edges, which is where the block ends; on the pooled
-lane there is no such pair of edges to find.
+− r² between adjacent variants. On the single-panel lane it sits near zero
+across the block and spikes at its edges, which is where the block ends; on the
+pooled lane there is no such pair of edges to find.
 
 The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
 haplotype is long; Fst says its variants are the ones whose frequency differs

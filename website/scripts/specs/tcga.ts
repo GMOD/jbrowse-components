@@ -761,7 +761,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // real UI for a real click and has no business in the published frame
     hideSelectors: ['.MuiSnackbar-root'],
     viewportWidth: 1500,
-    viewportHeight: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
+    viewportHeight:
+      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 10000,
     // The bands are row ranges with a color strip in the gutter, and the legend
     // is the only thing that says which range is which -- so the figure's whole
