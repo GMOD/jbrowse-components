@@ -427,11 +427,11 @@ bash build_tcga_cohort_cnv_zarr.sh
 
 It reads the cohort BED through
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)'s
-`--bed` mode, naming the sample and value columns, and passes a
-`name<TAB>group` table so each row carries its subtype. The levels are spaced
-about 3x apart rather than 10x: the adapter takes the coarsest level no wider
-than a screen pixel, so a 10x gap leaves a view that lands just under a level's
-bin size reading up to 10x more bins than it can draw.
+`--bed` mode, naming the sample and value columns, and passes a `name<TAB>group`
+table so each row carries its subtype. The levels are spaced about 3x apart
+rather than 10x: the adapter takes the coarsest level no wider than a screen
+pixel, so a 10x gap leaves a view that lands just under a level's bin size
+reading up to 10x more bins than it can draw.
 
 The recurrence step is separately runnable as
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py),
