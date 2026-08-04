@@ -65,6 +65,31 @@ function outOfRangeLayoutIndices(
   ]
 }
 
+// `size` is only honoured on the top-level split, where every child is a
+// sized panel: dockview's grid forces its branches to alternate orientation by
+// depth, so a nested container in this tree has no single branch to size
+// against. Silently dropping the numbers reads as "sizes don't work" (the whole
+// pass bails, including the outer split's own sizes), so name what was ignored.
+function unsizeableLayoutNodes(layout: LayoutNode): boolean {
+  const hasNestedSize = (node: LayoutNode, depth: number): boolean =>
+    (node.size !== undefined && depth > 1) ||
+    (node.children?.some(child => hasNestedSize(child, depth + 1)) ?? false)
+
+  const topLevelHonoured =
+    layout.direction !== undefined &&
+    layout.direction !== 'tabs' &&
+    (layout.children?.every(
+      c => c.views !== undefined && c.size !== undefined,
+    ) ??
+      false)
+
+  return (
+    hasNestedSize(layout, 0) ||
+    (!topLevelHonoured &&
+      (layout.children?.some(c => c.size !== undefined) ?? false))
+  )
+}
+
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
 // LGV session
 export async function loadSessionSpec(
@@ -206,6 +231,12 @@ export async function loadSessionSpec(
       if (badIndices.length) {
         session.notifyError(
           `Session spec layout references view index ${badIndices.join(', ')}, but the spec has ${views.length} view(s).`,
+        )
+      }
+      if (unsizeableLayoutNodes(layout)) {
+        session.notify(
+          'Session spec layout "size" is only applied when every panel of the top-level horizontal/vertical split carries one; the rest of the layout still builds, with those panels sharing the space evenly.',
+          'info',
         )
       }
       if (isSessionWithWorkspaceLayout(session)) {

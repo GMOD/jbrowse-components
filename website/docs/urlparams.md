@@ -898,6 +898,83 @@ panels:
 
 This creates a 70/30 split with the left panel taking 70% of the width.
 
+`size` applies to the **top-level split only**, and only when every one of its
+panels carries one. Sizes on a nested container, or a top-level split where one
+panel is left unsized, are ignored — the layout still builds, but those panels
+share the space evenly, and a notification says so. Drag the divider to adjust
+from there; the position is saved with the session.
+
+#### Tabs instead of a split
+
+`"direction": "tabs"` puts its children in one tab group rather than dividing
+the space, so only one panel is visible at a time and the rest are a click away.
+Useful when the views are alternatives to each other rather than things to
+compare side by side:
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000",
+      "tracks": ["volvox_sv_test"]
+    }
+  ],
+  "layout": {
+    "direction": "tabs",
+    "children": [{ "views": [0] }, { "views": [1] }]
+  }
+}
+```
+
+Both panels land in the same tab group; the first is the one shown. Tabs can be
+renamed by double-clicking them, and dragged out into a split at any time.
+
+Mixing the two is where it gets useful — a fixed reference panel on the left,
+and a set of tabs to page through on the right:
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000",
+      "tracks": ["volvox_sv_test"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    }
+  ],
+  "layout": {
+    "direction": "horizontal",
+    "children": [
+      { "views": [0] },
+      {
+        "direction": "tabs",
+        "children": [{ "views": [1] }, { "views": [2] }]
+      }
+    ]
+  }
+}
+```
+
 #### Complex nested layout example
 
 You can create more complex layouts by nesting containers:
@@ -963,8 +1040,9 @@ The `layout` parameter:
 - `direction` can be `"horizontal"` (left-right), `"vertical"` (top-bottom), or
   `"tabs"` (one tab group, one panel visible at a time)
 - `views` is an array of view indices (referencing the `views` array)
-- `size` is an optional number specifying the proportional size of a panel, and
-  is ignored under `"tabs"`, where the panels share one group's space
+- `size` is an optional number giving a panel's proportion of the top-level
+  split; it is honoured only there, and only when every panel of that split
+  carries one (see [Custom panel sizes](#custom-panel-sizes))
 - Views within the same panel are stacked vertically
 - Layouts can be nested arbitrarily deep
 

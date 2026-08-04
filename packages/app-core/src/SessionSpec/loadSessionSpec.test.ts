@@ -42,6 +42,7 @@ function setup(
   const session = {
     views: [] as StubView[],
     notifyError: jest.fn(),
+    notify: jest.fn(),
     ...(workspaces
       ? { setUseWorkspaces: jest.fn(), setInit: jest.fn() }
       : undefined),
@@ -317,4 +318,78 @@ test('a spec view nesting its settings under init is told where they go', async 
   expect(session.notifyError).toHaveBeenCalledWith(
     expect.stringContaining('nest their settings under "init"'),
   )
+})
+
+// `size` reaches dockview only on the top-level split, and only when every
+// panel there carries one; anywhere else the whole sizing pass bails, so a spec
+// author who sizes a nested panel sees an evenly-split layout and no reason why
+describe('layout size that cannot be applied', () => {
+  async function loadWithLayout(layout: unknown) {
+    const { session, pluginManager } = setup({
+      'LaunchView-LinearGenomeView': async s => {
+        s.views.push(stubView(`v${s.views.length}`))
+      },
+    })
+    const views = [
+      { type: 'LinearGenomeView' },
+      { type: 'LinearGenomeView' },
+      { type: 'LinearGenomeView' },
+    ]
+    await loadSessionSpec({ views, layout } as never, pluginManager)
+    return session
+  }
+
+  const sized = (n: number, views: number[]) => ({ views, size: n })
+
+  it('says nothing when every top-level panel is sized', async () => {
+    const session = await loadWithLayout({
+      direction: 'horizontal',
+      children: [sized(70, [0]), sized(30, [1])],
+    })
+    expect(session.notify).not.toHaveBeenCalled()
+  })
+
+  it('says nothing when no size is given at all', async () => {
+    const session = await loadWithLayout({
+      direction: 'horizontal',
+      children: [{ views: [0] }, { views: [1] }],
+    })
+    expect(session.notify).not.toHaveBeenCalled()
+  })
+
+  it('warns when only some top-level panels are sized', async () => {
+    const session = await loadWithLayout({
+      direction: 'horizontal',
+      children: [sized(70, [0]), { views: [1] }],
+    })
+    expect(session.notify).toHaveBeenCalledWith(
+      expect.stringContaining('size'),
+      'info',
+    )
+  })
+
+  it('warns when a size sits inside a nested container', async () => {
+    const session = await loadWithLayout({
+      direction: 'horizontal',
+      children: [
+        sized(30, [0]),
+        { direction: 'vertical', children: [sized(50, [1]), sized(50, [2])] },
+      ],
+    })
+    expect(session.notify).toHaveBeenCalledWith(
+      expect.stringContaining('size'),
+      'info',
+    )
+  })
+
+  it('warns when tabs children are sized, which shares one group', async () => {
+    const session = await loadWithLayout({
+      direction: 'tabs',
+      children: [sized(70, [0]), sized(30, [1])],
+    })
+    expect(session.notify).toHaveBeenCalledWith(
+      expect.stringContaining('size'),
+      'info',
+    )
+  })
 })
