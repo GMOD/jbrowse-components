@@ -53,6 +53,22 @@ add one back for convenience.
   float32.** `0.35` comes back as `0.34999999403953552`. Harmless in float space;
   it bites a consumer that truncates into byte space, which is why synteny's fill
   now rounds. Parity tests use `toBeCloseTo`, never bit equality.
+- **Integer `/` truncates; the other arithmetic operators are float64.** WGSL
+  divides integers with truncation and JS does not, so `vid / 6u` is 1 on the
+  GPU and 1.166… in a naive transliteration — wrong for *ordinary in-range*
+  inputs, not just at the type's edges, and `vs_main` in `insertion.slang`
+  really does contain `vid_1 / u32(6)`. The emitter now emits `Math.trunc` for
+  an integer quotient and refuses when it cannot tell. `%` needs nothing (both
+  languages take the sign of the dividend and truncate toward zero). u32 `+`/`*`
+  **overflow** is deliberately not modeled: it needs 2^32-scale inputs no
+  exported decision approaches, and float64 loses bits before a mask could
+  restore the wrap anyway.
+- **The literal suffix strip is base-aware, and has to be.** A hex literal's
+  digits can end in `f`, so a blind `/[fhuil]$/` turns `0xff` into `0xf` — 255
+  silently becomes 15 — and `0xf` into the unparseable `0x`. This is the second
+  time hex has been the one form the pipeline could not read; the first was
+  `evalConstExpr` in `parseDirectives.ts`. slangc emits decimal today, so both
+  were latent, which is exactly why they survived.
 - **Integer signedness is tracked and refused-on-doubt.** `u32` and `i32` are
   both `number` in TS, so the emitter carries the WGSL type: `>>>` for an
   unsigned shift, `>>> 0` after the other unsigned bitwise operators, and a hard
@@ -117,6 +133,14 @@ functions would have needed first anyway.
 
 ## Adding a function to the export set
 
+0. **Check it clears the bar.** Export when the formula has a branch, a magic
+   constant or a pixel snap, or when the constant is a vocabulary only the
+   shader's uniforms give meaning to. A two-term expression over named inputs
+   does *not* clear it — that is the `computeCorners` class, and
+   `covBottomOffsetPx` (`covHeight - covYOffset`) is the marginal case already
+   over the line. Every entry costs an import edge, a generated file and a
+   parity test, so the table should stop growing well before it reaches "every
+   scalar expression in every shader".
 1. Find the scalar decision. If the natural signature takes a `Uniforms` struct,
    returns clip space, or returns a color, **split it**: pure scalar core, thin
    wrapper the shader's own call sites keep using. `snapBoxCenterYPx` /
@@ -142,6 +166,21 @@ functions would have needed first anyway.
 
 **Step 4 is not optional.** The generator's whole value is that it can't drift;
 that only holds if each retirement was proved once.
+
+## Bumping `SLANG_VERSION`
+
+The retired twins kept as fixtures are the oracle for a desugaring change, which
+is the whole reason they are kept rather than deleted. A pin bump is:
+
+```sh
+pnpm gen:shaders && git diff --stat -- '**/*.generated.ts'   # read the diff
+pnpm test --testPathPatterns 'Parity\.test\.ts$'             # 13 files
+```
+
+The emitter is coupled to the *shape* of slangc's WGSL — identifier mangling,
+how `&&` and `?:` are desugared, whether a literal arrives as `u32(10)` or
+`10u`. Nothing else in the tree depends on that shape, so this is the only
+place a bump can go quietly wrong.
 
 ## The residue: 8 `SYNC:` sites, classified
 

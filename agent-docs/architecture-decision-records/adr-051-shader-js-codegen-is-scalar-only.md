@@ -313,7 +313,21 @@ and the two implementations have to be *meant* to agree:
 - The emitter couples the build to the *shape* of slangc's WGSL output
   (identifier mangling, desugaring choices), which no consumer depended on
   before. `SLANG_VERSION` is pinned and the failure is loud, but a version bump
-  should re-run `pnpm gen:shaders` and read the diff.
+  should re-run `pnpm gen:shaders`, read the diff, and run the parity suite —
+  the permanently-kept retired twins are the only oracle for a desugaring
+  change. Procedure in the handoff.
+- **"Every gap is a hard error" is a claim to keep auditing, not a property the
+  design confers.** A review found two constructs that were silently
+  mistranslated rather than refused, both now fixed and covered: integer `/`,
+  which WGSL truncates and JS does not (`vid / 6u` → 1 on the GPU, 1.166… in
+  the twin — wrong for ordinary inputs, and `insertion.slang`'s `vs_main`
+  contains exactly that expression), and the literal suffix strip, which turned
+  `0xff` into `0xf` because a hex literal's digits can end in `f`. Neither was
+  reachable from a function exported today, which is *why* they survived: the
+  refusal machinery is only tested where an export happens to go. The
+  signedness work is the model — it was built because `showChevron` needed it,
+  not because a sweep found it — so the standing job is to look for the next
+  such construct before an export reaches it, rather than after.
 - Scope is deliberately capped: this covers scalar decisions, not the ~5,400
   lines of hand-written canvas drawing repo-wide. Roughly 1,200 of those lines
   have no shader counterpart at all (the Canvas2D-only sequence display, MAF's

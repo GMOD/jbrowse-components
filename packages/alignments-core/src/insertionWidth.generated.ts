@@ -5,16 +5,16 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function textWidth(num: number): number {
-  if ((num < ((10) >>> 0))) {
+  if ((num < 10)) {
     return 16.0
   }
-  if ((num < ((100) >>> 0))) {
+  if ((num < 100)) {
     return 22.0
   }
-  if ((num < ((1000) >>> 0))) {
+  if ((num < 1000)) {
     return 28.0
   }
-  if ((num < ((10000) >>> 0))) {
+  if ((num < 10000)) {
     return 34.0
   }
   return 40.0
@@ -22,7 +22,7 @@ function textWidth(num: number): number {
 
 export function insertionBarWidthPx(length: number, pxPerBp: number, featHeight: number): number {
   let insWPx = ((length) * pxPerBp)
-  let isLong = (length >= ((10) >>> 0))
+  let isLong = (length >= 10)
   let isLarge: boolean
   if (isLong) {
     isLarge = (insWPx >= 15.0)

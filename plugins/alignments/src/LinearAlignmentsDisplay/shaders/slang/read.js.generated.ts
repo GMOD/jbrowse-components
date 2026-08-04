@@ -21,18 +21,18 @@ export function showChevron(chainMode: boolean, pxPerBp: number, featHeight: num
     baseShow = false
   }
   let dirMoot: boolean
-  if ((colorScheme == ((0) >>> 0))) {
+  if ((colorScheme == 0)) {
     dirMoot = true
   } else {
-    dirMoot = (((flags & ((8) >>> 0)) >>> 0) != ((0) >>> 0))
+    dirMoot = (((flags & 8) >>> 0) != 0)
   }
   if (dirMoot) {
     dirMoot = true
   } else {
-    dirMoot = (interchrom != ((0) >>> 0))
+    dirMoot = (interchrom != 0)
   }
   let pairTooTight: boolean
-  if ((((flags & ((1) >>> 0)) >>> 0) != ((0) >>> 0))) {
+  if ((((flags & 1) >>> 0) != 0)) {
     pairTooTight = ((Math.abs(insertSize) * pxPerBp) < 10.0)
   } else {
     pairTooTight = false

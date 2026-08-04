@@ -227,6 +227,79 @@ describe('bit operations', () => {
       emit(`fn f_0( a_0 : f32) -> f32 { return a_0 & 1u; }`, ['f']),
     ).toThrow(/signed/)
   })
+
+  test('a hex literal keeps every digit', () => {
+    // The suffix strip has to know the base: `0xff` blind-stripped of a
+    // trailing `f` is `0xf`, so 255 becomes 15 with nothing thrown, and `0xf`
+    // becomes the unparseable `0x`.
+    const out = emit(
+      `fn f_0( v_0 : u32) -> u32 { return (v_0 & 0xff) + 0xf; }`,
+      ['f'],
+    )
+    expect(out).toContain('0xff')
+    expect(evaluate(out, 'f')(0x1234)).toBe(0x34 + 0xf)
+  })
+})
+
+describe('integer division', () => {
+  // WGSL divides integers with truncation; JS never does. Unlike the overflow
+  // cases, this is wrong for ordinary in-range inputs, so it has to be handled
+  // rather than documented.
+  test('a u32 quotient truncates', () => {
+    const out = emit(
+      `fn f_0( idx_0 : u32, per_0 : u32) -> u32 { return idx_0 / per_0; }`,
+      ['f'],
+    )
+    expect(evaluate(out, 'f')(7, 2)).toBe(3)
+    expect(evaluate(out, 'f')(5, 6)).toBe(0)
+  })
+
+  test('an i32 quotient truncates toward zero, as WGSL does', () => {
+    const out = emit(
+      `fn f_0( a_0 : i32, b_0 : i32) -> i32 { return a_0 / b_0; }`,
+      ['f'],
+    )
+    // Not Math.floor: -7/2 is -3 in WGSL and -4 under floor.
+    expect(evaluate(out, 'f')(-7, 2)).toBe(-3)
+  })
+
+  test('a float quotient is left alone', () => {
+    const out = emit(
+      `fn f_0( a_0 : f32, b_0 : f32) -> f32 { return a_0 / b_0; }`,
+      ['f'],
+    )
+    expect(out).not.toContain('Math.trunc')
+    expect(evaluate(out, 'f')(7, 2)).toBe(3.5)
+  })
+
+  test('a remainder needs no adjustment in either signedness', () => {
+    // Both languages take the sign of the dividend and truncate toward zero.
+    const out = emit(
+      `fn f_0( a_0 : i32, b_0 : i32) -> i32 { return a_0 % b_0; }`,
+      ['f'],
+    )
+    expect(evaluate(out, 'f')(-7, 2)).toBe(-1)
+  })
+})
+
+test('folds a literal scalar constructor instead of wrapping it', () => {
+  // slangc spells every integer literal as a constructor call, so leaving these
+  // alone buries the code in `((10) >>> 0)` — and a reviewable twin is the
+  // fallback safety property when the generator is wrong.
+  const out = emit(
+    `fn f_0( n_0 : u32) -> f32 { if(n_0 < u32(10)) { return 1.0f; } return f32(u32(2)); }`,
+    ['f'],
+  )
+  expect(out).toContain('< 10')
+  expect(out).not.toContain('>>> 0')
+  expect(evaluate(out, 'f')(3)).toBe(1)
+  expect(evaluate(out, 'f')(30)).toBe(2)
+})
+
+test('a nested negation does not emit a decrement', () => {
+  const out = emit(`fn f_0( a_0 : f32) -> f32 { return -(-a_0); }`, ['f'])
+  expect(out).not.toContain('--')
+  expect(evaluate(out, 'f')(3)).toBe(3)
 })
 
 test.each([

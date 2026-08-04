@@ -205,10 +205,20 @@ jobs:
       - name: Check generated shaders are up to date
         run: |
           pnpm gen:shaders
-          if ! git diff --quiet -- '**/*.generated.ts'; then
+          # `git diff` cannot see an artifact generated for the FIRST time and
+          # never committed — adding `//! js-export:` to a shader and forgetting
+          # to `git add` the new twin left this job green, and the failure
+          # surfaced as an unresolved import in some other job. Untracked
+          # artifacts are counted separately, the way scripts/autogen.ts does.
+          untracked=$(git ls-files --others --exclude-standard -- '**/*.generated.ts')
+          if ! git diff --quiet -- '**/*.generated.ts' || [ -n "$untracked" ]; then
             echo "Error: generated shaders are out of date!"
             echo "Run 'pnpm gen:shaders' and commit the changes."
             git diff --stat -- '**/*.generated.ts'
+            if [ -n "$untracked" ]; then
+              echo "Generated but never committed:"
+              echo "$untracked"
+            fi
             exit 1
           fi
 

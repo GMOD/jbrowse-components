@@ -738,6 +738,27 @@ class Emitter {
     }
   }
 
+  /**
+   * WGSL's `/` is integer division on integer operands and JS's never is, so
+   * the emitter has to know which one it is looking at. `vid / 6u` is 1 on the
+   * GPU and 1.1666… in JS — a silently wrong answer for ordinary in-range
+   * inputs, not just at the type's edges, which is why this refuses rather than
+   * assuming float when it cannot tell.
+   */
+  private divideIsIntegral(e: Expr & { k: 'bin' }) {
+    const t = this.typeOf(e.l) ?? this.typeOf(e.r)
+    if (t === undefined) {
+      throw new Error(
+        `wgslToJs: cannot tell whether the operands of '/' are integers ` +
+          `(inferred nothing). WGSL divides integers with truncation and JS ` +
+          `does not, so emitting one without knowing would silently change ` +
+          `the result. Annotate the shader-side local, or extend the ` +
+          `inference in wgslToJs.ts.`,
+      )
+    }
+    return t === 'u32' || t === 'i32'
+  }
+
   /** The operand type a bitwise operator acts on, or a refusal naming why. */
   private intTypeFor(e: Expr & { k: 'bin' }): 'u32' | 'i32' {
     // The shift count may legitimately be a different type from the value, so
@@ -766,9 +787,51 @@ class Emitter {
     return this.rename(name)
   }
 
-  /** Drop WGSL's literal type suffix: `0.5f` -> `0.5`, `1u` -> `1`. */
+  /**
+   * Drop WGSL's literal type suffix: `0.5f` -> `0.5`, `1u` -> `1`.
+   *
+   * The strip has to know the base. A hex literal's *digits* can end in `f`, so
+   * a blind `/[fhuil]$/` turns `0xff` into `0xf` — 255 silently becomes 15 —
+   * and `0xf` into the unparseable `0x`. Only the integer suffixes can follow a
+   * hex literal; `f` and `h` are float suffixes and cannot appear on one. (Same
+   * blind spot the constant evaluator in parseDirectives.ts had, and hex is how
+   * a u32 sentinel gets spelled.)
+   */
   private num(text: string) {
-    return text.replace(/[fhuil]$/, '')
+    return /^0[xX]/.test(text)
+      ? text.replace(/[uil]$/, '')
+      : text.replace(/[fhuil]$/, '')
+  }
+
+  /**
+   * `u32(10)` -> `10`. slangc spells every integer literal as a constructor
+   * call, so without this the output is a thicket of `((10) >>> 0)` — and
+   * readability is load-bearing here: the fallback safety property when the
+   * generator is wrong is that a human can review the twin. Folds only where
+   * the conversion provably cannot change the literal.
+   */
+  private foldConstructor(name: string, arg: Expr | undefined) {
+    if (arg?.k !== 'num') {
+      return undefined
+    }
+    const text = this.num(arg.text)
+    const v = Number(text)
+    if (!Number.isFinite(v)) {
+      return undefined
+    }
+    if (name === 'f32') {
+      return text
+    }
+    if (!Number.isInteger(v)) {
+      return undefined
+    }
+    return name === 'u32'
+      ? v >= 0 && v <= 0xffffffff
+        ? text
+        : undefined
+      : v >= -0x80000000 && v <= 0x7fffffff
+        ? text
+        : undefined
   }
 
   expr(e: Expr): string {
@@ -793,7 +856,11 @@ class Emitter {
             ? `((~${this.expr(e.e)}) >>> 0)`
             : `(~${this.expr(e.e)})`
         }
-        return `${e.op}${this.expr(e.e)}`
+        const inner = this.expr(e.e)
+        // `-` against a leading `-` would read as a decrement operator.
+        return e.op === '-' && inner.startsWith('-')
+          ? `- ${inner}`
+          : `${e.op}${inner}`
       }
       case 'bin': {
         // Parenthesized unconditionally: slangc's output is already fully
@@ -811,7 +878,18 @@ class Emitter {
               ? `((${raw}) >>> 0)`
               : `(${raw})`
         }
-        // WGSL and JS agree on the arithmetic and comparison operators.
+        // Integer `/` truncates in WGSL and does not in JS. (`%` needs no such
+        // treatment: both languages take the sign of the dividend and truncate
+        // toward zero, so the operators already agree.)
+        if (e.op === '/' && this.divideIsIntegral(e)) {
+          return `Math.trunc(${this.expr(e.l)} / ${this.expr(e.r)})`
+        }
+        // WGSL and JS agree on the remaining arithmetic and comparison
+        // operators, up to the float64-vs-float32 width the ADR accepts. They
+        // do NOT agree on integer overflow — a u32 `+`/`*` wraps on the GPU and
+        // grows in JS — but that needs 2^32-scale inputs, which no exported
+        // decision goes anywhere near, and float64 cannot model the wrap
+        // faithfully anyway (the product loses bits before it could be masked).
         return `(${this.expr(e.l)} ${e.op} ${this.expr(e.r)})`
       }
       case 'call': {
@@ -824,7 +902,13 @@ class Emitter {
     const a = e.args.map(x => this.expr(x))
     const name = e.name
     // Scalar constructors. `f32(x)` is identity on a JS number; the integer
-    // ones truncate the way the shader does.
+    // ones truncate the way the shader does. A literal argument folds away.
+    if (name === 'f32' || name === 'i32' || name === 'u32') {
+      const folded = this.foldConstructor(name, e.args[0])
+      if (folded !== undefined) {
+        return folded
+      }
+    }
     if (name === 'f32') {
       return `(${a[0]})`
     }
