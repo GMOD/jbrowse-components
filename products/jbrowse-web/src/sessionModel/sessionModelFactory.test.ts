@@ -10,6 +10,8 @@ import { reaction } from 'mobx'
 import { createTestSession } from '../rootModel/index.ts'
 import sessionModelFactory from './index.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
 describe('JBrowseWebSessionModel', () => {
@@ -36,6 +38,10 @@ describe('JBrowseWebSessionModel', () => {
   })
 
   describe('connections', () => {
+    // the connection arrays are typed by a pluggable schema, so their elements
+    // land as `any`; name the element type once here rather than per assertion
+    const ids = (confs: AnyConfigurationModel[]) =>
+      confs.map(c => c.connectionId as string)
     const connSnap = {
       type: 'UCSCTrackHubConnection',
       connectionId: 'conn1',
@@ -86,6 +92,33 @@ describe('JBrowseWebSessionModel', () => {
       const connB = session.connections.find(c => c.connectionId === 'connB')!
       session.deleteConnection(connB)
       expect(session.connections.map(c => c.connectionId)).toEqual(['connA'])
+    })
+
+    // the two adders differ in where the config lands, which is the whole
+    // reason both exist: addConnectionConf follows the user (an admin's edits
+    // are the site's), addSessionConnectionConf always means this session
+    it.each([false, true])(
+      'addSessionConnectionConf keeps the config in the session (adminMode=%s)',
+      adminMode => {
+        const session = createTestSession({ adminMode })
+        session.addSessionConnectionConf(connSnap)
+        expect(ids(session.sessionConnections)).toEqual(['conn1'])
+        expect(session.jbrowse.connections).toHaveLength(0)
+      },
+    )
+
+    it('an admin addConnectionConf writes the config, not the session', () => {
+      const session = createTestSession({ adminMode: true })
+      session.addConnectionConf(connSnap)
+      expect(session.sessionConnections).toHaveLength(0)
+      expect(ids(session.jbrowse.connections)).toEqual(['conn1'])
+    })
+
+    it('a non-admin addConnectionConf writes the session, not the config', () => {
+      const session = createTestSession({})
+      session.addConnectionConf(connSnap)
+      expect(ids(session.sessionConnections)).toEqual(['conn1'])
+      expect(session.jbrowse.connections).toHaveLength(0)
     })
 
     it('non-admin addConnectionConf dedupes an already-present connection', () => {

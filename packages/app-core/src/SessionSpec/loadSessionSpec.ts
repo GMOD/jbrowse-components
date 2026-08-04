@@ -32,6 +32,15 @@ function isSessionWithWorkspaceLayout(
 // that stops a connection opening its own view over the spec's — is a web
 // session's, not the base interface's.
 interface SessionWithSpecConnections {
+  // `addConnectionConf` puts the config wherever *this user's* edits go, which
+  // in jbrowse-web's admin mode is the config.json served to everyone. A spec
+  // key named `sessionConnections` means the session, whoever is looking, so
+  // prefer the session-scoped adder where the application has one. Everywhere
+  // else (Desktop, the embedded products) there is only one place a connection
+  // can live and `addConnectionConf` is it.
+  addSessionConnectionConf?: (
+    conf: Record<string, unknown>,
+  ) => AnyConfigurationModel
   addConnectionConf: (conf: Record<string, unknown>) => AnyConfigurationModel
   makeConnection: (
     conf: AnyConfigurationModel,
@@ -181,15 +190,48 @@ export async function loadSessionSpec(
     // the assemblies and tracks a connection brings in.
     if (sessionConnections.length) {
       if (session && isSessionWithSpecConnections(session)) {
+        // A connection type nothing registered is a typo or a missing plugin,
+        // the same authoring slip the view check below reports. Caught here
+        // because the config would otherwise fail the connection array's MST
+        // union check and throw past every per-key guard to the catch at the
+        // bottom, costing the spec its tracks, its views and its layout over
+        // one bad entry — and reporting it as a raw union-type dump.
+        const connectionTypes = pluginManager.getElementTypeRecord('connection')
         for (const conf of sessionConnections) {
-          // silent whenever the spec launches views of its own: a connection
-          // that opens one on connect (a single-file UCSC hub goes to its
-          // `defaultPos`) would otherwise open a second view competing with
-          // the one the spec asked for. With no views the spec is only asking
-          // to attach the connection, so let it do its own thing.
-          session.makeConnection(session.addConnectionConf(conf), {
-            silent: views.length > 0,
-          })
+          const { type } = conf
+          const label =
+            typeof conf.connectionId === 'string' ? conf.connectionId : '?'
+          if (typeof type !== 'string' || !connectionTypes.has(type)) {
+            session.notifyError(
+              `Session spec connection "${label}" has ${
+                typeof type === 'string'
+                  ? `unknown type "${type}". The plugin providing the connection may be missing, or the type may be misspelled.`
+                  : 'no "type".'
+              }`,
+            )
+            continue
+          }
+          // Per-connection, for the same reason each view gets its own: one
+          // unusable connection shouldn't cost the spec everything after it.
+          try {
+            // silent whenever the spec launches views of its own: a connection
+            // that opens one on connect (a single-file UCSC hub goes to its
+            // `defaultPos`) would otherwise open a second view competing with
+            // the one the spec asked for. With no views the spec is only asking
+            // to attach the connection, so let it do its own thing.
+            session.makeConnection(
+              session.addSessionConnectionConf
+                ? session.addSessionConnectionConf(conf)
+                : session.addConnectionConf(conf),
+              { silent: views.length > 0 },
+            )
+          } catch (e) {
+            console.error(e)
+            session.notifyError(
+              `Connection "${label}" has an invalid configuration: ${e}`,
+              e,
+            )
+          }
         }
       } else {
         session?.notifyError(

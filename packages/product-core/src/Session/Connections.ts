@@ -6,7 +6,10 @@ import { isBaseSession } from './BaseSession.ts'
 import type { BaseSession } from './BaseSession.ts'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfiguration,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -162,8 +165,18 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * Adds to the **config**, not the session: `jbrowse.connections`, which
+         * every visitor to this instance loads. jbrowse-web overrides this so a
+         * non-admin's connection lands in `sessionConnections` instead — see
+         * WebSessionConnectionsMixin, whose `addSessionConnectionConf` is what
+         * to call when you mean the session specifically rather than "wherever
+         * this user's edits go".
+         *
+         * Applications without that override (Desktop, the embedded products)
+         * have only this one destination, and it is the right one there: their
+         * config and session are saved as a single document.
          */
-        addConnectionConf(connectionConf: AnyConfigurationModel) {
+        addConnectionConf(connectionConf: AnyConfiguration) {
           return session.jbrowse.addConnectionConf(connectionConf)
         },
 

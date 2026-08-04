@@ -10,6 +10,8 @@ import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 jest.mock('./makeWorkerInstance', () => () => {})
 
 // the connection's hub.txt read. Left pending so the connection stays `loading`
@@ -30,12 +32,13 @@ const HUB = {
   },
 }
 
-function setup() {
+function setup({ adminMode = false } = {}) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   const rootModel = rootModelFactory({
     pluginManager,
     sessionModelFactory,
+    adminMode,
   }).create({
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -61,6 +64,23 @@ test('a spec registers its connections as real session connections', async () =>
   // the config the spec named was instantiated, not merely stored
   expect(session.connectionInstances).toHaveLength(1)
   expect(session.connectionInstances[0]!.loading).toBe(true)
+})
+
+// `sessionConnections` names the session, and an admin opening a link is still
+// only opening a link — the connection must not reach jbrowse.connections,
+// which the admin server writes back into the config.json every visitor loads
+test('an admin loading a spec keeps its connections in the session', async () => {
+  const { pluginManager, rootModel } = setup({ adminMode: true })
+
+  await loadSessionSpec({ sessionConnections: [HUB], views: [] }, pluginManager)
+
+  const { session } = rootModel
+  expect(
+    session.sessionConnections.map(
+      (c: AnyConfigurationModel) => c.connectionId as string,
+    ),
+  ).toEqual(['hub1'])
+  expect(session.jbrowse.connections).toHaveLength(0)
 })
 
 // a hub's own connect() opens a view at its defaultPos; with the spec launching

@@ -9,6 +9,7 @@ import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
+  AnyConfiguration,
   AnyConfigurationModel,
   ConfigurationSchemaDefinition,
 } from '@jbrowse/core/configuration'
@@ -108,8 +109,12 @@ export function JBrowseModelF({
       },
       /**
        * #action
+       * Adds to the config's own `connections`, which every visitor to this
+       * instance loads. Takes a snapshot as readily as a built config model —
+       * the array coerces — since callers hand it plain JSON (a session spec's
+       * `sessionConnections`, the CLI's add-connection output).
        */
-      addConnectionConf(connectionConf: AnyConfigurationModel) {
+      addConnectionConf(connectionConf: AnyConfiguration) {
         const { type } = connectionConf
         if (!type) {
           throw new Error('connection type not specified')

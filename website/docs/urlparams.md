@@ -392,10 +392,12 @@ views over them, with nothing baked into the served config (pair it with
 ```
 
 A top-level `sessionConnections` array attaches connections — UCSC track hubs,
-JBrowse hubs — to the session. Each entry is a connection config. Connections
-are added after `sessionAssemblies` and before the tracks and views, and the
-spec waits for each one to finish fetching before launching its views, so a view
-can name an assembly or a trackId the connection supplies:
+JBrowse hubs — to the session. Each entry is a connection config, and it stays
+with the session: opening the link never writes the connection into the
+config.json the instance serves, whoever opens it. Connections are added after
+`sessionAssemblies` and before the tracks and views, and the spec waits for each
+one to finish fetching before launching its views, so a view can name an
+assembly or a trackId the connection supplies:
 
 ```json
 {

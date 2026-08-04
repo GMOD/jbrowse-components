@@ -27,11 +27,27 @@ function stubView(id: string): StubView {
 // fetch settles, so a spec that registers one has to wait that out before
 // launching views over the assemblies and tracks it supplies. Observable
 // because the wait is a mobx `when` over exactly that flag.
-function connectionStub() {
+function connectionStub({
+  // jbrowse-web has both adders; Desktop and the embedded products have only
+  // addConnectionConf, whose one destination is the right one there
+  sessionScoped = true,
+  throwOnAdd = false,
+} = {}) {
   const connectionInstances = observable.array<{ loading: boolean }>([])
   const made: { conf: Record<string, unknown>; silent?: boolean }[] = []
+  const addedVia: string[] = []
+  const adder = (via: string) => (conf: Record<string, unknown>) => {
+    if (throwOnAdd) {
+      throw new Error('invalid connection configuration')
+    }
+    addedVia.push(via)
+    return conf
+  }
   return {
     made,
+    // which of the two adders the spec reached for — the destination is not
+    // the same, so this is the assertion, not an implementation detail
+    addedVia,
     settle: () => {
       runInAction(() => {
         for (const conn of connectionInstances) {
@@ -41,7 +57,10 @@ function connectionStub() {
     },
     session: {
       connectionInstances,
-      addConnectionConf: (conf: Record<string, unknown>) => conf,
+      addConnectionConf: adder('addConnectionConf'),
+      ...(sessionScoped
+        ? { addSessionConnectionConf: adder('addSessionConnectionConf') }
+        : undefined),
       makeConnection: (
         conf: Record<string, unknown>,
         snap?: { silent?: boolean },
@@ -68,10 +87,12 @@ function setup(
   {
     workspaces = true,
     registeredViewTypes = [] as string[],
+    registeredConnectionTypes = ['UCSCTrackHubConnection'],
     connections,
   }: {
     workspaces?: boolean
     registeredViewTypes?: string[]
+    registeredConnectionTypes?: string[]
     // omitted models a session that cannot take connections at all
     connections?: ReturnType<typeof connectionStub>
   } = {},
@@ -89,8 +110,12 @@ function setup(
   const pluginManager = {
     rootModel,
     extensionPoints: { has: (name: string) => name in handlers },
-    getElementTypeRecord: () => ({
-      has: (type: string) => registeredViewTypes.includes(type),
+    getElementTypeRecord: (group: string) => ({
+      has: (type: string) =>
+        (group === 'connection'
+          ? registeredConnectionTypes
+          : registeredViewTypes
+        ).includes(type),
     }),
     // mirrors the real PluginManager: an extension point with no registered
     // callback resolves to the extendee unchanged rather than throwing
@@ -369,8 +394,14 @@ describe('sessionConnections', () => {
     hubTxtLocation: { uri: 'https://example.com/hub.txt' },
   }
 
-  function setupWithHub(log: string[]) {
-    const connections = connectionStub()
+  function setupWithHub(
+    log: string[],
+    opts: Parameters<typeof connectionStub>[0] & {
+      registeredConnectionTypes?: string[]
+    } = {},
+  ) {
+    const { registeredConnectionTypes, ...stubOpts } = opts
+    const connections = connectionStub(stubOpts)
     const { session, pluginManager } = setup(
       {
         'LaunchView-LinearGenomeView': async s => {
@@ -378,7 +409,7 @@ describe('sessionConnections', () => {
           s.views.push(stubView('lgv'))
         },
       },
-      { connections },
+      { connections, registeredConnectionTypes },
     )
     return { session, pluginManager, connections }
   }
@@ -446,6 +477,79 @@ describe('sessionConnections', () => {
     expect(session.notifyError).toHaveBeenCalledWith(
       expect.stringContaining('cannot add connections to a session'),
     )
+  })
+
+  // the key is `sessionConnections`, so it means the session — not
+  // addConnectionConf's "wherever this user's edits go", which for a jbrowse-web
+  // admin is the config.json served to every visitor
+  it('adds to the session, not to wherever the user edits land', async () => {
+    const { pluginManager, connections } = setupWithHub([])
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+
+    expect(connections.addedVia).toEqual(['addSessionConnectionConf'])
+  })
+
+  // Desktop and the embedded products have no sessionConnections array; their
+  // one destination is the config, which is saved with the session there anyway
+  it('falls back to addConnectionConf where there is no session-scoped adder', async () => {
+    const { pluginManager, connections } = setupWithHub([], {
+      sessionScoped: false,
+    })
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+
+    expect(connections.addedVia).toEqual(['addConnectionConf'])
+  })
+
+  // an unregistered type fails the connection array's MST union check, which
+  // threw past every per-key guard and cost the spec its tracks, views and
+  // layout — over one typo, reported as a raw union-type dump
+  it('names an unknown connection type and still loads the rest of the spec', async () => {
+    const { session, pluginManager, connections } = setupWithHub([], {
+      registeredConnectionTypes: ['UCSCTrackHubConnection'],
+    })
+
+    await loadSessionSpec(
+      {
+        sessionConnections: [{ ...HUB, type: 'NotARealConnection' }],
+        views: [{ type: 'LinearGenomeView', assembly: 'volvox' }],
+      },
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('unknown type "NotARealConnection"'),
+    )
+    expect(connections.made).toEqual([])
+    expect(session.views).toHaveLength(1)
+  })
+
+  it('keeps loading the spec when a connection config is rejected', async () => {
+    const { session, pluginManager, connections } = setupWithHub([], {
+      throwOnAdd: true,
+    })
+
+    await loadSessionSpec(
+      {
+        sessionConnections: [HUB],
+        views: [{ type: 'LinearGenomeView', assembly: 'volvox' }],
+      },
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('has an invalid configuration'),
+      expect.anything(),
+    )
+    expect(connections.made).toEqual([])
+    expect(session.views).toHaveLength(1)
   })
 })
 
