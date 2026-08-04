@@ -145,7 +145,9 @@ pair:
 
 If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
 `assemblyNameToPanSN` slot (e.g. if you named the assembly `Ecoli_K12` but its
-PanSN prefix is `K12`, use `{ "Ecoli_K12": "K12" }`).
+PanSN prefix is `K12`, use `{ "Ecoli_K12": "K12" }`). A name matching no sample
+in the file raises an error listing the samples the file does hold, so the
+mapping can be written from what the error reports.
 
 To add the track from the command line instead of editing the config by hand,
 spell the adapter out in `--config`. A `.paf` extension on its own is inferred
@@ -389,7 +391,13 @@ pileup, so the rest of that menu is the one you already know from alignments:
 **Show... > Show coverage**, for instance, adds a histogram of how many other
 strains cover each base of the strain you are viewing.
 
-<Figure caption="One track, one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, with the K-12 lane hidden. The shaded band is K-12's phenylacetate (paa) operon. Sakai, CFT073 and IAI39 all stop at its left edge and NCTC86 runs straight through." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+A lane can only say where a strain stops. What that strain carries instead is
+not in the PAF at all, since sequence absent from the alignment is absent from
+the file, so the figure below carries a second pane: the same window in the
+pangenome graph of these strains, where the island is a segment and the strains
+that skip it take an arm around it.
+
+<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, with the K-12 lane hidden. The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and IAI39 all stop at its left edge where NCTC86 runs straight through. Below, the same window as a graph: the ringed node is the 21.8 kb segment carrying the operon, and the short arm beside it is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 The same mode zoomed out to the whole chromosome gives a per-strain overview of
 where each one diverges. Because a synteny view's rows are ordinary linear
@@ -403,17 +411,18 @@ range query instead:
 
 ### The same gap, drawn as a graph
 
-A PAF says where a lane stops. It cannot say what the strains that stop there
-carry instead, because sequence absent from the alignment is absent from the
-file. A pangenome graph does say it: the island is a segment, and each strain's
-walk either goes through that segment or takes a detour around it.
+The pane under the lanes above is that graph, and it is worth a section of its
+own. A PAF says where a lane stops; it cannot say what the strains that stop
+there carry instead, because sequence absent from the alignment is absent from
+the file. A pangenome graph does say it: the island is a segment, and each
+strain's walk either goes through that segment or takes a detour around it.
 
-The E. coli tutorials also build a minigraph graph of the same five strains, and
+The E. coli tutorials build that minigraph graph of the same five strains, and
 the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
-it beside the alignment. Drawn together, the ribbons and the graph are two
-readings of the same event:
+it beside the alignment. Against the ribbons rather than the lanes, the same
+event reads twice over:
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks so the gap is the event rather than the edge of the data. Below, the same window as a graph: the island is the one long green node, and the detour the other strains take is the short arm beside it." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks so the gap is the event rather than the edge of the data. Below, the same window as a graph: the island is the one long green node, and the detour the other strains take is the short arm beside it. The two rings are the same segment, s502, once as a block in K-12's segments lane and once as that node." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### From a lane to a stack, for one locus
 

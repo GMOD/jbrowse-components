@@ -15,6 +15,8 @@ import {
   assemblyByPanSNPrefix,
   createReciprocalDedupe,
   assemblyForPanSNName,
+  noPanSNMatchError,
+  panSNInventory,
   resolvePanSNPrefix,
   sideDraws,
 } from '../util.ts'
@@ -60,9 +62,14 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     // against either way. Built once: N bands x every pan/zoom otherwise rescans
     // every record in the file.
     const sidesByContig = new Map<string, RecordSide[]>()
+    // collected on the same pass, so a query whose assembly matches no sample in
+    // the file can say what the file does hold — see noPanSNMatchError
+    const seqNames = new Set<string>()
     for (const [index, r] of records.entries()) {
       for (const flip of [true, false]) {
-        const contig = panSNContig(flip ? r.qname : r.tname)
+        const name = flip ? r.qname : r.tname
+        seqNames.add(name)
+        const contig = panSNContig(name)
         const sides = sidesByContig.get(contig)
         if (sides) {
           sides.push({ index, flip })
@@ -71,7 +78,7 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
         }
       }
     }
-    return { records, sidesByContig }
+    return { records, sidesByContig, panSN: panSNInventory(seqNames) }
   }
 
   // Exactly the contigs `getFeatures` can emit for: the same `sideDraws` gate
@@ -97,12 +104,22 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { records, sidesByContig } = await this.setup(opts)
+      const { records, sidesByContig, panSN } = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
       const asmByPrefix = assemblyByPanSNPrefix(this)
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
       const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
+
+      // An assembly the file has never heard of is a misconfigured track that
+      // would otherwise draw nothing and say nothing; see noPanSNMatchError.
+      if (!panSN.prefixes.has(anchorPrefix)) {
+        throw noPanSNMatchError({
+          assemblyName,
+          prefix: anchorPrefix,
+          inventory: panSN,
+        })
+      }
 
       // Only the sides filed under the queried contig can satisfy the
       // `refName === qref` test, so the rest of the file is skipped outright.

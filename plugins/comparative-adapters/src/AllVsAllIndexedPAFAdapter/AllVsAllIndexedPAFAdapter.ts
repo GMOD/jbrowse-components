@@ -12,6 +12,8 @@ import {
   createReciprocalDedupe,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
+  noPanSNMatchError,
+  panSNInventory,
   readPifLines,
   resolveCoarseTier,
   resolvePanSNPrefix,
@@ -169,8 +171,22 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
 
       // Resolve the anchor (assembly, refName) to its PanSN seqid(s); one contig
       // can map to several when the sample is multi-haplotype.
-      const seqs =
-        (await this.seqIndex(opts)).get(anchorPrefix)?.get(qref) ?? []
+      const byContig = (await this.seqIndex(opts)).get(anchorPrefix)
+      // A prefix present but holding no such contig is ordinary — a contig with
+      // no alignments. A prefix the file has never heard of is a misconfigured
+      // track that would otherwise draw nothing and say nothing; see
+      // noPanSNMatchError.
+      if (byContig === undefined) {
+        throw noPanSNMatchError({
+          assemblyName,
+          prefix: anchorPrefix,
+          inventory: panSNInventory(
+            // the tier letter (t/q/T/Q) is not part of the name
+            (await this.refSeqNames(opts)).map(name => name.slice(1)),
+          ),
+        })
+      }
+      const seqs = byContig.get(qref) ?? []
 
       // One slot per concurrent getLines: they run under one Promise.all and
       // would otherwise take turns overwriting the single status field, so the

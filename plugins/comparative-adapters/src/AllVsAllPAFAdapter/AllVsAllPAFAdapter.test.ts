@@ -350,3 +350,64 @@ test('real all-vs-all fixture: draws against an assembly missing from assemblyNa
   // volvox_del is absent from assemblyNames yet is still drawn, prefix-labelled
   expect(mateAsms).toEqual(['volvox_del', 'volvox_ins'])
 })
+
+// An assembly whose name is not the PanSN sample prefix used to produce a
+// configured track that drew nothing, reported nothing, and looked exactly like
+// a locus with no alignments — hasDataForRefName is unconditionally true, so
+// nothing filtered it out. The prefixes are also the one thing no form or config
+// editor shows, so the error carries them.
+describe('an assembly the file has never heard of', () => {
+  test('names what the file does hold, and how to map onto it', async () => {
+    await expect(
+      feats(makeAdapter(['Vitis_vinifera', 'peach']), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'Vitis_vinifera',
+      }),
+    ).rejects.toThrow(
+      /No sequences in this file belong to assembly "Vitis_vinifera".*samples are: cacao, grape, peach.*assemblyNameToPanSN.*\{"Vitis_vinifera": "cacao"\}/s,
+    )
+  })
+
+  test('a wrong mapping names the prefix it resolved to, not just the assembly', async () => {
+    await expect(
+      feats(makeAdapter(['grapeJB', 'peach'], { grapeJB: 'Vitis' }), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'grapeJB',
+      }),
+    ).rejects.toThrow(/assembly "grapeJB" \(PanSN prefix "Vitis"\)/)
+  })
+
+  // a different mistake with a different remedy — usually a pairwise PAF opened
+  // with an all-vs-all adapter — so listing its contigs as samples reads as
+  // nonsense
+  test('a file with no PanSN prefix at all says so instead', async () => {
+    const loc = writePaf([
+      'chr1\t1000\t100\t200\t+\tchr2\t1000\t100\t200\t95\t100\t60',
+    ])
+    await expect(
+      feats(makeAdapter(['grape', 'peach'], {}, loc), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'grape',
+      }),
+    ).rejects.toThrow(/carry no PanSN sample prefix/)
+  })
+
+  // the ordinary case this must not fire on: the prefix is present, the contig
+  // simply has no alignments
+  test('a known assembly on a contig with no alignments is still empty, not an error', async () => {
+    expect(
+      await feats(makeAdapter(['grape', 'peach']), {
+        refName: 'no_such_contig',
+        start: 0,
+        end: 2000,
+        assemblyName: 'grape',
+      }),
+    ).toEqual([])
+  })
+})

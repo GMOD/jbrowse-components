@@ -380,3 +380,46 @@ test('asking for coarse on a file with no coarse tier still returns features', a
   expect(fa.length).toBeGreaterThan(0)
   expect(tiersOf(fa)).toEqual(new Set(['fine']))
 })
+
+// Same guard as the in-memory adapter, off the tabix contig list rather than a
+// parse: a track configured with an assembly name that is not the PanSN sample
+// prefix drew nothing and said nothing, and the prefixes it should have used are
+// not visible anywhere in the UI.
+describe('an assembly the file has never heard of', () => {
+  test('names what the file does hold, and how to map onto it', async () => {
+    await expect(
+      feats(makeAdapter(['Vitis_vinifera', 'peach']), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'Vitis_vinifera',
+      }),
+    ).rejects.toThrow(
+      /No sequences in this file belong to assembly "Vitis_vinifera".*samples are: cacao, grape, peach.*assemblyNameToPanSN/s,
+    )
+  })
+
+  // the tier letter (t/q/T/Q) prefixing every seqid is not part of the name, so
+  // the reported samples must not come back as `tgrape`/`Tgrape`
+  test('the reported samples are stripped of the tier letter', async () => {
+    await expect(
+      feats(makeAdapter(['nope', 'peach']), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'nope',
+      }),
+    ).rejects.toThrow(/samples are: cacao, grape, peach\./)
+  })
+
+  test('a known assembly on a contig with no alignments is still empty, not an error', async () => {
+    expect(
+      await feats(makeAdapter(['grape', 'peach']), {
+        refName: 'no_such_contig',
+        start: 0,
+        end: 2000,
+        assemblyName: 'grape',
+      }),
+    ).toEqual([])
+  })
+})

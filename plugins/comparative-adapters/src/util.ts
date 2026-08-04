@@ -110,6 +110,75 @@ export function assemblyForPanSNName(
   return prefixes[0]!
 }
 
+/**
+ * What PanSN names a file actually carries: every prefix a query can be
+ * addressed by (both depths, so `grape` and `grape#1`), the sample-level ones on
+ * their own for reporting, and whether any name is PanSN at all. A sample name
+ * never contains the separator — that is what splits it off — so the two depths
+ * are told apart by looking for one.
+ */
+export function panSNInventory(seqNames: Iterable<string>) {
+  const prefixes = new Set<string>()
+  let anyPanSN = false
+  for (const name of seqNames) {
+    anyPanSN ||= name.includes('#')
+    for (const prefix of panSNPrefixes(name)) {
+      prefixes.add(prefix)
+    }
+  }
+  return {
+    prefixes,
+    samples: [...prefixes].filter(p => !p.includes('#')).sort(),
+    anyPanSN,
+  }
+}
+
+export type PanSNInventory = ReturnType<typeof panSNInventory>
+
+/**
+ * What an all-vs-all adapter raises when a query's assembly resolves to a PanSN
+ * prefix that names nothing in the file.
+ *
+ * This is a thrown error rather than an empty result on purpose. Both all-vs-all
+ * adapters answer `hasDataForRefName` with `true` unconditionally (deciding it
+ * properly is a getFeatures), so nothing downstream filters the track out, and
+ * `getRefNames` legitimately returns `[]` for an assembly the file does not
+ * cover. A name that does not match therefore used to produce a configured track
+ * that drew nothing, reported nothing, and looked exactly like a locus with no
+ * alignments. The prefixes are also the one thing the user cannot discover from
+ * the UI — no form or config editor lists them — so the message carries them.
+ */
+export function noPanSNMatchError({
+  assemblyName,
+  prefix,
+  inventory,
+}: {
+  assemblyName: string
+  // the PanSN prefix `assemblyName` resolved to, which is the name itself unless
+  // assemblyNameToPanSN mapped it
+  prefix: string
+  inventory: PanSNInventory
+}) {
+  const { samples, anyPanSN } = inventory
+  const example = samples[0]
+  if (example === undefined) {
+    return new Error(`This file contains no sequences.`)
+  }
+  const shown = samples.slice(0, 8)
+  const rest = samples.length - shown.length
+  const list = `${shown.join(', ')}${rest > 0 ? `, and ${rest} more` : ''}`
+  // A file with no separator anywhere is a different mistake with a different
+  // remedy — usually a pairwise PAF opened with an all-vs-all adapter — and
+  // listing its contigs as if they were samples reads as nonsense.
+  return new Error(
+    anyPanSN
+      ? `No sequences in this file belong to assembly "${assemblyName}"${
+          prefix === assemblyName ? '' : ` (PanSN prefix "${prefix}")`
+        }. Its samples are: ${list}. If this assembly is one of them under another name, map it with the adapter's assemblyNameToPanSN slot, e.g. {"${assemblyName}": "${example}"}.`
+      : `This file's sequence names carry no PanSN sample prefix ("${example}" rather than "${assemblyName}#1#${example}"), so an all-vs-all adapter cannot tell which assembly each side of an alignment belongs to. Use a pairwise adapter for a two-genome PAF, or rewrite the names as sample#haplotype#contig.`,
+  )
+}
+
 export function parseBed(text: string) {
   const result = new Map<string, BareFeature>()
   for (const line of text.split(/\n|\r\n|\r/)) {
