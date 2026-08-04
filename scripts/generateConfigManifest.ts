@@ -18,6 +18,7 @@
 // node's type stripping refuses, and @jbrowse/core only resolves from a package
 // that depends on it. esbuild's stdin+resolveDir gives us both without writing a
 // scratch entry file into someone else's package (this is a shared worktree).
+import { execFile } from 'node:child_process'
 import {
   mkdtempSync,
   readFileSync,
@@ -25,9 +26,11 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { promisify } from 'node:util'
 
 import esbuild from 'esbuild'
 
@@ -433,6 +436,26 @@ const lines = [
   '',
 ]
 writeFileSync(INDEX, `${lines.join('\n')}\n`)
+
+// The index is assembled one line per type, so its bullets run past the width
+// `pnpm format` wraps markdown to. Both gates compare against the committed
+// bytes — `autogen --check` against what this writes, `check-format` against
+// what oxfmt writes — so leaving it unformatted makes the two fight and neither
+// can be satisfied at once. Formatting here settles it on oxfmt's answer.
+//
+// The binary is resolved through node rather than spawned by name: only an npm
+// script puts it on PATH, so `node scripts/generateConfigManifest.ts` would
+// otherwise ENOENT and silently format nothing.
+const oxfmtBin = path.join(
+  path.dirname(
+    createRequire(path.join(REPO_ROOT, 'package.json')).resolve(
+      'oxfmt/package.json',
+    ),
+  ),
+  'bin',
+  'oxfmt',
+)
+await promisify(execFile)(process.execPath, [oxfmtBin, INDEX])
 
 const counts = Object.entries(schema)
   .filter(([, types]) => !Array.isArray(types))
