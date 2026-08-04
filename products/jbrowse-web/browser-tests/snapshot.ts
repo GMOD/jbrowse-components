@@ -12,9 +12,18 @@ import type { Page } from 'puppeteer'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const baseSnapshotsDir = path.resolve(__dirname, '__snapshots__')
 
+// What an `--update-snapshots` run actually rewrote, for the end-of-run report.
+// A sweep that says nothing is indistinguishable from one that quietly churned
+// the whole directory.
+export const snapshotUpdates: { name: string; pct: number | null }[] = []
+
 export const snapshotConfig = {
   backend: '' as string,
   updateSnapshots: false,
+  // Bypass the content-stable gate below and rewrite every golden, whatever it
+  // differs by. The escape hatch for "I know this changed and the gate is wider
+  // than my change" — a relabelled axis moves well under half a percent.
+  forceSnapshots: false,
   // Capture + feed the cross-backend gate but skip the golden read/write and its
   // pass/fail. Goldens are environment-specific (a real-GPU webgl golden won't
   // match a swiftshader capture), so CI — which renders webgl under swiftshader —
@@ -41,6 +50,23 @@ function targetedThreshold(threshold: number) {
     : threshold
 }
 
+// Content-stable gate for `--update-snapshots`: a re-captured golden only
+// replaces the committed one when it differs by more than this. The same idea,
+// and the same 0.5%, as the website screenshot generator's commit gate — see
+// `pngDiffFraction` in website/scripts/image-pipeline.ts.
+//
+// Without it, `--update-snapshots` rewrote every golden unconditionally. A
+// single sweep touched 117 files of which 69 differed by under 1% and 66 by
+// under 0.1% — jitter that churns the tree, inflates the diff, and buries the
+// handful of goldens that genuinely moved. (Measured on the display-mixin
+// refactor sweep, where 48 real changes arrived alongside 69 non-changes.)
+//
+// Deliberately NOT the test's own pass/fail threshold, which would be the
+// tempting choice: full-page goldens pass at 10%, so gating on that would keep
+// a golden that had visibly changed but not yet failed, and let it rot. 0.5%
+// sits above the jitter and below anything a reader would notice.
+const SNAPSHOT_UPDATE_GATE = 0.005
+
 function compareImages(
   name: string,
   actualBuffer: Buffer | Uint8Array,
@@ -59,16 +85,32 @@ function compareImages(
   }
   const snapshotPath = path.join(snapshotsDir, `${name}.png`)
 
-  if (updateSnapshots || !fs.existsSync(snapshotPath)) {
+  if (!fs.existsSync(snapshotPath)) {
     fs.writeFileSync(snapshotPath, actualBuffer)
-    return {
-      passed: true,
-      message: updateSnapshots ? 'Snapshot updated' : 'Snapshot created',
-    }
+    snapshotUpdates.push({ name, pct: null })
+    return { passed: true, message: 'Snapshot created' }
   }
 
   const expectedBuffer = fs.readFileSync(snapshotPath)
   const diff = comparePngBuffers(expectedBuffer, actualBuffer)
+
+  if (updateSnapshots) {
+    // A size change is always real — the canvas itself moved — so it never
+    // meets the gate.
+    const stable =
+      !snapshotConfig.forceSnapshots &&
+      diff.sameSize &&
+      diff.diffFraction <= SNAPSHOT_UPDATE_GATE
+    if (stable) {
+      return { passed: true, message: 'Snapshot unchanged (kept)' }
+    }
+    fs.writeFileSync(snapshotPath, actualBuffer)
+    snapshotUpdates.push({
+      name,
+      pct: diff.sameSize ? diff.diffFraction : null,
+    })
+    return { passed: true, message: 'Snapshot updated' }
+  }
 
   if (!diff.sameSize) {
     // If the existing golden is the default empty canvas size (300x150),

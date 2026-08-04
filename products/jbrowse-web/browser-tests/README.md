@@ -72,6 +72,18 @@ snapshot.
 Use `--update-snapshots` or `-u` to update snapshots when intentional visual
 changes are made.
 
+An update run **only rewrites a golden whose capture actually moved** — past
+0.5% of its pixels, or any change in canvas size. Rendering here is close to
+deterministic, so without that gate every golden gets rewritten byte-for-byte
+and the ones that genuinely changed are buried: one sweep over the display-mixin
+refactor touched 117 files, of which 66 differed by under 0.1%. The run prints
+what it wrote and by how much. Same idea, and the same 0.5%, as the website
+screenshot generator's commit gate.
+
+Pass `--force-snapshots` to rewrite everything regardless. Reach for it when a
+change is real but smaller than the gate — a renamed label moves well under half
+a percent of a full-page capture.
+
 ### Nothing here runs in CI — these are local tools
 
 **No part of this directory runs on `push`.** Not the goldens, and (since

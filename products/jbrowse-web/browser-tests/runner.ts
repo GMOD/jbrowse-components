@@ -18,7 +18,7 @@ import {
 import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
-import { snapshotConfig } from './snapshot.ts'
+import { snapshotConfig, snapshotUpdates } from './snapshot.ts'
 
 import type { TestCase, TestSuite } from './types.ts'
 import type { Server } from 'node:http'
@@ -41,6 +41,9 @@ const { values } = parseArgs({
     concurrency: { type: 'string' },
     'slow-mo': { type: 'string' },
     'update-snapshots': { type: 'boolean', short: 'u', default: false },
+    // rewrite every golden an --update-snapshots run captures, bypassing the
+    // content-stable gate that otherwise keeps a golden whose capture barely moved
+    'force-snapshots': { type: 'boolean', default: false },
     auth: { type: 'boolean', default: false },
     // comma-separated and/or repeated: --filter=grape,hs1 or --filter=a --filter=b
     filter: { type: 'string', multiple: true, default: [] },
@@ -96,6 +99,7 @@ const firefoxPath =
   '/usr/bin/firefox-nightly'
 
 snapshotConfig.updateSnapshots = updateSnapshots
+snapshotConfig.forceSnapshots = values['force-snapshots']
 snapshotConfig.gateOnly = gateOnly
 
 type RenderingBackend = 'webgl' | 'webgpu' | 'canvas2d'
@@ -511,6 +515,24 @@ async function main() {
     }
 
     console.log(`\n${'─'.repeat(50)}`)
+    if (updateSnapshots) {
+      // Say what moved. A sweep that reports nothing reads the same whether it
+      // rewrote two goldens or two hundred.
+      console.log(
+        `  Snapshots: ${snapshotUpdates.length} written, the rest unchanged` +
+          (values['force-snapshots'] ? ' (gate forced off)' : ''),
+      )
+      for (const u of [...snapshotUpdates]
+        .sort((a, b) => (b.pct ?? 1) - (a.pct ?? 1))
+        .slice(0, 20)) {
+        const how =
+          u.pct === null ? 'new/resized' : `${(u.pct * 100).toFixed(2)}%`
+        console.log(`    • ${u.name} (${how})`)
+      }
+      if (snapshotUpdates.length > 20) {
+        console.log(`    …and ${snapshotUpdates.length - 20} more`)
+      }
+    }
     console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
     if (backends.length > 1) {
       console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
