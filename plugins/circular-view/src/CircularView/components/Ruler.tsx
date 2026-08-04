@@ -16,80 +16,22 @@ import type {
   SliceNonElidedRegion,
 } from '../slices.ts'
 
-function arcPath(
-  startXY: [number, number],
-  endXY: [number, number],
-  radiusPx: number,
-  largeArc: '0' | '1',
-) {
+// the slice's own angular span as an SVG arc. A slice covers its region
+// exactly, so this is equally the arc from its first base to its last
+function sliceArcPath(slice: Slice, radiusPx: number) {
+  const { startRadians, endRadians } = slice
   return [
     'M',
-    ...startXY,
+    ...polarToCartesian(radiusPx, startRadians),
     'A',
     radiusPx,
     radiusPx,
     '0',
-    largeArc,
+    endRadians - startRadians > Math.PI ? '1' : '0',
     '1',
-    ...endXY,
+    ...polarToCartesian(radiusPx, endRadians),
   ].join(' ')
 }
-
-function sliceArcPath(
-  slice: Slice,
-  radiusPx: number,
-  startBase: number,
-  endBase: number,
-) {
-  const startXY = slice.bpToXY(startBase, radiusPx)
-  const endXY = slice.bpToXY(endBase, radiusPx)
-  const largeArc =
-    Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
-  return arcPath(startXY, endXY, radiusPx, largeArc)
-}
-
-const ElisionRulerArc = observer(function ElisionRulerArc({
-  model,
-  slice,
-  region,
-}: {
-  model: CircularViewModel
-  slice: Slice
-  region: SliceElidedRegion
-}) {
-  const theme = useTheme()
-  const { radiusPx } = model
-  const { endRadians, startRadians } = slice
-  const widthPx = (endRadians - startRadians) * radiusPx
-  const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
-  const centerRadians = (endRadians + startRadians) / 2
-  const regionCount = `[${toLocale(region.regions.length)}]`
-  return (
-    <>
-      <RulerLabel
-        text={regionCount}
-        offsetRadians={model.offsetRadians}
-        maxWidthPx={widthPx}
-        radians={centerRadians}
-        radiusPx={radiusPx}
-        title={`${regionCount} more regions`}
-        color={theme.palette.text.primary}
-      />
-      <path
-        d={arcPath(
-          polarToCartesian(radiusPx + 1, startRadians),
-          polarToCartesian(radiusPx + 1, endRadians),
-          radiusPx + 1,
-          largeArc,
-        )}
-        stroke={stripAlpha(theme.palette.text.secondary)}
-        strokeWidth={2}
-        strokeDasharray="2,2"
-        fill="none"
-      />
-    </>
-  )
-})
 
 const RulerLabel = observer(function RulerLabel({
   offsetRadians,
@@ -146,6 +88,73 @@ const RulerLabel = observer(function RulerLabel({
   )
 })
 
+// the arc and its label, the two things every slice draws whether it stands for
+// one region or a run of elided ones
+const RulerArc = observer(function RulerArc({
+  model,
+  slice,
+  text,
+  title,
+  labelColor,
+  strokeColor,
+  dashed,
+}: {
+  model: CircularViewModel
+  slice: Slice
+  text: string
+  title?: string
+  labelColor: string
+  strokeColor: string
+  dashed?: boolean
+}) {
+  const { radiusPx, offsetRadians } = model
+  const { endRadians, startRadians } = slice
+  return (
+    <>
+      <RulerLabel
+        text={text}
+        title={title}
+        offsetRadians={offsetRadians}
+        maxWidthPx={(endRadians - startRadians) * radiusPx}
+        radians={(endRadians + startRadians) / 2}
+        radiusPx={radiusPx}
+        color={labelColor}
+      />
+      <path
+        d={sliceArcPath(slice, radiusPx + 1)}
+        stroke={stripAlpha(strokeColor)}
+        strokeWidth={2}
+        strokeDasharray={dashed ? '2,2' : undefined}
+        fill="none"
+      />
+    </>
+  )
+})
+
+const ElisionRulerArc = observer(function ElisionRulerArc({
+  model,
+  slice,
+  region,
+}: {
+  model: CircularViewModel
+  slice: Slice
+  region: SliceElidedRegion
+}) {
+  const theme = useTheme()
+  const regionCount = `[${toLocale(region.regions.length)}]`
+  return (
+    <RulerArc
+      model={model}
+      slice={slice}
+      text={regionCount}
+      title={`${regionCount} more regions`}
+      labelColor={theme.palette.text.primary}
+      strokeColor={theme.palette.text.secondary}
+      dashed
+    />
+  )
+})
+
 const RegionRulerArc = observer(function RegionRulerArc({
   model,
   slice,
@@ -156,10 +165,6 @@ const RegionRulerArc = observer(function RegionRulerArc({
   region: SliceNonElidedRegion
 }) {
   const theme = useTheme()
-  const { radiusPx } = model
-  const { endRadians, startRadians } = slice
-  const centerRadians = (endRadians + startRadians) / 2
-  const widthPx = (endRadians - startRadians) * radiusPx
   const session = getSession(model)
   const assembly = session.assemblyManager.get(region.assemblyName)
   const refNameColor = assembly?.getRefNameColor(region.refName)
@@ -173,22 +178,13 @@ const RegionRulerArc = observer(function RegionRulerArc({
   }
 
   return (
-    <>
-      <RulerLabel
-        text={region.refName}
-        offsetRadians={model.offsetRadians}
-        maxWidthPx={widthPx}
-        radians={centerRadians}
-        radiusPx={radiusPx}
-        color={color}
-      />
-      <path
-        d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
-        stroke={stripAlpha(color)}
-        strokeWidth={2}
-        fill="none"
-      />
-    </>
+    <RulerArc
+      model={model}
+      slice={slice}
+      text={region.refName}
+      labelColor={color}
+      strokeColor={color}
+    />
   )
 })
 

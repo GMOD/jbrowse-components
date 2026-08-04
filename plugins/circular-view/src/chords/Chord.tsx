@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import { bpToRadians } from '../CircularView/slices.ts'
 import { getEndpoint } from './chordGeometry.ts'
 
-import type { Block } from './types.ts'
+import type { Slice } from '../CircularView/slices.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -21,7 +21,7 @@ const Chord = observer(function Chord({
   onClick,
 }: {
   feature: Feature
-  blocksForRefs: Record<string, Block>
+  blocksForRefs: Record<string, Slice>
   radius: number
   config: AnyConfigurationModel
   bezierRadius: number

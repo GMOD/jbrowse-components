@@ -1,15 +1,15 @@
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 
-import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
+import Chords from '../../chords/Chords.tsx'
 import DisplayError from '../components/DisplayError.tsx'
 
-import type { ChordDisplayModel } from '../../ChordRenderer/types.ts'
+import type { ChordDisplayModel } from '../../chords/types.ts'
 
 export async function renderSvg(display: ChordDisplayModel) {
   await awaitSvgReady(display)
   return display.error ? (
     <DisplayError model={display} />
-  ) : display.features ? (
-    <SVChordsReactComponent display={display} />
+  ) : display.ready ? (
+    <Chords display={display} />
   ) : null
 }

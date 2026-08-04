@@ -18,11 +18,11 @@ import {
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { Block } from '../../ChordRenderer/types.ts'
 import type {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/model.ts'
+import type { Slice } from '../../CircularView/slices.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -99,9 +99,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       /**
        * #getter
        * both halves of a chord render: the features, and the refName map that
-       * translates the adapter's names to the assembly's. `blocksForRefs` falls
-       * back to untranslated names while the map is in flight, so an export that
-       * only waited on features could capture a figure with every chord silently
+       * translates the assembly's names to the adapter's. `blocksForRefs` falls
+       * back to untranslated names while the map is in flight, so a render that
+       * only waited on features could draw a figure with every chord silently
        * dropped (whenever the adapter names differ, e.g. `1` vs `chr1`).
        */
       get ready() {
@@ -147,9 +147,12 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
 
       /**
        * #getter
+       * every slice of the circle, keyed by the refName a feature off this
+       * display's adapter carries. An elided slice answers to each of the
+       * refNames it swallowed
        */
-      get blocksForRefs(): Record<string, Block> {
-        const result: Record<string, Block> = {}
+      get blocksForRefs(): Record<string, Slice> {
+        const result: Record<string, Slice> = {}
         for (const block of this.view.staticSlices) {
           const regions = block.region.elided
             ? block.region.regions
@@ -204,7 +207,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         /**
          * #action
          */
-        setRefNameMap(refNameMap: Record<string, string>) {
+        setRefNameMap(refNameMap: Record<string, string> | undefined) {
           self.refNameMap = refNameMap
         },
       }
@@ -269,6 +272,11 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
               }
               const stopToken = createStopToken()
               refNameStopToken = stopToken
+
+              // the old map named the old assembly's refs; keeping it while the
+              // new one loads would let `ready` wave through a render keyed on
+              // names this adapter no longer has
+              self.setRefNameMap(undefined)
 
               try {
                 const refNameMap =

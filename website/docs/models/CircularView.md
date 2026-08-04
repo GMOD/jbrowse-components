@@ -49,7 +49,6 @@ the whole surface.
 | <span id="property-spacingpx">**spacingPx**</span><br><code>spacingPx: types.stripDefault(types.number, defaultSpacingPx)</code> |  | CircularView |
 | <span id="property-paddingpx">**paddingPx**</span><br><code>paddingPx: types.stripDefault(types.number, defaultPaddingPx)</code> |  | CircularView |
 | <span id="property-minvisiblewidth">**minVisibleWidth**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>minVisibleWidth: types.stripDefault( types.number, defaultMinVi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>minVisibleWidth: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.number,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultMinVisibleWidth,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  | CircularView |
-| <span id="property-minimumblockwidth">**minimumBlockWidth**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>minimumBlockWidth: types.stripDefault( types.number, defaultMin…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>minimumBlockWidth: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.number,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;defaultMinimumBlockWidth,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  | CircularView |
 | <span id="property-trackselectortype">**trackSelectorType**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>trackSelectorType: types.stripDefault(types.string, 'hierarchic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>trackSelectorType: types.stripDefault(types.string, 'hierarchical')</code></pre></dialog></span> | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. | CircularView |
 | <span id="property-init">**init**</span><br><code>init: types.frozen&lt;CircularViewInit &#124; undefined&gt;()</code> | used for initializing the view from a session snapshot | CircularView |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseViewModel](../baseviewmodel#property-id) |
@@ -78,12 +77,12 @@ the whole surface.
 | <span id="getter-bpperradian">**bpPerRadian**</span><br><code>number</code> |  |
 | <span id="getter-centerxy">**centerXY**</span><br><code>[number, number]</code> |  |
 | <span id="getter-totalbp">**totalBp**</span><br><code>number</code> |  |
-| <span id="getter-maximumradiuspx">**maximumRadiusPx**</span><br><code>number</code> |  |
 | <span id="getter-maxbpperpx">**maxBpPerPx**</span><br><code>number</code> |  |
 | <span id="getter-minbpperpx">**minBpPerPx**</span><br><code>number</code> |  |
 | <span id="getter-atmaxbpperpx">**atMaxBpPerPx**</span><br><code>boolean</code> |  |
 | <span id="getter-atminbpperpx">**atMinBpPerPx**</span><br><code>boolean</code> |  |
 | <span id="getter-figuresize">**figureSize**</span><br><code>number</code> | figure is always square, so width === height |
+| <span id="getter-figureoriginxy">**figureOriginXY**</span><br><code>[number, number]</code> | top-left of the figure within the view's box. The figure is centered there — a view much wider than it is tall would otherwise leave the circle jammed in the corner under the controls, and a figure zoomed past the box overflows evenly rather than only off the bottom-right — and then shifted by the zoom-to-cursor pan |
 | <span id="getter-elidedregions">**elidedRegions**</span><br><code>SliceRegion[]</code> | this is displayedRegions, post-processed to elide regions that are too small to see reasonably |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
@@ -107,7 +106,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-fittowindow">**fitToWindow**</span><br><code>() =&gt; void</code> |  | CircularView |
+| <span id="action-fittowindow">**fitToWindow**</span><br><code>() =&gt; void</code> | size the figure so it exactly fills the smaller of the view's two dimensions | CircularView |
 | <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; number</code> |  | CircularView |
 | <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  | CircularView |
 | <span id="action-rotateclockwisebutton">**rotateClockwiseButton**</span><br><code>() =&gt; void</code> |  | CircularView |

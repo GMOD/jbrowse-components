@@ -1,21 +1,20 @@
 import { parseSvAlt } from '@jbrowse/sv-core'
 
-import type { Block } from './types.ts'
+import type { Slice } from '../CircularView/slices.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * The block+position a chord's far end lands on. Prefers a VCF breakend
+ * The slice+position a chord's far end lands on. Prefers a VCF breakend
  * (ALT/INFO), then an explicit `mate` field, else the feature's own end.
  */
 export function getEndpoint(
   feature: Feature,
-  blocksForRefs: Record<string, Block>,
-  startBlock: Block,
+  blocksForRefs: Record<string, Slice>,
+  startBlock: Slice,
 ) {
   const alt = (feature.get('ALT') as string[] | undefined)?.[0]
   const mate = feature.get('mate') as
-    | { refName: string; start: number }
-    | undefined
+    { refName: string; start: number } | undefined
   const parsed = parseSvAlt(feature, alt)
   return parsed
     ? {

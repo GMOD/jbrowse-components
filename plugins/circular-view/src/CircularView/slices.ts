@@ -37,6 +37,11 @@ export function bpToRadians(
     : (bp - region.start) / bpPerRadian + startRadians
 }
 
+/**
+ * One wedge of the circle: a displayed region (or a run of elided ones) placed
+ * at a fixed angular span. The unit of geometry every circular display draws
+ * against — `bpToXY` turns a genomic coordinate into a point at any radius.
+ */
 export class Slice {
   key: string
 
@@ -52,10 +57,9 @@ export class Slice {
     offsetRadians: number,
   ) {
     const { bpPerRadian } = view
-    this.key =
-      'regions' in region
-        ? JSON.stringify(region.regions)
-        : assembleLocString(region)
+    this.key = region.elided
+      ? JSON.stringify(region.regions)
+      : assembleLocString(region)
     this.bpPerRadian = bpPerRadian
     this.startRadians = offsetRadians
     this.endRadians = region.widthBp / bpPerRadian + offsetRadians
@@ -66,7 +70,7 @@ export class Slice {
   }
 }
 
-function calculateStaticSlices(self: {
+export function calculateStaticSlices(self: {
   elidedRegions: readonly SliceRegion[]
   bpPerRadian: number
   spacingPx: number
@@ -81,5 +85,3 @@ function calculateStaticSlices(self: {
   }
   return slices
 }
-
-export { calculateStaticSlices }

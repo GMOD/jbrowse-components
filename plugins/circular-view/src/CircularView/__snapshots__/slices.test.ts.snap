@@ -23,7 +23,7 @@ exports[`two slices 1`] = `
     "key": "{wow}toast:1..10,000",
     "region": {
       "assemblyName": "wow",
-      "elided": true,
+      "elided": false,
       "end": 10000,
       "refName": "toast",
       "start": 0,
@@ -34,13 +34,23 @@ exports[`two slices 1`] = `
   Slice {
     "bpPerRadian": 3183.098861837907,
     "endRadians": 6.288185307179586,
-    "key": "{wow}test:1..10,000",
+    "key": "[{"assemblyName":"wow","refName":"tiny1","start":0,"end":5000},{"assemblyName":"wow","refName":"tiny2","start":0,"end":5000}]",
     "region": {
-      "assemblyName": "wow",
       "elided": true,
-      "end": 10000,
-      "refName": "test",
-      "start": 0,
+      "regions": [
+        {
+          "assemblyName": "wow",
+          "end": 5000,
+          "refName": "tiny1",
+          "start": 0,
+        },
+        {
+          "assemblyName": "wow",
+          "end": 5000,
+          "refName": "tiny2",
+          "start": 0,
+        },
+      ],
       "widthBp": 10000,
     },
     "startRadians": 3.146592653589793,

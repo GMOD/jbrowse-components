@@ -234,9 +234,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               displayId: `${trackId}-chord-display`,
               onChordClick:
                 'jexl:defaultOnChordClick(feature, track, pluginManager)',
-              renderer: {
-                type: 'StructuralVariantChordRenderer',
-              },
             },
           ],
         }

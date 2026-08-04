@@ -14,6 +14,23 @@ import type { CircularViewModel } from '../model.ts'
 // clicking what is under it. See handlePointerMove.
 const DRAG_THRESHOLD_PX = 4
 
+// where a pointer sits relative to the middle of the circle, in the *screen*
+// frame — the figure's own rotation is left in, since both callers want it
+// there (the rotation delta is a difference of two of these, and the pan
+// zoomToPoint applies is screen-space)
+function offsetFromCenter(
+  model: CircularViewModel,
+  rect: DOMRect,
+  { clientX, clientY }: { clientX: number; clientY: number },
+) {
+  const [originX, originY] = model.figureOriginXY
+  const [cx, cy] = model.centerXY
+  return [
+    clientX - rect.left - originX - cx,
+    clientY - rect.top - originY - cy,
+  ] as const
+}
+
 const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
@@ -95,9 +112,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     offsetRadians,
     centerXY,
     figureSize,
+    figureOriginXY,
     hideVerticalResizeHandle,
-    panX,
-    panY,
   } = model
   const { classes } = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -115,9 +131,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     }
     const onWheel = (event: WheelEvent) => {
       const rect = el.getBoundingClientRect()
-      const [cx, cy] = model.centerXY
-      const dx = event.clientX - rect.left - cx - model.panX
-      const dy = event.clientY - rect.top - cy - model.panY
+      const [dx, dy] = offsetFromCenter(model, rect, event)
       const distFromCenter = Math.hypot(dx, dy)
       if (distFromCenter > model.radiusPx + model.paddingPx) {
         return
@@ -142,11 +156,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   const angleFromCenter = (clientX: number, clientY: number) => {
     const rect = containerRef.current!.getBoundingClientRect()
-    const [cx, cy] = centerXY
-    return Math.atan2(
-      clientY - rect.top - cy - panY,
-      clientX - rect.left - cx - panX,
-    )
+    const [dx, dy] = offsetFromCenter(model, rect, { clientX, clientY })
+    return Math.atan2(dy, dx)
   }
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -207,7 +218,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     >
       <div
         className={classes.panWrapper}
-        style={{ transform: `translate(${panX}px,${panY}px)` }}
+        style={{
+          transform: `translate(${figureOriginXY[0]}px,${figureOriginXY[1]}px)`,
+        }}
       >
         <svg
           className={cx(

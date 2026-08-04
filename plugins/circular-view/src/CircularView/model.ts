@@ -32,6 +32,10 @@ import type { FC, ReactNode } from 'react'
 
 const twoPi = 2 * Math.PI
 
+// the figure never grows past this, so a zoomed-in circle stays a size the
+// browser can lay out
+const maximumRadiusPx = 5000
+
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
@@ -82,7 +86,6 @@ function stateModelFactory(pluginManager: PluginManager) {
   const defaultSpacingPx = 10
   const defaultPaddingPx = 80
   const defaultMinVisibleWidth = 6
-  const defaultMinimumBlockWidth = 20
   return types
     .compose(
       'CircularView',
@@ -163,13 +166,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         */
-        minimumBlockWidth: types.stripDefault(
-          types.number,
-          defaultMinimumBlockWidth,
-        ),
-        /**
-         * #property
          * vestigial: the hierarchical selector is the only one that exists, so
          * this value is ignored. Retained because saved sessions and configs
          * persist it.
@@ -243,12 +239,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get maximumRadiusPx() {
-        return 5000
-      },
-      /**
-       * #getter
-       */
       get maxBpPerPx() {
         const minCircumferencePx = twoPi * self.minimumRadiusPx
         return this.totalBp / minCircumferencePx
@@ -258,7 +248,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get minBpPerPx() {
         // min depends on window dimensions, clamp between old min(0.01) and max
-        const maxCircumferencePx = twoPi * this.maximumRadiusPx
+        const maxCircumferencePx = twoPi * maximumRadiusPx
         return clamp(
           this.totalBp / maxCircumferencePx,
           0.0000000001,
@@ -283,6 +273,21 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get figureSize() {
         return this.radiusPx * 2 + 2 * self.paddingPx
+      },
+      /**
+       * #getter
+       * top-left of the figure within the view's box. The figure is centered
+       * there — a view much wider than it is tall would otherwise leave the
+       * circle jammed in the corner under the controls, and a figure zoomed
+       * past the box overflows evenly rather than only off the bottom-right —
+       * and then shifted by the zoom-to-cursor pan
+       */
+      get figureOriginXY(): [number, number] {
+        const { figureSize } = this
+        return [
+          (this.width - figureSize) / 2 + self.panX,
+          (self.height - figureSize) / 2 + self.panY,
+        ]
       },
       /**
        * #getter
@@ -427,18 +432,45 @@ function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * size the figure so it exactly fills the smaller of the view's two
+       * dimensions
        */
       fitToWindow() {
         if (!self.displayedRegions.length) {
           return
         }
-        const r = Math.min(self.width, self.height) / 2 - self.paddingPx
-        this.setBpPerPx(
-          self.totalBp / (twoPi * Math.max(r, self.minimumRadiusPx)),
+        const targetRadiusPx = Math.max(
+          Math.min(self.width, self.height) / 2 - self.paddingPx,
+          self.minimumRadiusPx,
         )
+        // the circumference is the regions plus one inter-slice gap each, so
+        // the gaps come out of the budget before the bp are spread over what is
+        // left. Ignoring them overshoots by sliceCount*spacingPx/PI px of
+        // figure size, which an assembly with many contigs clips off the bottom
+        // of its own box. How many slices there are itself depends on bpPerPx
+        // (narrow regions elide together), so iterate until the count settles —
+        // two passes, in practice
+        let sliceCount = -1
+        for (
+          let i = 0;
+          i < 5 && sliceCount !== self.elidedRegions.length;
+          i++
+        ) {
+          sliceCount = self.elidedRegions.length
+          this.setBpPerPx(
+            self.totalBp /
+              Math.max(
+                twoPi * targetRadiusPx - sliceCount * self.spacingPx,
+                twoPi * self.minimumRadiusPx,
+              ),
+          )
+        }
         self.panX = 0
         self.panY = 0
       },
+      /**
+       * #action
+       */
       setWidth(newWidth: number): number {
         const clamped = Math.max(newWidth, minWidth)
         self.volatileWidth = clamped
@@ -520,9 +552,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.autoFit = false
         const oldRadius = self.radiusPx
         self.bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        // figureOriginXY keeps the circle's center pinned to the middle of the
+        // box, so the only thing that moves the cursor's point is its own
+        // offset from that center growing with the radius
         const dr = oldRadius - self.radiusPx
-        self.panX += dr * (1 + Math.cos(cursorAngle))
-        self.panY += dr * (1 + Math.sin(cursorAngle))
+        self.panX += dr * Math.cos(cursorAngle)
+        self.panY += dr * Math.sin(cursorAngle)
       },
 
       /**

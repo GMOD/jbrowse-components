@@ -40,11 +40,14 @@ test('one slice', () => {
   expect(slice).toMatchSnapshot()
 })
 
+// a plain slice next to an elided one: the two take their keys from different
+// places (the loc string vs the swallowed regions), and a Slice has to end up
+// with the right one
 test('two slices', () => {
   const view = {
     elidedRegions: [
       {
-        elided: true,
+        elided: false,
         assemblyName: 'wow',
         refName: 'toast',
         start: 0,
@@ -53,11 +56,11 @@ test('two slices', () => {
       },
       {
         elided: true,
-        assemblyName: 'wow',
-        refName: 'test',
-        start: 0,
-        end: 10000,
         widthBp: 10000,
+        regions: [
+          { assemblyName: 'wow', refName: 'tiny1', start: 0, end: 5000 },
+          { assemblyName: 'wow', refName: 'tiny2', start: 0, end: 5000 },
+        ],
       },
     ],
     spacingPx: 5,

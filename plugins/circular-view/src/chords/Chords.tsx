@@ -4,7 +4,7 @@ import Chord from './Chord.tsx'
 
 import type { ChordDisplayModel } from './types.ts'
 
-const SVChordsReactComponent = observer(function SVChordsReactComponent({
+const Chords = observer(function Chords({
   display,
 }: {
   display: ChordDisplayModel
@@ -19,6 +19,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
     onChordClick,
   } = display
   return (
+    // testid is load-bearing for the embedded-component cypress suites
     <g data-testid="structuralVariantChordRenderer">
       {features?.map(feature => (
         <Chord
@@ -36,4 +37,4 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
   )
 })
 
-export default SVChordsReactComponent
+export default Chords

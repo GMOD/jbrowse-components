@@ -1,16 +1,14 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { Slice } from '../CircularView/slices.ts'
 import { getEndpoint } from './chordGeometry.ts'
 
-import type { Block } from './types.ts'
-
-function block(refName: string): Block {
-  return {
-    bpPerRadian: 1,
-    startRadians: 0,
-    endRadians: 1,
-    region: { start: 0, end: 1, refName },
-  }
+function block(refName: string) {
+  return new Slice(
+    { bpPerRadian: 1 },
+    { elided: false, widthBp: 1, start: 0, end: 1, refName, assemblyName: 'a' },
+    0,
+  )
 }
 
 const chr1 = block('chr1')
