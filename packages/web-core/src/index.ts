@@ -9,6 +9,7 @@ export {
   BaseWebSessionModel,
   finalizeWebSession,
 } from './BaseWebSession/index.ts'
+export { sessionLastUsed } from './WebRootModel.ts'
 export type {
   AbstractJBrowseModel,
   AbstractWebRootModel,

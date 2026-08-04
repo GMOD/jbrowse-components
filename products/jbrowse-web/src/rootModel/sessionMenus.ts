@@ -1,4 +1,5 @@
 import { formatRelativeTime } from '@jbrowse/core/util'
+import { sessionLastUsed } from '@jbrowse/web-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 import type { SessionMetadata } from '@jbrowse/web-core'
@@ -21,7 +22,9 @@ function sessionLabel(
   currentSessionId: string | undefined,
 ) {
   const suffix =
-    r.id === currentSessionId ? 'current' : formatRelativeTime(r.createdAt)
+    r.id === currentSessionId
+      ? 'current'
+      : formatRelativeTime(sessionLastUsed(r))
   return `${r.name} (${suffix})`
 }
 

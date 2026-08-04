@@ -453,10 +453,15 @@ const SessionLoader = types
         // one (jbrowse.org demos do) needs a needless "trust this plugin" click.
         const configPlugins = dropVendoredPlugins(config.plugins ?? [])
         const isCrossOrigin = configUri.origin !== window.location.origin
+        // cheap local check first, for the same reason as loadSession:
+        // checkPlugins fetches the plugin store and THROWS when it is
+        // unreachable, and that throw becomes a configError — a dead app. An
+        // already-remembered plugin must not be able to die that way just
+        // because the store is down.
         if (
           isCrossOrigin &&
-          !(await checkPlugins(configPlugins)) &&
-          !arePluginsRemembered(configPlugins)
+          !arePluginsRemembered(configPlugins) &&
+          !(await checkPlugins(configPlugins))
         ) {
           self.setSessionTriaged({
             snap: config,
@@ -667,7 +672,7 @@ const SessionLoader = types
      * loadSessionByType may itself surface a new (session) triage.
      */
     async applyTriagedConfig(snap: Snap) {
-      await self.loadConfigAndPlugins({ ...snap, id: createElementId() })
+      await self.loadConfigAndPlugins(snap)
       self.setSessionTriaged(undefined)
       await this.loadSessionByType()
     },

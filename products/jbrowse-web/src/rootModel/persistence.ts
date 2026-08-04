@@ -1,4 +1,5 @@
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
+import { sessionLastUsed } from '@jbrowse/web-core'
 import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
@@ -21,7 +22,7 @@ async function pruneOldSessions(
   const metadata = await sessionDB.getAll('metadata')
   const stale = metadata
     .filter(m => !m.favorite && m.id !== activeId)
-    .sort((a, b) => +b.createdAt - +a.createdAt)
+    .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a))
     .slice(MAX_AUTOSAVED_SESSIONS)
   await Promise.all(
     stale.flatMap(m => [
@@ -61,6 +62,11 @@ export async function setupSessionDB(self: WebRootModel) {
                 {
                   favorite: ret?.favorite ?? false,
                   createdAt: ret?.createdAt ?? new Date(),
+                  // a session id survives reloads, so createdAt is pinned to
+                  // the day the session first appeared and says nothing about
+                  // whether it is still in use. This is what the recent list,
+                  // the pruner and the age-based delete all rank by.
+                  updatedAt: new Date(),
                   name,
                   id,
                   configPath,

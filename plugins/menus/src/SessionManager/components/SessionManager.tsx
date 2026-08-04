@@ -10,12 +10,15 @@ import { Button, IconButton, Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import { sessionLastUsed } from './util.ts'
+
 import type { SessionModel } from './util.ts'
 
 interface Row {
   id: string
   name: string
   createdAt: Date
+  lastUsed: Date
   fav: boolean
 }
 
@@ -41,15 +44,19 @@ const SessionManager = observer(function SessionManager({
       id: r.id,
       name: r.name,
       createdAt: r.createdAt,
+      lastUsed: sessionLastUsed(r),
       fav: r.favorite,
     }))
     .filter(f => !showOnlyFavs || f.fav)
 
   async function handleDeleteOld() {
+    // ages by last use, not creation: an id survives reloads, so a session
+    // edited every day still carries the createdAt of the day it was opened and
+    // would otherwise be deleted out from under the user
     const toDelete = (session.savedSessionMetadata ?? []).filter(
       elt =>
-        (Date.now() - elt.createdAt.getTime()) / (1000 * 60 * 60 * 24) > 1 &&
-        !elt.favorite,
+        (Date.now() - sessionLastUsed(elt).getTime()) / (1000 * 60 * 60 * 24) >
+          1 && !elt.favorite,
     )
     await Promise.all(toDelete.map(elt => session.deleteSavedSession(elt.id)))
     session.notify(`${toDelete.length} sessions deleted`, 'info')
@@ -89,15 +96,17 @@ const SessionManager = observer(function SessionManager({
       ),
     },
     {
-      headerName: 'Created at',
-      field: 'createdAt',
+      // the rows arrive ordered by last use, so dating them by creation would
+      // read as an unsorted list
+      headerName: 'Last used',
+      field: 'lastUsed',
       renderCell: ({ row }: { row: Row }) => (
         <Tooltip
           disableInteractive
           slotProps={{ transition: { timeout: 0 } }}
-          title={row.createdAt.toLocaleString()}
+          title={`Last used ${row.lastUsed.toLocaleString()}\nCreated ${row.createdAt.toLocaleString()}`}
         >
-          <div>{formatRelativeTime(row.createdAt)}</div>
+          <div>{formatRelativeTime(row.lastUsed)}</div>
         </Tooltip>
       ),
     },

@@ -7,6 +7,9 @@ import type { SessionShareMode } from '@jbrowse/core/util'
 // remembers the user's chosen share *mode* (short/long/json), not a URL
 export const SHARE_MODE_LOCALSTORAGE_KEY = 'jbrowse-shareMode'
 
+// never carried into a shared link, see buildShareUrl
+const ADMIN_PARAMS = ['adminKey', 'adminServer']
+
 export interface ShareUrlResult {
   url: string
   sessionParam: string
@@ -38,6 +41,14 @@ export async function buildShareUrl(
   // carry over the page's existing params (e.g. config) from wherever they live
   // so none are lost when session is relocated, then write them all to one place
   const params = readAllQueryParams()
+  // ...except the admin ones. They survive stripConsumedSessionParams (an admin
+  // needs them across reloads), so they are still in the address bar when the
+  // share dialog reads it — and adminKey is the credential the admin server
+  // accepts for overwriting config.json. Sharing a link must never hand that to
+  // the recipient.
+  for (const key of ADMIN_PARAMS) {
+    params.delete(key)
+  }
   params.set('session', sessionParam)
   if (password) {
     params.set('password', password)

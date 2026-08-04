@@ -11,6 +11,7 @@ import {
   loadPluginRecords,
   readSessionFromStorage,
 } from './sessionLoaderHelpers.ts'
+import { forgetTrustedPlugins, rememberPlugins } from './trustedPlugins.ts'
 
 import type { SessionSource } from './types.ts'
 
@@ -50,6 +51,7 @@ describe('SessionLoader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     sessionStorage.clear()
+    forgetTrustedPlugins()
     jest.spyOn(console, 'error').mockImplementation(() => {})
     jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -588,6 +590,35 @@ describe('SessionLoader', () => {
       expect(loader.sessionTriaged).toBeUndefined()
       expect(loader.configSnapshot).toBeDefined()
       expect(loader.sessionSource).toEqual({ type: 'default' })
+    })
+
+    // checkPlugins fetches the plugin store and THROWS when it is unreachable,
+    // and that throw becomes a configError — a dead app. A plugin the user
+    // already accepted on this origin must be settled locally, before the
+    // network is ever consulted.
+    it('a remembered config plugin loads without consulting the plugin store', async () => {
+      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
+      const { checkPlugins } = jest.requireMock('./util')
+      const plugin = { name: 'Custom', url: 'https://example.com/custom.js' }
+      openLocation.mockReturnValueOnce({
+        readFile: jest
+          .fn()
+          .mockResolvedValue(JSON.stringify({ plugins: [plugin] })),
+      })
+      checkPlugins.mockRejectedValueOnce(new Error('plugin store unreachable'))
+      rememberPlugins([plugin])
+
+      const loader = createAndInit({
+        configPath: 'http://example.com/config.json',
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded || !!loader.configError, {
+        timeout: 5000,
+      })
+      expect(checkPlugins).not.toHaveBeenCalled()
+      expect(loader.sessionTriaged).toBeUndefined()
+      expect(loader.configError).toBeUndefined()
+      expect(loader.configSnapshot).toBeDefined()
     })
 
     it('sets configError and skips session loading when config fetch fails', async () => {

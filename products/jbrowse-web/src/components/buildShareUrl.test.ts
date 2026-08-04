@@ -73,6 +73,30 @@ describe('buildShareUrl', () => {
     expect(hashParams.get('password')).toBeNull()
   })
 
+  // adminKey survives stripConsumedSessionParams (an admin needs it across
+  // reloads), so it is still in the address bar when the share dialog reads it.
+  // It is the credential the admin server accepts for rewriting config.json.
+  it.each(['short', 'long'] as const)(
+    'never carries the admin params into a %s share link',
+    async mode => {
+      setUrl('/app/?config=conf.json&adminKey=secret&adminServer=/upd')
+      mockEncode.mockResolvedValue({
+        sessionParam: mode === 'short' ? 'share-abc' : 'encoded-BIG',
+      })
+
+      const { url } = await buildShareUrl(mode, {}, 'https://share/')
+      expect(url).not.toContain('secret')
+      const u = new URL(url, window.location.origin)
+      const params = new URLSearchParams(
+        mode === 'short' ? u.search : u.hash.slice(1),
+      )
+      expect(params.get('adminKey')).toBeNull()
+      expect(params.get('adminServer')).toBeNull()
+      // an ordinary param still comes along
+      expect(params.get('config')).toBe('conf.json')
+    },
+  )
+
   it('carries existing hash params when the page already uses the hash', async () => {
     setUrl('/app/#config=conf.json&session=local-old')
     mockEncode.mockResolvedValue({ sessionParam: 'encoded-BIG' })

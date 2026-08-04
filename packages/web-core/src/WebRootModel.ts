@@ -13,8 +13,24 @@ export interface SessionMetadata {
   id: string
   name: string
   createdAt: Date
+  /**
+   * last autosave. Optional because rows written before this field existed are
+   * still in users' IndexedDB — read them through {@link sessionLastUsed}, never
+   * directly.
+   */
+  updatedAt?: Date
   configPath: string
   favorite: boolean
+}
+
+/**
+ * When a saved session was last touched. Everything that ranks, ages out, or
+ * dates a session wants this, not `createdAt`: an id survives reloads, so a
+ * session you have been editing all week still carries the createdAt of the day
+ * you opened it.
+ */
+export function sessionLastUsed(m: SessionMetadata) {
+  return m.updatedAt ?? m.createdAt
 }
 
 /** Shape of the jbrowse config model as seen from the session */

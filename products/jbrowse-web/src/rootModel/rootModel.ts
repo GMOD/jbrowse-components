@@ -25,6 +25,7 @@ import {
   undoMenuItem,
   workspacesMenuItem,
 } from '@jbrowse/product-core'
+import { sessionLastUsed } from '@jbrowse/web-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import StarIcon from '@mui/icons-material/Star'
 
@@ -183,7 +184,7 @@ export default function RootModel({
           this.setSavedSessionMetadata(
             ret
               .filter(f => f.configPath === (self.configPath ?? ''))
-              .sort((a, b) => +b.createdAt - +a.createdAt),
+              .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
           )
         }
       },

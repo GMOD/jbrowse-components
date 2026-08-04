@@ -1,7 +1,7 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { pluginDefinitionMetadata } from '@jbrowse/core/pluginDefinitions'
 import {
+  pluginDefinitionMetadata,
   pluginDescriptionString,
   pluginUrl,
 } from '@jbrowse/core/pluginDefinitions'
