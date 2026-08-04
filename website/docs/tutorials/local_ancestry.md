@@ -226,7 +226,7 @@ size: the small one is who, the big one is where.
 
 ## Reading the painting
 
-<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange); the wolfdogs below carry megabase blocks; the sweep breeds carry flecks, bar the Great Anglo-French Tricolour Hound's 11.4 Mb block; the German Shepherd lineage at the foot is solid dog. Highlighted: the window dissected below." src="/img/dog10k-wolfdog-ancestry.png" />
+<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange); the wolfdogs below carry megabase blocks; the sweep breeds carry flecks, bar the Great Anglo-French Tricolour Hound's 11.4 Mb block; the German Shepherd lineage at the foot is solid dog. Highlighted: the window the genotype check further down runs in." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Read each pair of rows as one animal's two chromosome copies. Wolf on one row
 and dog on the other is a heterozygous stretch; both orange is homozygous
@@ -234,6 +234,14 @@ wolf-derived. The breeds separate on block length as well as on total wolf
 fraction, and length is the more informative of the two: a recent cross leaves
 long founder haplotypes because recombination has had few generations to break
 them up.
+
+One feature of the painting is not about the dogs at all. Blocks break up
+towards the end of chr1, and that is the genetic map rather than the animals.
+The build script tiles the chromosome and prints both the block-edge count and
+the map's recombination per window, and the busiest window on one is the busiest
+on the other. Where the map puts more recombination a block has more places to
+end, so block density in a window is worth reading against the map before it is
+read against the breed.
 
 Both ends of the figure are checks. The German Shepherd lineage at the foot
 takes almost no wolf on this chromosome under the same panel and the same run,
@@ -275,18 +283,19 @@ The Shiloh Shepherd does not. Its longest wolf block on chr1 is 17.5 Mb, against
 a sweep in which every breed but one stops at 2.4 Mb. The Dog10K paper's own
 D-statistics find no significant excess of wolf allele sharing in this breed
 over German Shepherd Dogs, and the collection holds a single Shiloh Shepherd,
-painted here on a single chromosome.
+painted here on a single chromosome. A later genome-wide run over the same
+collection puts it among the three dogs with the longest, most recent wolf
+tracts ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
-**The exception is worth naming, because the sweep found it rather than being
-asked about it.** The Great Anglo-French Tricolour Hound — a French pack hound
-with no wolf in its account of itself — carries an 11.4 Mb block on one
-haplotype, which is wolfdog scale, while its total chr1 wolf fraction is only
-0.042 because the rest of it is empty. One long block in one animal is what a
-recent single introgression looks like and also what a phasing error or a
-mis-assembled region looks like; a chromosome and an animal are not enough to
-tell those apart. It is in the named figure above so that it is visible rather
-than averaged away, and following it up would start with the check in the next
-section applied at its edges.
+The one breed the sweep turns up that has no wolf in its account of itself is
+the Great Anglo-French Tricolour Hound, which carries a wolfdog-scale block on
+one haplotype and almost nothing on the rest of the chromosome. One long block
+in one animal is what a recent introgression looks like and also what a phasing
+error looks like, and one animal on one chromosome cannot separate those. The
+same paper reports this breed as the one with the most within-breed spread in
+wolf ancestry it found, which is a claim a one-dog-per-breed sweep cannot check,
+so the section below paints the breed again with every animal of it the
+collection allows.
 
 Those readings are all row-order arguments, and the order above came out of
 FLARE's per-sample summary, so it can only rank what the summary already ranked.
@@ -307,14 +316,59 @@ view, so panning to a 5 Mb window and re-clustering gives a different order for
 the same rows. A dendrogram beside a painting is an answer to a question that
 includes where you were looking.
 
+## One breed, five dogs
+
+A sweep that draws one dog per breed reports a breed as whatever that dog is,
+which is the wrong instrument for a breed whose individuals disagree. Running
+local ancestry across the whole Dog10K collection,
+[Lin et al. (2025)](https://doi.org/10.1073/pnas.2421768122) report the Great
+Anglo-French Tricolour Hound as the breed with the widest spread in wolf
+ancestry of any they analysed, two of its dogs carrying tracts recent enough to
+date the admixture within recorded breed history. The related Great Anglo-French
+White and Orange Hound is lower but also variable. Where that ancestry came from
+is not known.
+
+The collection holds six of each. One of each stays in the dog reference panel,
+since an animal painted against itself paints dog by construction, which leaves
+five of each to paint. The build script runs those ten as a second FLARE job,
+against the same two panels, the same map and the same held-out wolf as
+everything above, and prints their ancestry fractions and block lengths beside
+the ones behind the figures above.
+
+<Figure caption="Top: chr1 for five Great Anglo-French Tricolour Hounds and five White and Orange Hounds, between a held-out gray wolf and a German Shepherd. Bottom: the first 25 Mb, which the row labels cover in the panel above. Two Tricolour rows carry megabase wolf blocks the length of the chromosome, three carry almost none, and four of the five White and Orange are painted dog end to end." src="/img/dog10k-anglofrench-hounds.png" links="Whole chromosome=dog10k-anglofrench-hounds-chromosome,First 25 Mb=dog10k-anglofrench-hounds-start" />
+
+Two of the Tricolour Hounds are painted like the wolfdog above them and three
+are not. Of the White and Orange Hounds one carries a block and the rest are
+painted dog end to end, like the German Shepherd at the foot. These are ten
+registered members of two closely related French pack breeds.
+
+The dog the sweep drew, on how well its breed was sequenced and nothing else, is
+one of these five, and its long block is the one the section above could not
+separate from a phasing error. Both of its haplotypes end a wolf block at the
+same coordinate, which is what the lower panel is zoomed in on.
+
+Two cautions. This is one chromosome, so nothing here is the genome-wide
+fraction the paper reports. And what carries ancestry is an animal rather than a
+breed, which is the same reading the eighth wolfdog forced above.
+
 ## Checking a block against the genotypes
 
 A painted block is an inference, and the genotypes it was inferred from are
-right there in the panel. The window worth checking is not the middle of a block
-but its **edge**: inside a block, a wolf-called haplotype carrying wolf alleles
-is barely a claim, while at an edge the painting says the wolf alleles stop at a
-coordinate, and either they do or they do not. Nine of the sixty-four haplotypes
-end a wolf block inside the 1.5 Mb highlighted above.
+right there in the panel. The check has to be run at a block's **edge** rather
+than in its middle, and that is the whole reason the window below is the window
+below. Inside a block, finding wolf alleles on a wolf-called haplotype is close
+to circular: those alleles are what the call was made on, so the check cannot
+come out wrong. At an edge the painting commits to something that can be: it
+says the wolf alleles stop at a particular coordinate, and they either do, or
+run past it, or stop well short of it.
+
+So a window is worth dissecting when it holds edges, and worth more when it
+holds edges from both wolfdogs and ordinary breeds, whose blocks are very
+different lengths. The window highlighted above holds nine of them, which is how
+many times the check gets to run rather than a property of the place: the same
+tiling the build script prints puts it among the ordinary windows on both block
+edges and recombination. The band marks an address; the result is what happens
+at the edges inside it.
 
 Underneath the gene track and the painting, the same window's phased genotypes
 go in as a matrix, filtered to the markers that carry ancestry information at
@@ -333,7 +387,7 @@ description of the 32 animals in the file. Without the filter the lane draws
 every common site in 1.5 Mb, nearly all of them shared between wolves and dogs,
 and the figure is a wall of salt-and-pepper.
 
-<Figure caption="1.5 Mb of chr1 spanning nine wolf-block edges. Top: the genes in the window. Middle: FLARE's painting for 32 named animals. Bottom: their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after it; a sweep breed's short block is only half-carried on its wolf side." src="/img/dog10k-wolfdog-block-genotypes.png" />
+<Figure caption="Top: the whole of chr1 in the same 64 rows, the checked 1.5 Mb banded. Below: that window, its genes, FLARE's painting for 32 named animals, and their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after; a sweep breed's short block is only half-carried." src="/img/dog10k-wolfdog-block-genotypes.png" links="Whole chromosome=dog10k-wolfdog-block-genotypes-chromosome,The 1.5 Mb window=dog10k-wolfdog-block-genotypes-window" />
 
 The matrix draws one column per marker rather than placing each at its
 coordinate, so a run of carriers reads as a band instead of as speckle; the
@@ -398,9 +452,9 @@ bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 
 It downloads the Dog10K sample table, derives the panel and target lists, slices
 that chromosome out of the phased panel, generates the map, runs FLARE, prints
-the per-sample ancestry fractions, the wolf-block length distribution and the
-FLARE-independent allele count behind the readings above, and writes both
-painted BEDs
+the per-sample ancestry fractions, the wolf-block length distribution, the
+FLARE-independent allele count and the per-window block-edge and recombination
+tiling behind the readings above, and writes both painted BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
 plus their indexes and the genotype slice the last figure uses.
 
@@ -422,6 +476,10 @@ plus their indexes and the genotype slice the last figure uses.
   [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)
 - Browning et al. (2023).
   [Fast, accurate local ancestry inference with FLARE](https://doi.org/10.1016/j.ajhg.2023.02.010)
+- Lin et al. (2025).
+  [A legacy of genetic entanglement with wolves shapes modern dogs](https://doi.org/10.1073/pnas.2421768122),
+  local ancestry over the same collection, and the source of the Great
+  Anglo-French result the last section paints
 - Campbell et al. (2016).
   [A pedigree-based map of recombination in the domestic dog genome](https://doi.org/10.1534/g3.116.034678),
   the genetic map used here, in the

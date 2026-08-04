@@ -163,7 +163,16 @@ awk -F'\t' '$3=="Wolf" && $2=="Greece"{print $1}' keep.tsv > greek.txt
 awk -F'\t' '$3=="Breed_Dogs" && $2 ~ /German Shepherd/{print $1}' keep.tsv \
   | grep -v GRSD000002 > gsdref.txt
 
-cat wolves.txt dogs.txt targets.txt greek.txt gsdref.txt | sort -u > all.txt
+# Every Great Anglo-French hound of both forms, for the within-breed run at the
+# foot of this script. The sweep takes one dog per breed, which is the wrong
+# sampling for a breed whose interest is that its individuals DISAGREE, so these
+# are pulled in whole here and painted separately. Only the slice needs them at
+# this point; which of them can be a target is decided down there.
+awk -F'\t' '$3=="Breed_Dogs" && $2 ~ /^Great Anglo-French/{print $1}' keep.tsv \
+  > anglofrench.all.txt
+
+cat wolves.txt dogs.txt targets.txt greek.txt gsdref.txt anglofrench.all.txt \
+  | sort -u > all.txt
 awk '{print $1"\tWolf"}' wolves.txt > refpanel.txt
 awk '{print $1"\tDog"}' dogs.txt >> refpanel.txt
 
@@ -271,6 +280,81 @@ echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (243 animals) and"
 echo "      $(pwd)/dog10k_wolfdog_named.$CHROM.bed.gz (the named subset),"
 echo "plus their .tbi. Load them with the track JSON in the local ancestry"
 echo "tutorial; the subset track's rowOrder is named.tsv, in that order."
+
+# ── The Great Anglo-French hounds, one breed at a time ───────────────────────
+# Lin et al. 2025 (PNAS 122:e2421768122) ran local ancestry over the Dog10K
+# genomes and reported that the Great Anglo-French Tricolour Hound has the
+# HIGHEST VARIANCE IN WOLF ANCESTRY of any breed analysed (0.03 to 5.47%), with
+# two individuals carrying tracts long enough to date to ~17 and ~24 generations
+# — and that it is unclear where that ancestry came from. The related White and
+# Orange Hound is lower but also variable (0.004 to 1.8%).
+#
+# A one-dog-per-breed sweep cannot show that: it draws a single animal and the
+# breed comes out as whatever that animal happens to be. So this is a SECOND,
+# SEPARATE FLARE run over both forms of the breed at once, against the same
+# panels and the same map. Separate rather than folded into the run above
+# because the sweep's own design (one dog per breed, 243 targets) is load-bearing
+# for the figures above it, and because these rows want breed order rather than
+# the sweep's descending-wolf-fraction order — the claim is within-breed spread,
+# so the two breeds have to sit in two blocks to be compared.
+if [ "$CHROM" = chr1 ]; then
+  # GAFT000001/GAWO000001 stay in the DOG PANEL and so cannot be painted: a
+  # target matched against itself paints dog by construction. Everything else of
+  # both forms is free, which is five of the collection's six of each. Reference
+  # rows top and bottom are animals already held out of the panel by the run
+  # above, so nothing here is both panel and target.
+  python3 - <<'PY' > anglofrench.tsv
+PANEL = {'GAFT000001', 'GAWO000001'}
+ROWS = [('CLUPRU000001', 'Gray wolf (held out)'),
+        ('SAAR000001', 'Saarloos Wolfdog')]
+for prefix, name in (('GAFT', 'Gt Anglo-French Tricolour'),
+                     ('GAWO', 'Gt Anglo-French Wh/Orange')):
+    n = 0
+    for i in range(1, 7):
+        sample = '%s%06d' % (prefix, i)
+        if sample in PANEL:
+            continue
+        n += 1
+        ROWS.append((sample, '%s %d' % (name, n)))
+ROWS.append(('GRSD000002', 'German Shepherd'))
+for sample, label in ROWS:
+    print('%s\t%s' % (sample, label))
+PY
+  bcftools view -S <(cut -f1 anglofrench.tsv) --force-samples \
+    -Oz -o anglofrench.gt.vcf.gz "$CHROM.subset.vcf.gz"
+  java -Xmx12g -jar flare.jar ref="$CHROM.ref.vcf.gz" ref-panel=refpanel.txt \
+    gt=anglofrench.gt.vcf.gz map="$CHROM.map" out="anglofrench_$CHROM" seed=42
+  python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "anglofrench_$CHROM.anc.vcf.gz" \
+    anglofrench.tsv "dog10k_anglofrench.$CHROM.bed"
+  { grep '^#' "dog10k_anglofrench.$CHROM.bed"
+    grep -v '^#' "dog10k_anglofrench.$CHROM.bed" \
+      | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
+  } | bgzip > "dog10k_anglofrench.$CHROM.bed.gz"
+  tabix -f -p bed "dog10k_anglofrench.$CHROM.bed.gz"
+
+  echo
+  echo "Ancestry fractions for the Anglo-French run on $CHROM:"
+  zcat "anglofrench_$CHROM.global.anc.gz"
+  echo
+  echo "Wolf blocks per Anglo-French animal on $CHROM (count, median kb, longest kb):"
+  awk -F'\t' '$11=="Wolf" {
+      split($10, a, " hap"); len[a[1]] = len[a[1]] " " ($3-$2)
+    }
+    END {
+      for (animal in len) {
+        n = split(len[animal], v, " ")
+        m = 0; for (i = 1; i <= n; i++) if (v[i] != "") w[++m] = v[i] + 0
+        for (i = 2; i <= m; i++) { x = w[i]; j = i - 1
+          while (j > 0 && w[j] > x) { w[j+1] = w[j]; j-- }
+          w[j+1] = x }
+        med = (m % 2) ? w[(m+1)/2] : (w[m/2] + w[m/2+1]) / 2
+        printf "  %-28s %4d  %8.0f  %8.0f\n", animal, m, med/1000, w[m]/1000
+        delete w; m = 0
+      }
+    }' "dog10k_anglofrench.$CHROM.bed" | sort -k2,2nr
+  echo
+  echo "Wrote $(pwd)/dog10k_anglofrench.$CHROM.bed.gz plus its .tbi."
+fi
 
 # Wolf-block length distribution per animal. The tutorial's claim that the
 # breeds separate on block LENGTH and not only on total wolf fraction rests on
@@ -386,6 +470,73 @@ if [ "$CHROM" = chr1 ]; then
   tabix -f -p vcf dog10k_wolfdog_chr1_block.vcf.gz
   echo
   echo "Wrote $(pwd)/dog10k_wolfdog_chr1_block.vcf.gz (the marker figure's window)."
+
+  # Is that window a special place, or an ordinary one? The tutorial marks it on
+  # a whole-chromosome painting, where 1.5 Mb is about a percent of the frame and
+  # nothing inside it resolves, and a marked band reads as a claim whether or not
+  # one was meant. So tile the chromosome and count, and let the page say which
+  # it is rather than leave the reader to assume. The same pass prints the map's
+  # cM per tile, because that is what sets how often a painted block CAN end:
+  # the tile that tops this list is the one the map puts the most recombination
+  # in, not the one with the most wolf ancestry.
+  python3 - "$BLOCK_START" "$BLOCK_END" <<'CONTEXT'
+import bisect
+import statistics
+import sys
+
+lo, hi = int(sys.argv[1]), int(sys.argv[2])
+win = hi - lo
+
+ends, span = [], 0
+with open('dog10k_wolfdog_named.chr1.bed') as fh:
+    for line in fh:
+        if line.startswith('#'):
+            continue
+        f = line.rstrip('\n').split('\t')
+        span = max(span, int(f[2]))
+        if f[10] == 'Wolf':
+            ends.append(int(f[2]))
+# a block flush against the end of the painted region stops because the
+# chromosome does, not because the ancestry changes
+ends = [e for e in ends if e < span]
+
+# the same map FLARE was given, read back as a cumulative cM(position) step
+# function: columns are chrom, ., cM, bp
+grid = sorted((int(f[3]), float(f[2]))
+              for f in (line.split() for line in open('chr1.map'))
+              if len(f) >= 4)
+pos = [p for p, _ in grid]
+cms = [c for _, c in grid]
+
+
+def cm_at(x):
+    i = bisect.bisect_left(pos, x)
+    if i <= 0:
+        return cms[0]
+    if i >= len(pos):
+        return cms[-1]
+    f = (x - pos[i - 1]) / (pos[i] - pos[i - 1])
+    return cms[i - 1] + f * (cms[i] - cms[i - 1])
+
+
+tiles = [(sum(1 for e in ends if s <= e < s + win),
+          cm_at(s + win) - cm_at(s), s)
+         for s in range(0, span, win)]
+counts = [t[0] for t in tiles]
+here = sum(1 for e in ends if lo <= e < hi)
+atleast = sum(1 for c in counts if c >= here)
+busiest = max(tiles)
+
+print('\nWolf-block ends per %.1f Mb of chr1, over the 64 named haplotype rows:'
+      % (win / 1e6))
+print('  median tile         %3d ends   %5.2f cM'
+      % (statistics.median(counts), statistics.median(t[1] for t in tiles)))
+print('  the checked window  %3d ends   %5.2f cM   (%d of %d tiles hold %d or more)'
+      % (here, cm_at(hi) - cm_at(lo), atleast, len(tiles), here))
+print('  busiest tile        %3d ends   %5.2f cM   at chr1:%s-%s'
+      % (busiest[0], busiest[1], format(busiest[2], ','),
+         format(busiest[2] + win, ',')))
+CONTEXT
 
   # Does the painting hold at its own edges? For every haplotype whose wolf
   # block ENDS inside the window, count the figure's markers carried on each

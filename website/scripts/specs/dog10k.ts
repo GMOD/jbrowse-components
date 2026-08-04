@@ -145,6 +145,13 @@ const DOG_VCF_LAYOUT = NAMED.flatMap(([sample, label, color]) =>
   haplotypeRows({ sample, label, color }),
 )
 
+// The 1.5 Mb the genotype check runs in, shared by the whole-chromosome painting
+// that marks it and by the two halves of the figure that dissects it, so the
+// band and the blown-up view cannot drift apart. Same window as $BLOCK_START /
+// $BLOCK_END in scripts/build_dog10k_wolfdog_ancestry.sh, which writes the
+// genotype slice for it.
+const WOLF_BLOCK_WINDOW = 'chr1:112,000,000-113,500,000'
+
 // Row labels for the CYP1A2 figure. Breeds carrying the nonsense allele first,
 // then two that do not, then the wolves — which is where the control lives: no
 // wolf or coyote in the whole collection carries it.
@@ -384,10 +391,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       assembly: 'UU_Cfam_GSD_1.0',
       loc: 'chr1:1-123,556,469',
       // the window the genotype figure below dissects, marked in-app so the two
-      // figures are visibly the same place. Read off the committed BED, not
-      // eyeballed: nine of these 64 rows end a wolf block inside it, which is
-      // what that figure is about.
-      highlight: ['chr1:112,000,000-113,500,000'],
+      // figures are visibly the same place
+      highlight: [WOLF_BLOCK_WINDOW],
       tracks: [
         {
           trackId: 'dog10k_wolfdog_named',
@@ -420,12 +425,26 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // annotation should highlight what is trying to be shown" (review). Both
     // callouts anchor on the locus and the track rather than on measured pixels,
     // so they follow the band if the window or the row count ever moves.
+    //
+    // THE LABEL NAMES THE NINE AS A SAMPLE SIZE, NOT AS A FINDING. It used to
+    // read "nine of these rows end a wolf block inside it", full stop, which on
+    // a red box over 1.2% of the frame reads as "something happens here" — and
+    // nothing does. The build script tiles the chromosome: 9 ends against a
+    // median tile's 5, with 16 of 83 tiles holding as many or more, in a tile
+    // the genetic map gives 0.35 cM against a 0.75 cM median. An ordinary
+    // window. What it is picked for is that a painting can only be CHECKED at a
+    // block edge — inside a block, wolf alleles on a wolf-called haplotype are
+    // what the call was made on, so the check cannot come out wrong — and nine
+    // edges spread across four wolfdog and five ordinary-breed haplotypes is
+    // nine chances for it to. The label has to carry that clause or the count
+    // goes back to reading as a result. Nobody can count nine edges in the ~17
+    // px this band is wide, so the picture cannot be the evidence either way.
     annotations: [
       {
         type: 'box',
         anchor: {
           track: 'dog10k_wolfdog_named',
-          locus: 'chr1:112,000,000-113,500,000',
+          locus: WOLF_BLOCK_WINDOW,
         },
       },
       {
@@ -440,7 +459,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         textAlign: 'end',
         maxWidth: 430,
         fontSize: 15,
-        text: 'The 1.5 Mb the genotype figure below checks:\nnine of these rows end a wolf block inside it',
+        text: 'Where the genotype check below runs:\nnine block edges, where a painting can be wrong',
       },
     ],
   },
@@ -498,6 +517,58 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     viewportHeight: 1305,
   },
 
+  // The LOCATOR half of dog10k-wolfdog-block-genotypes: the same 64 rows in the
+  // same order over the whole chromosome, with the checked window drawn on them.
+  //
+  // It exists because the marked band on dog10k-wolfdog-ancestry, six paragraphs
+  // earlier in the page, is ~17 px wide and its payoff was nowhere near it — the
+  // reader had to hold a coordinate in their head to connect the two. Stacked
+  // straight onto the blown-up view it becomes a path: this sliver, then what is
+  // inside it. Same 320 px track height as the painting in the lower half, so
+  // both are at the same row pitch and a row can be traced down between them.
+  //
+  // No annotation and no row labels. The band is the whole message here, and the
+  // names are spent once, on the matrix at the foot of the lower half.
+  {
+    mode: 'url',
+    name: 'dog10k-wolfdog-block-genotypes-chromosome',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr1:1-123,556,469',
+      highlight: [WOLF_BLOCK_WINDOW],
+      tracks: [
+        {
+          trackId: 'dog10k_wolfdog_named',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 320,
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    // same gate as dog10k-wolfdog-ancestry: the legend renders only once the
+    // features are loaded and binned, while canvasDrawn can flip on an empty
+    // first paint
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    // the 320px track and its header, nothing below
+    viewportHeight: 520,
+    // The view's own highlight is a pale tint, and at 1.2% of the frame that is
+    // easy to miss in a locator whose entire job is to be found. Same box as on
+    // dog10k-wolfdog-ancestry, anchored on the locus rather than on pixels, so
+    // the two figures mark the window the same way. No text: the caption and the
+    // half directly below say what it is.
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: WOLF_BLOCK_WINDOW,
+        },
+      },
+    ],
+  },
+
   // Does the painting survive contact with the genotypes it was inferred from?
   // The check is the markers in this window whose alt allele is common in the
   // wolf panel and rare in the dog panel (AF_wolf >= 0.8, AF_dog <= 0.15, both
@@ -509,6 +580,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // or dog straight through. Inside a single block the figure could only show
   // that a wolf-called haplotype carries wolf alleles; at an edge there is
   // something to be wrong about, and 49 markers rather than 21 to be wrong with.
+  //
+  // Those nine are why the window is USABLE, not a property that makes it
+  // special: the build script tiles the chromosome and finds a median 1.5 Mb
+  // holding 5 wolf-block ends, with 16 of 83 tiles at 9 or more. Do not let a
+  // caption or a callout promote the count into a finding.
   //
   // The build script counts the markers carried either side of each of those
   // nine edges, and the answer is why the window is worth the height. Three of
@@ -533,10 +609,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // twice.
   {
     mode: 'url',
-    name: 'dog10k-wolfdog-block-genotypes',
+    name: 'dog10k-wolfdog-block-genotypes-window',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr1:112,000,000-113,500,000',
+      loc: WOLF_BLOCK_WINDOW,
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
@@ -584,6 +660,107 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // gene track, the 320px painting, the 700px matrix, their headers and the
     // two keys, nothing below
     viewportHeight: 1363,
+  },
+
+  {
+    mode: 'compose',
+    name: 'dog10k-wolfdog-block-genotypes',
+    parts: [
+      'dog10k-wolfdog-block-genotypes-chromosome',
+      'dog10k-wolfdog-block-genotypes-window',
+    ],
+  },
+
+  // Both Great Anglo-French hound breeds, five dogs each, from the second FLARE
+  // run in scripts/build_dog10k_wolfdog_ancestry.sh.
+  //
+  // WHY THIS BREED. Lin et al. 2025 (PNAS 122:e2421768122) ran local ancestry
+  // over the Dog10K genomes and found the Great Anglo-French Tricolour Hound has
+  // the HIGHEST VARIANCE IN WOLF ANCESTRY of any breed analysed (0.03 to 5.47%),
+  // two of its individuals carrying tracts long enough to date to ~17 and ~24
+  // generations, and wrote that it is unclear where that ancestry came from. The
+  // related White and Orange Hound is lower but also variable (0.004 to 1.8%).
+  // That is a published claim about WITHIN-breed spread, and a one-dog-per-breed
+  // sweep is structurally unable to show it: the sweep figure above draws a
+  // single Tricolour Hound and the breed comes out as whatever that dog is.
+  //
+  // The row order is BREED ORDER, not the descending-wolf-fraction order the
+  // sweep figures use, and that is the whole design: sorting by wolf fraction
+  // would interleave the two breeds and destroy the comparison the figure is
+  // for. Wolf on top and German Shepherd at the foot are the same two ends of
+  // the scale the other figures carry, so the hound rows are read between a
+  // known ceiling and a known floor rather than against each other alone.
+  //
+  // 26 rows in 560px is ~21px a row, well above the ~6px a row label needs, so
+  // unlike the 486-row spectrum this figure names every animal — with only ten
+  // hounds in it, WHICH dog carries the block is the result rather than a detail
+  // spent on a label.
+  //
+  // TWO PANELS, AND THE SECOND IS NOT OPTIONAL. The row labels are drawn as an
+  // overlay across the left ~14% of the frame, which over a 123.5 Mb view is the
+  // first ~17 Mb of chr1 — and two of these ten dogs carry their block inside it
+  // (Tricolour 5 an 11.4 Mb terminal block, Wh/Orange 3 a 4.3 Mb one at 6 Mb).
+  // The whole-chromosome panel alone therefore paints both of them as cleaner
+  // than they are, which is the one error this figure cannot afford, since its
+  // subject is which individual carries what. The lower panel re-draws the first
+  // 25 Mb, where 11.4 Mb is 46% of the width instead of 9%. Same 560px track
+  // height in both so the rows keep one pitch and a dog can be followed down.
+  {
+    mode: 'url',
+    name: 'dog10k-anglofrench-hounds-chromosome',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr1:1-123,556,469',
+      tracks: [
+        {
+          trackId: 'dog10k_anglofrench',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 560,
+          // 21px a row is far above MIN_SEPARATOR_ROW_PX, and the rows come in
+          // pairs that have to be read as one animal each
+          showRowSeparators: true,
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    viewportHeight: 765,
+  },
+
+  {
+    mode: 'url',
+    name: 'dog10k-anglofrench-hounds-start',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // 25 Mb, not the 17 the labels cover: the extra 8 Mb is what puts a clean
+      // right-hand margin after Tricolour 5's block so the block reads as a
+      // block that ends rather than as the panel running out.
+      loc: 'chr1:1-25,000,000',
+      tracks: [
+        {
+          trackId: 'dog10k_anglofrench',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 560,
+          showRowSeparators: true,
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    viewportHeight: 765,
+  },
+
+  {
+    mode: 'compose',
+    name: 'dog10k-anglofrench-hounds',
+    parts: [
+      'dog10k-anglofrench-hounds-chromosome',
+      'dog10k-anglofrench-hounds-start',
+    ],
   },
 
   // The Collie eye anomaly deletion (Schall & Kidd 2025, Fig 9): a 7.8 kb
@@ -1326,6 +1503,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'canFam4_ncbi_refseq',
           type: 'LinearBasicDisplay',
+          // the same glyph mode as dog10k-size-fst-scan-igf1, which is the
+          // figure directly above this one on the page and frames part of the
+          // same window: a reader moving between them should not have IGF1
+          // drawn two ways
+          geneGlyphMode: 'longestCoding',
           height: 80,
         },
         {
