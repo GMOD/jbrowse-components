@@ -57,7 +57,18 @@ literal, never `?raw` a private helper of this site.
   scores **zero** on both. When one fails, the fix is almost never to change the
   number — it is that a display started rendering a Material component that
   isn't behind either provider. Raising the budget quietly makes the prose
-  false. Background: `agent-docs/handoffs/byo-no-mui.md`.
+  false. Background: `agent-docs/reference/DISPLAYCHROME.md`, "The
+  bring-your-own seams".
+- **For anything smoke can't see, a throwaway puppeteer probe against the built
+  `dist/` is the pattern** — serve `dist/`, strip the Astro base,
+  `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a `.tmp.mjs`
+  **inside this directory** (workspace module resolution does not reach `/tmp`)
+  and delete it after; `oxlint` will flag it if you forget. Two traps that cost
+  time: `page.mouse.click` uses **viewport** coordinates, so `scrollIntoView` the
+  element and re-read its `boundingBox()` first or every click lands on `<html>`;
+  and whether a hover lands on a feature in a headless swiftshader render is
+  luck, which is why `BaseTooltip.test.tsx` in `@jbrowse/core` is the
+  deterministic half of the tooltip's coverage and the half to extend first.
 - **Every section needs `src/docs/<slug>.md`.** `ExampleSection` renders nothing
   when the file is absent, so a page can ship as a title, a one-line lead and
   400 lines of source with no explanation — which is how this site's own lead

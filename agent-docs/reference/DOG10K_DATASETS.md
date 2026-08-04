@@ -1,52 +1,40 @@
 ---
-name: tutorial-focus
-description: State of the tutorial-focus pass — the one-dataset rule it applies, which pages were refocused or moved, and which are still tours wearing a tutorial's clothes. Read before adding or restructuring a website tutorial.
+name: dog10k-datasets
+description: The Dog10K callsets, loci and measured recipes behind the local-ancestry, SV and LoF tutorials — which assembly everything is on, which VCF actually carries DUP/INV, how to compute per-sample copy number from the hosted CRAMs, and the gotchas that produce a plausible wrong answer. Read before adding a Dog10K locus or figure.
 ---
 
-# Tutorial focus pass: state and next steps
+# Dog10K: callsets, loci and measured recipes
 
-The rule this pass applies, from the user: **a tutorial follows one dataset step
-by step.** A page that tours a capability across three datasets is a user guide
-wearing a tutorial's clothes, and should either be refocused onto a single
-dataset or moved under `user_guides/`. Prefer refocusing unless the datasets are
-genuinely interrelated.
+What the `local_ancestry`, `dog10k_svs` and `dog10k_lof` tutorials rest on. The
+infrastructure is in place (`test_data/dog10k/config.json`, remote slicing,
+breed-labeled `layout`), so a new locus is roughly an hour. Forward-looking
+tutorial ideas live in [OTHER_IDEAS.md](../OTHER_IDEAS.md), "Tutorial ideas";
+the editorial rules these pages follow are in `website/CLAUDE.md`.
 
-Two supporting habits came out of the pass and are worth keeping:
+## Which dog assembly
 
-- **Every dataset should carry a built-in control** — something in the same
-  figure, from the same pipeline, that ought to come out negative. The German
-  Shepherd row in the wolfdog painting and the wolf rows in the SV panel are
-  what make those figures self-validating. The 2026-08-04 rebuild of the
-  wolfdog painting added the other half of that: a POSITIVE control (eight gray
-  wolves held out of the wolf panel and painted like any target) and a
-  219-breed sweep that is neither, so the subject has a scale on both sides
-  rather than only a floor. Two of the eight positives came out wrong, which is
-  the argument for having them.
-- **End on checking the inference against the raw data.** Both Dog10K tutorials
-  close by putting the underlying genotypes under the derived track. It is the
-  step that separates a figure you can trust from a figure that merely looks
-  good.
+Everything here is **canFam4 = UU_Cfam_GSD_1.0** (the German Shepherd assembly):
+`test_data/dog10k/config.json`, its `chrom.sizes`, the pre-existing
+`test_data/cfam2` demo, all three Dog10K callsets, and the hosted UCSC gene track
+the figures point at. Verified by chr1 = 123,556,469 bp against UCSC's
+`canFam4.chrom.sizes`.
 
-## Done
+The wider dog literature is still largely canFam3.1 — the published genetic maps,
+most GWAS, and dbSNP rsIDs — which is exactly why the local-ancestry tutorial has
+to generate its own uniform map and why the CYP1A2 tutorial derives the stop
+codon's coordinate instead of copying an rsID's position. **Treat any dog
+coordinate from a paper as canFam3.1 until proven otherwise.**
 
-- `tutorials/synteny_visualization.md` — refocused onto the three _H. pylori_
-  strains end to end. The hg38-vs-T2T figure went back to
-  `tutorials/genomes_synteny.md`, which owns that dataset. The generic ribbon
-  color-mode list moved to `user_guides/linear_synteny_view.md` (it was stale:
-  missing Target, Reference, Mean query identity). The ortholog-coloring section
-  is prose only: its figure was cut in review, because the locus-tag-only genes
-  (no `gene` attribute, so all one fallback color) are most of the lane and
-  randomColor gave them a magenta that swamped the handful of named orthologs
-  the figure was meant to show.
-- `tutorials/analyze_trio.md` — pared to the KHV trio and hap-ibd only.
-- `tutorials/local_ancestry.md` (new) — Dog10K wolfdogs, replacing the 1000
+## What already ships
+
+- `tutorials/local_ancestry.md` — Dog10K wolfdogs, replacing the 1000
   Genomes ASW trio the local-ancestry material used to use. Built by
   `scripts/build_dog10k_wolfdog_ancestry.sh`.
-- `tutorials/dog10k_svs.md` (new) — the Collie eye anomaly deletion from Schall
+- `tutorials/dog10k_svs.md` — the Collie eye anomaly deletion from Schall
   & Kidd 2025, plus the two _DENR_ SINEC2A1 dimorphisms as the contrasting kind
   of variant (220 bp at ~90% frequency, the reference carrying the rare allele).
   Both built by `scripts/build_dog10k_nhej1_sv.sh`.
-- `tutorials/dog10k_lof.md` (new) — the _CYP1A2_ p.Arg373Ter nonsense allele
+- `tutorials/dog10k_lof.md` — the _CYP1A2_ p.Arg373Ter nonsense allele
   from the Dog10K paper's Fig 10, built by `scripts/build_dog10k_cyp1a2.sh`.
   The coordinate is derived by translating the reference CDS rather than copied,
   which is worth repeating elsewhere: it re-checks against the assembly in use.
@@ -58,48 +46,15 @@ Two supporting habits came out of the pass and are worth keeping:
   returns to two in the flanks, which is the control on the normalization. The
   track config carries all nine rows; the script covers all 15 CRAMs and prints
   each dog's CN over the element beside its CN in the flanks.
-- `tutorials/methylation.md` (17b87d98d0) — refocused onto HG002 at the SNRPN
-  imprinting center. The COLO829 by-type/2-color figure was already in
-  `user_guides/alignments_track.md#modifications-and-methylation`, so the
-  tutorial links there; the 6mA fiber-seq section moved into that same
-  user-guide section, and its gallery card's `guide:` followed. Track configs
-  now carry the real hosted URLs instead of `yourhost` placeholders, plus a
-  provenance section naming the ONT open-data paths both files were sliced
-  from.
-- `tutorials/scatac_pseudobulk.md` (6f6bb56c35) — refocused onto the 5k PBMC
-  dataset its own `build_scatac_pseudobulk.sh` produces, since that is the one a
-  reader can actually run the pseudobulk step on. SnapATAC2 stays inline; ArchR,
-  sinto + deepTools, and the bare-fragments route condense to a bullet each. The
-  CATlas ALB figure moved to `user_guides/multiquantitative_track.md`; CATlas
-  keeps its gallery card and a Sources pointer to its public BigWigs. The
-  tutorial card's crop source in `gen-tutorial-thumbs.ts` had to move with the
-  figure — a card whose `src` is no longer on the page still builds, so nothing
-  fails to warn you.
+Both Dog10K tutorials close by putting the underlying genotypes under the derived
+track, and both carry a **built-in control** — the German Shepherd row in the
+wolfdog painting, the wolf rows in the SV panel. The 2026-08-04 rebuild of the
+painting added the other half: a POSITIVE control (eight gray wolves held out of
+the wolf panel and painted like any target) plus a 219-breed sweep that is
+neither, so the subject has a scale on both sides rather than only a floor. Two
+of the eight positives came out wrong, which is the argument for having them.
 
-## Next, in the order I would take them
-
-### `tutorials/rnaseq.md` — needs a finding, not a tour
-
-The user's steer: end on something biologically interesting rather than "here is
-some stuff" — a new gene model, intron readthrough, or **differential isoform
-usage with transcript glyphs colored by a pipeline's call**. That last one is
-the strongest and is mechanically ready: a GFF attribute plus
-`jexl:randomColor(get(feature,'<attr>'))` on the canvas display colors
-transcripts, exactly as the H. pylori ortholog figure does. What it needs is a
-two-condition long-read dataset and a small pipeline to write the attribute.
-Note the coloring jexl evaluates on the **drawn** feature (a CDS subfeature for
-a gene), which is why `name` gave protein accessions and `gene` was the right
-attribute — see the same trap in `specs/synteny.ts`.
-
-### `tutorials/pangenome_hprc.md` — optional
-
-Carries both HPRC release 1 and release 2 figures. The user is fine either way,
-since the two releases are the same project. Lowest priority.
-
-## More Dog10K loci, if wanted
-
-The infrastructure is in place (`test_data/dog10k/config.json`, remote slicing,
-breed-labeled `layout`), so each of these is roughly an hour:
+## More loci, each about an hour
 
 - **_HMGA2_, Spitz group** — three intronic SVs in a gene tied to body weight
   and ear type (Schall & Kidd Fig S5).
@@ -193,20 +148,6 @@ It is a 12.8 GB *gzipped* bigWig, so it cannot be range-requested: adding a
 conservation track under any of these figures means downloading it whole,
 decompressing, and slicing the locus into a small bigWig. UCSC has no
 conservation track for canFam4.
-
-## Which dog assembly
-
-Everything here is **canFam4 = UU_Cfam_GSD_1.0** (the German Shepherd assembly):
-`test_data/dog10k/config.json`, its `chrom.sizes`, the pre-existing
-`test_data/cfam2` demo, all three Dog10K callsets, and the hosted UCSC gene
-track the figures point at. Verified by chr1 = 123,556,469 bp against UCSC's
-`canFam4.chrom.sizes`.
-
-The wider dog literature is still largely canFam3.1 — the published genetic
-maps, most GWAS, and dbSNP rsIDs — which is exactly why the local-ancestry
-tutorial has to generate its own uniform map and why the CYP1A2 tutorial derives
-the stop codon's coordinate instead of copying an rsID's position. Treat any
-dog coordinate from a paper as canFam3.1 until proven otherwise.
 
 ## Gotchas worth not rediscovering
 

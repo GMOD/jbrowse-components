@@ -45,6 +45,23 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the
   trigger declarative and wait on a `data-testid` on the real result.
 
+## Tutorials
+
+- **A tutorial follows one dataset step by step.** A page that tours a capability
+  across three datasets is a user guide wearing a tutorial's clothes: refocus it
+  onto a single dataset, or move it under `user_guides/`. Prefer refocusing
+  unless the datasets are genuinely interrelated.
+- **Every dataset should carry a built-in control** — something in the same
+  figure, from the same pipeline, that ought to come out negative. Better still,
+  one of each: a negative control is a floor, a positive control held out of the
+  reference panel and analyzed like any target is a scale.
+- **End on checking the inference against the raw data.** Putting the underlying
+  genotypes under the derived track is the step that separates a figure you can
+  trust from one that merely looks good.
+- Moving a figure off a tutorial means moving its card's crop source in
+  `gen-tutorial-thumbs.ts` too — a card whose `src` is no longer on the page
+  still builds, so nothing warns you.
+
 ## Prose, captions, cards
 
 - **Never write a hand-computed statistic into prose.** Numbers must be

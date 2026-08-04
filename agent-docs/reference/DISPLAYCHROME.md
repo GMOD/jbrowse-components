@@ -238,7 +238,47 @@ displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
 stays in the bundle. *Weight* is only available to code writing its own display
 component — `DisplayChromeBase` + a `TrackControlComponent` of its own import no
 toolkit at all. `pnpm measure-chrome-bundle` measures the first half of that and
-CI re-checks it.
+CI re-checks it. The weight half is blocked on `makeStyles` importing `useTheme`
+from `@mui/material/styles`
+(`packages/core/src/util/tss-react/mui/mui.ts`) — see OTHER_IDEAS.md, "A
+theme-free `makeStyles`", for what closing it would take.
+
+**Counting `Mui*` classnames does not measure "no Material UI", and this is the
+one thing to know before trusting a census.** `@jbrowse/core/util/tss-react`'s
+`makeStyles` emits an *emotion* class (`css-5970li`) while reading the Material
+UI theme, so a component can be fully MUI-styled and score zero.
+`BaseTooltip` was exactly that: a grey Material chip in a font the host page
+never loaded, on every page, with the guard reporting clean.
+
+So the build-your-own smoke census
+(`products/jbrowse-build-your-own/examples-site/scripts/smoke.mjs`) has two
+halves, and needs both:
+
+1. **`MUI_BUDGET`** — outermost elements carrying a `Mui*` classname.
+2. **`muiThemedStyling`** — elements whose computed `font-family` starts with
+   `Roboto` (MUI's default typography), excluding anything already inside a
+   `Mui*` subtree, measured at rest **and** after a pointer sweep across each
+   track.
+
+The fingerprint is the font because it is the only thing that discriminates: the
+JBrowse palette *deliberately* reproduces MUI's color values
+(`packages/core/src/ui/palette.ts`), so `rgb(97, 97, 97)` proves nothing, while
+that site's own stack starts with `-apple-system` and nothing on it loads Roboto.
+Neither half is vacuous — reverting `BaseTooltip` to `makeStyles` fails 4 of 7
+pages by name.
+
+What still slips through: a themed `makeStyles` component that sets no
+typography. The three in the display render path today (`BaseLinearDisplay`,
+canvas's `FeatureComponent`, alignments') are all `makeStyles()({…})` with **no
+theme argument** — layout only. A new one taking `theme =>` and touching only
+colors would pass both halves. If that becomes real, the answer is to stop
+importing MUI's `useTheme` in `makeStyles`, not a third census.
+
+**Don't raise `MUI_BUDGET` or narrow the font census to make smoke pass**, and
+don't hide the corner controls to reach zero — the track-sizing button carries
+the count of features the layout dropped and the isoform notice is the only sign
+transcripts are hidden, so a track that lies about its contents is worse than one
+with a stray Material widget. They needed a plain rendering, which they have.
 
 Every ambient corner control (`TrackHeightIndicator`, canvas's
 `GeneGlyphControl` and `SoloSelectionChip`) is a thin wrapper that *describes*

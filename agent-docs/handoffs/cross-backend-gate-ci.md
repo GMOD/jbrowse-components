@@ -119,10 +119,13 @@ opaque wait error, and `assertNonBlank` is still the backstop.
 - **The gate is blind to a bug both backends share.** It would have caught
   neither render bug found on 2026-07-16. Goldens are the other half, and they
   only refresh by hand.
-- **Threshold overrides are where the gate is told not to look.** Seven entries
-  in `THRESHOLD_OVERRIDES`, and `targeted_inversion-pbsim-coverage` sits at
-  16.71% under a 20% ceiling in every run — a real, stable divergence the gate
-  is configured to accept. That list wants auditing, not growing.
+- **Threshold overrides are where the gate is told not to look.**
+  `grep -c 'match:' products/jbrowse-web/browser-tests/crossBackendGate.ts` — nine
+  entries, unchanged since `333db010c9` (2026-07-09). This file said seven for
+  several rounds, so count them rather than trusting the number; an audit that
+  goes looking for seven stops two short. `targeted_inversion-pbsim-coverage`
+  sits at 16.71% under a 20% ceiling in every run — a real, stable divergence
+  the gate is configured to accept. That list wants auditing, not growing.
 - **`EXCLUDED_SUBSTRINGS` is empty.** Scoping to deterministic views is done with
   `--filter` (substring match on suite name), not by excluding.
 - Port 8123 `serve` leftovers on this machine are unrelated — the runner uses

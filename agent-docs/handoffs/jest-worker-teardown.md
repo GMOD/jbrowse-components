@@ -22,7 +22,9 @@ from the experiment.
 `products/jbrowse-web/src/tests/util.tsx` `getPluginManager` builds a
 PluginManager and a root model, and nothing ever destroys either. It is the
 single chokepoint — `createView`, `createViewNoWait` and `getTestSession` all go
-through it — and 63 files under `src/tests` reach it.
+through it — and `grep -rlE "from '\./util\.tsx'" products/jbrowse-web/src/tests | wc -l`
+reaches it (105 of the 136 test files there; this file said 63 for several
+rounds, so re-run the grep rather than trusting a number).
 
 React unmounting does not own the engine. Testing-library's auto-cleanup
 unmounts the tree; the MST root lives on with its autoruns running. This is the

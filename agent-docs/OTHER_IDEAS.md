@@ -2025,6 +2025,29 @@ worker scan); whether P3's breakend bridge is in scope. Minor findings noted:
 endpoint is unreachable via click); `arcIsVisible` culls by endpoint Y only (a
 same-row bowed curve just off-screen can be dropped, harmless).
 
+## Cancer SV datasets not yet shot
+
+Lifted from the `cancer_sv` build; the tool and the verified COLO829/K562 facts
+are in [guides/SV_MULTIHOP.md](guides/SV_MULTIHOP.md).
+
+- **HCC1395 multi-caller copy number.** SEQC2 publishes CNV output from six
+  callers plus SNP arrays on one tumour, all hg38, and PacBio Revio HiFi
+  tumour/normal BAMs are public at
+  `downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/`. "Callers disagree,
+  adjudicate them against the reads" is a distinct tutorial from the existing
+  C-GIAB one.
+- **COLO320-DM ecDNA.** The strongest remaining focal-amplification story (MYC on
+  ecDNA, CN ~100). Blocked only by disk: the ONT data is raw fastq in
+  `PRJNA1110283` (33-53 GB per run) and needs a genome-wide minimap2 run before
+  anything is browsable.
+
+Two datasets that are dead ends, so nobody re-checks them: **SK-BR-3** — every
+file under `labshare.cshl.edu/shares/schatzlab/www-data/skbr3/` 404s, leaving
+only raw PacBio CLR in SRA `PRJNA476239`, so the paper is design inspiration
+only. **C-GIAB / HG008** has no RNA arm at all and cannot carry a fusion
+tutorial. COLO829 has no matching RNA and K562 no usable hg38 WGS (ENCODE's is
+hg19 and 337 GB), which is why the tutorial uses two cell lines.
+
 ## C-GIAB tutorial follow-ups (need data prep + S3 upload, not sandbox-runnable)
 
 Deferred from the figure-accuracy pass, verified against the V0.5 benchmark
@@ -2070,6 +2093,43 @@ gap from the same pass is tracked in TODO.md.
   getter" cleanly, and [ADR-041](architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
   rules out the composition trick that would express it. Deferred; the default
   is fail-hung rather than fail-stale, which is the safe side.
+
+### A theme-free `makeStyles` — the build-your-own "weight" half
+
+The two bring-your-own seams shipped and a stock wiggle, feature or alignments
+display now renders **nothing styled by Material UI** when an embedder installs
+both plain sets (`reference/DISPLAYCHROME.md`, "The bring-your-own seams", has
+the census that proves it). What did not ship is *weight*: `makeStyles` imports
+`useTheme` from `@mui/material/styles`
+(`packages/core/src/util/tss-react/mui/mui.ts`), and
+`grep -rn 'makeStyles(' --include='*.ts*' packages plugins products` is ~269 call
+sites. While that holds, "Material UI never enters the module graph" is
+unreachable for anyone rendering a stock display, no matter how many providers
+they install. The build-your-own site says so plainly under "What you do not get
+rid of"; that is honesty, not a solution.
+
+The fix, if it is worth it, is a theme-free `makeStyles` — or a
+`usePalette()`-backed styling helper — that stock display components are
+*required* to use. It would also close the census gap noted in DISPLAYCHROME.md
+(a themed `makeStyles` component that sets no typography passes both halves
+today). `pnpm measure-chrome-bundle` measures what the reach half costs now.
+
+**The examples site cannot demonstrate this half, and that was assessed rather
+than assumed.** `DisplayChromeBase` takes `model: ChromeModel &
+RenderLifecycleModel<B>` plus a backend `factory`, so a page showing it needs a
+display *model* — a config schema, a display type and a plugin to register them,
+on top of the ~300 lines of view boilerplate every page there repeats. Most of
+the file would be about how to write a display rather than about the seam, and
+the site's "one page adds one thing" arc has nowhere to put it. If it ever gets a
+demo it belongs outside the arc, and the honest scope is a custom-display page
+that happens to use `DisplayChromeBase` — not a `DisplayChromeBase` page.
+
+Two smaller loose ends from the same pass: alignments' bottom-right row doesn't
+reserve its `VerticalScrollbar`'s 12px (canvas reserves 14), cosmetic overlap
+with the thumb only, left alone to avoid churning PNG goldens that weren't
+verifiable in-session; and `plainTrackControl` carries one literal colour
+(`#d97706`) because there is no CSS system colour for "something is wrong" and
+the warning state exists precisely to be seen without hovering.
 
 ## Vertical real estate & the "scrolls within scrolls" problem
 
@@ -2233,6 +2293,38 @@ just import from one source of truth.
 
 Motivation: avoid CLI depending directly on `packages/core`, and eliminate the duplication
 that causes drift bugs.
+
+## Two tutorials the focus pass left open
+
+The 2026-08 tutorial-focus pass refocused `synteny_visualization`,
+`analyze_trio`, `methylation` and `scatac_pseudobulk` onto one dataset each and
+built the three Dog10K pages
+([reference/DOG10K_DATASETS.md](reference/DOG10K_DATASETS.md)). Two are left:
+
+- **`tutorials/rnaseq.md` needs a finding, not a tour.** End on something
+  biologically interesting rather than "here is some stuff" — a new gene model,
+  intron readthrough, or **differential isoform usage with transcript glyphs
+  colored by a pipeline's call**. The last is strongest and mechanically ready: a
+  GFF attribute plus `jexl:randomColor(get(feature,'<attr>'))` on the canvas
+  display colors transcripts, exactly as the H. pylori ortholog figure does. What
+  it needs is a two-condition long-read dataset and a small pipeline to write the
+  attribute. Note the coloring jexl evaluates on the **drawn** feature (a CDS
+  subfeature for a gene), which is why `name` gave protein accessions and `gene`
+  was the right attribute — same trap as in `specs/synteny.ts`.
+- **`tutorials/pangenome_hprc.md` carries both HPRC release 1 and release 2
+  figures.** Splitting is optional and lowest priority, since the two releases
+  are the same project.
+
+Also parked from that pass: the **wolf-ancestry frequency sweep across all
+autosomes**, which would let the local-ancestry tutorial quote genome-wide
+fractions instead of chr1-only ones. Run `build_dog10k_wolfdog_ancestry.sh` over
+chr1..chr38 and summarize wolf ancestry per position across the eight wolfdogs as
+a quantitative track. Cost re-measured 2026-08-04 after the target set grew from
+11 animals to 243: chr1 is ~15 minutes (4 of remote slicing for 591 samples, the
+rest FLARE at 16 threads), and chr1 is ~6% of the autosomes, so the sweep is 4-5
+hours rather than the ~3.5 the 11-animal run implied. Compelling if a depleted
+region lands on something known — but with eight animals the noise is real:
+describe it, do not call it selection.
 
 ## Tutorial ideas (2026-07 audit)
 

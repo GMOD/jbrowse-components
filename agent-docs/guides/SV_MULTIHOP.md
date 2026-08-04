@@ -1,16 +1,17 @@
 ---
-name: cancer-sv-tutorial
-description: State of the cancer_sv tutorial and scripts/sv_multihop.py — what shipped, the multi-hop rearrangement it teaches and how its figures are built, and what is left open. Read before touching the cancer_sv figures or the derivative-allele reconstruction.
+name: sv-multihop
+description: How scripts/sv_multihop.py reconstructs a derivative allele from a somatic SV callset plus the tumour reads, the four silent-wrong-answer bugs now pinned by behavior checks, and the COLO829/K562 facts the cancer_sv tutorial rests on. Read before touching the cancer_sv figures or the derivative-allele reconstruction.
 ---
 
-# Cancer SV tutorial and sv_multihop: handoff
-
-2026-08-02. Shipped in five commits on `main`, `6c8a7b4708`..`8f15a3be06`.
+# sv_multihop and the cancer_sv tutorial
 
 The `cancer_sv` tutorial teaches multi-hop somatic rearrangements: a gene fusion
 formed by a chain of junctions rather than one breakpoint, reconstructed as a
 derivative allele and checked against the reads. `scripts/sv_multihop.py` is the
 tool behind it and is meant to be reusable against any somatic SV callset.
+Shipped 2026-08-02 in `6c8a7b4708`..`8f15a3be06`; the forward-looking dataset
+ideas that used to sit at the bottom of this file are in
+[OTHER_IDEAS.md](../OTHER_IDEAS.md), "Cancer SV datasets not yet shot".
 
 ## What exists
 
@@ -29,9 +30,9 @@ Behavior checks for both python helpers live in `scripts/check-build-scripts.py`
 
 ## Verified facts, do not re-derive
 
-**SK-BR-3 is unusable as a dataset.** Every file under
-`labshare.cshl.edu/shares/schatzlab/www-data/skbr3/` 404s. Only raw PacBio CLR
-in SRA `PRJNA476239` remains. The paper is design inspiration only.
+Which cell lines are usable at all — and which are dead ends nobody should
+re-check — is in [OTHER_IDEAS.md](../OTHER_IDEAS.md), "Cancer SV datasets not yet
+shot". This section is about the two the tutorial uses.
 
 **COLO829 chain 1** is a closed 3-junction cycle across three chromosomes,
 joining RARB (chr3), BICC1 (chr10) and TRHDE (chr12) inside under a kilobase of
@@ -64,11 +65,6 @@ Supporting evidence, all measured rather than eyeballed:
 exactly `chr9:130,854,064`. The amplified segment `chr9:130,731,327-131,152,326`
 (CN 6.8 against flanking ~1.0) is bounded by the `BCR--ABL1` and `NUP214--XKR3`
 junctions.
-
-**COLO829 has no matching RNA**, and K562 has no usable hg38 WGS (ENCODE's is
-hg19 and 337 GB). That split is why the tutorial uses two cell lines.
-
-**C-GIAB / HG008 has no RNA arm at all**, so it cannot carry a fusion tutorial.
 
 ## sv_multihop design notes
 
@@ -177,7 +173,7 @@ window/tie failure. Feeding the emitted `--jbrowse-out` config to jbrowse-web
 (serve it under the built `jbrowse-web` package's `build/` output) is what
 proves the wiring.
 
-## Done since this was written
+## The two gates this work added
 
 - **The settle gate is semantic.** `assertViewsPresent` in
   `website/scripts/generate-screenshots.ts` reads each spec's own
@@ -192,30 +188,21 @@ proves the wiring.
   a synteny view. `--ref-name` names the reference assembly. Verified end to end
   against jbrowse-web on the synthetic foldback above.
 
-## Open items, ranked
+## Two figures that are not a baseline
 
-- **Re-render the two synteny figures from a clean build.**
-  `derivative_synteny` and `derivative_inserts` were captured against a
-  `products/jbrowse-web` build that contained other agents' uncommitted synteny
-  and dotplot source changes. They are committed as-is and should not be
-  treated as a baseline until re-rendered.
-- **Sweep the new capture gates across all figures.** The error-snackbar check
-  caught two broken figures; it has only been sampled against three existing
-  ones. The semantic gate above ships unswept for the same reason — it was
-  exercised against a single-view spec, a nested-panel synteny spec, a dotplot
-  and an import form (0 declared views), plus its failure path against an
-  injected phantom view at both levels. A full `pnpm screenshots --force` run is
-  the real test and needs a quiet worktree (port 3334 is exclusive).
-- **HCC1395 multi-caller copy number.** SEQC2 publishes CNV output from six
-  callers plus SNP arrays on one tumour, all hg38, and PacBio Revio HiFi
-  tumour/normal BAMs are public at
-  `downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/`. "Callers disagree,
-  adjudicate them against the reads" is a distinct tutorial from the existing
-  C-GIAB one.
-- **COLO320-DM ecDNA.** The strongest remaining focal-amplification story
-  (MYC on ecDNA, CN ~100). Blocked here only by disk: the ONT data is raw
-  fastq in `PRJNA1110283` (33-53 GB per run) and needs a genome-wide minimap2
-  run before anything is browsable.
+`derivative_synteny` and `derivative_inserts` were captured against a
+`products/jbrowse-web` build that contained other agents' uncommitted **synteny
+and dotplot** source changes, and are committed as-is. Tracked in
+[TODO.md](../TODO.md), "Re-render the two cancer_sv derivative figures", with the
+precondition — do not treat them as a baseline until that is done.
+
+The other capture debt: the error-snackbar check and the semantic
+`assertViewsPresent` gate both ship unswept. The snackbar check caught two broken
+figures and has been sampled against three existing ones; the semantic gate was
+exercised against a single-view spec, a nested-panel synteny spec, a dotplot and
+an import form (0 declared views), plus its failure path against an injected
+phantom view at both levels. A full `pnpm screenshots --force` run is the real
+test and needs a quiet worktree (port 3334 is exclusive).
 
 ## Should sv_multihop become its own repo
 
