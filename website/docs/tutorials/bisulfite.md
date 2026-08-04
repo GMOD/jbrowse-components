@@ -228,7 +228,9 @@ Methylated cytosines paint red, and **Show unmethylated (blue)** adds the
 converted sites in blue. The mode is reference-based, so it only means anything
 on a bisulfite or EM-seq library.
 
-The figures below leave **Show unmethylated** off, so methylation reads as
+<Figure caption="One WGBS pileup loaded twice over the 3' end of AT1G12930 and the silenced AT1G12935 element, both colored Bisulfite / CpG. Top: methylated only, which leaves a converted cytosine blank. Bottom: Show unmethylated, which paints it blue, so the gene body reads as a mix of methylated and unmethylated CpGs where the element on the right is almost all red." src="/img/methylation/arabidopsis_wgbs_two_color.png" />
+
+The remaining figure leaves **Show unmethylated** off, so methylation reads as
 presence of red and the three contexts contrast without a red/blue mix on every
 read.
 

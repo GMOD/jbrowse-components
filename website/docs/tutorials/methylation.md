@@ -63,6 +63,8 @@ At this point the reads carry the answer but do not show it: the pileup over the
 CpG island is an interleaved mix of methylated and unmethylated reads, and
 nothing in that mix says whether it is one allele or two.
 
+<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs filled in blue, stacked in file order. Red-dominant and blue-dominant reads alternate down the pileup, so both alleles are on screen and neither is legible. Same locus, tracks and coloring as the figure below, which differs only in the grouping." src="/img/methylation/hg002_snrpn_ungrouped.png" />
+
 ## Aggregate methylation with modkit bedMethyl
 
 [modkit pileup](https://nanoporetech.github.io/modkit/) collapses the per-read
