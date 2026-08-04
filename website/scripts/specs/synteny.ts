@@ -63,30 +63,43 @@ function tnnt3Session(view: Record<string, unknown> = {}) {
   })
 }
 
-// Genes over repeats in each panel of the finished SHH comparison, one entry
-// per track. RefSeq Curated is the same gene track (and the same longest-isoform
-// glyph) the LGV the launch came from is showing. The heights are the figure's,
-// which is the point of declaring this frame rather than clicking it together:
-// they are what makes it fill the grid cell it shares with the launch it came
-// out of, exactly, instead of the 100px default four times over. Compact
-// repeats, since a 300 kb window of RepeatMasker is a texture rather than a set
-// of features to pick out, and the leftover height goes to them.
+// Genes over repeats in each panel of the finished SHH comparison, one entry per
+// track. RefSeq Curated is the same gene track (and the same longest-isoform
+// glyph) the LGV the launch came from is showing, and the human pair matches
+// what that view's tracks were copied into the anchor panel as — so the two
+// bottom frames differ in the mouse panel and nothing else.
+//
+// The heights are the figure's, which is the point of declaring this frame
+// rather than clicking it together: pinned, they hold the two frames to roughly
+// one height instead of the default four times over. Labels off on the repeats
+// for the same reason they are off in the launching view — at 42 kb every
+// repeat carries a name and the names are two rows of overlapping text.
 const SHH_PANEL_TRACKS = {
   hg38: [
     {
       trackId: 'hg38-ncbiRefSeqCurated',
       geneGlyphMode: 'longestCoding',
-      height: 70,
+      height: 60,
     },
-    { trackId: 'hg38-rmsk', displayMode: 'compact', height: 155 },
+    {
+      trackId: 'hg38-rmsk',
+      displayMode: 'compact',
+      showLabels: 'none',
+      height: 85,
+    },
   ],
   mm39: [
     {
       trackId: 'mm39-ncbiRefSeqCurated',
       geneGlyphMode: 'longestCoding',
-      height: 70,
+      height: 60,
     },
-    { trackId: 'mm39-rmsk', displayMode: 'compact', height: 155 },
+    {
+      trackId: 'mm39-rmsk',
+      displayMode: 'compact',
+      showLabels: 'none',
+      height: 85,
+    },
   ],
 }
 
@@ -1360,8 +1373,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // synteny view -> an empty view that lands on the import form. The form opens
   // in Quick start with the config's synteny track already selected, so the rows
   // it implies are on screen immediately: one single-stage figure, no
-  // menu-driving, annotating the three things the tutorial names (the mode
-  // toggle, the track, the rows it fills) plus Launch.
+  // menu-driving, annotating the three things the tutorial names: the mode
+  // toggle, the track, and the rows it fills.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_import_form',
@@ -1376,7 +1389,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 1000,
     // Quick start is a short form (a select, the rows it implies, Launch), so
     // this is sized to the form rather than the taller manual row stack
-    viewportHeight: 340,
+    viewportHeight: 356,
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
@@ -1409,15 +1422,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Every assembly in the track becomes a row, then Launch',
+        text: 'Every assembly in the track becomes a row',
         x: 780,
         y: 205,
         maxWidth: 340,
       },
+      // pointed at the rows, not at Launch: a submit button at the bottom of a
+      // form needs no callout, and an arrow across the frame to reach it was
+      // the largest thing in the figure (reviewer)
       {
         type: 'arrow',
-        from: { x: 770, y: 235 },
-        anchor: { text: 'Launch' },
+        from: { x: 770, y: 220 },
+        anchor: { selector: '[data-testid="quick-start-rows"]' },
       },
     ],
   },
@@ -1670,10 +1686,21 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // not, so the chain track is a handful of separated blocks and the view the
   // launch opens is worth looking at.
   //
+  // 40 kb, not the 300 kb this used to open on. At 300 kb the payoff frames were
+  // unreadable in both bands that matter: RepeatMasker was a solid strip rather
+  // than repeats, and the ribbon's CIGAR indel wedges (cigarMode 'full') were a
+  // mass of overlapping triangles. At ~45 bp/px a 300 bp Alu is its own block and
+  // the ribbon's gaps are countable, so the picture shows what it is for — SHH's
+  // own sequence aligning across ~90 My while the flank either side of it is
+  // interrupted, repeat by repeat. The window keeps SHH whole and leans
+  // downstream, which is the side those interruptions are on.
+  //
   // The right-click is a viewport coordinate, not a selector: the chain-block
   // canvas fills the display's whole height, so its center lands well below the
-  // two rows of blocks. The loc and viewport width are fixed, so the block sits
-  // at that coordinate every run.
+  // row of blocks. The gene display carries an explicit height for the same
+  // reason — an auto height is a function of how many isoforms RefSeq draws
+  // here, and everything below it (the chain canvas the click lands in) moves
+  // with it.
   {
     mode: 'url',
     name: 'genomes_synteny/launch_sequence',
@@ -1682,11 +1709,29 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr7:155,650,000-155,950,000',
+          loc: 'chr7:155,795,000-155,835,000',
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
               geneGlyphMode: 'longestCoding',
+              height: 60,
+            },
+            // RepeatMasker is open BEFORE the launch, not added after it. Two
+            // things follow, and both are the point of the figure: the reader
+            // can already line the repeats up against the gaps in the chain
+            // below them, and "Copy this view's tracks into its panel" carries
+            // both tracks into the human panel of the launched view — so the
+            // step left over for the last frame is the mouse panel, one panel
+            // rather than four tracks across two.
+            {
+              trackId: 'hg38-rmsk',
+              displayMode: 'compact',
+              // 58 repeats in this window, and every one of them carries a name
+              // — at 40 kb that is two rows of overlapping text under a row of
+              // blocks. The blocks are what the figure is pointing at; the
+              // classes are named in the prose.
+              showLabels: 'none',
+              height: 70,
             },
             {
               // stacked, not the one-row-per-group default: the collapsed band
@@ -1697,7 +1742,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
               trackId: 'hg38_to_mm39_liftOver',
               type: 'LGVSyntenyDisplay',
               collapseGroupRows: false,
-              height: 120,
+              // one row: this window sits inside a single 6.4 Mb chain, so the
+              // rest of the display would be empty canvas under the menu
+              height: 60,
             },
           ],
         },
@@ -1711,7 +1758,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // (the binding frame) — the menu opens below the clicked block, so the boxed
     // "Launch synteny view" item is its last line. The bottom row sets its own,
     // taller, height per stage.
-    viewportHeight: 540,
+    viewportHeight: 575,
     stageColumns: 2,
     hideTooltip: true,
     // resolving mm39 through the hub plugin raises a "Successfully loaded"
@@ -1724,7 +1771,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'rightclick', from: { x: 666, y: 331 } },
+          { type: 'rightclick', from: { x: 666, y: 396 } },
           { type: 'waitForText', text: 'Open feature details' },
           // leave the item the reader is being pointed at under the cursor, so
           // it carries the menu's own hover highlight as well as the box below
@@ -1768,7 +1815,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
       {
         actions: [
-          { type: 'click', text: 'Submit' },
+          // "Replace current view", not "Open in new view": the launch is
+          // anchored on the locus the LGV above is already showing, so the
+          // alternative leaves two views of one place stacked and this frame
+          // spends its top half restating stage 1. Both buttons are the dialog's
+          // own, and the prose names the choice.
+          { type: 'click', text: 'Replace current view' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="synteny_canvas_done"]',
@@ -1779,14 +1831,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // paints
           { type: 'delay', ms: 10000 },
         ],
-        // addView appends the synteny view BELOW the LGV it was launched from,
-        // and this row of the grid is as tall as stage 4's four tracks make it,
-        // so both fit unscrolled and the frame keeps the view it came from —
-        // which is also what makes the two bottom panels the same height. (The
-        // LGV is minimized in stage 4 instead, where the room is needed. It
-        // can't just be scrolled past: ViewHeader suppresses scroll-into-view
-        // under webdriver.)
-        viewportHeight: 888,
+        // The synteny view alone now, so this frame is its own height: the
+        // human panel (the launching view's two tracks, copied), the band, and
+        // the mate panel's empty-state block. That block is ~120px shorter than
+        // the two tracks stage 4 puts in its place, so the two cells of the row
+        // cannot both be full — compose pads this one, and padding it is better
+        // than clipping stage 4 or squeezing four tracks to fit.
+        viewportHeight: 570,
         annotations: [
           {
             type: 'text',
@@ -1827,12 +1878,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
               views: [
                 {
                   assembly: 'hg38',
-                  loc: 'chr7:155,648,868-155,950,868',
+                  loc: 'chr7:155,794,008-155,836,008',
                   tracks: SHH_PANEL_TRACKS.hg38,
                 },
                 {
                   assembly: 'mm39',
-                  loc: 'chr5:28,525,529-28,836,048',
+                  loc: 'chr5:28,655,318-28,724,519',
                   tracks: SHH_PANEL_TRACKS.mm39,
                 },
               ],
@@ -1840,7 +1891,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           ],
         }),
         readySelector: '[data-testid="synteny_canvas_done"]',
-        viewportHeight: 888,
+        viewportHeight: 690,
         annotations: [
           {
             type: 'text',
