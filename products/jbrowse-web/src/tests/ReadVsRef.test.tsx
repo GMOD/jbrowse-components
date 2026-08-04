@@ -59,6 +59,17 @@ test('launch read vs ref dotplot', async () => {
 
   fireEvent.click(await findByText(/Launch/, {}, delay))
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
+
+  // Both launchers share one dialog: it resolves the clicked segment to its
+  // primary alignment (so the read axis is the read's own orientation, not the
+  // clicked segment's) and asks for a window size. The view is added by its
+  // onSubmit, so nothing happens until Submit is enabled and clicked.
+  const elt = await findByText('Submit', {}, delay)
+  await waitFor(() => {
+    expect(elt.getAttribute('disabled')).toBe(null)
+  }, delay)
+  fireEvent.click(elt)
+
   await waitFor(() => {
     expect(session.views.length).toBe(2)
     expect(session.views[1]!.type).toBe('DotplotView')
