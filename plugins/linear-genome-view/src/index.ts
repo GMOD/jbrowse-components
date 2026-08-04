@@ -204,6 +204,7 @@ export type {
 } from './shared/renderDisplaySvg.tsx'
 export {
   defaultTextHeight,
+  labelBaselineFromTop,
   labelOffset,
   totalHeight,
   trackBoxHeight,

@@ -5,6 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import {
   SVGView,
   defaultTextHeight,
+  labelBaselineFromTop,
   renderViewTracks,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -39,8 +40,12 @@ export async function renderToSvg(
   const themeVar = session.getActiveThemeOptions?.(themeName)
   const { width, views, levels } = model
 
-  // each view is a header (assembly label + ruler) stacked above its tracks
-  const headerHeight = fontSize + rulerHeight
+  // Clearance between a row and whatever sits above it. A row starts with its
+  // assembly label, and the ribbon band above it is a solid block of colour, so
+  // without this the label's ascenders begin on the band's last pixel and the
+  // name reads as part of the ribbons. The first row keeps the flush top edge
+  // that every export's assembly label hangs from.
+  const rowTopGap = 6
 
   // each display's renderSvg owns its own readiness wait (LGV track displays
   // await their byte estimate internally, renderSyntenyDisplaySvg awaits
@@ -100,13 +105,18 @@ export async function renderToSvg(
   // The last view has no level below it (N views -> N-1 levels), so `levels[i]`
   // is the single source of that invariant — no index bookkeeping in the layout.
   const rows = views.flatMap((view, i) => {
+    // SVGView draws the assembly label on the alphabetic baseline at its own
+    // origin, so the group starts at that baseline and the label's ink box
+    // occupies the band above it
+    const labelBaselineY = labelBaselineFromTop(
+      i === 0 ? 0 : rowTopGap,
+      fontSize,
+    )
     const viewRow = {
       key: view.id,
-      height: headerHeight + rowTracks[i]!.tracksHeight,
-      // the assembly label floats in the `fontSize` band above the ruler (see
-      // SVGView), which is why the group starts that far down
+      height: labelBaselineY + rulerHeight + rowTracks[i]!.tracksHeight,
       node: (
-        <g transform={`translate(${exportMargin} ${fontSize})`}>
+        <g transform={`translate(${exportMargin} ${labelBaselineY})`}>
           <SVGView
             view={view}
             displayResults={rowTracks[i]!.displayResults}
