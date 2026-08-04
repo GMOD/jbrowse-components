@@ -240,6 +240,14 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show only split alignments',
     'Keeps only reads the aligner gave a supplementary segment (SAM flag 0x800), so what is left is the breakpoint evidence rather than the pileup it sits in.',
   ),
+  // Sits directly under "Show coverage" in the alignments "Show..." submenu
+  // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
+  // what a figure comparing depth across samples wants: at whole-gene zoom a
+  // 30x pileup is a solid mass and only the curve carries the comparison.
+  showPileup: checkbox(
+    'Show... → Show pileup',
+    'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
+  ),
   // Same label in the same submenu on both displays that have the slot: the
   // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
   // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.

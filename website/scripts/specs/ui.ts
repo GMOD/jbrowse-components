@@ -256,16 +256,25 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 20000,
   },
 
-  // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble callset
-  // (3202 samples) across chr19:42.7-47.8Mb, sorted by genotype at the large
-  // ~1.12Mb inversion HGSV_73318 (chr19:46,275,880-47,396,219, AF=0.238). Because
-  // this display draws variants at genomic position, the inversion renders as a
-  // wide band; after the sort, carrier samples cluster to the top so the band
-  // splits cleanly. Rebuilt from a share link as a declarative sessionSpec. The
-  // right-click lands at x~1130 (genomic ~46.55Mb), an inversion-only gap where no
-  // other SV overlaps, so the sort reliably targets the inversion. forceLoad
-  // lifts the 1MB tabix fetch gate so the 5Mb window auto-loads headless instead of
-  // showing a force-load prompt. Remote 1000genomes data, so allow a long ready/settle.
+  // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble
+  // callset (3202 samples) over the RHD locus, chr1:25.2-25.4Mb, sorted by
+  // genotype at HGSV_1821 — the 70kb deletion that removes the whole of RHD
+  // (chr1:25,265,081-25,335,163, PASS, AF=0.182, 2233 hom-ref / 771 het / 198
+  // hom-alt). Deleting RHD is the most common cause of the RhD-negative blood
+  // type, so the three genotype bands this sort produces are the three dosages
+  // of a gene rather than an anonymous interval.
+  //
+  // The window is 200kb rather than the multi-megabase sweep this spec used
+  // before: the deletion is then a third of the frame with RHD under it and
+  // RHCE (the 97%-identical paralog the read figures below turn on) at the
+  // right-hand edge, and the window still carries five SV classes for the
+  // svType variant below.
+  //
+  // The right-click lands at x~750, the deletion's midpoint in this window
+  // (fraction 0.50 of a 1500px capture), which is inside the deletion and clear
+  // of the smaller calls around it, so the sort reliably targets HGSV_1821.
+  // forceLoad lifts the 1MB tabix fetch gate. Remote 1000genomes data, so allow
+  // a long ready/settle.
   {
     mode: 'url',
     name: 'multisv',
@@ -274,21 +283,17 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '19:42,749,096-47,802,386',
+          loc: '1:25,200,000-25,400,000',
           tracks: [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
-              // shorter multi-sample display (~400px)
               height: 400,
             },
-            // NCBI RefSeq gene track below the variant display.
-            // showLabels:'on' forces gene names on (the default 'auto' hides
-            // them at this 5Mb zoom past maxLabelFeatureDensity); showOnlyGenes
-            // drops the per-transcript/mRNA subfeatures so only the gene-level
-            // glyphs (and their labels) render; showDescriptions:false keeps the
-            // track compact (gene symbols only, no description line — reviewer).
+            // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
+            // drops the per-transcript subfeatures so RHD/RHCE read as single
+            // labelled glyphs under the matrix
             {
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
@@ -303,28 +308,27 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    viewportHeight: 720,
+    viewportHeight: 800,
     settleMs: 35000,
     hideTooltip: true,
     actions: [
-      // y=450 lands in the multi-sample matrix (proven coordinate); the dense
-      // 5Mb gene track never fully clears "Loading" headless, so don't gate on it
-      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      { type: 'rightclick', from: { x: 750, y: 450 } },
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
-      // into the capture (remove the crosshairs)
+      // into the capture
       { type: 'hover', from: { x: 6, y: 6 } },
       { type: 'delay', ms: 800 },
     ],
   },
 
-  // Same chr19 inversion window as `multisv`, but with the multi-sample display
-  // colored by SV type (`featureColor: 'svType'`): every alt-carrying cell takes
-  // its variant's structural-variant class color (the ~1.12Mb HGSV_73318
-  // inversion band paints the inversion color), and the legend names each SV
-  // class present. Demonstrates the SV-type coloring preset on real data.
+  // Same RHD window as `multisv`, with the multi-sample display colored by SV
+  // type (`featureColor: 'svType'`): every alt-carrying cell takes its
+  // variant's structural-variant class color and the legend names each class
+  // present. This 200kb holds five of them (DEL, DUP, INS, INV, CNV), so the
+  // window is a map of what kind of SV sits where with the RHD deletion as its
+  // largest feature.
   {
     mode: 'url',
     name: 'multisv_svtype',
@@ -333,7 +337,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '19:42,749,096-47,802,386',
+          loc: '1:25,200,000-25,400,000',
           tracks: [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
@@ -349,14 +353,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               showLabels: 'on',
               showDescriptions: false,
               showOnlyGenes: true,
-              // every gene row inside the lane rather than four labeled rows
-              // with the fifth sliced against the lane border and the rest
-              // behind an internal scrollbar. At 5Mb the fit ladder lands on
-              // its `bodies` rung, i.e. no gene names: a labeled stack does not
-              // fit any lane height worth giving this figure (tried 220px — it
-              // still dropped the names and added 90px of whitespace), and the
-              // lane's job here is which part of the window carries genes, not
-              // which gene
               heightMode: 'fit',
             },
           ],
@@ -365,19 +361,140 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    // clears the 400px matrix plus the 140px gene track: at 720 the RefSeq
-    // lane was sliced off mid-labels, cutting the genes the SV calls line up
-    // against
     viewportHeight: 800,
     settleMs: 35000,
     hideTooltip: true,
-    actions: [
-      { type: 'rightclick', from: { x: 1130, y: 450 } },
-      { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype' },
-      { type: 'delay', ms: 6000 },
-      { type: 'hover', from: { x: 6, y: 6 } },
-      { type: 'delay', ms: 800 },
+  },
+
+  // The read-level check the SV-multisamples tutorial's genotypes are read
+  // against: three 1000 Genomes high-coverage Illumina CRAMs over the RHD
+  // deletion, one per genotype at HGSV_1821, stacked in one view under the gene
+  // track. Verified read counts over a 10kb window inside RHD against a 10kb
+  // flank outside the deletion (samtools, required_fields=0x9FF):
+  //
+  //   HG00113  1/1   flank 2440   inside  149   6%
+  //   HG00096  0/1   flank 2556   inside 1421  56%
+  //   HG00097  0/0   flank 2800   inside 2759  99%
+  //
+  // so the dosage reads straight off the coverage band: gone, halved, flat.
+  //
+  // Two settings carry the figure. `showPileup: false` drops the stacked-read
+  // band, because at 100kb a 30x pileup is a solid mass and the coverage curve
+  // is the whole subject here. And minScore/maxScore PIN all three rows to one
+  // 0-70 axis: left to autoscale each row fits its own maximum, which drew the
+  // three genotypes at almost the same height and destroyed the comparison the
+  // figure exists to make. A few spikes clip at 70; the ~35x baseline sitting at
+  // half height is what matters.
+  {
+    mode: 'url',
+    name: 'multisv_rhd_dosage',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:25,250,000-25,350,000',
+          // RHD's own span, from the RefSeq annotation the gene lane draws
+          // (chr1:25,272,393-25,330,445). The lane's label ladder will not put
+          // a name on RHD at this zoom — RSRP1 spans the whole window and takes
+          // the top rows — so the band is what ties the coverage hole to the
+          // gene, and it is taken from the annotation rather than measured.
+          highlight: [
+            {
+              refName: '1',
+              start: 25272393,
+              end: 25330445,
+              color: 'rgba(214,137,16,0.13)',
+            },
+          ],
+          tracks: [
+            {
+              trackId: 'ncbi_refseq_109_hg38',
+              type: 'LinearBasicDisplay',
+              // showOnlyGenes + fit: RSRP1 spans the whole window and its
+              // transcript rows pushed RHD, the subject, below the lane's fold
+              height: 110,
+              showLabels: 'on',
+              showDescriptions: false,
+              showOnlyGenes: true,
+            },
+            ...['HG00113', 'HG00096', 'HG00097'].map(s => ({
+              trackId: `${s}.final`,
+              type: 'LinearAlignmentsDisplay',
+              forceLoad: true,
+              showPileup: false,
+              height: 160,
+              coverageHeight: 150,
+              minScore: 0,
+              maxScore: 70,
+            })),
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG00097.final',
+    readyTimeout: 240000,
+    viewportHeight: 960,
+    settleMs: 60000,
+  },
+
+  // Why the RHD hole is not quite empty. RHCE sits next door at ~97% identity,
+  // so in a sample with no RHD the gene's footprint still collects reads that
+  // belong to the paralog. Measured inside RHD (chr1:25,295,000-25,305,000):
+  //
+  //   HG00113 (no RHD)     144 reads   62% MAPQ 0    29% MAPQ>=20
+  //   HG00097 (two copies) 2484 reads   6% MAPQ 0    93% MAPQ>=20
+  //
+  // Two stages over the same 15kb inside RHD in HG00113: the default coloring,
+  // then Color by -> Mapping quality, where the MAPQ-0 residue paints red on
+  // the legend's 0-to-60 ramp. Each stage declares its own session URL rather
+  // than driving the menu, so the pair is reproducible without a click chain.
+  {
+    mode: 'url',
+    name: 'multisv_rhd_mapq',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:25,295,000-25,310,000',
+          tracks: [
+            {
+              trackId: 'HG00113.final',
+              type: 'LinearAlignmentsDisplay',
+              forceLoad: true,
+              height: 320,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG00113',
+    readyTimeout: 180000,
+    viewportHeight: 530,
+    settleMs: 30000,
+    stages: [
+      {},
+      {
+        url: kgUrl({
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: '1:25,295,000-25,310,000',
+              tracks: [
+                {
+                  trackId: 'HG00113.final',
+                  type: 'LinearAlignmentsDisplay',
+                  forceLoad: true,
+                  height: 320,
+                  colorBy: { type: 'mappingQuality' },
+                },
+              ],
+            },
+          ],
+        }),
+      },
     ],
   },
 
