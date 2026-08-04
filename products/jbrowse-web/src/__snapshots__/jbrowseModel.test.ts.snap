@@ -783,15 +783,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "colorBy": {
+            "type": "mappingQuality",
+          },
           "displayId": "volvox_alignments_alignments",
           "height": 600,
-          "pileupDisplay": {
-            "colorBy": {
-              "type": "mappingQuality",
-            },
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "type": "LinearPileupDisplay",
-          },
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -1336,12 +1332,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "renderers": {
-            "XYPlotRenderer": {
-              "color": "#C8B414",
-              "type": "XYPlotRenderer",
-            },
-          },
+          "color": "#C8B414",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2449,18 +2440,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
-          "renderer": {
-            "type": "StructuralVariantChordRenderer",
-          },
           "type": "ChordVariantDisplay",
         },
         {
+          "color": "jexl:feature.type=='SNV'?'green':'purple'",
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
-          "renderer": {
-            "color1": "jexl:feature.type=='SNV'?'green':'purple'",
-            "type": "CanvasFeatureRenderer",
-          },
           "type": "LinearVariantDisplay",
         },
       ],
@@ -2659,16 +2644,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "deep_seq_alignments",
-          "pileupDisplay": {
-            "displayId": "deep_seq_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "maxHeight": 10000,
-                "type": "PileupRenderer",
-              },
-            },
-            "type": "LinearPileupDisplay",
-          },
+          "maxHeight": 10000,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -2728,9 +2704,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "arc_track_linear",
-          "renderer": {
-            "type": "ArcRenderer",
-          },
           "type": "LinearArcDisplay",
         },
       ],
@@ -2771,11 +2744,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "arcHeight": "jexl:log10(feature.end-feature.start)*20",
           "displayId": "arc_track_custom_height_linear",
-          "renderer": {
-            "height": "jexl:log10(feature.end-feature.start)*20",
-            "type": "ArcRenderer",
-          },
           "type": "LinearArcDisplay",
         },
       ],
@@ -3361,13 +3331,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "color": "jexl:repeatColor(feature)",
           "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
-          "renderers": {
-            "XYPlotRenderer": {
-              "color": "jexl:repeatColor(feature)",
-              "type": "XYPlotRenderer",
-            },
-          },
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -3392,13 +3357,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "color": "jexl:repeatColor(feature)",
           "displayId": "volvox_repeat-plus-LinearWiggleDisplay",
-          "renderers": {
-            "XYPlotRenderer": {
-              "color": "jexl:repeatColor(feature)",
-              "type": "XYPlotRenderer",
-            },
-          },
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -3486,18 +3446,13 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "gff3_custom_tooltips_linear",
-          "renderer": {
-            "labels": {
-              "description": "jexl:feature.note || feature.description || ''",
-              "name": "jexl:feature.name || feature.id",
-            },
-            "mouseover": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
-            "showDescriptions": true,
-            "showLabels": true,
-            "subfeatureLabels": "below",
-            "subfeatureMouseover": "jexl:feature.name + ' (' + feature.type + ') - parent: ' + feature.parent.name",
-            "type": "CanvasFeatureRenderer",
+          "labels": {
+            "description": "jexl:feature.note || feature.description || ''",
+            "name": "jexl:feature.name || feature.id",
           },
+          "mouseover": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
+          "showLabels": "auto",
+          "subfeatureLabels": "below",
           "type": "LinearBasicDisplay",
         },
       ],
@@ -3525,16 +3480,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "gff3_mouseover_attr_linear",
-          "renderer": {
-            "labels": {
-              "description": "jexl:feature.note || feature.description || ''",
-              "name": "jexl:feature.name || feature.id",
-            },
-            "showDescriptions": false,
-            "showLabels": true,
-            "subfeatureLabels": "below",
-            "type": "CanvasFeatureRenderer",
+          "labels": {
+            "description": "jexl:feature.note || feature.description || ''",
+            "name": "jexl:feature.name || feature.id",
           },
+          "showLabels": "auto",
+          "subfeatureLabels": "below",
           "type": "LinearBasicDisplay",
         },
       ],
@@ -3603,14 +3554,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "color": "jexl:feature.start>5000?'darkgreen':'red'",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
           "jexlFilters": [
             "feature.start<8000",
           ],
-          "renderer": {
-            "color1": "jexl:feature.start>5000?'darkgreen':'red'",
-            "type": "CanvasFeatureRenderer",
-          },
           "type": "LinearVariantDisplay",
         },
       ],
