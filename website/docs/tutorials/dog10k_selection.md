@@ -171,8 +171,8 @@ which sites actually separate the two size classes — 95 of the 606, spanning
 41,455,350-41,611,659 — so this window is that span with about 55 kb of
 undifferentiated flank on each side. The shared haplotype is then about a third
 of the panel with both its edges still inside the frame, instead of one sixth of
-a panel of noise. Neither edge is the gene's: _IGF1_ is 41,495,479-41,567,874 and
-the haplotype runs 40 kb past it upstream and 44 kb past it downstream.
+a panel of noise. Neither edge is the gene's: _IGF1_ is 41,495,479-41,567,874
+and the haplotype runs 40 kb past it upstream and 44 kb past it downstream.
 
 ## Reading it
 

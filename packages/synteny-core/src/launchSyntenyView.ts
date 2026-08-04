@@ -1,6 +1,9 @@
 import { addOrReplaceView } from '@jbrowse/core/util'
 
-import type { AbstractSessionModel, AbstractViewModel } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+} from '@jbrowse/core/util'
 
 // Both synteny LaunchView handlers do the same two things: reject a spec with
 // fewer than two views, then open the view with its assembled init block. Kept

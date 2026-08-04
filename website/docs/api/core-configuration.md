@@ -226,7 +226,7 @@ Takes no jexl `args`, unlike `getConf`: a promotable slot cannot hold a callback
 
 ```js
 // type signature
-<…>(model: IAnyStateTreeNode & ... 1 more ... & { ...; }, slot: SLOT) => ConfigurationSlotValueResolved<...>
+<…>(model: IStateTreeNode<...> & ... 1 more ... & { ...; }, slot: SLOT) => ConfigurationSlotValueResolved<...>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

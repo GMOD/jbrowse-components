@@ -50,12 +50,12 @@ at the same thing local ancestry does.
 
 Then the rest of the dog world, because two wolfdog breeds on their own can only
 show that a documented cross leaves blocks. One dog from each of the 219 breeds
-the collection sequenced four or more of goes in as well — chosen on how well the
-breed was sequenced and on nothing about the breed — so the same run also says
-what a dog with no such cross looks like, and any breed that turns out to carry
-something is found rather than nominated. Eight European gray wolves are held out
-of the wolf panel and painted as targets, which is the only thing in the figure
-that says what a correct all-wolf call looks like.
+the collection sequenced four or more of goes in as well — chosen on how well
+the breed was sequenced and on nothing about the breed — so the same run also
+says what a dog with no such cross looks like, and any breed that turns out to
+carry something is found rather than nominated. Eight European gray wolves are
+held out of the wolf panel and painted as targets, which is the only thing in
+the figure that says what a correct all-wolf call looks like.
 
 The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased
 reference panel of 1929 canids on the `UU_Cfam_GSD_1.0` assembly, which includes
@@ -216,8 +216,8 @@ config: a BED carrying `itemRgb` is painted with it automatically.
 ```
 
 `rowOrder` is abbreviated here; the build script writes all sixty-four rows, in
-descending order of the animal's chr1 wolf fraction, so the row order is
-FLARE's own output rather than an editorial choice.
+descending order of the animal's chr1 wolf fraction, so the row order is FLARE's
+own output rather than an editorial choice.
 
 The same FLARE run writes a second BED holding all 243 animals, loaded the same
 way with an empty `rowOrder`. Two paintings rather than one, because a row label
@@ -268,14 +268,14 @@ assignments are many and short, and its longest is 1.5 Mb — inside the range a
 ordinary breed reaches anyway, since the Kars, the Eurasier and the Spanish
 Mastiff all land between 1.7 and 2.0 Mb with no wolf story attached to any of
 them. That is what having 219 breeds in the run buys: "short flecks" is a
-comparison, and the sweep is what it gets compared against. Appearance carries no
-ancestry.
+comparison, and the sweep is what it gets compared against. Appearance carries
+no ancestry.
 
 The Shiloh Shepherd does not. Its longest wolf block on chr1 is 17.5 Mb, against
 a sweep in which every breed but one stops at 2.4 Mb. The Dog10K paper's own
-D-statistics find no significant excess of wolf allele sharing in this breed over
-German Shepherd Dogs, and the collection holds a single Shiloh Shepherd, painted
-here on a single chromosome.
+D-statistics find no significant excess of wolf allele sharing in this breed
+over German Shepherd Dogs, and the collection holds a single Shiloh Shepherd,
+painted here on a single chromosome.
 
 **The exception is worth naming, because the sweep found it rather than being
 asked about it.** The Great Anglo-French Tricolour Hound — a French pack hound
@@ -316,9 +316,10 @@ is barely a claim, while at an edge the painting says the wolf alleles stop at a
 coordinate, and either they do or they do not. Nine of the sixty-four haplotypes
 end a wolf block inside the 1.5 Mb highlighted above.
 
-Underneath the gene track and the painting, the same window's phased genotypes go
-in as a matrix, filtered to the markers that carry ancestry information at all —
-the ones whose alt allele is common in the wolf panel and rare in the dog panel:
+Underneath the gene track and the painting, the same window's phased genotypes
+go in as a matrix, filtered to the markers that carry ancestry information at
+all — the ones whose alt allele is common in the wolf panel and rare in the dog
+panel:
 
 ```
 "jexlFilters": [
@@ -335,9 +336,9 @@ and the figure is a wall of salt-and-pepper.
 <Figure caption="1.5 Mb of chr1 spanning nine wolf-block edges. Top: the genes in the window. Middle: FLARE's painting for 32 named animals. Bottom: their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after it; a sweep breed's short block is only half-carried on its wolf side." src="/img/dog10k-wolfdog-block-genotypes.png" />
 
 The matrix draws one column per marker rather than placing each at its
-coordinate, so a run of carriers reads as a band instead of as speckle; the lines
-above the rows tie each column back to where it actually is, which is how a
-column is matched to the block edge in the painting above it.
+coordinate, so a run of carriers reads as a band instead of as speckle; the
+lines above the rows tie each column back to where it actually is, which is how
+a column is matched to the block edge in the painting above it.
 
 The build script does the same comparison as a count, one line per edge, so the
 figure is not the only place the claim lives:
@@ -398,8 +399,8 @@ bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 It downloads the Dog10K sample table, derives the panel and target lists, slices
 that chromosome out of the phased panel, generates the map, runs FLARE, prints
 the per-sample ancestry fractions, the wolf-block length distribution and the
-FLARE-independent allele count behind the readings above, and writes both painted
-BEDs
+FLARE-independent allele count behind the readings above, and writes both
+painted BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
 plus their indexes and the genotype slice the last figure uses.
 

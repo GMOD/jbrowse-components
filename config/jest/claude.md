@@ -9,12 +9,11 @@ adding a shim here over reintroducing one: a guard in production source ships a
 branch nothing in production ever takes, and it forces `types: ["jest"]` on
 every project that compiles that file.
 
-Which list a shim belongs in follows from when the value is read:
-`setupFiles` runs before the module graph is imported, so anything captured at
-module-eval time (`rIC` resolves `window.requestIdleCallback` once) must be
-installed there. `setupFilesAfterEnv` is where `beforeEach`/`jest.mock` are
-available, so per-test resets (`localStorage.js`, `deterministicIds.js`) go
-there.
+Which list a shim belongs in follows from when the value is read: `setupFiles`
+runs before the module graph is imported, so anything captured at module-eval
+time (`rIC` resolves `window.requestIdleCallback` once) must be installed there.
+`setupFilesAfterEnv` is where `beforeEach`/`jest.mock` are available, so
+per-test resets (`localStorage.js`, `deterministicIds.js`) go there.
 
 ## Console warning filters
 

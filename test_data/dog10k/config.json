@@ -50,9 +50,7 @@
       "type": "FeatureTrack",
       "trackId": "canFam4_ncbi_refseq",
       "name": "NCBI RefSeq genes (canFam4)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -70,9 +68,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_nhej1_svs",
       "name": "Dog10K structural variants at NHEJ1",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_nhej1_svs.vcf.gz"
@@ -82,9 +78,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_denr_svs",
       "name": "Dog10K structural variants at DENR",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_denr_svs.vcf.gz"
@@ -94,9 +88,7 @@
       "type": "GWASTrack",
       "trackId": "dog10k_size_fst",
       "name": "Fst, toy/small vs giant breeds (200 kb windows)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "GWASAdapter",
         "uri": "dog10k_size_fst.bed.gz",
@@ -116,9 +108,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_fgf4_svs",
       "name": "Dog10K structural variants at FGF4 (named breeds)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_fgf4_svs.vcf.gz",
@@ -138,9 +128,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_fgf4_cohort_svs",
       "name": "Dog10K structural variants at FGF4 (whole collection)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_fgf4_cohort_svs.vcf.gz",
@@ -153,10 +141,7 @@
       "type": "SyntenyTrack",
       "trackId": "dog10k_fgf4_retro_cfa18",
       "name": "FGF4 CFA18 retrocopy (MF040222) vs its parent gene",
-      "assemblyNames": [
-        "FGF4retro-CFA18",
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["FGF4retro-CFA18", "UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "PAFAdapter",
         "uri": "dog10k_fgf4_retro_cfa18.paf",
@@ -168,10 +153,7 @@
       "type": "SyntenyTrack",
       "trackId": "dog10k_fgf4_retro_cfa12",
       "name": "FGF4 CFA12 retrocopy (MF040221) vs its parent gene",
-      "assemblyNames": [
-        "FGF4retro-CFA12",
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["FGF4retro-CFA12", "UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "PAFAdapter",
         "uri": "dog10k_fgf4_retro_cfa12.paf",
@@ -183,9 +165,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_fgf4_retro_cfa18_genes",
       "name": "FGF4 CFA18 retrocopy: GenBank annotation (MF040222)",
-      "assemblyNames": [
-        "FGF4retro-CFA18"
-      ],
+      "assemblyNames": ["FGF4retro-CFA18"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "FGF4retro-CFA18.gff3.gz"
@@ -195,9 +175,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_fgf4_retro_cfa12_genes",
       "name": "FGF4 CFA12 retrocopy: GenBank annotation (MF040221)",
-      "assemblyNames": [
-        "FGF4retro-CFA12"
-      ],
+      "assemblyNames": ["FGF4retro-CFA12"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "FGF4retro-CFA12.gff3.gz"
@@ -207,9 +185,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_cyp1a2_snvs",
       "name": "Dog10K SNVs at CYP1A2",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_cyp1a2_snvs.vcf.gz"
@@ -219,9 +195,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_cyp1a2_snvs_positional",
       "name": "Dog10K SNVs at CYP1A2 (per position)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_cyp1a2_snvs.vcf.gz"
@@ -231,9 +205,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_cyp1a2_cn",
       "name": "CYP1A2 copy number (read depth, 5 kb windows)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -304,9 +276,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_cyp1a2_cohort_cn",
       "name": "CYP1A2 copy number across the Dog10K collection (callset depth)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -369,9 +339,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_cyp1a2_cpg",
       "name": "CpG islands (UCSC cpgIslandExt)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -396,9 +364,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_cyp1a2_breed_cn",
       "name": "CYP1A2 copy number, named animals",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -479,9 +445,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_slc28a3_cohort_cn",
       "name": "SLC28A3 copy number across the Dog10K collection (callset depth)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -540,9 +504,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_slc28a3_breed_cn",
       "name": "SLC28A3 copy number, named animals",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -612,9 +574,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_wolfdog_block_genotypes",
       "name": "Dog10K phased genotypes across a wolf-block edge (chr1)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_wolfdog_chr1_block.vcf.gz"
@@ -624,9 +584,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_wolfdog_ancestry",
       "name": "Local ancestry, 243 canids (FLARE, chr1): gray wolf vs breed dog",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -645,9 +603,7 @@
       "type": "FeatureTrack",
       "trackId": "dog10k_wolfdog_named",
       "name": "Local ancestry, named animals (FLARE, chr1)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
@@ -731,9 +687,7 @@
       "type": "VariantTrack",
       "trackId": "dog10k_igf1_haplotype",
       "name": "Dog10K SNVs across IGF1 (toy, giant, wolf)",
-      "assemblyNames": [
-        "UU_Cfam_GSD_1.0"
-      ],
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_igf1.vcf.gz",

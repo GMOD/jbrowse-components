@@ -55,7 +55,9 @@ test('left right-aligns into the gutter trackLabelLeftOffset reserved', () => {
   // trackLabelLeftOffset reserves `widest name + TRACK_LABEL_GAP`, so the text
   // has to end exactly TRACK_LABEL_GAP short of the track body or the widest
   // name overflows the gutter that was measured for it
-  expect(text?.getAttribute('x')).toBe(String(TRACK_LABEL_OFFSET - TRACK_LABEL_GAP))
+  expect(text?.getAttribute('x')).toBe(
+    String(TRACK_LABEL_OFFSET - TRACK_LABEL_GAP),
+  )
   expect(text?.getAttribute('text-anchor')).toBe('end')
 })
 
@@ -69,7 +71,9 @@ test.each([10, 13, 26])(
   fontSize => {
     const y = Number(renderLabel('left', fontSize)?.getAttribute('y'))
     expect(inkTop(y, fontSize)).toBeGreaterThanOrEqual(0)
-    expect(y + descent(fontSize)).toBeLessThanOrEqual(labelInkHeight(fontSize) + 1)
+    expect(y + descent(fontSize)).toBeLessThanOrEqual(
+      labelInkHeight(fontSize) + 1,
+    )
   },
 )
 
@@ -96,7 +100,9 @@ test('overlay insets over the track body it draws on', () => {
   expect(text?.getAttribute('x')).toBe(String(CONTENT_X + 5))
   // ascenders stay inside the box below the label's own top edge; at y=0 they
   // used to rise into the track above
-  expect(inkTop(Number(text?.getAttribute('y')), FONT_SIZE)).toBeGreaterThanOrEqual(0)
+  expect(
+    inkTop(Number(text?.getAttribute('y')), FONT_SIZE),
+  ).toBeGreaterThanOrEqual(0)
 })
 
 test.each(['left', 'offset', 'overlay'] as const)(
@@ -105,6 +111,8 @@ test.each(['left', 'offset', 'overlay'] as const)(
     // every mode resolves the baseline from util.ts's ink-box model, which is
     // the same model getHeaderLayout/defaultTextHeight reserve space with —
     // leaving it to the renderer would make the two disagree
-    expect(renderLabel(trackLabels)?.getAttribute('dominant-baseline')).toBeNull()
+    expect(
+      renderLabel(trackLabels)?.getAttribute('dominant-baseline'),
+    ).toBeNull()
   },
 )
