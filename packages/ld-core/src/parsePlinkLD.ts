@@ -38,7 +38,11 @@ export function resolvePlinkLDHeader(firstLine: string): {
 // PLINK header looks like: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
 // With optional: DP, MAF_A, MAF_B, PHASE
 export function parsePlinkLDHeader(headerLine: string): PlinkLDHeader {
-  const columns = headerLine.trim().split(/\s+/)
+  // A header row kept for tabix is commonly commented out (`#CHR_A …`) so that
+  // the index's meta character covers it. The `#` is the comment marker, not
+  // part of the first column's name, and leaving it attached made every such
+  // file throw "Expected columns CHR_A, BP_A, CHR_B, BP_B" on load.
+  const columns = headerLine.trim().replace(/^#/, '').split(/\s+/)
 
   const findIdx = (names: string[]) => {
     for (const name of names) {

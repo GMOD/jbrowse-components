@@ -2,7 +2,12 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { unzip } from '@jbrowse/core/util/unzip'
-import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
+import {
+  DEFAULT_PLINK_LD_HEADER,
+  parsePlinkLDHeader,
+  parsePlinkLDLine,
+  resolvePlinkLDHeader,
+} from '@jbrowse/ld-core'
 
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
 
@@ -15,20 +20,9 @@ interface Config {
   header: PlinkLDHeader
 }
 
-// tabix's getHeader() hands back only the lines that begin with the index's
-// meta character. A plink `.ld` is normally indexed `tabix -S 1`, because its
-// header row carries no `#`, so getHeader() comes back EMPTY for it and the
-// column layout falls back to DEFAULT_PLINK_LD_HEADER — whose `dprimeIdx` is
-// -1. That is not cosmetic: `ldMetric: 'dprime'` then resolves to r² for every
-// file indexed that way, and the legend still says D', so the display draws r²
-// under a D' label. The index does record `skip: 1`; @gmod/tabix simply does
-// not act on it.
-//
-// So read the first line off the front of the file instead. One range request,
-// the same read BgzipTaffyAdapter makes for its own header line, and `unzip`
-// tolerates the partial block at the end of it. A file that really has no
-// header yields a data row, which resolvePlinkLDHeader rejects and falls back
-// on exactly as before.
+// One 64 KB range request off the front of the file — the same read
+// BgzipTaffyAdapter makes for its own header line, and `unzip` tolerates the
+// partial block at the end of it.
 async function readFirstLine(fh: {
   read: (length: number, position: number) => Promise<Uint8Array>
 }) {
@@ -51,21 +45,36 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
-    // Prefer what tabix reports, then the file's own first line (see
-    // readFirstLine). LocusZoom-style files ship without a header row and land
-    // on the default PLINK column order either way. A peek that throws leaves
-    // the headerless default, which is what this did before it peeked at all,
-    // so the extra read cannot make a file worse than it already was. tabix
-    // skips any real `#`/`-S` header, so getLines still yields only data rows.
-    let headerLine = await ld.getHeader()
-    if (!headerLine) {
+    // The column layout decides whether the file's D' column is found at all,
+    // so `ldMetric: 'dprime'` lives or dies here.
+    //
+    // A commented header (`#CHR_A …`) comes back from getHeader() and is
+    // resolved from its content, which is safe because the meta character
+    // already proved it is not data.
+    //
+    // A plink `.ld` more often carries a BARE header row and is indexed
+    // `tabix -S 1`. getHeader() returns only lines starting with the meta
+    // character, so it reports nothing — while the index says, in `skipLines`,
+    // that the first line is a header. Ask the index rather than inferring from
+    // the line's content: `skipLines` is a statement by the file's own index,
+    // where "does this look like a header" is a guess, and it is a guess that
+    // misfires on a headerless file whose chromosome column reads `CHR1`.
+    //
+    // Neither branch can do worse than the old headerless default: an
+    // unreadable or unparseable header falls back to it, which is what every
+    // `-S 1` file got before.
+    const headerLine = await ld.getHeader()
+    let header = DEFAULT_PLINK_LD_HEADER
+    if (headerLine) {
+      header = resolvePlinkLDHeader(headerLine).header
+    } else if (((await ld.getMetadata()).skipLines ?? 0) > 0) {
       try {
-        headerLine = await readFirstLine(filehandle)
+        header = parsePlinkLDHeader(await readFirstLine(filehandle))
       } catch {
-        headerLine = ''
+        // declared header, unreadable or unrecognizable: the default layout
+        // still finds the position and r² columns
       }
     }
-    const { header } = resolvePlinkLDHeader(headerLine)
 
     return { ld, header }
   }

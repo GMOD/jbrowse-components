@@ -45,3 +45,35 @@ test('exposes refNames from the index', async () => {
   const adapter = makeAdapter('./test_data/dprime.ld.gz')
   expect(await adapter.getRefNames()).toEqual(['1'])
 })
+
+// The other way a header survives tabix: commented out, so the index's meta
+// character covers it and getHeader() returns it. The `#` belongs to the
+// comment, not to the first column's name — leaving it attached threw
+// "Expected columns CHR_A, BP_A, CHR_B, BP_B" and took the whole track down.
+test('reads a commented header', async () => {
+  const adapter = makeAdapter('./test_data/dprime_hash.ld.gz')
+  expect((await adapter.getHeader()).dprimeIdx).toBe(7)
+  const records = await adapter.getLDRecords({
+    refName: '1',
+    start: 0,
+    end: 5000,
+  })
+  expect(records.find(r => r.snpB === 'rsB')!.dprime).toBeCloseTo(0.91)
+})
+
+// A headerless file whose chromosome column reads CHR1 is the case that decides
+// how the first line may be used. Its first line matches the "looks like a
+// header" pattern while being data, so inferring a header from content throws
+// here and loses the file. The index is asked instead (skipLines is 0), so the
+// line is never read as a header and the default layout stands.
+test('keeps a headerless file whose chrom column looks like a header', async () => {
+  const adapter = makeAdapter('./test_data/headerless_chr1.ld.gz')
+  const records = await adapter.getLDRecords({
+    refName: 'CHR1',
+    start: 0,
+    end: 5000,
+  })
+  expect(records).toHaveLength(2)
+  expect(records[0]!.r2).toBeCloseTo(0.82)
+  expect((await adapter.getHeader()).dprimeIdx).toBe(-1)
+})
