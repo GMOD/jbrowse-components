@@ -80,7 +80,7 @@ export function getMethBins(
     let refPos = 0
     for (let i = 0, l = cigarOps.length; i < l; i++) {
       const packed = cigarOps[i]!
-      const len = packed >> 4
+      const len = packed >>> 4
       const op = packed & 0xf
 
       if (op === CIGAR_S || op === CIGAR_I) {

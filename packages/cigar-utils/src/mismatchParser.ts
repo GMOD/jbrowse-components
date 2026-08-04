@@ -196,7 +196,7 @@ export function clipLengthAtStartOfReadNumeric(
   }
   const packed = strand === -1 ? cigar[len - 1]! : cigar[0]!
   const op = packed & 0xf
-  return op === CIGAR_S || op === CIGAR_H ? packed >> 4 : 0
+  return op === CIGAR_S || op === CIGAR_H ? packed >>> 4 : 0
 }
 
 // produces a list of "feature-like" object from parsing supplementary

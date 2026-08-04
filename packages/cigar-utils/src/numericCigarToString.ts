@@ -8,7 +8,7 @@ export function numericCigarToString(cigar: ArrayLike<number>) {
   let result = ''
   for (let i = 0, l = cigar.length; i < l; i++) {
     const packed = cigar[i]!
-    result += (packed >> 4) + CIGAR_CHARS[packed & 0xf]!
+    result += (packed >>> 4) + CIGAR_CHARS[packed & 0xf]!
   }
   return result
 }
