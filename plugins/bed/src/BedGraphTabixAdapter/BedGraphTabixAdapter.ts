@@ -106,6 +106,18 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
           'Downloading features',
           opts.statusCallback,
           onProgress =>
+            // `same` is a single-coordinate file — a GWAS-style txt with only a
+            // start column, indexed `-b N -e N`. The widening is not slop: the
+            // column value is used below as an interbase start (point p is
+            // drawn at [p, p+1)), while the index reads that same column as a
+            // 1-based position and places the record at [p-1, p). getLines
+            // filters on the index's view, so the point at exactly query.start
+            // — visible at the left edge of the view — is one the query would
+            // otherwise not ask for. Widening by a base is what asks for it.
+            //
+            // For a file indexed `-0`, the two views agree and this instead
+            // pulls in one extra point just left of the view, which is
+            // harmless.
             bedGraph.getLines(
               query.refName,
               query.start + (same ? -1 : 0),
