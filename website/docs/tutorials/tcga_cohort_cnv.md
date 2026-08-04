@@ -25,6 +25,7 @@ vertical stripes down the stack.
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz`            | cohort gain/loss frequencies      |
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz` | the same, split by clinical group |
 | `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                          | per-tumor histology, receptors    |
+| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr`                              | the same segments, binned         |
 
 ## What the files hold
 
@@ -264,6 +265,87 @@ Point `--groups` at any other column for a different split; `histology` and
 `stage` come from harmonized GDC fields and so work for any TCGA project, while
 `subtype` is breast specific.
 
+## Read the same calls as a binned matrix
+
+The stack asks tabix for every segment overlapping the view and rasterizes them
+in the browser. At whole-genome zoom that is the entire file: 379,318 segments
+for a picture a few hundred pixels tall. The same calls binned onto a fixed grid
+answer that view out of one level of a resolution pyramid instead.
+
+`tcga_brca_cnv.zarr` holds the 1104 tumors as a samples-by-bins matrix in a
+[Zarr v3](https://zarr.dev/) store, one array per level from 10kb bins up to
+3Mb. `MultiWiggleZarrAdapter` reads the coarsest level whose bins are still no
+wider than a screen pixel, so a screenful costs a chunk or two at any zoom.
+Bytes over the wire for three views, counted through each reader:
+
+| View                  | BED + tabix | Zarr store | Zarr requests |
+| --------------------- | ----------- | ---------- | ------------- |
+| ERBB2, a 200kb window | 411 KB      | 14 KB      | 1             |
+| chr17 end to end      | 411 KB      | 237 KB     | 12            |
+| whole genome          | 5843 KB     | 1176 KB    | 4             |
+
+The first row is the widest gap and most of it is not the binning. TCGA segments
+average 2.6 Mb, so a query has to reach back to wherever an overlapping segment
+started, and tabix reads the same 411 KB for a 200kb window as for the whole
+chromosome — 1218 lines returned in the first case against 18,867 in the second.
+Set against that, the store is 25 MB on disk to the BED's 5.9 MB. It earns its
+place on the zoomed-out views and on cohorts larger than this one, not as a
+replacement for the stack.
+
+The plugin is in **beta** and not in the
+[plugin store](/docs/user_guides/plugin_store) yet, but the built bundle is
+hosted, so it loads from any config today (see
+[configuring plugins](/docs/config_guides/plugins)):
+
+```json
+{
+  "plugins": [
+    {
+      "name": "Zarr",
+      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "tcga_brca_cnv_zarr",
+      "name": "TCGA-BRCA copy number, binned (1104 primary tumors)",
+      "assemblyNames": ["hg38"],
+      "category": ["TCGA"],
+      "adapter": {
+        "type": "MultiWiggleZarrAdapter",
+        "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr"
+      },
+      "displayDefaults": {
+        "defaultRendering": "multirowdensity",
+        "bicolorPivot": 0,
+        "minScore": -1.5,
+        "maxScore": 1.5,
+        "posColor": "#b2182b",
+        "negColor": "#2166ac"
+      }
+    }
+  ]
+}
+```
+
+The adapter config is the store's location and nothing else: the sample list,
+the bin size and the resolution levels are attributes of the store. Each tumor's
+receptor subtype rides along as its `group`, from the same clinical table the
+recurrence split uses, so the clustering sidebar groups the rows the same way.
+
+Color works differently here than on the stack. There is no jexl expression
+binning `segmean` into five steps; a quantitative track ramps continuously
+between `negColor` and `posColor` about `bicolorPivot`, which sits at 0 because
+these are log2 ratios. `minScore` and `maxScore` clamp the ramp, and at ±1.5
+they saturate at roughly the stack's amplification and deep-loss cutoffs.
+
+Binning is also the one thing this representation loses. A focal amplification
+narrower than the base 10kb bin is averaged with its neighbours rather than
+drawn at its own amplitude, where the stack keeps the caller's exact interval at
+every zoom. For SNP 6.0 segments, whose mean length is 2.6 Mb, that costs
+nothing; for exome or WGS callers emitting kilobase segments it would.
+
 ## Use your own cohort
 
 Nothing here is TCGA-specific. Any caller that emits per-sample segments works;
@@ -321,6 +403,28 @@ tumors).
 
 The third is that `Segment_Mean` is carried through unchanged. JBrowse plots
 what the caller called; nothing here re-normalizes it.
+
+The binned store is a separate script,
+[`build_tcga_cohort_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv_zarr.sh),
+and not a step of the one above, because it needs none of what that one needed:
+its inputs are the BED and the clinical table, so it runs against the hosted
+copies in well under a minute rather than repeating the download. It needs
+`node` 22 or newer and nothing else — no `npm install`, since the converter only
+reaches for a BigWig reader on the path this does not take.
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv_zarr.sh
+bash build_tcga_cohort_cnv_zarr.sh
+# -> tcga_brca_cnv.zarr/ (29 MB, 1752 files)
+```
+
+It reads the cohort BED through
+[`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)'s
+`--bed` mode, naming the sample and value columns, and passes a
+`name<TAB>group` table so each row carries its subtype. The levels are spaced
+about 3x apart rather than 10x: the adapter takes the coarsest level no wider
+than a screen pixel, so a 10x gap leaves a view that lands just under a level's
+bin size reading up to 10x more bins than it can draw.
 
 The recurrence step is separately runnable as
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py),
