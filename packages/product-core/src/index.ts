@@ -106,6 +106,11 @@ export { toPluginLoadRecord } from './pluginInput.ts'
 export type { PluginInput } from './pluginInput.ts'
 export { decodeSessionFromUrl, encodeSessionToUrl } from './sessionUrl.ts'
 export type { SessionSnapshot } from './sessionUrl.ts'
+// in-memory files as tracks, for hosts whose data lives in a process rather
+// than at a URL (a notebook kernel, an R session) — read by byte range, so an
+// indexed file stays indexed
+export { registerLocalFiles, resolveLocalFileUris } from './localFiles.ts'
+export type { LocalFileInput } from './localFiles.ts'
 export {
   migrateConfigSnapshot,
   migrateSessionSnapshot,
