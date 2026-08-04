@@ -73,6 +73,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)
+- [](/docs/tutorials/dog10k_svs)
 
 ### Cancer genomics
 
@@ -91,7 +92,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/dog10k_lof)
 - [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/local_ancestry)
-- [](/docs/tutorials/dog10k_svs)
 
 ### Epigenomics & single cell
 

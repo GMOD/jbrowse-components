@@ -5,7 +5,7 @@ description:
   Genotype four classes of structural variant across dog breeds and read each
   against the gene it sits in
 guide_category: Tutorials
-tutorial_category: Population genomics
+tutorial_category: Structural variation
 ---
 
 **TL;DR:** slice a locus out of the Dog10K structural-variant callsets over
@@ -519,6 +519,9 @@ on an annotated _FGF4_ intron and each deposited CDS is a single interval.
   [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection) and
   [](/docs/tutorials/local_ancestry), the other Dog10K tutorials, on the same
   assembly
+- [](/docs/tutorials/sv_multisamples), the same callset-slice-and-genotype
+  reading on a human panel, and [](/docs/tutorials/population_cnv) for the
+  copy-number half
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 - [](/docs/user_guides/sv_visualization)

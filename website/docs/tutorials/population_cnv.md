@@ -316,7 +316,9 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
   display's own menus and options
 - [](/docs/tutorials/tcga_cohort_cnv), the same one-row-per-sample idea for
   somatic copy number across a tumor cohort
-- [Structural variants across samples](/docs/tutorials/sv_multisamples)
+- [Structural variants across samples](/docs/tutorials/sv_multisamples), the
+  balanced-rearrangement half of the same panel, and
+  [](/docs/tutorials/dog10k_svs) for both on a canine one
 - [Clustering](/docs/user_guides/clustering)
 
 ## References

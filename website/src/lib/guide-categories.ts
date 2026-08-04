@@ -56,6 +56,17 @@ export const DEVELOPER_CATEGORIES = [
 // genomics' before), and the SV pages are not all cancer (the 1000 Genomes
 // inversion and copy-number panels are germline). One axis each keeps both
 // headings true of everything under them.
+//
+// One category per page, deliberately, and not a tag system. Tutorials do sit
+// on several axes at once — biology domain, variant type, the display doing the
+// work — and every few months that reads like an argument for tags. It isn't,
+// at this size: these are section headings on one landing page, a page can only
+// appear once in a linear list, and after the split above all 35 pages have a
+// category that is true of them. What a reader actually wants from tags is to
+// find the sibling page in another section, and `## See also` already does that
+// with prose that says WHY the two are related, which a tag cannot. When a page
+// straddles, fix the cross-links, not the schema. Revisit only if the corpus
+// roughly doubles or a section stops describing its contents.
 export const TUTORIAL_CATEGORIES = [
   'Getting started',
   'Synteny & comparative genomics',

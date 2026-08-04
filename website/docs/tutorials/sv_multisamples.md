@@ -129,4 +129,7 @@ For more on navigating it, see
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/analyze_trio)
+- [](/docs/tutorials/dog10k_svs), the same reading on a canine panel, and
+  [](/docs/tutorials/population_cnv) for copy number across the same 1000
+  Genomes samples
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
