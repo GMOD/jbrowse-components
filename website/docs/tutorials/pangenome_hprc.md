@@ -7,6 +7,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
+**TL;DR:** HPRC release 2's `sv.gfa` is an rGFA, so its segments carry
+coordinates and the graph opens by locus from two small tabix indexes rather
+than the 842 MB file. Its `wave.vcf.gz` ships an index too, so 464 haplotypes
+draw as a genotype matrix straight off S3.
+
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
 fivefold expansion over release 1. This tutorial opens two of its products: the
 pangenome graph drawn as a graph, and the variant callset (464 haplotypes as a
@@ -213,7 +218,7 @@ segments. Where each one attaches comes from the
 the bubble lane and the [allele inventory](#the-allele-inventory) give their
 lengths.
 
-Two things control whether that picture is readable, and neither is obvious.
+Two settings control whether that picture is readable.
 
 **Bubble spread**, in the graph's settings menu, sets a floor on how long a node
 is drawn. The force engine comes from Bandage, whose graphs are assembled
@@ -599,7 +604,12 @@ inverted paralogs somewhere nearby: each of those crosses on screen exactly the
 way the inversion does, so the script keeps only haplotypes whose alignments
 inside the drawn window are the inversion and its two forward flanks.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles with the boxed one the subject, and the rGFA segments. The top row is HG01891 hap 1: its ribbon crosses inside the boxed span and runs parallel either side of it. The bottom row is HG02698 hap 2, one forward ribbon across the whole window." src="/img/pangenome/hprc_inversion.png" />
+Each haplotype row carries its own CAT gene annotation, which states the same
+event a second way: the named genes inside the boxed span run PPIAL4F, RNVU1-28,
+RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E down the carrier and PPIAL4E
+through PPIAL4F — the reference's order — down the non-carrier.
+
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles with the boxed one the subject, and the rGFA segments. The top row is HG01891 hap 1: its ribbon crosses inside the boxed span, runs parallel either side of it, and its own genes run backwards through it. The bottom row is HG02698 hap 2, one forward ribbon and reference gene order across the whole window — the comparison that separates an inversion from a contig deposited backwards." src="/img/pangenome/hprc_inversion.png" />
 
 The [allele inventory](#the-allele-inventory) has nothing for them by
 construction, since a mixed-orientation pair of backbone segments is a

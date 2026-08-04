@@ -222,6 +222,26 @@
         "type": "Gff3TabixAdapter",
         "uri": "hprc_cfhr_HG00099.1.genes.gff3.gz"
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_inv_genes_HG01891_1",
+      "name": "HG01891.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01891.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_inv_HG01891.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_inv_genes_HG02698_2",
+      "name": "HG02698.2 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG02698.2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_inv_HG02698.2.genes.gff3.gz"
+      }
     }
   ]
 }

@@ -548,6 +548,17 @@ const INV_CARRIER = 'HG01891.1'
 const INV_CARRIER_TRACK = 'hprc_inv_synteny_HG01891_1'
 const INV_NONCARRIER = 'HG02698.2'
 const INV_NONCARRIER_TRACK = 'hprc_inv_synteny_HG02698_2'
+// Each haplotype's own CAT annotation, which is what makes the non-carrier row
+// worth its height (review: "the third sample ... looks like it matches the hg38
+// reference so not interesting, can consider deleting third row"). With gene
+// lanes on both, the crossing ribbon is no longer the only thing said twice: the
+// named genes inside the block run PPIAL4F, RNVU1-28, RNVU1-2A, RNVU1-26,
+// NBPF15, RNVU1-15, PPIAL4E down the carrier and PPIAL4E, RNVU1-15, NBPF15,
+// RNVU1-26, RNVU1-2A, RNVU1-28, PPIAL4F down the non-carrier, i.e. reference
+// order on one row and reversed on the other. That is the reading a crossing
+// ribbon alone cannot separate from a contig deposited backwards.
+const INV_CARRIER_GENES = 'hprc_inv_genes_HG01891_1'
+const INV_NONCARRIER_GENES = 'hprc_inv_genes_HG02698_2'
 // Each row's own window: the span its in-frame records cover on that haplotype.
 const INV_CARRIER_WINDOW = 'JAGYVO020000062.1:6,437,000-6,868,942'
 const INV_NONCARRIER_WINDOW = 'JBHDTM010000033.1:3,912,000-4,309,991'
@@ -713,10 +724,11 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
 }
 
 // A haplotype row's own genes: HPRC's CAT annotation of that assembly, sliced to
-// the window by scripts/build_hprc_cfhr_synteny.sh. Same glyph settings as the
-// hg38 lane between them, so the three rows are read the same way and the
-// missing genes are missing rather than differently drawn.
-function cfhrGeneLane(trackId: string) {
+// the window by scripts/build_hprc_cfhr_synteny.sh and
+// scripts/build_hprc_inversion_synteny.sh. Same glyph settings as the hg38 lane
+// between them, so the three rows are read the same way and the missing genes
+// are missing rather than differently drawn.
+function haplotypeGeneLane(trackId: string) {
   return {
     trackId,
     type: 'LinearBasicDisplay',
@@ -2318,13 +2330,21 @@ export const graphSpecs: ScreenshotSpec[] = [
           // then against hg38, which is the comparison.
           tracks: [[CFHR_CARRIER_TRACK], [CFHR_NONCARRIER_TRACK]],
           drawCurves: true,
-          levelHeights: [110, 110],
+          // The carrier's band is where the event is — a ribbon that stops and
+          // resumes around the highlighted span — and the non-carrier's is one
+          // ribbon straight through it, which needs less height to be read
+          // (review: "the third row just looks like normal non interesting
+          // alignment"). It is the row's GENE LANE that earns its keep, not its
+          // ribbon: CFHR3 and CFHR1 annotated there are what make their absence
+          // from the carrier a deletion rather than a gap in CAT's annotation of
+          // one assembly.
+          levelHeights: [110, 70],
           collapseEmptyRows: true,
           views: [
             {
               assembly: CFHR_CARRIER,
               loc: CFHR_CARRIER_WINDOW,
-              tracks: [cfhrGeneLane(CFHR_CARRIER_GENES)],
+              tracks: [haplotypeGeneLane(CFHR_CARRIER_GENES)],
             },
             {
               assembly: 'hg38',
@@ -2351,7 +2371,7 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               assembly: CFHR_NONCARRIER,
               loc: CFHR_NONCARRIER_WINDOW,
-              tracks: [cfhrGeneLane(CFHR_NONCARRIER_GENES)],
+              tracks: [haplotypeGeneLane(CFHR_NONCARRIER_GENES)],
             },
           ],
         },
@@ -2379,7 +2399,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // 1580 while the graph half was FMMM, whose drawing is squarer than 11 rows
     // of backbone: the anchored pane came out 238 px shorter
-    viewportHeight: 1342,
+    viewportHeight: 1302,
     hideTooltip: true,
     // What the reader is looking at, named on the rows themselves (review: "can
     // red boxes and text annotation be added"). The box wraps the two genes the
@@ -2442,6 +2462,17 @@ export const graphSpecs: ScreenshotSpec[] = [
   // ribbon crosses inside it while its flanking ribbons run parallel, which is
   // the whole figure.
   //
+  // BOTH HAPLOTYPE ROWS CARRY THEIR OWN CAT GENES, and that is what keeps the
+  // non-carrier row (review: "this looks like it matches the hg38 reference so
+  // not interesting, can consider deleting third row"). It does match, and that
+  // is its job: a lone crossing ribbon is equally what an assembly whose contig
+  // was deposited in the opposite orientation draws, which is why the build
+  // script tests the flanks rather than the block. The gene lanes put that test
+  // in the frame — inside the boxed bubble the carrier's named genes run
+  // PPIAL4F, RNVU1-28, RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E and the
+  // non-carrier's run the reference's order, PPIAL4E through PPIAL4F. Delete the
+  // third row and the figure has a crossing with nothing to compare it against.
+  //
   // `cigarMode: 'off'` because the one thing this figure means by a crossing is
   // an inversion. HPRC's PAF carries a CIGAR per record, and at 400 kb a record
   // the default 'full' mode paints each large indel in it as a wedge pinching to
@@ -2458,10 +2489,19 @@ export const graphSpecs: ScreenshotSpec[] = [
           tracks: [[INV_CARRIER_TRACK], [INV_NONCARRIER_TRACK]],
           drawCurves: true,
           cigarMode: 'off',
-          levelHeights: [150, 150],
+          // The crossing band keeps its height; the non-carrier's does not need
+          // it. A band's job here is to be followed across, and the lower one is
+          // a single parallel ribbon — 150 px of it was the "third row is
+          // boring" half of the review, and the answer is to spend that height
+          // on the gene lane under it instead of on the ribbon.
+          levelHeights: [150, 90],
           collapseEmptyRows: true,
           views: [
-            { assembly: INV_CARRIER, loc: INV_CARRIER_WINDOW, tracks: [] },
+            {
+              assembly: INV_CARRIER,
+              loc: INV_CARRIER_WINDOW,
+              tracks: [haplotypeGeneLane(INV_CARRIER_GENES)],
+            },
             {
               assembly: 'hg38',
               loc: INV_WINDOW,
@@ -2489,7 +2529,7 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               assembly: INV_NONCARRIER,
               loc: INV_NONCARRIER_WINDOW,
-              tracks: [],
+              tracks: [haplotypeGeneLane(INV_NONCARRIER_GENES)],
             },
           ],
         },
@@ -2503,13 +2543,15 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportWidth: 1000,
     // the two ribbon bands, the three lanes between them and the bottom row's
-    // ruler; 900 left 79 px of blank under it, per the run's own report
-    viewportHeight: 820,
+    // ruler, plus a gene lane on each haplotype row and 60 px off the lower band
+    viewportHeight: 945,
     hideTooltip: true,
-    // Only the box. The haplotype rows carry no track of their own to anchor a
-    // label to (the CFHR figure's labels hang off its per-haplotype gene lanes),
-    // and the view chrome already names each row's assembly at its left edge, so
-    // a callout would restate it.
+    // The flagged bubble, and what each haplotype's own genes do inside it. The
+    // row labels hang off the gene lanes the rows now carry, the same way the
+    // CFHR figure's do, and they say the thing the ribbons cannot: a crossing
+    // ribbon on its own is also what a contig deposited backwards draws, and it
+    // is gene order agreeing with the reference on one row and running backwards
+    // on the other that separates the two.
     annotations: [
       {
         type: 'box',
@@ -2518,6 +2560,34 @@ export const graphSpecs: ScreenshotSpec[] = [
           track: 'hprc_minigraph_bubbles',
           locus: INV_BLOCK_LOCUS,
         },
+      },
+      {
+        type: 'text',
+        fontSize: 17,
+        maxWidth: 520,
+        anchor: {
+          view: [0, 0],
+          track: INV_CARRIER_GENES,
+          locus: windowStart(INV_CARRIER_WINDOW),
+          fracY: 1,
+          dx: 14,
+          dy: -24,
+        },
+        text: 'HG01891 hap1: genes reversed in the block',
+      },
+      {
+        type: 'text',
+        fontSize: 17,
+        maxWidth: 520,
+        anchor: {
+          view: [0, 2],
+          track: INV_NONCARRIER_GENES,
+          locus: windowStart(INV_NONCARRIER_WINDOW),
+          fracY: 1,
+          dx: 14,
+          dy: -24,
+        },
+        text: 'HG02698 hap2: reference gene order',
       },
     ],
   },

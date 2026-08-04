@@ -8,7 +8,7 @@
 # flagged bubble and slices a carrier and a non-carrier out of HPRC's own
 # all-vs-GRCh38 PAF.
 #
-# Requires: curl, awk, python3
+# Requires: curl, awk, python3, bgzip, tabix
 # Usage:    bash scripts/build_hprc_inversion_synteny.sh [outdir]
 #
 # Writes, per haplotype, into ./hprc_inversion_synteny_build/ (copy them beside
@@ -18,6 +18,8 @@
 #                                        the PanSN prefix stripped
 #   hprc_inv_<sample>.<hap>.chrom.sizes  the query contig's length, for a
 #                                        ChromSizesAdapter assembly
+#   hprc_inv_<sample>.<hap>.genes.gff3.gz  HPRC's own CAT annotation of that
+#                                        haplotype, cut to the drawn window
 #
 # The locus is chr1:144,419,292-144,572,458 at 1q21.1, which
 # hprc-v2.0-mc-grch38.bubbles.bed.gz reports as inversion-flagged and whose
@@ -65,6 +67,12 @@ cd "$OUTDIR"
 
 REL=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2
 PAF=$REL/impg/pafs/hprc465vsgrch38.aln.paf.gz
+# Release 2 annotates every assembly with CAT, and the index says where each
+# haplotype's gff3 lives. Same file the CFHR build reads.
+CAT_INDEX=https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
+# how far outside a row's drawn window its gene slice reaches, so panning a live
+# link a little does not run off the end of the annotation
+GENE_FLANK=20000
 
 # The flagged bubble, and the window streamed around it. The flank margins below
 # start 20 kb outside the bubble so a breakpoint's own homology is in neither.
@@ -225,6 +233,57 @@ while IFS=$'\t' read -r sample hap label contig qstart qend; do
   echo "   draws this row at $contig:$qstart-$qend"
   awk -F'\t' '{print "   query " $3 "-" $4 "  " $5 "  target chr1:" $8 "-" $9}' \
     "hprc_inv_$name.paf"
+done < inv_panel.txt
+
+# ── The genes on each haplotype ─────────────────────────────────────────────
+# A crossing ribbon is also what a contig deposited in the opposite orientation
+# draws, which is why the classification above tests the flanks. These lanes put
+# that test in the figure: CAT annotates each release 2 assembly on its own
+# contigs (the same names the PAF queries carry once the PanSN prefix is off), so
+# each row can show its own gene order through the block — the reference's on the
+# non-carrier, reversed on the carrier.
+#
+# `intron`, `start_codon` and `stop_codon` rows are dropped: a gene glyph draws
+# exons and CDS, and an intron feature would paint over the gap it names.
+#
+# So are the loci CAT has no symbol for, which it names by their Ensembl gene id.
+# 29 of the 45 genes in this window are those, and unfiltered they are most of
+# the lane and all of the same width and colour as the rest: the row packs three
+# deep and reading an order off it means first finding the labels that are
+# names. Every row of a CAT record carries `gene_name`, gene through exon, so
+# this is one filter rather than a parent walk. The reference lane above is
+# curated the same way by `geneGlyphMode`.
+[ -f cat_index.csv ] || curl -fsSL -o cat_index.csv "$CAT_INDEX"
+
+echo
+echo "== CAT gene annotation, per haplotype"
+while IFS=$'\t' read -r sample hap label contig qstart qend; do
+  name="$sample.$hap"
+  s3=$(awk -F, -v s="$sample" -v h="$hap" '$1==s && $2==h {print $4}' cat_index.csv)
+  [ -n "$s3" ] || { echo "no CAT annotation indexed for $name"; exit 1; }
+  url="https://s3-us-west-2.amazonaws.com/human-pangenomics/${s3#s3://human-pangenomics/}"
+  gs=$((qstart > GENE_FLANK ? qstart - GENE_FLANK : 0))
+  ge=$((qend + GENE_FLANK))
+  echo "== $name ($label): $contig:$gs-$ge"
+  # CAT emits each gene's rows together rather than in coordinate order, and
+  # overlapping genes therefore interleave backwards, which tabix rejects
+  { echo '##gff-version 3'
+    curl -fsS "$url" \
+      | zcat \
+      | awk -F'\t' -v c="$contig" -v s="$gs" -v e="$ge" \
+          '$1==c && $4<e && $5>s && $3!="intron" && $3!="start_codon" &&
+           $3!="stop_codon" && $9 !~ /gene_name=ENSG/' \
+      | LC_ALL=C sort -k1,1 -k4,4n -k5,5n
+  } > "hprc_inv_$name.genes.gff3"
+  bgzip -f "hprc_inv_$name.genes.gff3"
+  tabix -f -p gff "hprc_inv_$name.genes.gff3.gz"
+  # named genes only, in the order the row draws them: the carrier's is the
+  # reference's reversed, which is the figure's second statement of the event
+  zcat "hprc_inv_$name.genes.gff3.gz" \
+    | awk -F'\t' '$3=="gene" { match($9, /Name=[^;]*/)
+                               n = substr($9, RSTART+5, RLENGTH-5)
+                               if (n !~ /^ENSG/) print n }' \
+    | tr '\n' ' ' | sed 's/^/   genes: /;s/$/\n/'
 done < inv_panel.txt
 
 # The claim the figure makes, asserted rather than described: the carrier's
