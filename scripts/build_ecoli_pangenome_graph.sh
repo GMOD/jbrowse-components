@@ -29,12 +29,13 @@
 # Everything is pinned (fixed RefSeq accessions, pinned pggb image + parameters),
 # so re-running reproduces the same graph and views.
 #
-# Requires: docker (the pggb image, which also carries odgi for the depth
-#           projection, and the cactus image for minigraph/gfatools), the NCBI
-#           `datasets` CLI, samtools, bedGraphToBigWig (UCSC kentUtils), python3,
-#           bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx unless
-#           `jbrowse` is on PATH).
+# Requires: docker or singularity (the pggb image, which also carries odgi for
+#           the depth projection, and the cactus image for minigraph/gfatools),
+#           the NCBI `datasets` CLI, samtools, bedGraphToBigWig (UCSC kentUtils),
+#           python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
+#           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
+#           CONTAINER=singularity bash scripts/build_ecoli_pangenome_graph.sh
 #
 set -euo pipefail
 
@@ -98,14 +99,35 @@ REF=K12   # the strain the VCF and MAF are projected onto
 #    does. Check `smoothxg --version` against that commit before assuming the
 #    crop is dead code.
 PGGB_IMAGE=ghcr.io/pangenome/pggb:202603141454453ade6b
-in_pggb() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$PGGB_IMAGE" "$@"; }
 
 # minigraph and gfatools build the rGFA counterpart of the graph (see the
 # graph-view assets section at the end). Neither is in the pggb image; the
 # Minigraph-Cactus image the sibling tutorial pins carries both, so reuse it
 # rather than asking for two more host installs.
 CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
-in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$CACTUS_IMAGE" "$@"; }
+
+# docker if it is there, else singularity/apptainer, which is what a cluster
+# usually has instead. Only this dispatch differs between the two: every
+# `in_pggb`/`in_cactus` call below is unchanged, because `--bind`/`--pwd` are
+# `-v`/`-w` and singularity already runs as the invoking user, so it needs no
+# `-u`. Set CONTAINER to pick one explicitly.
+CONTAINER="${CONTAINER:-}"
+if [ -z "$CONTAINER" ]; then
+  for c in docker singularity apptainer; do
+    if command -v "$c" >/dev/null 2>&1; then CONTAINER="$c"; break; fi
+  done
+fi
+case "$CONTAINER" in
+  docker)
+    in_image() { local image="$1"; shift; docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$image" "$@"; } ;;
+  singularity | apptainer)
+    in_image() { local image="$1"; shift; "$CONTAINER" exec --cleanenv --bind "$PWD":/data --pwd /data "docker://$image" "$@"; } ;;
+  *)
+    echo "need docker, singularity or apptainer on PATH to run $PGGB_IMAGE" >&2
+    exit 1 ;;
+esac
+in_pggb() { in_image "$PGGB_IMAGE" "$@"; }
+in_cactus() { in_image "$CACTUS_IMAGE" "$@"; }
 
 # ── Fetch each genome + annotation; keep only the chromosome, renamed `chr` ────
 # NCTC86 is GCF_002007705.1 (NZ_CP019778.1, 5,111,920 bp), the assembly the

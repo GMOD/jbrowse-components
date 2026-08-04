@@ -8,9 +8,9 @@ tutorial_category: Synteny & comparative genomics
 ---
 
 **TL;DR:** build a five-strain _E. coli_ graph with pggb, then load its linear
-projections (synteny, pangenome variants, whole-genome MAF, depth and per-strain
-presence) as ordinary JBrowse tracks on the K12 axis, and draw the graph itself
-beside them.
+projections (synteny, pangenome variants, whole-genome MAF, depth, graph
+complexity and per-strain presence) as ordinary JBrowse tracks on the K12 axis,
+and draw the graph itself beside them.
 
 A pangenome graph collapses many genomes into one structure: shared sequence is
 a single path that every sample walks, and where samples differ the path
@@ -29,7 +29,7 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- `docker`, for the pggb image, which also carries odgi
+- `docker` or `singularity`, for the pggb image, which also carries odgi
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -44,6 +44,14 @@ CLI and `bedGraphToBigWig` are each a
 [single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/); and `node`
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 pggb image.
+
+pggb's
+[installation docs](https://pggb.readthedocs.io/en/latest/rst/installation.html)
+cover that image, plus bioconda (`conda install -c bioconda pggb`), guix, and a
+from-source build of the five tools the pipeline is made of. The image is the
+route here because it pins all five at once. On a cluster with no docker,
+`singularity` runs the same image, and the wrapper below is the only line that
+changes.
 
 ## The linear projections
 
@@ -103,6 +111,18 @@ in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
   -n 5 -c 4 -p 90 -s 5000 -V K12:10000 -M -t "$(nproc)"
 ```
 
+Under singularity, redefine the wrapper and every call after it is unchanged.
+`--bind` and `--pwd` are `-v` and `-w`, and singularity runs as the invoking
+user already, so it needs no `-u`. A `docker://` reference is pulled and cached
+on first use, so there is no separate `singularity pull` step:
+
+```bash
+in_pggb() {
+  singularity exec --cleanenv --bind "$PWD":/data --pwd /data \
+    docker://ghcr.io/pangenome/pggb:202603141454453ade6b "$@"
+}
+```
+
 Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
 reproducible. Five bacterial chromosomes are minutes on a laptop; smoothxg's
 partial-order alignment is the step that grows, and `-T` caps its threads
@@ -116,8 +136,8 @@ defaults to `1`, so `-n 5` alone keeps each segment's single best match and
 builds an under-connected graph that crashes smoothxg. Set it to the haplotype
 count minus one. `-n` is a smoothxg parameter and cannot influence mapping at
 all, which is why the two have to be set together. The other flag is `-w /data`
-in the wrapper, which gives the `-u` user a writable working directory. Without
-it seqwish cannot write its temporary files.
+in the wrapper (`--pwd /data` under singularity), which gives the container a
+writable working directory. Without it seqwish cannot write its temporary files.
 
 pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [seqwish](https://github.com/ekg/seqwish) (induces the graph),
@@ -129,6 +149,15 @@ output directory holds everything the sections below load: the graph
 the MAF. It also already holds pggb's own 1D and 2D renderings of the graph
 (`*.viz_*.png` from `odgi viz`, `*.lay.draw.png` from `odgi layout`), unless you
 passed `-v`.
+
+Resolve the graph's two spellings once here. Every odgi command below refers to
+them, and the glob has to expand on the host, since a `/data/*.gfa` inside the
+container is passed through as a literal:
+
+```bash
+gfa=$(ls pggb/*.smooth.final.gfa)
+og=$(ls pggb/*.smooth.final.og)
+```
 
 ## Synteny projection
 
@@ -195,8 +224,6 @@ paralogy a pairwise PAF has no way to express.
 ```bash
 printf 'K12#1#chr\n' > target.txt
 printf 'Sakai#1#chr\nCFT073#1#chr\nNCTC86#1#chr\nIAI39#1#chr\n' > query.txt
-# resolve the graph on the host: a /data/*.og glob cannot expand inside docker
-og=$(ls pggb/*.smooth.final.og)
 in_pggb odgi untangle -i "/data/$og" \
   -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -p -t "$(nproc)" \
   > ecoli_pggb_untangle.paf
@@ -434,7 +461,6 @@ reflen=$(awk '$1 == "K12#1#chr" {print $2}' all.fa.gz.fai)
 awk -v len="$reflen" 'BEGIN{for(s=0;s<len;s+=500){e=s+500; if(e>len)e=len; print "K12#1#chr\t"s"\t"e}}' \
   > depth_windows.bed
 
-gfa=$(ls pggb/*.smooth.final.gfa)
 in_pggb odgi depth -i "/data/$gfa" -b /data/depth_windows.bed \
   | awk -v OFS='\t' '$1 == "K12#1#chr" {print "chr", $2, $3, $4}' \
   | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
@@ -469,7 +495,10 @@ stretches are K12's private sequence, and the gene lane names what is in them.
 The peaks go the other way. `odgi depth` counts path **steps**, and the graph
 collapses the rRNA operons into one copy that every strain then walks several
 times, so those windows read well above the strain count. Read the signal as
-relative rather than as an exact genome tally.
+relative rather than as an exact genome tally. That is a property of this
+builder, not of the projection: the Minigraph-Cactus tutorial draws
+[both graphs' curves over one of those operons](/docs/tutorials/pangenome_cactus#pangenome-depth-and-per-strain-presence),
+and only this one steps up.
 
 ### Graph complexity
 
@@ -480,7 +509,8 @@ reports each window's mean node degree, which is 2 along a stretch every path
 walks identically and rises wherever paths enter and leave. So it locates the
 graph's tangles directly rather than by inferring them from a dip in coverage,
 and it is the one curve here with no equivalent in an alignment-derived track.
-Same windows, same conversion, same track type:
+Same windows, same conversion, same track type, so load it as a second
+`QuantitativeTrack` under the depth one:
 
 ```bash
 in_pggb odgi degree -i "/data/$og" -b /data/depth_windows.bed \
@@ -489,7 +519,7 @@ in_pggb odgi degree -i "/data/$og" -b /data/depth_windows.bed \
 bedGraphToBigWig ecoli_pggb_degree.bedgraph chrom.sizes ecoli_pggb_degree.bw
 ```
 
-<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near the strain count where every strain traverses the graph, so the sequence is core, and drops toward 1 over the accessory stretches private to fewer strains. The peaks are the collapsed rRNA operons, which each path walks several times." src="/img/pangenome/depth.png" />
+<Figure caption="The two graph-shape curves over the whole K12 chromosome. On top, odgi depth: a plateau near the strain count over core sequence, troughs at 1 over K12-private accessory stretches, and spikes above the strain count over the collapsed rRNA operons, which each path walks several times. Below it, odgi degree: mean node degree, near 2 where every path walks the same nodes and higher wherever paths enter and leave. The two disagree where a window is fully covered and still branched, which is what depth alone cannot say." src="/img/pangenome/depth.png" />
 
 ### Per-strain presence
 
@@ -719,8 +749,6 @@ bp instead, which is what the view's own **Graph context: N hops** setting does
 when it cuts from an index:
 
 ```bash
-# resolve the graph on the host, since a /data/*.og glob can't expand in docker
-og=$(ls pggb/*.smooth.final.og)
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - \
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
@@ -777,7 +805,6 @@ links only. So this is what the file route is still for: cut the IS5 bubble
 come with it.
 
 ```bash
-og=$(ls pggb/*.smooth.final.og)
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - \
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_is5.gfa
@@ -799,7 +826,6 @@ walks out to every one of them and returns tens of thousands of segments for a
 500 bp window:
 
 ```bash
-og=$(ls pggb/*.smooth.final.og)
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -o - \
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_rrna.gfa
@@ -835,7 +861,9 @@ raster, the two graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and
 all of which need the cactus image for minigraph and gfatools. The `config.json`
 declares the graph genome view plugin, so the graph track and its launch menu
 item work without adding the plugin by hand. It needs the same tools listed
-under [Prerequisites](#prerequisites).
+under [Prerequisites](#prerequisites), and picks its container runtime from what
+is on `PATH`, docker first and then singularity or apptainer. Force one with
+`CONTAINER=singularity`.
 
 Everything downstream is derived from the strain table at the top of the script,
 so adding genomes there is the only edit an expanded pangenome needs. Watch two

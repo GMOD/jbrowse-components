@@ -1,17 +1,20 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Figures for the Minigraph-Cactus pangenome tutorial (pangenome_cactus.md).
 // They load the same hosted ecoli_pangenome demo config as the pggb figures
 // (specs/pangenome.ts), whose ecoli_cactus_* tracks are the Minigraph-Cactus
-// projections of the same four strains, as a bare ?config= against the local
+// projections of the same five strains, as a bare ?config= against the local
 // build. Every projection is anchored on the K12 reference, so each is a plain
-// LinearGenomeView on K12 (the synteny one stacks all four). Remote demo data →
+// LinearGenomeView on K12 (the synteny one stacks all five). Remote demo data →
 // generous settle.
-const CONFIG = encodeURIComponent(
-  'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-)
+//
+// Through ECOLI_DEMO_BASE like the pggb specs, rather than the hosted URL
+// written out, so a rebuilt-but-not-yet-uploaded demo renders these figures too.
+// Same default, so it changes no committed image.
+const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 
 // The odgi viz raster's own path rows, in its order and its colors, sampled out
 // of the committed graph.png. K12 is absent on purpose — in a K12-anchored view
@@ -64,6 +67,170 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
+  },
+
+  // Projection 2: the graph's variants (`--vcf`, vg deconstruct vs K12) in the
+  // matrix display, which is the display the tutorial's variants section picks
+  // and, until this figure, the one section on the page with no picture at all.
+  //
+  // Same window as the MAF figure below, chr:800,000-806,000, deliberately: the
+  // reader gets one 6 kb stretch twice, as per-base alignment rows and as the
+  // genotype matrix decomposed from them. It is also the right density for the
+  // display to be legible rather than a barcode. Measured on the hosted VCF:
+  //   bcftools view -H -r chr:800000-806000 ecoli_cactus.vcf.gz | wc -l
+  // is 133 records, so ~7px per column at this width, over 16 distinct
+  // four-sample genotype patterns — private alleles (one row lit), shared ones
+  // (two or three), and a handful of multi-allelic sites. A denser window (the
+  // busiest 10 kb runs to 870 records) collapses every column to a pixel.
+  {
+    mode: 'url',
+    name: 'pangenome_cactus/variants',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:800,000-806,000',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'ecoli_cactus_variants',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              // four sample rows plus the connector band. Tall enough that a row
+              // is a band rather than a hairline, which is what makes the
+              // per-strain pattern the subject of the figure.
+              height: 260,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '806,000',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    // fits the gene lane plus the whole 260px matrix and the genotype legend;
+    // 480 cut 117px off the bottom sample row, which the generator's
+    // below-the-fold check caught.
+    //
+    // The legend is left up, as on every other multi-sample variant figure: it
+    // names the cell colors in frame, which is otherwise a sentence of caption.
+    // With only four rows it does overlap the right end of the top row
+    // (CFT073), about ten of the 133 columns for one of four strains. That is
+    // affordable here because the figure's subject is NCTC86's row, the third,
+    // which nothing covers.
+    viewportHeight: 600,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 950, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+
+  // The two builders' depth curves in one frame, which is the comparison both
+  // pangenome pages assert in prose ("the same five strains and the same
+  // projections onto K12") and neither showed.
+  //
+  // ONE MultiQuantitativeTrack rather than two QuantitativeTracks, with
+  // minScore/maxScore pinned. Two separate wiggle lanes each autoscale to their
+  // own max, so pggb's plateau would draw at half height against its 0-10 axis
+  // and Cactus's at full height against its 0-5, and the figure would say the
+  // opposite of the truth. One track on one fixed axis is the only honest shape.
+  //
+  // THE LOCUS IS READ OFF THE DATA, not chosen. bigWigToBedGraph on both
+  // published bigWigs, then the windows where pggb exceeds the strain count:
+  // the two sustained plateaus are chr:3,941,000-3,947,000 and
+  // chr:4,166,000-4,171,500, which are the rrnC and rrnB operons. Over
+  // chr:3,935,000-3,955,000, which frames the first with flanks:
+  //   pggb    min 4.81  max 9.98  mean 6.28   (40 windows)
+  //   cactus  min 3.89  max 4.00  mean 3.97   (39 windows)
+  // The pggb curve doubles over the operon and the Cactus curve does not move at
+  // all. Whole-chromosome the two are near-identical walls (means 4.48 and 4.36)
+  // and 4.6 Mb over 1000px puts nine 500bp windows in a pixel, so the spikes
+  // aggregate away — that framing was tried first and showed nothing.
+  //
+  // The same operon is the subject of the pggb tutorial's untangle figure
+  // (chr:3,941,447-3,946,786), so the collapse reads twice: as several query
+  // segments landing on one reference span there, and as doubled depth here.
+  //
+  // Session tracks, not the config's own ecoli_*_depth tracks, because the two
+  // have to land in one multiwiggle to share the axis. Absolute URIs: session
+  // tracks do not inherit the config's baseUri.
+  {
+    mode: 'url',
+    name: 'pangenome_cactus/builders',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'ecoli_depth_by_builder',
+          name: 'Pangenome depth over K12, by builder (odgi depth)',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                type: 'BigWigAdapter',
+                name: 'pggb',
+                bigWigLocation: {
+                  uri: `${ECOLI_DEMO_BASE}/ecoli_pggb_depth.bw`,
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                type: 'BigWigAdapter',
+                name: 'Minigraph-Cactus',
+                bigWigLocation: {
+                  uri: `${ECOLI_DEMO_BASE}/ecoli_cactus_depth.bw`,
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+          displays: [
+            {
+              type: 'MultiLinearWiggleDisplay',
+              displayId: 'ecoli_depth_by_builder-display',
+              // 0 to twice the strain count, fixed, so the two rows are directly
+              // comparable and the doubling is half the row rather than a full
+              // one. Autoscale would rescale each row to its own max and erase
+              // the only thing the figure is about.
+              minScore: 0,
+              maxScore: 10,
+            },
+          ],
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:3,935,000-3,955,000',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'ecoli_depth_by_builder',
+              type: 'MultiLinearWiggleDisplay',
+              // two rows at 150px: the doubling is 2x the plateau, so a row has
+              // to be tall enough for that ratio to read.
+              height: 300,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'by builder',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    // the gene lane plus the whole 300px two-row stack, with room for the
+    // bottom row's 0 tick (640 left it on the frame edge)
+    viewportHeight: 690,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 950, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
   },
 
   // Projection 3: the graph's whole-genome alignment (the HAL) projected onto K12

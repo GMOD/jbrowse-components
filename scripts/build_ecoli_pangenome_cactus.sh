@@ -20,12 +20,14 @@
 # `cactus-pangenome` emits the graph (GFA/odgi), the VCF, and a HAL in one run;
 # the projections below are derived from those outputs afterward.
 #
-# Requires: docker (the cactus image, which also carries odgi, halSynteny,
-#           hal2maf, and vg), the NCBI `datasets` CLI, samtools,
-#           bedGraphToBigWig (UCSC kentUtils), bgzip/tabix (htslib), unzip, wget,
-#           ImageMagick (`convert`/`identify`, for the correspondence band),
-#           and node (JBrowse CLI, via npx unless `jbrowse` is on PATH).
+# Requires: docker or singularity (the cactus image, which also carries odgi,
+#           halSynteny, hal2maf, and vg), the NCBI `datasets` CLI, samtools,
+#           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib),
+#           unzip, wget, ImageMagick (`convert`/`identify`, for the
+#           correspondence band), and node (JBrowse CLI, via npx unless
+#           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]
+#           CONTAINER=singularity bash scripts/build_ecoli_pangenome_cactus.sh
 #
 set -euo pipefail
 
@@ -58,7 +60,27 @@ REFPATH="K12#0#chr"
 # graph. Bump deliberately, not silently. odgi, halSynteny, and hal2maf
 # all ship inside this image, so the projections below reuse it.
 CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
-in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data --env TMPDIR=/data/tmp "$CACTUS_IMAGE" "$@"; }
+
+# docker if it is there, else singularity/apptainer, which is what a cluster
+# usually has instead. Only this wrapper differs between the two: every `in_cactus`
+# call below is unchanged, because `--bind`/`--pwd` are `-v`/`-w` and singularity
+# already runs as the invoking user, so it needs no `-u`. Set CONTAINER to pick
+# one explicitly.
+CONTAINER="${CONTAINER:-}"
+if [ -z "$CONTAINER" ]; then
+  for c in docker singularity apptainer; do
+    if command -v "$c" >/dev/null 2>&1; then CONTAINER="$c"; break; fi
+  done
+fi
+case "$CONTAINER" in
+  docker)
+    in_cactus() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data --env TMPDIR=/data/tmp "$CACTUS_IMAGE" "$@"; } ;;
+  singularity | apptainer)
+    in_cactus() { "$CONTAINER" exec --cleanenv --bind "$PWD":/data --pwd /data --env TMPDIR=/data/tmp "docker://$CACTUS_IMAGE" "$@"; } ;;
+  *)
+    echo "need docker, singularity or apptainer on PATH to run $CACTUS_IMAGE" >&2
+    exit 1 ;;
+esac
 
 # ── Fetch each genome + annotation; keep only the chromosome, renamed `chr` ────
 # NCTC86 is GCF_002007705.1 (NZ_CP019778.1, 5,111,920 bp), the assembly the
@@ -142,8 +164,10 @@ done
 
 # ── Projection 2: pangenome variants (cactus-pangenome's --vcf) ───────────────
 # cactus deconstructs the graph against K12 into mc/ecoli.vcf.gz. Its CHROM is
-# already the assembly refName (`chr`) and its samples are the three non-K12
-# strains, so it loads as-is — no rename step (pggb's -V needed one).
+# already the assembly refName (`chr`) and its samples are the non-K12 strains,
+# so it loads as-is — no rename step (pggb's -V needed one). cactus-pangenome
+# runs vcfbub itself (--vcfbub, on by default), which is why nothing here has to
+# pop the snarl tree the way the pggb build does.
 
 # ── Projection 3: whole-genome MAF, re-rooted on K12, as a tabixed BED ─────────
 # cactus-pangenome writes mc/ecoli.full.hal by default. hal2maf --refGenome roots
@@ -158,9 +182,12 @@ tabix -f -p bed ecoli_cactus.maf.bed.gz
 
 # ── Projection 4: pangenome depth (core vs accessory) as a bigWig ─────────────
 # odgi depth counts how many path-steps traverse the graph nodes under each K12
-# position: ~4 where all strains are present (core), dropping toward 1 where the
-# stretch is K12-private (accessory). Tile K12 into 500 bp windows, rename the
-# PanSN path to the assembly refName, and convert to bigWig.
+# position: near the strain count where every strain is present (core), dropping
+# toward 1 where the stretch is K12-private (accessory). Tile K12 into 500 bp
+# windows, rename the PanSN path to the assembly refName, and convert to bigWig.
+# Steps, not strains: a repeat the graph collapsed would read above the strain
+# count, as it does in the pggb build. Minigraph-Cactus keeps the rRNA copies
+# apart, so this curve tops out at the strain count instead.
 awk -v p="$REFPATH" -v len="$REFLEN" -v w=500 \
   'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len; print p "\t" s "\t" e } }' \
   > depth_windows.bed
@@ -396,19 +423,28 @@ jb add-track ecoli_cactus_depth.bw --trackId ecoli_cactus_depth \
   --name "MC graph: pangenome depth (paths over K12)" -a K12 --load copy --force --out "$APP"
 
 # projection 4b: per-strain presence (one bigWig per strain -> MultiQuantitativeTrack)
-cp ecoli_cactus_pav_Sakai.bw ecoli_cactus_pav_CFT073.bw ecoli_cactus_pav_NCTC86.bw "$APP/"
-cat > pav_track.json <<'JSON'
+# Derived from $STRAINS rather than listed, like $AN above: a hand-written list
+# silently drops whichever strain it was written before. It used to name three of
+# the four the loop generates, so IAI39's bigWig was built and then left out of
+# the track, and this build disagreed with the hosted demo and with the figure in
+# the tutorial.
+for strain in $STRAINS; do
+  [ "$strain" = "$REF" ] || cp "ecoli_cactus_pav_$strain.bw" "$APP/"
+done
+SUBS=$(for strain in $STRAINS; do
+  [ "$strain" = "$REF" ] && continue
+  printf '      { "type": "BigWigAdapter", "name": "%s", "bigWigLocation": { "uri": "ecoli_cactus_pav_%s.bw" } },\n' "$strain" "$strain"
+done | sed '$ s/,$//')
+cat > pav_track.json <<JSON
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "ecoli_cactus_pav",
-  "name": "MC graph: per-strain presence (odgi pav, vs K12)",
-  "assemblyNames": ["K12"],
+  "name": "MC graph: per-strain presence (odgi pav, vs $REF)",
+  "assemblyNames": ["$REF"],
   "adapter": {
     "type": "MultiWiggleAdapter",
     "subadapters": [
-      { "type": "BigWigAdapter", "name": "Sakai",  "bigWigLocation": { "uri": "ecoli_cactus_pav_Sakai.bw" } },
-      { "type": "BigWigAdapter", "name": "CFT073", "bigWigLocation": { "uri": "ecoli_cactus_pav_CFT073.bw" } },
-      { "type": "BigWigAdapter", "name": "NCTC86", "bigWigLocation": { "uri": "ecoli_cactus_pav_NCTC86.bw" } }
+$SUBS
     ]
   }
 }
@@ -454,7 +490,7 @@ JSON
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the four assemblies, gene tracks, the"
+echo "Built $APP/config.json with the $(echo "$STRAINS" | wc -w) assemblies, gene tracks, the"
 echo "Minigraph-Cactus projections (synteny, variants, MAF, depth, per-strain"
 echo "presence), and the KTa004 read pileup mapped through the graph. Serve it:"
 echo "  npx serve $(pwd)/$APP"
