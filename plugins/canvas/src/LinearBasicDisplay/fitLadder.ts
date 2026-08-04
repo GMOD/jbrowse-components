@@ -131,15 +131,21 @@ export interface FitStage {
 // `trackHeight`, clamped to [minScale, maxScale]. `maxScale` (>= 1) lets a sparse
 // stack grow so bodies fill the available space instead of leaving whitespace;
 // `minScale` (<= 1) stops a squeeze before a body shrinks below the min-box floor
-// (past that the surplus scrolls). Callers guard `contentHeight > 0`, so there is
-// no divide-by-zero.
+// (past that the surplus scrolls).
+//
+// An empty stack answers 1: it has nothing to fill the track with, and the
+// division would otherwise hand back Infinity and so `maxScale` — a stack of
+// nothing, "grown". The guard lives here, next to the division it protects,
+// rather than at the call site, so a second caller can't forget it.
 export function fitScaleToFill(
   contentHeight: number,
   trackHeight: number,
   minScale: number,
   maxScale: number,
 ) {
-  return Math.max(minScale, Math.min(maxScale, trackHeight / contentHeight))
+  return contentHeight > 0
+    ? Math.max(minScale, Math.min(maxScale, trackHeight / contentHeight))
+    : 1
 }
 
 // Floor for the fit squeeze, as a scale in (0, 1]: the deepest reduction that
@@ -213,20 +219,6 @@ function rungHeightMeasurer(measureIds?: ReadonlySet<string>) {
   }
 }
 
-// The scale that fills the track with a kept rung. Split out so the empty-stack
-// case is answered once, in the place that knows why: a stack of height 0 has
-// nothing to fill the track with, so it stays at 1 instead of dividing by zero.
-function keptRungScale(
-  contentHeight: number,
-  trackHeight: number,
-  minScale: number,
-  maxScale: number,
-) {
-  return contentHeight > 0
-    ? fitScaleToFill(contentHeight, trackHeight, minScale, maxScale)
-    : 1
-}
-
 // Resolve the escalation ladder: keep the least-reduced rung whose unscaled stack
 // fits `trackHeight`, then scale it to fill. A fitting rung grows to fill the
 // track (capped at `maxScale`, so a sparse stack's bodies get taller instead of
@@ -258,7 +250,7 @@ export function resolveFitLadder(
         level: rung.level,
         layout,
         contentHeight,
-        scale: keptRungScale(contentHeight, trackHeight, minScale, maxScale),
+        scale: fitScaleToFill(contentHeight, trackHeight, minScale, maxScale),
       }
     }
   }

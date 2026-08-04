@@ -1207,9 +1207,12 @@ function packPreparedRef(
       const { left: arrowLeft, right: arrowRight } = strandArrowPadding(geom)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
       const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
-      // A null top means the feature overflowed maxHeight. This is expected
-      // (fit mode's `bodies` rung, or a dense fixed-height track): the feature
-      // gets OFFSCREEN_Y so it's filtered out and the surplus scrolls.
+      // A null top means the stack passed GranularRectLayout's own row limit —
+      // its `maxHeight` option, which we leave at the 10000px default, NOT the
+      // display's `maxHeight` config slot (that clamps the reported content
+      // height, and is a tenth the size). Expected on a genuinely deep stack: the
+      // feature gets OFFSCREEN_Y so it's filtered out, and `countTruncatedFeatures`
+      // is how the display owns up to it.
       const top = layout.addRect(id, leftPx, rightPx, ext.height)
       layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
     }
@@ -1290,9 +1293,10 @@ function applyLayoutToRegion(
     info.bottomPx += offset
   }
 
-  // Drop the whole entry for a feature that overflowed maxHeight: the feature
-  // itself doesn't render, and we don't want to pay the React reconciliation cost
-  // of emitting thousands of off-screen <div> labels in FloatingLabelsLayer.
+  // Drop the whole entry for a feature the packer could not place (see the row
+  // limit at `addRect`): the feature itself doesn't render, and we don't want to
+  // pay the React reconciliation cost of emitting thousands of off-screen <div>
+  // labels in FloatingLabelsLayer.
   //
   // A decimated feature keeps its entry and loses only `nameLabel` — that is the
   // one label the decimation ruled on, and it's the one whose row height went

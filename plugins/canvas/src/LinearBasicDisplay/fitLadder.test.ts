@@ -67,6 +67,12 @@ describe('fitScaleToFill', () => {
     expect(fitScaleToFill(1000, 100, 0.2, 3)).toBe(0.2)
   })
 
+  it('answers 1 for an empty stack rather than Infinity/maxScale', () => {
+    // The division would give Infinity, which clamps to maxScale — a stack of
+    // nothing reported as "grown". The guard lives with the division.
+    expect(fitScaleToFill(0, 100, 0.2, 3)).toBe(1)
+  })
+
   it('is always within [minScale, maxScale]', () => {
     for (const content of [10, 100, 137, 1000, 9999]) {
       for (const track of [1, 50, 100, 500]) {
