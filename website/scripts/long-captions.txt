@@ -17,7 +17,6 @@ tutorials/chromhmm.md /img/chromhmm_hoxa_9celltype.png
 tutorials/dog10k_lof.md /img/dog10k-cyp1a2-cohort-copy-number.png
 tutorials/dog10k_svs.md /img/dog10k-denr-sine-deletions.png
 tutorials/dog10k_svs.md /img/dog10k-fgf4-retrogene-synteny.png
-tutorials/genomes_synteny.md /img/genomes_synteny/launch_sequence.png
 tutorials/ld_mosquitoes.md /img/ld/anopheles_2la.png
 tutorials/local_ancestry.md /img/dog10k-wolfdog-ancestry.png
 tutorials/pangenome_ecoli.md /img/pangenome/depth.png

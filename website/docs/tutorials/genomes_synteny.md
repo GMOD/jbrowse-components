@@ -68,7 +68,7 @@ liftOver** around _SHH_, because a cross-species target is where the tracks each
 panel ends up with are worth following. Every click is the same on the hs1 track
 this page opened with.
 
-<Figure caption="The four steps on the hg38-to-mm39 liftOver track around SHH: right-click a chain block, confirm how the target panel is framed, then the synteny view takes the launching view's place, framed on the mouse interval the CIGAR maps the visible region onto. The human panel arrives with the launching view's NCBI RefSeq and RepeatMasker tracks; the last frame adds both to the mouse panel. SHH crosses to mouse Shh on one unbroken run of ribbon, while the flanks either side of it are cut into wedges by sequence one species has and the other does not." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="The four steps on the hg38-to-mm39 liftOver track around SHH: right-click a chain block, confirm the framing, launch, then add the mouse panel's genes and repeats. SHH crosses to mouse Shh on one unbroken run of ribbon; the flanks either side are cut into wedges by sequence one species has and the other does not." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had
 on, which is why the human side arrives with its genes and repeats already;
