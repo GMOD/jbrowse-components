@@ -6,8 +6,10 @@ import Scalebar from './Scalebar.tsx'
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // a LinearGenomeView nested in a LinearSyntenyView, which opts its sub-views
-// into the assembly-name scalebar prefix via showAssemblyNameInSubviewScalebar
-function syntenySubView(offsetPx: number) {
+// into the assembly-name scalebar prefix via showAssemblyNameInSubviewScalebar.
+// bpPerPx 0.25 draws each 100bp region 400px wide, wide enough that the folded
+// "volvox:ctgA" label fits inside the region it names
+function syntenySubView(offsetPx: number, bpPerPx = 0.25) {
   const session = createTestSession({
     sessionSnapshot: {
       views: [
@@ -17,7 +19,7 @@ function syntenySubView(offsetPx: number) {
             {
               type: 'LinearGenomeView',
               offsetPx,
-              bpPerPx: 1,
+              bpPerPx,
               displayedRegions: [
                 { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
                 { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
@@ -157,7 +159,7 @@ describe('Scalebar genome view component', () => {
   })
 
   it('displays assembly name prefix only on pinned label when scrolled', async () => {
-    // scrolled so ctgA is off-screen left (pinned)
+    // scrolled so ctgA's left end is off-screen (its label pins to the viewport)
     const model = syntenySubView(50)
 
     const { queryByTestId, container } = render(<Scalebar model={model} />)
@@ -174,6 +176,35 @@ describe('Scalebar genome view component', () => {
       // prefix must not also render
       expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
+  })
+
+  it('pins the bare assembly name when the view is scrolled left of its regions', async () => {
+    // negative offsetPx: the row's data starts mid-viewport, as it does for
+    // every genome but the longest one in a stack of whole-genome synteny rows
+    const model = syntenySubView(-300)
+
+    const { getByTestId, container } = render(<Scalebar model={model} />)
+    await waitFor(() => {
+      // ctgA's label is out at the region's left edge, 300px from the viewport
+      // edge, so folding the assembly name into it would leave the left of the
+      // row unlabeled while rows whose data starts at 0 are labeled
+      expect(getByTestId('refLabel-ctgA').textContent).toBe('ctgA')
+      expect(getByTestId('refLabel-prefix').textContent).toBe('volvox')
+      expect(container.textContent).not.toContain('volvox:')
+    })
+  })
+
+  it('pins the bare assembly name when the folded label would not fit', async () => {
+    // ctgA drawn 100px wide, of which 50 are left after the scroll: no room for
+    // "volvox:ctgA" without running over ctgB, and a name clipped mid-glyph
+    // names a chromosome that does not exist
+    const model = syntenySubView(50, 1)
+
+    const { getByTestId, queryByTestId } = render(<Scalebar model={model} />)
+    await waitFor(() => {
+      expect(getByTestId('refLabel-prefix').textContent).toBe('volvox')
+    })
+    expect(queryByTestId('refLabel-ctgA')).toBeNull()
   })
 
   it('does not display assembly name prefix for a top-level view', async () => {

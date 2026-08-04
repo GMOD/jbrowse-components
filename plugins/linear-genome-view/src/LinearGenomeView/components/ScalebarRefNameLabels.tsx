@@ -5,6 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import {
+  REF_NAME_LABEL_FONT_SIZE,
   getScalebarRefNameLabels,
   regionMoveActions,
   withRegionMoved,
@@ -25,7 +26,14 @@ interface MenuState {
 
 const useStyles = makeStyles()(theme => ({
   refLabel: {
-    fontSize: 11,
+    // the width the fit test in getScalebarRefNameLabels measures against
+    fontSize: REF_NAME_LABEL_FONT_SIZE,
+    // maxWidth is the label's whole box, paddingLeft included — stated here
+    // rather than inherited from whatever box-sizing the embedding page sets,
+    // since under content-box the padding comes off the text twice (once in the
+    // maxWidth the fit test was given, once in the layout) and every name wide
+    // enough to need the space is clipped mid-glyph
+    boxSizing: 'border-box',
     position: 'absolute',
     // x-position is driven by transform:translateX (compositor-only) not left
     left: 0,
@@ -80,8 +88,10 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           }}
         />
       ))}
-      {/* Fallback: bare assembly name pinned far-left when no sticky label
-      carried it (e.g. the leftmost region was too narrow to label) */}
+      {/* Bare assembly name pinned far-left whenever no sticky label folded it
+      in: the view is scrolled left of its first region (so that label sits out
+      at the region's own edge), or the leftmost region had no room for a label
+      at all. Either way the row still says which assembly it is. */}
       {showPrefixFallback ? (
         <span
           className={cx(classes.prefixLabel, classes.refLabel)}

@@ -144,6 +144,12 @@ export function stickyBlockIndex(blocks: BaseBlock[], offsetPx: number) {
     : scrolledOff
 }
 
+/** Clearance between the standalone assembly-name chip and a sticky label. */
+const PREFIX_GAP = 4
+
+/** Left inset of a non-sticky refName label from its region's left edge. */
+const REF_NAME_LABEL_PADDING_PX = 7
+
 export interface ScalebarRefNameLabel {
   key: string
   refName: string
@@ -155,10 +161,14 @@ export interface ScalebarRefNameLabel {
 }
 
 /**
- * translateX and maxWidth for one refName label, or undefined when the space
- * before the region ends is too narrow (<20px) to be worth a label (e.g. a tiny
- * collapsed-intron region). Sticky labels start at the viewport's left edge;
- * others start at their block's left edge.
+ * translateX, maxWidth and paddingLeft for one refName label. Sticky labels
+ * start at the viewport's left edge; others start at their block's left edge.
+ *
+ * maxWidth is the width of the whole label box, paddingLeft included, so the
+ * text has `maxWidth - paddingLeft` to draw in — that is what both consumers
+ * clip to (a border-box max-width on the span, an SVG clip rect from the box's
+ * own left edge). The caller decides whether the name it wants to draw fits in
+ * that (see refNameLabelWidth); a name is drawn whole or not at all.
  */
 function refLabelLayout({
   blockOffsetPx,
@@ -169,7 +179,7 @@ function refLabelLayout({
   blockOffsetPx: number
   // right edge of the label's region, or undefined if the caller's regionEndPx
   // has no entry for it (impossible for a block from the same staticBlocks the
-  // map was built from) — treated the same as too-narrow: no label
+  // map was built from) — treated as no room at all: no label
   regionEnd: number | undefined
   offsetPx: number
   sticky: boolean
@@ -189,20 +199,25 @@ function refLabelLayout({
   // local [0,3] from this same block.offsetPx edge), so paddingLeft must clear
   // that bar plus a few px of breathing room, else the text visually touches
   // the divider. Sticky labels sit at the viewport's own left edge, no divider.
-  const paddingLeft = sticky ? 0 : 7
-  const maxWidth =
-    regionEnd === undefined ? 0 : regionEnd - labelStartPx - paddingLeft - 1
-  return maxWidth < 20 ? undefined : { transform, maxWidth, paddingLeft }
+  const paddingLeft = sticky ? 0 : REF_NAME_LABEL_PADDING_PX
+  const maxWidth = regionEnd === undefined ? 0 : regionEnd - labelStartPx - 1
+  return { transform, maxWidth, paddingLeft }
 }
 
 /**
  * Builds the refName labels drawn along the scalebar as plain data (no JSX): one
  * label per run of same-refName regions (deduped so collapsed introns don't
  * repeat the name) plus a "sticky" label pinned to the left edge naming the
- * refName under the viewport's left border. `prefix` (an assembly name, synteny
- * only) folds into the sticky label as "prefix:refName"; showPrefixFallback
- * flags that it must instead be drawn standalone because no sticky label carried
- * it (e.g. the leftmost region was too narrow to label).
+ * refName under the viewport's left border.
+ *
+ * `prefix` (an assembly name, synteny only) is always shown at the viewport's
+ * left edge, either folded into the sticky label as "prefix:refName" or, when
+ * the sticky label sits too far right to collide with it (a view scrolled left
+ * of its first region, so the row's data starts mid-viewport) or is missing
+ * altogether, standalone — that's what showPrefixFallback asks the caller to
+ * draw. Otherwise a row of stacked genomes labels some rows with the assembly
+ * name and some without, depending only on how wide their leftmost chromosome
+ * happens to be.
  */
 export function getScalebarRefNameLabels({
   blocks,
@@ -216,6 +231,12 @@ export function getScalebarRefNameLabels({
   prefix: string | undefined
 }) {
   const hasPrefix = prefix !== undefined && prefix !== ''
+  // the standalone prefix chip occupies the viewport's left edge, so a sticky
+  // label starting inside that span has to absorb the prefix instead. The gap
+  // is part of the span: a sticky label carries no padding of its own, so one
+  // starting at exactly the chip's right edge abuts it and the two read as a
+  // single word ("volvoxctgA") for the few px of scroll around the threshold
+  const prefixSpanPx = hasPrefix ? refNameLabelWidth(prefix) + PREFIX_GAP : 0
   const stickyIdx = stickyBlockIndex(blocks, offsetPx)
   const isRunStart = showRefNameLabels(blocks, getBlockRefName)
   const labels: ScalebarRefNameLabel[] = []
@@ -248,10 +269,14 @@ export function getScalebarRefNameLabels({
       offsetPx,
       sticky,
     })
-    if (!layout) {
+    const withPrefix = sticky && hasPrefix && layout.transform < prefixSpanPx
+    const text = withPrefix ? `${prefix}:${block.refName}` : block.refName
+    // draw the name whole or not at all: a name clipped mid-glyph reads as a
+    // different chromosome ("LG2" cut to "LG"), and measuring it means a short
+    // name gets its label in a region a fixed minimum width would have skipped
+    if (layout.maxWidth < layout.paddingLeft + refNameLabelWidth(text)) {
       continue
     }
-    const withPrefix = sticky && hasPrefix
     stickyHasPrefix ||= withPrefix
     labels.push({
       key: block.key,
@@ -260,10 +285,30 @@ export function getScalebarRefNameLabels({
       transform: layout.transform,
       maxWidth: layout.maxWidth,
       paddingLeft: layout.paddingLeft,
-      text: withPrefix ? `${prefix}:${block.refName}` : block.refName,
+      text,
     })
   }
   return { labels, showPrefixFallback: hasPrefix && !stickyHasPrefix }
+}
+
+/**
+ * Whether a label from getScalebarRefNameLabels is drawn whole within a
+ * viewport `widthPx` wide. The labels themselves are only fitted to their
+ * *region*, which routinely runs past the right edge of the view, so one
+ * starting a few px before that edge passes the region fit and is then cut by
+ * the viewport clip. On screen that reads as a name scrolled partly out of
+ * frame, but a static SVG export has no frame to scroll — there a cut "LG2"
+ * just names a chromosome that doesn't exist, so the export drops it instead,
+ * as it already does for tick numbers at the same edge.
+ */
+export function refNameLabelFitsInView(
+  label: ScalebarRefNameLabel,
+  widthPx: number,
+) {
+  return (
+    label.transform + label.paddingLeft + refNameLabelWidth(label.text) <=
+    widthPx
+  )
 }
 
 /**
@@ -328,9 +373,21 @@ export function tickLabelWidth(label: string) {
   return measureText(label, TICK_LABEL_FONT_SIZE) + 4
 }
 
-/** Font size of the bold overview-scalebar refName label, drawn at the left
- * edge of its block. */
+/** Font size of the bold refName label drawn at the left edge of its block, on
+ * the scalebar and the overview scalebar alike. */
 export const REF_NAME_LABEL_FONT_SIZE = 11
+
+/**
+ * measureText's width table is for the regular weight; refName labels are bold,
+ * which runs a few percent wider. Under-measuring here would clip the last glyph
+ * off a name that was judged to fit, so round up rather than down.
+ */
+const BOLD_WIDTH_FACTOR = 1.05
+
+/** On-screen width of a bold refName label. */
+function refNameLabelWidth(refName: string) {
+  return measureText(refName, REF_NAME_LABEL_FONT_SIZE) * BOLD_WIDTH_FACTOR
+}
 
 /** Left inset of the overview refName label within its block. */
 const REF_NAME_LABEL_INSET_PX = 3
@@ -343,7 +400,7 @@ const REF_NAME_LABEL_INSET_PX = 3
 export function overviewRefNameLabelWidth(refName: string) {
   return (
     REF_NAME_LABEL_INSET_PX +
-    measureText(refName, REF_NAME_LABEL_FONT_SIZE) +
+    refNameLabelWidth(refName) +
     REF_NAME_LABEL_INSET_PX
   )
 }
@@ -402,6 +459,10 @@ export interface BlockRun {
   start: number
   end: number
   reversed: boolean
+  // of the run's first block, so callers can tell whether a refName label is
+  // drawn at this run's left edge (see runRefNameLabelPx)
+  refName: string
+  isLeftEndOfDisplayedRegion: boolean
 }
 
 export function groupContiguousBlocks(blocks: BaseBlock[]) {
@@ -424,6 +485,8 @@ export function groupContiguousBlocks(blocks: BaseBlock[]) {
           start: block.start,
           end: block.end,
           reversed: !!block.reversed,
+          refName: block.refName,
+          isLeftEndOfDisplayedRegion: !!block.isLeftEndOfDisplayedRegion,
         }
         currentRegionIndex = block.displayedRegionIndex
         runs.push(current)
@@ -434,6 +497,33 @@ export function groupContiguousBlocks(blocks: BaseBlock[]) {
     }
   }
   return runs
+}
+
+/**
+ * Horizontal space reserved at each run's left edge for the bold refName label
+ * drawn there, or 0 for runs that get none. Coordinate labels use this to stay
+ * out from under the name, the way the overview scalebar's already do via
+ * overviewRefNameLabelWidth: the refName label is opaque and painted after the
+ * numbers, so one underneath it isn't merely crowded but invisible — and since
+ * both sit in the block frame and scroll together, invisible at every scroll
+ * position rather than only while passing behind.
+ *
+ * Which runs get a label follows getScalebarRefNameLabels: only where a region
+ * genuinely begins, and only the first of a run of one refName (collapsed
+ * introns make many adjacent regions of the same name). It deliberately drops
+ * that function's offsetPx term so the reservation — and with it scalebarLabels
+ * — stays stable while scrolling; a run scrolled off the left reserves space
+ * that is off-screen anyway. Where the two disagree the reservation is the
+ * conservative side: at worst a coordinate is dropped from a region too narrow
+ * to have kept MIN_TICK_LABELS_PER_BLOCK of them.
+ */
+export function runRefNameLabelPx(runs: BlockRun[]) {
+  const isRunStart = showRefNameLabels(runs, run => run.refName)
+  return runs.map((run, i) =>
+    isRunStart[i] && run.isLeftEndOfDisplayedRegion
+      ? REF_NAME_LABEL_PADDING_PX + refNameLabelWidth(run.refName)
+      : 0,
+  )
 }
 
 /**

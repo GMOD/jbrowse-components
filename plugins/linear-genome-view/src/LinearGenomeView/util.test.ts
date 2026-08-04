@@ -1,6 +1,8 @@
 import {
   getScalebarRefNameLabels,
   groupContiguousBlocks,
+  refNameLabelFitsInView,
+  runRefNameLabelPx,
   makeBlockTicks,
   makeOverviewTickLabels,
   makeOverviewTicks,
@@ -13,6 +15,7 @@ import {
   withRegionReversed,
 } from './util.ts'
 
+import type { BlockRun } from './util.ts'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // bpPerPx=5000 → chooseGridPitch gives majorPitch=1_000_000
@@ -235,8 +238,27 @@ describe('groupContiguousBlocks', () => {
       block(0, 800, 1600, 800),
     ])
     expect(runs).toEqual([
-      { offsetPx: 0, widthPx: 1600, start: 0, end: 1600, reversed: false },
+      {
+        offsetPx: 0,
+        widthPx: 1600,
+        start: 0,
+        end: 1600,
+        reversed: false,
+        refName: 'ctgA',
+        isLeftEndOfDisplayedRegion: false,
+      },
     ])
+  })
+
+  test('a run reports its first block, not a later chunk of the same region', () => {
+    // the ~800px chunks after the first are interior to the region: a run that
+    // took isLeftEndOfDisplayedRegion from the last block it merged would
+    // forget that the region starts here
+    const runs = groupContiguousBlocks([
+      { ...block(0, 0, 800, 0), isLeftEndOfDisplayedRegion: true },
+      block(0, 800, 1600, 800),
+    ])
+    expect(runs[0]!.isLeftEndOfDisplayedRegion).toBe(true)
   })
 
   test('a new region starts a new run (no separator block between them)', () => {
@@ -245,8 +267,24 @@ describe('groupContiguousBlocks', () => {
       block(1, 0, 500, 800),
     ])
     expect(runs).toEqual([
-      { offsetPx: 0, widthPx: 800, start: 0, end: 800, reversed: false },
-      { offsetPx: 800, widthPx: 500, start: 0, end: 500, reversed: false },
+      {
+        offsetPx: 0,
+        widthPx: 800,
+        start: 0,
+        end: 800,
+        reversed: false,
+        refName: 'ctgA',
+        isLeftEndOfDisplayedRegion: false,
+      },
+      {
+        offsetPx: 800,
+        widthPx: 500,
+        start: 0,
+        end: 500,
+        reversed: false,
+        refName: 'ctgA',
+        isLeftEndOfDisplayedRegion: false,
+      },
     ])
   })
 
@@ -262,6 +300,46 @@ describe('groupContiguousBlocks', () => {
       block(0, 800, 1600, 803),
     ])
     expect(runs).toHaveLength(2)
+  })
+})
+
+describe('runRefNameLabelPx', () => {
+  const run = (
+    refName: string,
+    isLeftEndOfDisplayedRegion: boolean,
+  ): BlockRun => ({
+    offsetPx: 0,
+    widthPx: 800,
+    start: 0,
+    end: 800,
+    reversed: false,
+    refName,
+    isLeftEndOfDisplayedRegion,
+  })
+
+  test('reserves the padding plus the measured bold name', () => {
+    // 7px inset clearing the region divider, then "ctgB" at 11px bold (23.06)
+    const [px] = runRefNameLabelPx([run('ctgB', true)])
+    expect(px).toBeCloseTo(30.06, 1)
+  })
+
+  test('a run that gets no label reserves nothing', () => {
+    // interior of a region the view is scrolled into: no divider, no label, so
+    // holding space there would drop a coordinate for nothing
+    expect(runRefNameLabelPx([run('ctgB', false)])).toEqual([0])
+  })
+
+  test('collapsed introns reserve only at the first run of a name', () => {
+    // many adjacent regions of one refName: the name is drawn once, so only
+    // that run gives up the space
+    const px = runRefNameLabelPx([
+      run('ctgA', true),
+      run('ctgA', true),
+      run('ctgB', true),
+    ])
+    expect(px[0]).toBeGreaterThan(0)
+    expect(px[1]).toBe(0)
+    expect(px[2]).toBeGreaterThan(0)
   })
 })
 
@@ -550,6 +628,127 @@ describe('getScalebarRefNameLabels', () => {
     ])
   })
 
+  test('left-overscroll with a prefix: sticky label keeps the bare refName, prefix goes standalone', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: -300,
+      regionEndPx: regionEnds(blocks),
+      prefix: 'hg38',
+    })
+    // the label is out at the region's left edge (screen 300), nowhere near the
+    // assembly name pinned at 0, so folding them into one string would leave the
+    // viewport's left edge unlabeled — the row would not say which assembly it
+    // is, while a neighboring row whose first region starts at 0 would
+    expect(labels[0]!.text).toBe('chr1')
+    expect(labels[0]!.transform).toBe(300)
+    expect(showPrefixFallback).toBe(true)
+  })
+
+  test('slight left-overscroll: sticky label still absorbs the prefix it would overlap', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: -5,
+      regionEndPx: regionEnds(blocks),
+      prefix: 'hg38',
+    })
+    expect(labels[0]!.text).toBe('hg38:chr1')
+    expect(showPrefixFallback).toBe(false)
+  })
+
+  test('the sticky label unfolds only once it clears the standalone chip', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const textAt = (offsetPx: number) =>
+      getScalebarRefNameLabels({
+        blocks,
+        offsetPx,
+        regionEndPx: regionEnds(blocks),
+        prefix: 'hg38',
+      }).labels[0]!.text
+    // "hg38" is ~25.6px wide and a sticky label carries no padding of its own,
+    // so at a transform of 27 the two would sit a glyph-and-a-half apart and
+    // read as "hg38chr1" — keep folding until there's real clearance
+    expect(textAt(-27)).toBe('hg38:chr1')
+    expect(textAt(-30)).toBe('chr1')
+  })
+
+  // a second region of the given pixel width, following a wide chr1
+  function withSecondRegion(refName: string, widthPx: number) {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName,
+        displayedRegionIndex: 1,
+        offsetPx: 800,
+        widthPx,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    return getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    }).labels
+  }
+
+  test('a short name is labeled in a region too narrow for a long one', () => {
+    // 20px of region holds "X" but not "chr22" — the old flat 20px floor hid
+    // both, which at whole-genome zoom drops the numbering off every small
+    // chromosome even though the digits would have fit
+    expect(withSecondRegion('X', 20).map(l => l.refName)).toEqual(['chr1', 'X'])
+    expect(withSecondRegion('chr22', 20).map(l => l.refName)).toEqual(['chr1'])
+  })
+
+  test('maxWidth is the whole label box, so the fit test has to pay paddingLeft', () => {
+    const [, label] = withSecondRegion('X', 20)
+    // maxWidth spans the region, padding included: both consumers clip from the
+    // box's own left edge (a border-box max-width, an SVG clip rect at x=0), so
+    // taking paddingLeft off it here as well would spend those 7px twice and
+    // clip the name it was just measured to fit
+    expect(label!.maxWidth).toBe(20)
+    expect(label!.paddingLeft).toBe(7)
+    // "X" is 7.7px wide and 20 - 7 = 13px are left for it, but at 14px of
+    // region the padding leaves 7 and the name no longer fits
+    expect(withSecondRegion('X', 14).map(l => l.refName)).toEqual(['chr1'])
+  })
+
   test('too-narrow sticky region drops its label, prefix falls back to standalone', () => {
     const blocks = [
       refBlock({
@@ -569,6 +768,43 @@ describe('getScalebarRefNameLabels', () => {
     })
     expect(labels).toEqual([])
     expect(showPrefixFallback).toBe(true)
+  })
+
+  test('a label fitted to its region can still overrun the view edge', () => {
+    // chr14 starts 20px before the right edge of an 820px view, inside a region
+    // 800px wide: it clears the region fit by a mile and is still cut in half by
+    // the viewport. The SVG export drops it on that second test; on screen it
+    // stays, as a name you scroll the rest of into frame
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'chr14',
+        displayedRegionIndex: 1,
+        offsetPx: 800,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    })
+    const [chr1, chr14] = labels
+    expect(chr14!.refName).toBe('chr14')
+    expect(refNameLabelFitsInView(chr14!, 820)).toBe(false)
+    // 7px of padding plus ~29px of "chr14" need the view to reach ~836
+    expect(refNameLabelFitsInView(chr14!, 840)).toBe(true)
+    expect(refNameLabelFitsInView(chr1!, 820)).toBe(true)
   })
 })
 

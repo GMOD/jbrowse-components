@@ -72,6 +72,7 @@ import {
   groupContiguousBlocks,
   labelFitsInBlock,
   makeBlockTicks,
+  runRefNameLabelPx,
   tickLabelWidth,
 } from './util.ts'
 
@@ -1843,7 +1844,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const { bpPerPx } = self
           const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
           const labels: { x: number; label: string; key: string }[] = []
-          for (const run of groupContiguousBlocks(blocks)) {
+          const runs = groupContiguousBlocks(blocks)
+          const refNameLabelPx = runRefNameLabelPx(runs)
+          for (const [i, run] of runs.entries()) {
             const runLeft = run.offsetPx - firstBlockOffset
             const runLabels = []
             for (const { base, x } of makeBlockTicks(
@@ -1854,7 +1857,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
             )) {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const w = tickLabelWidth(label)
-              if (labelFitsInBlock(x - w / 2, w, run.widthPx)) {
+              // the bold refName label pinned at the run's left edge takes
+              // precedence, as it does on the overview scalebar
+              if (
+                x - w / 2 >= refNameLabelPx[i]! &&
+                labelFitsInBlock(x - w / 2, w, run.widthPx)
+              ) {
                 runLabels.push({
                   x: runLeft + x,
                   label,
