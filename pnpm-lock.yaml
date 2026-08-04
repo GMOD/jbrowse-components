@@ -42,8 +42,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0(supports-color@8.1.1))
       '@gmod/bbi':
-        specifier: ^10.0.1
-        version: 10.0.1
+        specifier: ^10.0.2
+        version: 10.0.2
       '@jbrowse/mobx-state-tree':
         specifier: ^6.0.0
         version: 6.0.0(mobx@7.0.0)
@@ -823,8 +823,8 @@ importers:
   plugins/bed:
     dependencies:
       '@gmod/bbi':
-        specifier: ^10.0.1
-        version: 10.0.1
+        specifier: ^10.0.2
+        version: 10.0.2
       '@gmod/bed':
         specifier: ^2.2.9
         version: 2.2.9
@@ -1770,8 +1770,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^10.0.1
-        version: 10.0.1
+        specifier: ^10.0.2
+        version: 10.0.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4260,8 +4260,8 @@ packages:
   '@gmod/bam@7.7.1':
     resolution: {integrity: sha512-Mi3r0V6KaVqGzgqQPUtZjK6M/LcRs8BofarHbfi4TfIBoFH87D5Y5lW6UXnY+GWtn1C7WlaLlsak3NdVQXRvRg==}
 
-  '@gmod/bbi@10.0.1':
-    resolution: {integrity: sha512-pMhKd3HQPNBXrY1XwW5M1IHoXBa6PzM1/YMVtMB9E8I/hkUHJxcvpvj8xwZYBPc/vjzaLRrFek7FNAX009GcbQ==}
+  '@gmod/bbi@10.0.2':
+    resolution: {integrity: sha512-+SLeLDeKB+6XHdKE3koOQvBIVwq8ECSLynsct7HYec6P5qRTYV4Q63+tAMtDn4In4xXnUsXNFliZ1O9REKv+GQ==}
 
   '@gmod/bed@2.2.9':
     resolution: {integrity: sha512-+vtkTtwdcA7nSy/tEJlAsZtjUmopVDszXCgA0JBGSyEYq/inL//rt7Zaz+cTFEfGNivCGGKV0crLc5hliKrlrA==}
@@ -12190,7 +12190,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@10.0.1':
+  '@gmod/bbi@10.0.2':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
