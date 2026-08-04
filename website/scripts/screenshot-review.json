@@ -1113,10 +1113,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-01T12:30:41.087Z",
-    "hash": "a06034a383585ce758486d4642b9605398a00978"
+    "status": "bad",
+    "note": "this is now a very chaotic screenshot. we might want to zoom out even more, and use better labeling in the legend, and decrease the height of the multirowcanvasdisplay just for a little less overwhelming height",
+    "reviewedAt": "2026-08-04T21:57:12.192Z",
+    "hash": "9682e1f0c8c0bb8b4e490ab2569d29d205d50b4a"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1608,10 +1608,10 @@
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
-    "status": "bad",
-    "note": "still dont understand this figure and the text like 5593, if insertion should be purple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
-    "reviewedAt": "2026-08-04T17:38:45.417Z",
-    "hash": "35282756b177e9c6257e7a98a8fceb3b8c1f2486"
+    "status": "answered",
+    "note": "The numbered purple boxes are insertion markers: an insertion consumes no reference, so a record that inserts 7.8 kb lands on the same 2px floor a SNP does and its length can only be drawn as a widened marker with the bp count in it. Two fixes since the review. (1) The marker now takes the theme's palette.insertion, the same color plugin-alignments' pileup and the MAF lane below it use, instead of the theme-agnostic #c000c0 fallback -- it used to take its cell's own genotype color, which in genotype coloring is the same dark blue as the neighbouring cells it paints across, so only the white number showed and it read as a number floating in the matrix. (2) NCTC86 no longer gets a marker on a row the VCF calls '.' for: cellCarriesAlt was read back off the resolved cell color, and allele-count mode blends its no-call shade through colord to a hex that is never string-equal to the NO_CALL_COLOR literal, so every no-call was flagged alt-carrying. Both fixed; figure regenerated. On the MAF lane not showing it: that is the data, not an inconsistency. The three strains stop aligning to K12 at exactly 4,579,961 (MAF block4717 carries only the K12 row) and their inserted sequence sits between MAF blocks rather than as reference-gap columns inside one, so there is no gap for an insertion marker to anchor to; the nearest real one, in block4715, is 72 bp = 1.2 px at 60 kb. The blank MAF row and the variant lane's marker are the same event said two ways.",
+    "reviewedAt": "2026-08-04T22:26:25.071Z",
+    "hash": "870ad62292e47cdc6d419c5f33d5b02a39982d7a"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -2219,9 +2219,9 @@
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
     "status": "answered",
-    "note": "BOTH ANSWERED. (1) 'why does the clustered one have all dogs and this one does not' -- because they are two tracks doing two jobs, and the frame never said so. Now it does: this one's header reads 'Local ancestry, the 32 named animals of the 243' and the clustered one's reads 'Local ancestry, all 243 canids: 219 breeds, 8 wolfdogs, 8 wolves'. The split exists because a row label needs about 6px of row height and 486 rows do not have them at any figure size -- 243 animals is where everything falls, 32 is who. The 32 are not a curated list either: the 24 the target table names plus the 8 sweep breeds with the most wolf on chr1, and the row order is descending FLARE wolf fraction, so both membership and order come out of the run. (2) The highlight now carries a red box and a callout saying what it is ('The 1.5 Mb the genotype figure below checks: nine of these rows end a wolf block inside it'). Both anchor on the locus and the track rather than on measured pixels, so they follow the band if the window or the row count moves. Also picked up the two tree-sidebar fixes described on the clustered figure.",
-    "reviewedAt": "2026-08-04T20:59:11.569Z",
-    "hash": "3e6ae2057cfe4b2e5cb30c41ba2c2c4b2f71eba1"
+    "note": "DONE. New display setting rather than a figure tweak: LinearMultiRowFeatureDisplay now has a showRowSeparators slot (config slot + 'Show row separators' in the track menu's Show... submenu + SVG export), and this figure sets it. It was worth doing as a product feature because the reason the lines help here is general: rows are haplotypes, two per animal, and most of this painting is one solid dog color, so without a boundary neither the row count nor which pair of rows belongs to which sidebar name can be read off the image. Drawn as a theme-divider hairline on each row boundary, half-pixel offset so it stays 1px crisp, shared by the live display and the SVG export so they can't drift. Gated at 4px a row (rowBand's MIN_SEPARATOR_ROW_PX): below that the line is as thick as the row it borders and the grid becomes the figure, which is why the 486-row clustered figure at ~2.3px a row deliberately does not set it. The track menu item stays clickable there but carries a 'Needs rows 4px or taller' subLabel rather than being disabled.",
+    "reviewedAt": "2026-08-04T22:23:26.220Z",
+    "hash": "c0cefef5eeb9c86e6fab53b5b0d71621e26dd284"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
@@ -2253,9 +2253,9 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "answered",
-    "note": "Window narrowed 400 kb -> 220 kb, which is the fix the 'cant tell the story' was asking for, and the reason is specific to the matrix: every record is one column of EQUAL width, so window width in the frame is a count of records rather than a span of chromosome. The sites that actually separate toy/small from giant are 95 of the 606 in the slice (alt AF 0.82 vs 0.21), spanning 41,455,350-41,611,659 -- the build script now prints that range instead of it being eyeballed -- so in the 400 kb frame the shared haplotype was one sixth of a panel of noise. At 220 kb (that span plus ~55 kb of flank each side) it is about a third of the panel with both edges still inside. Neither edge is the gene's: IGF1 is 41,495,479-41,567,874 and the haplotype runs 40 kb past it upstream and 44 kb past it downstream, which is why the frame is not the gene. ANCESTRY PAINTING: no, and not a close call. Local ancestry assigns each segment to a SOURCE POPULATION, and here both groups are dogs -- there is no wolf-vs-dog contrast to paint, so the painting would have one color and say nothing. NOT PROPOSED FOR THE GALLERY: the Dog10K card is dog10k-size-fst-scan-genome and stays that way; this is the tutorial's payoff figure, not a card.  REGENERATED after the tree-sidebar sidebar/chip fixes and the track rename ('Local ancestry, the 32 named animals of the 243'), so the PNG matches the two figures above.",
-    "reviewedAt": "2026-08-04T20:59:22.998Z",
+    "status": "bad",
+    "note": "are there any ways we can improve this screenshot to tell a better story? any complementary tracks that would help?",
+    "reviewedAt": "2026-08-04T21:58:39.342Z",
     "hash": "3d35b1f1c1d5ff96d4882ed7994881c40b72b60a"
   },
   "dog10k-slc28a3-copy-number": {
@@ -2630,16 +2630,16 @@
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
-    "status": "answered",
-    "note": "Now uses 'Replace current view'. That option already existed in the app (the dialog offers 'Draw in new view' and 'Replace current view', and it already carries the launching view's non-alignments tracks onto the reference panel) -- the spec was still clicking the old 'Draw it', which would have failed on the next regen anyway. The result frame is the synteny view alone: ribbons at full width, the provenance track's four segment labels clear of the bottom edge, and no 240px of the same pileup sitting above the answer. The picker frame still shows the dialog over the pileup it was computed from, which is the half that has to.",
-    "reviewedAt": "2026-08-04T21:03:59.543Z",
+    "status": "bad",
+    "note": "is this capable of loading the reads across the different areas, and even launch like a wasm of minimap2 to the derived contig? is that just insane stuff? i dont know. it is potentially the type of thing that should be an external plugin, but it is a fun idea. previous notes: Now uses 'Replace current view'. That option already existed in the app (the dialog offers 'Draw in new view' and 'Replace current view', and it already carries the launching view's non-alignments tracks onto the reference panel) -- the spec was still clicking the old 'Draw it', which would have failed on the next regen anyway. The result frame is the synteny view alone: ribbons at full width, the provenance track's four segment labels clear of the bottom edge, and no 240px of the same pileup sitting above the answer. The picker frame still shows the dialog over the pileup it was computed from, which is the half that has to.",
+    "reviewedAt": "2026-08-04T21:55:56.484Z",
     "hash": "c8195163228333d251b57a546a569a85b64fbd19"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
     "status": "answered",
-    "note": "Same change as derivative_autogenerated: 'Replace current view', so the result frame is the two chr9 windows and the crossing ribbons rather than a pileup with the answer squeezed under it. Shorter than that figure because a fold-back's derivative carries two segments, so the provenance track is one row.",
-    "reviewedAt": "2026-08-04T21:03:59.824Z",
+    "note": "kind of a boring screenshot. is this capable of loading the reads across the different areas, and even launch like a wasm of minimap2 to the derived contig? is that just insane stuff? i dont know. it is potentially the type of thing that should be an external plugin, but it is a fun idea.  Same change as derivative_autogenerated: 'Replace current view', so the result frame is the two chr9 windows and the crossing ribbons rather than a pileup with the answer squeezed under it. Shorter than that figure because a fold-back's derivative carries two segments, so the provenance track is one row.",
+    "reviewedAt": "2026-08-04T21:56:16.257Z",
     "hash": "6d99e21940a0a6e5f78ff2f031ff1c449d0091bd"
   },
   "dog10k-wolfdog-ancestry-clustered": {
@@ -2669,5 +2669,12 @@
     "note": "layoutQuality 3 landed: both halves draw as smooth arcs, the pggb beads read as beads, and the caption sits inside the arc",
     "reviewedAt": "2026-08-04T21:04:13.113Z",
     "hash": "85afe7707698e2af458fcde749c0c44c47aba27a"
+  },
+  "chromhmm_hoxa_9celltype": {
+    "name": "chromhmm_hoxa_9celltype",
+    "status": "bad",
+    "note": "is there significance of these 9 cell types expressing their chromatin state this way? might annotate.",
+    "reviewedAt": "2026-08-04T21:57:51.911Z",
+    "hash": "97aaa1c78e9a54804598e5c093f9e2ce8e0bacb8"
   }
 }
