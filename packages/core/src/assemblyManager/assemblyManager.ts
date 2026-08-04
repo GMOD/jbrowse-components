@@ -48,6 +48,13 @@ function isThenable(value: unknown): value is PromiseLike<unknown> {
   return typeof (value as PromiseLike<unknown> | undefined)?.then === 'function'
 }
 
+interface AssemblyReport {
+  /** at least one handler was called, i.e. somebody might be working on it */
+  handled: boolean
+  /** the promise a handler returned, settling when it has finished trying */
+  claim?: Promise<void>
+}
+
 /**
  * Per-session record of the `Core-handleUnrecognizedAssembly` reports this
  * manager has made, and of what the handlers said back.
@@ -63,76 +70,72 @@ function isThenable(value: unknown): value is PromiseLike<unknown> {
  *
  * A handler may return a promise, which is its statement that it is working on
  * the name and that resolution is over when the promise settles. That is what
- * lets {@link waitForAssembly} wait on an event rather than on a clock, so the
- * promise should cover everything the handler does before the session gains
- * anything observable — for a handler that adds a connection, at least the
- * probe that decides whether to add one. The value is remembered here, so a
- * later waiter can await the same attempt the first lookup started.
+ * lets `waitForAssembly` wait on an event rather than on a clock, so the promise
+ * should cover everything the handler does before the session gains anything
+ * observable — for a handler that adds a connection, at least the probe that
+ * decides whether to add one. The value is remembered here, so a later waiter
+ * can await the same attempt the first lookup started.
  *
  * Keyed on the session node so replacing the session (`setSession`) starts
  * over: the connections and session assemblies a handler created for the old
- * session went with it, so a name it already answered for has to be
- * answerable again.
+ * session went with it, so a name it already answered for has to be answerable
+ * again.
  *
- * A class instance rather than volatile fields because `get` records into it
- * from inside a derivation: MST leaves a class instance in volatile state
- * un-enhanced, while writing an observable volatile there is a state change
- * inside a computed.
+ * Not observable state: `get` records into this from inside a derivation, where
+ * writing an observable would be a state change inside a computed. A closure
+ * rather than a class, because this is the type of a volatile and so reaches the
+ * inferred root-model type of every product, where a class loses either way —
+ * `private` members are still written into the declaration and then rejected as
+ * inaccessible (TS4094), while a field typed `Map<string, AssemblyReport>` names
+ * a module-local type (TS4058). Neither fires in this package; both fire in
+ * jbrowse-web, the embedded products and the react components. Two methods
+ * closing over the state name nothing but their own signatures.
  */
-interface AssemblyReport {
-  /** at least one handler was called, i.e. somebody might be working on it */
-  handled: boolean
-  /** the promise a handler returned, settling when it has finished trying */
-  claim?: Promise<void>
-}
+function createUnrecognizedAssemblyReports() {
+  let current: unknown
+  const reports = new Map<string, AssemblyReport>()
 
-// Both fields are `private` and `reportFor` states its return shape inline, so
-// this type stays inside the module: the class is the type of a volatile, so
-// anything it names publicly has to be nameable from every product that infers
-// a root model off the manager (TS4058), and none of this is their business.
-class UnrecognizedAssemblyReports {
-  private session: unknown = undefined
-  private reports = new Map<string, AssemblyReport>()
+  return {
+    /**
+     * Report `name` via `fire`, once per session, and keep what came back.
+     * `handlerCount` separates "every handler declined" from "nobody
+     * listening": the folded result is the same either way, and only the first
+     * is worth waiting out.
+     */
+    report(
+      session: unknown,
+      name: string,
+      handlerCount: number,
+      fire: () => unknown,
+    ) {
+      if (current !== session) {
+        current = session
+        reports.clear()
+      }
+      if (reports.has(name)) {
+        return
+      }
+      const report: AssemblyReport = { handled: handlerCount > 0 }
+      // recorded before firing: a handler that synchronously reads back through
+      // `get` must not re-enter and report the same name again
+      reports.set(name, report)
+      const result = fire()
+      if (isThenable(result)) {
+        // a rejection is the handler's own to log; here it only means "done"
+        report.claim = Promise.resolve(result).then(
+          () => {},
+          () => {},
+        )
+      }
+    },
 
-  /**
-   * Report `name` via `fire`, once per session, and keep what came back.
-   * `handlerCount` separates "every handler declined" from "nobody listening":
-   * the folded result is the same either way, and only the first is worth
-   * waiting out.
-   */
-  report(
-    session: unknown,
-    name: string,
-    handlerCount: number,
-    fire: () => unknown,
-  ) {
-    if (this.session !== session) {
-      this.session = session
-      this.reports.clear()
-    }
-    if (this.reports.has(name)) {
-      return
-    }
-    const report: AssemblyReport = { handled: handlerCount > 0 }
-    // recorded before firing: a handler that synchronously reads back through
-    // `get` must not re-enter and report the same name again
-    this.reports.set(name, report)
-    const result = fire()
-    if (isThenable(result)) {
-      // a rejection is the handler's own to log; here it only means "done"
-      report.claim = Promise.resolve(result).then(
-        () => {},
-        () => {},
-      )
-    }
-  }
-
-  /** what `report` recorded for `name` under `session`, if anything */
-  reportFor(
-    session: unknown,
-    name: string,
-  ): { handled: boolean; claim?: Promise<void> } | undefined {
-    return this.session === session ? this.reports.get(name) : undefined
+    /** what `report` recorded for `name` under `session`, if anything */
+    reportFor(
+      session: unknown,
+      name: string,
+    ): { handled: boolean; claim?: Promise<void> } | undefined {
+      return current === session ? reports.get(name) : undefined
+    },
   }
 }
 
@@ -157,7 +160,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * rate limiter for `get`'s `Core-handleUnrecognizedAssembly` reports, so
        * each unknown name reaches the extension point once per session
        */
-      unrecognizedReports: new UnrecognizedAssemblyReports(),
+      unrecognizedReports: createUnrecognizedAssemblyReports(),
     }))
     .views(self => ({
       /**
