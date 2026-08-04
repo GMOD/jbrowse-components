@@ -23,6 +23,10 @@ interface AssemblyManagerParent {
   session?: {
     sessionAssemblies?: AnyConfigurationModel[]
     temporaryAssemblies?: AnyConfigurationModel[]
+    // only `loading` is read: a connection mid-fetch is something that could
+    // still add an assembly, and settleAssemblyResolution waits for that to
+    // finish rather than for a timeout
+    connectionInstances?: { loading: boolean }[]
   }
 }
 
@@ -32,17 +36,38 @@ export interface AssemblyBaseOpts {
   statusCallback?: StatusCallback
 }
 
+// How long waitForAssembly gives a handler that did NOT return a promise.
+// Nothing about such a handler is observable — it was told a name and said
+// nothing back — so there is no event to wait on and the only choices are a
+// clock or giving up immediately, which would break a fire-and-forget handler
+// that resolves the name a moment later. A handler that returns a promise gets
+// waited on properly and never reaches this.
+const UNDECLARED_HANDLER_GRACE_MS = 10000
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return typeof (value as PromiseLike<unknown> | undefined)?.then === 'function'
+}
+
 /**
- * Which assembly names have already been reported to
- * `Core-handleUnrecognizedAssembly`, so each is reported once per session.
+ * Per-session record of the `Core-handleUnrecognizedAssembly` reports this
+ * manager has made, and of what the handlers said back.
  *
- * Handlers resolve a name asynchronously and out of band — the hubs plugin
- * probes a url and adds a connection — and the assembly turning up is itself
- * the reactive signal, so there is nothing for a second report to accomplish.
- * `get` is called from render paths and computeds, so without this every
- * re-render re-reported, and a handler that answers by fetching re-fetched:
- * for exactly the names nothing can supply (a session naming a genome this
- * host has never heard of) that is an unbounded stream of requests.
+ * Each name is reported once. Handlers resolve a name asynchronously and out of
+ * band — the hubs plugin probes a url and adds a connection — and the assembly
+ * turning up is itself the reactive signal, so there is nothing for a second
+ * report to accomplish. `get` is called from render paths and computeds, so
+ * without this every re-render re-reported, and a handler that answers by
+ * fetching re-fetched: for exactly the names nothing can supply (a session
+ * naming a genome this host has never heard of) that is an unbounded stream of
+ * requests.
+ *
+ * A handler may return a promise, which is its statement that it is working on
+ * the name and that resolution is over when the promise settles. That is what
+ * lets {@link waitForAssembly} wait on an event rather than on a clock, so the
+ * promise should cover everything the handler does before the session gains
+ * anything observable — for a handler that adds a connection, at least the
+ * probe that decides whether to add one. The value is remembered here, so a
+ * later waiter can await the same attempt the first lookup started.
  *
  * Keyed on the session node so replacing the session (`setSession`) starts
  * over: the connections and session assemblies a handler created for the old
@@ -54,21 +79,60 @@ export interface AssemblyBaseOpts {
  * un-enhanced, while writing an observable volatile there is a state change
  * inside a computed.
  */
-class UnrecognizedAssemblyReports {
-  session: unknown = undefined
-  names = new Set<string>()
+interface AssemblyReport {
+  /** at least one handler was called, i.e. somebody might be working on it */
+  handled: boolean
+  /** the promise a handler returned, settling when it has finished trying */
+  claim?: Promise<void>
+}
 
-  /** true the first time `name` comes up under `session`, false afterwards */
-  shouldReport(session: unknown, name: string) {
+// Both fields are `private` and `reportFor` states its return shape inline, so
+// this type stays inside the module: the class is the type of a volatile, so
+// anything it names publicly has to be nameable from every product that infers
+// a root model off the manager (TS4058), and none of this is their business.
+class UnrecognizedAssemblyReports {
+  private session: unknown = undefined
+  private reports = new Map<string, AssemblyReport>()
+
+  /**
+   * Report `name` via `fire`, once per session, and keep what came back.
+   * `handlerCount` separates "every handler declined" from "nobody listening":
+   * the folded result is the same either way, and only the first is worth
+   * waiting out.
+   */
+  report(
+    session: unknown,
+    name: string,
+    handlerCount: number,
+    fire: () => unknown,
+  ) {
     if (this.session !== session) {
       this.session = session
-      this.names.clear()
+      this.reports.clear()
     }
-    if (this.names.has(name)) {
-      return false
+    if (this.reports.has(name)) {
+      return
     }
-    this.names.add(name)
-    return true
+    const report: AssemblyReport = { handled: handlerCount > 0 }
+    // recorded before firing: a handler that synchronously reads back through
+    // `get` must not re-enter and report the same name again
+    this.reports.set(name, report)
+    const result = fire()
+    if (isThenable(result)) {
+      // a rejection is the handler's own to log; here it only means "done"
+      report.claim = Promise.resolve(result).then(
+        () => {},
+        () => {},
+      )
+    }
+  }
+
+  /** what `report` recorded for `name` under `session`, if anything */
+  reportFor(
+    session: unknown,
+    name: string,
+  ): { handled: boolean; claim?: Promise<void> } | undefined {
+    return this.session === session ? this.reports.get(name) : undefined
   }
 }
 
@@ -138,26 +202,32 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             return assembly
           }
           const { session } = getParent<AssemblyManagerParent>(self)
-          if (
-            !this.has(asmName) &&
-            self.unrecognizedReports.shouldReport(session, asmName)
-          ) {
+          if (!this.has(asmName)) {
             // Extension point for loading unrecognized assemblies. Allows
-            // plugins to provide custom logic for assembly resolution
+            // plugins to provide custom logic for assembly resolution.
             //
-            // Note: this does not return any particular value. however, it can
-            // trigger things like like adding connections, that will
-            // eventually trigger assemblies to be loaded and new evaluations
-            // via observable behavior. Which is also why each name is reported
-            // only once per session — see UnrecognizedAssemblyReports.
-            pm.evaluateExtensionPoint(
-              /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown */
-              'Core-handleUnrecognizedAssembly',
-              undefined,
-              {
-                assemblyName: asmName,
-                session,
-              },
+            // A handler normally works out of band — adding a connection, say —
+            // and the assembly turning up is what this manager reacts to, so
+            // nothing here reads a result. But a handler that returns a promise
+            // is telling waitForAssembly when it has finished trying, which is
+            // the difference between waiting on an event and waiting on a
+            // clock; UnrecognizedAssemblyReports keeps it, and keeps each name
+            // from being reported more than once per session.
+            const point = 'Core-handleUnrecognizedAssembly'
+            self.unrecognizedReports.report(
+              session,
+              asmName,
+              pm.extensionPointCallbackCount(point),
+              () =>
+                pm.evaluateExtensionPoint(
+                /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout */
+                'Core-handleUnrecognizedAssembly',
+                undefined,
+                {
+                  assemblyName: asmName,
+                  session,
+                },
+              ),
             )
           }
         }
@@ -227,6 +297,63 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     .views(self => ({
       /**
        * #method
+       * Wait out whatever might still be about to supply `assemblyName`, and
+       * resolve once nothing is.
+       *
+       * Resolution is a chain of events, not a duration: a handler probes and
+       * adds a connection, the connection fetches a config, the config's
+       * assemblies land in the session. Each link is observable, so each is
+       * waited on rather than guessed at.
+       *
+       * - the handler's own promise, if it returned one, covers the part before
+       *   the session gains anything to watch (the hubs plugin's HEAD probe)
+       * - any connection still fetching could be carrying the assembly, so its
+       *   `loading` flag going false is the next event. Every loading
+       *   connection counts, not just one naming this assembly: a connection
+       *   config need not declare what it will turn out to provide, and waiting
+       *   for one connection too many costs a moment while missing one returns
+       *   the wrong answer.
+       *
+       * A handler that returned nothing gets {@link UNDECLARED_HANDLER_GRACE_MS}
+       * instead, because it left nothing to wait on.
+       */
+      async settleAssemblyResolution(assemblyName: string) {
+        const { session } = getParent<AssemblyManagerParent>(self)
+        // read through assemblyNameMap, not get(): a predicate `when`
+        // re-evaluates should stay pure, and the report get() would make has
+        // already been made by waitForAssembly
+        const present = () => !!self.assemblyNameMap[assemblyName]
+        if (present()) {
+          return
+        }
+        const report = self.unrecognizedReports.reportFor(session, assemblyName)
+        if (report?.claim) {
+          await report.claim
+        } else if (report?.handled) {
+          await when(present, { timeout: UNDECLARED_HANDLER_GRACE_MS }).catch(
+            () => {},
+          )
+        }
+        // Nothing left that could still produce it. Both clauses are things
+        // that end on their own, so this needs no bound of its own.
+        const settled = () =>
+          // a config carrying the name is already in the tree and the
+          // afterAttach autorun is about to build its model
+          !self.assemblyNamesList.includes(assemblyName) &&
+          // a connection mid-fetch could be carrying it. Every loading
+          // connection counts, not just one naming this assembly: a connection
+          // config need not declare what it will turn out to provide, and
+          // waiting for one connection too many costs a moment while missing
+          // one returns the wrong answer.
+          !session?.connectionInstances?.some(conn => conn.loading)
+        if (!present()) {
+          await when(() => present() || settled())
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
        * use this method instead of assemblyManager.get(assemblyName) to get an
        * assembly with regions loaded
        */
@@ -234,16 +361,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         if (!assemblyName) {
           throw new Error('no assembly name supplied to waitForAssembly')
         }
+        // get() rather than a bare map read: an unknown name has to reach
+        // Core-handleUnrecognizedAssembly before there is anything to wait for
         let assembly = self.get(assemblyName)
         if (!assembly) {
-          try {
-            await when(() => Boolean(self.get(assemblyName)), {
-              timeout: 10000,
-            })
-            assembly = self.get(assemblyName)
-          } catch (e) {
-            // ignore
-          }
+          await self.settleAssemblyResolution(assemblyName)
+          assembly = self.get(assemblyName)
         }
 
         if (!assembly) {

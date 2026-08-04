@@ -916,6 +916,16 @@ export default class PluginManager {
     return accumulator
   }
 
+  /**
+   * How many callbacks are registered on `extensionPointName`. For a caller
+   * that has to tell "every handler declined" apart from "nobody was
+   * listening" — the two look identical in the folded result, and
+   * assemblyManager waits out the first but not the second.
+   */
+  extensionPointCallbackCount(extensionPointName: string) {
+    return this.extensionPoints.get(extensionPointName)?.length ?? 0
+  }
+
   evaluateAsyncExtensionPoint<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,

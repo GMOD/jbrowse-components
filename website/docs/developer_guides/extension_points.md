@@ -134,7 +134,7 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
-| `Core-handleUnrecognizedAssembly` | sync |  | Supply an assembly config when a referenced assembly is unknown |
+| `Core-handleUnrecognizedAssembly` | sync |  | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
 | `Core-preferencesDialogPanels` | sync | list | Add panels to the preferences dialog |
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
 | `Core-replaceAbout` | sync | single | Replace or wrap a track's About dialog body |
