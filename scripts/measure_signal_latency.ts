@@ -1,8 +1,8 @@
 // Measure what one window of a multi-sample signal track costs over the wire,
 // both ways: one BigWig per sample against one samples-by-bins Zarr store. The
-// scaling section of website/docs/tutorials/population_cnv.md quotes this
-// script's output rather than asserting the numbers, since they are the whole
-// argument for the second format.
+// scaling section of website/docs/tutorials/population_cnv.md states this
+// script's numbers rather than asserting any of its own, since they are the
+// whole argument for the second format.
 //
 // Requests are counted by wrapping fetch, so the count includes every header,
 // index and data read the reader makes, not just the ones we asked for. Byte
@@ -97,15 +97,21 @@ async function pool<T>(
   )
 }
 
+// One measurement is a headline row of aligned columns, then its detail
+// indented under the label rather than under a column it does not belong to.
 function report(
   label: string,
   ms: number,
   count: { requests: number; bytes: number },
 ) {
   console.log(
-    `${label.padEnd(28)} ${String(count.requests).padStart(6)} requests  ` +
-      `${(count.bytes / 1e6).toFixed(2).padStart(7)} MB  ${(ms / 1000).toFixed(1).padStart(6)} s`,
+    `${label.padEnd(26)} ${String(count.requests).padStart(5)} requests  ` +
+      `${(count.bytes / 1e6).toFixed(2).padStart(6)} MB  ${(ms / 1000).toFixed(1).padStart(5)} s`,
   )
+}
+
+function detail(text: string) {
+  console.log(`  ${text}`)
 }
 
 // One range request's round trip, so the request counts above can be read as a
@@ -170,12 +176,11 @@ if (values.samples || values.config) {
   const elapsed = performance.now() - t0
   const count = read()
   report(`${urls.length} BigWigs`, elapsed, count)
-  console.log(
-    `${''.padEnd(28)} ${(count.requests / urls.length).toFixed(1)} requests per file`,
+  detail(
+    `${(count.requests / urls.length).toFixed(1)} requests per file, ` +
+      `median range request ${(await pingLatency(urls[0]!)).toFixed(0)} ms`,
   )
-  console.log(
-    `${''.padEnd(28)} median range request ${(await pingLatency(urls[0]!)).toFixed(0)} ms\n`,
-  )
+  console.log()
 }
 
 if (values.zarr) {
@@ -228,7 +233,7 @@ if (values.zarr) {
 
   const elapsed = performance.now() - t0
   report(`Zarr store, ${nSamples} samples`, elapsed, read())
-  console.log(
-    `${''.padEnd(28)} 2 metadata + ${chunks.length} chunk${chunks.length === 1 ? '' : 's'} of ${nSamples} x ${chunkBins}`,
+  detail(
+    `2 metadata + ${chunks.length} chunk${chunks.length === 1 ? '' : 's'} of ${nSamples} x ${chunkBins}`,
   )
 }

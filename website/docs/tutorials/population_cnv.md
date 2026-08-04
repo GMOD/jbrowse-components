@@ -152,14 +152,11 @@ node measure_signal_latency.ts --samples pur.tsv \
   --zarr https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/qm2_cn_1kb.zarr
 ```
 
-```
-104 BigWigs                     625 requests     2.01 MB     1.8 s
-                             6.0 requests per file
-                             median range request 25 ms
-
-Zarr store, 2504 samples          3 requests     0.22 MB     0.2 s
-                             2 metadata + 1 chunk of 2504 x 256
-```
+Against the hosted files, the 104 BigWigs answer that window in 625 requests and
+2.01 MB, about six requests per file, and take 1.8 seconds at a median range
+request of 25 ms. The Zarr store answers the same window for all 2504
+individuals in 3 requests and 0.22 MB, and takes 0.2 seconds: two metadata reads
+plus one chunk of 2504 samples by 256 bins.
 
 Two megabytes is not the problem. The request count is. Every BigWig needs a few
 reads to find where a region's values live before it can read them, and those
