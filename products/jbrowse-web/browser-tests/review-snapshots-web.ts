@@ -487,13 +487,50 @@ function matchesFilters(s, q) {
     (justActed.has(s.name) || (matchesStatus && matchesKind && matchesDrift))
 }
 
+// Note text typed but not yet saved, by snapshot name. A render rebuilds all of
+// #main from \`data\`, which knows only what the server has — so a note on a card
+// with no verdict yet (saveNote has nothing to attach it to) lived only in the
+// DOM, and the next repaint threw it away. The drift poll repaints every two
+// seconds on its own, so those words were lost without the reviewer touching
+// anything. They are carried across every repaint instead, and dropped once
+// what is on the card matches what is saved.
+const pendingNotes = new Map()
+
+function harvestNotes() {
+  for (const el of document.querySelectorAll('.card')) {
+    const name = el.dataset.name
+    const typed = el.querySelector('.note')?.value
+    if (typed === undefined) {
+      continue
+    }
+    const saved = (data.find(s => s.name === name)?.verdict?.note) || ''
+    if (typed === saved) {
+      pendingNotes.delete(name)
+    } else {
+      pendingNotes.set(name, typed)
+    }
+  }
+}
+
+function applyPendingNotes() {
+  for (const el of document.querySelectorAll('.card')) {
+    const typed = pendingNotes.get(el.dataset.name)
+    const note = el.querySelector('.note')
+    if (typed !== undefined && note) {
+      note.value = typed
+    }
+  }
+}
+
 function render() {
   syncControls()
   renderCounts()
   const q = $('#search').value.toLowerCase()
   const visible = specsInPage().filter(s => matchesFilters(s, q))
   const card = filters.page === 'basic' ? basicCard : backendCard
+  harvestNotes()
   $('#main').innerHTML = visible.map(card).join('')
+  applyPendingNotes()
 }
 
 const cardEl = btn => btn.closest('.card')
@@ -594,32 +631,54 @@ const conflictText = result =>
       (result.current ? result.current.status : 'cleared') +
       '). The card is back in sync; act again if you still want to.'
 
+// Writes for one snapshot run one after another. Clicking Approve while the
+// note field has focus fires that field's change event first — the blur is part
+// of the click — so two writes for the same card are issued back to back.
+// Unserialized, the second still carries the reviewedAt the first has already
+// replaced, and the server refuses it as a conflict with a change that was us:
+// the reviewer's Approve silently does not land and the card says the entry
+// moved elsewhere.
+const writeChain = new Map()
+
+function queueWrite(name, fn) {
+  const run = (writeChain.get(name) || Promise.resolve()).then(fn)
+  // each caller reports its own failure; the chain itself must survive one
+  writeChain.set(name, run.catch(() => {}))
+  return run
+}
+
 async function setVerdict(btn, status) {
-  const el = cardEl(btn)
-  const name = el.dataset.name
-  const note = el.querySelector('.note').value
+  const name = cardEl(btn).dataset.name
   const s = data.find(x => x.name === name)
   if (!s) {
     return
   }
-  try {
-    const result = await postVerdict(s, status, note)
-    if (result.conflict) {
-      adoptRemote(s, result)
-      setMessage(name, conflictText(result), 'warn')
-    } else {
-      // adopt the server's own verdict: it carries the reviewedAt the next
-      // write has to match and the image hash this tab cannot compute. It was
-      // recorded against the current image, so it is not stale.
-      s.verdict = result.body
-      s.stale = false
-      setMessage(name, '')
+  await queueWrite(name, async () => {
+    // Read the note now rather than when the button was clicked: a note save
+    // ahead of us in the queue may have re-rendered the card. The card can also
+    // be gone by now (a filter changed since the click), in which case the last
+    // saved note beats dropping the verdict on the floor.
+    const noteEl = cardOf(name)?.querySelector('.note')
+    const note = noteEl ? noteEl.value : s.verdict ? s.verdict.note : ''
+    try {
+      const result = await postVerdict(s, status, note)
+      if (result.conflict) {
+        adoptRemote(s, result)
+        setMessage(name, conflictText(result), 'warn')
+      } else {
+        // adopt the server's own verdict: it carries the reviewedAt the next
+        // write has to match and the image hash this tab cannot compute. It was
+        // recorded against the current image, so it is not stale.
+        s.verdict = result.body
+        s.stale = false
+        setMessage(name, '')
+      }
+    } catch (err) {
+      setMessage(name, 'Not saved — ' + err.message, 'error')
     }
-  } catch (err) {
-    setMessage(name, 'Not saved — ' + err.message, 'error')
-  }
-  justActed.add(name)
-  updateCard(name)
+    justActed.add(name)
+    updateCard(name)
+  })
 }
 
 // Deliberately does not re-render: the reviewer's text stays exactly as they
@@ -627,36 +686,41 @@ async function setVerdict(btn, status) {
 async function saveNote(input) {
   const name = cardEl(input).dataset.name
   const s = data.find(x => x.name === name)
+  const note = input.value
   if (!s) {
     return
   }
-  if (!s.verdict) {
-    // a note has nothing to attach to until there is a verdict; say so rather
-    // than dropping the words silently, as this used to
-    setMessage(name, 'Note not saved yet — approve or deny and it goes with the verdict.', 'warn')
-    paintMessage(name)
-    return
-  }
-  // A note save carries the image precondition too, because the server restamps
-  // the verdict's hash from the current snapshot on every write: without it,
-  // typing a note would quietly re-bless one that had been rewritten since, and
-  // clear its 'changed since review' flag with nobody having looked.
-  try {
-    const result = await postVerdict(s, s.verdict.status, input.value)
-    if (result.conflict) {
-      adoptRemote(s, result)
-      setMessage(name, conflictText(result) + ' Your note text is still here — blur again to save it.', 'warn')
-      // re-render on this path only: it swaps in the image that is actually on
-      // disk, and updateCard carries the typed note across for us
-      updateCard(name)
+  await queueWrite(name, async () => {
+    if (!s.verdict) {
+      // a note has nothing to attach to until there is a verdict; say so rather
+      // than dropping the words silently, as this used to. An Approve/Deny click
+      // is usually right behind us in the queue, and it carries this text along.
+      setMessage(name, 'Note not saved yet — approve or deny and it goes with the verdict.', 'warn')
+      paintMessage(name)
       return
     }
-    s.verdict = result.body
-    setMessage(name, '')
-  } catch (err) {
-    setMessage(name, 'Note not saved — ' + err.message, 'error')
-  }
-  paintMessage(name)
+    // A note save carries the image precondition too, because the server
+    // restamps the verdict's hash from the current snapshot on every write:
+    // without it, typing a note would quietly re-bless one that had been
+    // rewritten since, and clear its 'changed since review' flag with nobody
+    // having looked.
+    try {
+      const result = await postVerdict(s, s.verdict.status, note)
+      if (result.conflict) {
+        adoptRemote(s, result)
+        setMessage(name, conflictText(result) + ' Your note text is still here — blur again to save it.', 'warn')
+        // re-render on this path only: it swaps in the image that is actually
+        // on disk, and updateCard carries the typed note across for us
+        updateCard(name)
+        return
+      }
+      s.verdict = result.body
+      setMessage(name, '')
+    } catch (err) {
+      setMessage(name, 'Note not saved — ' + err.message, 'error')
+    }
+    paintMessage(name)
+  })
 }
 
 async function clearVerdict(btn) {
@@ -665,23 +729,25 @@ async function clearVerdict(btn) {
   if (!s) {
     return
   }
-  try {
-    const result = await postJson('/api/verdict/clear', {
-      name,
-      ifReviewedAt: precondition(s),
-    })
-    if (result.conflict) {
-      adoptRemote(s, result)
-      setMessage(name, conflictText(result), 'warn')
-    } else {
-      s.verdict = undefined
-      s.stale = false
-      setMessage(name, '')
+  await queueWrite(name, async () => {
+    try {
+      const result = await postJson('/api/verdict/clear', {
+        name,
+        ifReviewedAt: precondition(s),
+      })
+      if (result.conflict) {
+        adoptRemote(s, result)
+        setMessage(name, conflictText(result), 'warn')
+      } else {
+        s.verdict = undefined
+        s.stale = false
+        setMessage(name, '')
+      }
+    } catch (err) {
+      setMessage(name, 'Not cleared — ' + err.message, 'error')
     }
-  } catch (err) {
-    setMessage(name, 'Not cleared — ' + err.message, 'error')
-  }
-  updateCard(name)
+    updateCard(name)
+  })
 }
 
 // Re-render a single card in place so acting on one never wipes unsaved note

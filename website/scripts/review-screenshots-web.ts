@@ -801,6 +801,40 @@ function matchesFilters(s, q) {
   return matchesQuery && matchesGroup && matchesKind && (justActed.has(s.name) || (matchesStatus && matchesChanged))
 }
 
+// Note text typed but not yet saved, by figure name. A render rebuilds all of
+// #main from \`data\`, which knows only what the server has — so a note on a card
+// with no verdict yet (saveNote has nothing to attach it to) lived only in the
+// DOM, and the next repaint threw it away. Typing a reason and then reaching for
+// the search box was enough to lose it. Carried across every repaint instead,
+// and dropped once what is on the card matches what is saved.
+const pendingNotes = new Map()
+
+function harvestNotes() {
+  for (const el of document.querySelectorAll('.card')) {
+    const name = el.dataset.name
+    const typed = el.querySelector('.note')?.value
+    if (typed === undefined) {
+      continue
+    }
+    const saved = (data.find(s => s.name === name)?.verdict?.note) || ''
+    if (typed === saved) {
+      pendingNotes.delete(name)
+    } else {
+      pendingNotes.set(name, typed)
+    }
+  }
+}
+
+function applyPendingNotes() {
+  for (const el of document.querySelectorAll('.card')) {
+    const typed = pendingNotes.get(el.dataset.name)
+    const note = el.querySelector('.note')
+    if (typed !== undefined && note) {
+      note.value = typed
+    }
+  }
+}
+
 function render() {
   syncControls()
   renderCounts()
@@ -813,7 +847,9 @@ function render() {
       return tb - ta
     })
   }
+  harvestNotes()
   $('#main').innerHTML = visible.map(card).join('')
+  applyPendingNotes()
 }
 
 // Re-render a single card in place rather than rebuilding all of main, so
