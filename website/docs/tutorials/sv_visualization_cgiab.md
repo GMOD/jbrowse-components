@@ -494,6 +494,15 @@ connecting the two chromosomes.
 
 <Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
+That chord is one breakend of a larger event, not a lone translocation. The V0.5
+benchmark tags `SV_20` with `EVENTTYPE=CHROMOPLEXY` and files it under
+`EVENT=cluster_3` together with its mate on chr13 and two further breakends on
+chr3. Interchromosomal translocations in HG008 are frequently complex in this
+way, not describable as a single pair of breakpoints
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), which is why
+the assembly views below are worth reaching for once a chord has told you where
+to look.
+
 For the SV inspector workflow itself (filtering the table, search, configuring
 the circular overview), see the
 [SV inspector guide](/docs/user_guides/sv_inspector_view).

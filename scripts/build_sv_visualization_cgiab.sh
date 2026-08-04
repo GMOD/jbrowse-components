@@ -57,14 +57,15 @@
 #   GRCh38_HG008-T-<BENCH_VER>_somatic-CNV_PASS.draftbenchmark.calls.bed
 #   config.json  (demos/cgiab/config.json, which is kept byte-identical to what
 #     jbrowse.org/demos/cgiab/ serves -- NOT jbrowse2/config.json, whose
-#     --load copy paths are local and do not exist on S3. The older
-#     website/scripts/cgiab-demo-config.json predates demos/ being checked in and
-#     is stale; it still points the tumor reads at the 118 GB NCBI BAM rather
-#     than the rehosted slice.)
+#     --load copy paths are local and do not exist on S3)
+# Deploy that config with scripts/deploy-demo.sh cgiab/config.json, which uploads
+# and invalidates in one step and refuses to push anything that differs from the
+# checked-in copy. The bucket has no versioning, so an overwrite assembled
+# somewhere else is unrecoverable.
 # Then regenerate the tutorial figures: cd website && pnpm screenshots --filter sv_cgiab
 #
 # A config-only change (e.g. the BAF track's resolutionMultiplier) needs no
-# rebuild and no data upload: copy demos/cgiab/config.json alone and invalidate.
+# rebuild and no data upload: deploy demos/cgiab/config.json on its own.
 #
 set -euo pipefail
 

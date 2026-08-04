@@ -22,8 +22,12 @@ HERE=$(cd "$(dirname "$0")/.." && pwd)   # website/ (holds rclone.conf)
 # hificnv.<sample>.depth.bw output); the BAF bigWig is the unfolded 0..1 track
 # the build script pileups over germline het sites, deliberately not HiFiCNV's
 # folded maf.bw; the PIF comes from `jbrowse make-pif HG008T_v3.2.paf`.
-# config.json is the hosted demo config (V0.5 benchmark + HG008T_v3.2 assembly
-# + the HiFiCNV/BAF/Wakhan tracks).
+#
+# Data files only. config.json is deliberately NOT staged here: it has a
+# checked-in copy at demos/cgiab/config.json and ships with
+# `scripts/deploy-demo.sh cgiab/config.json`, which refuses to upload anything
+# that differs from that copy. Pushing a config assembled in a scratch dir is how
+# ecoli_pangenome lost a track, and the bucket has no versioning to restore from.
 EXPECTED=(
   HG008-T.hificnv.depth.bw
   HG008-T_baf.bcftools.bw
@@ -33,7 +37,6 @@ EXPECTED=(
   HG008T_v3.2.fasta.gz.fai
   HG008T_v3.2.fasta.gz.gzi
   GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed
-  config.json
 )
 
 missing=0

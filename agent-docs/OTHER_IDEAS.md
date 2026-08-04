@@ -2027,22 +2027,15 @@ same-row bowed curve just off-screen can be dropped, harmless).
 
 ## C-GIAB tutorial follow-ups (need data prep + S3 upload, not sandbox-runnable)
 
-Two items deferred from the figure-accuracy pass, verified against the V0.5
-benchmark files + the data paper (McDaniel et al. 2025, _Sci Data_ 12:1195, DOI
-10.1038/s41597-025-05438-2). See also TODO.md "more accurate cgiab: wakhan,
-pycnv".
+Deferred from the figure-accuracy pass, verified against the V0.5 benchmark
+files + the data paper (McDaniel et al. 2025, _Sci Data_ 12:1195, DOI
+10.1038/s41597-025-05438-2).
 
-**V0.4 → V0.5 benchmark upgrade.** V0.5 (2026-03-18) is the current somatic
-SV+CNV benchmark; the tutorial loads V0.4. Gene-level CN/haplotype states are
-**unchanged** (CDKN2A CN0; TP53 = CNA_20, 1+0; chr17q = CNA_21, 2+0; SMAD4 =
-CNA_48, 0+1; KRAS = SV_101, 2+1), so the walkthrough biology holds. Swap V0.4
-load URLs for the V0.5 dir (`.../NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/`)
-in the tutorial commands, `cgiab-demo-config.json`, and `specs/sv.ts`; re-confirm
-call IDs against the V0.5 VCF/BED before updating prose (IDs renumber between
-versions). New in V0.5: confident subclonal SVs (VAF>5%) promoted to PASS,
-VNTR/TR SVs, `svviz2` VAF, explicit `EVENTTYPE=CHROMOPLEXY` (the chr3-chr13
-fusion is `cluster_3`) — worth one line in the translocation walkthrough. The
-demo-bucket log2/BAF/CNV bigWigs don't need regenerating.
+**Unused V0.5 fields.** VNTR/TR SVs and the `svviz2` per-dataset VAF fields are
+loaded but never shown; either could carry a figure. When writing about
+chromoplexy, note that the benchmark's `EVENT=cluster_3` (chr3/chr13, cited in
+the translocation walkthrough) is **not** the chromoplexy example in Wagner et
+al. 2026, which is a chr3/6/7/11 series forming three hybrid chromosomes.
 
 **Single-cell WGS section.** C-GIAB publishes single-cell WGS for HG008-T via
 BioSkryb ResolveDNA (PTA): 119 per-cell CRAMs (Ultima UG100, GRCh38, barcode in
